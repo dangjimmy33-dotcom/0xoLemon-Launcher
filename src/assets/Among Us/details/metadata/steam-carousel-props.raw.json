@@ -1,0 +1,145 @@
+﻿{
+    "appName":  "Among Us",
+    "trailers":  [
+                     {
+                         "id":  1,
+                         "featured":  true,
+                         "thumbnail":  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/257195243/2cb7c83c4a037599c78d5fef912da987dde4aedc/movie_232x130.jpg?t=1757444890",
+                         "poster":  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/257195243/2cb7c83c4a037599c78d5fef912da987dde4aedc/movie_600x337.jpg?t=1757444890",
+                         "statsURL":  "https://store.steampowered.com/app/trailerstats/945360/1500936740",
+                         "category":  3,
+                         "title":  "Detective and Viper",
+                         "dashManifests":  [
+                                               "https://video.fastly.steamstatic.com/store_trailers/945360/1500936740/ab4e8e0e92771daaa6e83ee679314df2ee84d72d/1757443796/dash_av1.mpd?t=1757444890",
+                                               "https://video.fastly.steamstatic.com/store_trailers/945360/1500936740/ab4e8e0e92771daaa6e83ee679314df2ee84d72d/1757443796/dash_h264.mpd?t=1757444890"
+                                           ],
+                         "hlsManifest":  "https://video.fastly.steamstatic.com/store_trailers/945360/1500936740/ab4e8e0e92771daaa6e83ee679314df2ee84d72d/1757443796/hls_264_master.m3u8?t=1757444890"
+                     },
+                     {
+                         "id":  2,
+                         "featured":  true,
+                         "thumbnail":  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/257032139/316eca9d700911b9961ea8f724c54eb895ef557a/movie_232x130.jpg?t=1757444893",
+                         "poster":  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/257032139/316eca9d700911b9961ea8f724c54eb895ef557a/movie_600x337.jpg?t=1757444893",
+                         "statsURL":  "https://store.steampowered.com/app/trailerstats/945360/715586",
+                         "dashManifests":  [
+                                               "https://video.fastly.steamstatic.com/store_trailers/945360/715586/1a15416526c3077d895d4b9a54ddbb35c2a2ddec/1750599426/dash_av1.mpd?t=1757444893",
+                                               "https://video.fastly.steamstatic.com/store_trailers/945360/715586/1a15416526c3077d895d4b9a54ddbb35c2a2ddec/1750599426/dash_h264.mpd?t=1757444893"
+                                           ],
+                         "hlsManifest":  "https://video.fastly.steamstatic.com/store_trailers/945360/715586/1a15416526c3077d895d4b9a54ddbb35c2a2ddec/1750599426/hls_264_master.m3u8?t=1757444893"
+                     },
+                     {
+                         "id":  3,
+                         "featured":  false,
+                         "thumbnail":  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/256978016/movie.184x123.jpg?t=1698177291",
+                         "poster":  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/256978016/movie.293x165.jpg?t=1698177291",
+                         "statsURL":  "https://store.steampowered.com/app/trailerstats/945360/622287",
+                         "category":  3,
+                         "title":  "The Fungle Launch",
+                         "dashManifests":  [
+                                               "https://video.fastly.steamstatic.com/store_trailers/945360/622287/11e6bbffbc31caf648fc8f2ae1cb26b7254bcfc0/1750599424/dash_av1.mpd?t=1698177291",
+                                               "https://video.fastly.steamstatic.com/store_trailers/945360/622287/11e6bbffbc31caf648fc8f2ae1cb26b7254bcfc0/1750599424/dash_h264.mpd?t=1698177291"
+                                           ],
+                         "hlsManifest":  "https://video.fastly.steamstatic.com/store_trailers/945360/622287/11e6bbffbc31caf648fc8f2ae1cb26b7254bcfc0/1750599424/hls_264_master.m3u8?t=1698177291"
+                     },
+                     {
+                         "id":  4,
+                         "featured":  false,
+                         "thumbnail":  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/256924476/movie.184x123.jpg?t=1684189580",
+                         "poster":  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/256924476/movie.293x165.jpg?t=1684189580",
+                         "statsURL":  "https://store.steampowered.com/app/trailerstats/945360/528132",
+                         "category":  3,
+                         "title":  "Hide n Seek",
+                         "dashManifests":  [
+                                               "https://video.fastly.steamstatic.com/store_trailers/945360/528132/fc1a92c9ff1e4ec24d9a71a880db04f59c0e3ce0/1750599423/dash_av1.mpd?t=1684189580",
+                                               "https://video.fastly.steamstatic.com/store_trailers/945360/528132/fc1a92c9ff1e4ec24d9a71a880db04f59c0e3ce0/1750599423/dash_h264.mpd?t=1684189580"
+                                           ],
+                         "hlsManifest":  "https://video.fastly.steamstatic.com/store_trailers/945360/528132/fc1a92c9ff1e4ec24d9a71a880db04f59c0e3ce0/1750599423/hls_264_master.m3u8?t=1684189580"
+                     },
+                     {
+                         "id":  5,
+                         "featured":  false,
+                         "thumbnail":  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/256733242/movie.184x123.jpg?t=1684189588",
+                         "poster":  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/256733242/movie.293x165.jpg?t=1684189588",
+                         "statsURL":  "https://store.steampowered.com/app/trailerstats/945360/192206",
+                         "category":  3,
+                         "title":  "Release Trailer",
+                         "dashManifests":  [
+                                               "https://video.fastly.steamstatic.com/store_trailers/945360/192206/43dae26ff3a8974bb7ec4a1550f0f6c4a692f988/1750599336/dash_av1.mpd?t=1684189588",
+                                               "https://video.fastly.steamstatic.com/store_trailers/945360/192206/43dae26ff3a8974bb7ec4a1550f0f6c4a692f988/1750599336/dash_h264.mpd?t=1684189588"
+                                           ],
+                         "hlsManifest":  "https://video.fastly.steamstatic.com/store_trailers/945360/192206/43dae26ff3a8974bb7ec4a1550f0f6c4a692f988/1750599336/hls_264_master.m3u8?t=1684189588"
+                     }
+                 ],
+    "screenshots":  [
+                        {
+                            "name":  "ss_b7374128e5b786a302a716bca038d604b00ffe46.jpg",
+                            "thumbnail":  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_b7374128e5b786a302a716bca038d604b00ffe46.116x65.jpg?t=1781287930",
+                            "standard":  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_b7374128e5b786a302a716bca038d604b00ffe46.600x338.jpg?t=1781287930",
+                            "full":  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_b7374128e5b786a302a716bca038d604b00ffe46.1920x1080.jpg?t=1781287930",
+                            "altText":  "Screenshot #0"
+                        },
+                        {
+                            "name":  "ss_719484b5e0314cc2ae43793786448e032056a31d.jpg",
+                            "thumbnail":  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_719484b5e0314cc2ae43793786448e032056a31d.116x65.jpg?t=1781287930",
+                            "standard":  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_719484b5e0314cc2ae43793786448e032056a31d.600x338.jpg?t=1781287930",
+                            "full":  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_719484b5e0314cc2ae43793786448e032056a31d.1920x1080.jpg?t=1781287930",
+                            "altText":  "Screenshot #1"
+                        },
+                        {
+                            "name":  "ss_ffd9c8926cbd7fce3ca5e5efb4399c47bb196bc8.jpg",
+                            "thumbnail":  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_ffd9c8926cbd7fce3ca5e5efb4399c47bb196bc8.116x65.jpg?t=1781287930",
+                            "standard":  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_ffd9c8926cbd7fce3ca5e5efb4399c47bb196bc8.600x338.jpg?t=1781287930",
+                            "full":  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_ffd9c8926cbd7fce3ca5e5efb4399c47bb196bc8.1920x1080.jpg?t=1781287930",
+                            "altText":  "Screenshot #2"
+                        },
+                        {
+                            "name":  "ss_1fbd9dc9fd6a2710d233a088ef426a6d78fcf884.jpg",
+                            "thumbnail":  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_1fbd9dc9fd6a2710d233a088ef426a6d78fcf884.116x65.jpg?t=1781287930",
+                            "standard":  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_1fbd9dc9fd6a2710d233a088ef426a6d78fcf884.600x338.jpg?t=1781287930",
+                            "full":  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_1fbd9dc9fd6a2710d233a088ef426a6d78fcf884.1920x1080.jpg?t=1781287930",
+                            "altText":  "Screenshot #3"
+                        },
+                        {
+                            "name":  "ss_9d11502fa973580a82b532b25f1901b8425c28f9.jpg",
+                            "thumbnail":  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_9d11502fa973580a82b532b25f1901b8425c28f9.116x65.jpg?t=1781287930",
+                            "standard":  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_9d11502fa973580a82b532b25f1901b8425c28f9.600x338.jpg?t=1781287930",
+                            "full":  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_9d11502fa973580a82b532b25f1901b8425c28f9.1920x1080.jpg?t=1781287930",
+                            "altText":  "Screenshot #4"
+                        },
+                        {
+                            "name":  "ss_17be75e178e3520c986504504ada8535de19cc0d.jpg",
+                            "thumbnail":  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_17be75e178e3520c986504504ada8535de19cc0d.116x65.jpg?t=1781287930",
+                            "standard":  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_17be75e178e3520c986504504ada8535de19cc0d.600x338.jpg?t=1781287930",
+                            "full":  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_17be75e178e3520c986504504ada8535de19cc0d.1920x1080.jpg?t=1781287930",
+                            "altText":  "Screenshot #5"
+                        },
+                        {
+                            "name":  "ss_a1872c1c594ad4e5885d248516919d85243d9c1f.jpg",
+                            "thumbnail":  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_a1872c1c594ad4e5885d248516919d85243d9c1f.116x65.jpg?t=1781287930",
+                            "standard":  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_a1872c1c594ad4e5885d248516919d85243d9c1f.600x338.jpg?t=1781287930",
+                            "full":  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_a1872c1c594ad4e5885d248516919d85243d9c1f.1920x1080.jpg?t=1781287930",
+                            "altText":  "Screenshot #6"
+                        },
+                        {
+                            "name":  "ss_7ccc894b8f95091f608fa012450549091cce2423.jpg",
+                            "thumbnail":  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_7ccc894b8f95091f608fa012450549091cce2423.116x65.jpg?t=1781287930",
+                            "standard":  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_7ccc894b8f95091f608fa012450549091cce2423.600x338.jpg?t=1781287930",
+                            "full":  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_7ccc894b8f95091f608fa012450549091cce2423.1920x1080.jpg?t=1781287930",
+                            "altText":  "Screenshot #7"
+                        },
+                        {
+                            "name":  "ss_13ec9b7b0ad4d154a99a8cbbc4a0c12c02d0421f.jpg",
+                            "thumbnail":  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_13ec9b7b0ad4d154a99a8cbbc4a0c12c02d0421f.116x65.jpg?t=1781287930",
+                            "standard":  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_13ec9b7b0ad4d154a99a8cbbc4a0c12c02d0421f.600x338.jpg?t=1781287930",
+                            "full":  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_13ec9b7b0ad4d154a99a8cbbc4a0c12c02d0421f.1920x1080.jpg?t=1781287930",
+                            "altText":  "Screenshot #8"
+                        },
+                        {
+                            "name":  "ss_41c3f20fa1faf5c9c7548b38a22c449bcfa9bc5e.jpg",
+                            "thumbnail":  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_41c3f20fa1faf5c9c7548b38a22c449bcfa9bc5e.116x65.jpg?t=1781287930",
+                            "standard":  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_41c3f20fa1faf5c9c7548b38a22c449bcfa9bc5e.600x338.jpg?t=1781287930",
+                            "full":  "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_41c3f20fa1faf5c9c7548b38a22c449bcfa9bc5e.1920x1080.jpg?t=1781287930",
+                            "altText":  "Screenshot #9"
+                        }
+                    ]
+}

@@ -1,0 +1,674 @@
+{
+  "appId": 945360,
+  "title": "Among Us",
+  "type": "game",
+  "requiredAge": 0,
+  "isFree": false,
+  "shortDescription": "An online and local party game of teamwork and betrayal for 4-15 players...in space!",
+  "detailedDescriptionHtml": "<span class=\"bb_img_ctn\"><img class=\"bb_img\" src=\"asset:description_images\\001_6bbe13c19eac2f3aeaadddbc7bb40fdc.webp\" width=620 height=330 /></span><br><br>Play with 4-15 player online or via local WiFi as you attempt to prepare your spaceship for departure, but beware as one or more random players among the Crew are Impostors bent on killing everyone!<br><br>Originally created as a party game, we recommend playing with friends at a LAN party or online using voice chat. Enjoy cross-platform play between Android, iOS, PC, and console.<br><br><span class=\"bb_img_ctn\"><img class=\"bb_img\" src=\"asset:description_images\\002_76bef22d1af309e719a8f2b578ef63dc.webp\" width=600 height=124 /></span><br><ul class=\"bb_ul\"><li> Win by completing tasks to prepare the ship or ejecting all Impostors.<br></li><li> React quickly to undo the Impostor's sabotages.<br></li><li> Check the Admin map and Security cameras to keep tabs on other Crewmates.<br></li><li> Report any dead bodies immediately to start discussion of who the suspected Impostor is.<br></li><li> Call emergency meetings to discuss suspicious behavior.<br></li><li> Vote to eject suspected Impostors.</li></ul><br><br><span class=\"bb_img_ctn\"><img class=\"bb_img\" src=\"asset:description_images\\003_a00136b10c71226d0cb43d07d88efbf7.webp\" width=600 height=125 /></span><br><ul class=\"bb_ul\"><li> Kill Crewmates and frame bystanders.<br></li><li> Pretend to run tasks to blend in with the crewmates.<br></li><li> Sneak through the vents to quickly move about the ship.<br></li><li> Use sabotages to cause chaos and divide the crew.<br></li><li> Close doors to trap victims and kill in private.</li></ul><br><span class=\"bb_img_ctn\"><img class=\"bb_img\" src=\"asset:description_images\\004_c2ae1f9084de411d71d9c73d345d9622.webp\" width=600 height=315 /></span><h2 class=\"bb_tag\" >Features</h2><ul class=\"bb_ul\"><li> Customization: Pick your color, hat, visor, skin, and pet.<br></li><li> Lots of game options: Add more Impostors, more tasks, different roles, and so much more!<br></li><li> Different modes to choose from: Classic or Hide n Seek. <br></li><li> 4 different maps to play in: The Skeld, MIRA HQ, Polus, and the Airship.<br></li><li> Quickly find a game online from the host list.<br></li><li> In-game text chat.<br></li><li> Rich Discord integration.<br></li><li> Cross-platform play between PC, console, Android, and iOS!</li></ul>",
+  "aboutTheGameHtml": "<span class=\"bb_img_ctn\"><img class=\"bb_img\" src=\"asset:description_images\\001_6bbe13c19eac2f3aeaadddbc7bb40fdc.webp\" width=620 height=330 /></span><br><br>Play with 4-15 player online or via local WiFi as you attempt to prepare your spaceship for departure, but beware as one or more random players among the Crew are Impostors bent on killing everyone!<br><br>Originally created as a party game, we recommend playing with friends at a LAN party or online using voice chat. Enjoy cross-platform play between Android, iOS, PC, and console.<br><br><span class=\"bb_img_ctn\"><img class=\"bb_img\" src=\"asset:description_images\\002_76bef22d1af309e719a8f2b578ef63dc.webp\" width=600 height=124 /></span><br><ul class=\"bb_ul\"><li> Win by completing tasks to prepare the ship or ejecting all Impostors.<br></li><li> React quickly to undo the Impostor's sabotages.<br></li><li> Check the Admin map and Security cameras to keep tabs on other Crewmates.<br></li><li> Report any dead bodies immediately to start discussion of who the suspected Impostor is.<br></li><li> Call emergency meetings to discuss suspicious behavior.<br></li><li> Vote to eject suspected Impostors.</li></ul><br><br><span class=\"bb_img_ctn\"><img class=\"bb_img\" src=\"asset:description_images\\003_a00136b10c71226d0cb43d07d88efbf7.webp\" width=600 height=125 /></span><br><ul class=\"bb_ul\"><li> Kill Crewmates and frame bystanders.<br></li><li> Pretend to run tasks to blend in with the crewmates.<br></li><li> Sneak through the vents to quickly move about the ship.<br></li><li> Use sabotages to cause chaos and divide the crew.<br></li><li> Close doors to trap victims and kill in private.</li></ul><br><span class=\"bb_img_ctn\"><img class=\"bb_img\" src=\"asset:description_images\\004_c2ae1f9084de411d71d9c73d345d9622.webp\" width=600 height=315 /></span><h2 class=\"bb_tag\" >Features</h2><ul class=\"bb_ul\"><li> Customization: Pick your color, hat, visor, skin, and pet.<br></li><li> Lots of game options: Add more Impostors, more tasks, different roles, and so much more!<br></li><li> Different modes to choose from: Classic or Hide n Seek. <br></li><li> 4 different maps to play in: The Skeld, MIRA HQ, Polus, and the Airship.<br></li><li> Quickly find a game online from the host list.<br></li><li> In-game text chat.<br></li><li> Rich Discord integration.<br></li><li> Cross-platform play between PC, console, Android, and iOS!</li></ul>",
+  "supportedLanguagesHtml": "English, Portuguese - Brazil, Spanish - Latin America, Spanish - Spain, Korean, Russian, French, Italian, German, Dutch, Japanese, Portuguese - Portugal, Simplified Chinese, Traditional Chinese",
+  "website": "http://innersloth.com/gameAmongUs.php",
+  "developers": "Innersloth",
+  "publishers": "Innersloth",
+  "releaseDate": {
+    "coming_soon": false,
+    "date": "Nov 16, 2018"
+  },
+  "genres": "Casual",
+  "categories": [
+    "Multi-player",
+    "PvP",
+    "Online PvP",
+    "LAN PvP",
+    "Co-op",
+    "Online Co-op",
+    "LAN Co-op",
+    "Cross-Platform Multiplayer",
+    "Steam Achievements",
+    "Full controller support",
+    "Steam Trading Cards",
+    "In-App Purchases",
+    "Remote Play on Phone",
+    "Remote Play on Tablet",
+    "Family Sharing"
+  ],
+  "platforms": {
+    "windows": true,
+    "mac": false,
+    "linux": false
+  },
+  "metacritic": {
+    "score": 85,
+    "url": "https://www.metacritic.com/game/pc/among-us?ftag=MCD-06-10aaa1f"
+  },
+  "recommendations": {
+    "total": 645130
+  },
+  "achievements": {
+    "total": 33,
+    "items": [
+      {
+        "apiName": "kills_first",
+        "displayName": "A TASTE FOR IT",
+        "description": "Get your first kill",
+        "hidden": false,
+        "iconFile": "achievement_images/001_kills-first.jpg",
+        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/28d77d90c1978829c159eae6fe799a191c34be83.jpg",
+        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/c56b0ced741a29491e86e63e2399e3d161f7aa30.jpg"
+      },
+      {
+        "apiName": "kills_easy",
+        "displayName": "KILLER",
+        "description": "Get 5 total kills",
+        "hidden": false,
+        "iconFile": "achievement_images/002_kills-easy.jpg",
+        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/f2b99effc0a886290c7b86e1d13bf8fb8df9552c.jpg",
+        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/e3c2d55d9d2ebb6b918c443aee7ff9807c8db9d6.jpg"
+      },
+      {
+        "apiName": "kills_medium",
+        "displayName": "ASSASSIN",
+        "description": "Get 50 total kills",
+        "hidden": false,
+        "iconFile": "achievement_images/003_kills-medium.jpg",
+        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/c56c94c6016eaa474ba59118c0c70b814156fe20.jpg",
+        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/3bfa10b9461b7c4dcbe5d1a75c4973d8034c6fce.jpg"
+      },
+      {
+        "apiName": "kills_hard",
+        "displayName": "SCOURGE",
+        "description": "",
+        "hidden": true,
+        "iconFile": "achievement_images/004_kills-hard.jpg",
+        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/6a0dd8539784b692366028f41774673397d04c13.jpg",
+        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/afbceff91aaf5f9370fad840d7bab3f377af2670.jpg"
+      },
+      {
+        "apiName": "task_complete_easy",
+        "displayName": "INTERN",
+        "description": "Complete 10 total tasks",
+        "hidden": false,
+        "iconFile": "achievement_images/005_task-complete-easy.jpg",
+        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/11d6a7da14eaa7036982b4375ea7caba288339ce.jpg",
+        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/92bbf0ca8e83c2e5aea0e22ea28fa786fb9219a9.jpg"
+      },
+      {
+        "apiName": "task_complete_medium",
+        "displayName": "MANAGER",
+        "description": "Complete 100 total tasks",
+        "hidden": false,
+        "iconFile": "achievement_images/006_task-complete-medium.jpg",
+        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/fb8ff2604057a9cc13acf74166c52ff945354803.jpg",
+        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/b7e20af007f9f24bd749e233a49195a403d0d990.jpg"
+      },
+      {
+        "apiName": "task_complete_hard",
+        "displayName": "TASKMASTER",
+        "description": "",
+        "hidden": true,
+        "iconFile": "achievement_images/007_task-complete-hard.jpg",
+        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/c7782fd07440b564df902fb0d80daa292f06ee9e.jpg",
+        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/29745d3324fb6675789cb0104aeefa84eebde23d.jpg"
+      },
+      {
+        "apiName": "wins_skeld",
+        "displayName": "A SHIP ADRIFT",
+        "description": "Win 3 games on Skeld",
+        "hidden": false,
+        "iconFile": "achievement_images/008_wins-skeld.jpg",
+        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/1c1b96b03b075eb3b42e368ebbdf257e19ef9087.jpg",
+        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/3fe2fa8522f171ba3d14faaccd014015ff2d91c2.jpg"
+      },
+      {
+        "apiName": "wins_mira",
+        "displayName": "CORPORATE LOCKDOWN",
+        "description": "Win 3 games on MIRA",
+        "hidden": false,
+        "iconFile": "achievement_images/009_wins-mira.jpg",
+        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/144c10dcf276eaffe8a7c03553c7d8a63c0de116.jpg",
+        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/db5fd29f80f19e3a4d7b017a12953f6fbfcfb9b0.jpg"
+      },
+      {
+        "apiName": "wins_polus",
+        "displayName": "UNEARTHED",
+        "description": "Win 3 games on Polus",
+        "hidden": false,
+        "iconFile": "achievement_images/010_wins-polus.jpg",
+        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/4d3d812ce857674d5013fb8c499bfacfd063277c.jpg",
+        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/df802d7bdec5147ddfbe9f88dd150f44fa0ff0b8.jpg"
+      },
+      {
+        "apiName": "wins_airship",
+        "displayName": "TOPPAT CREWMATES",
+        "description": "Win 3 games on The Airship",
+        "hidden": false,
+        "iconFile": "achievement_images/011_wins-airship.jpg",
+        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/78c3fd6c3f272601db4023d546f4e0879c3880c3.jpg",
+        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/7c01e1b09e9eaa6aa0134cd98c36fed3fc6922a7.jpg"
+      },
+      {
+        "apiName": "survive_two_impostors",
+        "displayName": "NEVER SUSPECT A THING",
+        "description": "",
+        "hidden": true,
+        "iconFile": "achievement_images/012_survive-two-impostors.jpg",
+        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/9c5048637cd0aecf7f9fcd4ac4f46c0d0c1d7541.jpg",
+        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/651c64d193b6fbb83f29774af46b5e7ce6505309.jpg"
+      },
+      {
+        "apiName": "win_all_tasks",
+        "displayName": "A WELL-OILED MACHINE",
+        "description": "Win a game by completing all tasks as a crewmate",
+        "hidden": false,
+        "iconFile": "achievement_images/013_win-all-tasks.jpg",
+        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/6d277eed63e041a20b28e090f8d258f84bb71daf.jpg",
+        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/2edf1ad6047e2020c3e64a4fca7f66728f804f9b.jpg"
+      },
+      {
+        "apiName": "win_sabotage",
+        "displayName": "SABOTEUR",
+        "description": "Win a game by sabotaging a critical system as Impostor.",
+        "hidden": false,
+        "iconFile": "achievement_images/014_win-sabotage.jpg",
+        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/6062188e86a7cf3c7ef46f0b3e575861a26bbb46.jpg",
+        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/b350cf33a97104167c9aac0c60079f2946396a91.jpg"
+      },
+      {
+        "apiName": "win_kills",
+        "displayName": "SLASHER",
+        "description": "Win a game by killing all crewmates as Impostor.",
+        "hidden": false,
+        "iconFile": "achievement_images/015_win-kills.jpg",
+        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/cbf1cacf0178c63aa2f8545030d53b5f9891aeb0.jpg",
+        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/1f40fda42c6f94d3c7b3c4e918c505c912deb77c.jpg"
+      },
+      {
+        "apiName": "survive_crewmate",
+        "displayName": "SURVIVOR",
+        "description": "Survive and win a game as a crewmate",
+        "hidden": false,
+        "iconFile": "achievement_images/016_survive-crewmate.jpg",
+        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/36b531782d1eba6166eb54769d36f42a3e87ace0.jpg",
+        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/1ec721a4e56994c379be9d3517b386df87814303.jpg"
+      },
+      {
+        "apiName": "win_impostor_vote",
+        "displayName": "SMOOTH TALKER",
+        "description": "Win a game by vote as Impostor",
+        "hidden": false,
+        "iconFile": "achievement_images/017_win-impostor-vote.jpg",
+        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/e2bf2b4ca2e03bbf1b48a9a8c72dd2fde4ee7e68.jpg",
+        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/d57f432e94a7e3ef5cf1c42ad2997fdde0103d54.jpg"
+      },
+      {
+        "apiName": "card_first_try",
+        "displayName": "IMPOSSIBLE TASK",
+        "description": "",
+        "hidden": true,
+        "iconFile": "achievement_images/018_card-first-try.jpg",
+        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/c486b2f15c031a9929e6193a334c8f947b326009.jpg",
+        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/377f77e19968f9d7fec4c1aeffb38815a659eb17.jpg"
+      },
+      {
+        "apiName": "kill_during_lights",
+        "displayName": "LIGHTS OUT",
+        "description": "Get a kill during a lights sabotage",
+        "hidden": false,
+        "iconFile": "achievement_images/019_kill-during-lights.jpg",
+        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/6d53ce190945abd26dc4d5cf265cda396196e736.jpg",
+        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/704ff65764606c74aef094fc6dd965952e4f3f88.jpg"
+      },
+      {
+        "apiName": "die_during_medscan",
+        "displayName": "WATCH ME SCAN",
+        "description": "",
+        "hidden": true,
+        "iconFile": "achievement_images/020_die-during-medscan.jpg",
+        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/bf78b9db17985ba127345ac32258f3116ed7ec00.jpg",
+        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/2b297edb4fc38bdfb458e14c74048c28a67cfb6f.jpg"
+      },
+      {
+        "apiName": "fix_own_sabotage",
+        "displayName": "CREWPOSTOR",
+        "description": "",
+        "hidden": true,
+        "iconFile": "achievement_images/021_fix-own-sabotage.jpg",
+        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/cb4695fda4b61e880404ba5051185a1c154e6156.jpg",
+        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/69b62a24754bd1dc28bf51e0a855696710b65b26.jpg"
+      },
+      {
+        "apiName": "three_kills_before_meeting",
+        "displayName": "H U N G E R",
+        "description": "",
+        "hidden": true,
+        "iconFile": "achievement_images/022_three-kills-before-meeting.jpg",
+        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/f5a1d827b0b4c4709d3a16a6e5a309a302ca4187.jpg",
+        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/7407736424058a1a0c06821bd7bb1a8f97b68f2b.jpg"
+      },
+      {
+        "apiName": "win_always_correct_votes",
+        "displayName": "SHERLOCK",
+        "description": "Win a game as crew with your only votes being for the Impostor",
+        "hidden": false,
+        "iconFile": "achievement_images/023_win-always-correct-votes.jpg",
+        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/970151abaa23e371daaea0423122126184346103.jpg",
+        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/2137274ff67c3d513c9e131bff6a5438a9d8a364.jpg"
+      },
+      {
+        "apiName": "no_vents_impostor_win",
+        "displayName": "CIRCUMVENTER",
+        "description": "",
+        "hidden": true,
+        "iconFile": "achievement_images/024_no-vents-impostor-win.jpg",
+        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/d98da75d64e92504c70b54339a17ab98b8b732fa.jpg",
+        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/7e15b6428da3e3edbcdea760cb01a5f0c2e9ac00.jpg"
+      },
+      {
+        "apiName": "hns_survive_crewmate",
+        "displayName": "HIDDEN TALENT",
+        "description": "Survive a Game as Crew in Hide n Seek Mode",
+        "hidden": false,
+        "iconFile": "achievement_images/025_hns-survive-crewmate.jpg",
+        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/7428551173ce6c4ba93f2b0c7acd226ce208e18a.jpg",
+        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/bfea0ec6e1e21c905d032eb8e5f1a354a9600083.jpg"
+      },
+      {
+        "apiName": "hns_impostor_kill_all",
+        "displayName": "NO ESCAPE",
+        "description": "Kill all hiders as impostor in Hide n Seek Mode",
+        "hidden": false,
+        "iconFile": "achievement_images/026_hns-impostor-kill-all.jpg",
+        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/2529465727f1115c5d69e58bb5f7df53aa11c03f.jpg",
+        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/1b9cc75bef0f2d3c9666a658304735eb86783d8f.jpg"
+      },
+      {
+        "apiName": "hns_complete_all_tasks",
+        "displayName": "PERFORM UNDER PRESSURE",
+        "description": "Do all your tasks in Hide n Seek Mode",
+        "hidden": false,
+        "iconFile": "achievement_images/027_hns-complete-all-tasks.jpg",
+        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/9dca2128c2fc0bab1dac0b075daabfb5bc2312db.jpg",
+        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/4f3b552ac6ab7e1986fc89043d7f4619005b99e3.jpg"
+      },
+      {
+        "apiName": "kill_while_shifted",
+        "displayName": "TRUST NO ONE",
+        "description": "Kill Someone while disguised as them",
+        "hidden": false,
+        "iconFile": "achievement_images/028_kill-while-shifted.jpg",
+        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/8f9010c15a71df86b2750757565f7217f05261b2.jpg",
+        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/d40f4fafc7838afc8ccb8f90ce97b24518098086.jpg"
+      },
+      {
+        "apiName": "block_kill_as_guardian",
+        "displayName": "I CAN BE YOUR ANGLE",
+        "description": "Block a kill as a guardian angel",
+        "hidden": false,
+        "iconFile": "achievement_images/029_block-kill-as-guardian.jpg",
+        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/90221101a3a9b33c742711741e0585c887f7d791.jpg",
+        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/5b34bcd7e8495fd8493a1805407a04b3ec7b1fd2.jpg"
+      },
+      {
+        "apiName": "hns_crewmate_wins_easy",
+        "displayName": "YOU CAN'T RUN",
+        "description": "10 wins as a hider in Hide n Seek Mode",
+        "hidden": false,
+        "iconFile": "achievement_images/030_hns-crewmate-wins-easy.jpg",
+        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/12a62b22955b0aeac6f250a7e736dc0e82e1d5e7.jpg",
+        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/0007446eff8607648b66658c984d5d4fdd6740cb.jpg"
+      },
+      {
+        "apiName": "hns_crewmate_wins_hard",
+        "displayName": "BUT YOU CAN HIDE",
+        "description": "50 wins as a hider in Hide n Seek Mode",
+        "hidden": false,
+        "iconFile": "achievement_images/031_hns-crewmate-wins-hard.jpg",
+        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/78f031450563a755346a47c36531806df024c0be.jpg",
+        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/38a89336b3ce67d98296ea40a609ad6e285ecf78.jpg"
+      },
+      {
+        "apiName": "hns_impostor_kills_easy",
+        "displayName": "YOU CAN RUN",
+        "description": "100 kills as a seeker in Hide n Seek Mode",
+        "hidden": false,
+        "iconFile": "achievement_images/032_hns-impostor-kills-easy.jpg",
+        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/bef1f16697da915b6edb6546ef86a48ef461b19d.jpg",
+        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/b5d7f62a454b6b57fc25704a2148b3f8ebd11f46.jpg"
+      },
+      {
+        "apiName": "hns_impostor_kills_hard",
+        "displayName": "BUT YOU CAN'T HIDE",
+        "description": "200 kills as a seeker in Hide n Seek Mode",
+        "hidden": false,
+        "iconFile": "achievement_images/033_hns-impostor-kills-hard.jpg",
+        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/cd35efbab2dec93d23dd90eb296cc95bd6373e29.jpg",
+        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/42e9cf46caa4d881206ae70089ca5b4df648dd00.jpg"
+      }
+    ]
+  },
+  "pcRequirements": {
+    "minimum": "<strong>Minimum:</strong><br><ul class=\"bb_ul\"><li><strong>OS:</strong> Windows 10 x32bit<br></li><li><strong>Processor:</strong> INTEL i3-4330<br></li><li><strong>Memory:</strong> 1 GB RAM<br></li><li><strong>Graphics:</strong> INTEL HD Graphics 4600</li></ul>",
+    "recommended": "<strong>Recommended:</strong><br><ul class=\"bb_ul\"><li><strong>OS:</strong> Windows 10 x64bit<br></li><li><strong>Processor:</strong> INTEL i3-4330<br></li><li><strong>Memory:</strong> 4 GB RAM<br></li><li><strong>Graphics:</strong> Nvidia GTX 650</li></ul>"
+  },
+  "macRequirements": [],
+  "linuxRequirements": [],
+  "contentDescriptors": {
+    "ids": [],
+    "notes": null
+  },
+  "supportInfo": {
+    "url": "https://innersloth.zendesk.com/hc/en-us",
+    "email": "support@innersloth.com"
+  },
+  "media": [
+    {
+      "role": "header",
+      "title": "Steam header",
+      "sourceUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/header.jpg?t=1781287930",
+      "file": "store_art/header.webp",
+      "sizeBytes": 14304,
+      "sha256": "92935f8a040d53b0fcd83f410965a28123f20fa4ede5fbc37f542f26ca236b63",
+      "lastWriteTimeUtc": "2026-06-13T12:44:18.217Z"
+    },
+    {
+      "role": "capsule",
+      "title": "Steam capsule",
+      "sourceUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/capsule_231x87.jpg?t=1781287930",
+      "file": "store_art/capsule.webp",
+      "sizeBytes": 5714,
+      "sha256": "723701f2396afe22cdba03864f1fbe09977735e03fdb81a745df75f42f364173",
+      "lastWriteTimeUtc": "2026-06-13T12:44:18.141Z"
+    },
+    {
+      "role": "capsule-v5",
+      "title": "Steam capsule v5",
+      "sourceUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/capsule_184x69.jpg?t=1781287930",
+      "file": "store_art/capsule-v5.webp",
+      "sizeBytes": 4080,
+      "sha256": "fd188a692a8fff456239f4b0e1ac1f5b3eaa9b7374c43c010838a5e2881a480b",
+      "lastWriteTimeUtc": "2026-06-13T12:44:18.173Z"
+    },
+    {
+      "role": "background",
+      "title": "Steam background",
+      "sourceUrl": "https://store.akamai.steamstatic.com/images/storepagebackground/app/945360?t=1781287930",
+      "file": "store_art/background.webp",
+      "sizeBytes": 6310,
+      "sha256": "089b0ea0b0416eaae6ca0e85dbda1628565ff71375caa9df614679b07d40ed9d",
+      "lastWriteTimeUtc": "2026-06-13T12:44:17.997Z"
+    },
+    {
+      "role": "background-raw",
+      "title": "Steam background raw",
+      "sourceUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/page_bg_raw.jpg?t=1781287930",
+      "file": "store_art/background-raw.webp",
+      "sizeBytes": 29420,
+      "sha256": "8f3821fc9f0029a120380f970f646dea06e86ce6b1ff485821ff030e9148d227",
+      "lastWriteTimeUtc": "2026-06-13T12:44:18.107Z"
+    },
+    {
+      "role": "screenshot",
+      "title": "Screenshot 1",
+      "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_b7374128e5b786a302a716bca038d604b00ffe46.1920x1080.jpg?t=1781287930",
+      "file": "screenshots/001_screenshot.webp",
+      "sizeBytes": 82292,
+      "sha256": "a5a735aec1983e9c2d9f2cca82d8254331ad01eea737a2fd348bd5089f6fa1c8",
+      "lastWriteTimeUtc": "2026-06-13T12:44:18.419Z"
+    },
+    {
+      "role": "screenshot",
+      "title": "Screenshot 2",
+      "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_719484b5e0314cc2ae43793786448e032056a31d.1920x1080.jpg?t=1781287930",
+      "file": "screenshots/002_screenshot.webp",
+      "sizeBytes": 62766,
+      "sha256": "78d228c88fa5b774fac863067e2bf1835c33867b31c61668675152f6635ba3ce",
+      "lastWriteTimeUtc": "2026-06-13T12:44:18.590Z"
+    },
+    {
+      "role": "screenshot",
+      "title": "Screenshot 3",
+      "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_ffd9c8926cbd7fce3ca5e5efb4399c47bb196bc8.1920x1080.jpg?t=1781287930",
+      "file": "screenshots/003_screenshot.webp",
+      "sizeBytes": 49928,
+      "sha256": "1c3526d2ed4968c65090ddf537385d4f856f9004900311b6b2502b0d43ce6bfe",
+      "lastWriteTimeUtc": "2026-06-13T12:44:18.729Z"
+    },
+    {
+      "role": "screenshot",
+      "title": "Screenshot 4",
+      "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_1fbd9dc9fd6a2710d233a088ef426a6d78fcf884.1920x1080.jpg?t=1781287930",
+      "file": "screenshots/004_screenshot.webp",
+      "sizeBytes": 86496,
+      "sha256": "75490eca4d34e0b6faaed59021775c7f6d5c9c8f8ec36269dd4d2fca058b0c47",
+      "lastWriteTimeUtc": "2026-06-13T12:44:18.904Z"
+    },
+    {
+      "role": "screenshot",
+      "title": "Screenshot 5",
+      "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_9d11502fa973580a82b532b25f1901b8425c28f9.1920x1080.jpg?t=1781287930",
+      "file": "screenshots/005_screenshot.webp",
+      "sizeBytes": 124056,
+      "sha256": "0239153c005c0ce3242ace37eebaf38319fe507ad321ed5dc45e93b5609a83ca",
+      "lastWriteTimeUtc": "2026-06-13T12:44:19.131Z"
+    },
+    {
+      "role": "screenshot",
+      "title": "Screenshot 6",
+      "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_17be75e178e3520c986504504ada8535de19cc0d.1920x1080.jpg?t=1781287930",
+      "file": "screenshots/006_screenshot.webp",
+      "sizeBytes": 78844,
+      "sha256": "f55b1ff14848dd6336d6b40c2fe1164269b52b49485b8808ec795322cdb736a2",
+      "lastWriteTimeUtc": "2026-06-13T12:44:19.319Z"
+    },
+    {
+      "role": "screenshot",
+      "title": "Screenshot 7",
+      "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_a1872c1c594ad4e5885d248516919d85243d9c1f.1920x1080.jpg?t=1781287930",
+      "file": "screenshots/007_screenshot.webp",
+      "sizeBytes": 51354,
+      "sha256": "681edfe0461652b0de1c67ee200c021cb979590806390157042cd1753e19e458",
+      "lastWriteTimeUtc": "2026-06-13T12:44:19.485Z"
+    },
+    {
+      "role": "screenshot",
+      "title": "Screenshot 8",
+      "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_7ccc894b8f95091f608fa012450549091cce2423.1920x1080.jpg?t=1781287930",
+      "file": "screenshots/008_screenshot.webp",
+      "sizeBytes": 75812,
+      "sha256": "df56ac60856fd73b68995f4e3c1ef416b4bfd41beb40ec1beab32c67164b2b1c",
+      "lastWriteTimeUtc": "2026-06-13T12:44:19.674Z"
+    },
+    {
+      "role": "screenshot",
+      "title": "Screenshot 9",
+      "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_13ec9b7b0ad4d154a99a8cbbc4a0c12c02d0421f.1920x1080.jpg?t=1781287930",
+      "file": "screenshots/009_screenshot.webp",
+      "sizeBytes": 45876,
+      "sha256": "f7609b8ec5430ab2358164f30c5cf4d70f21eee92f7fb92394634edd28289348",
+      "lastWriteTimeUtc": "2026-06-13T12:44:19.821Z"
+    },
+    {
+      "role": "screenshot",
+      "title": "Screenshot 10",
+      "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_41c3f20fa1faf5c9c7548b38a22c449bcfa9bc5e.1920x1080.jpg?t=1781287930",
+      "file": "screenshots/010_screenshot.webp",
+      "sizeBytes": 70206,
+      "sha256": "0ecd3bd632dacac0a6b31a447820da2de8b24cfba674c08cdb027afb9c6ef541",
+      "lastWriteTimeUtc": "2026-06-13T12:44:20.003Z"
+    },
+    {
+      "role": "video",
+      "title": "Detective and Viper",
+      "sourceUrl": "https://video.fastly.steamstatic.com/store_trailers/945360/1500936740/ab4e8e0e92771daaa6e83ee679314df2ee84d72d/1757443796/hls_264_master.m3u8?t=1757444890",
+      "file": "videos/001_detective-and-viper.mp4",
+      "sizeBytes": 1816045,
+      "sha256": "6641c98c7c3f71937588d64d29fbaa6457f8f59e9f460e7d31afcb6d564b0a06",
+      "lastWriteTimeUtc": "2026-06-13T13:44:50.892Z"
+    },
+    {
+      "role": "video-thumbnail",
+      "title": "Detective and Viper",
+      "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/257195243/2cb7c83c4a037599c78d5fef912da987dde4aedc/movie_232x130.jpg?t=1757444890",
+      "file": "video_thumbnails/001_detective-and-viper_thumb.webp",
+      "sizeBytes": 9190,
+      "sha256": "5d56d6d821eb53fe358de1996af6c85aeb69f403eca3770986fdea6054fd2322",
+      "lastWriteTimeUtc": "2026-06-13T12:44:20.160Z"
+    },
+    {
+      "role": "video-poster",
+      "title": "Detective and Viper",
+      "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/257195243/2cb7c83c4a037599c78d5fef912da987dde4aedc/movie_600x337.jpg?t=1757444890",
+      "file": "video_thumbnails/001_detective-and-viper_poster.webp",
+      "sizeBytes": 29240,
+      "sha256": "3afbeda0ea0903710cb16b2961ed60665f887abdc043ee75088e22804d048805",
+      "lastWriteTimeUtc": "2026-06-13T12:44:20.124Z"
+    },
+    {
+      "role": "video",
+      "title": "Phantom, Tracker, Noisemaker",
+      "sourceUrl": "https://video.fastly.steamstatic.com/store_trailers/945360/715586/1a15416526c3077d895d4b9a54ddbb35c2a2ddec/1750599426/hls_264_master.m3u8?t=1757444893",
+      "file": "videos/002_phantom-tracker-noisemaker.mp4",
+      "sizeBytes": 3009234,
+      "sha256": "b4ee45b50106dda818d96aa1f1398b39310d96dd8a40fe5caab502abbdde8f30",
+      "lastWriteTimeUtc": "2026-06-13T13:44:55.896Z"
+    },
+    {
+      "role": "video-thumbnail",
+      "title": "Phantom, Tracker, Noisemaker",
+      "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/257032139/316eca9d700911b9961ea8f724c54eb895ef557a/movie_232x130.jpg?t=1757444893",
+      "file": "video_thumbnails/002_phantom-tracker-noisemaker_thumb.webp",
+      "sizeBytes": 6688,
+      "sha256": "bc41dcbf2eae991992e2703139bc404e545c91db203d681d8ae07a90a56186f6",
+      "lastWriteTimeUtc": "2026-06-13T12:44:20.306Z"
+    },
+    {
+      "role": "video-poster",
+      "title": "Phantom, Tracker, Noisemaker",
+      "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/257032139/316eca9d700911b9961ea8f724c54eb895ef557a/movie_600x337.jpg?t=1757444893",
+      "file": "video_thumbnails/002_phantom-tracker-noisemaker_poster.webp",
+      "sizeBytes": 24166,
+      "sha256": "72d6cf76fbeb0d5b379803fb699f74a92016c3b6832d414763987f061f7a7039",
+      "lastWriteTimeUtc": "2026-06-13T12:44:20.271Z"
+    },
+    {
+      "role": "video",
+      "title": "The Fungle Launch",
+      "sourceUrl": "https://video.fastly.steamstatic.com/store_trailers/945360/622287/11e6bbffbc31caf648fc8f2ae1cb26b7254bcfc0/1750599424/hls_264_master.m3u8?t=1698177291",
+      "file": "videos/003_the-fungle-launch.mp4",
+      "sizeBytes": 2147579,
+      "sha256": "cfbb49b6cc7d76e521df44fab76f2bd8003f3d196c0355c874f00f6eba5a95ad",
+      "lastWriteTimeUtc": "2026-06-13T13:44:59.535Z"
+    },
+    {
+      "role": "video-thumbnail",
+      "title": "The Fungle Launch",
+      "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/256978016/movie.184x123.jpg?t=1698177291",
+      "file": "video_thumbnails/003_the-fungle-launch_thumb.webp",
+      "sizeBytes": 6816,
+      "sha256": "c1ca06f0bfc51c471a1e6d3f336de3c556ac3ee7b8ef3d99148032eea46a5dfd",
+      "lastWriteTimeUtc": "2026-06-13T12:44:20.419Z"
+    },
+    {
+      "role": "video-poster",
+      "title": "The Fungle Launch",
+      "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/256978016/movie.293x165.jpg?t=1698177291",
+      "file": "video_thumbnails/003_the-fungle-launch_poster.webp",
+      "sizeBytes": 14126,
+      "sha256": "826dc06f606c87b780a0eb03b388e3fa595c0e489c21b31f97aa87849dc52648",
+      "lastWriteTimeUtc": "2026-06-13T12:44:20.386Z"
+    },
+    {
+      "role": "video",
+      "title": "Hide n Seek",
+      "sourceUrl": "https://video.fastly.steamstatic.com/store_trailers/945360/528132/fc1a92c9ff1e4ec24d9a71a880db04f59c0e3ce0/1750599423/hls_264_master.m3u8?t=1684189580",
+      "file": "videos/004_hide-n-seek.mp4",
+      "sizeBytes": 2469314,
+      "sha256": "83f75484c9be53df110a4b574018daa21ac8ff1d29ed2224d231c64d0bf7b140",
+      "lastWriteTimeUtc": "2026-06-13T13:45:04.039Z"
+    },
+    {
+      "role": "video-thumbnail",
+      "title": "Hide n Seek",
+      "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/256924476/movie.184x123.jpg?t=1684189580",
+      "file": "video_thumbnails/004_hide-n-seek_thumb.webp",
+      "sizeBytes": 4030,
+      "sha256": "c8b7e310a4fd94153de767d917733debb2ec05ce2852dae01982cb886964c319",
+      "lastWriteTimeUtc": "2026-06-13T12:44:20.520Z"
+    },
+    {
+      "role": "video-poster",
+      "title": "Hide n Seek",
+      "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/256924476/movie.293x165.jpg?t=1684189580",
+      "file": "video_thumbnails/004_hide-n-seek_poster.webp",
+      "sizeBytes": 7790,
+      "sha256": "5ce9fa4ed367dfbe2f37c18ee67d2d86abc60c39d3400446104000faca67cf79",
+      "lastWriteTimeUtc": "2026-06-13T12:44:20.489Z"
+    },
+    {
+      "role": "video",
+      "title": "Release Trailer",
+      "sourceUrl": "https://video.fastly.steamstatic.com/store_trailers/945360/192206/43dae26ff3a8974bb7ec4a1550f0f6c4a692f988/1750599336/hls_264_master.m3u8?t=1684189588",
+      "file": "videos/005_release-trailer.mp4",
+      "sizeBytes": 1234505,
+      "sha256": "bdc50a02a34bad366ddc008aa0058243ed743b4fa6726f20b981b1d5b7532b83",
+      "lastWriteTimeUtc": "2026-06-13T13:45:06.621Z"
+    },
+    {
+      "role": "video-thumbnail",
+      "title": "Release Trailer",
+      "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/256733242/movie.184x123.jpg?t=1684189588",
+      "file": "video_thumbnails/005_release-trailer_thumb.webp",
+      "sizeBytes": 3128,
+      "sha256": "10cbe5a53a3e1e18f1dc7f6826895e43ccba06bda8d7a1b80da0273f35257e2f",
+      "lastWriteTimeUtc": "2026-06-13T12:44:20.623Z"
+    },
+    {
+      "role": "video-poster",
+      "title": "Release Trailer",
+      "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/256733242/movie.293x165.jpg?t=1684189588",
+      "file": "video_thumbnails/005_release-trailer_poster.webp",
+      "sizeBytes": 6440,
+      "sha256": "ec495e8187d771f4bc58a056df567a975b4384b757a4eda0fc508325f21cb062",
+      "lastWriteTimeUtc": "2026-06-13T12:44:20.592Z"
+    },
+    {
+      "role": "description-image",
+      "title": "Description image 1",
+      "sourceUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/extras/6bbe13c19eac2f3aeaadddbc7bb40fdc.avif?t=1781287930",
+      "file": "description_images/001_6bbe13c19eac2f3aeaadddbc7bb40fdc.webp",
+      "sizeBytes": 12766,
+      "sha256": "9d7bd7d246f9106189a5cda3db25239bb9616127fa0a9bf4602dd16cbd966a7b",
+      "lastWriteTimeUtc": "2026-06-13T12:46:47.962Z"
+    },
+    {
+      "role": "description-image",
+      "title": "Description image 2",
+      "sourceUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/extras/76bef22d1af309e719a8f2b578ef63dc.avif?t=1781287930",
+      "file": "description_images/002_76bef22d1af309e719a8f2b578ef63dc.webp",
+      "sizeBytes": 11156,
+      "sha256": "8df2d8b022cec7251ab327fb1139c6887d967eaaf9d50a9369f30f36d3f9819b",
+      "lastWriteTimeUtc": "2026-06-13T12:46:48.044Z"
+    },
+    {
+      "role": "description-image",
+      "title": "Description image 3",
+      "sourceUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/extras/a00136b10c71226d0cb43d07d88efbf7.avif?t=1781287930",
+      "file": "description_images/003_a00136b10c71226d0cb43d07d88efbf7.webp",
+      "sizeBytes": 7522,
+      "sha256": "3f078b65ad20fb5e18620f84a193d7296fe74bfa0d90e8b8db701d0dda4989c7",
+      "lastWriteTimeUtc": "2026-06-13T12:46:48.110Z"
+    },
+    {
+      "role": "description-image",
+      "title": "Description image 4",
+      "sourceUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/extras/c2ae1f9084de411d71d9c73d345d9622.avif?t=1781287930",
+      "file": "description_images/004_c2ae1f9084de411d71d9c73d345d9622.webp",
+      "sizeBytes": 18118,
+      "sha256": "050a6c8a6a76b92340c4cd5937c8ab048232fa7b9be98ab08f601be9852da745",
+      "lastWriteTimeUtc": "2026-06-13T12:46:48.198Z"
+    }
+  ],
+  "fetchedAt": "2026-06-13T12:48:58.1398990Z",
+  "source": "steam-store+steam-carousel+steam-achievements"
+}

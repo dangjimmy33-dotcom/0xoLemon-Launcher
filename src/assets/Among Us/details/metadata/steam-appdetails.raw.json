@@ -1,0 +1,365 @@
+﻿{
+    "945360":  {
+                   "success":  true,
+                   "data":  {
+                                "type":  "game",
+                                "name":  "Among Us",
+                                "steam_appid":  945360,
+                                "required_age":  0,
+                                "is_free":  false,
+                                "controller_support":  "full",
+                                "detailed_description":  "\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/extras/6bbe13c19eac2f3aeaadddbc7bb40fdc.avif?t=1781287930\" width=620 height=330 /\u003e\u003c/span\u003e\u003cbr\u003e\u003cbr\u003ePlay with 4-15 player online or via local WiFi as you attempt to prepare your spaceship for departure, but beware as one or more random players among the Crew are Impostors bent on killing everyone!\u003cbr\u003e\u003cbr\u003eOriginally created as a party game, we recommend playing with friends at a LAN party or online using voice chat. Enjoy cross-platform play between Android, iOS, PC, and console.\u003cbr\u003e\u003cbr\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/extras/76bef22d1af309e719a8f2b578ef63dc.avif?t=1781287930\" width=600 height=124 /\u003e\u003c/span\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e Win by completing tasks to prepare the ship or ejecting all Impostors.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e React quickly to undo the Impostor\u0027s sabotages.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Check the Admin map and Security cameras to keep tabs on other Crewmates.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Report any dead bodies immediately to start discussion of who the suspected Impostor is.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Call emergency meetings to discuss suspicious behavior.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Vote to eject suspected Impostors.\u003c/li\u003e\u003c/ul\u003e\u003cbr\u003e\u003cbr\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/extras/a00136b10c71226d0cb43d07d88efbf7.avif?t=1781287930\" width=600 height=125 /\u003e\u003c/span\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e Kill Crewmates and frame bystanders.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Pretend to run tasks to blend in with the crewmates.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Sneak through the vents to quickly move about the ship.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Use sabotages to cause chaos and divide the crew.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Close doors to trap victims and kill in private.\u003c/li\u003e\u003c/ul\u003e\u003cbr\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/extras/c2ae1f9084de411d71d9c73d345d9622.avif?t=1781287930\" width=600 height=315 /\u003e\u003c/span\u003e\u003ch2 class=\"bb_tag\" \u003eFeatures\u003c/h2\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e Customization: Pick your color, hat, visor, skin, and pet.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Lots of game options: Add more Impostors, more tasks, different roles, and so much more!\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Different modes to choose from: Classic or Hide n Seek. \u003cbr\u003e\u003c/li\u003e\u003cli\u003e 4 different maps to play in: The Skeld, MIRA HQ, Polus, and the Airship.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Quickly find a game online from the host list.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e In-game text chat.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Rich Discord integration.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Cross-platform play between PC, console, Android, and iOS!\u003c/li\u003e\u003c/ul\u003e",
+                                "about_the_game":  "\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/extras/6bbe13c19eac2f3aeaadddbc7bb40fdc.avif?t=1781287930\" width=620 height=330 /\u003e\u003c/span\u003e\u003cbr\u003e\u003cbr\u003ePlay with 4-15 player online or via local WiFi as you attempt to prepare your spaceship for departure, but beware as one or more random players among the Crew are Impostors bent on killing everyone!\u003cbr\u003e\u003cbr\u003eOriginally created as a party game, we recommend playing with friends at a LAN party or online using voice chat. Enjoy cross-platform play between Android, iOS, PC, and console.\u003cbr\u003e\u003cbr\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/extras/76bef22d1af309e719a8f2b578ef63dc.avif?t=1781287930\" width=600 height=124 /\u003e\u003c/span\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e Win by completing tasks to prepare the ship or ejecting all Impostors.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e React quickly to undo the Impostor\u0027s sabotages.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Check the Admin map and Security cameras to keep tabs on other Crewmates.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Report any dead bodies immediately to start discussion of who the suspected Impostor is.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Call emergency meetings to discuss suspicious behavior.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Vote to eject suspected Impostors.\u003c/li\u003e\u003c/ul\u003e\u003cbr\u003e\u003cbr\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/extras/a00136b10c71226d0cb43d07d88efbf7.avif?t=1781287930\" width=600 height=125 /\u003e\u003c/span\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e Kill Crewmates and frame bystanders.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Pretend to run tasks to blend in with the crewmates.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Sneak through the vents to quickly move about the ship.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Use sabotages to cause chaos and divide the crew.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Close doors to trap victims and kill in private.\u003c/li\u003e\u003c/ul\u003e\u003cbr\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/extras/c2ae1f9084de411d71d9c73d345d9622.avif?t=1781287930\" width=600 height=315 /\u003e\u003c/span\u003e\u003ch2 class=\"bb_tag\" \u003eFeatures\u003c/h2\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e Customization: Pick your color, hat, visor, skin, and pet.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Lots of game options: Add more Impostors, more tasks, different roles, and so much more!\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Different modes to choose from: Classic or Hide n Seek. \u003cbr\u003e\u003c/li\u003e\u003cli\u003e 4 different maps to play in: The Skeld, MIRA HQ, Polus, and the Airship.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Quickly find a game online from the host list.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e In-game text chat.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Rich Discord integration.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Cross-platform play between PC, console, Android, and iOS!\u003c/li\u003e\u003c/ul\u003e",
+                                "short_description":  "An online and local party game of teamwork and betrayal for 4-15 players...in space!",
+                                "supported_languages":  "English, Portuguese - Brazil, Spanish - Latin America, Spanish - Spain, Korean, Russian, French, Italian, German, Dutch, Japanese, Portuguese - Portugal, Simplified Chinese, Traditional Chinese",
+                                "reviews":  "“Made friends from it and probably will lose them all because of it at some point.”\u003cbr /\u003e\r\n10/10 – BenAshe_66\u003cbr /\u003e\r\n\u003cbr /\u003e\r\n“Love the fact that they only have one bone.”\u003cbr /\u003e\r\n5/5 – astronautvinyls\u003cbr /\u003e\r\n\u003cbr /\u003e\r\n“Among Us is a game.”\u003cbr /\u003e\r\n10/10 – Rocket_Slime\u003cbr /\u003e\r\n",
+                                "header_image":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/header.jpg?t=1781287930",
+                                "capsule_image":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/capsule_231x87.jpg?t=1781287930",
+                                "capsule_imagev5":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/capsule_184x69.jpg?t=1781287930",
+                                "website":  "http://innersloth.com/gameAmongUs.php",
+                                "pc_requirements":  {
+                                                        "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows 10 x32bit\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e INTEL i3-4330\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 1 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e INTEL HD Graphics 4600\u003c/li\u003e\u003c/ul\u003e",
+                                                        "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows 10 x64bit\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e INTEL i3-4330\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 4 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e Nvidia GTX 650\u003c/li\u003e\u003c/ul\u003e"
+                                                    },
+                                "mac_requirements":  [
+
+                                                     ],
+                                "linux_requirements":  [
+
+                                                       ],
+                                "developers":  [
+                                                   "Innersloth"
+                                               ],
+                                "publishers":  [
+                                                   "Innersloth"
+                                               ],
+                                "price_overview":  {
+                                                       "currency":  "USD",
+                                                       "initial":  499,
+                                                       "final":  299,
+                                                       "discount_percent":  40,
+                                                       "initial_formatted":  "$4.99",
+                                                       "final_formatted":  "$2.99"
+                                                   },
+                                "packages":  [
+                                                 307391,
+                                                 518028
+                                             ],
+                                "package_groups":  [
+                                                       {
+                                                           "name":  "default",
+                                                           "title":  "Buy Among Us",
+                                                           "description":  "",
+                                                           "selection_text":  "Select a purchase option",
+                                                           "save_text":  "",
+                                                           "display_type":  0,
+                                                           "is_recurring_subscription":  "false",
+                                                           "subs":  [
+                                                                        {
+                                                                            "packageid":  307391,
+                                                                            "percent_savings_text":  "-40% ",
+                                                                            "percent_savings":  0,
+                                                                            "option_text":  "Among Us - \u003cspan class=\"discount_original_price\"\u003e$4.99\u003c/span\u003e $2.99",
+                                                                            "option_description":  "",
+                                                                            "can_get_free_license":  "0",
+                                                                            "is_free_license":  false,
+                                                                            "price_in_cents_with_discount":  299
+                                                                        },
+                                                                        {
+                                                                            "packageid":  518028,
+                                                                            "percent_savings_text":  " ",
+                                                                            "percent_savings":  0,
+                                                                            "option_text":  "Among Us - Commercial License - $5.99",
+                                                                            "option_description":  "",
+                                                                            "can_get_free_license":  "0",
+                                                                            "is_free_license":  false,
+                                                                            "price_in_cents_with_discount":  599
+                                                                        }
+                                                                    ]
+                                                       }
+                                                   ],
+                                "platforms":  {
+                                                  "windows":  true,
+                                                  "mac":  false,
+                                                  "linux":  false
+                                              },
+                                "metacritic":  {
+                                                   "score":  85,
+                                                   "url":  "https://www.metacritic.com/game/pc/among-us?ftag=MCD-06-10aaa1f"
+                                               },
+                                "categories":  [
+                                                   {
+                                                       "id":  1,
+                                                       "description":  "Multi-player"
+                                                   },
+                                                   {
+                                                       "id":  49,
+                                                       "description":  "PvP"
+                                                   },
+                                                   {
+                                                       "id":  36,
+                                                       "description":  "Online PvP"
+                                                   },
+                                                   {
+                                                       "id":  47,
+                                                       "description":  "LAN PvP"
+                                                   },
+                                                   {
+                                                       "id":  9,
+                                                       "description":  "Co-op"
+                                                   },
+                                                   {
+                                                       "id":  38,
+                                                       "description":  "Online Co-op"
+                                                   },
+                                                   {
+                                                       "id":  48,
+                                                       "description":  "LAN Co-op"
+                                                   },
+                                                   {
+                                                       "id":  27,
+                                                       "description":  "Cross-Platform Multiplayer"
+                                                   },
+                                                   {
+                                                       "id":  22,
+                                                       "description":  "Steam Achievements"
+                                                   },
+                                                   {
+                                                       "id":  28,
+                                                       "description":  "Full controller support"
+                                                   },
+                                                   {
+                                                       "id":  29,
+                                                       "description":  "Steam Trading Cards"
+                                                   },
+                                                   {
+                                                       "id":  35,
+                                                       "description":  "In-App Purchases"
+                                                   },
+                                                   {
+                                                       "id":  41,
+                                                       "description":  "Remote Play on Phone"
+                                                   },
+                                                   {
+                                                       "id":  42,
+                                                       "description":  "Remote Play on Tablet"
+                                                   },
+                                                   {
+                                                       "id":  62,
+                                                       "description":  "Family Sharing"
+                                                   }
+                                               ],
+                                "genres":  [
+                                               {
+                                                   "id":  "4",
+                                                   "description":  "Casual"
+                                               }
+                                           ],
+                                "screenshots":  [
+                                                    {
+                                                        "id":  0,
+                                                        "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/ss_b7374128e5b786a302a716bca038d604b00ffe46.600x338.jpg?t=1781287930",
+                                                        "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/ss_b7374128e5b786a302a716bca038d604b00ffe46.1920x1080.jpg?t=1781287930"
+                                                    },
+                                                    {
+                                                        "id":  1,
+                                                        "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/ss_719484b5e0314cc2ae43793786448e032056a31d.600x338.jpg?t=1781287930",
+                                                        "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/ss_719484b5e0314cc2ae43793786448e032056a31d.1920x1080.jpg?t=1781287930"
+                                                    },
+                                                    {
+                                                        "id":  2,
+                                                        "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/ss_ffd9c8926cbd7fce3ca5e5efb4399c47bb196bc8.600x338.jpg?t=1781287930",
+                                                        "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/ss_ffd9c8926cbd7fce3ca5e5efb4399c47bb196bc8.1920x1080.jpg?t=1781287930"
+                                                    },
+                                                    {
+                                                        "id":  3,
+                                                        "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/ss_1fbd9dc9fd6a2710d233a088ef426a6d78fcf884.600x338.jpg?t=1781287930",
+                                                        "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/ss_1fbd9dc9fd6a2710d233a088ef426a6d78fcf884.1920x1080.jpg?t=1781287930"
+                                                    },
+                                                    {
+                                                        "id":  4,
+                                                        "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/ss_9d11502fa973580a82b532b25f1901b8425c28f9.600x338.jpg?t=1781287930",
+                                                        "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/ss_9d11502fa973580a82b532b25f1901b8425c28f9.1920x1080.jpg?t=1781287930"
+                                                    },
+                                                    {
+                                                        "id":  5,
+                                                        "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/ss_17be75e178e3520c986504504ada8535de19cc0d.600x338.jpg?t=1781287930",
+                                                        "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/ss_17be75e178e3520c986504504ada8535de19cc0d.1920x1080.jpg?t=1781287930"
+                                                    },
+                                                    {
+                                                        "id":  6,
+                                                        "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/ss_a1872c1c594ad4e5885d248516919d85243d9c1f.600x338.jpg?t=1781287930",
+                                                        "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/ss_a1872c1c594ad4e5885d248516919d85243d9c1f.1920x1080.jpg?t=1781287930"
+                                                    },
+                                                    {
+                                                        "id":  7,
+                                                        "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/ss_7ccc894b8f95091f608fa012450549091cce2423.600x338.jpg?t=1781287930",
+                                                        "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/ss_7ccc894b8f95091f608fa012450549091cce2423.1920x1080.jpg?t=1781287930"
+                                                    },
+                                                    {
+                                                        "id":  8,
+                                                        "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/ss_13ec9b7b0ad4d154a99a8cbbc4a0c12c02d0421f.600x338.jpg?t=1781287930",
+                                                        "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/ss_13ec9b7b0ad4d154a99a8cbbc4a0c12c02d0421f.1920x1080.jpg?t=1781287930"
+                                                    },
+                                                    {
+                                                        "id":  9,
+                                                        "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/ss_41c3f20fa1faf5c9c7548b38a22c449bcfa9bc5e.600x338.jpg?t=1781287930",
+                                                        "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/ss_41c3f20fa1faf5c9c7548b38a22c449bcfa9bc5e.1920x1080.jpg?t=1781287930"
+                                                    }
+                                                ],
+                                "movies":  [
+                                               {
+                                                   "id":  257195243,
+                                                   "name":  "Detective and Viper",
+                                                   "thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257195243/2cb7c83c4a037599c78d5fef912da987dde4aedc/movie_600x337.jpg?t=1757444890",
+                                                   "dash_av1":  "https://video.akamai.steamstatic.com/store_trailers/945360/1500936740/ab4e8e0e92771daaa6e83ee679314df2ee84d72d/1757443796/dash_av1.mpd?t=1757444890",
+                                                   "dash_h264":  "https://video.akamai.steamstatic.com/store_trailers/945360/1500936740/ab4e8e0e92771daaa6e83ee679314df2ee84d72d/1757443796/dash_h264.mpd?t=1757444890",
+                                                   "hls_h264":  "https://video.akamai.steamstatic.com/store_trailers/945360/1500936740/ab4e8e0e92771daaa6e83ee679314df2ee84d72d/1757443796/hls_264_master.m3u8?t=1757444890",
+                                                   "highlight":  true
+                                               },
+                                               {
+                                                   "id":  257032139,
+                                                   "name":  "Phantom, Tracker, Noisemaker",
+                                                   "thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257032139/316eca9d700911b9961ea8f724c54eb895ef557a/movie_600x337.jpg?t=1757444893",
+                                                   "dash_av1":  "https://video.akamai.steamstatic.com/store_trailers/945360/715586/1a15416526c3077d895d4b9a54ddbb35c2a2ddec/1750599426/dash_av1.mpd?t=1757444893",
+                                                   "dash_h264":  "https://video.akamai.steamstatic.com/store_trailers/945360/715586/1a15416526c3077d895d4b9a54ddbb35c2a2ddec/1750599426/dash_h264.mpd?t=1757444893",
+                                                   "hls_h264":  "https://video.akamai.steamstatic.com/store_trailers/945360/715586/1a15416526c3077d895d4b9a54ddbb35c2a2ddec/1750599426/hls_264_master.m3u8?t=1757444893",
+                                                   "highlight":  true
+                                               },
+                                               {
+                                                   "id":  256978016,
+                                                   "name":  "The Fungle Launch",
+                                                   "thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256978016/movie.293x165.jpg?t=1698177291",
+                                                   "dash_av1":  "https://video.akamai.steamstatic.com/store_trailers/945360/622287/11e6bbffbc31caf648fc8f2ae1cb26b7254bcfc0/1750599424/dash_av1.mpd?t=1698177291",
+                                                   "dash_h264":  "https://video.akamai.steamstatic.com/store_trailers/945360/622287/11e6bbffbc31caf648fc8f2ae1cb26b7254bcfc0/1750599424/dash_h264.mpd?t=1698177291",
+                                                   "hls_h264":  "https://video.akamai.steamstatic.com/store_trailers/945360/622287/11e6bbffbc31caf648fc8f2ae1cb26b7254bcfc0/1750599424/hls_264_master.m3u8?t=1698177291",
+                                                   "highlight":  false
+                                               },
+                                               {
+                                                   "id":  256924476,
+                                                   "name":  "Hide n Seek",
+                                                   "thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256924476/movie.293x165.jpg?t=1684189580",
+                                                   "dash_av1":  "https://video.akamai.steamstatic.com/store_trailers/945360/528132/fc1a92c9ff1e4ec24d9a71a880db04f59c0e3ce0/1750599423/dash_av1.mpd?t=1684189580",
+                                                   "dash_h264":  "https://video.akamai.steamstatic.com/store_trailers/945360/528132/fc1a92c9ff1e4ec24d9a71a880db04f59c0e3ce0/1750599423/dash_h264.mpd?t=1684189580",
+                                                   "hls_h264":  "https://video.akamai.steamstatic.com/store_trailers/945360/528132/fc1a92c9ff1e4ec24d9a71a880db04f59c0e3ce0/1750599423/hls_264_master.m3u8?t=1684189580",
+                                                   "highlight":  false
+                                               },
+                                               {
+                                                   "id":  256733242,
+                                                   "name":  "Release Trailer",
+                                                   "thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256733242/movie.293x165.jpg?t=1684189588",
+                                                   "dash_av1":  "https://video.akamai.steamstatic.com/store_trailers/945360/192206/43dae26ff3a8974bb7ec4a1550f0f6c4a692f988/1750599336/dash_av1.mpd?t=1684189588",
+                                                   "dash_h264":  "https://video.akamai.steamstatic.com/store_trailers/945360/192206/43dae26ff3a8974bb7ec4a1550f0f6c4a692f988/1750599336/dash_h264.mpd?t=1684189588",
+                                                   "hls_h264":  "https://video.akamai.steamstatic.com/store_trailers/945360/192206/43dae26ff3a8974bb7ec4a1550f0f6c4a692f988/1750599336/hls_264_master.m3u8?t=1684189588",
+                                                   "highlight":  false
+                                               }
+                                           ],
+                                "recommendations":  {
+                                                        "total":  645130
+                                                    },
+                                "achievements":  {
+                                                     "total":  33,
+                                                     "highlighted":  [
+                                                                         {
+                                                                             "icon":  "28d77d90c1978829c159eae6fe799a191c34be83.jpg",
+                                                                             "localized_name":  "A TASTE FOR IT",
+                                                                             "name":  "A TASTE FOR IT",
+                                                                             "path":  "https://cdn.akamai.steamstatic.com/steamcommunity/public/images/apps/945360/28d77d90c1978829c159eae6fe799a191c34be83.jpg"
+                                                                         },
+                                                                         {
+                                                                             "icon":  "f2b99effc0a886290c7b86e1d13bf8fb8df9552c.jpg",
+                                                                             "localized_name":  "KILLER",
+                                                                             "name":  "KILLER",
+                                                                             "path":  "https://cdn.akamai.steamstatic.com/steamcommunity/public/images/apps/945360/f2b99effc0a886290c7b86e1d13bf8fb8df9552c.jpg"
+                                                                         },
+                                                                         {
+                                                                             "icon":  "c56c94c6016eaa474ba59118c0c70b814156fe20.jpg",
+                                                                             "localized_name":  "ASSASSIN",
+                                                                             "name":  "ASSASSIN",
+                                                                             "path":  "https://cdn.akamai.steamstatic.com/steamcommunity/public/images/apps/945360/c56c94c6016eaa474ba59118c0c70b814156fe20.jpg"
+                                                                         },
+                                                                         {
+                                                                             "icon":  "6a0dd8539784b692366028f41774673397d04c13.jpg",
+                                                                             "localized_name":  "SCOURGE",
+                                                                             "name":  "SCOURGE",
+                                                                             "path":  "https://cdn.akamai.steamstatic.com/steamcommunity/public/images/apps/945360/6a0dd8539784b692366028f41774673397d04c13.jpg"
+                                                                         },
+                                                                         {
+                                                                             "icon":  "11d6a7da14eaa7036982b4375ea7caba288339ce.jpg",
+                                                                             "localized_name":  "INTERN",
+                                                                             "name":  "INTERN",
+                                                                             "path":  "https://cdn.akamai.steamstatic.com/steamcommunity/public/images/apps/945360/11d6a7da14eaa7036982b4375ea7caba288339ce.jpg"
+                                                                         },
+                                                                         {
+                                                                             "icon":  "fb8ff2604057a9cc13acf74166c52ff945354803.jpg",
+                                                                             "localized_name":  "MANAGER",
+                                                                             "name":  "MANAGER",
+                                                                             "path":  "https://cdn.akamai.steamstatic.com/steamcommunity/public/images/apps/945360/fb8ff2604057a9cc13acf74166c52ff945354803.jpg"
+                                                                         },
+                                                                         {
+                                                                             "icon":  "c7782fd07440b564df902fb0d80daa292f06ee9e.jpg",
+                                                                             "localized_name":  "TASKMASTER",
+                                                                             "name":  "TASKMASTER",
+                                                                             "path":  "https://cdn.akamai.steamstatic.com/steamcommunity/public/images/apps/945360/c7782fd07440b564df902fb0d80daa292f06ee9e.jpg"
+                                                                         },
+                                                                         {
+                                                                             "icon":  "1c1b96b03b075eb3b42e368ebbdf257e19ef9087.jpg",
+                                                                             "localized_name":  "A SHIP ADRIFT",
+                                                                             "name":  "A SHIP ADRIFT",
+                                                                             "path":  "https://cdn.akamai.steamstatic.com/steamcommunity/public/images/apps/945360/1c1b96b03b075eb3b42e368ebbdf257e19ef9087.jpg"
+                                                                         },
+                                                                         {
+                                                                             "icon":  "144c10dcf276eaffe8a7c03553c7d8a63c0de116.jpg",
+                                                                             "localized_name":  "CORPORATE LOCKDOWN",
+                                                                             "name":  "CORPORATE LOCKDOWN",
+                                                                             "path":  "https://cdn.akamai.steamstatic.com/steamcommunity/public/images/apps/945360/144c10dcf276eaffe8a7c03553c7d8a63c0de116.jpg"
+                                                                         },
+                                                                         {
+                                                                             "icon":  "4d3d812ce857674d5013fb8c499bfacfd063277c.jpg",
+                                                                             "localized_name":  "UNEARTHED",
+                                                                             "name":  "UNEARTHED",
+                                                                             "path":  "https://cdn.akamai.steamstatic.com/steamcommunity/public/images/apps/945360/4d3d812ce857674d5013fb8c499bfacfd063277c.jpg"
+                                                                         }
+                                                                     ]
+                                                 },
+                                "release_date":  {
+                                                     "coming_soon":  false,
+                                                     "date":  "Nov 16, 2018"
+                                                 },
+                                "support_info":  {
+                                                     "url":  "https://innersloth.zendesk.com/hc/en-us",
+                                                     "email":  "support@innersloth.com"
+                                                 },
+                                "background":  "https://store.akamai.steamstatic.com/images/storepagebackground/app/945360?t=1781287930",
+                                "background_raw":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/page_bg_raw.jpg?t=1781287930",
+                                "content_descriptors":  {
+                                                            "ids":  [
+
+                                                                    ],
+                                                            "notes":  null
+                                                        },
+                                "ratings":  {
+                                                "dejus":  {
+                                                              "rating":  "l",
+                                                              "descriptors":  "Violência fantasiosa"
+                                                          },
+                                                "steam_germany":  {
+                                                                      "rating_generated":  "1",
+                                                                      "rating":  "12",
+                                                                      "required_age":  "12",
+                                                                      "banned":  "0",
+                                                                      "use_age_gate":  "0",
+                                                                      "descriptors":  "Gewalt"
+                                                                  },
+                                                "igrs":  {
+                                                             "rating_generated":  "1",
+                                                             "rating":  "13",
+                                                             "required_age":  "13",
+                                                             "banned":  "0",
+                                                             "use_age_gate":  "0",
+                                                             "descriptors":  "Kekerasan\nInteraksi Daring"
+                                                         }
+                                            }
+                            }
+               }
+}
