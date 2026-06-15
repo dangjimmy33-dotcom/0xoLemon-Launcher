@@ -262,8 +262,36 @@ fn pause_job(state: State<'_, LauncherState>) {
 }
 
 #[tauri::command]
-fn resume_job(state: State<'_, LauncherState>) {
+fn resume_job(app: AppHandle, state: State<'_, LauncherState>) -> Result<(), String> {
     state.job_control.resume();
+    if !state.job_control.is_running() {
+        if let Ok(Some(journal)) = job::read_latest_journal(&app) {
+            match journal.kind.as_str() {
+                "install" => {
+                    job::spawn_install_job(
+                        app,
+                        state.job_control.clone(),
+                        Some(journal.to_version),
+                        Some(journal.install_path),
+                        Some(journal.game_id),
+                    )
+                    .map_err(|e| e.to_string())?;
+                }
+                "update" => {
+                    job::spawn_update_job(
+                        app,
+                        state.job_control.clone(),
+                        journal.install_path,
+                        Some(journal.to_version),
+                        Some(journal.game_id),
+                    )
+                    .map_err(|e| e.to_string())?;
+                }
+                _ => {}
+            }
+        }
+    }
+    Ok(())
 }
 
 #[tauri::command]

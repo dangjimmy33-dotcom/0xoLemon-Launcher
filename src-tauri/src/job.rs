@@ -56,6 +56,7 @@ const VERIFY_READ_BUFFER_BYTES: usize = 4 * 1024 * 1024;
 pub struct JobControl {
     paused: AtomicBool,
     canceled: AtomicBool,
+    running: AtomicBool,
 }
 
 fn hidden_command(program: impl AsRef<OsStr>) -> Command {
@@ -71,6 +72,15 @@ impl JobControl {
     pub fn reset(&self) {
         self.paused.store(false, Ordering::SeqCst);
         self.canceled.store(false, Ordering::SeqCst);
+        self.running.store(false, Ordering::SeqCst);
+    }
+
+    pub fn set_running(&self, running: bool) {
+        self.running.store(running, Ordering::SeqCst);
+    }
+
+    pub fn is_running(&self) -> bool {
+        self.running.load(Ordering::SeqCst)
     }
 
     pub fn pause(&self) {
@@ -422,8 +432,12 @@ pub fn spawn_update_job(
     let initial = journal.clone();
     let return_journal = journal.clone();
 
+    control.set_running(true);
+    let control_for_thread = control.clone();
     thread::spawn(move || {
-        if let Err(err) = run_real_update_job(&app_for_thread, control, initial) {
+        let result = run_real_update_job(&app_for_thread, control_for_thread.clone(), initial);
+        control_for_thread.set_running(false);
+        if let Err(err) = result {
             let mut failed = read_latest_journal(&app_for_thread)
                 .ok()
                 .flatten()
@@ -486,8 +500,12 @@ pub fn spawn_install_job(
     let initial = journal.clone();
     let return_journal = journal.clone();
 
+    control.set_running(true);
+    let control_for_thread = control.clone();
     thread::spawn(move || {
-        if let Err(err) = run_real_install_job(&app_for_thread, control, initial) {
+        let result = run_real_install_job(&app_for_thread, control_for_thread.clone(), initial);
+        control_for_thread.set_running(false);
+        if let Err(err) = result {
             let mut failed = read_latest_journal(&app_for_thread)
                 .ok()
                 .flatten()
@@ -588,14 +606,18 @@ pub fn spawn_repair_job(
     let app_for_thread = app.clone();
     let initial = journal.clone();
     let return_journal = journal.clone();
+    control.set_running(true);
+    let control_for_thread = control.clone();
     thread::spawn(move || {
-        if let Err(err) = run_real_repair_job(
+        let result = run_real_repair_job(
             &app_for_thread,
-            control,
+            control_for_thread.clone(),
             initial,
             repair_files,
             target_manifest,
-        ) {
+        );
+        control_for_thread.set_running(false);
+        if let Err(err) = result {
             let mut failed = read_latest_journal(&app_for_thread)
                 .ok()
                 .flatten()
