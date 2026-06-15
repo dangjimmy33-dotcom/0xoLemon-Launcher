@@ -30,25 +30,60 @@ struct DriveInfo {
     total_bytes: u64,
 }
 
+#[cfg(windows)]
+#[link(name = "kernel32")]
+unsafe extern "system" {
+    fn GetLogicalDrives() -> u32;
+    fn GetDriveTypeW(lpRootPathName: *const u16) -> u32;
+    fn GetDiskFreeSpaceExW(
+        lpDirectoryName: *const u16,
+        lpFreeBytesAvailableToCaller: *mut u64,
+        lpTotalNumberOfBytes: *mut u64,
+        lpTotalNumberOfFreeBytes: *mut u64,
+    ) -> i32;
+}
+
 #[tauri::command]
 fn list_system_drives() -> Vec<DriveInfo> {
     let mut drives = Vec::new();
     #[cfg(windows)]
     {
-        for letter in b'A'..=b'Z' {
-            let path = format!("{}:\\", letter as char);
-            if let (Ok(free), Ok(total)) = (
-                fs2::free_space(&path),
-                fs2::total_space(&path),
-            ) {
-                if total > 0 {
-                    drives.push(DriveInfo {
-                        letter: format!("{}:", letter as char),
-                        label: format!("Local Disk ({}:)", letter as char),
-                        free_bytes: free,
-                        total_bytes: total,
-                    });
-                }
+        const DRIVE_REMOVABLE: u32 = 2;
+        const DRIVE_FIXED: u32 = 3;
+
+        let mask = unsafe { GetLogicalDrives() };
+        for index in 0..26 {
+            if mask & (1u32 << index) == 0 {
+                continue;
+            }
+
+            let letter = (b'A' + index as u8) as char;
+            let root = format!("{}:\\", letter);
+            let root_wide: Vec<u16> = root.encode_utf16().chain(std::iter::once(0)).collect();
+            let drive_type = unsafe { GetDriveTypeW(root_wide.as_ptr()) };
+            if drive_type != DRIVE_FIXED && drive_type != DRIVE_REMOVABLE {
+                continue;
+            }
+
+            let mut free_available = 0u64;
+            let mut total = 0u64;
+            let mut total_free = 0u64;
+            let ok = unsafe {
+                GetDiskFreeSpaceExW(
+                    root_wide.as_ptr(),
+                    &mut free_available,
+                    &mut total,
+                    &mut total_free,
+                )
+            };
+
+            if ok != 0 && total > 0 {
+                drives.push(DriveInfo {
+                    letter: format!("{}:", letter),
+                    label: format!("Local Disk ({}:)", letter),
+                    free_bytes: free_available,
+                    total_bytes: total,
+                });
             }
         }
     }
@@ -236,6 +271,12 @@ fn cancel_job(state: State<'_, LauncherState>) {
     state.job_control.cancel();
 }
 
+#[tauri::command]
+fn abort_and_clean_job(state: State<'_, LauncherState>, game_id: String) -> Result<(), String> {
+    state.job_control.cancel();
+    job::abort_and_clean_job(&game_id).map_err(|e| e.to_string())
+}
+
 #[derive(Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 struct ShortcutLaunchRequest {
@@ -276,7 +317,8 @@ pub fn run() {
             start_repair_job,
             pause_job,
             resume_job,
-            cancel_job
+            cancel_job,
+            abort_and_clean_job
         ])
         .setup(|app| {
             let app_dir = app.path().app_data_dir()?;

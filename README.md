@@ -1,16 +1,13 @@
-# 007 First Light Smart Launcher
+# 0xoLemon Launcher
 
-Tauri v2 + React launcher for a Steam-like update pipeline:
+Tauri v2 + React launcher with a Steam-like depot pipeline:
 
-- FastCDC content-defined chunks targeting 1 MiB.
-- 256 MiB transport packs for low request count over a free proxy.
-- Manifest-driven scan, verify, repair, rollback, cache, and resumable jobs.
-- No HDiffPatch runtime dependency.
-- No Hugging Face URL or token in the launcher.
+- Content-defined chunks targeting about 1 MiB.
+- Transport packs around 256 MiB to reduce request count.
+- Manifest-driven install, update, verify, repair, rollback, cache, and resume.
+- Hugging Face is used as storage, but launcher runtime reads only game depot metadata and packs.
 
----
-
-## Run the launcher (dev mode)
+## Run Dev
 
 ```powershell
 cd E:\007Launcher
@@ -18,122 +15,116 @@ npm install
 npm run tauri:dev
 ```
 
-## Build the launcher (production)
+## Build Launcher
 
 ```powershell
 cd E:\007Launcher\src-tauri
 cargo tauri build
 ```
 
----
+The portable executable is normally here:
 
-## Publish a new game version
+```text
+E:\007Launcher\src-tauri\target\release\first-light-smart-launcher.exe
+```
 
-> **TL;DR**: mỗi lần có bản game mới, chỉ cần 3 bước:
-> 1. Set token trong shell.
-> 2. Chạy `build-version --extend-existing`.
-> 3. Cập nhật `fallbackCatalog` trong `src/App.tsx`.
+## Publish A New Game Version
 
-### Bước 1 — Biên dịch depot builder (chỉ cần làm lại nếu code thay đổi)
+Use the wrapper tool instead of remembering the long `depot_builder` command.
+
+### One-time build of the builder
 
 ```powershell
 cd E:\007Launcher\src-tauri
 cargo build --release --bin depot_builder
 ```
 
-### Bước 2 — Set HF token (chỉ trong shell hiện tại)
+### Set HF token in the current shell
 
 ```powershell
 $env:HF_TOKEN = "hf_xxxxxxxxxxxxxxxxxxxx"
-$env:HF_HUB_ENABLE_HF_TRANSFER = "1"    # tùy chọn, tăng tốc upload
+$env:HF_HUB_ENABLE_HF_TRANSFER = "1"
 ```
 
-### Bước 3 — Build và upload version mới
+Do not put the token in React, JSON, or committed config files.
+
+### 007 First Light example
+
+```powershell
+cd E:\007Launcher
+.\tools\publish_depot_version.ps1 `
+  -GameId 007-first-light `
+  -Version v1.3 `
+  -Input "E:\007 First Light" `
+  -LaunchExecutable "Retail\007FirstLight.exe"
+```
+
+### Among Us example
+
+```powershell
+cd E:\007Launcher
+.\tools\publish_depot_version.ps1 `
+  -GameId among-us `
+  -Version v17.4I `
+  -Input "E:\Compressed\Among Us" `
+  -LaunchExecutable "Among Us.exe" `
+  -RepoPrefix "among-us"
+```
+
+The tool does this:
+
+1. Downloads only remote metadata into `E:\007Launcher\depot\<game-id>`.
+2. Builds the new version with `--extend-existing`.
+3. Reuses old chunk hashes from existing manifests.
+4. Starts new pack IDs after the latest uploaded pack.
+5. Uploads new packs and metadata to HF.
+6. Verifies remote `catalog.json` points to the requested latest version.
+
+No existing pack is overwritten.
+
+## Build Asset Packs
+
+Each game should have its own asset folder and cooked `.0xo` pack:
+
+```text
+E:\007Launcher\src\assets\007 first light
+E:\007Launcher\src\assets\Among Us
+E:\007Launcher\src-tauri\target\release\assets\games\<game-id>\*.0xo
+```
+
+Build asset packs:
 
 ```powershell
 cd E:\007Launcher\src-tauri
-
-.\target\release\depot_builder.exe build-version `
-  --input        "E:\<thư mục game mới>"         `
-  --version      vX.Y                             `
-  --out          "E:\007Launcher\depot\007-first-light" `
-  --game-id      007-first-light                  `
-  --launch-executable "Retail\007FirstLight.exe"  `
-  --extend-existing                               `
-  --upload-repo  "CatManga/Cat-Manga"             `
-  --repo-type    dataset                          `
-  --repo-prefix  "007-first-light"
+cargo build --release --bin asset_pack_builder
+.\target\release\asset_pack_builder.exe
 ```
 
-**Ví dụ thực tế** — v1.3 với game nằm ở `E:\007 First Light`:
+After adding a new game, rebuild the launcher so bundled packs are included:
 
 ```powershell
-.\target\release\depot_builder.exe build-version `
-  --input        "E:\007 First Light"             `
-  --version      v1.3                             `
-  --out          "E:\007Launcher\depot\007-first-light" `
-  --game-id      007-first-light                  `
-  --launch-executable "Retail\007FirstLight.exe"  `
-  --extend-existing                               `
-  --upload-repo  "CatManga/Cat-Manga"             `
-  --repo-type    dataset                          `
-  --repo-prefix  "007-first-light"
+cd E:\007Launcher
+npm run tauri:build
 ```
 
-> `--extend-existing` đọc catalog hiện tại, tái sử dụng chunk cũ, và bắt đầu đánh số pack từ sau pack cuối cùng đã có. Không ghi đè bất kỳ pack nào đã upload.
+## Manual Depot Builder Command
 
-### Bước 4 — Cập nhật fallbackCatalog trong launcher
-
-Mở `E:\007Launcher\src\App.tsx`, tìm `fallbackCatalog`, cập nhật:
-
-```ts
-latestVersion: 'vX.Y',
-availableVersions: [
-  // ... giữ nguyên các version cũ, đổi latest: false
-  { version: 'vX.Y', label: 'Update X.Y', buildId: 'XXXXXXX', sizeBytes: 49_690_000_000, latest: true },
-],
-```
-
----
-
-## Build depot từ đầu (build-pair — chỉ dùng lần đầu)
+Use this only if the wrapper is not enough:
 
 ```powershell
 cd E:\007Launcher\src-tauri
-cargo run --bin depot_builder -- build-pair `
-  --old-input "E:\007 First Light - Sao chép" `
-  --new-input "E:\007 First Light"            `
+.\target\release\depot_builder.exe build-version `
+  --input "E:\007 First Light" `
+  --version v1.3 `
   --out "E:\007Launcher\depot\007-first-light" `
-  --old-version v1.0 --new-version v1.1       `
+  --game-id 007-first-light `
   --launch-executable "Retail\007FirstLight.exe" `
-  --upload-repo "CatManga/Cat-Manga" --repo-type dataset --repo-prefix "007-first-light"
+  --extend-existing `
+  --upload-repo "CatManga/Cat-Manga" `
+  --repo-type dataset `
+  --repo-prefix "007-first-light"
 ```
-
-The builder streams large RPKG files; it does not load them fully into memory.
-
----
-
-## Proxy Worker (Cloudflare)
-
-```powershell
-cd E:\007Launcher\worker
-npm install
-npm run types
-npx wrangler secret put HF_ORIGIN_BASE
-npx wrangler secret put HF_BEARER_TOKEN
-npm run deploy
-```
-
-`HF_ORIGIN_BASE` should point to the repo prefix, for example:
-
-```
-https://huggingface.co/datasets/CatManga/Cat-Manga/resolve/main/007-first-light
-```
-
-`HF_BEARER_TOKEN` is optional if the origin is public.
-
----
 
 ## Safety
 
-Cleanup, repair, and uninstall flows must operate from manifest-owned file lists. The project intentionally avoids recursive deletion commands and recursive cleanup flags.
+Cleanup, repair, and uninstall flows must operate from manifest-owned file lists. Do not use recursive deletion commands or recursive cleanup flags.

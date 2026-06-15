@@ -370,7 +370,7 @@ fn detect_generic_versions(game_id: &str, app_id: u64) -> Vec<GameVersionInfo> {
                             format!("Steam {app_id}")
                         },
                         size_bytes: size,
-                        latest: entry.version == catalog.latest_version,
+                        latest: Some(entry.version.clone()) == catalog.effective_latest_version().map(str::to_string),
                     }
                 })
                 .collect::<Vec<_>>()

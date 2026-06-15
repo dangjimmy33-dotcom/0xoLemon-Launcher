@@ -458,6 +458,7 @@ function App() {
   const [launcherUpdate, setLauncherUpdate] = useState<LauncherUpdateInfo | null>(null)
   const [launcherUpdateStatus, setLauncherUpdateStatus] = useState<string | null>(null)
   const [showDrivePicker, setShowDrivePicker] = useState(false)
+  const [showUninstallConfirm, setShowUninstallConfirm] = useState(false)
   // Library locations the user has added (persisted to localStorage)
   const [libraries, setLibraries] = useState<string[]>(() => {
     try {
@@ -845,7 +846,7 @@ function App() {
       const deltaMs = now - previous.at
       if (deltaBytes > 0 && deltaMs > 0) {
         const instantRate = (deltaBytes * 1000) / deltaMs
-        setDownloadRate((current) => (current > 0 ? current * 0.65 + instantRate * 0.35 : instantRate))
+        setDownloadRate((current) => (current > 0 ? current * 0.95 + instantRate * 0.05 : instantRate))
       }
     }
     downloadSampleRef.current = { jobId: activeJob.id, bytesDone: activeJob.bytesDone, at: now }
@@ -1172,7 +1173,15 @@ function App() {
     }
   }
 
-  async function uninstallSelectedGame() {
+    function uninstallSelectedGame() {
+    if (!selectedGame || !selectedInstalled) {
+      return
+    }
+    setShowUninstallConfirm(true)
+  }
+
+  async function executeUninstall() {
+    setShowUninstallConfirm(false)
     if (!selectedGame || !selectedInstalled) {
       return
     }
@@ -1180,7 +1189,6 @@ function App() {
       setScanStatus('Browser preview cannot uninstall local game files')
       return
     }
-
     try {
       const report = await invoke<UninstallReport>('uninstall_game', {
         gameId: selectedGame.id,
@@ -1226,8 +1234,18 @@ function App() {
       return
     }
 
-    await invoke('cancel_job').catch(() => undefined)
-    setJob((current) => (current ? { ...current, status: 'canceled', phase: 'Canceled' } : current))
+    if (!window.confirm('Are you sure you want to cancel the download? This will delete all downloaded data.')) {
+      return
+    }
+
+    if (selectedGameId) {
+      await invoke('abort_and_clean_job', { gameId: selectedGameId }).catch(() => undefined)
+    } else {
+      await invoke('cancel_job').catch(() => undefined)
+    }
+    
+    setJob(null)
+    setVerifyStatus(null)
   }
 
   return (
@@ -1365,6 +1383,35 @@ function App() {
           />
         ) : null}
         {launchSplash ? <LaunchSplash splash={launchSplash} /> : null}
+
+        {showUninstallConfirm && selectedGame ? (
+          <div className="dialog-backdrop" role="presentation">
+            <section className="install-modal" role="dialog" aria-modal="true" aria-labelledby="uninstall-title">
+              <div className="modal-handle" />
+              <header>
+                <button type="button" onClick={() => setShowUninstallConfirm(false)} aria-label="Cancel">
+                  <X size={17} />
+                </button>
+                <h2 id="uninstall-title">Confirm Uninstall</h2>
+                <p>Are you sure you want to uninstall {selectedGame.title}?</p>
+              </header>
+              <div className="install-modal-body">
+                <div className="warning-box" style={{ background: 'rgba(255, 60, 60, 0.1)', border: '1px solid rgba(255, 60, 60, 0.3)', padding: '16px', borderRadius: '8px', color: '#ffb3b3' }}>
+                  <CircleAlert size={20} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '10px' }} />
+                  <span style={{ verticalAlign: 'middle' }}>This will permanently delete all local files for this game from your hard drive.</span>
+                </div>
+              </div>
+              <footer>
+                <button type="button" className="secondary" onClick={() => setShowUninstallConfirm(false)}>
+                  Cancel
+                </button>
+                <button type="button" className="danger-control" onClick={executeUninstall} style={{ padding: '8px 24px', background: '#e53935', color: '#fff', border: 'none', borderRadius: '4px', fontWeight: 'bold' }}>
+                  Uninstall
+                </button>
+              </footer>
+            </section>
+          </div>
+        ) : null}
       </section>
     </main>
     </div>

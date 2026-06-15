@@ -278,7 +278,7 @@ pub fn build_depot(input: BuildDepotInput) -> Result<BuildReport, BuildError> {
     let catalog = Catalog {
         format_version: FORMAT_VERSION,
         game_id: input.game_id.clone(),
-        latest_version: input.latest_version.clone(),
+        latest_version: Some(input.latest_version.clone()),
         versions: catalog_versions.clone(),
         packs: pack_records.clone(),
         signature: None,

@@ -4,11 +4,15 @@ version = "0.1.0"
 description = "Steam-like chunk launcher for 007 First Light"
 authors = ["007 Launcher"]
 edition = "2021"
-default-run = "first-light-smart-launcher"
+default-run = "0xoLemon"
 
 [lib]
 name = "first_light_launcher"
 crate-type = ["staticlib", "cdylib", "rlib"]
+
+[[bin]]
+name = "0xoLemon"
+path = "src/main.rs"
 
 [[bin]]
 name = "depot_builder"

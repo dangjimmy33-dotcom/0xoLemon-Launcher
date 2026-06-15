@@ -41,7 +41,7 @@ const INSTALLED_MANIFEST_FILE: &str = "manifest.0xo";
 const DOWNLOAD_SESSION_FILE: &str = "depot-session.json";
 const STATE_MAGIC: &[u8] = b"0XOSTATE1\n";
 const STATE_KEY: &[u8] = b"0xoLemon-local-install-state-v1";
-const DEFAULT_DOWNLOAD_WORKERS: usize = 16;
+const DEFAULT_DOWNLOAD_WORKERS: usize = 8;
 const MAX_DOWNLOAD_WORKERS: usize = 64;
 const DEFAULT_DOWNLOAD_RETRIES: u32 = 5;
 const MAX_DOWNLOAD_RETRIES: u32 = 12;
@@ -256,10 +256,11 @@ pub struct JobLog {
 
 pub fn snapshot(app: &AppHandle) -> Result<LauncherSnapshot, JobError> {
     let source = DepotSource::from_env();
-    let catalog = source.load_local_catalog().ok();
+    // Try local catalog first (fast), then fall back to remote HF catalog
+    let catalog = source.load_local_catalog().ok().or_else(|| source.load_catalog().ok());
     let latest_version = catalog
         .as_ref()
-        .map(|catalog| catalog.latest_version.clone())
+        .and_then(|catalog| catalog.effective_latest_version().map(str::to_string))
         .unwrap_or_else(|| "unknown".to_string());
     let available_versions = catalog_versions(catalog.as_ref());
     let cache_size = persistent_cache_size(app).unwrap_or(0);
@@ -269,7 +270,7 @@ pub fn snapshot(app: &AppHandle) -> Result<LauncherSnapshot, JobError> {
     let (current_version, update_size, changed_files, detected_install_path) =
         match (catalog.as_ref(), marker) {
             (Some(catalog), Some(marker)) => {
-                let target_version = catalog.latest_version.clone();
+                let target_version = catalog.effective_latest_version().unwrap_or("unknown").to_string();
                 let (changed_files, update_size) = if marker.version == target_version {
                     (Vec::new(), 0)
                 } else if catalog_has_version(catalog, &marker.version) {
@@ -333,7 +334,7 @@ pub fn snapshot_for_fresh_install(
 
     Ok(LauncherSnapshot {
         current_version: "not installed".to_string(),
-        latest_version: catalog.latest_version.clone(),
+        latest_version: catalog.effective_latest_version().unwrap_or("unknown").to_string(),
         available_versions: catalog_versions(Some(&catalog)),
         detected_install_path: None,
         update_size: estimate_install_download_bytes(None, &manifest),
@@ -364,7 +365,7 @@ pub fn snapshot_for_install(
         .unwrap_or_else(|| "unknown".to_string());
     let catalog = source.load_catalog()?;
     let selected_version = resolve_target_version(&catalog, target_version)?;
-    let latest_version = catalog.latest_version.clone();
+    let latest_version = catalog.effective_latest_version().unwrap_or("unknown").to_string();
     let (changed_files, update_size) = if current_version == "unknown" {
         (Vec::new(), 0)
     } else if current_version == selected_version {
@@ -527,7 +528,7 @@ pub fn spawn_repair_job(
     let version = target_version
         .filter(|value| !value.trim().is_empty() && value != "not installed")
         .or_else(|| marker.as_ref().map(|marker| marker.version.clone()))
-        .unwrap_or_else(|| catalog.latest_version.clone());
+        .unwrap_or_else(|| catalog.effective_latest_version().unwrap_or("unknown").to_string());
     let version = resolve_target_version(&catalog, Some(version))?;
     let target_manifest = source.load_manifest(&catalog, &version)?;
     let requested = file_paths
@@ -844,6 +845,13 @@ fn create_game_shortcut(
         fs::create_dir_all(&desktop)?;
         let shortcut_path = desktop.join(format!("{}.lnk", source.game_dir_name));
         let launcher_exe = std::env::current_exe().unwrap_or_else(|_| executable.to_path_buf());
+        let app_data = app.path().app_data_dir().unwrap_or_else(|_| install_root.to_path_buf());
+        let _ = fs::create_dir_all(&app_data);
+        let bootstrap_exe = app_data.join(format!("0xoLemon-{}.exe", source.game_id));
+        if !bootstrap_exe.exists() {
+            let _ = fs::hard_link(&launcher_exe, &bootstrap_exe)
+                .or_else(|_| fs::copy(&launcher_exe, &bootstrap_exe).map(|_| ()));
+        }
         let icon_location = format!("{},0", executable.display());
         let working_dir = launcher_exe.parent().unwrap_or(install_root);
         let arguments = shortcut_argument_line(&[
@@ -861,7 +869,7 @@ fn create_game_shortcut(
              $shortcut.Description = {}; \
              $shortcut.Save()",
             ps_quote(&shortcut_path.display().to_string()),
-            ps_quote(&launcher_exe.display().to_string()),
+            ps_quote(&bootstrap_exe.display().to_string()),
             ps_quote(&arguments),
             ps_quote(&working_dir.display().to_string()),
             ps_quote(&icon_location),
@@ -1014,8 +1022,9 @@ pub fn verify_install_integrity(
         .unwrap_or_else(|| {
             source
                 .load_local_catalog()
-                .map(|catalog| catalog.latest_version)
-                .unwrap_or_else(|_| "unknown".to_string())
+                .ok()
+                .and_then(|catalog| catalog.effective_latest_version().map(str::to_string))
+                .unwrap_or_else(|| "unknown".to_string())
         });
     let manifest = if marker
         .as_ref()
@@ -2097,7 +2106,7 @@ fn resolve_target_version(
 ) -> Result<String, JobError> {
     let target = target_version
         .filter(|version| !version.trim().is_empty() && version != "unknown")
-        .unwrap_or_else(|| catalog.latest_version.clone());
+        .unwrap_or_else(|| catalog.effective_latest_version().unwrap_or("unknown").to_string());
     if catalog_has_version(catalog, &target) {
         Ok(target)
     } else {
@@ -2496,7 +2505,16 @@ fn cleanup_staged_chunks(
     Ok(())
 }
 
-fn cleanup_committed_download_session(
+pub fn abort_and_clean_job(game_id: &str) -> Result<(), JobError> {
+    let source = DepotSource::for_game(game_id);
+    let install_root = source.default_common_game_dir();
+    let downloading_root = downloading_dir_for_install(&install_root, &source);
+    let _ = cleanup_committed_download_session(&downloading_root, &source);
+    let _ = std::fs::remove_dir_all(&downloading_root);
+    Ok(())
+}
+
+pub fn cleanup_committed_download_session(
     downloading_root: &Path,
     source: &DepotSource,
 ) -> Result<(), JobError> {
@@ -2749,7 +2767,7 @@ fn resolve_install_root(install_path: Option<String>, source: &DepotSource) -> P
         .unwrap_or_else(|| source.default_common_game_dir())
 }
 
-fn downloading_dir_for_install(install_root: &Path, source: &DepotSource) -> PathBuf {
+pub fn downloading_dir_for_install(install_root: &Path, source: &DepotSource) -> PathBuf {
     if install_root == source.default_common_game_dir() {
         source.default_downloading_game_dir()
     } else {
@@ -2965,21 +2983,35 @@ fn wait_for_control(
         return Err(JobError::Depot("job canceled".to_string()));
     }
 
-    while control.is_paused() {
+    if control.is_paused() {
+        // Mark paused and keep emitting while waiting
         journal.status = JobStatus::Paused;
         journal.steps[step_index].status = StepStatus::Paused;
         journal.resumable = true;
         touch(journal);
         persist_and_emit(app, journal)?;
-        thread::sleep(Duration::from_millis(500));
-        if control.is_canceled() {
-            journal.status = JobStatus::Canceled;
-            journal.phase = "Canceled".to_string();
-            append_log(journal, "warn", "Paused job canceled by user");
-            persist_and_emit(app, journal)?;
-            return Err(JobError::Depot("job canceled".to_string()));
+
+        loop {
+            thread::sleep(Duration::from_millis(300));
+            if control.is_canceled() {
+                journal.status = JobStatus::Canceled;
+                journal.phase = "Canceled".to_string();
+                append_log(journal, "warn", "Paused job canceled by user");
+                persist_and_emit(app, journal)?;
+                return Err(JobError::Depot("job canceled".to_string()));
+            }
+            if !control.is_paused() {
+                break;
+            }
         }
+
+        // Resumed — restore step to running and emit immediately so UI updates
+        journal.status = JobStatus::Downloading;
+        journal.steps[step_index].status = StepStatus::Running;
+        touch(journal);
+        persist_and_emit(app, journal)?;
     }
+
     Ok(())
 }
 

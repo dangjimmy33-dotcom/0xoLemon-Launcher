@@ -11,10 +11,22 @@ pub const PACK_TARGET_SIZE: u64 = 256 * 1024 * 1024;
 pub struct Catalog {
     pub format_version: u32,
     pub game_id: String,
-    pub latest_version: String,
+    #[serde(default)]
+    pub latest_version: Option<String>,
     pub versions: Vec<CatalogVersion>,
     pub packs: Vec<PackRecord>,
     pub signature: Option<SignatureEnvelope>,
+}
+
+impl Catalog {
+    /// Returns the effective latest version:
+    /// uses `latest_version` if set, otherwise falls back to the last version in the list.
+    pub fn effective_latest_version(&self) -> Option<&str> {
+        self.latest_version
+            .as_deref()
+            .filter(|v| !v.is_empty())
+            .or_else(|| self.versions.last().map(|v| v.version.as_str()))
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

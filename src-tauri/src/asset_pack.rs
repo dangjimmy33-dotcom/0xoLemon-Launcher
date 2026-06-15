@@ -52,6 +52,8 @@ const DEFAULT_DEPOT_ROOT: &str = r"E:\007Launcher\depot\007-first-light";
 const DEFAULT_STORE_ROOT: &str = r"E:\0xoLemon store";
 const DEFAULT_COMMON_GAME: &str = r"E:\0xoLemon store\common\007 First Light";
 const DEFAULT_DOWNLOADING_GAME: &str = r"E:\0xoLemon store\downloading\007 First Light";
+const DEFAULT_DEPOT_REPO_BASE: &str =
+    "https://huggingface.co/datasets/CatManga/Cat-Manga/resolve/main";
 
 pub fn default_asset_source() -> PathBuf {
     PathBuf::from(DEFAULT_ASSET_SOURCE)
@@ -73,7 +75,9 @@ pub fn get_game_catalog(app: &AppHandle) -> Result<GameCatalog, AssetPackError> 
         }
         for game in &pack.manifest.catalog.games {
             if seen.insert(game.id.clone()) {
-                games.push(game.clone());
+                let mut game = game.clone();
+                overlay_summary_depot_versions(&mut game);
+                games.push(game);
             }
         }
     }
@@ -95,14 +99,16 @@ pub fn get_game_detail(
     game_id: &str,
     _locale: Option<String>,
 ) -> Result<GameDetail, AssetPackError> {
-    load_legacy_game_pack(app, game_id)
+    let mut detail = load_legacy_game_pack(app, game_id)
         .or_else(|_| load_game_part_pack(app, game_id, GAME_CORE_PART))
         .or_else(|_| load_pack(app))?
         .manifest
         .details
         .get(game_id)
         .cloned()
-        .ok_or_else(|| AssetPackError::GameNotFound(game_id.to_string()))
+        .ok_or_else(|| AssetPackError::GameNotFound(game_id.to_string()))?;
+    overlay_detail_depot_versions(&mut detail);
+    Ok(detail)
 }
 
 pub fn get_game_asset(
@@ -377,7 +383,9 @@ fn locate_catalog_pack_paths(app: &AppHandle) -> Result<Vec<PathBuf>, AssetPackE
 
     for root in roots {
         let assets_dir = root.join("assets");
-        let paths = catalog_pack_paths_in(&assets_dir)?;
+        let mut paths = catalog_pack_paths_in(&assets_dir)?;
+        paths.extend(game_catalog_pack_paths_in(&assets_dir)?);
+        paths = unique_paths(paths);
         if !paths.is_empty() {
             return Ok(paths);
         }
@@ -386,6 +394,46 @@ fn locate_catalog_pack_paths(app: &AppHandle) -> Result<Vec<PathBuf>, AssetPackE
     Err(AssetPackError::InvalidPack(
         "assets/catalog*.0xo is missing".to_string(),
     ))
+}
+
+fn game_catalog_pack_paths_in(assets_dir: &Path) -> Result<Vec<PathBuf>, AssetPackError> {
+    let games_dir = assets_dir.join("games");
+    if !games_dir.exists() {
+        return Ok(Vec::new());
+    }
+
+    let mut paths = Vec::new();
+    for entry in fs::read_dir(games_dir)? {
+        let entry = entry?;
+        if !entry.file_type()?.is_dir() {
+            continue;
+        }
+        let game_dir = entry.path();
+        let game_id = entry.file_name().to_string_lossy().to_string();
+        let core = game_dir.join("core.0xo");
+        if core.is_file() {
+            paths.push(core);
+            continue;
+        }
+        let legacy = game_dir.join(format!("{game_id}.0xo"));
+        if legacy.is_file() {
+            paths.push(legacy);
+        }
+    }
+    paths.sort();
+    Ok(paths)
+}
+
+fn unique_paths(paths: Vec<PathBuf>) -> Vec<PathBuf> {
+    let mut seen = HashSet::new();
+    let mut unique = Vec::new();
+    for path in paths {
+        let key = path.to_string_lossy().to_string();
+        if seen.insert(key) {
+            unique.push(path);
+        }
+    }
+    unique
 }
 
 fn catalog_pack_paths_in(assets_dir: &Path) -> Result<Vec<PathBuf>, AssetPackError> {
@@ -1626,7 +1674,7 @@ fn detect_versions() -> Vec<GameVersionInfo> {
                             label: entry.version.clone(),
                             build_id: version_build_id(&entry.version),
                             size_bytes: size,
-                            latest: entry.version == catalog.latest_version,
+                            latest: Some(entry.version.clone()) == catalog.effective_latest_version().map(str::to_string),
                         }
                     })
                     .collect::<Vec<_>>()
@@ -1663,6 +1711,79 @@ fn detect_versions() -> Vec<GameVersionInfo> {
     }
     versions.sort_by(|a, b| a.version.cmp(&b.version));
     versions
+}
+
+fn overlay_summary_depot_versions(game: &mut GameSummary) {
+    if let Some((latest, versions)) = load_depot_versions_for_game(&game.id) {
+        game.latest_version = latest;
+        game.available_versions = versions;
+    }
+}
+
+fn overlay_detail_depot_versions(detail: &mut GameDetail) {
+    if let Some((latest, versions)) = load_depot_versions_for_game(&detail.game_id) {
+        detail.versions = versions;
+        if let Some(version) = detail
+            .versions
+            .iter_mut()
+            .find(|version| version.version == latest)
+        {
+            version.latest = true;
+        }
+    }
+}
+
+fn load_depot_versions_for_game(game_id: &str) -> Option<(String, Vec<GameVersionInfo>)> {
+    let catalog = load_local_depot_catalog(game_id).or_else(|| fetch_remote_depot_catalog(game_id))?;
+    let latest = catalog.effective_latest_version()?.to_string();
+    let versions = catalog
+        .versions
+        .iter()
+        .map(|entry| GameVersionInfo {
+            version: entry.version.clone(),
+            label: entry.version.clone(),
+            build_id: version_build_id(&entry.version),
+            size_bytes: entry.total_size,
+            latest: entry.version == latest,
+        })
+        .collect::<Vec<_>>();
+    if versions.is_empty() {
+        None
+    } else {
+        Some((latest, versions))
+    }
+}
+
+fn load_local_depot_catalog(game_id: &str) -> Option<Catalog> {
+    let path = PathBuf::from(r"E:\007Launcher\depot")
+        .join(game_id)
+        .join("catalog.json");
+    fs::read(path)
+        .ok()
+        .and_then(|bytes| serde_json::from_slice::<Catalog>(&bytes).ok())
+}
+
+fn fetch_remote_depot_catalog(game_id: &str) -> Option<Catalog> {
+    let base = std::env::var("OXO_DEPOT_REPO_BASE")
+        .unwrap_or_else(|_| DEFAULT_DEPOT_REPO_BASE.to_string());
+    let url = format!("{}/{}/catalog.json", base.trim_end_matches('/'), game_id);
+    let client = Client::builder()
+        .connect_timeout(Duration::from_secs(3))
+        .timeout(Duration::from_secs(8))
+        .build()
+        .ok()?;
+    let mut request = client.get(url).header("User-Agent", "0xolemon-launcher/0.1");
+    if let Ok(token) = std::env::var("HF_TOKEN").or_else(|_| std::env::var("FIRST_LIGHT_HF_TOKEN"))
+    {
+        request = request.header("Authorization", format!("Bearer {token}"));
+    }
+    request
+        .send()
+        .ok()?
+        .error_for_status()
+        .ok()?
+        .json::<Catalog>()
+        .ok()
 }
 
 fn manifest_total_size(path: &Path) -> u64 {
