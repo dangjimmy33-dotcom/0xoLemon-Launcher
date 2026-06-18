@@ -1,308 +1,282 @@
-[
-  {
-    "role": "header",
-    "title": "Steam header",
-    "sourceUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/header.jpg?t=1781287930",
-    "file": "store_art/header.webp",
-    "sizeBytes": 14304,
-    "sha256": "92935f8a040d53b0fcd83f410965a28123f20fa4ede5fbc37f542f26ca236b63",
-    "lastWriteTimeUtc": "2026-06-13T12:44:18.217Z"
-  },
-  {
-    "role": "capsule",
-    "title": "Steam capsule",
-    "sourceUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/capsule_231x87.jpg?t=1781287930",
-    "file": "store_art/capsule.webp",
-    "sizeBytes": 5714,
-    "sha256": "723701f2396afe22cdba03864f1fbe09977735e03fdb81a745df75f42f364173",
-    "lastWriteTimeUtc": "2026-06-13T12:44:18.141Z"
-  },
-  {
-    "role": "capsule-v5",
-    "title": "Steam capsule v5",
-    "sourceUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/capsule_184x69.jpg?t=1781287930",
-    "file": "store_art/capsule-v5.webp",
-    "sizeBytes": 4080,
-    "sha256": "fd188a692a8fff456239f4b0e1ac1f5b3eaa9b7374c43c010838a5e2881a480b",
-    "lastWriteTimeUtc": "2026-06-13T12:44:18.173Z"
-  },
-  {
-    "role": "background",
-    "title": "Steam background",
-    "sourceUrl": "https://store.akamai.steamstatic.com/images/storepagebackground/app/945360?t=1781287930",
-    "file": "store_art/background.webp",
-    "sizeBytes": 6310,
-    "sha256": "089b0ea0b0416eaae6ca0e85dbda1628565ff71375caa9df614679b07d40ed9d",
-    "lastWriteTimeUtc": "2026-06-13T12:44:17.997Z"
-  },
-  {
-    "role": "background-raw",
-    "title": "Steam background raw",
-    "sourceUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/page_bg_raw.jpg?t=1781287930",
-    "file": "store_art/background-raw.webp",
-    "sizeBytes": 29420,
-    "sha256": "8f3821fc9f0029a120380f970f646dea06e86ce6b1ff485821ff030e9148d227",
-    "lastWriteTimeUtc": "2026-06-13T12:44:18.107Z"
-  },
-  {
-    "role": "screenshot",
-    "title": "Screenshot 1",
-    "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_b7374128e5b786a302a716bca038d604b00ffe46.1920x1080.jpg?t=1781287930",
-    "file": "screenshots/001_screenshot.webp",
-    "sizeBytes": 82292,
-    "sha256": "a5a735aec1983e9c2d9f2cca82d8254331ad01eea737a2fd348bd5089f6fa1c8",
-    "lastWriteTimeUtc": "2026-06-13T12:44:18.419Z"
-  },
-  {
-    "role": "screenshot",
-    "title": "Screenshot 2",
-    "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_719484b5e0314cc2ae43793786448e032056a31d.1920x1080.jpg?t=1781287930",
-    "file": "screenshots/002_screenshot.webp",
-    "sizeBytes": 62766,
-    "sha256": "78d228c88fa5b774fac863067e2bf1835c33867b31c61668675152f6635ba3ce",
-    "lastWriteTimeUtc": "2026-06-13T12:44:18.590Z"
-  },
-  {
-    "role": "screenshot",
-    "title": "Screenshot 3",
-    "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_ffd9c8926cbd7fce3ca5e5efb4399c47bb196bc8.1920x1080.jpg?t=1781287930",
-    "file": "screenshots/003_screenshot.webp",
-    "sizeBytes": 49928,
-    "sha256": "1c3526d2ed4968c65090ddf537385d4f856f9004900311b6b2502b0d43ce6bfe",
-    "lastWriteTimeUtc": "2026-06-13T12:44:18.729Z"
-  },
-  {
-    "role": "screenshot",
-    "title": "Screenshot 4",
-    "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_1fbd9dc9fd6a2710d233a088ef426a6d78fcf884.1920x1080.jpg?t=1781287930",
-    "file": "screenshots/004_screenshot.webp",
-    "sizeBytes": 86496,
-    "sha256": "75490eca4d34e0b6faaed59021775c7f6d5c9c8f8ec36269dd4d2fca058b0c47",
-    "lastWriteTimeUtc": "2026-06-13T12:44:18.904Z"
-  },
-  {
-    "role": "screenshot",
-    "title": "Screenshot 5",
-    "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_9d11502fa973580a82b532b25f1901b8425c28f9.1920x1080.jpg?t=1781287930",
-    "file": "screenshots/005_screenshot.webp",
-    "sizeBytes": 124056,
-    "sha256": "0239153c005c0ce3242ace37eebaf38319fe507ad321ed5dc45e93b5609a83ca",
-    "lastWriteTimeUtc": "2026-06-13T12:44:19.131Z"
-  },
-  {
-    "role": "screenshot",
-    "title": "Screenshot 6",
-    "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_17be75e178e3520c986504504ada8535de19cc0d.1920x1080.jpg?t=1781287930",
-    "file": "screenshots/006_screenshot.webp",
-    "sizeBytes": 78844,
-    "sha256": "f55b1ff14848dd6336d6b40c2fe1164269b52b49485b8808ec795322cdb736a2",
-    "lastWriteTimeUtc": "2026-06-13T12:44:19.319Z"
-  },
-  {
-    "role": "screenshot",
-    "title": "Screenshot 7",
-    "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_a1872c1c594ad4e5885d248516919d85243d9c1f.1920x1080.jpg?t=1781287930",
-    "file": "screenshots/007_screenshot.webp",
-    "sizeBytes": 51354,
-    "sha256": "681edfe0461652b0de1c67ee200c021cb979590806390157042cd1753e19e458",
-    "lastWriteTimeUtc": "2026-06-13T12:44:19.485Z"
-  },
-  {
-    "role": "screenshot",
-    "title": "Screenshot 8",
-    "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_7ccc894b8f95091f608fa012450549091cce2423.1920x1080.jpg?t=1781287930",
-    "file": "screenshots/008_screenshot.webp",
-    "sizeBytes": 75812,
-    "sha256": "df56ac60856fd73b68995f4e3c1ef416b4bfd41beb40ec1beab32c67164b2b1c",
-    "lastWriteTimeUtc": "2026-06-13T12:44:19.674Z"
-  },
-  {
-    "role": "screenshot",
-    "title": "Screenshot 9",
-    "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_13ec9b7b0ad4d154a99a8cbbc4a0c12c02d0421f.1920x1080.jpg?t=1781287930",
-    "file": "screenshots/009_screenshot.webp",
-    "sizeBytes": 45876,
-    "sha256": "f7609b8ec5430ab2358164f30c5cf4d70f21eee92f7fb92394634edd28289348",
-    "lastWriteTimeUtc": "2026-06-13T12:44:19.821Z"
-  },
-  {
-    "role": "screenshot",
-    "title": "Screenshot 10",
-    "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_41c3f20fa1faf5c9c7548b38a22c449bcfa9bc5e.1920x1080.jpg?t=1781287930",
-    "file": "screenshots/010_screenshot.webp",
-    "sizeBytes": 70206,
-    "sha256": "0ecd3bd632dacac0a6b31a447820da2de8b24cfba674c08cdb027afb9c6ef541",
-    "lastWriteTimeUtc": "2026-06-13T12:44:20.003Z"
-  },
-  {
-    "role": "video",
-    "title": "Detective and Viper",
-    "sourceUrl": "https://video.fastly.steamstatic.com/store_trailers/945360/1500936740/ab4e8e0e92771daaa6e83ee679314df2ee84d72d/1757443796/hls_264_master.m3u8?t=1757444890",
-    "file": "videos/001_detective-and-viper.mp4",
-    "sizeBytes": 1816045,
-    "sha256": "6641c98c7c3f71937588d64d29fbaa6457f8f59e9f460e7d31afcb6d564b0a06",
-    "lastWriteTimeUtc": "2026-06-13T13:44:50.892Z"
-  },
-  {
-    "role": "video-thumbnail",
-    "title": "Detective and Viper",
-    "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/257195243/2cb7c83c4a037599c78d5fef912da987dde4aedc/movie_232x130.jpg?t=1757444890",
-    "file": "video_thumbnails/001_detective-and-viper_thumb.webp",
-    "sizeBytes": 9190,
-    "sha256": "5d56d6d821eb53fe358de1996af6c85aeb69f403eca3770986fdea6054fd2322",
-    "lastWriteTimeUtc": "2026-06-13T12:44:20.160Z"
-  },
-  {
-    "role": "video-poster",
-    "title": "Detective and Viper",
-    "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/257195243/2cb7c83c4a037599c78d5fef912da987dde4aedc/movie_600x337.jpg?t=1757444890",
-    "file": "video_thumbnails/001_detective-and-viper_poster.webp",
-    "sizeBytes": 29240,
-    "sha256": "3afbeda0ea0903710cb16b2961ed60665f887abdc043ee75088e22804d048805",
-    "lastWriteTimeUtc": "2026-06-13T12:44:20.124Z"
-  },
-  {
-    "role": "video",
-    "title": "Phantom, Tracker, Noisemaker",
-    "sourceUrl": "https://video.fastly.steamstatic.com/store_trailers/945360/715586/1a15416526c3077d895d4b9a54ddbb35c2a2ddec/1750599426/hls_264_master.m3u8?t=1757444893",
-    "file": "videos/002_phantom-tracker-noisemaker.mp4",
-    "sizeBytes": 3009234,
-    "sha256": "b4ee45b50106dda818d96aa1f1398b39310d96dd8a40fe5caab502abbdde8f30",
-    "lastWriteTimeUtc": "2026-06-13T13:44:55.896Z"
-  },
-  {
-    "role": "video-thumbnail",
-    "title": "Phantom, Tracker, Noisemaker",
-    "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/257032139/316eca9d700911b9961ea8f724c54eb895ef557a/movie_232x130.jpg?t=1757444893",
-    "file": "video_thumbnails/002_phantom-tracker-noisemaker_thumb.webp",
-    "sizeBytes": 6688,
-    "sha256": "bc41dcbf2eae991992e2703139bc404e545c91db203d681d8ae07a90a56186f6",
-    "lastWriteTimeUtc": "2026-06-13T12:44:20.306Z"
-  },
-  {
-    "role": "video-poster",
-    "title": "Phantom, Tracker, Noisemaker",
-    "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/257032139/316eca9d700911b9961ea8f724c54eb895ef557a/movie_600x337.jpg?t=1757444893",
-    "file": "video_thumbnails/002_phantom-tracker-noisemaker_poster.webp",
-    "sizeBytes": 24166,
-    "sha256": "72d6cf76fbeb0d5b379803fb699f74a92016c3b6832d414763987f061f7a7039",
-    "lastWriteTimeUtc": "2026-06-13T12:44:20.271Z"
-  },
-  {
-    "role": "video",
-    "title": "The Fungle Launch",
-    "sourceUrl": "https://video.fastly.steamstatic.com/store_trailers/945360/622287/11e6bbffbc31caf648fc8f2ae1cb26b7254bcfc0/1750599424/hls_264_master.m3u8?t=1698177291",
-    "file": "videos/003_the-fungle-launch.mp4",
-    "sizeBytes": 2147579,
-    "sha256": "cfbb49b6cc7d76e521df44fab76f2bd8003f3d196c0355c874f00f6eba5a95ad",
-    "lastWriteTimeUtc": "2026-06-13T13:44:59.535Z"
-  },
-  {
-    "role": "video-thumbnail",
-    "title": "The Fungle Launch",
-    "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/256978016/movie.184x123.jpg?t=1698177291",
-    "file": "video_thumbnails/003_the-fungle-launch_thumb.webp",
-    "sizeBytes": 6816,
-    "sha256": "c1ca06f0bfc51c471a1e6d3f336de3c556ac3ee7b8ef3d99148032eea46a5dfd",
-    "lastWriteTimeUtc": "2026-06-13T12:44:20.419Z"
-  },
-  {
-    "role": "video-poster",
-    "title": "The Fungle Launch",
-    "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/256978016/movie.293x165.jpg?t=1698177291",
-    "file": "video_thumbnails/003_the-fungle-launch_poster.webp",
-    "sizeBytes": 14126,
-    "sha256": "826dc06f606c87b780a0eb03b388e3fa595c0e489c21b31f97aa87849dc52648",
-    "lastWriteTimeUtc": "2026-06-13T12:44:20.386Z"
-  },
-  {
-    "role": "video",
-    "title": "Hide n Seek",
-    "sourceUrl": "https://video.fastly.steamstatic.com/store_trailers/945360/528132/fc1a92c9ff1e4ec24d9a71a880db04f59c0e3ce0/1750599423/hls_264_master.m3u8?t=1684189580",
-    "file": "videos/004_hide-n-seek.mp4",
-    "sizeBytes": 2469314,
-    "sha256": "83f75484c9be53df110a4b574018daa21ac8ff1d29ed2224d231c64d0bf7b140",
-    "lastWriteTimeUtc": "2026-06-13T13:45:04.039Z"
-  },
-  {
-    "role": "video-thumbnail",
-    "title": "Hide n Seek",
-    "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/256924476/movie.184x123.jpg?t=1684189580",
-    "file": "video_thumbnails/004_hide-n-seek_thumb.webp",
-    "sizeBytes": 4030,
-    "sha256": "c8b7e310a4fd94153de767d917733debb2ec05ce2852dae01982cb886964c319",
-    "lastWriteTimeUtc": "2026-06-13T12:44:20.520Z"
-  },
-  {
-    "role": "video-poster",
-    "title": "Hide n Seek",
-    "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/256924476/movie.293x165.jpg?t=1684189580",
-    "file": "video_thumbnails/004_hide-n-seek_poster.webp",
-    "sizeBytes": 7790,
-    "sha256": "5ce9fa4ed367dfbe2f37c18ee67d2d86abc60c39d3400446104000faca67cf79",
-    "lastWriteTimeUtc": "2026-06-13T12:44:20.489Z"
-  },
-  {
-    "role": "video",
-    "title": "Release Trailer",
-    "sourceUrl": "https://video.fastly.steamstatic.com/store_trailers/945360/192206/43dae26ff3a8974bb7ec4a1550f0f6c4a692f988/1750599336/hls_264_master.m3u8?t=1684189588",
-    "file": "videos/005_release-trailer.mp4",
-    "sizeBytes": 1234505,
-    "sha256": "bdc50a02a34bad366ddc008aa0058243ed743b4fa6726f20b981b1d5b7532b83",
-    "lastWriteTimeUtc": "2026-06-13T13:45:06.621Z"
-  },
-  {
-    "role": "video-thumbnail",
-    "title": "Release Trailer",
-    "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/256733242/movie.184x123.jpg?t=1684189588",
-    "file": "video_thumbnails/005_release-trailer_thumb.webp",
-    "sizeBytes": 3128,
-    "sha256": "10cbe5a53a3e1e18f1dc7f6826895e43ccba06bda8d7a1b80da0273f35257e2f",
-    "lastWriteTimeUtc": "2026-06-13T12:44:20.623Z"
-  },
-  {
-    "role": "video-poster",
-    "title": "Release Trailer",
-    "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/256733242/movie.293x165.jpg?t=1684189588",
-    "file": "video_thumbnails/005_release-trailer_poster.webp",
-    "sizeBytes": 6440,
-    "sha256": "ec495e8187d771f4bc58a056df567a975b4384b757a4eda0fc508325f21cb062",
-    "lastWriteTimeUtc": "2026-06-13T12:44:20.592Z"
-  },
-  {
-    "role": "description-image",
-    "title": "Description image 1",
-    "sourceUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/extras/6bbe13c19eac2f3aeaadddbc7bb40fdc.avif?t=1781287930",
-    "file": "description_images/001_6bbe13c19eac2f3aeaadddbc7bb40fdc.webp",
-    "sizeBytes": 12766,
-    "sha256": "9d7bd7d246f9106189a5cda3db25239bb9616127fa0a9bf4602dd16cbd966a7b",
-    "lastWriteTimeUtc": "2026-06-13T12:46:47.962Z"
-  },
-  {
-    "role": "description-image",
-    "title": "Description image 2",
-    "sourceUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/extras/76bef22d1af309e719a8f2b578ef63dc.avif?t=1781287930",
-    "file": "description_images/002_76bef22d1af309e719a8f2b578ef63dc.webp",
-    "sizeBytes": 11156,
-    "sha256": "8df2d8b022cec7251ab327fb1139c6887d967eaaf9d50a9369f30f36d3f9819b",
-    "lastWriteTimeUtc": "2026-06-13T12:46:48.044Z"
-  },
-  {
-    "role": "description-image",
-    "title": "Description image 3",
-    "sourceUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/extras/a00136b10c71226d0cb43d07d88efbf7.avif?t=1781287930",
-    "file": "description_images/003_a00136b10c71226d0cb43d07d88efbf7.webp",
-    "sizeBytes": 7522,
-    "sha256": "3f078b65ad20fb5e18620f84a193d7296fe74bfa0d90e8b8db701d0dda4989c7",
-    "lastWriteTimeUtc": "2026-06-13T12:46:48.110Z"
-  },
-  {
-    "role": "description-image",
-    "title": "Description image 4",
-    "sourceUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/extras/c2ae1f9084de411d71d9c73d345d9622.avif?t=1781287930",
-    "file": "description_images/004_c2ae1f9084de411d71d9c73d345d9622.webp",
-    "sizeBytes": 18118,
-    "sha256": "050a6c8a6a76b92340c4cd5937c8ab048232fa7b9be98ab08f601be9852da745",
-    "lastWriteTimeUtc": "2026-06-13T12:46:48.198Z"
-  }
+﻿[
+    {
+        "role":  "header",
+        "title":  "Steam header",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/header.jpg?t=1781287930",
+        "file":  "store_art/header.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:21:31.761Z"
+    },
+    {
+        "role":  "capsule",
+        "title":  "Steam capsule",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/capsule_231x87.jpg?t=1781287930",
+        "file":  "store_art/capsule.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:21:31.765Z"
+    },
+    {
+        "role":  "capsule-v5",
+        "title":  "Steam capsule v5",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/capsule_184x69.jpg?t=1781287930",
+        "file":  "store_art/capsule-v5.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:21:31.766Z"
+    },
+    {
+        "role":  "background",
+        "title":  "Steam background",
+        "sourceUrl":  "https://store.akamai.steamstatic.com/images/storepagebackground/app/945360?t=1781287930",
+        "file":  "store_art/background.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:21:31.766Z"
+    },
+    {
+        "role":  "background-raw",
+        "title":  "Steam background raw",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/page_bg_raw.jpg?t=1781287930",
+        "file":  "store_art/background-raw.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:21:31.767Z"
+    },
+    {
+        "role":  "description-image",
+        "title":  "Description image 1",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/extras/6bbe13c19eac2f3aeaadddbc7bb40fdc.avif?t=1781287930",
+        "file":  "description_images/001_6bbe13c19eac2f3aeaadddbc7bb40fdc.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:21:31.778Z"
+    },
+    {
+        "role":  "description-image",
+        "title":  "Description image 2",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/extras/76bef22d1af309e719a8f2b578ef63dc.avif?t=1781287930",
+        "file":  "description_images/002_76bef22d1af309e719a8f2b578ef63dc.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:21:31.779Z"
+    },
+    {
+        "role":  "description-image",
+        "title":  "Description image 3",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/extras/a00136b10c71226d0cb43d07d88efbf7.avif?t=1781287930",
+        "file":  "description_images/003_a00136b10c71226d0cb43d07d88efbf7.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:21:31.780Z"
+    },
+    {
+        "role":  "description-image",
+        "title":  "Description image 4",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/extras/c2ae1f9084de411d71d9c73d345d9622.avif?t=1781287930",
+        "file":  "description_images/004_c2ae1f9084de411d71d9c73d345d9622.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:21:31.781Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 1",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/ss_b7374128e5b786a302a716bca038d604b00ffe46.1920x1080.jpg?t=1781287930",
+        "file":  "screenshots/001_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:21:31.787Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 2",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/ss_719484b5e0314cc2ae43793786448e032056a31d.1920x1080.jpg?t=1781287930",
+        "file":  "screenshots/002_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:21:31.788Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 3",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/ss_ffd9c8926cbd7fce3ca5e5efb4399c47bb196bc8.1920x1080.jpg?t=1781287930",
+        "file":  "screenshots/003_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:21:31.788Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 4",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/ss_1fbd9dc9fd6a2710d233a088ef426a6d78fcf884.1920x1080.jpg?t=1781287930",
+        "file":  "screenshots/004_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:21:31.789Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 5",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/ss_9d11502fa973580a82b532b25f1901b8425c28f9.1920x1080.jpg?t=1781287930",
+        "file":  "screenshots/005_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:21:31.789Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 6",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/ss_17be75e178e3520c986504504ada8535de19cc0d.1920x1080.jpg?t=1781287930",
+        "file":  "screenshots/006_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:21:31.789Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 7",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/ss_a1872c1c594ad4e5885d248516919d85243d9c1f.1920x1080.jpg?t=1781287930",
+        "file":  "screenshots/007_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:21:31.790Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 8",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/ss_7ccc894b8f95091f608fa012450549091cce2423.1920x1080.jpg?t=1781287930",
+        "file":  "screenshots/008_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:21:31.790Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 9",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/ss_13ec9b7b0ad4d154a99a8cbbc4a0c12c02d0421f.1920x1080.jpg?t=1781287930",
+        "file":  "screenshots/009_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:21:31.791Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 10",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/ss_41c3f20fa1faf5c9c7548b38a22c449bcfa9bc5e.1920x1080.jpg?t=1781287930",
+        "file":  "screenshots/010_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:21:31.791Z"
+    },
+    {
+        "role":  "video",
+        "title":  "Detective and Viper",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/945360/1500936740/ab4e8e0e92771daaa6e83ee679314df2ee84d72d/1757443796/hls_264_master.m3u8?t=1757444890",
+        "file":  "videos/001_detective-and-viper.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:21:31.799Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "Detective and Viper",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257195243/2cb7c83c4a037599c78d5fef912da987dde4aedc/movie_600x337.jpg?t=1757444890",
+        "file":  "video_thumbnails/001_detective-and-viper_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:21:31.799Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "Detective and Viper",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257195243/2cb7c83c4a037599c78d5fef912da987dde4aedc/movie_600x337.jpg?t=1757444890",
+        "file":  "video_thumbnails/001_detective-and-viper_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:21:31.799Z"
+    },
+    {
+        "role":  "video",
+        "title":  "Phantom, Tracker, Noisemaker",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/945360/715586/1a15416526c3077d895d4b9a54ddbb35c2a2ddec/1750599426/hls_264_master.m3u8?t=1757444893",
+        "file":  "videos/002_phantom-tracker-noisemaker.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:21:31.800Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "Phantom, Tracker, Noisemaker",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257032139/316eca9d700911b9961ea8f724c54eb895ef557a/movie_600x337.jpg?t=1757444893",
+        "file":  "video_thumbnails/002_phantom-tracker-noisemaker_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:21:31.800Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "Phantom, Tracker, Noisemaker",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257032139/316eca9d700911b9961ea8f724c54eb895ef557a/movie_600x337.jpg?t=1757444893",
+        "file":  "video_thumbnails/002_phantom-tracker-noisemaker_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:21:31.800Z"
+    },
+    {
+        "role":  "video",
+        "title":  "The Fungle Launch",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/945360/622287/11e6bbffbc31caf648fc8f2ae1cb26b7254bcfc0/1750599424/hls_264_master.m3u8?t=1698177291",
+        "file":  "videos/003_the-fungle-launch.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:21:31.801Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "The Fungle Launch",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256978016/movie.293x165.jpg?t=1698177291",
+        "file":  "video_thumbnails/003_the-fungle-launch_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:21:31.801Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "The Fungle Launch",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256978016/movie_600x337.jpg?t=1698177291",
+        "file":  "video_thumbnails/003_the-fungle-launch_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:21:31.801Z"
+    }
 ]

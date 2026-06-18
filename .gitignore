@@ -16,6 +16,15 @@ depot-*
 worker/node_modules
 worker/dist
 *.local
+__pycache__/
+*.py[cod]
+
+# Local working copies and generated handoff archives
+src/App_backup.tsx
+src/src.zip
+src-tauri/src-tauri.zip
+tools/tools.zip
+steam_api_utf8.json
 
 # Editor directories and files
 .vscode/*

@@ -1,0 +1,514 @@
+﻿{
+    "appId":  3014320,
+    "title":  "OCTOPATH TRAVELER 0",
+    "type":  "game",
+    "requiredAge":  0,
+    "isFree":  false,
+    "shortDescription":  "Start from zero and discover the newest entry in the OCTOPATH TRAVELER series. Experience a story of restoration and retribution over the divine rings—an epic saga that unfolds across the realm of Orsterra.",
+    "detailedDescriptionHtml":  "\u003cp class=\"bb_paragraph\" style=\"text-align: center\"\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3014320/extras/ea1b61cad9c9ed6121bbb8807fe133d5.poster.avif?t=1779854659\" width=616 height=280 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3014320/extras/ea1b61cad9c9ed6121bbb8807fe133d5.webm?t=1779854659\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3014320/extras/ea1b61cad9c9ed6121bbb8807fe133d5.mp4?t=1779854659\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eStart from zero and discover the newest entry in the OCTOPATH TRAVELER series. Experience a story of restoration and retribution over the divine rings—an epic saga that unfolds across the realm of Orsterra.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eEnjoy familiar features such as the series\u0027 HD-2D graphics, a fusion of retro pixel art and 3DCG; the player\u0027s ability to roleplay using Path Actions of their choice; and the Break and Boost system that can turn the tide of battle. Additionally, brand-new features such as character creation and town building allow you to create your own character and restore your hometown.\u003c/p\u003e\u003cp class=\"bb_paragraph\" style=\"text-align: center\"\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"asset:description_images/001_8e8910ac7bcfaab9f81167fd1d68efb9.webp\" width=616 height=173 /\u003e\u003c/span\u003e\u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e[Key Features]\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003e You are the protagonist of the story. Choose your appearance, voice, motions, and favorite dish with the new character creation feature!\u003c/p\u003e\u003c/li\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003e Restore your hometown through town building. Invite companions and allies to live in a town of your creation!\u003c/p\u003e\u003c/li\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003e Engage in exhilarating and strategic command battles. Choose from over 30 allies to form a party comprised of up to eight characters!\u003c/p\u003e\u003c/li\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003e Use Path Actions to invite people to your town, engage in battle, and obtain items. Where you go and what you do is entirely up to you.\u003c/p\u003e\u003c/li\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003e Equip action skills with the new skill system. These skills can be learned by allies and passed on to others.\u003c/p\u003e\u003c/li\u003e\u003c/ul\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e",
+    "aboutTheGameHtml":  "\u003cp class=\"bb_paragraph\" style=\"text-align: center\"\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3014320/extras/ea1b61cad9c9ed6121bbb8807fe133d5.poster.avif?t=1779854659\" width=616 height=280 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3014320/extras/ea1b61cad9c9ed6121bbb8807fe133d5.webm?t=1779854659\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3014320/extras/ea1b61cad9c9ed6121bbb8807fe133d5.mp4?t=1779854659\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eStart from zero and discover the newest entry in the OCTOPATH TRAVELER series. Experience a story of restoration and retribution over the divine rings—an epic saga that unfolds across the realm of Orsterra.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eEnjoy familiar features such as the series\u0027 HD-2D graphics, a fusion of retro pixel art and 3DCG; the player\u0027s ability to roleplay using Path Actions of their choice; and the Break and Boost system that can turn the tide of battle. Additionally, brand-new features such as character creation and town building allow you to create your own character and restore your hometown.\u003c/p\u003e\u003cp class=\"bb_paragraph\" style=\"text-align: center\"\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"asset:description_images/001_8e8910ac7bcfaab9f81167fd1d68efb9.webp\" width=616 height=173 /\u003e\u003c/span\u003e\u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e[Key Features]\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003e You are the protagonist of the story. Choose your appearance, voice, motions, and favorite dish with the new character creation feature!\u003c/p\u003e\u003c/li\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003e Restore your hometown through town building. Invite companions and allies to live in a town of your creation!\u003c/p\u003e\u003c/li\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003e Engage in exhilarating and strategic command battles. Choose from over 30 allies to form a party comprised of up to eight characters!\u003c/p\u003e\u003c/li\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003e Use Path Actions to invite people to your town, engage in battle, and obtain items. Where you go and what you do is entirely up to you.\u003c/p\u003e\u003c/li\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003e Equip action skills with the new skill system. These skills can be learned by allies and passed on to others.\u003c/p\u003e\u003c/li\u003e\u003c/ul\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e",
+    "supportedLanguagesHtml":  "English\u003cstrong\u003e*\u003c/strong\u003e, Japanese\u003cstrong\u003e*\u003c/strong\u003e, Korean, Simplified Chinese, Traditional Chinese\u003cbr\u003e\u003cstrong\u003e*\u003c/strong\u003elanguages with full audio support",
+    "pcRequirements":  {
+                           "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003eRequires a 64-bit processor and operating system\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows® 11\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e AMD Ryzen™ 3 2300X / Intel® Core™ i3-8100\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 8 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e AMD Radeon™ RX 470 / NVIDIA® GeForce® GTX 960\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eDirectX:\u003c/strong\u003e Version 12\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 10 GB available space\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eAdditional Notes:\u003c/strong\u003e 1920 × 1080, Graphics Preset \u0026quot;Low\u0026quot;, 30FPS\u003c/li\u003e\u003c/ul\u003e",
+                           "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003eRequires a 64-bit processor and operating system\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows® 11\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e AMD Ryzen™ 5 2600 / Intel® Core™ i5-8400\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 16 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e AMD Radeon™ RX 5600XT / NVIDIA® GeForce® GTX 1070 / Intel® Arc™ A580\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eDirectX:\u003c/strong\u003e Version 12\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 10 GB available space\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eAdditional Notes:\u003c/strong\u003e 1920x1080, Graphics Preset \u0026quot;Ultra\u0026quot;, 60FPS\u003c/li\u003e\u003c/ul\u003e"
+                       },
+    "macRequirements":  {
+                            "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e",
+                            "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e"
+                        },
+    "linuxRequirements":  {
+                              "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e",
+                              "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e"
+                          },
+    "dlc":  [
+                3825480
+            ],
+    "website":  null,
+    "developers":  [
+                       "Square Enix",
+                       "DOKIDOKI GROOVE WORKS"
+                   ],
+    "publishers":  "Square Enix",
+    "releaseDate":  {
+                        "coming_soon":  false,
+                        "date":  "4 Dec, 2025"
+                    },
+    "genres":  "RPG",
+    "categories":  [
+                       "Single-player",
+                       "Steam Achievements",
+                       "Full controller support",
+                       "Steam Trading Cards",
+                       "Color Alternatives",
+                       "Custom Volume Controls",
+                       "Keyboard Only Option",
+                       "Playable without Timed Input",
+                       "Stereo Sound",
+                       "Steam Cloud",
+                       "Family Sharing"
+                   ],
+    "platforms":  {
+                      "windows":  true,
+                      "mac":  false,
+                      "linux":  false
+                  },
+    "metacritic":  null,
+    "recommendations":  {
+                            "total":  2643
+                        },
+    "reviewsSummary":  null,
+    "newsItems":  [
+                      {
+                          "gid":  "1826992588604242",
+                          "title":  "SQUARE ENIX Publisher Sale 2026",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1826992588604242",
+                          "is_external_url":  true,
+                          "author":  "williamtj",
+                          "contents":  "The Square Enix Publisher Sale is now on - save up to 90% off! \n\nWith over 200+ discounted games in the SQUARE ENIX Publisher Sale, our *NEW* host, Matthew Mercer, is here to help you find your next RPG adventure - accompanied by our long-time bestie Ben Starr... whether we asked for it or not.\n\nWatch the full video on YouTube and discover which RPG you should dive into next: https://youtu.be/joDXWCNf-JM",
+                          "feedlabel":  "Community Announcements",
+                          "date":  1773761503,
+                          "feedname":  "steam_community_announcements",
+                          "feed_type":  1,
+                          "appid":  3014320
+                      },
+                      {
+                          "gid":  "1826362059920390",
+                          "title":  "Version 1.0.7.0 Release",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1826362059920390",
+                          "is_external_url":  true,
+                          "author":  "TM_J",
+                          "contents":  "[Release Notes]\n[list]\n[*]   Increased the number of people able to be trained at the training ground\n[*]   Now able to fight a specific boss again (activating the strange monument will respawn it)\n[*]   Improved overall game performance\n[*]   Fixed an issue where, during a specific boss battle, the enemy\u0027s HP could not go lower than one and thus it could not be defeated\n[*]   Fixed an issue where certain characters\u0027 post-battle voice lines would not play properly\n[*]   Fixed an issue where certain equipment descriptions listed incorrect effects\n[*]   Fixed an issue where, under certain circumstances, using the \"form party\" feature during the main story would render you unable to complete the game\n[*]   Fixed an issue where the maximum amount of influence could not be attained under certain circumstances\n[*]   Fixed an issue where broken enemies could not be dealt damage under certain circumstances\n[*]   Fixed an issue where you were temporarily unable to use nut-related items under certain circumstances\n[*]   Fixed an issue where, if you failed to use an item during battle due to paralysis, that item would still be consumed\n[*]   Other minor bug fixes\n[/list]",
+                          "feedlabel":  "Community Announcements",
+                          "date":  1772702928,
+                          "feedname":  "steam_community_announcements",
+                          "feed_type":  1,
+                          "appid":  3014320,
+                          "tags":  [
+                                       "patchnotes"
+                                   ]
+                      },
+                      {
+                          "gid":  "1823191198604689",
+                          "title":  "Version 1.0.5.0 Release",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1823191198604689",
+                          "is_external_url":  true,
+                          "author":  "TM_J",
+                          "contents":  "[Release Notes]\n- Improved overall game performance\n- Fixed an issue where the museum\u0027s interior would not change after upgrading it\n- Fixed an issue where achievements would not unlock as normal on some platforms\n- Fixed an issue where data would not save correctly on some platforms\n- Other minor bug fixes",
+                          "feedlabel":  "Community Announcements",
+                          "date":  1769763553,
+                          "feedname":  "steam_community_announcements",
+                          "feed_type":  1,
+                          "appid":  3014320,
+                          "tags":  [
+                                       "patchnotes"
+                                   ]
+                      },
+                      {
+                          "gid":  "1821922921820643",
+                          "title":  "Version 1.0.2.0 Release",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1821922921820643",
+                          "is_external_url":  true,
+                          "author":  "TM_J",
+                          "contents":  "[Release Notes]\n- Improvements to overall sound quality",
+                          "feedlabel":  "Community Announcements",
+                          "date":  1768813214,
+                          "feedname":  "steam_community_announcements",
+                          "feed_type":  1,
+                          "appid":  3014320,
+                          "tags":  [
+                                       "patchnotes"
+                                   ]
+                      },
+                      {
+                          "gid":  "1819386365085904",
+                          "title":  "Version 1.0.3.0 Release",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1819386365085904",
+                          "is_external_url":  true,
+                          "author":  "TM_J",
+                          "contents":  "[p]\\[Release Notes]\n- Improvements to overall sound quality\n- Adjusted camera movement during battles\n- Fixed an issue where the designated manager of the facility built in “Kindlers of the Flame Ch. 4” was being placed incorrectly\n- Other minor bug fixes[/p]",
+                          "feedlabel":  "Community Announcements",
+                          "date":  1765960062,
+                          "feedname":  "steam_community_announcements",
+                          "feed_type":  1,
+                          "appid":  3014320,
+                          "tags":  [
+                                       "patchnotes"
+                                   ]
+                      }
+                  ],
+    "achievements":  {
+                         "total":  37,
+                         "items":  [
+                                       {
+                                           "apiName":  "ACH_ALL_ACHIEVEMENTS",
+                                           "displayName":  "A Story All Your Own",
+                                           "description":  "Unlock all achievements.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/2673874420d48acf72fa76c2998e59b63a2ee69c.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/ef2a8487f800138f92cccc9671e6c5f786b63799.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_FIRST_BREAK",
+                                           "displayName":  "First Break",
+                                           "description":  "Break an enemy in battle for the first time.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/45127a2edc5bc2670a83d066283f746a2d9539e2.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/ccc3c5f91edc718349d5120d7fc3f0bcadc07ec8.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_MAX_BOOST_ACTION",
+                                           "displayName":  "Max Boost",
+                                           "description":  "Act at maximum boost for the first time.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/6c506498c57a281528a3f40c79dc4e146b4fb119.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/4acd7d9bd64539dc35fe36f13221af0d39ade5d9.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_FIRST_ABILITY_LEARNED",
+                                           "displayName":  "A New Skill",
+                                           "description":  "Learn a skill for the first time.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/6dcf2dda840995c2f6b00e0e78aca0802c8bc49c.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/58e71b48d6b00c11e6fb2d8807438c72d44bcd29.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_FIRST_8_MEMBER_BATTLE",
+                                           "displayName":  "Octopath Battler",
+                                           "description":  "Fight with eight travelers in your party for the first time.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/dfd99027e51612a3dfda8bd68a0e5e2bb581ce51.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/4dba2f02931525ca7576b3b5800b49440207e371.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_ELFRIC_RING_OBTAINED",
+                                           "displayName":  "Ring of the Flamebringer",
+                                           "description":  "Obtain the ring of Aelfric, the Flamebringer.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/aa9cacab0af1cbe2a598ec9ce613250092832fd0.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/5674bab4ed7955e699136767651f880f5706d6fa.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_DREFAND_RING_OBTAINED",
+                                           "displayName":  "Ring of the Huntress",
+                                           "description":  "Obtain the ring of Draefendi, the Huntress.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/1c805252f2d1258fb7e8ba4a95c3556c2326b77a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/a19f19c33e22a2de732bdf988dee656dd47d2091.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_BRAND_RING_OBTAINED",
+                                           "displayName":  "Ring of the Thunderblade",
+                                           "description":  "Obtain the ring of Brand, the Thunderblade.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/f400d32f094bc24f93e89a7e7f8404ab046eccde.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/f44cdad5b3354488a5a9e4e3974afc178cf68ccb.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_EBER_RING_OBTAINED",
+                                           "displayName":  "Ring of the Prince of Thieves",
+                                           "description":  "Obtain the ring of Aeber, Prince of Thieves.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/ffeb24e8dd50552141e083cd88d19dbf2216ada6.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/89994f564f464a27f9b2ca0d9f4173f2223bec7f.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_ALEFAN_RING_OBTAINED",
+                                           "displayName":  "Ring of the Scholarking",
+                                           "description":  "Obtain the ring of Alephan, the Scholarking.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/d207c63d31d109cc8a56183801231fc2e47dd31e.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/3068d923d333b48d38e178887acf1828452769de.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_BIFERGAN_RING_OBTAINED",
+                                           "displayName":  "Ring of the Trader",
+                                           "description":  "Obtain the ring of Bifelgan, the Trader.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/952e3725a7b5e66f8d10fea680f8047410189cd7.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/2b662153d3aee9eb19ef84a4088c59eede8016e8.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_SILTIGE_RING_OBTAINED",
+                                           "displayName":  "Ring of the Lady of Grace",
+                                           "description":  "Obtain the ring of Sealticge, Lady of Grace.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/06bdfbf6a462af5d1e185fce3971ae94f75c5894.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/63ee55569dbc5f5bbf1815512b8284121681ff1a.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_DOTHER_RING_OBTAINED",
+                                           "displayName":  "Ring of the Charitable",
+                                           "description":  "Obtain the ring of Dohter, the Charitable.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/5fdd87f35462ac5be53e356a7b38a822c679fc2f.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/4d1f3130afe4bfeeb9a3e7502c50fb0c4ab50c38.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_ENDING_A",
+                                           "displayName":  "Champion of the Continent",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/404497ada6af8bc74e31f80f352b2160d70bfc32.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/eb6c4133144ac95417796186430cc627bbdf68bd.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_ENDING_B",
+                                           "displayName":  "Traveler from Zero",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/3f3e1b1927cecfafff16d3e09518104718e871c3.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/58eebb7a0553523353d3e2dfc24390b56e4f4a88.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_FIRST_BUILDING_CONSTRUCTED",
+                                           "displayName":  "The First Construction",
+                                           "description":  "Build a structure for the first time.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/3a64900432d6550969c83f02d92cf95389fbee32.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/432544abf2ec508a20d27170a36485a75f6c378d.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_INVITE_RESIDENT",
+                                           "displayName":  "The First Invitation",
+                                           "description":  "Invite someone to live in Wishvale for the first time.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/495f304d621cc1ed15f5e1e2c7579bd9da3d4e5d.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/7b0cfb8745a9f3ffac881ed732b0c3dd49f0485c.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_BASE_CONSTRUCTION",
+                                           "displayName":  "The Tavern and Hub",
+                                           "description":  "Build a hub.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/d924e12bbfc193bf38b39bb03467ca3519181248.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/73284c6816522550a9cc70369a807b51498e57d9.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_FARM_CONSTRUCTION",
+                                           "displayName":  "Freshly Grown Vegetables",
+                                           "description":  "Build fields.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/f61e1b4abbe5b9a3befb8a89ebae6390697020c7.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/95b1b9629a10017c82ce83af3b8cb5cb84915448.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_SHOP_CONSTRUCTION",
+                                           "displayName":  "A Dependable Merchant",
+                                           "description":  "Build a shop.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/ee3caef6116c4421a0d2da38747217994450a043.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/06dc16b19100001b80626b221908966f0c6c734f.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_CHURCH_CONSTRUCTION",
+                                           "displayName":  "A New Church",
+                                           "description":  "Build a church.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/1128994e9e884dd39bfb9c242f961eb6cec27d09.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/7e24a53e2bbd318c15fa3783c7e63bdcecfba3d4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_TORCH_CONSTRUCTION",
+                                           "displayName":  "Kindler of the Flame",
+                                           "description":  "Build the Sacred Flame dais.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/7d1a8f5445a73daad6b20d888d61dffb51c91b7b.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/dc4b127b28410e2655a9568df4d5deb779f12dac.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_MUSEUM_CONSTRUCTION",
+                                           "displayName":  "A Treasure Trove of Knowledge",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/23107a287f163a0dca6e9a77ec4ef7df4234d370.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/7c35a490b6ea63a54aba6d8c67caba4040791e28.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_ARENA_CONSTRUCTION",
+                                           "displayName":  "Overwhelming Zeal",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/9cfe64e8496e5b983b6fa5eddd7a2b415aefce28.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/01c430cb81a1f57841146f80e71b6ffc14ed4584.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_TOWN_LEVEL_MAX",
+                                           "displayName":  "For the Future of Wishvale",
+                                           "description":  "Raise the town level to max.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/7cbf22d34ff33581a919fc0e551b9616a65521f3.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/3ad0b3b6c2cf57c444db39eac90f15e31e5ec160.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_ALL_TRAVELERS_RECRUITED",
+                                           "displayName":  "The Summoned",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/0eb12de5ec8d8717c990ea56bd9c4c2bea6f000c.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/26b4f14ec081a8e43eba80e9f70259a6d4e659e2.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_ALL_BATTLE_JOBS_OBTAINED",
+                                           "displayName":  "Job Master",
+                                           "description":  "Obtain all secondary jobs.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/84e1039e747fbfbc5fb805e0186cc7e829a88dc1.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/e152fab6bccfd80c74aca9ff66993b1d936447aa.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_OWN_SHIP",
+                                           "displayName":  "Setting Sail",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/50a679a931fa4f1848d8d89b61511056c88b5af6.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/8c31c59aa58a7617e61c94ea80d3cb34ffa01667.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_REACHED_HELL",
+                                           "displayName":  "The Door to Hell",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/5d521a02398cfbf0976efc3f24e0be1e628c7d41.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/3052248c76d86534d2aa7e49c28367343c20f978.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_ALL_LANDS_TRAVELED",
+                                           "displayName":  "Master of Orsterra",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/0d4172acc6e7d8c90db13eb6aa8d3800a79f2349.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/06c0e956147099fd658a6f081159c1f92b7d39d9.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_DAMAGE_OVER_9999",
+                                           "displayName":  "Hard Hitter",
+                                           "description":  "Deal at least 9,999 damage.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/723b1af010aa9f776799a1b1a022bfbf7dc9659c.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/1f7f99640a7db0a203c96b0e77f7eec06bd7f7d4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_ALL_MUSIC_OBTAINED",
+                                           "displayName":  "Music Aficionado",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/dc168e13dd141b2eca52839aecb3fdfa61eb33dc.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/4f444b8e4fac82b83ed5724b846267a33f87b1fa.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_ALL_TREASURES_OBTAINED",
+                                           "displayName":  "Treasures of Legend",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/4529f4ab4f53471cace8cd77d887d63bfef31272.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/56375cfedbea777e051c00a74ab4ae678435ed01.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_ALL_HISTORIC_EQUIP_OBTAINED",
+                                           "displayName":  "Battle-Tested Gear",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/35d4fe0c35ac7eaa4044409fb977b11ba62668ab.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/8898f8a6ad6af4ce83e9f5870c766d47de3420ee.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_KNOWN_200_RESIDENTS",
+                                           "displayName":  "Informed Adventurer",
+                                           "description":  "Obtain information from 200 townspeople.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/fe668e3933f1d1de189875803cf5b60163260195.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/278e13077042301fb732590734cd137ca9619143.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_MAX_TRAVELER_BOND",
+                                           "displayName":  "A Special Kinship",
+                                           "description":  "Reach the highest amity level with a companion.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/6d9a727991d9719298b20f37a2bd829d9dce122b.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/a35894c345e2504d3849723942d572b73caf16a2.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_DRAGON_DEFEATED",
+                                           "displayName":  "Dragonslayer",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/8c1f34b0d40221c912dee17c5b87abd32f1717cd.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/d54cd690696d112df509eb908d144f06453b4ddc.jpg"
+                                       }
+                                   ]
+                     }
+}

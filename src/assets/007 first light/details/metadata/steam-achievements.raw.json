@@ -1,0 +1,366 @@
+﻿{
+    "game":  {
+                 "gameName":  "007 First Light",
+                 "gameVersion":  "5",
+                 "availableGameStats":  {
+                                            "achievements":  [
+                                                                 {
+                                                                     "name":  "KNT_Achievement_01",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Icebreaker",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/b3332b48b48964e7ddb245b4cfe6672b33df1c68.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/aca48647f32aea7e9e160eeeb2a8fd70b85cfd3d.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "KNT_Achievement_02",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "From Malta with love",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/2e75a773161a979b0b4d92613130d8da59f06b9e.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/5bbc5b10b763344639247b910f22be18a4293af0.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "KNT_Achievement_03",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Shaken not stirred",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/934da489227787a7bb353fd679ab11b196c80259.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/d0f401961daa0f4b6a9d06e22ef90faa55025d56.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "KNT_Achievement_04",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "I expect you to die",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/8798d04bc0571bc9756f40fb7f5b7339ac0b6f39.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/a87c77082e006e58a96b105d6605339fb5ebe781.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "KNT_Achievement_05",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Skyfall",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/9e6c4787f666b5c2d6cdf3f9abfa4838faf34064.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/394f970a91f3c5738c9078dff08a602dd33f57a5.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "KNT_Achievement_06",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Win, lose or die",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/a49aa7c75ed20df80bf565aa782cfacd4383ed3f.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/a6edca7d1459ee3c60a4f5ac60fd9f82db0b706d.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "KNT_Achievement_07",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Nobody lives forever",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/4efed74f25456d5f42c449c313b7dcee98e19197.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/6e2c38a65f4609c8ca24ba3653dd1bc8fec78a86.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "KNT_Achievement_08",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Trigger Mortis",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/e13e11626a097dbc6c6c47be344fdad2ef8bf0bc.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/6ecb9a35118fa0cd80c435d85fffd13d9ca1e84e.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "KNT_Achievement_09",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "A hard man to kill",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/16db7f6836d4e8e4af91c73958be71b6b19354ce.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/aa3e3ebf1a07dc580f1c14464074140592381404.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "KNT_Achievement_10",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "You only live twice",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/857351d6f353bf26c3f84d183d2fcce9c61b30df.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/e98ec7da81790cc6073ac69d6dc43123c7cae463.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "KNT_Achievement_11",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Agent under fire",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/020dea62175af4f7ccf8ce22be1660bc11044f42.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/c1f5b7f86623311f322c254fccb74c1a1dfce1f0.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "KNT_Achievement_12",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "All time high",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/a70faad78fd6609b88297b70e161c76737e8dd34.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/eb718bf54f6047b978b241575d816181abb7cb64.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "KNT_Achievement_13",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "No time to die",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/750137817822d6f47938522899f91a1fb9f41375.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/b003156a257a1018ecce032d63a9fb134d8dd55e.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "KNT_Achievement_14",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Double or die",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/77c00e2166958487284eeaa815ddf0b64fa2e135.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/1d2afc204efdd09aacdcadb0528004ed140e6007.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "KNT_Achievement_15",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "You know my name",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/ed92c00338addcae138ade3f1287bee3ef7d211c.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/93d33499b30c1ee7ab42ca4befa801cf8fa64aee.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "KNT_Achievement_16",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Solo",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/15c1c53eecaa1b6b783c79a20fa41358f1c87760.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/7eaf6cfdf0d3764cc49a623fdbf8ade0bb0bcfb0.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "KNT_Achievement_17",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "The writing is on the wall",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/cf3ada4d7a96f5c6f6d16e30a08e89144179bccb.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/a38c1755ec9f739a5eeec0dfedf7e47020c21ecc.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "KNT_Achievement_18",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "For king and country",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/905868ec8d1954b4d6493c9a0531c97f802787ee.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/cf1cb9e5f2d263f17948de1b0e0690fa654a8638.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "KNT_Achievement_19",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "The world is not enough",
+                                                                     "hidden":  0,
+                                                                     "description":  "Collect all postcards",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/5dbddb258fc8a41b1fcf18b2419b0b6e325ecee4.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/3531673b9665223001c9142ba9c9c814d871449f.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "KNT_Achievement_20",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "For your eyes only",
+                                                                     "hidden":  0,
+                                                                     "description":  "Unlock all MI6 files",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/e542f0685d2cc8a2c1fc389630fa16076f4dac88.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/0cda81ba71d30b2a2f546c864220017cf3ea7063.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "KNT_Achievement_21",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Recovered assets",
+                                                                     "hidden":  0,
+                                                                     "description":  "Collect all mementos",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/9a4e4ddae7916eb392df21c5ee0dbf4954026730.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/a1410479fb26d1c9a362d0f4f2643d58e96beac3.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "KNT_Achievement_22",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Casino Royale",
+                                                                     "hidden":  0,
+                                                                     "description":  "Collect all playing cards",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/1dbbf5aa2e49c0dd338f31f02d071a5e69134337.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/ed2fad2918e6df474518724ce20963035d823413.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "KNT_Achievement_23",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "A collector’s habit",
+                                                                     "hidden":  0,
+                                                                     "description":  "Find all collectibles",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/247db2735077da8015452a202aea9cb2819d2f90.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/1a997e57f2426717056e56aed6534a651ee37078.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "KNT_Achievement_24",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Soft landing",
+                                                                     "hidden":  0,
+                                                                     "description":  "Tackle an enemy over a ledge",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/f63db78e74ac4f090d0480238517da3049df9fd8.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/53986345d236846f30b04b3e0149c2240979d16f.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "KNT_Achievement_25",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Sleight of hand",
+                                                                     "hidden":  0,
+                                                                     "description":  "Disarm an enemy by shooting a weapon from their hand",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/ea87673bd63d056dd785b5d530273f120386c590.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/d4b6edf1747689bd1c11012221fcad382ff0b3a0.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "KNT_Achievement_26",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Positively shocking",
+                                                                     "hidden":  0,
+                                                                     "description":  "Make an enemy taser another enemy",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/88c8741685e385a3caa4f9f352a616b8850f4afb.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/77b01d2d1ed61385409522742905bfe003f83273.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "KNT_Achievement_27",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Short fuse",
+                                                                     "hidden":  0,
+                                                                     "description":  "Shoot at an enemy while he\u0027s throwing a grenade",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/90df340a3674082f9f565d941cdf5556808d6a08.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/7dc759daa766c7385525fb75dd0227aedea584fe.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "KNT_Achievement_28",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "He\u0027ll live",
+                                                                     "hidden":  0,
+                                                                     "description":  "Knock out an enemy by shooting him in the legs",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/7b01b8bd1f4319cd4079929f76705a50bfaa5b1c.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/39297dee398641023bde81e413d3e1fbeffb332e.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "KNT_Achievement_29",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Firestarter",
+                                                                     "hidden":  0,
+                                                                     "description":  "Push an enemy into a fire extinguisher",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/52b5daf0927bfa54d9ffc7476606ffc9597829f1.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/e0b6bb896968d5dfd170b2ae7c8a9d08efe1720b.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "KNT_Achievement_30",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Damp squib",
+                                                                     "hidden":  0,
+                                                                     "description":  "Hack a grenade before it explodes",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/7cb4e193bf296f1125b0931b512b82baf9a1e901.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/cca08491abd5f6b250337051f0d971a84b145918.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "KNT_Achievement_31",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Disarming personality",
+                                                                     "hidden":  0,
+                                                                     "description":  "Disarm an enemy with a laser",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/c5dff90146c86da3743a0b8fd8c03a60cedb0587.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/9e9e03526896dfc5c716b0079540d7cbf0506270.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "KNT_Achievement_32",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Always have an exit plan",
+                                                                     "hidden":  0,
+                                                                     "description":  "Use a gadget to escape a confrontation",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/81f69644846803f6a09a7738f4bb0514cb872f80.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/3bf2c4a62b9b7233fddd150f0fc60349e3cc0f18.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "KNT_Achievement_33",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "What if...?",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete an Operation in TacSim",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/70f3439c7db43ed316bfadd34fb97025430e9cc8.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/80293d83d6ae14dd1cd6b334ea8e00ada172dba3.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "KNT_Achievement_34",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "A change of pace",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete an Escalation in TacSim",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/20acc22ae1b47d72733aef83a7d81ace6fea0ffa.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/8f9d6722c080089d119372b3efdaf648bf8d7606.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "KNT_Achievement_35",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Keep moving forward",
+                                                                     "hidden":  0,
+                                                                     "description":  "Achieve clearance level 3",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/377a247574d1057e5aa85da4a3ea2605e9a098c3.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/415e616341a818fb4e1e1da31459e99953ad8c57.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "KNT_Achievement_36",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "The readiness is all",
+                                                                     "hidden":  0,
+                                                                     "description":  "Beat tier 3 of an Escalation in TacSim",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/876df3b86d94e891bbd5137e18974c8c9833c59c.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/0b8a6a26fe3608eb71e14117bf3b14d523bd68fd.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "KNT_Achievement_37",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "A legacy of spycraft",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/2ac9946a74d3f23ff91c93a712548e5829dfc6da.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3768760/f7b91736c799e416cca7da487426b19064ae947b.jpg"
+                                                                 }
+                                                             ],
+                                            "stats":  [
+                                                          {
+                                                              "name":  "CollectiblesPost",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  "GameStat_CollectiblesPostcards"
+                                                          },
+                                                          {
+                                                              "name":  "CollectiblesIntel",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  "GameStat_CollectiblesIntel"
+                                                          },
+                                                          {
+                                                              "name":  "CollectiblesMementos",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  "GameStat_CollectiblesMementos"
+                                                          },
+                                                          {
+                                                              "name":  "CollectiblesCards",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  "GameStat_CollectiblesCards"
+                                                          },
+                                                          {
+                                                              "name":  "TSIM_MissionsDone",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  "GameStat_TSIM_MissionsDone"
+                                                          },
+                                                          {
+                                                              "name":  "Collectibles",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  "GameStat_Collectibles"
+                                                          },
+                                                          {
+                                                              "name":  "CollectiblesLegacy",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  "CollectiblesLegacy"
+                                                          },
+                                                          {
+                                                              "name":  "TSIM_Level",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  "GameStat_TSIM_Level"
+                                                          }
+                                                      ]
+                                        }
+             }
+}

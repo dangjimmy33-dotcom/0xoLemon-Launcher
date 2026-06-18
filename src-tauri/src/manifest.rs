@@ -75,6 +75,18 @@ pub struct ChunkRef {
     pub pack_offset: u64,
     pub compressed_size: u64,
     pub compressed_sha256: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub encryption: Option<ChunkEncryption>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ChunkEncryption {
+    pub algorithm: String,
+    pub key_id: String,
+    pub nonce: String,
+    pub plaintext_compressed_size: u64,
+    pub plaintext_compressed_sha256: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

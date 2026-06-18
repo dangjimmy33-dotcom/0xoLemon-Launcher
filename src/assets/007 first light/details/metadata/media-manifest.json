@@ -1,0 +1,282 @@
+﻿[
+    {
+        "role":  "header",
+        "title":  "Steam header",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3768760/header.jpg?t=1780990824",
+        "file":  "store_art/header.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:20:50.030Z"
+    },
+    {
+        "role":  "capsule",
+        "title":  "Steam capsule",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3768760/capsule_231x87.jpg?t=1780990824",
+        "file":  "store_art/capsule.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:20:50.034Z"
+    },
+    {
+        "role":  "capsule-v5",
+        "title":  "Steam capsule v5",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3768760/capsule_184x69.jpg?t=1780990824",
+        "file":  "store_art/capsule-v5.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:20:50.034Z"
+    },
+    {
+        "role":  "background",
+        "title":  "Steam background",
+        "sourceUrl":  "https://store.akamai.steamstatic.com/images/storepagebackground/app/3768760?t=1780990824",
+        "file":  "store_art/background.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:20:50.035Z"
+    },
+    {
+        "role":  "background-raw",
+        "title":  "Steam background raw",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3768760/page_bg_raw.jpg?t=1780990824",
+        "file":  "store_art/background-raw.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:20:50.035Z"
+    },
+    {
+        "role":  "description-image",
+        "title":  "Description image 1",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3768760/extras/014b54d6b601b5d52bb93dd3c9fd9f0a.avif?t=1780990824",
+        "file":  "description_images/001_014b54d6b601b5d52bb93dd3c9fd9f0a.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:20:50.048Z"
+    },
+    {
+        "role":  "description-image",
+        "title":  "Description image 2",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3768760/extras/079f0d9dd7b1f9ce87c98ef49110e7a8.avif?t=1780990824",
+        "file":  "description_images/002_079f0d9dd7b1f9ce87c98ef49110e7a8.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:20:50.049Z"
+    },
+    {
+        "role":  "description-image",
+        "title":  "Description image 3",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3768760/extras/1911e1e0cf32017dc5ed0f3c4e4ba0f7.avif?t=1780990824",
+        "file":  "description_images/003_1911e1e0cf32017dc5ed0f3c4e4ba0f7.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:20:50.050Z"
+    },
+    {
+        "role":  "description-image",
+        "title":  "Description image 4",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3768760/extras/d5ea872ba5a578d39c68d2bf3596ef45.avif?t=1780990824",
+        "file":  "description_images/004_d5ea872ba5a578d39c68d2bf3596ef45.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:20:50.050Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 1",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3768760/ef374e5e4ede8c71f32d455652bc00f2fa7c035e/ss_ef374e5e4ede8c71f32d455652bc00f2fa7c035e.1920x1080.jpg?t=1780990824",
+        "file":  "screenshots/001_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:20:50.056Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 2",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3768760/18787f52adabf0e5248548ed83562e6aac88f94d/ss_18787f52adabf0e5248548ed83562e6aac88f94d.1920x1080.jpg?t=1780990824",
+        "file":  "screenshots/002_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:20:50.057Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 3",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3768760/828b106be4010c1b80170cad792aaa6f1417a101/ss_828b106be4010c1b80170cad792aaa6f1417a101.1920x1080.jpg?t=1780990824",
+        "file":  "screenshots/003_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:20:50.058Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 4",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3768760/c5e19e3879ed6da308e952d1e8d7bdc4cd835b4c/ss_c5e19e3879ed6da308e952d1e8d7bdc4cd835b4c.1920x1080.jpg?t=1780990824",
+        "file":  "screenshots/004_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:20:50.058Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 5",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3768760/6ad4e419c1eb043e3a12b9cc37166cdf204725c1/ss_6ad4e419c1eb043e3a12b9cc37166cdf204725c1.1920x1080.jpg?t=1780990824",
+        "file":  "screenshots/005_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:20:50.058Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 6",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3768760/2e3f04c42cca344dd3ca0be30c5078719bce23ed/ss_2e3f04c42cca344dd3ca0be30c5078719bce23ed.1920x1080.jpg?t=1780990824",
+        "file":  "screenshots/006_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:20:50.059Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 7",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3768760/d076a739da6136dc4da2c48750eb6f780d4f826d/ss_d076a739da6136dc4da2c48750eb6f780d4f826d.1920x1080.jpg?t=1780990824",
+        "file":  "screenshots/007_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:20:50.059Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 8",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3768760/4c81e0e09db3feb0ccf680418a1b766989c8173a/ss_4c81e0e09db3feb0ccf680418a1b766989c8173a.1920x1080.jpg?t=1780990824",
+        "file":  "screenshots/008_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:20:50.059Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 9",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3768760/7683959b09f7863c5eb23bfdbcf039269765b5d6/ss_7683959b09f7863c5eb23bfdbcf039269765b5d6.1920x1080.jpg?t=1780990824",
+        "file":  "screenshots/009_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:20:50.060Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 10",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3768760/ad4dfe02d7c437ba916114d8b1626dec348a6ca1/ss_ad4dfe02d7c437ba916114d8b1626dec348a6ca1.1920x1080.jpg?t=1780990824",
+        "file":  "screenshots/010_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:20:50.060Z"
+    },
+    {
+        "role":  "video",
+        "title":  "007 First Light  - Accolades Trailer",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/3768760/679739145/ecf18b9039446ffeb4f18a22f1ba7e4bcdb347e8/1780343027/hls_264_master.m3u8?t=1780344097",
+        "file":  "videos/001_007-first-light-accolades-trailer.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:20:50.074Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "007 First Light  - Accolades Trailer",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257347862/710709bed4d1b286d891918f9fe26f97cf1e82c5/movie_600x337.jpg?t=1780344097",
+        "file":  "video_thumbnails/001_007-first-light-accolades-trailer_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:20:50.074Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "007 First Light  - Accolades Trailer",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257347862/710709bed4d1b286d891918f9fe26f97cf1e82c5/movie_600x337.jpg?t=1780344097",
+        "file":  "video_thumbnails/001_007-first-light-accolades-trailer_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:20:50.074Z"
+    },
+    {
+        "role":  "video",
+        "title":  "007 First Light - Rules of Spycraft",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/3768760/2093780639/1a8c60fc90f2bca6ddeb726a68a8497f74707a9f/1779898449/hls_264_master.m3u8?t=1779900086",
+        "file":  "videos/002_007-first-light-rules-of-spycraft.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:20:50.074Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "007 First Light - Rules of Spycraft",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257344264/cb9910b6cf0384e08d504ceb95be268f57a0e3b0/movie_600x337.jpg?t=1779900086",
+        "file":  "video_thumbnails/002_007-first-light-rules-of-spycraft_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:20:50.074Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "007 First Light - Rules of Spycraft",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257344264/cb9910b6cf0384e08d504ceb95be268f57a0e3b0/movie_600x337.jpg?t=1779900086",
+        "file":  "video_thumbnails/002_007-first-light-rules-of-spycraft_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:20:50.074Z"
+    },
+    {
+        "role":  "video",
+        "title":  "Year 1 Roadmap",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/3768760/1534467305/5cba5dea46ed5f307223b33a7ae2eaabdf2372f6/1780694303/hls_264_master.m3u8?t=1780705645",
+        "file":  "videos/003_year-1-roadmap.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:20:50.075Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "Year 1 Roadmap",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257351684/6adfd9fce37d699e0b142d351c7d84df3df86677/movie_600x337.jpg?t=1780705645",
+        "file":  "video_thumbnails/003_year-1-roadmap_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:20:50.075Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "Year 1 Roadmap",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257351684/6adfd9fce37d699e0b142d351c7d84df3df86677/movie_600x337.jpg?t=1780705645",
+        "file":  "video_thumbnails/003_year-1-roadmap_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-16T06:20:50.075Z"
+    }
+]

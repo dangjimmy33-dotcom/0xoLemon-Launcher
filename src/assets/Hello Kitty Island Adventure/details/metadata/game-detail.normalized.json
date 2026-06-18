@@ -1,0 +1,662 @@
+﻿{
+    "appId":  2495100,
+    "title":  "Hello Kitty Island Adventure",
+    "steamMetadataCountry":  "us",
+    "steamMetadataLanguage":  "english",
+    "type":  "game",
+    "requiredAge":  0,
+    "isFree":  false,
+    "shortDescription":  "Embark on a cozy, open-world adventure with Hello Kitty and Friends. Befriend beloved characters as you explore and restore a mysterious island, solve ancient puzzles, cook delicious dishes, customize yourself and your cabins, and so much more.",
+    "detailedDescriptionHtml":  "\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"asset:description_images/001_8d86db7aaab7a8424102785b3042c98b.webp\" data-big-src=https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras_big/8d86db7aaab7a8424102785b3042c98b.avif?t=1776719582 width=800 height=310 /\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline crossorigin=\"anonymous\" poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/a7373c30c1f1ddccca5c8c53c0a86203.poster.avif?t=1776719582\" width=800 height=333 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/a7373c30c1f1ddccca5c8c53c0a86203.webm?t=1776719582\" type=\"video/webm; codecs=vp9\"\u003e\u003c/video\u003e\u003c/span\u003e \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e \u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eExplore a Massive World with 80+ Hours of Heartfelt Quests\u003c/strong\u003e\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003eDiscover eight unique regions, from the ocean\u0027s depths to an island in the clouds! Run, float, swim, and dive around the world to uncover hidden treasures and mysteries, all while listening to over 50 tracks of original music.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eEngage with stories both epic and cozy, from braving volcanoes filled with treacherous lava to throwing birthday parties for all your new friends, all while piecing together the ultimate secret behind Friendship Island. \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline crossorigin=\"anonymous\" poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/ae181245335da55334a8805744435a4d.poster.avif?t=1776719582\" width=800 height=333 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/ae181245335da55334a8805744435a4d.webm?t=1776719582\" type=\"video/webm; codecs=vp9\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eBefriend Iconic Characters and Create Their Perfect Gifts\u003c/strong\u003e\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003eWhether it’s cheerful Hello Kitty, mischievous Kuromi, or sweet Cinnamoroll, there are over 40 iconic Hello Kitty and Friends characters to meet, befriend, and adventure alongside. How do you improve friendship? Cooking and crafting galore! Create beautiful recipes at cooking stations or craft the items you find into the perfect gifts for all your new friends! \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eEach character has a unique role on the island and their own likes, activities, and interests. Once you’ve bolstered your friendship, invite your favorite characters to adventure alongside you and gain their special power-ups and abilities!\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eRenovate cabins and decorate them to attract new visitors to the island, like Hello Kitty’s twin sister Mimmy. These new visitors can unlock special quests and even entire new storylines!\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline crossorigin=\"anonymous\" poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/f9f7a99142340a737ac99bc59235f6ae.poster.avif?t=1776719582\" width=800 height=333 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/f9f7a99142340a737ac99bc59235f6ae.webm?t=1776719582\" type=\"video/webm; codecs=vp9\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eBe Who You Like and Live In Style\u003c/strong\u003e\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003eCreate your perfect avatar. Choose from six species with different face options, inclusive body types, and unique colors and patterns—all based on the Hello Kitty \u0026amp; Friends world. Collect, discover, and customize hundreds of clothing options to find your favorite look!\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eBuy and tailor furniture to create your dream home aesthetic, with over 30 furniture sets to mix and match and countless ways to change color, pattern, and style.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline crossorigin=\"anonymous\" poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/04a36e65bde43c1cdf3d9eab81e3cd7b.poster.avif?t=1776719582\" width=800 height=332 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/04a36e65bde43c1cdf3d9eab81e3cd7b.webm?t=1776719582\" type=\"video/webm; codecs=vp9\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eDiscover a Dynamic, Living World Teeming with Events\u003c/strong\u003e\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003eThere’s always something new to do on the Island with year-round events. Whether you’re celebrating the joys of summertime, ringing in a holiday, or throwing a party for a character’s special birthday, there are always new festivals (and rewards!) around the corner.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eKeep your eye on the weather, too! Weather events like Starfall, Rainstorms, and Steamy days will encourage new critters to appear, chests to spawn, rewards to collect, and other surprises.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline crossorigin=\"anonymous\" poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/e52ee63f5c360e6caf09abcf321a930a.poster.avif?t=1776719582\" width=800 height=333 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/e52ee63f5c360e6caf09abcf321a930a.webm?t=1776719582\" type=\"video/webm; codecs=vp9\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eEnjoy Hidden Puzzles, Relaxing Gardening, and Adorable Critter Collecting\u003c/strong\u003e\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003eHidden puzzle ruins are scattered all over the island—test your skills to unlock bonus rewards and solve the island’s mysteries.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eWatch your island spring to life with flowers of all shapes and sizes! Cultivate your gardens to breed rare and exotic varieties, colors, and patterns to impress your friends (and because gardening is fun).\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eThe island is teeming with life—kick back and fish in the clear waters or hunt for rare critters with your net. Donate them to the Nature Preserve to give them a safe place to live and grow your collection.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline crossorigin=\"anonymous\" poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/d2950b0ba0bfb9aaab3a82531de38c5e.poster.avif?t=1776719582\" width=800 height=333 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/d2950b0ba0bfb9aaab3a82531de38c5e.webm?t=1776719582\" type=\"video/webm; codecs=vp9\"\u003e\u003c/video\u003e\u003c/span\u003e \u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003ePlay Together—It’s Even Better!\u003c/strong\u003e\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003eDive into a multiplayer game with real-world friends. Team up to explore, get bonuses, and solve challenges together. Complete social quests to level up your friendship, unlock unique emotes, and gain special bonuses like trading rare items and clothing. \u003c/p\u003e",
+    "aboutTheGameHtml":  "\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"asset:description_images/001_8d86db7aaab7a8424102785b3042c98b.webp\" data-big-src=https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras_big/8d86db7aaab7a8424102785b3042c98b.avif?t=1776719582 width=800 height=310 /\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline crossorigin=\"anonymous\" poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/a7373c30c1f1ddccca5c8c53c0a86203.poster.avif?t=1776719582\" width=800 height=333 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/a7373c30c1f1ddccca5c8c53c0a86203.webm?t=1776719582\" type=\"video/webm; codecs=vp9\"\u003e\u003c/video\u003e\u003c/span\u003e \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e \u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eExplore a Massive World with 80+ Hours of Heartfelt Quests\u003c/strong\u003e\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003eDiscover eight unique regions, from the ocean\u0027s depths to an island in the clouds! Run, float, swim, and dive around the world to uncover hidden treasures and mysteries, all while listening to over 50 tracks of original music.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eEngage with stories both epic and cozy, from braving volcanoes filled with treacherous lava to throwing birthday parties for all your new friends, all while piecing together the ultimate secret behind Friendship Island. \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline crossorigin=\"anonymous\" poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/ae181245335da55334a8805744435a4d.poster.avif?t=1776719582\" width=800 height=333 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/ae181245335da55334a8805744435a4d.webm?t=1776719582\" type=\"video/webm; codecs=vp9\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eBefriend Iconic Characters and Create Their Perfect Gifts\u003c/strong\u003e\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003eWhether it’s cheerful Hello Kitty, mischievous Kuromi, or sweet Cinnamoroll, there are over 40 iconic Hello Kitty and Friends characters to meet, befriend, and adventure alongside. How do you improve friendship? Cooking and crafting galore! Create beautiful recipes at cooking stations or craft the items you find into the perfect gifts for all your new friends! \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eEach character has a unique role on the island and their own likes, activities, and interests. Once you’ve bolstered your friendship, invite your favorite characters to adventure alongside you and gain their special power-ups and abilities!\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eRenovate cabins and decorate them to attract new visitors to the island, like Hello Kitty’s twin sister Mimmy. These new visitors can unlock special quests and even entire new storylines!\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline crossorigin=\"anonymous\" poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/f9f7a99142340a737ac99bc59235f6ae.poster.avif?t=1776719582\" width=800 height=333 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/f9f7a99142340a737ac99bc59235f6ae.webm?t=1776719582\" type=\"video/webm; codecs=vp9\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eBe Who You Like and Live In Style\u003c/strong\u003e\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003eCreate your perfect avatar. Choose from six species with different face options, inclusive body types, and unique colors and patterns—all based on the Hello Kitty \u0026amp; Friends world. Collect, discover, and customize hundreds of clothing options to find your favorite look!\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eBuy and tailor furniture to create your dream home aesthetic, with over 30 furniture sets to mix and match and countless ways to change color, pattern, and style.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline crossorigin=\"anonymous\" poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/04a36e65bde43c1cdf3d9eab81e3cd7b.poster.avif?t=1776719582\" width=800 height=332 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/04a36e65bde43c1cdf3d9eab81e3cd7b.webm?t=1776719582\" type=\"video/webm; codecs=vp9\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eDiscover a Dynamic, Living World Teeming with Events\u003c/strong\u003e\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003eThere’s always something new to do on the Island with year-round events. Whether you’re celebrating the joys of summertime, ringing in a holiday, or throwing a party for a character’s special birthday, there are always new festivals (and rewards!) around the corner.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eKeep your eye on the weather, too! Weather events like Starfall, Rainstorms, and Steamy days will encourage new critters to appear, chests to spawn, rewards to collect, and other surprises.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline crossorigin=\"anonymous\" poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/e52ee63f5c360e6caf09abcf321a930a.poster.avif?t=1776719582\" width=800 height=333 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/e52ee63f5c360e6caf09abcf321a930a.webm?t=1776719582\" type=\"video/webm; codecs=vp9\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eEnjoy Hidden Puzzles, Relaxing Gardening, and Adorable Critter Collecting\u003c/strong\u003e\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003eHidden puzzle ruins are scattered all over the island—test your skills to unlock bonus rewards and solve the island’s mysteries.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eWatch your island spring to life with flowers of all shapes and sizes! Cultivate your gardens to breed rare and exotic varieties, colors, and patterns to impress your friends (and because gardening is fun).\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eThe island is teeming with life—kick back and fish in the clear waters or hunt for rare critters with your net. Donate them to the Nature Preserve to give them a safe place to live and grow your collection.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline crossorigin=\"anonymous\" poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/d2950b0ba0bfb9aaab3a82531de38c5e.poster.avif?t=1776719582\" width=800 height=333 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/d2950b0ba0bfb9aaab3a82531de38c5e.webm?t=1776719582\" type=\"video/webm; codecs=vp9\"\u003e\u003c/video\u003e\u003c/span\u003e \u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003ePlay Together—It’s Even Better!\u003c/strong\u003e\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003eDive into a multiplayer game with real-world friends. Team up to explore, get bonuses, and solve challenges together. Complete social quests to level up your friendship, unlock unique emotes, and gain special bonuses like trading rare items and clothing. \u003c/p\u003e",
+    "supportedLanguagesHtml":  "English, French, Italian, German, Spanish - Spain, Arabic, Dutch, Japanese, Korean, Portuguese - Brazil, Russian, Simplified Chinese, Traditional Chinese, Turkish",
+    "pcRequirements":  {
+                           "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003eRequires a 64-bit processor and operating system\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows 10\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e Intel Core i5-4360U or equivalent\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 6 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e NVIDIA GeForce 650, 1GB AMD Radeon HD 7750, 1 GB\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eDirectX:\u003c/strong\u003e Version 11\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 5 GB available space\u003c/li\u003e\u003c/ul\u003e",
+                           "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003eRequires a 64-bit processor and operating system\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows 10\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e Intel Core i5-4690 or AMD Ryzen 3 1300X\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 6 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e NVIDIA GeForce GTX 960, 4 GB or AMD Radeon R9 380, 4 GB\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eDirectX:\u003c/strong\u003e Version 11\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 5 GB available space\u003c/li\u003e\u003c/ul\u003e"
+                       },
+    "macRequirements":  {
+                            "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e",
+                            "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e"
+                        },
+    "linuxRequirements":  {
+                              "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e",
+                              "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e"
+                          },
+    "dlc":  [
+                4055140,
+                3890520
+            ],
+    "website":  "https://www.hellokittyislandadventure.com/",
+    "developers":  "Sunblink",
+    "publishers":  "Sunblink",
+    "releaseDate":  {
+                        "coming_soon":  false,
+                        "date":  "Jan 30, 2025"
+                    },
+    "genres":  "Action, Adventure, Casual, Indie, RPG, Simulation",
+    "categories":  [
+                       "Single-player",
+                       "Multi-player",
+                       "Co-op",
+                       "Online Co-op",
+                       "Steam Achievements",
+                       "Full controller support",
+                       "Steam Cloud",
+                       "Family Sharing"
+                   ],
+    "platforms":  {
+                      "windows":  true,
+                      "mac":  false,
+                      "linux":  false
+                  },
+    "metacritic":  null,
+    "recommendations":  {
+                            "total":  9113
+                        },
+    "reviewsSummary":  null,
+    "newsItems":  [
+                      {
+                          "gid":  "1835236783561464",
+                          "title":  "CU7 is Available Right Now!",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1835236783561464",
+                          "is_external_url":  true,
+                          "author":  "Swims",
+                          "contents":  "[h3][b]That’s right! CU7 is out now! [/b][/h3][p]\nWhat’s inside??? [/p][p] [/p][p][b]Greenhouse Upgrade[/b][/p][p]Is your greenhouse ready for a super-bloom? Collaborate with Lutz to upgrade your greenhouse and welcome all the flowers to the Merry Meadows.[/p][p][/p][p][b]Greenhouse Cabin Furniture[/b][/p][p]Florals never go out of style! Now you can style your cabins in a whole new way… gather your flowers and let’s see what your green thumb can create! [/p][p][img src=\"{STEAM_CLAN_IMAGE}/45303325/e856967e47ef65331262ea6350c1a783e5f2a8ef.png\"][/img][/p][p][b]Rainbow Reef Revival[/b][/p][p]It’s a Rainbow Refresh! Now when you clean up the reef, coral will grow like never before; and who will live in these new cabins?[/p][p] [/p][p][b]New Visitors[/b][/p][p]Some new watery wanderers are on their way to Friendship Island. Clear out some Rainbow Reef cabins to welcome them in![/p][p][/p][p][b]Undersea Secrets[/b][/p][p]Hangyodon and his friends feel like something is a little fishy in the Rainbow Reef. Follow the clues to find a new sort of treasure beneath the waves![/p][p] [/p][p]We can’t wait for you to dive in and see all the amazing new features on Friendship Island! Happy Adventuring [/p][p][img src=\"{STEAM_CLAN_IMAGE}/45303325/428db529b374e53147bb4bbebd77bde6c32e2fef.png\"][/img][/p][p][/p][h3][b]Also, here are some of the issues we fixed for CU7:[/b][/h3][p][b]Characters[/b][/p][p]- Usahana will give full XP, regardless of what level she is. The following changes will be made to Usahana\u0027s friendship level for players:[/p][p]  - If level was 25 or greater, set to max (35)[/p][p]  - If level was 24 --\u003e 33[/p][p]  - If level was 23 --\u003e 29[/p][p]  - If level was 22 --\u003e 25[/p][p]  - If level was 21 --\u003e 23[/p][p][/p][p][b]Quests[/b][/p][p]- Players who completed TOPHAT\u0027s birthday celebration but do not have his balloon recipe will be given the crafting plans upon logging in.[/p][p]- Players who completed \"Power Up the Gate\" but did not receive the Yellow Power Crystal Decoration will be given the crafting plans upon logging in.[/p][p]- Fixed an issue where Cogimyun could appear in both forms during “Saving Snacks.”[/p][p]- Players should no longer be softlocked on \"Balloons and Bluffs\" due to balloon placements.[/p][p][/p][p][b]Furniture and Clothing[/b][/p][p]- The lobby flooring in Cloud Island, Icy Peak, and Merry Meadows have been adjusted and fixed to have their original coloring.[/p][p]- 2026 event clothing for Hugs \u0026 Hearts, Colorblaze Carnival, Lighttime Jubilee, and Month of Meh should now count towards Poron\u0027s requirements.[/p][p]- Fixed clipping and placement issues for hats, cabin doorways, and event balloons.[/p][p][/p][p][b]Characters and Visitors[/b][/p][p]- Players should be able to interact with items and characters after Rockadoodler Roundup while using Cogimyun as a companion.[/p][p]- Nina will no longer be stuck wearing her visitor outfit if asked to change.[/p][p][/p][p][b]Collections and Items[/b][/p][p]- Various collection issues have been fixed, including arcade music discs appearing in the wrong collection, unavailable City Town furniture collection items, and final figurine rewards becoming unobtainable in some cases.[/p][p]- Fixed duplicate flooring and wallpaper tags in filters, and restored the missing City Town tag for the Violet and Black Loose City Shirt.[/p][p]- Fixed achievement and count tracking issues, including Wheatflour Wonderland achievements and the collect count in Sashimi Spire.[/p][p]- Added separate Creation Station and Chef\u0027s Station tabs in the inventory.[/p][p]- Added more sorting options across screens.[/p][p]- Added a dedicated filter icon for items made at the Creation Station.[/p][p][/p][p][b]Misc[/b][/p][p]- Fixed the Ice Breaker achievement to show the correct 2D icon.[/p][p]- Added Add All and +10 / -10 controls when donating or recycling multiple items.[/p][p]- Various translation and text fixes.[/p][p]\n© 2026 Sunblink.[/p][p align=\"start\"]© 2026 SANRIO CO., LTD.   Used Under License.[/p]",
+                          "feedlabel":  "Community Announcements",
+                          "date":  1781202958,
+                          "feedname":  "steam_community_announcements",
+                          "feed_type":  1,
+                          "appid":  2495100,
+                          "tags":  [
+                                       "patchnotes"
+                                   ]
+                      },
+                      {
+                          "gid":  "1835236783561238",
+                          "title":  "Paper Parade Returns!",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1835236783561238",
+                          "is_external_url":  true,
+                          "author":  "Swims",
+                          "contents":  "[p][img src=\"{STEAM_CLAN_IMAGE}/45303325/4c407f38d8bd2f670b61a46eb91adad1067101bf.png\"][/img]Starting June 11, Tuxedosam is rolling out the construction paper and inviting you to help build the parade float of his dreams… one fold, snip, and sparkle at a time. \n\nPaper Parade is back, and it’s bigger, brighter, and more fashionable than ever.[/p][p][/p][p]Collect Papercrafts from Hello Kitty and Friends, and bring them to the Event Stand in the Resort Plaza. [/p][p][/p][p]Every character has their own favorite thing to create, so the more friends you visit, the more colorful the parade becomes.[/p][p][/p][p]Trade your Papercrafts for vibrant new outfits, paper-inspired cabin decor, and limited-time rewards you’ll only see during Paper Parade.[/p][p][/p][p]So grab your scissors, your glitter glue, and your favorite friends, because Tuxedosam’s float won’t build itself! We can’t wait to see what you create.[/p][p][img src=\"{STEAM_CLAN_IMAGE}/45303325/76f7fc93fabd08efdcf8604b5c8269779067875b.png\"][/img][img src=\"{STEAM_CLAN_IMAGE}/45303325/5147958ebd18345466e5c2875dd1acdbb3d5900f.png\"][/img][img src=\"{STEAM_CLAN_IMAGE}/45303325/f57b27d9af4373fbe48b96e451c0e4bae07e9bfd.png\"][/img][img src=\"{STEAM_CLAN_IMAGE}/45303325/189e9aebce4695ac285264fca70f9b754d961bd0.png\"][/img]© 2026 Sunblink.[/p][p]© 2026 SANRIO CO., LTD.     Used Under License.[/p]",
+                          "feedlabel":  "Community Announcements",
+                          "date":  1781197227,
+                          "feedname":  "steam_community_announcements",
+                          "feed_type":  1,
+                          "appid":  2495100
+                      },
+                      {
+                          "gid":  "1832700592787031",
+                          "title":  "Under the Sea Celebration is Now Live!",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1832700592787031",
+                          "is_external_url":  true,
+                          "author":  "Swims",
+                          "contents":  "[p][img src=\"{STEAM_CLAN_IMAGE}/45303325/70333dbc628f9515fa38dee800a1515779cc4355.png\"][/img]Ahoy, there’s treasure in the waters! [/p][p][/p][p] Badtz-maru will trade rewards for Barnacles—collect them through fishing for new treasures. And, Tuxedosam gets a fresh wave of inspiration for new mermaid outfits.\n[/p][p]Get ready to swim into Under the Sea Celebration![/p][p][img src=\"{STEAM_CLAN_IMAGE}/45303325/9935e62ea23140801b2cd2823b75ee95f65182c8.png\"][/img][img src=\"{STEAM_CLAN_IMAGE}/45303325/440f3fa15f124c981f7db4456dd9643edc53e5d1.png\"][/img][img src=\"{STEAM_CLAN_IMAGE}/45303325/b66b0d64a7f470f58d553f2c07eebc31a82ca6c6.png\"][/img][/p][p]© 2026 Sunblink.[/p][p]© 2026 SANRIO CO., LTD.     Used Under License.[/p]",
+                          "feedlabel":  "Community Announcements",
+                          "date":  1778691640,
+                          "feedname":  "steam_community_announcements",
+                          "feed_type":  1,
+                          "appid":  2495100
+                      },
+                      {
+                          "gid":  "1831432155568522",
+                          "title":  "Month of Meh is Here!",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1831432155568522",
+                          "is_external_url":  true,
+                          "author":  "Swims",
+                          "contents":  "[p][img src=\"{STEAM_CLAN_IMAGE}/45303325/2aba2e77e512dabfc1c442014803a6bd9bf5627f.png\"][/img]Get your new outfits ready for Gudetamacon[/p][p][/p][p]Welcome to the first-ever Gudetamacon! It’s an egg-stravaganza celebrating the island’s favorite lazy egg, and the whole Sanrio crew has their outfits ready. What will your con fit be?\n[/p][p]The Island is going all-out with a costume contest dedicated to everyone’s favorite lazy egg, with all-new fashions. Hop in before the fun ends on May 31st![img src=\"{STEAM_CLAN_IMAGE}/45303325/2ca147f9fa41d48013c9a1f923f91e4257c9b4a2.png\"][/img][img src=\"{STEAM_CLAN_IMAGE}/45303325/a07038d6ddd51b10515c89a5a854b51a64e2f67d.png\"][/img][img src=\"{STEAM_CLAN_IMAGE}/45303325/a1093fcfae53035dfc3c6869f569ff3cfebae297.png\"][/img]\n© 2026 Sunblink.[/p][p]© 2026 SANRIO CO., LTD.     Used Under License.[/p]",
+                          "feedlabel":  "Community Announcements",
+                          "date":  1777561248,
+                          "feedname":  "steam_community_announcements",
+                          "feed_type":  1,
+                          "appid":  2495100
+                      },
+                      {
+                          "gid":  "1830163047257573",
+                          "title":  "City Town is Available Now!",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1830163047257573",
+                          "is_external_url":  true,
+                          "author":  "Swims",
+                          "contents":  "[h1]City Town DLC is Available NOW![/h1][p][img src=\"{STEAM_CLAN_IMAGE}/45303325/060fa5dab90b835ea1c931faafe179e0ef31a02c.png\"][/img][/p][p][/p][h3][b]Bright lights. Big dreams. Bigger adventures. Welcome to City Town!\n[/b][/h3][h2]Join the DLC Fun Here: [/h2][h2][dynamiclink href=\"https://store.steampowered.com/app/4055140/Hello_Kitty_Island_Adventure__City_Town/\"][/dynamiclink][/h2][p]A rainbow metropolis awaits! Join Usahana in City Town and discover a world of creativity, friendship, and fun. Run your own customizable Imagination Cafe, set up all-new shops with Sanrio friends, and unlock the power of dreams to uncover the City’s hidden wonders.\n[/p][list][*][p][b]Welcome, Usahana![/b] Become best friends and unlock 35 friendship levels[/p][/*][*][p][b]Explore City Town[/b] with 90+ original quests and 30+ hours of adventure[/p][/*][*][p][b]Unlock New Outfits and Decor[/b], including over 150+ new clothing and furniture items[/p][/*][*][p][b]Run Your Own Cafe[/b] – customize your space and craft your own orders for Sanrio friends[/p][/*][*][p][b]Solve 60+ Puzzles and Challenges[/b] throughout (and beneath!) the City[/p][/*][*][p][b]Plushies, Orchards, Arcades, and more![/b] Help your Sanrio friends open seven new shops in City Town[/p][/*][*][p][b]Create Custom Avatar Palettes [/b]and switch between your favorite outfits for that perfect look[/p][/*][*][p][b]Unlock a Customizable Apartment Complex[/b] inside the Rainbow Tower[/p][/*][*][p][b]Meet Usahana’s Visitor Friends:[/b] Panya, Buppi, Wanwa, Sora, and Nyako[/p][/*][*][p][b]And… keep an eye out for a mysterious cameo guest [/b][/p][/*][/list][p][/p][h3]Join Usahana in City Town — the most colorful, creative, and dream-filled destination yet![img src=\"{STEAM_CLAN_IMAGE}/45303325/76a25ebb125539913c72d01caa8504ed1a175e5f.png\"][/img][/h3][p][img src=\"{STEAM_CLAN_IMAGE}/45303325/0c3970a12dba2d5274841a786afe85b3bc35f3c0.png\"][/img][/p][h3][img src=\"{STEAM_CLAN_IMAGE}/45303325/12ca124fc138a9f7241d54b0a27bad4cedba3795.png\"][/img][/h3]",
+                          "feedlabel":  "Community Announcements",
+                          "date":  1776348620,
+                          "feedname":  "steam_community_announcements",
+                          "feed_type":  1,
+                          "appid":  2495100
+                      }
+                  ],
+    "achievements":  {
+                         "total":  53,
+                         "items":  [
+                                       {
+                                           "apiName":  "ACH_HappyLanding",
+                                           "displayName":  "Happy Landing!",
+                                           "description":  "Another Happy Landing!",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/eba5e5f552c52e31fadd8aede013c9a8c7704f6c.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/54ed46e1e8937afe03fc19a36617e23a79181a63.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_DinosaursNotIncluded",
+                                           "displayName":  "Dinosaurs Not Included",
+                                           "description":  "Open the Resort Gate with Chococat",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/e985040dfb39ae094dad4e2cc3672dca2208a18f.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/1777697fc5a29deab7496f0d0ebc0b12f9e24fe9.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_BogChamp",
+                                           "displayName":  "Bog Champ",
+                                           "description":  "Restore the Spooky Swamp",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/4d50ed7a9259a64c3237dd96b27dcc9b29ac086c.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/a00676ce9ee673e229c3a2c0a729b994443309ed.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_MansionCleared",
+                                           "displayName":  "Definitely Haunted",
+                                           "description":  "Restore the Haunted Mansion",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/0d46fdcbbab7922296a9d531edf4163abc877e10.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/8c666db98e055ecab3b662ce98b98b4337f804a0.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_NaturePreserve",
+                                           "displayName":  "A New Home",
+                                           "description":  "Open the Nature Preserve",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/8851e0fadfbf5cb646f33f257e6cbd455d0323f4.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/fe7c2a18ec19eb0b5c83541d85e9387b0e0dcfe6.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_ReviveReef",
+                                           "displayName":  "Reef Revival",
+                                           "description":  "Fully restore Rainbow Reef",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/28c3441623eadf8892cf1230304a89cdd0e9dabb.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/8b6c852b6d1847a64416b50c28ce773518d122c3.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_Mermaidifier",
+                                           "displayName":  "Mermaids are Real",
+                                           "description":  "Activate the Mermaidifier",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/4005068ecfce3f961d4f88113ba5590b4894d158.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/01bdff9fd418a8f91414b9fe86720f62bb66ae27.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_BandRestored",
+                                           "displayName":  "Swing Partners",
+                                           "description":  "Reboot the Dance Hall band",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/dc8963df7fcab8a96ef9eba6cbc17fa09d6551ef.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/1f8ae5ef2929251ce9087dfa8ba7043256b3dc91.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_OasisRestored",
+                                           "displayName":  "Paradise in the Desert",
+                                           "description":  "Restore the Oasis",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/6b54947151fa1148b6e4d38629d34893711c57b0.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/d51b402abc7bb616df13aef9f352f74368c5a435.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_VolcanoFiredUp",
+                                           "displayName":  "Rage Mode",
+                                           "description":  "Ignited the Volcano with Retsuko\u0027s Rage",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/e0fcde04c2e7472025158abb1f70e4128f8d3e1e.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/b749af4b9430682110117caf2e1d6a24842e1fdd.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_FreeBC",
+                                           "displayName":  "Friendship Forever",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/4465cd7b5bdfd636445aaf63509d347665036ff4.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/9e5e4aad121ba69c93b15351673beb1d62b869ca.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_Haunted",
+                                           "displayName":  "Haunted",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/61cb5d3a1c64ca8c4a34dda86d46416526d5fb69.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/f8259ffd642e73e812cdade310a9633784a68ea7.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_NapTime",
+                                           "displayName":  "Nap Time",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/02ce12bfce9f2a351d97ba7b1ec8ee5cbda5e523.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/83871db5834e046dff6fce875815bf377cf54c82.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_StickNation",
+                                           "displayName":  "Stick Nation",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/83ac35adae9ed1401d6b88cc5432c0b85588a85f.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/3eef4228bff703399b7e627fa3e696eb86d6eb8d.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_HappyHattery",
+                                           "displayName":  "Happy Hattery",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/bffbeccb74435b08b8c2b03f79e29462aebecb94.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/ec8f96a367d382fd81dc19f9407163f02534497a.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_HelloBestie",
+                                           "displayName":  "Hello Bestie!",
+                                           "description":  "Become Best Friends with Hello Kitty",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/17accbfbd01461979909cc04615692717e2621ce.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/53910ead62944e9e00486bbbfd4a0a971fc7dc25.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_EveryonesBestie",
+                                           "displayName":  "Everyone\u0027s Bestie",
+                                           "description":  "Become Best Friends with 15 Characters",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/a660300ba42f21ace2699603a98e3004e6729b34.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/791877b3cd443cea133ada16550238a305d840d1.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_BakingBliss",
+                                           "displayName":  "Baking Bliss",
+                                           "description":  "Unlock 20 recipes at the Oven",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/88cfd6425bcf04f94ad63c5e0a721d27ae110766.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/38e5ec78f532d4906fdedff3c482f6c77cf71238.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_PizzaPerfection",
+                                           "displayName":  "Pizza Perfection",
+                                           "description":  "Unlock 11 recipes at the Pizza Oven",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/a7a2b769822fde98f5c90afb10ad4c150757b7e4.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/51d5f746aaf13f0461b0c02f1fd962fcea7c4100.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_SodaSatisfaction",
+                                           "displayName":  "Soda Satisfaction",
+                                           "description":  "Unlock 14 recipes at the Soda Fountain",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/f6e1c2937403ab1f4fc796d205c6618b16919ad0.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/e0f2404cad7062db8af0bf4691e585935e5d0378.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_DeliciousDesserts",
+                                           "displayName":  "Delicious Desserts",
+                                           "description":  "Unlock 16 recipes at the Dessert Boat",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/aaceccf6c870d93d05fe71d25fd86b9e9107079b.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/74937b0945c9ae872b852390f495f26c3f16c996.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_ExcellentEspresso",
+                                           "displayName":  "Excellent Espresso",
+                                           "description":  "Unlock 13 recipes at the Espresso Machine",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/e9d0855148f3fef2356d1ec9a8240ac4b36adfa8.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/12565555f091db523168bc8d42d37054a5df3141.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_CandyConnoisseur",
+                                           "displayName":  "Candy Connoisseur",
+                                           "description":  "Unlock 10 recipes at the Candy Cloud Station",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/eab885ff70cf2eedfd0beccb36567d0cbf1c64b6.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/bc4bb7c3341665259b068ed5c357f6013b8bc576.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_EggcellentChef",
+                                           "displayName":  "Egg-cellent Chef",
+                                           "description":  "Unlock 14 recipes at the Egg Pan Station",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/849013493b40dd3f722f3b8c0d2f871a2579e611.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/f378cb8d0cf8816e02f2856bd895f8674c3c2363.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_ForTheLoveOfBaking",
+                                           "displayName":  "For the Love of Baking",
+                                           "description":  "Cook 100 recipes",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/a914f14bc4ea257844988bee7be680d7bb02faca.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/6d179f5b6b31127a53b6d090e943a965b5ceac42.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_SuperbGiftGiver",
+                                           "displayName":  "Superb Gift Giver",
+                                           "description":  "Give 50 3-star gifts",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/90d41938911d9d5b15f319243280fb9a119785e7.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/cc8ea90973d9484f16b897a1acd19fb5021d1c28.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_MasterOfTheRuins",
+                                           "displayName":  "Master of the Ruins",
+                                           "description":  "Complete 20 puzzle rooms",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/292fd44e20d2049e820e95074f5967217b5494b8.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/aa64cc8e3d19086cf8f11743377da415fe75721e.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_TrueGamer",
+                                           "displayName":  "True Gamer",
+                                           "description":  "Play All the Mini Games Around Friendship Island",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/6374e69c1c8a154accc29b077d7f85c33dfd854f.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/e4393e6a92c4d11e4294e4be2637a5b0ab95f263.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_EveryoneIsWelcome",
+                                           "displayName":  "Everyone is Welcome",
+                                           "description":  "Have 20 Visitors at 5 Stars",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/6f4f457897d7ce0f12ff616d60c512b12d8e29eb.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/cff964c7431b29b399e0cc3d5d6c464f0a3bf0b1.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_TimeForMilk",
+                                           "displayName":  "Time for Milk",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/bcd7f96d481204cc86bccfb6f20757f2d576e776.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/36dab9e64759234f6b7a2628c3647d864e4f7eea.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_TravelingParty",
+                                           "displayName":  "Traveling Party",
+                                           "description":  "Companion with one of your friends",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/e0a33df0790fbec041bc4f7b995c307a294e389f.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/5a2ef0742cd91b4be551706c207a002f0acac35a.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_ThroughThickAndThin",
+                                           "displayName":  "Through Thick and Thin",
+                                           "description":  "Have a character follow you to the lowest trench and the tallest peak",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/33df5509c1258e63a2ecefe8c194c25c3a9a78f9.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/014c327030d2a00d46aa98b818170fc091ff74fa.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_BakersDozen",
+                                           "displayName":  "A Bakers Dozen!",
+                                           "description":  "Take Photos of 13 gudetama",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/9e1f58314ec8fc73833415308fb8efceff281820.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/b76c494f7a324db7d157648edf07b6a19cbbd1ba.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_DozensSurely",
+                                           "displayName":  "Dozens Surely!",
+                                           "description":  "Take Photos of 120 gudetama",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/1d93cbf00de5d16dc0e3cbac117a3d399b69f9d2.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/558d39ec0c1b55fa8238574587fc5dc6d611afe2.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_OpenForVisits",
+                                           "displayName":  "Open for Visits",
+                                           "description":  "Unlock a Visitor Cabin",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/c58e27f1dddaa2bfb1f29bc2b75808d748df3773.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/1de77164a8ea7ff3fcec0efaf6542225ebead6ee.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_VacationHotSpot",
+                                           "displayName":  "Cabin Crazy",
+                                           "description":  "Repair twenty five visitor cabins",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/b91bae38a47abae61069ed8675cde9d50d799c60.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/68ea9ef157abffb11db9fc60d4f299994dc6bcf4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_TropicalChallenge",
+                                           "displayName":  "Tropical Challenge",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/4fd8450a439bc2db6edb543be4b5bdf28843a750.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/b67bfea4ef14e1c32e320e8c99a8b4caa9dc7349.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_SwampyChallenge",
+                                           "displayName":  "Swampy Challenge",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/0a9cc00408bf1d24214b1e34147ef0a19c4cb8e7.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/0ac48095df440494ac18d5e18f6dbf804b4dc883.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_RockyChallenge",
+                                           "displayName":  "Rocky Challenge",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/9ad36fea4a43a5943b4d7bce047d34ef78a2b716.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/11248919fb2b524629c176548da877f43abda868.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_VolcanicChallenge",
+                                           "displayName":  "Volcanic Challenge",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/707cc0de11802a3bff7f0dc44a9f3681d157aee5.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/745b200be9c1534fca893bae874bdf1856be2f71.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_AquaticChallenge",
+                                           "displayName":  "Aquatic Challenge",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/8642b047b00e8e47c4f090c07ec35198725cf84c.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/e613163de8faff7615180c0b890eacc891de72aa.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_FloatingChallenge",
+                                           "displayName":  "Floating Challenge",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/7ed10b25d8e7773c6839362d8f12dcfdbb08b087.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/7cb8b087159e9f684e380abba30867aaa7d59a68.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_FloralChallenge",
+                                           "displayName":  "Floral Challenge",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/4e9885502d32ab5a56f68ffaa58d09cb7ed042b9.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/d2de4ee7fa1899d839e14db2d494083e03aa7c78.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_RareFlower",
+                                           "displayName":  "Floral Pattern",
+                                           "description":  "Obtain a patterned flower",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/2a61947d4a583475d1046fe3f40e47a1b22e688a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/8fdfac3c4fa0eb1c8d51075013cf78f18d6149b6.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_FlowerCollector",
+                                           "displayName":  "Flower Collector",
+                                           "description":  "Obtain 10 unique Flower Types",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/e87fcfb75364890afdd4e3348c2a3fb2191c27fd.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/bb8de631c077204fd8f4ace643ad05bd4700475f.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_AdornedInFlowers",
+                                           "displayName":  "Adorned in Flowers",
+                                           "description":  "Create a Flower Crown",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/4a805bfa2b06330ba80622b77d03b610c83692a6.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/070a2992346c694beb2128e225a05e34c9e68741.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_BehindTheWaterfall",
+                                           "displayName":  "Behind the Waterfall",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/7b9fd7201aef93d1893ca485bc4915285e2542ea.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/04ac3a1e5890adbf5b3cf9d2dd52f05ca97f906d.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_RegionalExplorer",
+                                           "displayName":  "Regional Explorer",
+                                           "description":  "Reach every Region on Friendship Island",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/79beae2ec71a6614c5bc3be084fc72630654cd24.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/42f169c9809d7b15d43c8b043db5485e03123a24.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_MasterAngler",
+                                           "displayName":  "Master Angler",
+                                           "description":  "Catch 100 Fish",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/8f872711da1a99bb805f7e0a5bfc442886a3a143.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/248ebc83b63ca9f61b3d5e22aca82e602a052023.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_CritterMaster",
+                                           "displayName":  "Critter Master",
+                                           "description":  "Catch 100 Critters",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/bb0b370f9c0ab0c67f195d73ac06e2d733077626.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/8af6e054bda436b9505f496de1e9cf676de5b432.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_NewHeights",
+                                           "displayName":  "New Heights",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/80336184f94e4345b3ed03eebb4c77282f59a5b3.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/ca96756c794a819f49e350fcf3e7c572a40efc5e.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_FriendshipRestored",
+                                           "displayName":  "Friendships Restored",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/5f78751db12b2f67f50ba8855b28e063ded94628.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/f44c5fd9be21059a87cecbd1ea38ae7fb1c39e1d.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH_EnragingRuins",
+                                           "displayName":  "Ruining Rampage",
+                                           "description":  "Explore the Red Hot Ruins",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/21aa27b8679b537d6a20981e1fb8bae8b1f0618d.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/39778c574ba96d187778e0d9ed095ddc778ee1ab.jpg"
+                                       }
+                                   ]
+                     }
+}

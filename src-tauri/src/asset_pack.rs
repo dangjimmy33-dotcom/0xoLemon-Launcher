@@ -1,4 +1,7 @@
-use base64::{engine::general_purpose::STANDARD, Engine};
+use base64::{
+    engine::general_purpose::{STANDARD, URL_SAFE_NO_PAD},
+    Engine,
+};
 use chrono::Utc;
 use reqwest::blocking::Client;
 use serde_json::Value;
@@ -18,7 +21,9 @@ mod model;
 #[derive(Default)]
 pub struct AssetPackCache(Mutex<HashMap<String, Arc<LoadedPack>>>);
 
+use crate::launch::{load_source_launch_config, GameLaunchConfig};
 use crate::manifest::{Catalog, VersionManifest};
+use crate::remote_paths::{depot_repo_base_urls, encode_hf_relative_path, hf_dir_name_for_game_id};
 use generic_source::build_generic_manifest_and_assets;
 use keys::{derive_asset_pack_key, with_steam_api_key, with_steamgriddb_key};
 pub use model::{
@@ -46,14 +51,12 @@ const GAME_PACK_PARTS: [&str; 4] = [
     GAME_AUDIO_PART,
 ];
 const ZSTD_MAX_COMPRESSION_LEVEL: i32 = 22;
-const DEFAULT_ASSET_SOURCE: &str = r"E:\007Launcher\src\assets\007 first light";
-const DEFAULT_PACK_OUTPUT: &str = r"E:\007Launcher\src-tauri\assets\catalog.0xo";
+const DEFAULT_ASSET_SOURCE: &str = r"E:\007Launcher\src\assets";
+const DEFAULT_PACK_OUTPUT: &str = r"E:\007Launcher\src-tauri\assets";
 const DEFAULT_DEPOT_ROOT: &str = r"E:\007Launcher\depot\007-first-light";
 const DEFAULT_STORE_ROOT: &str = r"E:\0xoLemon store";
 const DEFAULT_COMMON_GAME: &str = r"E:\0xoLemon store\common\007 First Light";
 const DEFAULT_DOWNLOADING_GAME: &str = r"E:\0xoLemon store\downloading\007 First Light";
-const DEFAULT_DEPOT_REPO_BASE: &str =
-    "https://huggingface.co/datasets/CatManga/Cat-Manga/resolve/main";
 
 pub fn default_asset_source() -> PathBuf {
     PathBuf::from(DEFAULT_ASSET_SOURCE)
@@ -100,8 +103,7 @@ pub fn get_game_detail(
     _locale: Option<String>,
 ) -> Result<GameDetail, AssetPackError> {
     let mut detail = load_legacy_game_pack(app, game_id)
-        .or_else(|_| load_game_part_pack(app, game_id, GAME_CORE_PART))
-        .or_else(|_| load_pack(app))?
+        .or_else(|_| load_game_part_pack(app, game_id, GAME_CORE_PART))?
         .manifest
         .details
         .get(game_id)
@@ -136,50 +138,54 @@ pub fn get_game_asset(
     Err(AssetPackError::AssetNotFound(asset_id.to_string()))
 }
 
-pub fn build_default_pack(
-    source: &Path,
+pub fn build_all_packs(
+    sources: &[PathBuf],
     output: &Path,
 ) -> Result<AssetBuildSummary, AssetPackError> {
-    let build = build_manifest_and_assets(source)?;
-    let game_id = build.game_id.clone();
-    let manifest = build.manifest;
-    let assets = build.assets;
-    let achievement_count = build.achievement_count;
-    let game_pack_dir = output
-        .parent()
-        .unwrap_or_else(|| Path::new("."))
-        .join("games")
-        .join(&game_id);
-    let catalog_manifest = AssetPackManifest {
-        generated_at: manifest.generated_at.clone(),
-        catalog: manifest.catalog.clone(),
-        details: HashMap::new(),
-        assets: HashMap::new(),
-        i18n: manifest.i18n.clone(),
+    let mut total_games = 0;
+    let mut total_assets = 0;
+    let mut total_achievements = 0;
+    let mut output_paths = Vec::new();
+    let output_root = if output.extension().is_some() {
+        output.parent().unwrap_or_else(|| Path::new("."))
+    } else {
+        output
     };
-    let empty_assets = HashMap::new();
-    write_pack(&catalog_manifest, &empty_assets, output)?;
+    let mut generated_at = chrono::Utc::now().to_rfc3339();
 
-    let split_assets = split_assets_by_part(&assets);
-    let mut output_paths = vec![output.display().to_string()];
-    for part in GAME_PACK_PARTS {
-        let part_output = game_pack_dir.join(format!("{part}.0xo"));
-        let part_assets = split_assets.get(part).cloned().unwrap_or_default();
-        let part_manifest = if part == GAME_CORE_PART {
-            manifest.clone()
-        } else {
-            minimal_part_manifest(&manifest)
-        };
-        write_pack(&part_manifest, &part_assets, &part_output)?;
-        output_paths.push(part_output.display().to_string());
+    for source in sources {
+        let build = build_manifest_and_assets(source)?;
+        let game_id = build.game_id.clone();
+        let manifest = build.manifest;
+        let assets = build.assets;
+
+        generated_at = manifest.generated_at.clone();
+        total_games += manifest.catalog.games.len();
+        total_assets += assets.len();
+        total_achievements += build.achievement_count;
+
+        let game_pack_dir = output_root.join("games").join(&game_id);
+
+        let split_assets = split_assets_by_part(&assets);
+        for part in GAME_PACK_PARTS {
+            let part_output = game_pack_dir.join(format!("{part}.0xo"));
+            let part_assets = split_assets.get(part).cloned().unwrap_or_default();
+            let part_manifest = if part == GAME_CORE_PART {
+                manifest.clone()
+            } else {
+                minimal_part_manifest(&manifest)
+            };
+            write_pack(&part_manifest, &part_assets, &part_output)?;
+            output_paths.push(part_output.display().to_string());
+        }
     }
 
     Ok(AssetBuildSummary {
         output_path: output_paths.join("; "),
-        game_count: manifest.catalog.games.len(),
-        asset_count: assets.len(),
-        achievement_count,
-        generated_at: manifest.generated_at,
+        game_count: total_games,
+        asset_count: total_assets,
+        achievement_count: total_achievements,
+        generated_at,
     })
 }
 
@@ -215,6 +221,59 @@ fn minimal_part_manifest(base: &AssetPackManifest) -> AssetPackManifest {
     }
 }
 
+fn is_generic_game_source(source: &Path) -> bool {
+    if source
+        .join("details")
+        .join("metadata")
+        .join("game-detail.normalized.json")
+        .exists()
+    {
+        return true;
+    }
+
+    ["grid", "hero", "logo", "icon"]
+        .iter()
+        .all(|role| find_root_asset_with_prefix(source, role).is_some())
+}
+
+fn find_root_asset_with_prefix(source: &Path, prefix: &str) -> Option<PathBuf> {
+    let mut entries = fs::read_dir(source)
+        .ok()?
+        .filter_map(Result::ok)
+        .filter(|entry| {
+            entry
+                .file_type()
+                .map(|kind| kind.is_file())
+                .unwrap_or(false)
+        })
+        .filter(|entry| {
+            entry
+                .file_name()
+                .to_string_lossy()
+                .to_ascii_lowercase()
+                .starts_with(prefix)
+        })
+        .collect::<Vec<_>>();
+
+    entries.sort_by_key(|entry| {
+        let name = entry.file_name().to_string_lossy().to_ascii_lowercase();
+        let stem_len = Path::new(&name)
+            .file_stem()
+            .and_then(|stem| stem.to_str())
+            .map(|stem| stem.len())
+            .unwrap_or(usize::MAX);
+        let ext_rank = match Path::new(&name).extension().and_then(|ext| ext.to_str()) {
+            Some("webp") => 0,
+            Some("png") => 1,
+            Some("jpg") | Some("jpeg") => 2,
+            Some("ico") => 3,
+            _ => 9,
+        };
+        (stem_len, ext_rank, name)
+    });
+    entries.into_iter().next().map(|entry| entry.path())
+}
+
 fn load_pack_cached(
     app: &AppHandle,
     key: &str,
@@ -241,17 +300,6 @@ fn load_catalog_packs(app: &AppHandle) -> Result<Vec<Arc<LoadedPack>>, AssetPack
             })
         })
         .collect()
-}
-
-fn load_pack(app: &AppHandle) -> Result<Arc<LoadedPack>, AssetPackError> {
-    load_pack_cached(app, "catalog", || {
-        let path = locate_catalog_pack_paths(app)?
-            .into_iter()
-            .next()
-            .ok_or_else(|| AssetPackError::InvalidPack("asset catalog is missing".to_string()))?;
-        let bytes = fs::read(path)?;
-        parse_pack(bytes)
-    })
 }
 
 fn load_game_part_pack(
@@ -302,7 +350,6 @@ fn load_asset_candidate_packs(
         .map(|part| load_game_part_pack(app, game_id, part))
         .collect::<Vec<_>>();
     candidates.push(load_legacy_game_pack(app, game_id));
-    candidates.push(load_pack(app));
     candidates
 }
 
@@ -381,18 +428,18 @@ fn locate_catalog_pack_paths(app: &AppHandle) -> Result<Vec<PathBuf>, AssetPackE
     }
     roots.push(PathBuf::from(env!("CARGO_MANIFEST_DIR")));
 
+    // Build the Library from each game's own core pack. A global catalog can
+    // become stale and hide games added later, so it is intentionally ignored.
     for root in roots {
         let assets_dir = root.join("assets");
-        let mut paths = catalog_pack_paths_in(&assets_dir)?;
-        paths.extend(game_catalog_pack_paths_in(&assets_dir)?);
-        paths = unique_paths(paths);
+        let paths = unique_paths(game_catalog_pack_paths_in(&assets_dir)?);
         if !paths.is_empty() {
             return Ok(paths);
         }
     }
 
     Err(AssetPackError::InvalidPack(
-        "assets/catalog*.0xo is missing".to_string(),
+        "no per-game core asset packs were found under assets/games".to_string(),
     ))
 }
 
@@ -436,45 +483,19 @@ fn unique_paths(paths: Vec<PathBuf>) -> Vec<PathBuf> {
     unique
 }
 
-fn catalog_pack_paths_in(assets_dir: &Path) -> Result<Vec<PathBuf>, AssetPackError> {
-    if !assets_dir.exists() {
-        return Ok(Vec::new());
-    }
-
-    let mut paths = Vec::new();
-    for entry in fs::read_dir(assets_dir)? {
-        let entry = entry?;
-        if !entry.file_type()?.is_file() {
-            continue;
-        }
-        let name = entry.file_name().to_string_lossy().to_string();
-        if name.starts_with("catalog") && name.ends_with(".0xo") {
-            paths.push(entry.path());
-        }
-    }
-    paths.sort_by_key(|path| {
-        let name = path
-            .file_name()
-            .map(|value| value.to_string_lossy().to_string())
-            .unwrap_or_default();
-        (usize::from(name != "catalog.0xo"), name)
-    });
-    Ok(paths)
-}
-
 fn build_manifest_and_assets(source: &Path) -> Result<SourceAssetBuild, AssetPackError> {
-    if source
-        .join("details")
-        .join("metadata")
-        .join("game-detail.normalized.json")
-        .exists()
-    {
+    // Scalable/generic game folders should not fall back to the old 007-only
+    // hard-coded root files. A valid generic source is either a folder with
+    // metadata JSON or a folder that already has the 4 root brand assets.
+    if is_generic_game_source(source) {
         return build_generic_manifest_and_assets(source);
     }
 
     let mut assets = HashMap::new();
     let versions = detect_versions();
     let install = default_install_metadata();
+    let launch = load_source_launch_config(source, DEFAULT_GAME_ID, &install.launch_executable)
+        .map_err(AssetPackError::InvalidPack)?;
 
     let grid_id = asset_id(DEFAULT_GAME_ID, "grid");
     let hero_id = asset_id(DEFAULT_GAME_ID, "hero");
@@ -547,6 +568,7 @@ fn build_manifest_and_assets(source: &Path) -> Result<SourceAssetBuild, AssetPac
     if let Some(remote) = remote_metadata {
         apply_remote_metadata_overlay(&mut detail, remote, &mut assets);
     }
+    detail.launch = launch.clone();
 
     let summary = GameSummary {
         id: DEFAULT_GAME_ID.to_string(),
@@ -573,6 +595,7 @@ fn build_manifest_and_assets(source: &Path) -> Result<SourceAssetBuild, AssetPac
         logo_asset_id: logo_id,
         icon_asset_id: icon_id,
         install,
+        launch,
         asset_pack_path: format!("assets/games/{DEFAULT_GAME_ID}/{GAME_CORE_PART}.0xo"),
     };
 
@@ -828,7 +851,9 @@ fn add_file_asset(
     id: &str,
     path: &Path,
 ) -> Result<(), AssetPackError> {
-    let bytes = fs::read(path)?;
+    let bytes = fs::read(path).map_err(|e| {
+        AssetPackError::InvalidPack(format!("Cannot read {}: {}", path.display(), e))
+    })?;
     assets.insert(
         id.to_string(),
         RawAsset {
@@ -893,70 +918,28 @@ fn add_details_media_assets(
 }
 
 fn add_remote_media_assets(
-    assets: &mut HashMap<String, RawAsset>,
+    _assets: &mut HashMap<String, RawAsset>,
     media: &mut Vec<GameMedia>,
     remote: &RemoteMetadata,
 ) {
-    if remote.media_sources.is_empty() {
-        return;
-    }
-
-    let Ok(client) = Client::builder()
-        .timeout(Duration::from_secs(45))
-        .user_agent("0xoLemonAssetPackBuilder/0.1")
-        .build()
-    else {
-        return;
-    };
-
+    // Scale mode: do NOT cook Steam screenshots/trailers into .0xo packs.
+    // Keep the URL in a safe asset-id token and let the frontend stream/fetch lazily.
     for item in &remote.media_sources {
         if media.iter().any(|existing| existing.id == item.id) {
             continue;
         }
-
-        let (mime_type, bytes) = if is_stream_manifest_url(&item.url)
-            || item.mime_type == "application/vnd.apple.mpegurl"
-        {
-            let Some(bytes) = transcode_stream_preview(&item.url, &item.id) else {
-                continue;
-            };
-            ("video/mp4".to_string(), bytes)
-        } else {
-            let Ok(response) = client.get(&item.url).send() else {
-                continue;
-            };
-            if !response.status().is_success() {
-                continue;
-            }
-            let mime_type = response
-                .headers()
-                .get(reqwest::header::CONTENT_TYPE)
-                .and_then(|value| value.to_str().ok())
-                .map(|value| value.split(';').next().unwrap_or(value).to_string())
-                .unwrap_or_else(|| item.mime_type.clone());
-            let Ok(bytes) = response.bytes() else {
-                continue;
-            };
-            (mime_type, bytes.to_vec())
-        };
-        let id = asset_id(DEFAULT_GAME_ID, &format!("steam:{}", item.id));
-        assets.insert(
-            id.clone(),
-            RawAsset {
-                game_id: DEFAULT_GAME_ID.to_string(),
-                role: item.role.clone(),
-                mime_type: mime_type.clone(),
-                bytes,
-            },
-        );
         media.push(GameMedia {
             id: item.id.clone(),
             role: item.role.clone(),
             title: item.title.clone(),
-            mime_type,
-            asset_id: id,
+            mime_type: item.mime_type.clone(),
+            asset_id: remote_asset_id(&item.url),
         });
     }
+}
+
+pub(super) fn remote_asset_id(url: &str) -> String {
+    format!("remote64:{}", URL_SAFE_NO_PAD.encode(url.as_bytes()))
 }
 
 fn is_stream_manifest_url(url: &str) -> bool {
@@ -1256,6 +1239,7 @@ fn default_game_detail(
         achievements,
         sounds,
         install: install.clone(),
+        launch: GameLaunchConfig::default(),
         description_images: vec![],
         versions: versions.to_vec(),
         metadata_source: "local-default".to_string(),
@@ -1265,7 +1249,7 @@ fn default_game_detail(
 fn apply_remote_metadata_overlay(
     detail: &mut GameDetail,
     remote: RemoteMetadata,
-    assets: &mut HashMap<String, RawAsset>,
+    _assets: &mut HashMap<String, RawAsset>,
 ) {
     if !remote.achievements.is_empty() {
         apply_remote_achievement_metadata(&mut detail.achievements, &remote);
@@ -1280,55 +1264,23 @@ fn apply_remote_metadata_overlay(
         .detailed_description
         .filter(|value| !value.trim().is_empty())
     {
-        if let Ok(client) = Client::builder()
-            .timeout(Duration::from_secs(45))
-            .user_agent("0xoLemonAssetPackBuilder/0.1")
-            .build()
-        {
-            let mut extracted_images = Vec::new();
-            // Match <img ... src="URL" ...>
-            let re = regex::Regex::new(r#"<img[^>]+src="([^"]+)""#).unwrap();
-
-            // Collect all unique URLs to avoid borrowing issues during replacement
+        // Scale mode: keep Steam description images remote. The frontend replaces
+        // asset:remote64:<url> tokens with direct URLs and does not ask Rust to load them.
+        if let Ok(re) = regex::Regex::new(r#"<img[^>]+src=\"([^\"]+)\""#) {
             let urls: Vec<String> = re
                 .captures_iter(&full)
                 .filter_map(|cap| cap.get(1).map(|m| m.as_str().to_string()))
                 .collect();
-
-            let mut unique_urls = urls.clone();
+            let mut unique_urls = urls;
             unique_urls.sort();
             unique_urls.dedup();
-
             for url in unique_urls {
-                if let Ok(response) = client.get(&url).send() {
-                    if response.status().is_success() {
-                        let mime_type = response
-                            .headers()
-                            .get(reqwest::header::CONTENT_TYPE)
-                            .and_then(|value| value.to_str().ok())
-                            .map(|value| value.split(';').next().unwrap_or(value).to_string())
-                            .unwrap_or_else(|| "image/jpeg".to_string());
-                        if let Ok(bytes) = response.bytes() {
-                            let img_id = format!("desc-img-{}", extracted_images.len());
-                            let full_asset_id = asset_id(DEFAULT_GAME_ID, &img_id);
-                            assets.insert(
-                                full_asset_id.clone(),
-                                RawAsset {
-                                    game_id: DEFAULT_GAME_ID.to_string(),
-                                    role: "description-image".to_string(),
-                                    mime_type,
-                                    bytes: bytes.to_vec(),
-                                },
-                            );
-                            extracted_images.push(full_asset_id.clone());
-                            full = full.replace(&url, &format!("asset:{}", full_asset_id));
-                        }
-                    }
-                }
+                let token = remote_asset_id(&url);
+                detail.description_images.push(token.clone());
+                full = full.replace(&url, &format!("asset:{token}"));
             }
-            detail.description_images.extend(extracted_images);
         }
-        detail.detailed_description = full; // keep HTML!
+        detail.detailed_description = full; // keep HTML
     }
     if !remote.developers.is_empty() {
         detail.developers = remote.developers;
@@ -1581,6 +1533,12 @@ fn fetch_steam_achievements(
                                 .trim()
                                 .to_string(),
                             hidden: item.get("hidden").and_then(Value::as_i64).unwrap_or(0) != 0,
+                            icon_url: item
+                                .get("icon")
+                                .and_then(Value::as_str)
+                                .unwrap_or_default()
+                                .trim()
+                                .to_string(),
                         })
                     })
                     .collect::<Vec<_>>()
@@ -1674,7 +1632,8 @@ fn detect_versions() -> Vec<GameVersionInfo> {
                             label: entry.version.clone(),
                             build_id: version_build_id(&entry.version),
                             size_bytes: size,
-                            latest: Some(entry.version.clone()) == catalog.effective_latest_version().map(str::to_string),
+                            latest: Some(entry.version.clone())
+                                == catalog.effective_latest_version().map(str::to_string),
                         }
                     })
                     .collect::<Vec<_>>()
@@ -1734,7 +1693,8 @@ fn overlay_detail_depot_versions(detail: &mut GameDetail) {
 }
 
 fn load_depot_versions_for_game(game_id: &str) -> Option<(String, Vec<GameVersionInfo>)> {
-    let catalog = load_local_depot_catalog(game_id).or_else(|| fetch_remote_depot_catalog(game_id))?;
+    let catalog =
+        load_local_depot_catalog(game_id).or_else(|| fetch_remote_depot_catalog(game_id))?;
     let latest = catalog.effective_latest_version()?.to_string();
     let versions = catalog
         .versions
@@ -1763,27 +1723,45 @@ fn load_local_depot_catalog(game_id: &str) -> Option<Catalog> {
         .and_then(|bytes| serde_json::from_slice::<Catalog>(&bytes).ok())
 }
 
+fn remote_depot_prefix(game_id: &str) -> String {
+    hf_dir_name_for_game_id(game_id)
+}
+
 fn fetch_remote_depot_catalog(game_id: &str) -> Option<Catalog> {
-    let base = std::env::var("OXO_DEPOT_REPO_BASE")
-        .unwrap_or_else(|_| DEFAULT_DEPOT_REPO_BASE.to_string());
-    let url = format!("{}/{}/catalog.json", base.trim_end_matches('/'), game_id);
+    let remote_prefix = encode_hf_relative_path(&remote_depot_prefix(game_id));
     let client = Client::builder()
         .connect_timeout(Duration::from_secs(3))
         .timeout(Duration::from_secs(8))
         .build()
         .ok()?;
-    let mut request = client.get(url).header("User-Agent", "0xolemon-launcher/0.1");
-    if let Ok(token) = std::env::var("HF_TOKEN").or_else(|_| std::env::var("FIRST_LIGHT_HF_TOKEN"))
-    {
-        request = request.header("Authorization", format!("Bearer {token}"));
+    let token = std::env::var("HF_TOKEN")
+        .or_else(|_| std::env::var("FIRST_LIGHT_HF_TOKEN"))
+        .ok();
+
+    for base in depot_repo_base_urls() {
+        let url = format!(
+            "{}/{}/catalog.json",
+            base.trim_end_matches('/'),
+            remote_prefix
+        );
+        let mut request = client
+            .get(&url)
+            .header("User-Agent", "0xolemon-launcher/0.1");
+        if let Some(token) = &token {
+            request = request.header("Authorization", format!("Bearer {token}"));
+        }
+        let Ok(response) = request.send() else {
+            continue;
+        };
+        let Ok(response) = response.error_for_status() else {
+            continue;
+        };
+        if let Ok(catalog) = response.json::<Catalog>() {
+            return Some(catalog);
+        }
     }
-    request
-        .send()
-        .ok()?
-        .error_for_status()
-        .ok()?
-        .json::<Catalog>()
-        .ok()
+
+    None
 }
 
 fn manifest_total_size(path: &Path) -> u64 {
@@ -2000,51 +1978,28 @@ fn xor_stream(bytes: &mut [u8], salt: &[u8; 16], stream_id: u64) {
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        build_default_pack, default_asset_source, parse_pack, DEFAULT_GAME_ID, GAME_CORE_PART,
-        GAME_PACK_PARTS,
-    };
+    use super::{game_catalog_pack_paths_in, parse_pack};
+    use std::path::PathBuf;
 
     #[test]
-    fn built_pack_loads_and_corrupt_pack_rejects() {
-        let source = default_asset_source();
-        if !source.exists() {
-            return;
-        }
-        let output = std::env::temp_dir().join(format!(
-            "catalog-test-{}.0xo",
-            chrono::Utc::now().timestamp_nanos_opt().unwrap_or_default()
-        ));
-        std::env::set_var("OXO_ASSET_PACK_OFFLINE", "1");
-        let summary = build_default_pack(&source, &output).expect("build pack");
-        std::env::remove_var("OXO_ASSET_PACK_OFFLINE");
-        assert!(summary.asset_count > 0);
+    fn per_game_catalog_discovery_loads_every_core_pack() {
+        let assets_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("assets");
+        let paths = game_catalog_pack_paths_in(&assets_dir).expect("discover per-game packs");
+        assert!(paths.len() > 1, "expected multiple games in assets/games");
 
-        let bytes = std::fs::read(&output).expect("read pack");
-        let loaded = parse_pack(bytes.clone()).expect("parse pack");
-        assert_eq!(loaded.manifest.catalog.games.len(), 1);
-
-        let game_pack_dir = output
-            .parent()
-            .unwrap_or_else(|| std::path::Path::new("."))
-            .join("games")
-            .join(DEFAULT_GAME_ID);
-        for part in GAME_PACK_PARTS {
-            let part_path = game_pack_dir.join(format!("{part}.0xo"));
-            let part_bytes = std::fs::read(&part_path).expect("read split pack");
-            let loaded_part = parse_pack(part_bytes).expect("parse split pack");
-            if part == GAME_CORE_PART {
-                assert!(loaded_part.manifest.details.contains_key(DEFAULT_GAME_ID));
-            } else {
-                assert!(loaded_part.manifest.catalog.games.is_empty());
+        let mut game_ids = std::collections::HashSet::new();
+        for path in &paths {
+            let bytes = std::fs::read(path).expect("read per-game core pack");
+            let loaded = parse_pack(bytes).expect("parse per-game core pack");
+            for game in &loaded.manifest.catalog.games {
+                game_ids.insert(game.id.clone());
             }
-            let _ = std::fs::remove_file(part_path);
         }
+        assert_eq!(game_ids.len(), paths.len());
 
-        let mut corrupt = bytes;
+        let mut corrupt = std::fs::read(&paths[0]).expect("read pack for corruption check");
         let last = corrupt.len() - 1;
         corrupt[last] ^= 0x7d;
         assert!(parse_pack(corrupt).is_err());
-        let _ = std::fs::remove_file(output);
     }
 }

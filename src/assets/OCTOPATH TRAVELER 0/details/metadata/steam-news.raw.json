@@ -1,0 +1,85 @@
+﻿{
+    "appnews":  {
+                    "appid":  3014320,
+                    "newsitems":  [
+                                      {
+                                          "gid":  "1826992588604242",
+                                          "title":  "SQUARE ENIX Publisher Sale 2026",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1826992588604242",
+                                          "is_external_url":  true,
+                                          "author":  "williamtj",
+                                          "contents":  "The Square Enix Publisher Sale is now on - save up to 90% off! \n\nWith over 200+ discounted games in the SQUARE ENIX Publisher Sale, our *NEW* host, Matthew Mercer, is here to help you find your next RPG adventure - accompanied by our long-time bestie Ben Starr... whether we asked for it or not.\n\nWatch the full video on YouTube and discover which RPG you should dive into next: https://youtu.be/joDXWCNf-JM",
+                                          "feedlabel":  "Community Announcements",
+                                          "date":  1773761503,
+                                          "feedname":  "steam_community_announcements",
+                                          "feed_type":  1,
+                                          "appid":  3014320
+                                      },
+                                      {
+                                          "gid":  "1826362059920390",
+                                          "title":  "Version 1.0.7.0 Release",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1826362059920390",
+                                          "is_external_url":  true,
+                                          "author":  "TM_J",
+                                          "contents":  "[Release Notes]\n[list]\n[*]   Increased the number of people able to be trained at the training ground\n[*]   Now able to fight a specific boss again (activating the strange monument will respawn it)\n[*]   Improved overall game performance\n[*]   Fixed an issue where, during a specific boss battle, the enemy\u0027s HP could not go lower than one and thus it could not be defeated\n[*]   Fixed an issue where certain characters\u0027 post-battle voice lines would not play properly\n[*]   Fixed an issue where certain equipment descriptions listed incorrect effects\n[*]   Fixed an issue where, under certain circumstances, using the \"form party\" feature during the main story would render you unable to complete the game\n[*]   Fixed an issue where the maximum amount of influence could not be attained under certain circumstances\n[*]   Fixed an issue where broken enemies could not be dealt damage under certain circumstances\n[*]   Fixed an issue where you were temporarily unable to use nut-related items under certain circumstances\n[*]   Fixed an issue where, if you failed to use an item during battle due to paralysis, that item would still be consumed\n[*]   Other minor bug fixes\n[/list]",
+                                          "feedlabel":  "Community Announcements",
+                                          "date":  1772702928,
+                                          "feedname":  "steam_community_announcements",
+                                          "feed_type":  1,
+                                          "appid":  3014320,
+                                          "tags":  [
+                                                       "patchnotes"
+                                                   ]
+                                      },
+                                      {
+                                          "gid":  "1823191198604689",
+                                          "title":  "Version 1.0.5.0 Release",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1823191198604689",
+                                          "is_external_url":  true,
+                                          "author":  "TM_J",
+                                          "contents":  "[Release Notes]\n- Improved overall game performance\n- Fixed an issue where the museum\u0027s interior would not change after upgrading it\n- Fixed an issue where achievements would not unlock as normal on some platforms\n- Fixed an issue where data would not save correctly on some platforms\n- Other minor bug fixes",
+                                          "feedlabel":  "Community Announcements",
+                                          "date":  1769763553,
+                                          "feedname":  "steam_community_announcements",
+                                          "feed_type":  1,
+                                          "appid":  3014320,
+                                          "tags":  [
+                                                       "patchnotes"
+                                                   ]
+                                      },
+                                      {
+                                          "gid":  "1821922921820643",
+                                          "title":  "Version 1.0.2.0 Release",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1821922921820643",
+                                          "is_external_url":  true,
+                                          "author":  "TM_J",
+                                          "contents":  "[Release Notes]\n- Improvements to overall sound quality",
+                                          "feedlabel":  "Community Announcements",
+                                          "date":  1768813214,
+                                          "feedname":  "steam_community_announcements",
+                                          "feed_type":  1,
+                                          "appid":  3014320,
+                                          "tags":  [
+                                                       "patchnotes"
+                                                   ]
+                                      },
+                                      {
+                                          "gid":  "1819386365085904",
+                                          "title":  "Version 1.0.3.0 Release",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1819386365085904",
+                                          "is_external_url":  true,
+                                          "author":  "TM_J",
+                                          "contents":  "[p]\\[Release Notes]\n- Improvements to overall sound quality\n- Adjusted camera movement during battles\n- Fixed an issue where the designated manager of the facility built in “Kindlers of the Flame Ch. 4” was being placed incorrectly\n- Other minor bug fixes[/p]",
+                                          "feedlabel":  "Community Announcements",
+                                          "date":  1765960062,
+                                          "feedname":  "steam_community_announcements",
+                                          "feed_type":  1,
+                                          "appid":  3014320,
+                                          "tags":  [
+                                                       "patchnotes"
+                                                   ]
+                                      }
+                                  ],
+                    "count":  13
+                }
+}

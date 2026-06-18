@@ -1,0 +1,506 @@
+﻿{
+    "game":  {
+                 "gameName":  "Stellar Blade™",
+                 "gameVersion":  "5",
+                 "availableGameStats":  {
+                                            "stats":  [
+                                                          {
+                                                              "name":  "SB_Acquire_AllCan_Stat",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "SB_Acquire_AllNanoSuit_Stat",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "SB_Acquire_AllRecords_Stat",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "SB_Album_AllFish_Stat",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "SB_Open_AllBox_Stat",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "SB_KillCharacter_AllNative_Stat",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "SB_Activate_AllCamp_Stat",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "SB_LevelUpMax_AllExoSpine_Stat",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "SB_WeaponMaxUpgrade_Stat",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "SB_TumblerMaxUpgrade_Stat",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "SB_BodyMaxUpgrade_Stat",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "SB_BetaMaxUpgrade_Stat",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "SB_Acquire_AllSkill_Stat",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "SB_JustEvade_Stat",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "SB_JustParry_Stat",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "SB_CharKill_AssassinationSkills_Stat",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "SB_CharKill_BetaSkill_Stat",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "SB_CharKill_BurstSkill_Stat",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "SB_CharKill_TachySkill_Stat",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "SB_CharKill_RangeSkill_Stat",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "SB_KillCharacter_Stat",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "SB_Acquire_AllSkill_NewGamePlus_Stat",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          }
+                                                      ],
+                                            "achievements":  [
+                                                                 {
+                                                                     "name":  "01_Platinum",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "EVE Protocol",
+                                                                     "hidden":  0,
+                                                                     "description":  "You have unlocked all achievements in the main game.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/6b4a48027864e62ff22d12d5ef19e8b3a77af21c.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/df1f2aee5b6e5281b515226d1d1f634a91494d82.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "02_Activate_FirstCamp",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Camp Preparation",
+                                                                     "hidden":  0,
+                                                                     "description":  "Activated the first Camp.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/13e362ef7aa23d4fcd4a5660cddbbb040a28127a.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/eb72715c12aaa81390f11ce6dfa36330661a3bbf.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "03_KillCharacter_Opener",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Abaddon",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/3069db9059a93f10fbdac20083b22da657f09686.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/437995cc4b176fafcabae7c15d9d1c47495f15bc.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "04_KillCharacter_GrubShooter",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Corrupter",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/d096ff1f659928c6f238715e3500def12dccd01b.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/ec813e87e978bc705927371553509a5a5f17a95d.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "05_KillCharacter_Gigas_Kill",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Gigas",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/c7def2d6ec8cd4511142d4bc3ce7d7612a1f6e5a.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/cd3d7925fbe3d3f521ce7b185aa35b26745adf61.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "06_KillCharacter_Brute",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Brute",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/9efcf9bf09897bdea96d5acdd30986a06330b1c9.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/8a797b96f7063ba0f4cba6bf3df3877f10de2ac3.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "07_CompleteLevel_AltesLabor",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Altess Levoire",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/af5d5562f130eb33f25393ab9330f42017dc53a8.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/b773b9b6b9a4e745eb922b01e16d9b9fd8ca696c.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "08_KillCharacter_Stalker_Kill",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Stalker",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/44ca6fde5ba71e75697a6f47c400335472f40728.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/f85d4cc8f54baece3d7087555a41d5212fa08b11.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "09_KillCharacter_Juggernaut_Kill",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Juggernaut",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/cfb3d64e4841841a0dff101c67630029862c17c5.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/4878f6ff0b14e910bbf70cd83b1ecde4d429ca39.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "10_KillCharacter_Tachy_Kill",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Tachy",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/b257827573460ab6afaa34b6385c391ef7e12264.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/808da5228a1e1df1d44d22260f5a88a08b921421.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "11_KillCharacter_Behemoth",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Behemoth",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/238fc74430ec56675cfc291a43723d3c23d2704b.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/4273a5161072272d70adb98a55ae3edc657cbbbd.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "12_CompleteLevel_AbyssLabor",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Abyss Levoire",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/b40492eaa5badedda89e9bbb75de4764f019f2f0.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/43a91c3b0174a1be23f9e93773e7c6e3445ec529.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "13_KillCharacter_Belial_A_Kill",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Belial",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/540064d0dd28f9d984f21634f381dd2a1093b920.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/c8009bd93ca48c5d247f7e1d2e2a8038538fd250.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "14_KillCharacter_Marionette_Kill",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Karakuri",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/8ef60e5b2d795891a320ddbf4a3d5f30175307da.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/379a35d671474d300f12bf9be90f3745853b8eaf.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "15_KillCharacter_Gorgon_Kill",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Demogorgon",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/841ce1fb7bb9ab355534fe548d2604657e99f360.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/aca6f0d1f79b22b1e27e082632d6a3a0394bebd4.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "16_KillCharacter_Raven_Kill",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Raven",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/4b9a0839bb0a6a9264deff8adfc2c82af90825d1.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/c945185b5331a92b34fcbe84d483380c96abb22e.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "17_Ending_Colony",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Return to the Colony",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/c45187c9c145188f222fd97b9ec2f13790cfea20.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/33e3c7204110210c1bff5fa496d6d02fbd1baa2b.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "18_Ending_LostMemory",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Cost of Lost Memories",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/ce13b556d73b153f6bfddc48bcb9167f514343b9.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/2bca25bbc4b2f598e5514899f1b9af09efdd0119.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "19_Ending_NewMemory",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Making New Memories",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/2989a52550d78fa242f6fe690b569ed8b6b3b36b.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/65603a6ebd5343bd31861019b765fc16914d3ff6.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "20_Acquire_AllCan",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Can Collector",
+                                                                     "hidden":  0,
+                                                                     "description":  "Collected all cans.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/fe9bb49e1f3e238aa0a5eca1ff1624c318bcf1f0.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/813682d75b72a643972ffde190848e37d2af27b5.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "21_Acquire_AllNanoSuit",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Nano Suit Collector",
+                                                                     "hidden":  0,
+                                                                     "description":  "Acquired 30 Nano Suits.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/6d7e430737b1ce111d53ade73f0e940acaf23a43.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/b5050c5c26ea17caa18bf5e4e065cd0b860620c8.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "22_Acquire_AllRecords",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Records Collector",
+                                                                     "hidden":  0,
+                                                                     "description":  "Collected 200 Data Bank entries (Memorysticks, Documents, or Passcodes).",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/7133085f0facf0a389531773fdd4fc5b41ab6b81.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/046f3dece50939998e49450193f076c652e6a09f.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "23_Album_AllFish",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Lonely Fisherman",
+                                                                     "hidden":  0,
+                                                                     "description":  "Caught 20 different fish.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/7cd6a658d69dcde42ca1864bcd505219bd534335.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/810dca89ea6b8e111725c87636e05c2723a4ede8.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "24_Open_AllBox",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Box Hunter",
+                                                                     "hidden":  0,
+                                                                     "description":  "Opened 200 boxes.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/7d021ab4a8013a58caf864f576e102127139d1ef.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/7fb75b92309d6d43ca00a96ee8e6f2ad28283763.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "25_KillCharacter_AllNative",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Naytiba Researcher",
+                                                                     "hidden":  0,
+                                                                     "description":  "Got information on all Naytibas.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/afdb755ab5213c792ae95f43cc2ad38ebc389575.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/0ae264e18ec6b51eca71d844806da99ab4302289.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "26_Activate_AllCamp",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Meticulous Explorer",
+                                                                     "hidden":  0,
+                                                                     "description":  "Activated all Camps.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/edf7219f728dbb7355faa6fecc4fc422104d7681.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/0ff9fd5db10da03bebe6de447d3ebcdf341fa538.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "27_LevelUpMax_AllExoSpine",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Perfect Exospine",
+                                                                     "hidden":  0,
+                                                                     "description":  "Enhanced 10 Exospines to their max.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/59e92a7850ca44f4b09dcc2750ba01c4c238cd40.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/80c5a9bf0aa19346fa4af2698a25856edabf4ff5.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "28_WeaponMaxUpgrade",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Perfect Blood Edge",
+                                                                     "hidden":  0,
+                                                                     "description":  "Enhanced Blood Edge to its max.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/c78d409081bdeda5ec1ee81118c44520d7a379f8.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/8d002cbf7aa87b3c5eed3f95f3f42fbb74880da1.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "29_TumblerMaxUpgrade",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Perfect Rechargeable Tumbler",
+                                                                     "hidden":  0,
+                                                                     "description":  "Enhanced the Rechargeable Tumbler to its max.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/03c142994002f0a3971b51e6ddbbad733ce3a7f5.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/b35a50d28a86790e558acaf10a9a4adda8eb235f.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "30_BodyMaxUpgrade",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Perfect Physical Enhancement",
+                                                                     "hidden":  0,
+                                                                     "description":  "Enhanced HP to its max.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/43fcddb38a4508ececdacf4df90342065aaf87ef.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/371f6cb3ffbe6b45caa681bdb7cd1bf09bbfe337.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "31_BetaMaxUpgrade",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Perfect Beta Energy Enhancement",
+                                                                     "hidden":  0,
+                                                                     "description":  "Enhanced Beta Energy to its max.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/470c98f75895cdf9deddeec504e025686ca090d2.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/8b779b1bbbe8495adb56c59129ae94a569e7fe13.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "32_Acquire_AllSkill",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Thorough Technician",
+                                                                     "hidden":  0,
+                                                                     "description":  "Learned all skills.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/551c855756f37579ec4e3e40b165a9138d24e58d.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/16577751adcc82ba33b963cdb1e4507c82bdc737.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "33_CompleteQuest_Enya",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Beyond Fate",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/3bdfe77405552464205d5b3fd33769d98198a04c.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/e8a0181a3a6ffe0bb3b2d3fa0defc578ab8e4b34.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "34_CompleteQuest_Kaya",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Sisterly Love",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/92e02eb36e9f57676ed617d9eeb9f4e2ad790677.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/936e0f8833e3be9e29aec80bf0f966e4fccb1b0e.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "35_CompleteQuest_Digger",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Beep!",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/5ab77cd41fcfeb55fe20d1419d6576d7e9e0dca4.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/011bc02b3ccee12bd3d60774de7ed02915ca6a5b.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "36_JustEvade",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Battlefield Martial Artist",
+                                                                     "hidden":  0,
+                                                                     "description":  "Perfect Dodged 200 enemy attacks.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/11b8fa54887942e825d88052cafd9ef2f07f32d8.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/01424fdb8fc6ac3ceab415f8a84fbd3a1833cca3.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "37_JustParry",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Agile Gladiator",
+                                                                     "hidden":  0,
+                                                                     "description":  "Perfect Parried 300 enemy attacks.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/1871de3703775247bf4ee31d41334b44d06a29b2.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/e72125041ef0ce04408ed6ca7eb653d7cbbce565.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "38_CharKill_AssassinationSkills",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Silent Executioner",
+                                                                     "hidden":  0,
+                                                                     "description":  "Defeated 50 enemies by execution.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/74e17381385d70773fc0d7e889ce00511f2edbf7.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/fdb3c0ea31d10f04861e45c10bcf32bd94a54c7b.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "39_CharKill_BetaSkill",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Naytiba Hunter",
+                                                                     "hidden":  0,
+                                                                     "description":  "Defeated 100 enemies with Beta Skills.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/b854455823fb7a4835768c8603840ba3fe26af5b.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/091d59c772a6253a7ccfdae43f324e1500dd514b.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "40_CharKill_BurstSkill",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Relentless Destroyer",
+                                                                     "hidden":  0,
+                                                                     "description":  "Defeated 50 enemies with Burst Skills.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/a659ea82458f26c4fefbd876368c1f133a3523e6.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/7c7325119d991499027ceb5f40b9888f12731a3a.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "41_CharKill_TachySkill",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Revenging Agent",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/6a0d5aa41e2604d75c64f9f72c9e67aeaef597ff.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/b3d9ddf2623431b57f42af0d458b361ca2ee6a50.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "42_CharKill_RangeSkill",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Cold-blooded Sniper",
+                                                                     "hidden":  0,
+                                                                     "description":  "Defeated 150 enemies with ranged attacks.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/d86f93e8d6acbe7b05403093ae80ef212d528101.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/3bec5987bcd74e1394a72a1cf0f1d7fc97eb206a.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "43_KillCharacter",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Cruel Liberator",
+                                                                     "hidden":  0,
+                                                                     "description":  "Defeated 1,500 enemies.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/85bd0961f3ee9596a1709b90d6e9d32997c101f0.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/359e03479fd923790adc9b4d48b43a6df9817def.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "44_Complete_NewGamePlus",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Repeating Protocols",
+                                                                     "hidden":  0,
+                                                                     "description":  "Completed New Game +.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/307edc2977f8c0301b550d40a4aa7bbabb8c89ac.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/d97530a9865419d333894726a7cf97436c5c95ac.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "45_Acquire_AllSkill_NewGamePlus",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Infinite Blade",
+                                                                     "hidden":  0,
+                                                                     "description":  "Learned all skills in New Game +.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/90f3a5eda284e03ce6bb34bc79314bdb463480ea.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/889d6afa736b1b69b4c46b9b5e4b43c3e90bc18a.jpg"
+                                                                 }
+                                                             ]
+                                        }
+             }
+}

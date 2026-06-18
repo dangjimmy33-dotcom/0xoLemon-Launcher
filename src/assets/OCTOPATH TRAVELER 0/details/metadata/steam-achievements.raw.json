@@ -1,0 +1,373 @@
+﻿{
+    "game":  {
+                 "gameName":  "9pcs",
+                 "gameVersion":  "23",
+                 "availableGameStats":  {
+                                            "achievements":  [
+                                                                 {
+                                                                     "name":  "ACH_ALL_ACHIEVEMENTS",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "A Story All Your Own",
+                                                                     "hidden":  0,
+                                                                     "description":  "Unlock all achievements.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/2673874420d48acf72fa76c2998e59b63a2ee69c.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/ef2a8487f800138f92cccc9671e6c5f786b63799.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_FIRST_BREAK",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "First Break",
+                                                                     "hidden":  0,
+                                                                     "description":  "Break an enemy in battle for the first time.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/45127a2edc5bc2670a83d066283f746a2d9539e2.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/ccc3c5f91edc718349d5120d7fc3f0bcadc07ec8.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_MAX_BOOST_ACTION",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Max Boost",
+                                                                     "hidden":  0,
+                                                                     "description":  "Act at maximum boost for the first time.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/6c506498c57a281528a3f40c79dc4e146b4fb119.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/4acd7d9bd64539dc35fe36f13221af0d39ade5d9.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_FIRST_ABILITY_LEARNED",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "A New Skill",
+                                                                     "hidden":  0,
+                                                                     "description":  "Learn a skill for the first time.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/6dcf2dda840995c2f6b00e0e78aca0802c8bc49c.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/58e71b48d6b00c11e6fb2d8807438c72d44bcd29.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_FIRST_8_MEMBER_BATTLE",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Octopath Battler",
+                                                                     "hidden":  0,
+                                                                     "description":  "Fight with eight travelers in your party for the first time.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/dfd99027e51612a3dfda8bd68a0e5e2bb581ce51.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/4dba2f02931525ca7576b3b5800b49440207e371.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_ELFRIC_RING_OBTAINED",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Ring of the Flamebringer",
+                                                                     "hidden":  0,
+                                                                     "description":  "Obtain the ring of Aelfric, the Flamebringer.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/aa9cacab0af1cbe2a598ec9ce613250092832fd0.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/5674bab4ed7955e699136767651f880f5706d6fa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_DREFAND_RING_OBTAINED",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Ring of the Huntress",
+                                                                     "hidden":  0,
+                                                                     "description":  "Obtain the ring of Draefendi, the Huntress.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/1c805252f2d1258fb7e8ba4a95c3556c2326b77a.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/a19f19c33e22a2de732bdf988dee656dd47d2091.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_BRAND_RING_OBTAINED",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Ring of the Thunderblade",
+                                                                     "hidden":  0,
+                                                                     "description":  "Obtain the ring of Brand, the Thunderblade.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/f400d32f094bc24f93e89a7e7f8404ab046eccde.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/f44cdad5b3354488a5a9e4e3974afc178cf68ccb.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_EBER_RING_OBTAINED",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Ring of the Prince of Thieves",
+                                                                     "hidden":  0,
+                                                                     "description":  "Obtain the ring of Aeber, Prince of Thieves.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/ffeb24e8dd50552141e083cd88d19dbf2216ada6.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/89994f564f464a27f9b2ca0d9f4173f2223bec7f.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_ALEFAN_RING_OBTAINED",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Ring of the Scholarking",
+                                                                     "hidden":  0,
+                                                                     "description":  "Obtain the ring of Alephan, the Scholarking.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/d207c63d31d109cc8a56183801231fc2e47dd31e.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/3068d923d333b48d38e178887acf1828452769de.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_BIFERGAN_RING_OBTAINED",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Ring of the Trader",
+                                                                     "hidden":  0,
+                                                                     "description":  "Obtain the ring of Bifelgan, the Trader.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/952e3725a7b5e66f8d10fea680f8047410189cd7.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/2b662153d3aee9eb19ef84a4088c59eede8016e8.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_SILTIGE_RING_OBTAINED",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Ring of the Lady of Grace",
+                                                                     "hidden":  0,
+                                                                     "description":  "Obtain the ring of Sealticge, Lady of Grace.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/06bdfbf6a462af5d1e185fce3971ae94f75c5894.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/63ee55569dbc5f5bbf1815512b8284121681ff1a.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_DOTHER_RING_OBTAINED",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Ring of the Charitable",
+                                                                     "hidden":  0,
+                                                                     "description":  "Obtain the ring of Dohter, the Charitable.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/5fdd87f35462ac5be53e356a7b38a822c679fc2f.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/4d1f3130afe4bfeeb9a3e7502c50fb0c4ab50c38.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_ENDING_A",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Champion of the Continent",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/404497ada6af8bc74e31f80f352b2160d70bfc32.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/eb6c4133144ac95417796186430cc627bbdf68bd.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_ENDING_B",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Traveler from Zero",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/3f3e1b1927cecfafff16d3e09518104718e871c3.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/58eebb7a0553523353d3e2dfc24390b56e4f4a88.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_FIRST_BUILDING_CONSTRUCTED",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "The First Construction",
+                                                                     "hidden":  0,
+                                                                     "description":  "Build a structure for the first time.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/3a64900432d6550969c83f02d92cf95389fbee32.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/432544abf2ec508a20d27170a36485a75f6c378d.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_INVITE_RESIDENT",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "The First Invitation",
+                                                                     "hidden":  0,
+                                                                     "description":  "Invite someone to live in Wishvale for the first time.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/495f304d621cc1ed15f5e1e2c7579bd9da3d4e5d.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/7b0cfb8745a9f3ffac881ed732b0c3dd49f0485c.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_BASE_CONSTRUCTION",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "The Tavern and Hub",
+                                                                     "hidden":  0,
+                                                                     "description":  "Build a hub.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/d924e12bbfc193bf38b39bb03467ca3519181248.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/73284c6816522550a9cc70369a807b51498e57d9.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_FARM_CONSTRUCTION",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Freshly Grown Vegetables",
+                                                                     "hidden":  0,
+                                                                     "description":  "Build fields.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/f61e1b4abbe5b9a3befb8a89ebae6390697020c7.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/95b1b9629a10017c82ce83af3b8cb5cb84915448.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_SHOP_CONSTRUCTION",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "A Dependable Merchant",
+                                                                     "hidden":  0,
+                                                                     "description":  "Build a shop.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/ee3caef6116c4421a0d2da38747217994450a043.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/06dc16b19100001b80626b221908966f0c6c734f.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_CHURCH_CONSTRUCTION",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "A New Church",
+                                                                     "hidden":  0,
+                                                                     "description":  "Build a church.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/1128994e9e884dd39bfb9c242f961eb6cec27d09.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/7e24a53e2bbd318c15fa3783c7e63bdcecfba3d4.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_TORCH_CONSTRUCTION",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Kindler of the Flame",
+                                                                     "hidden":  0,
+                                                                     "description":  "Build the Sacred Flame dais.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/7d1a8f5445a73daad6b20d888d61dffb51c91b7b.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/dc4b127b28410e2655a9568df4d5deb779f12dac.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_MUSEUM_CONSTRUCTION",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "A Treasure Trove of Knowledge",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/23107a287f163a0dca6e9a77ec4ef7df4234d370.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/7c35a490b6ea63a54aba6d8c67caba4040791e28.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_ARENA_CONSTRUCTION",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Overwhelming Zeal",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/9cfe64e8496e5b983b6fa5eddd7a2b415aefce28.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/01c430cb81a1f57841146f80e71b6ffc14ed4584.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_TOWN_LEVEL_MAX",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "For the Future of Wishvale",
+                                                                     "hidden":  0,
+                                                                     "description":  "Raise the town level to max.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/7cbf22d34ff33581a919fc0e551b9616a65521f3.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/3ad0b3b6c2cf57c444db39eac90f15e31e5ec160.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_ALL_TRAVELERS_RECRUITED",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "The Summoned",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/0eb12de5ec8d8717c990ea56bd9c4c2bea6f000c.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/26b4f14ec081a8e43eba80e9f70259a6d4e659e2.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_ALL_BATTLE_JOBS_OBTAINED",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Job Master",
+                                                                     "hidden":  0,
+                                                                     "description":  "Obtain all secondary jobs.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/84e1039e747fbfbc5fb805e0186cc7e829a88dc1.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/e152fab6bccfd80c74aca9ff66993b1d936447aa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_OWN_SHIP",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Setting Sail",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/50a679a931fa4f1848d8d89b61511056c88b5af6.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/8c31c59aa58a7617e61c94ea80d3cb34ffa01667.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_REACHED_HELL",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "The Door to Hell",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/5d521a02398cfbf0976efc3f24e0be1e628c7d41.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/3052248c76d86534d2aa7e49c28367343c20f978.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_ALL_LANDS_TRAVELED",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Master of Orsterra",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/0d4172acc6e7d8c90db13eb6aa8d3800a79f2349.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/06c0e956147099fd658a6f081159c1f92b7d39d9.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_DAMAGE_OVER_9999",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Hard Hitter",
+                                                                     "hidden":  0,
+                                                                     "description":  "Deal at least 9,999 damage.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/723b1af010aa9f776799a1b1a022bfbf7dc9659c.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/1f7f99640a7db0a203c96b0e77f7eec06bd7f7d4.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_ALL_MUSIC_OBTAINED",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Music Aficionado",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/dc168e13dd141b2eca52839aecb3fdfa61eb33dc.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/4f444b8e4fac82b83ed5724b846267a33f87b1fa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_ALL_TREASURES_OBTAINED",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Treasures of Legend",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/4529f4ab4f53471cace8cd77d887d63bfef31272.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/56375cfedbea777e051c00a74ab4ae678435ed01.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_ALL_HISTORIC_EQUIP_OBTAINED",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Battle-Tested Gear",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/35d4fe0c35ac7eaa4044409fb977b11ba62668ab.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/8898f8a6ad6af4ce83e9f5870c766d47de3420ee.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_KNOWN_200_RESIDENTS",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Informed Adventurer",
+                                                                     "hidden":  0,
+                                                                     "description":  "Obtain information from 200 townspeople.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/fe668e3933f1d1de189875803cf5b60163260195.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/278e13077042301fb732590734cd137ca9619143.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_MAX_TRAVELER_BOND",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "A Special Kinship",
+                                                                     "hidden":  0,
+                                                                     "description":  "Reach the highest amity level with a companion.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/6d9a727991d9719298b20f37a2bd829d9dce122b.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/a35894c345e2504d3849723942d572b73caf16a2.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_DRAGON_DEFEATED",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Dragonslayer",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/8c1f34b0d40221c912dee17c5b87abd32f1717cd.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3014320/d54cd690696d112df509eb908d144f06453b4ddc.jpg"
+                                                                 }
+                                                             ],
+                                            "stats":  [
+                                                          {
+                                                              "name":  "ACH_ALL_ACHIEVEMENTS_ACH_ALL_ACHIEVEMENTS",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "ACH_TOWN_LEVEL_MAX_ACH_TOWN_LEVEL_MAX",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "ACH_ALL_TRAVELERS_RECRUITED_ACH_ALL_TRAVELERS_RECRUITED",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "ACH_ALL_BATTLE_JOBS_OBTAINED_ACH_ALL_BATTLE_JOBS_OBTAINED",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "ACH_ALL_LANDS_TRAVELED_ACH_ALL_LANDS_TRAVELED",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "ACH_ALL_MUSIC_OBTAINED_ACH_ALL_MUSIC_OBTAINED",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "ACH_ALL_HISTORIC_EQUIP_OBTAINED_ACH_ALL_HISTORIC_EQUIP_OBTAINED",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "ACH_KNOWN_200_RESIDENTS_ACH_KNOWN_200_RESIDENTS",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          }
+                                                      ]
+                                        }
+             }
+}

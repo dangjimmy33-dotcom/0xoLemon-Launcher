@@ -2,7 +2,7 @@ use std::env;
 use std::path::PathBuf;
 
 use first_light_launcher::builder::{
-    build_depot, BuildDepotInput, BuildVersionInput, PublishTarget,
+    build_depot, BuildDepotInput, BuildVersionInput, DepotEncryptionConfig, PublishTarget,
 };
 
 fn main() {
@@ -22,6 +22,50 @@ fn run() -> Result<(), String> {
             Err("expected build-pair or build-version command".to_string())
         }
     }
+}
+
+fn encryption_config(args: &[String]) -> DepotEncryptionConfig {
+    let disabled = has_flag(args, "--no-encrypt-packs") || has_flag(args, "--plain-packs");
+    let explicitly_enabled = has_flag(args, "--encrypt-packs");
+    let config = DepotEncryptionConfig {
+        enabled: explicitly_enabled || !disabled,
+        key_material: take_arg(args, "--encryption-key")
+            .ok()
+            .or_else(|| take_arg(args, "--depot-key").ok()),
+        key_id: take_arg(args, "--encryption-key-id").ok(),
+    };
+    eprintln!(
+        "[DEPOT] transport encryption: {}",
+        if config.enabled {
+            "enabled"
+        } else {
+            "disabled"
+        }
+    );
+    config
+}
+
+fn pack_target_size(args: &[String]) -> u64 {
+    let mb = take_arg(args, "--pack-target-mb")
+        .or_else(|_| take_arg(args, "--pack-size-mb"))
+        .ok()
+        .and_then(|value| value.trim().parse::<u64>().ok())
+        .unwrap_or(256);
+    let mb = mb.clamp(4, 4096);
+    mb * 1024 * 1024
+}
+
+fn pack_id_prefix(args: &[String]) -> String {
+    take_arg(args, "--pack-id-prefix")
+        .or_else(|_| take_arg(args, "--pack-prefix"))
+        .unwrap_or_else(|_| "pack-".to_string())
+}
+
+fn pack_start_index(args: &[String]) -> Option<usize> {
+    take_arg(args, "--pack-start-index")
+        .or_else(|_| take_arg(args, "--pack-start"))
+        .ok()
+        .and_then(|value| value.trim().parse::<usize>().ok())
 }
 
 fn build_pair(args: &[String]) -> Result<(), String> {
@@ -61,6 +105,10 @@ fn build_pair(args: &[String]) -> Result<(), String> {
             delete_local_packs: !keep_local_packs,
         }),
         extend_existing,
+        encryption: encryption_config(args),
+        pack_target_size: pack_target_size(args),
+        pack_id_prefix: pack_id_prefix(args),
+        start_pack_index: pack_start_index(args),
     })
     .map_err(|err| err.to_string())?;
 
@@ -99,6 +147,10 @@ fn build_version(args: &[String]) -> Result<(), String> {
             delete_local_packs: !keep_local_packs,
         }),
         extend_existing,
+        encryption: encryption_config(args),
+        pack_target_size: pack_target_size(args),
+        pack_id_prefix: pack_id_prefix(args),
+        start_pack_index: pack_start_index(args),
     })
     .map_err(|err| err.to_string())?;
 
@@ -122,6 +174,6 @@ fn take_arg(args: &[String], name: &str) -> Result<String, String> {
 
 fn print_usage() {
     eprintln!(
-        "usage:\n  depot_builder build-pair --old-input <path> --new-input <path> --out <path> [--old-version v1.0] [--new-version v1.1] [--game-id 007-first-light] [--launch-executable <relative-exe>] [--upload-repo owner/repo --repo-type dataset --repo-prefix 007-first-light] [--keep-local-packs] [--extend-existing]\n  depot_builder build-version --input <path> --version <version> --out <path> --game-id <game-id> [--launch-executable <relative-exe>] [--upload-repo owner/repo --repo-type dataset --repo-prefix <prefix>] [--keep-local-packs] [--extend-existing]"
+        "usage:\n  depot_builder build-pair --old-input <path> --new-input <path> --out <path> [--old-version v1.0] [--new-version v1.1] [--game-id 007-first-light] [--launch-executable <relative-exe>] [--upload-repo owner/repo --repo-type dataset --repo-prefix 007-first-light] [--keep-local-packs] [--extend-existing] [--pack-target-mb 128] [--pack-id-prefix pack-] [--pack-start-index 0] [--encrypt-packs|--encryption-key <key>|--no-encrypt-packs]\n  depot_builder build-version --input <path> --version <version> --out <path> --game-id <game-id> [--launch-executable <relative-exe>] [--upload-repo owner/repo --repo-type dataset --repo-prefix <prefix>] [--keep-local-packs] [--extend-existing] [--pack-target-mb 128] [--pack-id-prefix pack-] [--pack-start-index 0] [--encrypt-packs|--encryption-key <key>|--no-encrypt-packs]"
     );
 }

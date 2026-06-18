@@ -3,6 +3,8 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
+use crate::launch::GameLaunchConfig;
+
 #[derive(Debug, Error)]
 pub enum AssetPackError {
     #[error("asset pack io error: {0}")]
@@ -43,6 +45,8 @@ pub struct GameSummary {
     pub logo_asset_id: String,
     pub icon_asset_id: String,
     pub install: GameInstallMetadata,
+    #[serde(default)]
+    pub launch: GameLaunchConfig,
     pub asset_pack_path: String,
 }
 
@@ -86,6 +90,8 @@ pub struct GameDetail {
     pub achievements: Vec<GameAchievement>,
     pub sounds: Vec<GameSound>,
     pub install: GameInstallMetadata,
+    #[serde(default)]
+    pub launch: GameLaunchConfig,
     pub description_images: Vec<String>,
     pub versions: Vec<GameVersionInfo>,
     pub metadata_source: String,
@@ -187,6 +193,7 @@ pub(super) struct RemoteAchievement {
     pub(super) name: String,
     pub(super) description: String,
     pub(super) hidden: bool,
+    pub(super) icon_url: String,
 }
 
 #[derive(Debug, Clone)]

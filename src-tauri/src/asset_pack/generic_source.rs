@@ -5,11 +5,13 @@ use std::path::{Path, PathBuf};
 use chrono::Utc;
 use serde_json::Value;
 
+use crate::launch::load_source_launch_config;
 use crate::manifest::{Catalog, VersionManifest};
+use crate::remote_paths::launch_executable_for_game_id;
 
 use super::{
-    add_file_asset, add_font_assets, asset_id, default_i18n, mime_for_path, title_from_slug,
-    AssetPackError, AssetPackManifest, GameAchievement, GameCatalog, GameDetail,
+    add_file_asset, add_font_assets, asset_id, default_i18n, mime_for_path, remote_asset_id,
+    title_from_slug, AssetPackError, AssetPackManifest, GameAchievement, GameCatalog, GameDetail,
     GameInstallMetadata, GameMedia, GameRating, GameSound, GameSummary, GameVersionInfo, RawAsset,
     SourceAssetBuild,
 };
@@ -25,13 +27,26 @@ pub(super) fn build_generic_manifest_and_assets(
         .join("details")
         .join("metadata")
         .join("media-manifest.json");
-    let metadata: Value = read_json_file(&metadata_path)?;
-    let media_manifest: Value = read_json_file(&media_manifest_path)?;
+    let metadata: Value =
+        read_json_file(&metadata_path).unwrap_or_else(|_| fallback_metadata(source));
+    let media_manifest: Value =
+        read_json_file(&media_manifest_path).unwrap_or_else(|_| Value::Array(Vec::new()));
 
     let title = value_string(metadata.get("title")).unwrap_or_else(|| source_title(source));
-    let game_id = slugify(&title);
-    let app_id = value_u64(metadata.get("appId")).unwrap_or_default();
-    let install = generic_install_metadata(&title);
+    let game_id = value_string(metadata.get("gameId"))
+        .map(|value| slugify(&value))
+        .filter(|value| !value.is_empty())
+        .unwrap_or_else(|| slugify(&title));
+    let app_id = value_u64(metadata.get("appId"))
+        .or_else(|| {
+            std::env::var("OXO_ASSET_APP_ID")
+                .ok()
+                .and_then(|value| value.parse().ok())
+        })
+        .unwrap_or_default();
+    let install = generic_install_metadata(&game_id, &title);
+    let launch = load_source_launch_config(source, &game_id, &install.launch_executable)
+        .map_err(AssetPackError::InvalidPack)?;
     let versions = detect_generic_versions(&game_id, app_id);
     let latest_version = versions
         .iter()
@@ -70,9 +85,12 @@ pub(super) fn build_generic_manifest_and_assets(
         game_id: game_id.clone(),
         locale: "en-US".to_string(),
         title: title.clone(),
-        short_description: value_string(metadata.get("shortDescription")).unwrap_or_default(),
+        short_description: value_string(metadata.get("shortDescription"))
+            .unwrap_or_else(|| "Game metadata is stored as remote URLs and can be refreshed with the asset tool.".to_string()),
         detailed_description: rewrite_description_tokens(
-            value_string(metadata.get("detailedDescriptionHtml")).unwrap_or_default(),
+            value_string(metadata.get("detailedDescriptionHtml"))
+                .or_else(|| value_string(metadata.get("aboutTheGameHtml")))
+                .unwrap_or_else(|| "<p>No description available. Run the asset fetch step once to write remote Steam metadata.</p>".to_string()),
             &description_images,
         ),
         developers: if developers.is_empty() {
@@ -81,7 +99,11 @@ pub(super) fn build_generic_manifest_and_assets(
             developers.clone()
         },
         publishers: if publishers.is_empty() {
-            developers.clone()
+            if developers.is_empty() {
+                vec!["Unknown publisher".to_string()]
+            } else {
+                developers.clone()
+            }
         } else {
             publishers.clone()
         },
@@ -97,6 +119,7 @@ pub(super) fn build_generic_manifest_and_assets(
         achievements: achievements.clone(),
         sounds,
         install: install.clone(),
+        launch: launch.clone(),
         description_images: description_images.values().cloned().collect::<Vec<_>>(),
         versions: versions.clone(),
         metadata_source: value_string(metadata.get("source"))
@@ -128,6 +151,7 @@ pub(super) fn build_generic_manifest_and_assets(
         logo_asset_id: logo_id,
         icon_asset_id: icon_id,
         install,
+        launch,
         asset_pack_path: format!("assets/games/{game_id}/core.0xo"),
     };
 
@@ -183,73 +207,144 @@ fn add_generic_media_assets(
         let role = value_string(item.get("role")).unwrap_or_default();
         let title = value_string(item.get("title")).unwrap_or_else(|| title_from_slug(&role));
         let relative_file = value_string(item.get("file")).unwrap_or_default();
-        if relative_file.is_empty() {
-            continue;
-        }
-        let path = details_root.join(relative_to_path(&relative_file));
-        if !path.exists() {
-            continue;
-        }
+        let source_url = value_string(item.get("sourceUrl"))
+            .or_else(|| value_string(item.get("url")))
+            .unwrap_or_default();
+        let remote_only = item
+            .get("remoteOnly")
+            .and_then(Value::as_bool)
+            .unwrap_or(false);
+
+        let local_path = if remote_only || relative_file.is_empty() {
+            None
+        } else {
+            let path = details_root.join(relative_to_path(&relative_file));
+            path.exists().then_some(path)
+        };
+
+        let make_asset = |assets: &mut HashMap<String, RawAsset>,
+                          role_for_asset: &str,
+                          logical: &str,
+                          local_path: Option<&Path>|
+         -> Result<Option<(String, String)>, AssetPackError> {
+            if let Some(path) = local_path {
+                let asset = asset_id(game_id, logical);
+                add_file_asset(assets, game_id, role_for_asset, &asset, path)?;
+                return Ok(Some((asset, mime_for_path(path))));
+            }
+            if !source_url.trim().is_empty() {
+                return Ok(Some((
+                    remote_asset_id(&source_url),
+                    mime_for_remote_url(&source_url, role_for_asset),
+                )));
+            }
+            Ok(None)
+        };
 
         match role.as_str() {
-            "video" => {
+            "video" | "video-preview" | "trailer" | "movie" => {
                 let media_id = format!("movie-{video_index:02}");
-                let asset = asset_id(game_id, &format!("media:{media_id}"));
-                add_file_asset(assets, game_id, "video", &asset, &path)?;
-                media.push(GameMedia {
-                    id: media_id,
-                    role: "video".to_string(),
-                    title,
-                    mime_type: mime_for_path(&path),
-                    asset_id: asset,
-                });
-                video_index += 1;
+                if let Some((asset, mime_type)) = make_asset(
+                    assets,
+                    "video",
+                    &format!("media:{media_id}"),
+                    local_path.as_deref(),
+                )? {
+                    media.push(GameMedia {
+                        id: media_id,
+                        role: "video".to_string(),
+                        title,
+                        mime_type,
+                        asset_id: asset,
+                    });
+                    video_index += 1;
+                }
             }
-            "video-thumbnail" | "video-poster" => {
+            "video-thumbnail" | "video-poster" | "video-thumb" | "poster" => {
                 let thumb_index = video_index.saturating_sub(1);
                 let media_id = format!("movie-thumb-{thumb_index:02}");
                 if media.iter().any(|existing| existing.id == media_id) {
                     continue;
                 }
-                let asset = asset_id(game_id, &format!("media:{media_id}"));
-                add_file_asset(assets, game_id, "video-thumb", &asset, &path)?;
-                media.push(GameMedia {
-                    id: media_id,
-                    role: "video-thumb".to_string(),
-                    title,
-                    mime_type: mime_for_path(&path),
-                    asset_id: asset,
-                });
+                if let Some((asset, mime_type)) = make_asset(
+                    assets,
+                    "video-thumb",
+                    &format!("media:{media_id}"),
+                    local_path.as_deref(),
+                )? {
+                    media.push(GameMedia {
+                        id: media_id,
+                        role: "video-thumb".to_string(),
+                        title,
+                        mime_type,
+                        asset_id: asset,
+                    });
+                }
             }
-            "screenshot" => {
+            "screenshot" | "image" => {
                 let media_id = format!("screenshot-{screenshot_index:02}");
-                let asset = asset_id(game_id, &format!("media:{media_id}"));
-                add_file_asset(assets, game_id, "screenshot", &asset, &path)?;
-                media.push(GameMedia {
-                    id: media_id,
-                    role: "screenshot".to_string(),
-                    title,
-                    mime_type: mime_for_path(&path),
-                    asset_id: asset,
-                });
-                screenshot_index += 1;
+                if let Some((asset, mime_type)) = make_asset(
+                    assets,
+                    "screenshot",
+                    &format!("media:{media_id}"),
+                    local_path.as_deref(),
+                )? {
+                    media.push(GameMedia {
+                        id: media_id,
+                        role: "screenshot".to_string(),
+                        title,
+                        mime_type,
+                        asset_id: asset,
+                    });
+                    screenshot_index += 1;
+                }
             }
-            "description-image" => {
+            "description-image" | "description_image" | "desc-image" => {
                 let media_id = format!("desc-img-{description_index:02}");
-                let asset = asset_id(game_id, &media_id);
-                add_file_asset(assets, game_id, "description-image", &asset, &path)?;
-                description_images.insert(relative_file.replace('\\', "/"), asset);
-                description_index += 1;
+                if let Some((asset, _mime_type)) = make_asset(
+                    assets,
+                    "description-image",
+                    &media_id,
+                    local_path.as_deref(),
+                )? {
+                    if !relative_file.is_empty() {
+                        description_images.insert(relative_file.replace('\\', "/"), asset);
+                    } else if !source_url.trim().is_empty() {
+                        description_images.insert(source_url.clone(), asset);
+                    }
+                    description_index += 1;
+                }
             }
             _ => {
                 let media_id = format!("store-{}-{}", slugify(&role), media.len());
-                let asset = asset_id(game_id, &format!("media:{media_id}"));
-                add_file_asset(assets, game_id, &role, &asset, &path)?;
+                let _ = make_asset(
+                    assets,
+                    &role,
+                    &format!("media:{media_id}"),
+                    local_path.as_deref(),
+                )?;
             }
         }
     }
 
     Ok((media, description_images))
+}
+
+fn mime_for_remote_url(url: &str, role: &str) -> String {
+    let clean = url.split('?').next().unwrap_or(url).to_ascii_lowercase();
+    if role == "video" || clean.ends_with(".mp4") {
+        "video/mp4".to_string()
+    } else if clean.ends_with(".webm") {
+        "video/webm".to_string()
+    } else if clean.ends_with(".png") {
+        "image/png".to_string()
+    } else if clean.ends_with(".webp") {
+        "image/webp".to_string()
+    } else if clean.ends_with(".avif") {
+        "image/avif".to_string()
+    } else {
+        "image/jpeg".to_string()
+    }
 }
 
 fn add_generic_achievement_assets(
@@ -266,19 +361,31 @@ fn add_generic_achievement_assets(
     let mut achievements = Vec::with_capacity(items.len());
 
     for (index, item) in items.iter().enumerate() {
-        let icon_file = value_string(item.get("iconFile")).unwrap_or_default();
-        if icon_file.is_empty() {
-            continue;
-        }
-        let path = source.join(relative_to_path(&icon_file));
-        if !path.exists() {
-            continue;
-        }
         let raw_id =
             value_string(item.get("apiName")).unwrap_or_else(|| format!("achievement-{index:02}"));
         let id = slugify(&raw_id);
-        let asset = asset_id(game_id, &format!("achievement:{id}"));
-        add_file_asset(assets, game_id, "achievement", &asset, &path)?;
+        let icon_file = value_string(item.get("iconFile")).unwrap_or_default();
+        let steam_icon = value_string(item.get("steamIcon"))
+            .or_else(|| value_string(item.get("icon")))
+            .unwrap_or_default();
+
+        let asset = if !icon_file.is_empty() {
+            let path = source.join(relative_to_path(&icon_file));
+            if path.exists() {
+                let asset = asset_id(game_id, &format!("achievement:{id}"));
+                add_file_asset(assets, game_id, "achievement", &asset, &path)?;
+                asset
+            } else if !steam_icon.trim().is_empty() {
+                remote_asset_id(&steam_icon)
+            } else {
+                continue;
+            }
+        } else if !steam_icon.trim().is_empty() {
+            remote_asset_id(&steam_icon)
+        } else {
+            continue;
+        };
+
         achievements.push(GameAchievement {
             id,
             name: value_string(item.get("displayName")).unwrap_or_else(|| title_from_slug(&raw_id)),
@@ -331,7 +438,7 @@ fn add_generic_sound_assets(
     Ok(sounds)
 }
 
-fn generic_install_metadata(title: &str) -> GameInstallMetadata {
+fn generic_install_metadata(game_id: &str, title: &str) -> GameInstallMetadata {
     let common = format!(r"E:\0xoLemon store\common\{title}");
     let downloading = format!(r"E:\0xoLemon store\downloading\{title}");
     GameInstallMetadata {
@@ -340,7 +447,7 @@ fn generic_install_metadata(title: &str) -> GameInstallMetadata {
         default_downloading_folder: downloading,
         storage_label: "SSD".to_string(),
         supports_resume: true,
-        launch_executable: format!("{title}.exe"),
+        launch_executable: launch_executable_for_game_id(game_id),
     }
 }
 
@@ -370,7 +477,8 @@ fn detect_generic_versions(game_id: &str, app_id: u64) -> Vec<GameVersionInfo> {
                             format!("Steam {app_id}")
                         },
                         size_bytes: size,
-                        latest: Some(entry.version.clone()) == catalog.effective_latest_version().map(str::to_string),
+                        latest: Some(entry.version.clone())
+                            == catalog.effective_latest_version().map(str::to_string),
                     }
                 })
                 .collect::<Vec<_>>()
@@ -421,13 +529,19 @@ fn find_prefixed_file(source: &Path, prefix: &str) -> Option<PathBuf> {
         .collect::<Vec<_>>();
     entries.sort_by_key(|entry| {
         let name = entry.file_name().to_string_lossy().to_ascii_lowercase();
-        match Path::new(&name).extension().and_then(|ext| ext.to_str()) {
+        let stem_len = Path::new(&name)
+            .file_stem()
+            .and_then(|stem| stem.to_str())
+            .map(|stem| stem.len())
+            .unwrap_or(usize::MAX);
+        let ext_rank = match Path::new(&name).extension().and_then(|ext| ext.to_str()) {
             Some("webp") => 0,
             Some("png") => 1,
             Some("jpg") | Some("jpeg") => 2,
             Some("ico") => 3,
             _ => 9,
-        }
+        };
+        (stem_len, ext_rank, name)
     });
     entries.into_iter().next().map(|entry| entry.path())
 }
@@ -445,6 +559,27 @@ fn source_title(source: &Path) -> String {
         .file_name()
         .map(|name| name.to_string_lossy().to_string())
         .unwrap_or_else(|| "Game".to_string())
+}
+
+fn fallback_metadata(source: &Path) -> Value {
+    let title = std::env::var("OXO_ASSET_GAME_NAME").unwrap_or_else(|_| source_title(source));
+    let app_id = std::env::var("OXO_ASSET_APP_ID")
+        .ok()
+        .and_then(|value| value.parse::<u64>().ok())
+        .unwrap_or_default();
+    serde_json::json!({
+        "appId": app_id,
+        "title": title,
+        "shortDescription": "Remote metadata has not been fetched yet.",
+        "detailedDescriptionHtml": "<p>No description available. Use the asset fetch step once to write Steam remote metadata.</p>",
+        "developers": [],
+        "publishers": [],
+        "releaseDate": { "date": "" },
+        "genres": [],
+        "categories": [],
+        "achievements": { "total": 0, "items": [] },
+        "source": "fallback-generic"
+    })
 }
 
 fn read_json_file(path: &Path) -> Result<Value, AssetPackError> {
@@ -473,11 +608,30 @@ fn value_strings(value: Option<&Value>) -> Vec<String> {
     match value {
         Some(Value::Array(items)) => items
             .iter()
-            .filter_map(|item| value_string(Some(item)))
+            .filter_map(|item| {
+                value_string(Some(item))
+                    .or_else(|| {
+                        item.get("description")
+                            .and_then(|value| value_string(Some(value)))
+                    })
+                    .or_else(|| item.get("name").and_then(|value| value_string(Some(value))))
+            })
+            .flat_map(split_list_text)
             .collect(),
-        Some(Value::String(text)) if !text.trim().is_empty() => vec![text.trim().to_string()],
+        Some(Value::String(text)) if !text.trim().is_empty() => {
+            split_list_text(text.trim().to_string()).collect()
+        }
         _ => Vec::new(),
     }
+}
+
+fn split_list_text(text: String) -> impl Iterator<Item = String> {
+    text.split(',')
+        .map(str::trim)
+        .filter(|part| !part.is_empty())
+        .map(ToString::to_string)
+        .collect::<Vec<_>>()
+        .into_iter()
 }
 
 fn slugify(value: &str) -> String {

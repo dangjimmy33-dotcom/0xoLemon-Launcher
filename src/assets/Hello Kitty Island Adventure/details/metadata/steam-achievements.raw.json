@@ -1,0 +1,578 @@
+﻿{
+    "game":  {
+                 "gameName":  "Hello Kitty Island Adventure",
+                 "gameVersion":  "17",
+                 "availableGameStats":  {
+                                            "achievements":  [
+                                                                 {
+                                                                     "name":  "ACH_HappyLanding",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Happy Landing!",
+                                                                     "hidden":  0,
+                                                                     "description":  "Another Happy Landing!",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/eba5e5f552c52e31fadd8aede013c9a8c7704f6c.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/54ed46e1e8937afe03fc19a36617e23a79181a63.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_DinosaursNotIncluded",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Dinosaurs Not Included",
+                                                                     "hidden":  0,
+                                                                     "description":  "Open the Resort Gate with Chococat",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/e985040dfb39ae094dad4e2cc3672dca2208a18f.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/1777697fc5a29deab7496f0d0ebc0b12f9e24fe9.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_BogChamp",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Bog Champ",
+                                                                     "hidden":  0,
+                                                                     "description":  "Restore the Spooky Swamp",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/4d50ed7a9259a64c3237dd96b27dcc9b29ac086c.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/a00676ce9ee673e229c3a2c0a729b994443309ed.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_MansionCleared",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Definitely Haunted",
+                                                                     "hidden":  0,
+                                                                     "description":  "Restore the Haunted Mansion",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/0d46fdcbbab7922296a9d531edf4163abc877e10.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/8c666db98e055ecab3b662ce98b98b4337f804a0.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_NaturePreserve",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "A New Home",
+                                                                     "hidden":  0,
+                                                                     "description":  "Open the Nature Preserve",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/8851e0fadfbf5cb646f33f257e6cbd455d0323f4.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/fe7c2a18ec19eb0b5c83541d85e9387b0e0dcfe6.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_ReviveReef",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Reef Revival",
+                                                                     "hidden":  0,
+                                                                     "description":  "Fully restore Rainbow Reef",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/28c3441623eadf8892cf1230304a89cdd0e9dabb.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/8b6c852b6d1847a64416b50c28ce773518d122c3.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_Mermaidifier",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Mermaids are Real",
+                                                                     "hidden":  0,
+                                                                     "description":  "Activate the Mermaidifier",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/4005068ecfce3f961d4f88113ba5590b4894d158.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/01bdff9fd418a8f91414b9fe86720f62bb66ae27.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_BandRestored",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Swing Partners",
+                                                                     "hidden":  0,
+                                                                     "description":  "Reboot the Dance Hall band",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/dc8963df7fcab8a96ef9eba6cbc17fa09d6551ef.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/1f8ae5ef2929251ce9087dfa8ba7043256b3dc91.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_OasisRestored",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Paradise in the Desert",
+                                                                     "hidden":  0,
+                                                                     "description":  "Restore the Oasis",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/6b54947151fa1148b6e4d38629d34893711c57b0.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/d51b402abc7bb616df13aef9f352f74368c5a435.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_VolcanoFiredUp",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Rage Mode",
+                                                                     "hidden":  0,
+                                                                     "description":  "Ignited the Volcano with Retsuko\u0027s Rage",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/e0fcde04c2e7472025158abb1f70e4128f8d3e1e.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/b749af4b9430682110117caf2e1d6a24842e1fdd.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_FreeBC",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Friendship Forever",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/4465cd7b5bdfd636445aaf63509d347665036ff4.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/9e5e4aad121ba69c93b15351673beb1d62b869ca.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_Haunted",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Haunted",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/61cb5d3a1c64ca8c4a34dda86d46416526d5fb69.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/f8259ffd642e73e812cdade310a9633784a68ea7.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_NapTime",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Nap Time",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/02ce12bfce9f2a351d97ba7b1ec8ee5cbda5e523.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/83871db5834e046dff6fce875815bf377cf54c82.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_StickNation",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Stick Nation",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/83ac35adae9ed1401d6b88cc5432c0b85588a85f.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/3eef4228bff703399b7e627fa3e696eb86d6eb8d.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_HappyHattery",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Happy Hattery",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/bffbeccb74435b08b8c2b03f79e29462aebecb94.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/ec8f96a367d382fd81dc19f9407163f02534497a.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_HelloBestie",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Hello Bestie!",
+                                                                     "hidden":  0,
+                                                                     "description":  "Become Best Friends with Hello Kitty",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/17accbfbd01461979909cc04615692717e2621ce.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/53910ead62944e9e00486bbbfd4a0a971fc7dc25.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_EveryonesBestie",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Everyone\u0027s Bestie",
+                                                                     "hidden":  0,
+                                                                     "description":  "Become Best Friends with 15 Characters",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/a660300ba42f21ace2699603a98e3004e6729b34.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/791877b3cd443cea133ada16550238a305d840d1.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_BakingBliss",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Baking Bliss",
+                                                                     "hidden":  0,
+                                                                     "description":  "Unlock 20 recipes at the Oven",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/88cfd6425bcf04f94ad63c5e0a721d27ae110766.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/38e5ec78f532d4906fdedff3c482f6c77cf71238.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_PizzaPerfection",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Pizza Perfection",
+                                                                     "hidden":  0,
+                                                                     "description":  "Unlock 11 recipes at the Pizza Oven",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/a7a2b769822fde98f5c90afb10ad4c150757b7e4.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/51d5f746aaf13f0461b0c02f1fd962fcea7c4100.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_SodaSatisfaction",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Soda Satisfaction",
+                                                                     "hidden":  0,
+                                                                     "description":  "Unlock 14 recipes at the Soda Fountain",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/f6e1c2937403ab1f4fc796d205c6618b16919ad0.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/e0f2404cad7062db8af0bf4691e585935e5d0378.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_DeliciousDesserts",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Delicious Desserts",
+                                                                     "hidden":  0,
+                                                                     "description":  "Unlock 16 recipes at the Dessert Boat",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/aaceccf6c870d93d05fe71d25fd86b9e9107079b.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/74937b0945c9ae872b852390f495f26c3f16c996.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_ExcellentEspresso",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Excellent Espresso",
+                                                                     "hidden":  0,
+                                                                     "description":  "Unlock 13 recipes at the Espresso Machine",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/e9d0855148f3fef2356d1ec9a8240ac4b36adfa8.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/12565555f091db523168bc8d42d37054a5df3141.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_CandyConnoisseur",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Candy Connoisseur",
+                                                                     "hidden":  0,
+                                                                     "description":  "Unlock 10 recipes at the Candy Cloud Station",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/eab885ff70cf2eedfd0beccb36567d0cbf1c64b6.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/bc4bb7c3341665259b068ed5c357f6013b8bc576.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_EggcellentChef",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Egg-cellent Chef",
+                                                                     "hidden":  0,
+                                                                     "description":  "Unlock 14 recipes at the Egg Pan Station",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/849013493b40dd3f722f3b8c0d2f871a2579e611.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/f378cb8d0cf8816e02f2856bd895f8674c3c2363.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_ForTheLoveOfBaking",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "For the Love of Baking",
+                                                                     "hidden":  0,
+                                                                     "description":  "Cook 100 recipes",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/a914f14bc4ea257844988bee7be680d7bb02faca.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/6d179f5b6b31127a53b6d090e943a965b5ceac42.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_SuperbGiftGiver",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Superb Gift Giver",
+                                                                     "hidden":  0,
+                                                                     "description":  "Give 50 3-star gifts",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/90d41938911d9d5b15f319243280fb9a119785e7.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/cc8ea90973d9484f16b897a1acd19fb5021d1c28.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_MasterOfTheRuins",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Master of the Ruins",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete 20 puzzle rooms",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/292fd44e20d2049e820e95074f5967217b5494b8.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/aa64cc8e3d19086cf8f11743377da415fe75721e.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_TrueGamer",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "True Gamer",
+                                                                     "hidden":  0,
+                                                                     "description":  "Play All the Mini Games Around Friendship Island",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/6374e69c1c8a154accc29b077d7f85c33dfd854f.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/e4393e6a92c4d11e4294e4be2637a5b0ab95f263.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_EveryoneIsWelcome",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Everyone is Welcome",
+                                                                     "hidden":  0,
+                                                                     "description":  "Have 20 Visitors at 5 Stars",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/6f4f457897d7ce0f12ff616d60c512b12d8e29eb.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/cff964c7431b29b399e0cc3d5d6c464f0a3bf0b1.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_TimeForMilk",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Time for Milk",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/bcd7f96d481204cc86bccfb6f20757f2d576e776.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/36dab9e64759234f6b7a2628c3647d864e4f7eea.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_TravelingParty",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Traveling Party",
+                                                                     "hidden":  0,
+                                                                     "description":  "Companion with one of your friends",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/e0a33df0790fbec041bc4f7b995c307a294e389f.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/5a2ef0742cd91b4be551706c207a002f0acac35a.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_ThroughThickAndThin",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Through Thick and Thin",
+                                                                     "hidden":  0,
+                                                                     "description":  "Have a character follow you to the lowest trench and the tallest peak",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/33df5509c1258e63a2ecefe8c194c25c3a9a78f9.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/014c327030d2a00d46aa98b818170fc091ff74fa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_BakersDozen",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "A Bakers Dozen!",
+                                                                     "hidden":  0,
+                                                                     "description":  "Take Photos of 13 gudetama",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/9e1f58314ec8fc73833415308fb8efceff281820.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/b76c494f7a324db7d157648edf07b6a19cbbd1ba.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_DozensSurely",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Dozens Surely!",
+                                                                     "hidden":  0,
+                                                                     "description":  "Take Photos of 120 gudetama",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/1d93cbf00de5d16dc0e3cbac117a3d399b69f9d2.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/558d39ec0c1b55fa8238574587fc5dc6d611afe2.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_OpenForVisits",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Open for Visits",
+                                                                     "hidden":  0,
+                                                                     "description":  "Unlock a Visitor Cabin",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/c58e27f1dddaa2bfb1f29bc2b75808d748df3773.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/1de77164a8ea7ff3fcec0efaf6542225ebead6ee.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_VacationHotSpot",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Cabin Crazy",
+                                                                     "hidden":  0,
+                                                                     "description":  "Repair twenty five visitor cabins",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/b91bae38a47abae61069ed8675cde9d50d799c60.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/68ea9ef157abffb11db9fc60d4f299994dc6bcf4.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_TropicalChallenge",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Tropical Challenge",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/4fd8450a439bc2db6edb543be4b5bdf28843a750.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/b67bfea4ef14e1c32e320e8c99a8b4caa9dc7349.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_SwampyChallenge",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Swampy Challenge",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/0a9cc00408bf1d24214b1e34147ef0a19c4cb8e7.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/0ac48095df440494ac18d5e18f6dbf804b4dc883.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_RockyChallenge",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Rocky Challenge",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/9ad36fea4a43a5943b4d7bce047d34ef78a2b716.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/11248919fb2b524629c176548da877f43abda868.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_VolcanicChallenge",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Volcanic Challenge",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/707cc0de11802a3bff7f0dc44a9f3681d157aee5.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/745b200be9c1534fca893bae874bdf1856be2f71.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_AquaticChallenge",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Aquatic Challenge",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/8642b047b00e8e47c4f090c07ec35198725cf84c.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/e613163de8faff7615180c0b890eacc891de72aa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_FloatingChallenge",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Floating Challenge",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/7ed10b25d8e7773c6839362d8f12dcfdbb08b087.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/7cb8b087159e9f684e380abba30867aaa7d59a68.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_FloralChallenge",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Floral Challenge",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/4e9885502d32ab5a56f68ffaa58d09cb7ed042b9.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/d2de4ee7fa1899d839e14db2d494083e03aa7c78.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_RareFlower",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Floral Pattern",
+                                                                     "hidden":  0,
+                                                                     "description":  "Obtain a patterned flower",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/2a61947d4a583475d1046fe3f40e47a1b22e688a.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/8fdfac3c4fa0eb1c8d51075013cf78f18d6149b6.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_FlowerCollector",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Flower Collector",
+                                                                     "hidden":  0,
+                                                                     "description":  "Obtain 10 unique Flower Types",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/e87fcfb75364890afdd4e3348c2a3fb2191c27fd.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/bb8de631c077204fd8f4ace643ad05bd4700475f.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_AdornedInFlowers",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Adorned in Flowers",
+                                                                     "hidden":  0,
+                                                                     "description":  "Create a Flower Crown",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/4a805bfa2b06330ba80622b77d03b610c83692a6.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/070a2992346c694beb2128e225a05e34c9e68741.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_BehindTheWaterfall",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Behind the Waterfall",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/7b9fd7201aef93d1893ca485bc4915285e2542ea.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/04ac3a1e5890adbf5b3cf9d2dd52f05ca97f906d.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_RegionalExplorer",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Regional Explorer",
+                                                                     "hidden":  0,
+                                                                     "description":  "Reach every Region on Friendship Island",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/79beae2ec71a6614c5bc3be084fc72630654cd24.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/42f169c9809d7b15d43c8b043db5485e03123a24.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_MasterAngler",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Master Angler",
+                                                                     "hidden":  0,
+                                                                     "description":  "Catch 100 Fish",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/8f872711da1a99bb805f7e0a5bfc442886a3a143.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/248ebc83b63ca9f61b3d5e22aca82e602a052023.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_CritterMaster",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Critter Master",
+                                                                     "hidden":  0,
+                                                                     "description":  "Catch 100 Critters",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/bb0b370f9c0ab0c67f195d73ac06e2d733077626.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/8af6e054bda436b9505f496de1e9cf676de5b432.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_NewHeights",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "New Heights",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/80336184f94e4345b3ed03eebb4c77282f59a5b3.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/ca96756c794a819f49e350fcf3e7c572a40efc5e.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_FriendshipRestored",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Friendships Restored",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/5f78751db12b2f67f50ba8855b28e063ded94628.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/f44c5fd9be21059a87cecbd1ea38ae7fb1c39e1d.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_EnragingRuins",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Ruining Rampage",
+                                                                     "hidden":  0,
+                                                                     "description":  "Explore the Red Hot Ruins",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/21aa27b8679b537d6a20981e1fb8bae8b1f0618d.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2495100/39778c574ba96d187778e0d9ed095ddc778ee1ab.jpg"
+                                                                 }
+                                                             ],
+                                            "stats":  [
+                                                          {
+                                                              "name":  "Stat_Tutorial",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_gate",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_restoreswamp",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_restoremansion",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_naturepreserve",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_dancehall",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_oasis",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_volcanofiredup",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_freebc",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_revivereef",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_mermaidifierrestored",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_fallinmansion",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_naptime",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_sticknation",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_bestfriends",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_recipesmade",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_ovenrecipes",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_pizzarecipes",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_sodarecipes",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_dessertrecipes",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_espressorecipes",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          }
+                                                      ]
+                                        }
+             }
+}

@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>0xo Asset Builder — Game Asset Fetch & Pack Tool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #141720;
+    --surface2: #1b1f2e;
+    --surface3: #222737;
+    --border: #2a3045;
+    --border2: #3a4060;
+    --accent: #5b6aff;
+    --accent2: #7c8dff;
+    --accent-dim: rgba(91,106,255,0.12);
+    --green: #22c55e;
+    --green-dim: rgba(34,197,94,0.12);
+    --yellow: #f59e0b;
+    --yellow-dim: rgba(245,158,11,0.12);
+    --red: #ef4444;
+    --red-dim: rgba(239,68,68,0.12);
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --text3: #64748b;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ---- Header ---- */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .logo {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--accent), #9b59ff);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px; color: #fff;
+    flex-shrink: 0;
+  }
+  .brand { font-size: 16px; font-weight: 700; letter-spacing: -0.3px; }
+  .brand span { color: var(--accent2); }
+  .header-sub { font-size: 12px; color: var(--text3); margin-left: 4px; margin-top: 2px; }
+
+  /* ---- Layout ---- */
+  main {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    height: calc(100vh - 64px);
+    overflow: hidden;
+  }
+  .sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .sidebar-inner { padding: 24px; overflow-y: auto; flex: 1; gap: 20px; display: flex; flex-direction: column; }
+  .content {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ---- Section titles ---- */
+  .section-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+  }
+
+  /* ---- Form controls ---- */
+  label { font-size: 13px; color: var(--text2); margin-bottom: 6px; display: block; }
+  input[type=text], input[type=number], textarea, select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+    padding: 10px 12px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+
+  .form-row { display: flex; gap: 10px; }
+  .form-row > * { flex: 1; }
+  .form-group { display: flex; flex-direction: column; }
+
+  .hint { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+  /* ---- Toggle ---- */
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .toggle-row:last-child { border-bottom: none; }
+  .toggle-label { font-size: 13px; color: var(--text); }
+  .toggle-hint { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .toggle {
+    position: relative; width: 40px; height: 22px; flex-shrink: 0;
+  }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider {
+    position: absolute; inset: 0;
+    background: var(--surface3);
+    border-radius: 99px;
+    cursor: pointer;
+    transition: background 0.2s;
+    border: 1px solid var(--border2);
+  }
+  .toggle-slider:before {
+    content: '';
+    position: absolute;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    top: 2px; left: 2px;
+    transition: transform 0.2s;
+  }
+  .toggle input:checked + .toggle-slider { background: var(--accent); border-color: var(--accent); }
+  .toggle input:checked + .toggle-slider:before { transform: translateX(18px); }
+
+  /* ---- Buttons ---- */
+  .btn {
+    border: none; cursor: pointer; font-family: inherit;
+    font-size: 14px; font-weight: 600;
+    border-radius: var(--radius-sm);
+    padding: 10px 18px;
+    transition: all 0.15s;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent2); transform: translateY(-1px); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .btn-secondary { background: var(--surface3); color: var(--text); border: 1px solid var(--border2); }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent2); }
+  .btn-danger { background: var(--red-dim); color: var(--red); border: 1px solid rgba(239,68,68,0.25); }
+  .btn-success { background: var(--green-dim); color: var(--green); border: 1px solid rgba(34,197,94,0.25); }
+  .btn-full { width: 100%; justify-content: center; padding: 12px; font-size: 15px; }
+
+  /* ---- Action bar ---- */
+  .action-bar {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: var(--surface);
+  }
+  .action-row { display: flex; gap: 8px; }
+  .action-row .btn { flex: 1; }
+
+  /* ---- Log panel ---- */
+  .log-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface);
+    flex-shrink: 0;
+  }
+  .log-header h2 { font-size: 14px; font-weight: 600; }
+  .log-header .controls { display: flex; gap: 8px; align-items: center; }
+  .log-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 1.7;
+    background: var(--bg);
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+  .log-line { display: block; }
+  .log-line.info { color: var(--text2); }
+  .log-line.success { color: var(--green); }
+  .log-line.warn { color: var(--yellow); }
+  .log-line.error { color: var(--red); }
+  .log-line.step { color: var(--accent2); font-weight: 600; }
+  .log-line.skip { color: var(--text3); }
+
+  /* ---- Status bar ---- */
+  .status-bar {
+    height: 48px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    font-size: 12px;
+    color: var(--text3);
+    flex-shrink: 0;
+  }
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    padding: 3px 10px;
+    font-size: 12px;
+  }
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--text3);
+  }
+  .status-dot.running { background: var(--accent); animation: pulse 1s infinite; }
+  .status-dot.done { background: var(--green); }
+  .status-dot.error { background: var(--red); }
+
+  @keyframes pulse {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* ---- Progress ---- */
+  .progress-wrap {
+    padding: 12px 24px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: none;
+  }
+  .progress-wrap.visible { display: block; }
+  .progress-label { font-size: 12px; color: var(--text2); margin-bottom: 6px; display: flex; justify-content: space-between; }
+  .progress-bar { height: 4px; background: var(--surface3); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 99px; transition: width 0.4s; }
+
+  /* ---- Games list ---- */
+  .games-section { background: var(--surface); border-top: 1px solid var(--border); padding: 16px 24px; flex-shrink: 0; }
+  .games-section h3 { font-size: 12px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+  .games-grid { display: flex; flex-direction: column; gap: 6px; max-height: 160px; overflow-y: auto; }
+  .game-chip {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+    font-size: 13px;
+  }
+  .game-chip:hover { border-color: var(--accent); }
+  .game-chip.active { border-color: var(--accent); background: var(--accent-dim); }
+  .game-chip-name { font-weight: 500; }
+  .game-chip-status {
+    font-size: 10px; padding: 2px 6px; border-radius: 99px;
+    font-weight: 600; letter-spacing: 0.5px;
+  }
+  .game-chip-status.complete { background: var(--green-dim); color: var(--green); }
+  .game-chip-status.partial { background: var(--yellow-dim); color: var(--yellow); }
+  .game-chip-status.empty { background: var(--surface3); color: var(--text3); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
+
+  /* ---- Divider ---- */
+  .divider { height: 1px; background: var(--border); margin: 4px 0; }
+
+  /* ---- Range with display ---- */
+  .range-row {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .range-val {
+    font-size: 13px; font-family: 'JetBrains Mono', monospace;
+    color: var(--accent2); min-width: 28px; text-align: right;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">0x</div>
+  <div>
+    <div class="brand">0xo <span>Asset Builder</span></div>
+    <div class="header-sub">Steam Game Asset Fetch &amp; Pack Tool</div>
+  </div>
+</header>
+
+<main>
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <!-- Game Info -->
+      <div>
+        <div class="section-title">Game Info</div>
+        <div class="form-group" style="margin-bottom:12px">
+          <label for="appId">Steam App ID</label>
+          <div style="display:flex; gap: 8px;">
+            <input type="text" id="appId" placeholder="e.g. 921570" />
+            <button type="button" class="btn btn-secondary" onclick="validateAppId()" style="flex-shrink: 0; padding: 0 12px; font-size: 12px;">Validate</button>
+          </div>
+        </div>
+        <div id="previewCard" style="display:none; margin-bottom: 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px; font-size: 12px;">
+          <img id="previewImg" src="" style="width:100%; border-radius: 4px; margin-bottom: 8px;" />
+          <div id="previewName" style="font-weight: 600; color: var(--accent2);"></div>
+        </div>
+        <div class="form-group" style="margin-bottom:12px">
+          <label for="gameName">Game Name (exact)</label>
+          <input type="text" id="gameName" placeholder="e.g. OCTOPATH TRAVELER 0" />
+        </div>
+        <div class="form-group" style="margin-bottom:12px">
+          <label for="language">Metadata Language</label>
+          <select id="language">
+            <option value="english">English</option>
+            <option value="vietnamese">Vietnamese</option>
+            <option value="schinese">Simplified Chinese</option>
+            <option value="japanese">Japanese</option>
+            <option value="korean">Korean</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:12px">
+          <label for="steamCountry">Steam metadata region</label>
+          <select id="steamCountry">
+            <option value="us" selected>US - best anti region-lock default</option>
+            <option value="sg">Singapore</option>
+            <option value="gb">United Kingdom</option>
+            <option value="jp">Japan</option>
+            <option value="kr">Korea</option>
+            <option value="tw">Taiwan</option>
+            <option value="hk">Hong Kong</option>
+            <option value="th">Thailand</option>
+            <option value="vn">Vietnam</option>
+            <option value="de">Germany</option>
+            <option value="fr">France</option>
+            <option value="ca">Canada</option>
+            <option value="au">Australia</option>
+          </select>
+          <div class="hint">Adds cc=... to Steam AppDetails. US is usually safest for region/age-gated store pages.</div>
+        </div>
+        <div class="form-group">
+          <label for="assetsRoot">Assets Root</label>
+          <input type="text" id="assetsRoot" value="E:\007Launcher\src\assets" />
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- API Keys -->
+      <div>
+        <div class="section-title">API Keys</div>
+        <div class="form-group" style="margin-bottom:12px">
+          <label for="steamApiKey">Steam Web API Key</label>
+          <input type="text" id="steamApiKey" placeholder="Optional but recommended" />
+        </div>
+        <div class="form-group">
+          <label for="steamGridDbKey">SteamGridDB API Key</label>
+          <input type="text" id="steamGridDbKey" placeholder="For high-quality Grid/Hero images" />
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Options -->
+      <div>
+        <div class="section-title">Fetch Options</div>
+
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Skip Achievement Images</div>
+            <div class="toggle-hint">Don't download achievement icons</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="noAchievements" />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Skip Videos</div>
+            <div class="toggle-hint">Don't transcode video trailers</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="skipVideos" />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Overwrite Existing</div>
+            <div class="toggle-hint">Re-download already present files</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="overwrite" />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div style="margin-top:14px" class="form-group">
+          <label>Max Screenshots</label>
+          <div class="range-row">
+            <input type="range" min="1" max="20" value="10" id="maxSs" oninput="document.getElementById('maxSsVal').textContent=this.value" />
+            <span class="range-val" id="maxSsVal">10</span>
+          </div>
+        </div>
+
+        <div style="margin-top:10px" class="form-group">
+          <label>Max Videos</label>
+          <div class="range-row">
+            <input type="range" min="0" max="10" value="3" id="maxVid" oninput="document.getElementById('maxVidVal').textContent=this.value" />
+            <span class="range-val" id="maxVidVal">3</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Compression -->
+      <div>
+        <div class="section-title">Compression</div>
+
+        <div class="form-group" style="margin-bottom:12px">
+          <label>Screenshot Quality (WebP)</label>
+          <div class="range-row">
+            <input type="range" min="20" max="90" value="55" id="ssQuality" oninput="document.getElementById('ssQualityVal').textContent=this.value" />
+            <span class="range-val" id="ssQualityVal">55</span>
+          </div>
+          <div class="hint">Lower = smaller file, lower quality</div>
+        </div>
+
+        <div class="form-group" style="margin-bottom:12px">
+          <label>Image Quality (WebP, others)</label>
+          <div class="range-row">
+            <input type="range" min="20" max="90" value="75" id="imgQuality" oninput="document.getElementById('imgQualityVal').textContent=this.value" />
+            <span class="range-val" id="imgQualityVal">75</span>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom:12px">
+          <label>Video CRF (VP9, lower = better quality)</label>
+          <div class="range-row">
+            <input type="range" min="20" max="60" value="35" id="videoCrf" oninput="document.getElementById('videoCrfVal').textContent=this.value" />
+            <span class="range-val" id="videoCrfVal">35</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Video Scale (height px)</label>
+          <select id="videoScale">
+            <option value="480">480p</option>
+            <option value="720" selected>720p</option>
+            <option value="1080">1080p</option>
+          </select>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Quick game selector -->
+    <div class="games-section">
+      <h3>Known Games</h3>
+      <div class="games-grid" id="gamesList"></div>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="action-bar">
+      <div class="action-row">
+        <button class="btn btn-primary" id="btnFetch" onclick="runFetch()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Fetch Assets
+        </button>
+        <button class="btn btn-secondary" id="btnBuild" onclick="runBuild()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          Build Pack
+        </button>
+      </div>
+      <div class="action-row">
+        <button class="btn btn-secondary" onclick="runFetchAll()" style="font-size:13px">
+          Fetch All Games
+        </button>
+        <button class="btn btn-secondary" onclick="runBuildAll()" style="font-size:13px">
+          Build All Packs
+        </button>
+      </div>
+      <button class="btn btn-danger" id="btnStop" onclick="stopCurrent()" style="display:none">
+        ⛔ Stop Current Task
+      </button>
+    </div>
+  </aside>
+
+  <!-- ===== CONTENT (LOG) ===== -->
+  <div class="content">
+    <div class="log-header">
+      <h2>Output Log</h2>
+      <div class="controls">
+        <button class="btn btn-secondary" style="font-size:12px;padding:6px 12px" onclick="clearLog()">Clear</button>
+        <button class="btn btn-secondary" style="font-size:12px;padding:6px 12px" onclick="copyLog()">Copy</button>
+      </div>
+    </div>
+
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-label">
+        <span id="progressLabel">Fetching...</span>
+        <span id="progressPct">0%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    </div>
+
+    <div class="log-body" id="logBody">
+      <span class="log-line info">Ready. Configure a game and click Fetch Assets or Build Pack.</span>
+    </div>
+
+    <div class="status-bar">
+      <div class="status-pill" id="statusPill">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">Idle</span>
+      </div>
+      <span id="statusDetail"></span>
+      <span style="margin-left:auto" id="elapsedTime"></span>
+    </div>
+  </div>
+</main>
+
+<script>
+// ===== State =====
+let currentProcess = null;
+let startTime = null;
+let elapsedTimer = null;
+
+const KNOWN_GAMES = [
+  { name: "007 first light",      appId: "",       slug: "007-first-light" },
+  { name: "Among Us",             appId: "945360", slug: "among-us" },
+  { name: "OCTOPATH TRAVELER 0",  appId: "921570", slug: "octopath-traveler-0", noAchievements: true },
+];
+
+// ===== Log =====
+function log(msg, cls = 'info') {
+  const el = document.createElement('span');
+  el.className = `log-line ${cls}`;
+  const ts = new Date().toLocaleTimeString();
+  el.textContent = `[${ts}] ${msg}`;
+  const body = document.getElementById('logBody');
+  body.appendChild(el);
+  body.appendChild(document.createTextNode('\n'));
+  body.scrollTop = body.scrollHeight;
+}
+
+function clearLog() {
+  document.getElementById('logBody').innerHTML = '';
+}
+
+function copyLog() {
+  navigator.clipboard.writeText(document.getElementById('logBody').innerText).then(() => {
+    log('Log copied to clipboard.', 'success');
+  });
+}
+
+// ===== Status =====
+function setStatus(state, text, detail = '') {
+  const dot = document.getElementById('statusDot');
+  const txt = document.getElementById('statusText');
+  const dtl = document.getElementById('statusDetail');
+  dot.className = 'status-dot ' + state;
+  txt.textContent = text;
+  dtl.textContent = detail;
+}
+
+function setProgress(label, pct) {
+  const wrap = document.getElementById('progressWrap');
+  wrap.classList.add('visible');
+  document.getElementById('progressLabel').textContent = label;
+  document.getElementById('progressPct').textContent = Math.round(pct) + '%';
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+function hideProgress() {
+  document.getElementById('progressWrap').classList.remove('visible');
+}
+
+function startElapsed() {
+  startTime = Date.now();
+  elapsedTimer = setInterval(() => {
+    const s = Math.floor((Date.now() - startTime) / 1000);
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    document.getElementById('elapsedTime').textContent = `${m}:${sec.toString().padStart(2,'0')} elapsed`;
+  }, 1000);
+}
+
+function stopElapsed() {
+  clearInterval(elapsedTimer);
+  document.getElementById('elapsedTime').textContent = '';
+}
+
+// ===== Validate AppID =====
+async function validateAppId() {
+  const appId = document.getElementById('appId').value.trim();
+  const lang = document.getElementById('language').value || 'english';
+  const country = (document.getElementById('steamCountry')?.value || 'us');
+  if (!appId) {
+    log('Please enter an App ID first.', 'error');
+    return;
+  }
+  log(`Validating App ID ${appId}...`, 'info');
+  try {
+    const res = await fetch(`https://store.steampowered.com/api/appdetails?appids=${appId}&l=${encodeURIComponent(lang)}&cc=${encodeURIComponent(country)}`);
+    const data = await res.json();
+    if (data[appId] && data[appId].success) {
+      const game = data[appId].data;
+      document.getElementById('gameName').value = game.name;
+      document.getElementById('previewCard').style.display = 'block';
+      document.getElementById('previewImg').src = game.header_image;
+      document.getElementById('previewName').textContent = game.name;
+      log(`Found: ${game.name}`, 'success');
+    } else {
+      document.getElementById('previewCard').style.display = 'none';
+      log(`App ID ${appId} not found or invalid.`, 'error');
+    }
+  } catch (err) {
+    log(`Failed to fetch from Steam API (CORS issue?). Make sure the App ID is correct.`, 'error');
+    console.error(err);
+  }
+}
+
+// ===== Build PowerShell command =====
+function buildCmd(action) {
+  const appId    = document.getElementById('appId').value.trim();
+  const gameName = document.getElementById('gameName').value.trim();
+  const root     = document.getElementById('assetsRoot').value.trim();
+  const noAch    = document.getElementById('noAchievements').checked;
+  const skipVid  = document.getElementById('skipVideos').checked;
+  const overwr   = document.getElementById('overwrite').checked;
+  const maxSs    = document.getElementById('maxSs').value;
+  const maxVid   = skipVid ? '0' : document.getElementById('maxVid').value;
+  const ssQ      = document.getElementById('ssQuality').value;
+  const imgQ     = document.getElementById('imgQuality').value;
+  const vidCrf   = document.getElementById('videoCrf').value;
+  const vidScale = document.getElementById('videoScale').value;
+  const lang     = document.getElementById('language').value;
+  const country  = (document.getElementById('steamCountry')?.value || 'us');
+  const steamKey = document.getElementById('steamApiKey').value.trim();
+  const sgdbKey  = document.getElementById('steamGridDbKey').value.trim();
+
+  if (action === 'fetch') {
+    if (!appId || !gameName) return null;
+    let cmd = `powershell -ExecutionPolicy Bypass -File "E:\\007Launcher\\tools\\steam-fetch-game-assets.ps1"`;
+    cmd += ` -AppId ${appId} -GameName "${gameName}"`;
+    cmd += ` -AssetsRoot "${root}"`;
+    cmd += ` -Language "${lang}"`;
+    cmd += ` -SteamCountry "${country}"`;
+    cmd += ` -MaxScreenshots ${maxSs} -MaxVideos ${maxVid}`;
+    cmd += ` -ScreenshotQuality ${ssQ} -ImageQuality ${imgQ} -VideoCrf ${vidCrf} -VideoScale ${vidScale}`;
+    if (noAch) cmd += ` -NoAchievementImages`;
+    if (overwr) cmd += ` -Overwrite`;
+    if (steamKey) cmd += ` -SteamApiKey "${steamKey}"`;
+    if (sgdbKey) cmd += ` -SteamGridDbKey "${sgdbKey}"`;
+    return cmd;
+  }
+  if (action === 'build') {
+    return `cd "E:\\007Launcher\\src-tauri" && cargo run --bin asset_pack_builder`;
+  }
+  return null;
+}
+
+// ===== Simulate running a command =====
+// In a real desktop app this would invoke Tauri's shell API.
+// Here we show the generated command and instructions.
+function showCommand(cmd, title) {
+  log('', 'info');
+  log(`▶ ${title}`, 'step');
+  log('Generated command:', 'info');
+  log(cmd, 'success');
+  log('', 'info');
+  log('ℹ  To run: open PowerShell and paste the command above.', 'warn');
+  log('   Or use the Tauri shell integration if running inside the launcher.', 'warn');
+  log('', 'info');
+
+  // Copy to clipboard automatically
+  navigator.clipboard.writeText(cmd).then(() => {
+    log('✓ Command copied to clipboard!', 'success');
+  }).catch(() => {});
+}
+
+function runFetch() {
+  const cmd = buildCmd('fetch');
+  if (!cmd) {
+    log('✗ Please fill in App ID and Game Name.', 'error');
+    return;
+  }
+  setStatus('running', 'Generating fetch command...');
+  startElapsed();
+  setProgress('Preparing fetch command...', 30);
+  showCommand(cmd, 'Fetch Game Assets');
+  setStatus('done', 'Command ready');
+  stopElapsed();
+  hideProgress();
+}
+
+function runBuild() {
+  const cmd = buildCmd('build');
+  setStatus('running', 'Generating build command...');
+  showCommand(cmd, 'Build Asset Packs');
+  setStatus('done', 'Command ready');
+}
+
+function runFetchAll() {
+  log('', 'info');
+  log('▶ Fetch All Games', 'step');
+  KNOWN_GAMES.forEach(g => {
+    if (!g.appId) return;
+    const root = document.getElementById('assetsRoot').value.trim();
+    const maxSs = document.getElementById('maxSs').value;
+    const ssQ = document.getElementById('ssQuality').value;
+    const vidCrf = document.getElementById('videoCrf').value;
+    const vidScale = document.getElementById('videoScale').value;
+    const country = (document.getElementById('steamCountry')?.value || 'us');
+    let cmd = `powershell -ExecutionPolicy Bypass -File "E:\\007Launcher\\tools\\steam-fetch-game-assets.ps1"`;
+    cmd += ` -AppId ${g.appId} -GameName "${g.name}" -SteamCountry "${country}" -MaxScreenshots ${maxSs} -ScreenshotQuality ${ssQ} -VideoCrf ${vidCrf} -VideoScale ${vidScale}`;
+    if (g.noAchievements) cmd += ` -NoAchievementImages`;
+    log(`  ${g.name} (${g.appId}):`, 'info');
+    log(`  ${cmd}`, 'success');
+  });
+  log('', 'info');
+  log('Copy each command and run in PowerShell.', 'warn');
+}
+
+function runBuildAll() {
+  showCommand('cd "E:\\007Launcher\\src-tauri" && cargo run --bin asset_pack_builder', 'Build All Asset Packs');
+}
+
+function stopCurrent() {
+  log('⛔ Stopping current task...', 'warn');
+  setStatus('', 'Stopped');
+  stopElapsed();
+  hideProgress();
+}
+
+// ===== Games list =====
+function renderGamesList() {
+  const container = document.getElementById('gamesList');
+  container.innerHTML = '';
+  KNOWN_GAMES.forEach(g => {
+    const chip = document.createElement('div');
+    chip.className = 'game-chip';
+    chip.innerHTML = `
+      <span class="game-chip-name">${g.name}</span>
+      <span class="game-chip-status ${g.appId ? 'partial' : 'empty'}">${g.appId || 'LOCAL'}</span>
+    `;
+    chip.onclick = () => {
+      document.getElementById('appId').value = g.appId || '';
+      document.getElementById('gameName').value = g.name;
+      if (g.noAchievements) document.getElementById('noAchievements').checked = true;
+      document.querySelectorAll('.game-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      log(`Selected: ${g.name} (AppID: ${g.appId || 'N/A'})`, 'info');
+    };
+    container.appendChild(chip);
+  });
+}
+
+renderGamesList();
+log('Tool ready. Select a game from the list or enter App ID manually.', 'info');
+log('Note: Commands are generated and copied to clipboard — run them in PowerShell.', 'warn');
+</script>
+</body>
+</html>

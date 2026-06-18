@@ -1,0 +1,411 @@
+﻿{
+    "1250410":  {
+                    "success":  true,
+                    "data":  {
+                                 "type":  "game",
+                                 "name":  "Microsoft Flight Simulator (2020) 40th Anniversary Edition",
+                                 "steam_appid":  1250410,
+                                 "required_age":  0,
+                                 "is_free":  false,
+                                 "controller_support":  "full",
+                                 "detailed_description":  "From light planes to wide body jets to gliders and helicopters, fly highly detailed and accurate aircraft in the Microsoft Flight Simulator 40th Anniversary Edition. The world is at your fingertips.\u003cbr\u003e \u003cbr\u003e\u003cstrong\u003eMicrosoft Flight Simulator 40th Anniversary Edition\u003c/strong\u003e features 37 airplanes, gliders, and helicopters with unique flight models, 25 handcrafted airports, 4 classic commercial airports, 14 heliports and 15 glider airports.\u003cbr\u003e \u003cbr\u003eExplore Your World\u003cbr\u003e• Vivid and Detailed Landscapes - Immerse yourself in the vast and beautiful world that is our planet with over 1.5 billion buildings, 2 trillion trees, mountains, roads, rivers and more.\u003cbr\u003e• Living World - The Earth is vibrant and ever-changing and so is the world of Microsoft Flight Simulator, which includes live traffic, real-time weather, and animals.  \u003cbr\u003e \u003cbr\u003eEarn Your Wings\u003cbr\u003e• Aircraft - Hone your pilot skills in a variety of aircraft from light planes to commercial jets with comprehensive flight models. Every aircraft includes highly detailed and accurate cockpits with realistic instrumentation.\u003cbr\u003e• Checklist System - From pro to beginner, scale your level from full manual to full assist with interactive and highlighted instrument guidance and checklist.\u003cbr\u003e \u003cbr\u003eTest Your Skill\u003cbr\u003e• Live Weather -The weather engine enables users to switch on the live weather mode to experience real-time weather including accurate wind speed and direction, temperature, humidity, rain and more.\u003cbr\u003e• Day and Night Engine - Experience flight at any time of day or year allowing for night VFR, visual flight rules, navigation.\u003cbr\u003e• Aerodynamic Modeling - A state-of-the-art physics engine with over 1000 control surfaces per plane allows for a truly realistic experience.\u003cbr\u003e \u003cbr\u003eMicrosoft Flight Simulator has fulfilled the aspirations of aviators worldwide for 40 years. Celebrate the award-winning franchise with the \u003cstrong\u003e40th Anniversary Edition\u003c/strong\u003e, loaded with all-new features, aircraft and content that span the history of aviation.\u003cbr\u003e \u003cbr\u003eThe \u003cstrong\u003e40th Anniversary Edition\u003c/strong\u003e update introduces:\u003cbr\u003e•  1 true-to-life Airbus A310 Airliner\u003cbr\u003e•  2 helicopters and 14 heliports\u003cbr\u003e•  2 gliders and 15 glider airports\u003cbr\u003e•  7 famous historical aircraft including the Hughes H-4 Hercules (aka the Spruce Goose)\u003cbr\u003e•  4 classic commercial airports\u003cbr\u003e•  24 classic missions from the franchise’s past\u003cbr\u003e\u003cbr\u003eThe \u003cstrong\u003eDeluxe Edition\u003c/strong\u003e includes everything from the Standard Edition plus 5 additional highly accurate planes with unique flight models and 5 additional handcrafted international airports.\u003cbr\u003e \u003cbr\u003e\u003cstrong\u003eDeluxe Additional Aircraft\u003c/strong\u003e\u003cbr\u003e•  Diamond Aircraft DA40-TDI\u003cbr\u003e•  Diamond Aircraft DV20\u003cbr\u003e•  Textron Aviation Beechcraft Baron G58\u003cbr\u003e•  Textron Aviation Cessna 152 Aerobat\u003cbr\u003e•  Textron Aviation Cessna 172 Skyhawk\u003cbr\u003e \u003cbr\u003e\u003cstrong\u003eDeluxe Additional Handcrafted Airports\u003c/strong\u003e\u003cbr\u003e•  Amsterdam Airport Schiphol (Netherlands)\u003cbr\u003e•  Cairo International Airport (Egypt)\u003cbr\u003e•  Cape Town International Airport (South Africa)\u003cbr\u003e•  O’Hare International Airport (USA)\u003cbr\u003e•  Adolfo Suárez Madrid–Barajas Airport (Spain)\u003cbr\u003e\u003cbr\u003eThe \u003cstrong\u003ePremium Deluxe Edition\u003c/strong\u003e includes everything from the Deluxe Edition plus 5 additional highly accurate planes with unique flight models and 5 additional handcrafted international airports.\u003cbr\u003e \u003cbr\u003e\u003cstrong\u003ePremium Deluxe Additional Aircraft\u003c/strong\u003e\u003cbr\u003e•  Boeing 787-10 Dreamliner\u003cbr\u003e•  Cirrus Aircraft SR22\u003cbr\u003e•  Pipistrel Virus SW 121\u003cbr\u003e•  Textron Aviation Cessna Citation Longitude\u003cbr\u003e•  Zlin Aviation Shock Ultra\u003cbr\u003e \u003cbr\u003e\u003cstrong\u003ePremium Deluxe Additional Airports\u003c/strong\u003e\u003cbr\u003e•  Denver International Airport (USA)\u003cbr\u003e•  Dubai International Airport (United Arab Emirates)\u003cbr\u003e•  Frankfurt Airport (Germany)\u003cbr\u003e•  Heathrow Airport (United Kingdom)\u003cbr\u003e•  San Francisco International Airport (USA)",
+                                 "about_the_game":  "From light planes to wide body jets to gliders and helicopters, fly highly detailed and accurate aircraft in the Microsoft Flight Simulator 40th Anniversary Edition. The world is at your fingertips.\u003cbr\u003e \u003cbr\u003e\u003cstrong\u003eMicrosoft Flight Simulator 40th Anniversary Edition\u003c/strong\u003e features 37 airplanes, gliders, and helicopters with unique flight models, 25 handcrafted airports, 4 classic commercial airports, 14 heliports and 15 glider airports.\u003cbr\u003e \u003cbr\u003eExplore Your World\u003cbr\u003e• Vivid and Detailed Landscapes - Immerse yourself in the vast and beautiful world that is our planet with over 1.5 billion buildings, 2 trillion trees, mountains, roads, rivers and more.\u003cbr\u003e• Living World - The Earth is vibrant and ever-changing and so is the world of Microsoft Flight Simulator, which includes live traffic, real-time weather, and animals.  \u003cbr\u003e \u003cbr\u003eEarn Your Wings\u003cbr\u003e• Aircraft - Hone your pilot skills in a variety of aircraft from light planes to commercial jets with comprehensive flight models. Every aircraft includes highly detailed and accurate cockpits with realistic instrumentation.\u003cbr\u003e• Checklist System - From pro to beginner, scale your level from full manual to full assist with interactive and highlighted instrument guidance and checklist.\u003cbr\u003e \u003cbr\u003eTest Your Skill\u003cbr\u003e• Live Weather -The weather engine enables users to switch on the live weather mode to experience real-time weather including accurate wind speed and direction, temperature, humidity, rain and more.\u003cbr\u003e• Day and Night Engine - Experience flight at any time of day or year allowing for night VFR, visual flight rules, navigation.\u003cbr\u003e• Aerodynamic Modeling - A state-of-the-art physics engine with over 1000 control surfaces per plane allows for a truly realistic experience.\u003cbr\u003e \u003cbr\u003eMicrosoft Flight Simulator has fulfilled the aspirations of aviators worldwide for 40 years. Celebrate the award-winning franchise with the \u003cstrong\u003e40th Anniversary Edition\u003c/strong\u003e, loaded with all-new features, aircraft and content that span the history of aviation.\u003cbr\u003e \u003cbr\u003eThe \u003cstrong\u003e40th Anniversary Edition\u003c/strong\u003e update introduces:\u003cbr\u003e•  1 true-to-life Airbus A310 Airliner\u003cbr\u003e•  2 helicopters and 14 heliports\u003cbr\u003e•  2 gliders and 15 glider airports\u003cbr\u003e•  7 famous historical aircraft including the Hughes H-4 Hercules (aka the Spruce Goose)\u003cbr\u003e•  4 classic commercial airports\u003cbr\u003e•  24 classic missions from the franchise’s past\u003cbr\u003e\u003cbr\u003eThe \u003cstrong\u003eDeluxe Edition\u003c/strong\u003e includes everything from the Standard Edition plus 5 additional highly accurate planes with unique flight models and 5 additional handcrafted international airports.\u003cbr\u003e \u003cbr\u003e\u003cstrong\u003eDeluxe Additional Aircraft\u003c/strong\u003e\u003cbr\u003e•  Diamond Aircraft DA40-TDI\u003cbr\u003e•  Diamond Aircraft DV20\u003cbr\u003e•  Textron Aviation Beechcraft Baron G58\u003cbr\u003e•  Textron Aviation Cessna 152 Aerobat\u003cbr\u003e•  Textron Aviation Cessna 172 Skyhawk\u003cbr\u003e \u003cbr\u003e\u003cstrong\u003eDeluxe Additional Handcrafted Airports\u003c/strong\u003e\u003cbr\u003e•  Amsterdam Airport Schiphol (Netherlands)\u003cbr\u003e•  Cairo International Airport (Egypt)\u003cbr\u003e•  Cape Town International Airport (South Africa)\u003cbr\u003e•  O’Hare International Airport (USA)\u003cbr\u003e•  Adolfo Suárez Madrid–Barajas Airport (Spain)\u003cbr\u003e\u003cbr\u003eThe \u003cstrong\u003ePremium Deluxe Edition\u003c/strong\u003e includes everything from the Deluxe Edition plus 5 additional highly accurate planes with unique flight models and 5 additional handcrafted international airports.\u003cbr\u003e \u003cbr\u003e\u003cstrong\u003ePremium Deluxe Additional Aircraft\u003c/strong\u003e\u003cbr\u003e•  Boeing 787-10 Dreamliner\u003cbr\u003e•  Cirrus Aircraft SR22\u003cbr\u003e•  Pipistrel Virus SW 121\u003cbr\u003e•  Textron Aviation Cessna Citation Longitude\u003cbr\u003e•  Zlin Aviation Shock Ultra\u003cbr\u003e \u003cbr\u003e\u003cstrong\u003ePremium Deluxe Additional Airports\u003c/strong\u003e\u003cbr\u003e•  Denver International Airport (USA)\u003cbr\u003e•  Dubai International Airport (United Arab Emirates)\u003cbr\u003e•  Frankfurt Airport (Germany)\u003cbr\u003e•  Heathrow Airport (United Kingdom)\u003cbr\u003e•  San Francisco International Airport (USA)",
+                                 "short_description":  "From gliders and helicopters to wide-body jets, fly highly detailed and accurate aircraft in the Microsoft Flight Simulator 40th Anniversary Edition. The world is at your fingertips.",
+                                 "supported_languages":  "English\u003cstrong\u003e*\u003c/strong\u003e, French\u003cstrong\u003e*\u003c/strong\u003e, Italian, German\u003cstrong\u003e*\u003c/strong\u003e, Spanish - Spain, Polish, Portuguese - Brazil\u003cstrong\u003e*\u003c/strong\u003e, Russian, Dutch, Finnish, Japanese, Norwegian, Swedish\u003cbr\u003e\u003cstrong\u003e*\u003c/strong\u003elanguages with full audio support",
+                                 "header_image":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/header.jpg?t=1777409972",
+                                 "capsule_image":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/capsule_231x87.jpg?t=1777409972",
+                                 "capsule_imagev5":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/capsule_184x69.jpg?t=1777409972",
+                                 "website":  "https://www.flightsimulator.com",
+                                 "pc_requirements":  {
+                                                         "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003eRequires a 64-bit processor and operating system\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows 10\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e Intel i5-4460 | AMD Ryzen 3 1200\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 8 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e NVIDIA GTX 770 | AMD Radeon RX 570\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eDirectX:\u003c/strong\u003e Version 11\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 150 GB available space\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eVR Support:\u003c/strong\u003e SteamVR, Oculus PC, or OpenXR. Keyboard and mouse required\u003c/li\u003e\u003c/ul\u003e",
+                                                         "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003eRequires a 64-bit processor and operating system\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows 10\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e Intel i5-8400 | AMD Ryzen 5 1500X\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 16 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e NVIDIA GTX 970 | AMD Radeon RX 590\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eDirectX:\u003c/strong\u003e Version 11\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 150 GB available space\u003c/li\u003e\u003c/ul\u003e"
+                                                     },
+                                 "mac_requirements":  {
+                                                          "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e",
+                                                          "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e"
+                                                      },
+                                 "linux_requirements":  {
+                                                            "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e",
+                                                            "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e"
+                                                        },
+                                 "legal_notice":  "Microsoft Studios © 2020 Microsoft Corporation",
+                                 "ext_user_account_notice":  "Xbox Live ",
+                                 "developers":  [
+                                                    "Asobo Studio"
+                                                ],
+                                 "publishers":  [
+                                                    "Xbox Game Studios"
+                                                ],
+                                 "price_overview":  {
+                                                        "currency":  "USD",
+                                                        "initial":  5999,
+                                                        "final":  2099,
+                                                        "discount_percent":  65,
+                                                        "initial_formatted":  "$59.99",
+                                                        "final_formatted":  "$20.99"
+                                                    },
+                                 "packages":  [
+                                                  759287,
+                                                  759286,
+                                                  759285
+                                              ],
+                                 "package_groups":  [
+                                                        {
+                                                            "name":  "default",
+                                                            "title":  "Buy Microsoft Flight Simulator (2020) 40th Anniversary Edition",
+                                                            "description":  "",
+                                                            "selection_text":  "Select a purchase option",
+                                                            "save_text":  "",
+                                                            "display_type":  0,
+                                                            "is_recurring_subscription":  "false",
+                                                            "subs":  [
+                                                                         {
+                                                                             "packageid":  759287,
+                                                                             "percent_savings_text":  "-65% ",
+                                                                             "percent_savings":  0,
+                                                                             "option_text":  "Microsoft Flight Simulator (2020): 40th Anniversary Standard Edition - \u003cspan class=\"discount_original_price\"\u003e$59.99\u003c/span\u003e $20.99",
+                                                                             "option_description":  "",
+                                                                             "can_get_free_license":  "0",
+                                                                             "is_free_license":  false,
+                                                                             "price_in_cents_with_discount":  2099
+                                                                         },
+                                                                         {
+                                                                             "packageid":  759286,
+                                                                             "percent_savings_text":  "-65% ",
+                                                                             "percent_savings":  0,
+                                                                             "option_text":  "Microsoft Flight Simulator (2020): 40th Anniversary Deluxe Edition - \u003cspan class=\"discount_original_price\"\u003e$89.99\u003c/span\u003e $31.49",
+                                                                             "option_description":  "",
+                                                                             "can_get_free_license":  "0",
+                                                                             "is_free_license":  false,
+                                                                             "price_in_cents_with_discount":  3149
+                                                                         },
+                                                                         {
+                                                                             "packageid":  759285,
+                                                                             "percent_savings_text":  "-65% ",
+                                                                             "percent_savings":  0,
+                                                                             "option_text":  "Microsoft Flight Simulator (2020): 40th Anniversary Premium Deluxe Edition - \u003cspan class=\"discount_original_price\"\u003e$119.99\u003c/span\u003e $41.99",
+                                                                             "option_description":  "",
+                                                                             "can_get_free_license":  "0",
+                                                                             "is_free_license":  false,
+                                                                             "price_in_cents_with_discount":  4199
+                                                                         }
+                                                                     ]
+                                                        }
+                                                    ],
+                                 "platforms":  {
+                                                   "windows":  true,
+                                                   "mac":  false,
+                                                   "linux":  false
+                                               },
+                                 "metacritic":  {
+                                                    "score":  91,
+                                                    "url":  "https://www.metacritic.com/game/pc/microsoft-flight-simulator?ftag=MCD-06-10aaa1f"
+                                                },
+                                 "categories":  [
+                                                    {
+                                                        "id":  2,
+                                                        "description":  "Single-player"
+                                                    },
+                                                    {
+                                                        "id":  1,
+                                                        "description":  "Multi-player"
+                                                    },
+                                                    {
+                                                        "id":  22,
+                                                        "description":  "Steam Achievements"
+                                                    },
+                                                    {
+                                                        "id":  28,
+                                                        "description":  "Full controller support"
+                                                    },
+                                                    {
+                                                        "id":  53,
+                                                        "description":  "VR Supported"
+                                                    },
+                                                    {
+                                                        "id":  35,
+                                                        "description":  "In-App Purchases"
+                                                    },
+                                                    {
+                                                        "id":  61,
+                                                        "description":  "HDR available"
+                                                    },
+                                                    {
+                                                        "id":  62,
+                                                        "description":  "Family Sharing"
+                                                    }
+                                                ],
+                                 "genres":  [
+                                                {
+                                                    "id":  "28",
+                                                    "description":  "Simulation"
+                                                }
+                                            ],
+                                 "screenshots":  [
+                                                     {
+                                                         "id":  0,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_d31fefd20eda54107d0414c779d0058c8b030233.600x338.jpg?t=1777409972",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_d31fefd20eda54107d0414c779d0058c8b030233.1920x1080.jpg?t=1777409972"
+                                                     },
+                                                     {
+                                                         "id":  1,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_7bef6695583570c8714dab5acda6f08128e02f22.600x338.jpg?t=1777409972",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_7bef6695583570c8714dab5acda6f08128e02f22.1920x1080.jpg?t=1777409972"
+                                                     },
+                                                     {
+                                                         "id":  2,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_28e2168df0f5a96a0f7f90e04d6a2059fa09d32c.600x338.jpg?t=1777409972",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_28e2168df0f5a96a0f7f90e04d6a2059fa09d32c.1920x1080.jpg?t=1777409972"
+                                                     },
+                                                     {
+                                                         "id":  3,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_56be1573715370c1f3d4abfef38e2fa5cc9cfc08.600x338.jpg?t=1777409972",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_56be1573715370c1f3d4abfef38e2fa5cc9cfc08.1920x1080.jpg?t=1777409972"
+                                                     },
+                                                     {
+                                                         "id":  4,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_8f9298573c188569875bfd96361e9d977d6dfe9a.600x338.jpg?t=1777409972",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_8f9298573c188569875bfd96361e9d977d6dfe9a.1920x1080.jpg?t=1777409972"
+                                                     },
+                                                     {
+                                                         "id":  5,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_abe01d181b76e98b1a1d0d837a0a69eb62f78cb0.600x338.jpg?t=1777409972",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_abe01d181b76e98b1a1d0d837a0a69eb62f78cb0.1920x1080.jpg?t=1777409972"
+                                                     },
+                                                     {
+                                                         "id":  6,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_72521adf4cbe068279aa8164dc32ceb63a8506b2.600x338.jpg?t=1777409972",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_72521adf4cbe068279aa8164dc32ceb63a8506b2.1920x1080.jpg?t=1777409972"
+                                                     },
+                                                     {
+                                                         "id":  7,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_b962d1b93b3d457bc26d38e3228f60df9d877b08.600x338.jpg?t=1777409972",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_b962d1b93b3d457bc26d38e3228f60df9d877b08.1920x1080.jpg?t=1777409972"
+                                                     },
+                                                     {
+                                                         "id":  8,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_5deecf6aec75b49ca536ec7b23a029643a240dd5.600x338.jpg?t=1777409972",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_5deecf6aec75b49ca536ec7b23a029643a240dd5.1920x1080.jpg?t=1777409972"
+                                                     },
+                                                     {
+                                                         "id":  9,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_460489fa1a95b7e2225cefc0563a5b8a39b1371c.600x338.jpg?t=1777409972",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_460489fa1a95b7e2225cefc0563a5b8a39b1371c.1920x1080.jpg?t=1777409972"
+                                                     },
+                                                     {
+                                                         "id":  10,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_787f57f3b6b28495d167f076e651bc5220baf0f1.600x338.jpg?t=1777409972",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_787f57f3b6b28495d167f076e651bc5220baf0f1.1920x1080.jpg?t=1777409972"
+                                                     },
+                                                     {
+                                                         "id":  11,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_472202fe22c1dce44d7cbe962e4dde0e6dddd4d6.600x338.jpg?t=1777409972",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_472202fe22c1dce44d7cbe962e4dde0e6dddd4d6.1920x1080.jpg?t=1777409972"
+                                                     },
+                                                     {
+                                                         "id":  12,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_7c04f7a4875352b336a5ce9d84ca58440307c866.600x338.jpg?t=1777409972",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_7c04f7a4875352b336a5ce9d84ca58440307c866.1920x1080.jpg?t=1777409972"
+                                                     },
+                                                     {
+                                                         "id":  13,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_65f69dc7c5e8b95534b6ce02baf9ac0210c9aed3.600x338.jpg?t=1777409972",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_65f69dc7c5e8b95534b6ce02baf9ac0210c9aed3.1920x1080.jpg?t=1777409972"
+                                                     },
+                                                     {
+                                                         "id":  14,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_4e21663722e39ee7c2e54c4dd3576abe35e6d2a2.600x338.jpg?t=1777409972",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_4e21663722e39ee7c2e54c4dd3576abe35e6d2a2.1920x1080.jpg?t=1777409972"
+                                                     },
+                                                     {
+                                                         "id":  15,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_220a62d62d14c0e5058cdb81da20ced1a64d0b65.600x338.jpg?t=1777409972",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_220a62d62d14c0e5058cdb81da20ced1a64d0b65.1920x1080.jpg?t=1777409972"
+                                                     },
+                                                     {
+                                                         "id":  16,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_674c8c0019c934e65d6e128a8dba9729d31e0be4.600x338.jpg?t=1777409972",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_674c8c0019c934e65d6e128a8dba9729d31e0be4.1920x1080.jpg?t=1777409972"
+                                                     },
+                                                     {
+                                                         "id":  17,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_85f936740bebd09faec65aa63d4e3a6b86c69336.600x338.jpg?t=1777409972",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_85f936740bebd09faec65aa63d4e3a6b86c69336.1920x1080.jpg?t=1777409972"
+                                                     },
+                                                     {
+                                                         "id":  18,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_df1f00e6d78d52b95a4dddffb9ce8344240275f1.600x338.jpg?t=1777409972",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_df1f00e6d78d52b95a4dddffb9ce8344240275f1.1920x1080.jpg?t=1777409972"
+                                                     },
+                                                     {
+                                                         "id":  19,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_5ed5be21412a4f147d8f1fc3fce905cc85f5967d.600x338.jpg?t=1777409972",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_5ed5be21412a4f147d8f1fc3fce905cc85f5967d.1920x1080.jpg?t=1777409972"
+                                                     },
+                                                     {
+                                                         "id":  20,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_3f7151927aa6e226f497b11c20f40e10c9262ff4.600x338.jpg?t=1777409972",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_3f7151927aa6e226f497b11c20f40e10c9262ff4.1920x1080.jpg?t=1777409972"
+                                                     },
+                                                     {
+                                                         "id":  21,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_59dc043296ef2547f9accaca1ebe7a09d16e7032.600x338.jpg?t=1777409972",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_59dc043296ef2547f9accaca1ebe7a09d16e7032.1920x1080.jpg?t=1777409972"
+                                                     },
+                                                     {
+                                                         "id":  22,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_bf0dbbcf4fc2c28bc559f6c4558aab8c4bce1ab5.600x338.jpg?t=1777409972",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/ss_bf0dbbcf4fc2c28bc559f6c4558aab8c4bce1ab5.1920x1080.jpg?t=1777409972"
+                                                     }
+                                                 ],
+                                 "movies":  [
+                                                {
+                                                    "id":  256915896,
+                                                    "name":  "40th Anniversary",
+                                                    "thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256915896/movie.293x165.jpg?t=1684358207",
+                                                    "dash_av1":  "https://video.akamai.steamstatic.com/store_trailers/1250410/513209/00254739b742d4548e5727ecb713f685ec39e659/1750651547/dash_av1.mpd?t=1684358207",
+                                                    "dash_h264":  "https://video.akamai.steamstatic.com/store_trailers/1250410/513209/00254739b742d4548e5727ecb713f685ec39e659/1750651547/dash_h264.mpd?t=1684358207",
+                                                    "hls_h264":  "https://video.akamai.steamstatic.com/store_trailers/1250410/513209/00254739b742d4548e5727ecb713f685ec39e659/1750651547/hls_264_master.m3u8?t=1684358207",
+                                                    "highlight":  true
+                                                }
+                                            ],
+                                 "recommendations":  {
+                                                         "total":  68975
+                                                     },
+                                 "achievements":  {
+                                                      "total":  43,
+                                                      "highlighted":  [
+                                                                          {
+                                                                              "icon":  "cda92fc551b8726b05bb80762e6ce9e52fbbe5c4.jpg",
+                                                                              "localized_name":  "Challenge Accepted",
+                                                                              "name":  "Challenge Accepted",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/1250410/cda92fc551b8726b05bb80762e6ce9e52fbbe5c4.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "05b6a6b80e61d26385c18c3ba4af4813abc0c32d.jpg",
+                                                                              "localized_name":  "Fill \u0027er Up!",
+                                                                              "name":  "Fill \u0027er Up!",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/1250410/05b6a6b80e61d26385c18c3ba4af4813abc0c32d.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "5874cc71144aa4e5dc508c4a4a475b387150a088.jpg",
+                                                                              "localized_name":  "Rubberneck",
+                                                                              "name":  "Rubberneck",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/1250410/5874cc71144aa4e5dc508c4a4a475b387150a088.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "510b98a35f8b71ee06ce8716431f0c9000e81be9.jpg",
+                                                                              "localized_name":  "Mother Nature",
+                                                                              "name":  "Mother Nature",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/1250410/510b98a35f8b71ee06ce8716431f0c9000e81be9.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "356195a62ea6153bf351f0705b083fec394dd9c4.jpg",
+                                                                              "localized_name":  "Start Me Up",
+                                                                              "name":  "Start Me Up",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/1250410/356195a62ea6153bf351f0705b083fec394dd9c4.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "9ecebce28102d42128a22e9206ad57ae3b73eae7.jpg",
+                                                                              "localized_name":  "By the Book",
+                                                                              "name":  "By the Book",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/1250410/9ecebce28102d42128a22e9206ad57ae3b73eae7.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "9acd88805de8c1b4b8c95203ec2927ce97117189.jpg",
+                                                                              "localized_name":  "In The Wild",
+                                                                              "name":  "In The Wild",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/1250410/9acd88805de8c1b4b8c95203ec2927ce97117189.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "2dd5dbd60d932c71f75df9b2f154b7c2d59c2026.jpg",
+                                                                              "localized_name":  "Service with a Smile",
+                                                                              "name":  "Service with a Smile",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/1250410/2dd5dbd60d932c71f75df9b2f154b7c2d59c2026.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "f4801342c37d7337b43fce3d9d95444c396cd1fb.jpg",
+                                                                              "localized_name":  "Back-Up Plan",
+                                                                              "name":  "Back-Up Plan",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/1250410/f4801342c37d7337b43fce3d9d95444c396cd1fb.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "30034ffe539b5d6fded3375026dc6bfc8dc2eeba.jpg",
+                                                                              "localized_name":  "Job Shadowing",
+                                                                              "name":  "Job Shadowing",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/1250410/30034ffe539b5d6fded3375026dc6bfc8dc2eeba.jpg"
+                                                                          }
+                                                                      ]
+                                                  },
+                                 "release_date":  {
+                                                      "coming_soon":  false,
+                                                      "date":  "Aug 17, 2020"
+                                                  },
+                                 "support_info":  {
+                                                      "url":  "flightsimulator.zendesk.com",
+                                                      "email":  ""
+                                                  },
+                                 "background":  "https://store.akamai.steamstatic.com/images/storepagebackground/app/1250410?t=1777409972",
+                                 "background_raw":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1250410/page_bg_raw.jpg?t=1777409972",
+                                 "content_descriptors":  {
+                                                             "ids":  [
+
+                                                                     ],
+                                                             "notes":  null
+                                                         },
+                                 "ratings":  {
+                                                 "esrb":  {
+                                                              "rating":  "e",
+                                                              "display_online_notice":  "true",
+                                                              "interactive_elements":  "IN-GAME PURCHASES"
+                                                          },
+                                                 "pegi":  {
+                                                              "rating":  "3"
+                                                          },
+                                                 "usk":  {
+                                                             "rating":  "0"
+                                                         },
+                                                 "oflc":  {
+                                                              "rating":  "g"
+                                                          },
+                                                 "nzoflc":  {
+                                                                "rating":  "ctc"
+                                                            },
+                                                 "cero":  {
+                                                              "rating":  "a"
+                                                          },
+                                                 "fpb":  {
+                                                             "rating":  "A"
+                                                         },
+                                                 "dejus":  {
+                                                               "rating":  "l"
+                                                           },
+                                                 "csrr":  {
+                                                              "rating":  "P6"
+                                                          },
+                                                 "crl":  {
+                                                             "rating":  "0"
+                                                         },
+                                                 "agcom":  {
+                                                               "rating":  "3"
+                                                           },
+                                                 "steam_germany":  {
+                                                                       "rating_generated":  "1",
+                                                                       "rating":  "12",
+                                                                       "required_age":  "12",
+                                                                       "banned":  "0",
+                                                                       "use_age_gate":  "0",
+                                                                       "descriptors":  ""
+                                                                   },
+                                                 "igrs":  {
+                                                              "rating_generated":  "1",
+                                                              "rating":  "3",
+                                                              "required_age":  "3",
+                                                              "banned":  "0",
+                                                              "use_age_gate":  "0",
+                                                              "descriptors":  "Interaksi Daring"
+                                                          }
+                                             }
+                             }
+                }
+}

@@ -1,9 +1,15 @@
 pub mod asset_pack;
 pub mod builder;
+pub mod depot_crypto;
+pub mod game_tags;
 pub mod job;
+pub mod launch;
 pub mod manifest;
+pub mod platform;
+pub mod remote_paths;
 pub mod scanner;
 pub mod security;
+pub mod steam_integration;
 pub mod updater;
 
 use std::path::PathBuf;
@@ -14,12 +20,69 @@ use job::{
     GameInstallState, JobControl, JobJournal, LaunchReport, LauncherSnapshot, UninstallReport,
     VerifyInstallReport,
 };
+use launch::ResolvedGameLaunchConfig;
 use scanner::ScanReport;
 use tauri::{AppHandle, Emitter, Manager, State};
 
 #[tauri::command]
 fn get_disk_free_space(path: String) -> Result<u64, String> {
     fs2::free_space(PathBuf::from(path)).map_err(|err| err.to_string())
+}
+
+#[tauri::command]
+fn check_spacewar_installed() -> bool {
+    steam_integration::is_spacewar_installed()
+}
+
+#[tauri::command]
+fn install_spacewar() -> Result<(), String> {
+    steam_integration::install_spacewar()
+}
+
+#[tauri::command]
+fn is_steam_running() -> bool {
+    steam_integration::is_steam_running()
+}
+
+#[tauri::command]
+fn open_steam() -> Result<(), String> {
+    steam_integration::open_steam()
+}
+
+#[tauri::command]
+fn open_steam_big_picture() -> Result<(), String> {
+    steam_integration::open_big_picture()
+}
+
+#[tauri::command]
+fn get_steam_environment(app: AppHandle) -> steam_integration::SteamEnvironmentInfo {
+    steam_integration::environment_info(&app)
+}
+
+#[tauri::command]
+fn open_folder(path: String) -> Result<(), String> {
+    #[cfg(target_os = "windows")]
+    {
+        std::process::Command::new("explorer")
+            .arg(&path)
+            .spawn()
+            .map_err(|e| e.to_string())?;
+    }
+    #[cfg(target_os = "macos")]
+    {
+        std::process::Command::new("open")
+            .arg(&path)
+            .spawn()
+            .map_err(|e| e.to_string())?;
+    }
+    #[cfg(target_os = "linux")]
+    {
+        std::process::Command::new("xdg-open")
+            .arg(&path)
+            .spawn()
+            .map_err(|e| e.to_string())?;
+    }
+    Ok(())
 }
 
 #[derive(serde::Serialize)]
@@ -91,13 +154,15 @@ fn list_system_drives() -> Vec<DriveInfo> {
 }
 
 #[tauri::command]
-fn check_launcher_update() -> Result<Option<updater::LauncherUpdateInfo>, String> {
-    Ok(updater::check_update())
+async fn check_launcher_update(
+    app: AppHandle,
+) -> Result<Option<updater::LauncherUpdateInfo>, String> {
+    updater::check_update(&app).await
 }
 
 #[tauri::command]
-fn apply_launcher_update(app: AppHandle, download_url: String) -> Result<(), String> {
-    updater::download_and_apply(&app, download_url)
+async fn apply_launcher_update(app: AppHandle) -> Result<(), String> {
+    updater::download_and_apply(&app).await
 }
 
 #[tauri::command]
@@ -155,8 +220,32 @@ fn get_game_asset(app: AppHandle, game_id: String, asset_id: String) -> Result<A
 }
 
 #[tauri::command]
-fn get_game_install_state(game_id: String) -> Result<GameInstallState, String> {
-    job::game_install_state(&game_id).map_err(|err| err.to_string())
+fn get_game_install_state(app: AppHandle, game_id: String) -> Result<GameInstallState, String> {
+    job::game_install_state(&app, &game_id).map_err(|err| err.to_string())
+}
+
+#[tauri::command]
+fn get_game_install_states(
+    app: AppHandle,
+    game_ids: Vec<String>,
+) -> Result<Vec<GameInstallState>, String> {
+    job::game_install_states_quick(&app, &game_ids).map_err(|err| err.to_string())
+}
+
+#[tauri::command]
+fn get_game_launch_config(
+    app: AppHandle,
+    game_id: String,
+    install_path: String,
+    launch_executable: Option<String>,
+) -> Result<ResolvedGameLaunchConfig, String> {
+    job::game_launch_config(
+        &app,
+        &game_id,
+        PathBuf::from(install_path).as_path(),
+        launch_executable,
+    )
+    .map_err(|err| err.to_string())
 }
 
 #[tauri::command]
@@ -165,12 +254,14 @@ fn launch_game(
     game_id: String,
     install_path: String,
     launch_executable: Option<String>,
+    launch_option_id: Option<String>,
 ) -> Result<LaunchReport, String> {
     job::launch_game(
         &app,
         &game_id,
         PathBuf::from(install_path).as_path(),
         launch_executable,
+        launch_option_id,
     )
     .map_err(|err| err.to_string())
 }
@@ -192,8 +283,12 @@ fn verify_install_integrity(
 }
 
 #[tauri::command]
-fn uninstall_game(game_id: String, install_path: String) -> Result<UninstallReport, String> {
-    job::uninstall_game(&game_id, PathBuf::from(install_path).as_path())
+fn uninstall_game(
+    app: AppHandle,
+    game_id: String,
+    install_path: String,
+) -> Result<UninstallReport, String> {
+    job::uninstall_game(&app, &game_id, PathBuf::from(install_path).as_path())
         .map_err(|err| err.to_string())
 }
 
@@ -295,14 +390,19 @@ fn resume_job(app: AppHandle, state: State<'_, LauncherState>) -> Result<(), Str
 }
 
 #[tauri::command]
-fn cancel_job(state: State<'_, LauncherState>) {
+fn cancel_job(app: AppHandle, state: State<'_, LauncherState>) -> Result<(), String> {
     state.job_control.cancel();
+    job::abort_and_clean_job(&app, None).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-fn abort_and_clean_job(state: State<'_, LauncherState>, game_id: String) -> Result<(), String> {
+fn abort_and_clean_job(
+    app: AppHandle,
+    state: State<'_, LauncherState>,
+    game_id: String,
+) -> Result<(), String> {
     state.job_control.cancel();
-    job::abort_and_clean_job(&game_id).map_err(|e| e.to_string())
+    job::abort_and_clean_job(&app, Some(&game_id)).map_err(|e| e.to_string())
 }
 
 #[derive(Clone, serde::Serialize)]
@@ -337,6 +437,8 @@ pub fn run() {
             get_game_detail,
             get_game_asset,
             get_game_install_state,
+            get_game_install_states,
+            get_game_launch_config,
             launch_game,
             verify_install_integrity,
             uninstall_game,
@@ -346,24 +448,53 @@ pub fn run() {
             pause_job,
             resume_job,
             cancel_job,
-            abort_and_clean_job
+            abort_and_clean_job,
+            open_folder,
+            check_spacewar_installed,
+            install_spacewar,
+            is_steam_running,
+            open_steam,
+            open_steam_big_picture,
+            get_steam_environment
         ])
         .setup(|app| {
             let app_dir = app.path().app_data_dir()?;
             std::fs::create_dir_all(app_dir.join("journals"))?;
-            std::fs::create_dir_all(app_dir.join("cache"))?;
-            if let Some(request) = parse_shortcut_launch_request() {
+            platform::initialize(app.handle())
+                .map_err(|error| std::io::Error::new(std::io::ErrorKind::Other, error))?;
+            steam_integration::start_pending_worker(app.handle().clone());
+            let shortcut_request = parse_shortcut_launch_request();
+            // When the main launcher starts, migrate existing desktop shortcuts away
+            // from the legacy AppData bootstrap and point them at the game directory.
+            // Do not run this from a per-game bootstrap, otherwise an old bootstrap
+            // could copy itself into every registered game folder.
+            if shortcut_request.is_none() {
+                let _ = job::refresh_registered_game_shortcuts(app.handle());
+            }
+            if let Some(request) = shortcut_request {
                 let handle = app.handle().clone();
                 std::thread::spawn(move || {
                     std::thread::sleep(std::time::Duration::from_millis(900));
                     let _ = handle.emit("launcher://shortcut-launch", request.clone());
                     std::thread::sleep(std::time::Duration::from_millis(1800));
+                    if game_tags::game_has_tag(&request.game_id, "online") {
+                        if !steam_integration::is_spacewar_installed() {
+                            let _ = handle.emit("launcher://spacewar-required", request.clone());
+                            return;
+                        }
+                        if !steam_integration::is_steam_running() {
+                            let _ = handle
+                                .emit("launcher://steam-recommendation-required", request.clone());
+                            return;
+                        }
+                    }
                     let install_path = PathBuf::from(&request.install_path);
                     if let Err(err) = job::launch_game(
                         &handle,
                         &request.game_id,
                         install_path.as_path(),
                         request.launch_executable.clone(),
+                        None,
                     ) {
                         let _ = handle.emit("launcher://shortcut-launch-error", err.to_string());
                     }
@@ -373,6 +504,7 @@ pub fn run() {
         })
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .run(tauri::generate_context!())
         .expect("failed to run 007 First Light launcher");
 }

@@ -1,0 +1,65 @@
+name: Release 0xoLemon
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    name: Build signed Windows release
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate tag matches application version
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: pwsh
+        run: |
+          $tagVersion = "${{ github.ref_name }}".TrimStart("v")
+          $config = Get-Content -Raw -Encoding utf8 src-tauri/tauri.conf.json | ConvertFrom-Json
+          if ($config.version -ne $tagVersion) {
+            throw "Tag version $tagVersion does not match tauri.conf.json version $($config.version)"
+          }
+
+      - name: Build, sign, and publish release
+        uses: tauri-apps/tauri-action@84b9d35b5fc46c1e45415bdb6144030364f7ebc5 # v0.6.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: '0xoLemon ${{ github.ref_name }}'
+          releaseBody: |
+            Signed 0xoLemon launcher release.
+
+            The release includes the Windows installer and `latest.json` manifest used by the in-app updater.
+          releaseDraft: false
+          prerelease: false
+          updaterJsonPreferNsis: true
+          args: --target x86_64-pc-windows-msvc

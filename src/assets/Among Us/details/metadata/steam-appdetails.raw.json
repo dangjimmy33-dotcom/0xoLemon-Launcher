@@ -34,12 +34,12 @@
                                                    "Innersloth"
                                                ],
                                 "price_overview":  {
-                                                       "currency":  "USD",
-                                                       "initial":  499,
-                                                       "final":  299,
-                                                       "discount_percent":  40,
-                                                       "initial_formatted":  "$4.99",
-                                                       "final_formatted":  "$2.99"
+                                                       "currency":  "VND",
+                                                       "initial":  7000000,
+                                                       "final":  7000000,
+                                                       "discount_percent":  0,
+                                                       "initial_formatted":  "",
+                                                       "final_formatted":  "70.000₫"
                                                    },
                                 "packages":  [
                                                  307391,
@@ -57,23 +57,23 @@
                                                            "subs":  [
                                                                         {
                                                                             "packageid":  307391,
-                                                                            "percent_savings_text":  "-40% ",
+                                                                            "percent_savings_text":  " ",
                                                                             "percent_savings":  0,
-                                                                            "option_text":  "Among Us - \u003cspan class=\"discount_original_price\"\u003e$4.99\u003c/span\u003e $2.99",
+                                                                            "option_text":  "Among Us - 70.000₫",
                                                                             "option_description":  "",
                                                                             "can_get_free_license":  "0",
                                                                             "is_free_license":  false,
-                                                                            "price_in_cents_with_discount":  299
+                                                                            "price_in_cents_with_discount":  7000000
                                                                         },
                                                                         {
                                                                             "packageid":  518028,
                                                                             "percent_savings_text":  " ",
                                                                             "percent_savings":  0,
-                                                                            "option_text":  "Among Us - Commercial License - $5.99",
+                                                                            "option_text":  "Among Us - Commercial License - 80.000₫",
                                                                             "option_description":  "",
                                                                             "can_get_free_license":  "0",
                                                                             "is_free_license":  false,
-                                                                            "price_in_cents_with_discount":  599
+                                                                            "price_in_cents_with_discount":  8000000
                                                                         }
                                                                     ]
                                                        }
@@ -255,7 +255,7 @@
                                                }
                                            ],
                                 "recommendations":  {
-                                                        "total":  645130
+                                                        "total":  645597
                                                     },
                                 "achievements":  {
                                                      "total":  33,
@@ -264,67 +264,67 @@
                                                                              "icon":  "28d77d90c1978829c159eae6fe799a191c34be83.jpg",
                                                                              "localized_name":  "A TASTE FOR IT",
                                                                              "name":  "A TASTE FOR IT",
-                                                                             "path":  "https://cdn.akamai.steamstatic.com/steamcommunity/public/images/apps/945360/28d77d90c1978829c159eae6fe799a191c34be83.jpg"
+                                                                             "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/945360/28d77d90c1978829c159eae6fe799a191c34be83.jpg"
                                                                          },
                                                                          {
                                                                              "icon":  "f2b99effc0a886290c7b86e1d13bf8fb8df9552c.jpg",
                                                                              "localized_name":  "KILLER",
                                                                              "name":  "KILLER",
-                                                                             "path":  "https://cdn.akamai.steamstatic.com/steamcommunity/public/images/apps/945360/f2b99effc0a886290c7b86e1d13bf8fb8df9552c.jpg"
+                                                                             "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/945360/f2b99effc0a886290c7b86e1d13bf8fb8df9552c.jpg"
                                                                          },
                                                                          {
                                                                              "icon":  "c56c94c6016eaa474ba59118c0c70b814156fe20.jpg",
                                                                              "localized_name":  "ASSASSIN",
                                                                              "name":  "ASSASSIN",
-                                                                             "path":  "https://cdn.akamai.steamstatic.com/steamcommunity/public/images/apps/945360/c56c94c6016eaa474ba59118c0c70b814156fe20.jpg"
+                                                                             "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/945360/c56c94c6016eaa474ba59118c0c70b814156fe20.jpg"
                                                                          },
                                                                          {
                                                                              "icon":  "6a0dd8539784b692366028f41774673397d04c13.jpg",
                                                                              "localized_name":  "SCOURGE",
                                                                              "name":  "SCOURGE",
-                                                                             "path":  "https://cdn.akamai.steamstatic.com/steamcommunity/public/images/apps/945360/6a0dd8539784b692366028f41774673397d04c13.jpg"
+                                                                             "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/945360/6a0dd8539784b692366028f41774673397d04c13.jpg"
                                                                          },
                                                                          {
                                                                              "icon":  "11d6a7da14eaa7036982b4375ea7caba288339ce.jpg",
                                                                              "localized_name":  "INTERN",
                                                                              "name":  "INTERN",
-                                                                             "path":  "https://cdn.akamai.steamstatic.com/steamcommunity/public/images/apps/945360/11d6a7da14eaa7036982b4375ea7caba288339ce.jpg"
+                                                                             "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/945360/11d6a7da14eaa7036982b4375ea7caba288339ce.jpg"
                                                                          },
                                                                          {
                                                                              "icon":  "fb8ff2604057a9cc13acf74166c52ff945354803.jpg",
                                                                              "localized_name":  "MANAGER",
                                                                              "name":  "MANAGER",
-                                                                             "path":  "https://cdn.akamai.steamstatic.com/steamcommunity/public/images/apps/945360/fb8ff2604057a9cc13acf74166c52ff945354803.jpg"
+                                                                             "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/945360/fb8ff2604057a9cc13acf74166c52ff945354803.jpg"
                                                                          },
                                                                          {
                                                                              "icon":  "c7782fd07440b564df902fb0d80daa292f06ee9e.jpg",
                                                                              "localized_name":  "TASKMASTER",
                                                                              "name":  "TASKMASTER",
-                                                                             "path":  "https://cdn.akamai.steamstatic.com/steamcommunity/public/images/apps/945360/c7782fd07440b564df902fb0d80daa292f06ee9e.jpg"
+                                                                             "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/945360/c7782fd07440b564df902fb0d80daa292f06ee9e.jpg"
                                                                          },
                                                                          {
                                                                              "icon":  "1c1b96b03b075eb3b42e368ebbdf257e19ef9087.jpg",
                                                                              "localized_name":  "A SHIP ADRIFT",
                                                                              "name":  "A SHIP ADRIFT",
-                                                                             "path":  "https://cdn.akamai.steamstatic.com/steamcommunity/public/images/apps/945360/1c1b96b03b075eb3b42e368ebbdf257e19ef9087.jpg"
+                                                                             "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/945360/1c1b96b03b075eb3b42e368ebbdf257e19ef9087.jpg"
                                                                          },
                                                                          {
                                                                              "icon":  "144c10dcf276eaffe8a7c03553c7d8a63c0de116.jpg",
                                                                              "localized_name":  "CORPORATE LOCKDOWN",
                                                                              "name":  "CORPORATE LOCKDOWN",
-                                                                             "path":  "https://cdn.akamai.steamstatic.com/steamcommunity/public/images/apps/945360/144c10dcf276eaffe8a7c03553c7d8a63c0de116.jpg"
+                                                                             "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/945360/144c10dcf276eaffe8a7c03553c7d8a63c0de116.jpg"
                                                                          },
                                                                          {
                                                                              "icon":  "4d3d812ce857674d5013fb8c499bfacfd063277c.jpg",
                                                                              "localized_name":  "UNEARTHED",
                                                                              "name":  "UNEARTHED",
-                                                                             "path":  "https://cdn.akamai.steamstatic.com/steamcommunity/public/images/apps/945360/4d3d812ce857674d5013fb8c499bfacfd063277c.jpg"
+                                                                             "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/945360/4d3d812ce857674d5013fb8c499bfacfd063277c.jpg"
                                                                          }
                                                                      ]
                                                  },
                                 "release_date":  {
                                                      "coming_soon":  false,
-                                                     "date":  "Nov 16, 2018"
+                                                     "date":  "16 Nov, 2018"
                                                  },
                                 "support_info":  {
                                                      "url":  "https://innersloth.zendesk.com/hc/en-us",

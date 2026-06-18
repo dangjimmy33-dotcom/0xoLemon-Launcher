@@ -1,0 +1,226 @@
+﻿{
+    "4704690":  {
+                    "success":  true,
+                    "data":  {
+                                 "type":  "game",
+                                 "name":  "MECCHA CHAMELEON",
+                                 "steam_appid":  4704690,
+                                 "required_age":  0,
+                                 "is_free":  false,
+                                 "detailed_description":  "\u003cp class=\"bb_paragraph\" \u003ePaint your own body! Blend in like a chameleon in this hide-and-seek game!\u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eyeah! Mechcha \u0026quot;Hide and Seek\u0026quot;\u003c/strong\u003e\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003e The rules are simple. Split into the Seeker team and the Hider team to play hide-and-seek. The Seekers win if they find everyone within the time limit.\u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eyeah! Mechcha \u0026quot;Paint\u0026quot;\u003c/strong\u003e\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003e The way you hide is a bit special. Paint your pure white body to blend into the stage. Just like a chameleon. The hiding spot, the pose, and above all, your artistic skills are the key! Deceive the Seekers\u0027 eyes with a mimicry that would even surprise a chameleon.\u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eyeah! Mechcha \u0026quot;Matching\u0026quot;\u003c/strong\u003e \u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003eOf course you can play with friends, but you can also play with people you don\u0027t know. (If you create a server that is not set to private, anyone can join freely.) Game streamers can easily host viewer participation games. The maximum number of players depends on the host\u0027s network environment. (2–10 players recommended. This may increase or decrease based on future playtests.)\u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003e[About Videos and Streaming]\u003c/strong\u003e \u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003eGameplay videos and streaming are welcome. Please check the following two points:\u003c/p\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003eInclude the name of this game in the title. (Required)\u003c/p\u003e\u003c/li\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003eInclude the Steam store page URL in the description. (Optional)\u003c/p\u003e\u003c/li\u003e\u003c/ul\u003e",
+                                 "about_the_game":  "\u003cp class=\"bb_paragraph\" \u003ePaint your own body! Blend in like a chameleon in this hide-and-seek game!\u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eyeah! Mechcha \u0026quot;Hide and Seek\u0026quot;\u003c/strong\u003e\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003e The rules are simple. Split into the Seeker team and the Hider team to play hide-and-seek. The Seekers win if they find everyone within the time limit.\u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eyeah! Mechcha \u0026quot;Paint\u0026quot;\u003c/strong\u003e\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003e The way you hide is a bit special. Paint your pure white body to blend into the stage. Just like a chameleon. The hiding spot, the pose, and above all, your artistic skills are the key! Deceive the Seekers\u0027 eyes with a mimicry that would even surprise a chameleon.\u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eyeah! Mechcha \u0026quot;Matching\u0026quot;\u003c/strong\u003e \u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003eOf course you can play with friends, but you can also play with people you don\u0027t know. (If you create a server that is not set to private, anyone can join freely.) Game streamers can easily host viewer participation games. The maximum number of players depends on the host\u0027s network environment. (2–10 players recommended. This may increase or decrease based on future playtests.)\u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003e[About Videos and Streaming]\u003c/strong\u003e \u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003eGameplay videos and streaming are welcome. Please check the following two points:\u003c/p\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003eInclude the name of this game in the title. (Required)\u003c/p\u003e\u003c/li\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003eInclude the Steam store page URL in the description. (Optional)\u003c/p\u003e\u003c/li\u003e\u003c/ul\u003e",
+                                 "short_description":  "Paint yourself to blend in! \u0026quot;Meccha Chameleon\u0026quot; is a new-sensation hide-and-seek game where you paint your white body to mimic the stage. Spot, pose, and \u0026quot;artistic skill\u0026quot; are keys to survival. Deceive Seekers with techniques that put chameleons to shame! Supports public matches and streaming.",
+                                 "supported_languages":  "English, Japanese, Spanish - Spain, Simplified Chinese, Korean, French, Italian, German, Arabic, Portuguese - Brazil, Russian, Traditional Chinese",
+                                 "header_image":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4704690/163e2a742e5fb8e1f5d1e3a890da98f04ab809d4/header.jpg?t=1781108224",
+                                 "capsule_image":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4704690/18d14b8bd834e30a6a25df5ccd7f0a6e644f1577/capsule_231x87.jpg?t=1781108224",
+                                 "capsule_imagev5":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4704690/18d14b8bd834e30a6a25df5ccd7f0a6e644f1577/capsule_184x69.jpg?t=1781108224",
+                                 "website":  null,
+                                 "pc_requirements":  {
+                                                         "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows 10 64-bit.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e Intel Core i5\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e DirectX 11 or 12 compatible graphics card\u003c/li\u003e\u003c/ul\u003e"
+                                                     },
+                                 "mac_requirements":  [
+
+                                                      ],
+                                 "linux_requirements":  [
+
+                                                        ],
+                                 "developers":  [
+                                                    "lemorion_1224"
+                                                ],
+                                 "publishers":  [
+                                                    "lemorion_1224"
+                                                ],
+                                 "price_overview":  {
+                                                        "currency":  "USD",
+                                                        "initial":  599,
+                                                        "final":  599,
+                                                        "discount_percent":  0,
+                                                        "initial_formatted":  "",
+                                                        "final_formatted":  "$5.99"
+                                                    },
+                                 "packages":  [
+                                                  1637192
+                                              ],
+                                 "package_groups":  [
+                                                        {
+                                                            "name":  "default",
+                                                            "title":  "Buy MECCHA CHAMELEON",
+                                                            "description":  "",
+                                                            "selection_text":  "Select a purchase option",
+                                                            "save_text":  "",
+                                                            "display_type":  0,
+                                                            "is_recurring_subscription":  "false",
+                                                            "subs":  [
+                                                                         {
+                                                                             "packageid":  1637192,
+                                                                             "percent_savings_text":  " ",
+                                                                             "percent_savings":  0,
+                                                                             "option_text":  "MECCHA CHAMELEON - $5.99",
+                                                                             "option_description":  "",
+                                                                             "can_get_free_license":  "0",
+                                                                             "is_free_license":  false,
+                                                                             "price_in_cents_with_discount":  599
+                                                                         }
+                                                                     ]
+                                                        }
+                                                    ],
+                                 "platforms":  {
+                                                   "windows":  true,
+                                                   "mac":  false,
+                                                   "linux":  false
+                                               },
+                                 "categories":  [
+                                                    {
+                                                        "id":  1,
+                                                        "description":  "Multi-player"
+                                                    },
+                                                    {
+                                                        "id":  49,
+                                                        "description":  "PvP"
+                                                    },
+                                                    {
+                                                        "id":  36,
+                                                        "description":  "Online PvP"
+                                                    },
+                                                    {
+                                                        "id":  67,
+                                                        "description":  "Camera Comfort"
+                                                    },
+                                                    {
+                                                        "id":  68,
+                                                        "description":  "Custom Volume Controls"
+                                                    },
+                                                    {
+                                                        "id":  74,
+                                                        "description":  "Playable without Timed Input"
+                                                    },
+                                                    {
+                                                        "id":  69,
+                                                        "description":  "Stereo Sound"
+                                                    },
+                                                    {
+                                                        "id":  70,
+                                                        "description":  "Surround Sound"
+                                                    },
+                                                    {
+                                                        "id":  62,
+                                                        "description":  "Family Sharing"
+                                                    }
+                                                ],
+                                 "genres":  [
+                                                {
+                                                    "id":  "4",
+                                                    "description":  "Casual"
+                                                }
+                                            ],
+                                 "screenshots":  [
+                                                     {
+                                                         "id":  0,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4704690/6c0a47cc2fba1b160901d1553637a764198bdc98/ss_6c0a47cc2fba1b160901d1553637a764198bdc98.600x338.jpg?t=1781108224",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4704690/6c0a47cc2fba1b160901d1553637a764198bdc98/ss_6c0a47cc2fba1b160901d1553637a764198bdc98.1920x1080.jpg?t=1781108224"
+                                                     },
+                                                     {
+                                                         "id":  1,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4704690/0383a711ed93bf8edd848df4b63b331fc44f3ad5/ss_0383a711ed93bf8edd848df4b63b331fc44f3ad5.600x338.jpg?t=1781108224",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4704690/0383a711ed93bf8edd848df4b63b331fc44f3ad5/ss_0383a711ed93bf8edd848df4b63b331fc44f3ad5.1920x1080.jpg?t=1781108224"
+                                                     },
+                                                     {
+                                                         "id":  2,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4704690/51b0a906d1767b1b5abde623350dec64c6877c93/ss_51b0a906d1767b1b5abde623350dec64c6877c93.600x338.jpg?t=1781108224",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4704690/51b0a906d1767b1b5abde623350dec64c6877c93/ss_51b0a906d1767b1b5abde623350dec64c6877c93.1920x1080.jpg?t=1781108224"
+                                                     },
+                                                     {
+                                                         "id":  3,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4704690/0a8a562016b13a349349e685f7a4d5a6cbccef3e/ss_0a8a562016b13a349349e685f7a4d5a6cbccef3e.600x338.jpg?t=1781108224",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4704690/0a8a562016b13a349349e685f7a4d5a6cbccef3e/ss_0a8a562016b13a349349e685f7a4d5a6cbccef3e.1920x1080.jpg?t=1781108224"
+                                                     },
+                                                     {
+                                                         "id":  4,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4704690/2764a4a42c24a88d0bbb9b67e5c2bde979a24ac9/ss_2764a4a42c24a88d0bbb9b67e5c2bde979a24ac9.600x338.jpg?t=1781108224",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4704690/2764a4a42c24a88d0bbb9b67e5c2bde979a24ac9/ss_2764a4a42c24a88d0bbb9b67e5c2bde979a24ac9.1920x1080.jpg?t=1781108224"
+                                                     },
+                                                     {
+                                                         "id":  5,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4704690/c0c3ab9f5f2b41e86606a1c790fef432fe2d65cf/ss_c0c3ab9f5f2b41e86606a1c790fef432fe2d65cf.600x338.jpg?t=1781108224",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4704690/c0c3ab9f5f2b41e86606a1c790fef432fe2d65cf/ss_c0c3ab9f5f2b41e86606a1c790fef432fe2d65cf.1920x1080.jpg?t=1781108224"
+                                                     },
+                                                     {
+                                                         "id":  6,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4704690/25f5c021fcaf118dee1ed17d638a35c05f0eec2f/ss_25f5c021fcaf118dee1ed17d638a35c05f0eec2f.600x338.jpg?t=1781108224",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4704690/25f5c021fcaf118dee1ed17d638a35c05f0eec2f/ss_25f5c021fcaf118dee1ed17d638a35c05f0eec2f.1920x1080.jpg?t=1781108224"
+                                                     },
+                                                     {
+                                                         "id":  7,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4704690/b5a025eff8156f561590b3863ee5628353d5d41c/ss_b5a025eff8156f561590b3863ee5628353d5d41c.600x338.jpg?t=1781108224",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4704690/b5a025eff8156f561590b3863ee5628353d5d41c/ss_b5a025eff8156f561590b3863ee5628353d5d41c.1920x1080.jpg?t=1781108224"
+                                                     },
+                                                     {
+                                                         "id":  8,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4704690/8c63f28b06fcb680e4234b34a3b391818e9895e8/ss_8c63f28b06fcb680e4234b34a3b391818e9895e8.600x338.jpg?t=1781108224",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4704690/8c63f28b06fcb680e4234b34a3b391818e9895e8/ss_8c63f28b06fcb680e4234b34a3b391818e9895e8.1920x1080.jpg?t=1781108224"
+                                                     },
+                                                     {
+                                                         "id":  9,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4704690/e38c8f1a5457304900196a133ecd49c6632fc19e/ss_e38c8f1a5457304900196a133ecd49c6632fc19e.600x338.jpg?t=1781108224",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4704690/e38c8f1a5457304900196a133ecd49c6632fc19e/ss_e38c8f1a5457304900196a133ecd49c6632fc19e.1920x1080.jpg?t=1781108224"
+                                                     }
+                                                 ],
+                                 "movies":  [
+                                                {
+                                                    "id":  257336777,
+                                                    "name":  "TR2",
+                                                    "thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257336777/50fa43f687913f0d5295148f5b8f2892ec3d8b08/movie_600x337.jpg?t=1781024570",
+                                                    "dash_av1":  "https://video.akamai.steamstatic.com/store_trailers/4704690/438048352/68ce99874351195c215dd093f02a8de3fed9ef66/1781024020/dash_av1.mpd?t=1781024570",
+                                                    "dash_h264":  "https://video.akamai.steamstatic.com/store_trailers/4704690/438048352/68ce99874351195c215dd093f02a8de3fed9ef66/1781024020/dash_h264.mpd?t=1781024570",
+                                                    "hls_h264":  "https://video.akamai.steamstatic.com/store_trailers/4704690/438048352/68ce99874351195c215dd093f02a8de3fed9ef66/1781024020/hls_264_master.m3u8?t=1781024570",
+                                                    "highlight":  true
+                                                }
+                                            ],
+                                 "recommendations":  {
+                                                         "total":  7136
+                                                     },
+                                 "release_date":  {
+                                                      "coming_soon":  false,
+                                                      "date":  "Jun 9, 2026"
+                                                  },
+                                 "support_info":  {
+                                                      "url":  "https://X.com/lemorion1224",
+                                                      "email":  "lemorion1224@gmail.com"
+                                                  },
+                                 "background":  "https://store.akamai.steamstatic.com/images/storepagebackground/app/4704690?t=1781108224",
+                                 "background_raw":  "https://store.akamai.steamstatic.com/images/storepagebackground/app/4704690?t=1781108224",
+                                 "content_descriptors":  {
+                                                             "ids":  [
+
+                                                                     ],
+                                                             "notes":  null
+                                                         },
+                                 "ratings":  {
+                                                 "dejus":  {
+                                                               "rating_generated":  "1",
+                                                               "rating":  "14",
+                                                               "required_age":  "14",
+                                                               "banned":  "0",
+                                                               "use_age_gate":  "0",
+                                                               "descriptors":  ""
+                                                           },
+                                                 "steam_germany":  {
+                                                                       "rating_generated":  "1",
+                                                                       "rating":  "12",
+                                                                       "required_age":  "12",
+                                                                       "banned":  "0",
+                                                                       "use_age_gate":  "0",
+                                                                       "descriptors":  ""
+                                                                   },
+                                                 "igrs":  {
+                                                              "rating_generated":  "1",
+                                                              "rating":  "18",
+                                                              "required_age":  "18",
+                                                              "banned":  "0",
+                                                              "use_age_gate":  "0",
+                                                              "descriptors":  "Interaksi Daring"
+                                                          }
+                                             }
+                             }
+                }
+}

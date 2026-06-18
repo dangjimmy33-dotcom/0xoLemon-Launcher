@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "definitions": {
+    "denuvo": {
+      "label": "Denuvo",
+      "tone": "danger"
+    },
+    "online": {
+      "label": "Online",
+      "tone": "online"
+    },
+    "offline": {
+      "label": "Offline",
+      "tone": "offline"
+    }
+  },
+  "games": {
+    "007-first-light": ["denuvo","offline"],
+    "geometry-dash": ["offline"],
+    "stellar-blade": ["denuvo","offline"],
+    "among-us": ["online"],
+    "octopath-traveler-0": ["offline"],
+    "meccha-chameleon": ["online"],
+    "tom-clancy-s-splinter-cell-blacklist": ["offline", "online"],
+    "microsoft-flight-simulator-2020-40th-anniversary-edition": ["online", "xbox"],
+    "hello-kitty-island-adventure": ["denuvo", "offline"]
+  }
+}

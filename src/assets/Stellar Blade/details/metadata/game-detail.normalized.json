@@ -1,0 +1,589 @@
+﻿{
+    "appId":  3489700,
+    "title":  "Stellar Blade",
+    "steamMetadataCountry":  "us",
+    "steamMetadataLanguage":  "english",
+    "type":  "game",
+    "requiredAge":  "17",
+    "isFree":  false,
+    "shortDescription":  "Save humanity from extinction in post-apocalyptic action-adventure Stellar Blade™. Experience blistering combat and a twisting storyline as you unravel the mysteries of Earth’s downfall.",
+    "detailedDescriptionHtml":  "\u003ch2 class=\"bb_tag\" style=\"text-align: center\"\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"asset:description_images/001_3a67cae43d202cd157bbd33b90dd3219.webp\" width=616 height=53 /\u003e\u003c/span\u003e\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003eExperience the acclaimed PlayStation®5 hit Stellar Blade™ from Korean developers SHIFT UP, now optimized for PC.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003ch2 class=\"bb_tag\" style=\"text-align: center\"\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"asset:description_images/002_c6e2df3772c2f40364ef8f09e7fdae2d.webp\" width=616 height=53 /\u003e\u003c/span\u003e\u003c/h2\u003e\u003cp class=\"bb_paragraph\" style=\"text-align: center\"\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline crossorigin=\"anonymous\" poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3489700/extras/6eb438ae996a475a048ab832123f7a8c.poster.avif?t=1776466244\" width=616 height=348 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3489700/extras/6eb438ae996a475a048ab832123f7a8c.webm?t=1776466244\" type=\"video/webm; codecs=vp9\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eThe future of humanity is balanced on the edge of a blade. Ravaged by strange, powerful creatures, Earth has been abandoned, and what is left of the decimated human race has fled to a Colony in outer space.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eAfter travelling from the Colony, EVE arrives on the desolate remains of our planet with a clear-cut mission: to save humankind by reclaiming Earth from the Naytiba – the malevolent force that has devastated it.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eBut as EVE tackles the Naytiba one-by-one, piecing together the mysteries of the past in the ruins of human civilization, she realizes that her mission is far from straightforward. In fact, almost nothing is as it seems…\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003ch2 class=\"bb_tag\" style=\"text-align: center\"\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"asset:description_images/003_2917d99c87c674cfe94183bf374ae514.webp\" width=616 height=53 /\u003e\u003c/span\u003e\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" style=\"text-align: center\"\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline crossorigin=\"anonymous\" poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3489700/extras/8097adf35cdfbe7b7c3b746f2693840e.poster.avif?t=1776466244\" width=616 height=348 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3489700/extras/8097adf35cdfbe7b7c3b746f2693840e.webm?t=1776466244\" type=\"video/webm; codecs=vp9\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eEngage in blisteringly fast combat as you slash a path through the remnants of Earth. Unleash graceful yet brutal attacking combos, unlock new moves and weapon upgrades, and face epic boss encounters that will challenge both brain and brawn in equal measure.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003ch2 class=\"bb_tag\" style=\"text-align: center\"\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"asset:description_images/004_0a7baf1010e0bd3c064a87018e801ff1.webp\" width=616 height=53 /\u003e\u003c/span\u003e\u003c/h2\u003e\u003cp class=\"bb_paragraph\" style=\"text-align: center\"\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline crossorigin=\"anonymous\" poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3489700/extras/1d8bf487cb63cd517950a9044ab897bf.poster.avif?t=1776466244\" width=616 height=348 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3489700/extras/1d8bf487cb63cd517950a9044ab897bf.webm?t=1776466244\" type=\"video/webm; codecs=vp9\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eBecome immersed in a highly detailed post-apocalyptic world that blends beauty and horror to spectacular effect. \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003ch2 class=\"bb_tag\" style=\"text-align: center\"\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"asset:description_images/005_e89962cb109329d142f497875ddf4f2c.webp\" width=616 height=53 /\u003e\u003c/span\u003e\u003c/h2\u003e\u003cp class=\"bb_paragraph\" style=\"text-align: center\"\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline crossorigin=\"anonymous\" poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3489700/extras/9a881bdac27f5f957e2b9604b67c4ede.poster.avif?t=1776466244\" width=616 height=348 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3489700/extras/9a881bdac27f5f957e2b9604b67c4ede.webm?t=1776466244\" type=\"video/webm; codecs=vp9\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eUnravel a gripping human fate story, with mature themes, a thought-provoking narrative and emotionally-charged revelations from beginning to end.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eNew content\u003c/strong\u003e\u003c/h2\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003eTest your skill and strength against the fearsome warrior Mann, the leader of the Sentinels in Boss Challenge Mode.\u003c/p\u003e\u003c/li\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003eChinese and Japanese voice over and lip-sync support.\u003c/p\u003e\u003c/li\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003e25 costumes, three pairs of glasses and six pairs of earrings.\u003c/p\u003e\u003c/li\u003e\u003c/ul\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003ePC features\u003c/strong\u003e\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cstrong\u003eUltrawide monitor support\u003c/strong\u003e\u003c/p\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003eJourney across breathtaking science fiction-inspired environments through support for ultrawide screen setups, including 21:9 and 32:9 aspect ratios.\u003c/p\u003e\u003c/li\u003e\u003c/ul\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cstrong\u003ePC optimized graphics\u003c/strong\u003e\u003c/p\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003eBring this stunningly vibrant world to life with support for performance-enhancing technologies including NVIDIA DLSS 4 AI-powered graphics, NVIDIA DLAA image quality enhancement, NVIDIA Reflex system latency reduction, as well as AMD FSR 3. \u003c/p\u003e\u003c/li\u003e\u003c/ul\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cstrong\u003eUnlocked framerates\u003c/strong\u003e\u003c/p\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003eUnleash the full power of your hardware to unleash the full fury of EVE’s electrifying fighting style with support for high framerates and enhanced visual fluidity.\u003c/p\u003e\u003c/li\u003e\u003c/ul\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cstrong\u003eTexture pack support\u003c/strong\u003e\u003c/p\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003eEnrich the stellar Blade universe through a 4K option for the environment texture quality.\u003c/p\u003e\u003c/li\u003e\u003c/ul\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cstrong\u003eController and keyboard support\u003c/strong\u003e\u003c/p\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003eLeap into the adventure with a PlayStation DualSense® controller on a wired USB connection, or with full mouse and keyboard support.\u003c/p\u003e\u003c/li\u003e\u003c/ul\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cu\u003eHaptic feedback\u003c/u\u003e\u003c/p\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003eFeel the thrill of combat as your blade slashes its way to victory, with sensations enriched by the DualSense controller’s responsive vibrations.\u003cbr\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3489700/extras/8b4ba378c0230fb041df10d63c90cbd8.poster.avif?t=1776466244\" width=1170 height=658 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3489700/extras/8b4ba378c0230fb041df10d63c90cbd8.webm?t=1776466244\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3489700/extras/8b4ba378c0230fb041df10d63c90cbd8.mp4?t=1776466244\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003c/li\u003e\u003c/ul\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cu\u003eAdaptive triggers\u003c/u\u003e\u003c/p\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003eUnleash devastating yet graceful acrobatic moves, and interact with the technological remnants of an abandoned Earth using the DualSense controller’s adaptive triggers.\u003cbr\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3489700/extras/b79262f5428e3d854fafe0de77a1ea2a.poster.avif?t=1776466244\" width=1170 height=658 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3489700/extras/b79262f5428e3d854fafe0de77a1ea2a.webm?t=1776466244\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3489700/extras/b79262f5428e3d854fafe0de77a1ea2a.mp4?t=1776466244\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003c/li\u003e\u003c/ul\u003e",
+    "aboutTheGameHtml":  "\u003ch2 class=\"bb_tag\" style=\"text-align: center\"\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"asset:description_images/001_3a67cae43d202cd157bbd33b90dd3219.webp\" width=616 height=53 /\u003e\u003c/span\u003e\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003eExperience the acclaimed PlayStation®5 hit Stellar Blade™ from Korean developers SHIFT UP, now optimized for PC.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003ch2 class=\"bb_tag\" style=\"text-align: center\"\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"asset:description_images/002_c6e2df3772c2f40364ef8f09e7fdae2d.webp\" width=616 height=53 /\u003e\u003c/span\u003e\u003c/h2\u003e\u003cp class=\"bb_paragraph\" style=\"text-align: center\"\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline crossorigin=\"anonymous\" poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3489700/extras/6eb438ae996a475a048ab832123f7a8c.poster.avif?t=1776466244\" width=616 height=348 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3489700/extras/6eb438ae996a475a048ab832123f7a8c.webm?t=1776466244\" type=\"video/webm; codecs=vp9\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eThe future of humanity is balanced on the edge of a blade. Ravaged by strange, powerful creatures, Earth has been abandoned, and what is left of the decimated human race has fled to a Colony in outer space.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eAfter travelling from the Colony, EVE arrives on the desolate remains of our planet with a clear-cut mission: to save humankind by reclaiming Earth from the Naytiba – the malevolent force that has devastated it.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eBut as EVE tackles the Naytiba one-by-one, piecing together the mysteries of the past in the ruins of human civilization, she realizes that her mission is far from straightforward. In fact, almost nothing is as it seems…\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003ch2 class=\"bb_tag\" style=\"text-align: center\"\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"asset:description_images/003_2917d99c87c674cfe94183bf374ae514.webp\" width=616 height=53 /\u003e\u003c/span\u003e\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" style=\"text-align: center\"\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline crossorigin=\"anonymous\" poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3489700/extras/8097adf35cdfbe7b7c3b746f2693840e.poster.avif?t=1776466244\" width=616 height=348 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3489700/extras/8097adf35cdfbe7b7c3b746f2693840e.webm?t=1776466244\" type=\"video/webm; codecs=vp9\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eEngage in blisteringly fast combat as you slash a path through the remnants of Earth. Unleash graceful yet brutal attacking combos, unlock new moves and weapon upgrades, and face epic boss encounters that will challenge both brain and brawn in equal measure.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003ch2 class=\"bb_tag\" style=\"text-align: center\"\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"asset:description_images/004_0a7baf1010e0bd3c064a87018e801ff1.webp\" width=616 height=53 /\u003e\u003c/span\u003e\u003c/h2\u003e\u003cp class=\"bb_paragraph\" style=\"text-align: center\"\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline crossorigin=\"anonymous\" poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3489700/extras/1d8bf487cb63cd517950a9044ab897bf.poster.avif?t=1776466244\" width=616 height=348 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3489700/extras/1d8bf487cb63cd517950a9044ab897bf.webm?t=1776466244\" type=\"video/webm; codecs=vp9\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eBecome immersed in a highly detailed post-apocalyptic world that blends beauty and horror to spectacular effect. \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003ch2 class=\"bb_tag\" style=\"text-align: center\"\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"asset:description_images/005_e89962cb109329d142f497875ddf4f2c.webp\" width=616 height=53 /\u003e\u003c/span\u003e\u003c/h2\u003e\u003cp class=\"bb_paragraph\" style=\"text-align: center\"\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline crossorigin=\"anonymous\" poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3489700/extras/9a881bdac27f5f957e2b9604b67c4ede.poster.avif?t=1776466244\" width=616 height=348 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3489700/extras/9a881bdac27f5f957e2b9604b67c4ede.webm?t=1776466244\" type=\"video/webm; codecs=vp9\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eUnravel a gripping human fate story, with mature themes, a thought-provoking narrative and emotionally-charged revelations from beginning to end.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eNew content\u003c/strong\u003e\u003c/h2\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003eTest your skill and strength against the fearsome warrior Mann, the leader of the Sentinels in Boss Challenge Mode.\u003c/p\u003e\u003c/li\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003eChinese and Japanese voice over and lip-sync support.\u003c/p\u003e\u003c/li\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003e25 costumes, three pairs of glasses and six pairs of earrings.\u003c/p\u003e\u003c/li\u003e\u003c/ul\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003ePC features\u003c/strong\u003e\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cstrong\u003eUltrawide monitor support\u003c/strong\u003e\u003c/p\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003eJourney across breathtaking science fiction-inspired environments through support for ultrawide screen setups, including 21:9 and 32:9 aspect ratios.\u003c/p\u003e\u003c/li\u003e\u003c/ul\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cstrong\u003ePC optimized graphics\u003c/strong\u003e\u003c/p\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003eBring this stunningly vibrant world to life with support for performance-enhancing technologies including NVIDIA DLSS 4 AI-powered graphics, NVIDIA DLAA image quality enhancement, NVIDIA Reflex system latency reduction, as well as AMD FSR 3. \u003c/p\u003e\u003c/li\u003e\u003c/ul\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cstrong\u003eUnlocked framerates\u003c/strong\u003e\u003c/p\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003eUnleash the full power of your hardware to unleash the full fury of EVE’s electrifying fighting style with support for high framerates and enhanced visual fluidity.\u003c/p\u003e\u003c/li\u003e\u003c/ul\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cstrong\u003eTexture pack support\u003c/strong\u003e\u003c/p\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003eEnrich the stellar Blade universe through a 4K option for the environment texture quality.\u003c/p\u003e\u003c/li\u003e\u003c/ul\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cstrong\u003eController and keyboard support\u003c/strong\u003e\u003c/p\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003eLeap into the adventure with a PlayStation DualSense® controller on a wired USB connection, or with full mouse and keyboard support.\u003c/p\u003e\u003c/li\u003e\u003c/ul\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cu\u003eHaptic feedback\u003c/u\u003e\u003c/p\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003eFeel the thrill of combat as your blade slashes its way to victory, with sensations enriched by the DualSense controller’s responsive vibrations.\u003cbr\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3489700/extras/8b4ba378c0230fb041df10d63c90cbd8.poster.avif?t=1776466244\" width=1170 height=658 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3489700/extras/8b4ba378c0230fb041df10d63c90cbd8.webm?t=1776466244\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3489700/extras/8b4ba378c0230fb041df10d63c90cbd8.mp4?t=1776466244\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003c/li\u003e\u003c/ul\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cu\u003eAdaptive triggers\u003c/u\u003e\u003c/p\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003eUnleash devastating yet graceful acrobatic moves, and interact with the technological remnants of an abandoned Earth using the DualSense controller’s adaptive triggers.\u003cbr\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3489700/extras/b79262f5428e3d854fafe0de77a1ea2a.poster.avif?t=1776466244\" width=1170 height=658 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3489700/extras/b79262f5428e3d854fafe0de77a1ea2a.webm?t=1776466244\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3489700/extras/b79262f5428e3d854fafe0de77a1ea2a.mp4?t=1776466244\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003c/li\u003e\u003c/ul\u003e",
+    "supportedLanguagesHtml":  "English\u003cstrong\u003e*\u003c/strong\u003e, French\u003cstrong\u003e*\u003c/strong\u003e, Italian\u003cstrong\u003e*\u003c/strong\u003e, German\u003cstrong\u003e*\u003c/strong\u003e, Spanish - Spain\u003cstrong\u003e*\u003c/strong\u003e, Arabic, Dutch, Swedish, Spanish - Latin America\u003cstrong\u003e*\u003c/strong\u003e, Thai, Danish, Turkish, Norwegian, Finnish, Portuguese - Brazil\u003cstrong\u003e*\u003c/strong\u003e, Portuguese - Portugal, Russian, Simplified Chinese\u003cstrong\u003e*\u003c/strong\u003e, Traditional Chinese, Japanese\u003cstrong\u003e*\u003c/strong\u003e, Korean\u003cstrong\u003e*\u003c/strong\u003e, Polish\u003cbr\u003e\u003cstrong\u003e*\u003c/strong\u003elanguages with full audio support",
+    "pcRequirements":  {
+                           "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003eRequires a 64-bit processor and operating system\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows 10 64-bit\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e Intel® Core™ i5-7600k Processor / AMD Ryzen™ 5 1600X Processor\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 16 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e NVIDIA GeForce GTX 1060 6GB or AMD Radeon RX 580 8GB\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eDirectX:\u003c/strong\u003e Version 12\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 75 GB available space\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eAdditional Notes:\u003c/strong\u003e 1080P. Graphics Quality Preset “Low”. 60FPS Target. HDD Supported, SSD Recommended.\u003c/li\u003e\u003c/ul\u003e",
+                           "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003eRequires a 64-bit processor and operating system\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows 10 64-bit\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e Intel® Core™ i5-8400 Processor / AMD Ryzen™ 5 3600X Processor\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 16 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e NVIDIA GeForce RTX 2060 SUPER  or AMD Radeon RX 5700 XT\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eDirectX:\u003c/strong\u003e Version 12\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 75 GB available space\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eAdditional Notes:\u003c/strong\u003e 1440p. Graphics Quality Preset “Medium”.  60FPS Target. SSD Required.\u003c/li\u003e\u003c/ul\u003e"
+                       },
+    "macRequirements":  {
+                            "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e \u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eSound Card:\u003c/strong\u003e \u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eAdditional Notes:\u003c/strong\u003e \u003c/li\u003e\u003c/ul\u003e",
+                            "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e \u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eSound Card:\u003c/strong\u003e \u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eAdditional Notes:\u003c/strong\u003e \u003c/li\u003e\u003c/ul\u003e"
+                        },
+    "linuxRequirements":  {
+                              "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e \u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eSound Card:\u003c/strong\u003e \u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eVR Support:\u003c/strong\u003e \u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eAdditional Notes:\u003c/strong\u003e \u003c/li\u003e\u003c/ul\u003e",
+                              "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e \u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eSound Card:\u003c/strong\u003e \u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eVR Support:\u003c/strong\u003e \u003c/li\u003e\u003c/ul\u003e"
+                          },
+    "dlc":  null,
+    "website":  "https://www.playstation.com/games/stellar-blade/pc/",
+    "developers":  "SHIFT UP Corporation",
+    "publishers":  "PlayStation Publishing LLC (excluding China)",
+    "releaseDate":  {
+                        "coming_soon":  false,
+                        "date":  "Jun 11, 2025"
+                    },
+    "genres":  "Action, Adventure, RPG",
+    "categories":  [
+                       "Single-player",
+                       "Steam Achievements",
+                       "Full controller support",
+                       "Steam Trading Cards",
+                       "Adjustable Text Size",
+                       "Camera Comfort",
+                       "Color Alternatives",
+                       "Custom Volume Controls",
+                       "Adjustable Difficulty",
+                       "Playable without Timed Input",
+                       "Stereo Sound",
+                       "Subtitle Options",
+                       "Surround Sound",
+                       "Steam Cloud",
+                       "Stats",
+                       "HDR available",
+                       "Family Sharing"
+                   ],
+    "platforms":  {
+                      "windows":  true,
+                      "mac":  false,
+                      "linux":  false
+                  },
+    "metacritic":  null,
+    "recommendations":  {
+                            "total":  57173
+                        },
+    "reviewsSummary":  null,
+    "newsItems":  [
+                      {
+                          "gid":  "1835236783564948",
+                          "title":  "\"Почему только на Nintendo Switch 2?\" Поклонники Xbox массово попросили выпустить Stellar Blade на Xbox Series X|S — им ответили",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/Gamemag.ru/1835236783564948",
+                          "is_external_url":  true,
+                          "author":  "Deacon",
+                          "contents":  "\u003cimg src=\"https://gamemag.ru/images/cache/News/News199766/4ba08c03cc-2_1390x600.jpg\" alt=\"\"\u003e\u003cp\u003eПосле \u003ca href=\"https://gamemag.ru/news/199714/stellar-blade-coming-to-switch-2-in-2026\"\u003e\u003cstrong\u003eанонса Stellar Blade для Nintendo Switch 2\u003c/strong\u003e\u003c/a\u003e секция комментариев в соцсетях студии \u003cstrong\u003eShift Up \u003c/strong\u003eбыстро заполнилась сообщениями от поклонников \u003cstrong\u003eXbox\u003c/strong\u003e, которые просят корейских разработчиков не игнорировать их и выпустить экшен на \u003cstrong\u003eXbox Series X|S\u003c/strong\u003e. \u003c/p\u003e",
+                          "feedlabel":  "Gamemag.ru",
+                          "date":  1781307840,
+                          "feedname":  "Gamemag.ru",
+                          "feed_type":  0,
+                          "appid":  3489700
+                      },
+                      {
+                          "gid":  "1830163047258193",
+                          "title":  "YouTuber who showcases \"adult-oriented\" Resident Evil Requiem and Stellar Blade mods claims Capcom\u0027s laywers asked him to take down over 1,000 videos",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/Rock, Paper, Shotgun/1830163047258193",
+                          "is_external_url":  true,
+                          "author":  "",
+                          "contents":  "\u003cimg src=\"https://assetsio.gnwcdn.com/resident-evil-requiem-adult-mod-youtuber-claims-capcom-takedown-01.jpg?width=690\u0026quality=85\u0026format=jpg\u0026auto=webp\" /\u003e \u003cp\u003eA YouTuber who showcases mods which stick characters from games like \u003ca href=\"https://www.rockpapershotgun.com/games/resident-evil-9-revenant-shadows\"\u003eResident Evil Requiem\u003c/a\u003e and \u003ca href=\"https://www.rockpapershotgun.com/games/stellar-blade\"\u003eStellar Blade\u003c/a\u003e into skimpier costumes claims Capcom\u0027s legal team have sent him an email asking him to to pull over 1000 videos featuring \"adult-oriented\" mods for the publisher\u0027s games offline.\u003c/p\u003e\n \u003cp\u003e\u003ca href=\"https://www.rockpapershotgun.com/youtuber-who-showcases-adult-oriented-resident-evil-requiem-and-stellar-blade-mods-claims-capcoms-laywers-asked-him-to-take-down-over-1000-videos\"\u003eRead more\u003c/a\u003e\u003c/p\u003e",
+                          "feedlabel":  "Rock, Paper, Shotgun",
+                          "date":  1776355070,
+                          "feedname":  "Rock, Paper, Shotgun",
+                          "feed_type":  0,
+                          "appid":  3489700
+                      },
+                      {
+                          "gid":  "1821922921810626",
+                          "title":  "Stellar Blade\u0027s director says AI can see \u0027one person can perform the work of 100 people\u0027 but that won\u0027t wind up in job losses, somehow",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/PC Gamer/1821922921810626",
+                          "is_external_url":  true,
+                          "author":  "Harvey Randall",
+                          "contents":  "\u003cimg src=\"https://cdn.mos.cms.futurecdn.net/PfaXJ3fnWSVg7rbDZXS2J5-1280-80.jpg\"/\u003e\u003cbr\u003e\u003cbr\u003e\n                We\u0027re not even a few steps deep into January yet, and the AI crossfire of 2025 continues. I say crossfire because it\u0027s unclear where any of this is going to land. AI\u0027s as big as the shift to 3D, \u003ca href=\"https://www.pcgamer.com/gaming-industry/ubisoft-says-ai-is-as-big-a-revolution-for-our-industry-as-the-shift-to-3d-its-magical-ai-npcs-are-out-of-prototyping-and-you-bet-its-got-all-our-studios-working-with-the-tech/\"\u003esays Ubisoft\u003c/a\u003e—smack-bang in the \u003ca href=\"https://www.pcgamer.com/software/ai/worlds-top-banker-says-the-ai-bubble-will-burst-and-shedloads-of-money-will-probably-be-lost/\"\u003emiddle of an AI bubble\u003c/a\u003e. Half of \u003ca href=\"https://www.pcgamer.com/gaming-industry/over-half-of-japanese-game-companies-are-using-ai-in-development-according-to-a-new-survey-including-level-5-and-capcom/\"\u003eJapanese game developers are using it\u003c/a\u003e! Also, \u003ca href=\"https://www.pcgamer.com/games/third-person-shooter/even-after-its-success-embark-design-lead-is-still-lukewarm-on-ai-usage-for-arc-raiders-i-dont-think-its-fallen-any-way-or-the-other/\"\u003eArc Raiders developer Embark is still lukewarm on the stuff\u003c/a\u003e despite controversially using it during its development cycle...\n                \u003ca href=\"https://www.pcgamer.com/software/ai/stellar-blades-director-says-ai-can-see-one-person-can-perform-the-work-of-100-people-but-that-wont-wind-up-in-job-losses-somehow/?utm_source=steam\u0026utm_medium=referral\" target=\"_blank\"\u003eRead more.\u003c/a\u003e",
+                          "feedlabel":  "PC Gamer",
+                          "date":  1768396496,
+                          "feedname":  "PC Gamer",
+                          "feed_type":  0,
+                          "appid":  3489700
+                      },
+                      {
+                          "gid":  "1818752592136777",
+                          "title":  "Stellar Blade boss receives presidential commendation for his contributions to the Korean videogame industry",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/PC Gamer/1818752592136777",
+                          "is_external_url":  true,
+                          "author":  "Andy Chalk",
+                          "contents":  "\u003cimg src=\"https://cdn.mos.cms.futurecdn.net/wBHoycbbE3vMzDsXXdEA55-1280-80.jpg\"/\u003e\u003cbr\u003e\u003cbr\u003e\n                Hyung-tae Kim, CEO of Korean game studio Shift Up and director of 2025 gooner game of the year \u003ca href=\"https://www.pcgamer.com/stellar-blade/\"\u003eStellar Blade\u003c/a\u003e, has received a Presidential Commendation for his contributions to the development of South Korea\u0027s videogame industry. A \u003ca href=\"https://v-daum-net.translate.goog/v/20251210163514353?_x_tr_sl=ko\u0026_x_tr_tl=en\u0026_x_tr_hl=en-US\u0026_x_tr_pto=wapp\" target=\"_blank\"\u003eDaum\u003c/a\u003e report (via \u003ca href=\"https://automaton-media.com/en/news/stellar-blade-director-hyung-tae-kim-receives-award-from-president-of-south-korea-for-contributions-to-game-industry/\" target=\"_blank\"\u003eAutomaton\u003c/a\u003e) says the prize honors Kim\u0027s work on both Stellar Blade and the game that preceded it, the 2022 action RPG Goddess of Victory: Nikke...\n                \u003ca href=\"https://www.pcgamer.com/games/action/stellar-blade-boss-receives-presidential-commendation-for-his-contributions-to-the-korean-videogame-industry/?utm_source=steam\u0026utm_medium=referral\" target=\"_blank\"\u003eRead more.\u003c/a\u003e",
+                          "feedlabel":  "PC Gamer",
+                          "date":  1765907246,
+                          "feedname":  "PC Gamer",
+                          "feed_type":  0,
+                          "appid":  3489700
+                      },
+                      {
+                          "gid":  "1816849002020889",
+                          "title":  "Nominate Stellar Blade for the Steam Awards 2025 - Outstanding Visual Style",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1816849002020889",
+                          "is_external_url":  true,
+                          "author":  "Wolfcastle",
+                          "contents":  "[p][img src=\"{STEAM_CLAN_IMAGE}/45493125/b00d2ba83ae3403e8413ad76362065a4589f4772.png\"][/img][/p][p]It’s time to show your support![/p][p]Stellar Blade has captivated players around the world with its breathtaking art direction, intricate environments, and cinematic detail that brings every moment to life. Vote for Stellar Blade at the Steam Awards 2025 in the category of Outstanding Visual Style and help recognize the incredible artistry that makes it one of the most visually stunning games of the year.[/p][p][/p][p]Also, Stellar Blade is currently 20% off on Steam until Dec. 2—there’s never been a better time to experience it yourself and see why it deserves your vote![/p][p][/p][p][/p]",
+                          "feedlabel":  "Community Announcements",
+                          "date":  1764007264,
+                          "feedname":  "steam_community_announcements",
+                          "feed_type":  1,
+                          "appid":  3489700,
+                          "tags":  [
+                                       "steam_award_nomination_request",
+                                       "mod_hide_library_overview"
+                                   ]
+                      }
+                  ],
+    "achievements":  {
+                         "total":  45,
+                         "items":  [
+                                       {
+                                           "apiName":  "01_Platinum",
+                                           "displayName":  "EVE Protocol",
+                                           "description":  "You have unlocked all achievements in the main game.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/6b4a48027864e62ff22d12d5ef19e8b3a77af21c.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/df1f2aee5b6e5281b515226d1d1f634a91494d82.jpg"
+                                       },
+                                       {
+                                           "apiName":  "02_Activate_FirstCamp",
+                                           "displayName":  "Camp Preparation",
+                                           "description":  "Activated the first Camp.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/13e362ef7aa23d4fcd4a5660cddbbb040a28127a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/eb72715c12aaa81390f11ce6dfa36330661a3bbf.jpg"
+                                       },
+                                       {
+                                           "apiName":  "03_KillCharacter_Opener",
+                                           "displayName":  "Abaddon",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/3069db9059a93f10fbdac20083b22da657f09686.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/437995cc4b176fafcabae7c15d9d1c47495f15bc.jpg"
+                                       },
+                                       {
+                                           "apiName":  "04_KillCharacter_GrubShooter",
+                                           "displayName":  "Corrupter",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/d096ff1f659928c6f238715e3500def12dccd01b.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/ec813e87e978bc705927371553509a5a5f17a95d.jpg"
+                                       },
+                                       {
+                                           "apiName":  "05_KillCharacter_Gigas_Kill",
+                                           "displayName":  "Gigas",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/c7def2d6ec8cd4511142d4bc3ce7d7612a1f6e5a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/cd3d7925fbe3d3f521ce7b185aa35b26745adf61.jpg"
+                                       },
+                                       {
+                                           "apiName":  "06_KillCharacter_Brute",
+                                           "displayName":  "Brute",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/9efcf9bf09897bdea96d5acdd30986a06330b1c9.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/8a797b96f7063ba0f4cba6bf3df3877f10de2ac3.jpg"
+                                       },
+                                       {
+                                           "apiName":  "07_CompleteLevel_AltesLabor",
+                                           "displayName":  "Altess Levoire",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/af5d5562f130eb33f25393ab9330f42017dc53a8.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/b773b9b6b9a4e745eb922b01e16d9b9fd8ca696c.jpg"
+                                       },
+                                       {
+                                           "apiName":  "08_KillCharacter_Stalker_Kill",
+                                           "displayName":  "Stalker",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/44ca6fde5ba71e75697a6f47c400335472f40728.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/f85d4cc8f54baece3d7087555a41d5212fa08b11.jpg"
+                                       },
+                                       {
+                                           "apiName":  "09_KillCharacter_Juggernaut_Kill",
+                                           "displayName":  "Juggernaut",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/cfb3d64e4841841a0dff101c67630029862c17c5.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/4878f6ff0b14e910bbf70cd83b1ecde4d429ca39.jpg"
+                                       },
+                                       {
+                                           "apiName":  "10_KillCharacter_Tachy_Kill",
+                                           "displayName":  "Tachy",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/b257827573460ab6afaa34b6385c391ef7e12264.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/808da5228a1e1df1d44d22260f5a88a08b921421.jpg"
+                                       },
+                                       {
+                                           "apiName":  "11_KillCharacter_Behemoth",
+                                           "displayName":  "Behemoth",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/238fc74430ec56675cfc291a43723d3c23d2704b.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/4273a5161072272d70adb98a55ae3edc657cbbbd.jpg"
+                                       },
+                                       {
+                                           "apiName":  "12_CompleteLevel_AbyssLabor",
+                                           "displayName":  "Abyss Levoire",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/b40492eaa5badedda89e9bbb75de4764f019f2f0.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/43a91c3b0174a1be23f9e93773e7c6e3445ec529.jpg"
+                                       },
+                                       {
+                                           "apiName":  "13_KillCharacter_Belial_A_Kill",
+                                           "displayName":  "Belial",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/540064d0dd28f9d984f21634f381dd2a1093b920.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/c8009bd93ca48c5d247f7e1d2e2a8038538fd250.jpg"
+                                       },
+                                       {
+                                           "apiName":  "14_KillCharacter_Marionette_Kill",
+                                           "displayName":  "Karakuri",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/8ef60e5b2d795891a320ddbf4a3d5f30175307da.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/379a35d671474d300f12bf9be90f3745853b8eaf.jpg"
+                                       },
+                                       {
+                                           "apiName":  "15_KillCharacter_Gorgon_Kill",
+                                           "displayName":  "Demogorgon",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/841ce1fb7bb9ab355534fe548d2604657e99f360.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/aca6f0d1f79b22b1e27e082632d6a3a0394bebd4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "16_KillCharacter_Raven_Kill",
+                                           "displayName":  "Raven",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/4b9a0839bb0a6a9264deff8adfc2c82af90825d1.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/c945185b5331a92b34fcbe84d483380c96abb22e.jpg"
+                                       },
+                                       {
+                                           "apiName":  "17_Ending_Colony",
+                                           "displayName":  "Return to the Colony",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/c45187c9c145188f222fd97b9ec2f13790cfea20.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/33e3c7204110210c1bff5fa496d6d02fbd1baa2b.jpg"
+                                       },
+                                       {
+                                           "apiName":  "18_Ending_LostMemory",
+                                           "displayName":  "Cost of Lost Memories",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/ce13b556d73b153f6bfddc48bcb9167f514343b9.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/2bca25bbc4b2f598e5514899f1b9af09efdd0119.jpg"
+                                       },
+                                       {
+                                           "apiName":  "19_Ending_NewMemory",
+                                           "displayName":  "Making New Memories",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/2989a52550d78fa242f6fe690b569ed8b6b3b36b.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/65603a6ebd5343bd31861019b765fc16914d3ff6.jpg"
+                                       },
+                                       {
+                                           "apiName":  "20_Acquire_AllCan",
+                                           "displayName":  "Can Collector",
+                                           "description":  "Collected all cans.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/fe9bb49e1f3e238aa0a5eca1ff1624c318bcf1f0.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/813682d75b72a643972ffde190848e37d2af27b5.jpg"
+                                       },
+                                       {
+                                           "apiName":  "21_Acquire_AllNanoSuit",
+                                           "displayName":  "Nano Suit Collector",
+                                           "description":  "Acquired 30 Nano Suits.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/6d7e430737b1ce111d53ade73f0e940acaf23a43.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/b5050c5c26ea17caa18bf5e4e065cd0b860620c8.jpg"
+                                       },
+                                       {
+                                           "apiName":  "22_Acquire_AllRecords",
+                                           "displayName":  "Records Collector",
+                                           "description":  "Collected 200 Data Bank entries (Memorysticks, Documents, or Passcodes).",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/7133085f0facf0a389531773fdd4fc5b41ab6b81.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/046f3dece50939998e49450193f076c652e6a09f.jpg"
+                                       },
+                                       {
+                                           "apiName":  "23_Album_AllFish",
+                                           "displayName":  "Lonely Fisherman",
+                                           "description":  "Caught 20 different fish.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/7cd6a658d69dcde42ca1864bcd505219bd534335.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/810dca89ea6b8e111725c87636e05c2723a4ede8.jpg"
+                                       },
+                                       {
+                                           "apiName":  "24_Open_AllBox",
+                                           "displayName":  "Box Hunter",
+                                           "description":  "Opened 200 boxes.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/7d021ab4a8013a58caf864f576e102127139d1ef.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/7fb75b92309d6d43ca00a96ee8e6f2ad28283763.jpg"
+                                       },
+                                       {
+                                           "apiName":  "25_KillCharacter_AllNative",
+                                           "displayName":  "Naytiba Researcher",
+                                           "description":  "Got information on all Naytibas.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/afdb755ab5213c792ae95f43cc2ad38ebc389575.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/0ae264e18ec6b51eca71d844806da99ab4302289.jpg"
+                                       },
+                                       {
+                                           "apiName":  "26_Activate_AllCamp",
+                                           "displayName":  "Meticulous Explorer",
+                                           "description":  "Activated all Camps.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/edf7219f728dbb7355faa6fecc4fc422104d7681.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/0ff9fd5db10da03bebe6de447d3ebcdf341fa538.jpg"
+                                       },
+                                       {
+                                           "apiName":  "27_LevelUpMax_AllExoSpine",
+                                           "displayName":  "Perfect Exospine",
+                                           "description":  "Enhanced 10 Exospines to their max.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/59e92a7850ca44f4b09dcc2750ba01c4c238cd40.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/80c5a9bf0aa19346fa4af2698a25856edabf4ff5.jpg"
+                                       },
+                                       {
+                                           "apiName":  "28_WeaponMaxUpgrade",
+                                           "displayName":  "Perfect Blood Edge",
+                                           "description":  "Enhanced Blood Edge to its max.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/c78d409081bdeda5ec1ee81118c44520d7a379f8.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/8d002cbf7aa87b3c5eed3f95f3f42fbb74880da1.jpg"
+                                       },
+                                       {
+                                           "apiName":  "29_TumblerMaxUpgrade",
+                                           "displayName":  "Perfect Rechargeable Tumbler",
+                                           "description":  "Enhanced the Rechargeable Tumbler to its max.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/03c142994002f0a3971b51e6ddbbad733ce3a7f5.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/b35a50d28a86790e558acaf10a9a4adda8eb235f.jpg"
+                                       },
+                                       {
+                                           "apiName":  "30_BodyMaxUpgrade",
+                                           "displayName":  "Perfect Physical Enhancement",
+                                           "description":  "Enhanced HP to its max.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/43fcddb38a4508ececdacf4df90342065aaf87ef.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/371f6cb3ffbe6b45caa681bdb7cd1bf09bbfe337.jpg"
+                                       },
+                                       {
+                                           "apiName":  "31_BetaMaxUpgrade",
+                                           "displayName":  "Perfect Beta Energy Enhancement",
+                                           "description":  "Enhanced Beta Energy to its max.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/470c98f75895cdf9deddeec504e025686ca090d2.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/8b779b1bbbe8495adb56c59129ae94a569e7fe13.jpg"
+                                       },
+                                       {
+                                           "apiName":  "32_Acquire_AllSkill",
+                                           "displayName":  "Thorough Technician",
+                                           "description":  "Learned all skills.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/551c855756f37579ec4e3e40b165a9138d24e58d.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/16577751adcc82ba33b963cdb1e4507c82bdc737.jpg"
+                                       },
+                                       {
+                                           "apiName":  "33_CompleteQuest_Enya",
+                                           "displayName":  "Beyond Fate",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/3bdfe77405552464205d5b3fd33769d98198a04c.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/e8a0181a3a6ffe0bb3b2d3fa0defc578ab8e4b34.jpg"
+                                       },
+                                       {
+                                           "apiName":  "34_CompleteQuest_Kaya",
+                                           "displayName":  "Sisterly Love",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/92e02eb36e9f57676ed617d9eeb9f4e2ad790677.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/936e0f8833e3be9e29aec80bf0f966e4fccb1b0e.jpg"
+                                       },
+                                       {
+                                           "apiName":  "35_CompleteQuest_Digger",
+                                           "displayName":  "Beep!",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/5ab77cd41fcfeb55fe20d1419d6576d7e9e0dca4.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/011bc02b3ccee12bd3d60774de7ed02915ca6a5b.jpg"
+                                       },
+                                       {
+                                           "apiName":  "36_JustEvade",
+                                           "displayName":  "Battlefield Martial Artist",
+                                           "description":  "Perfect Dodged 200 enemy attacks.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/11b8fa54887942e825d88052cafd9ef2f07f32d8.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/01424fdb8fc6ac3ceab415f8a84fbd3a1833cca3.jpg"
+                                       },
+                                       {
+                                           "apiName":  "37_JustParry",
+                                           "displayName":  "Agile Gladiator",
+                                           "description":  "Perfect Parried 300 enemy attacks.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/1871de3703775247bf4ee31d41334b44d06a29b2.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/e72125041ef0ce04408ed6ca7eb653d7cbbce565.jpg"
+                                       },
+                                       {
+                                           "apiName":  "38_CharKill_AssassinationSkills",
+                                           "displayName":  "Silent Executioner",
+                                           "description":  "Defeated 50 enemies by execution.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/74e17381385d70773fc0d7e889ce00511f2edbf7.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/fdb3c0ea31d10f04861e45c10bcf32bd94a54c7b.jpg"
+                                       },
+                                       {
+                                           "apiName":  "39_CharKill_BetaSkill",
+                                           "displayName":  "Naytiba Hunter",
+                                           "description":  "Defeated 100 enemies with Beta Skills.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/b854455823fb7a4835768c8603840ba3fe26af5b.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/091d59c772a6253a7ccfdae43f324e1500dd514b.jpg"
+                                       },
+                                       {
+                                           "apiName":  "40_CharKill_BurstSkill",
+                                           "displayName":  "Relentless Destroyer",
+                                           "description":  "Defeated 50 enemies with Burst Skills.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/a659ea82458f26c4fefbd876368c1f133a3523e6.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/7c7325119d991499027ceb5f40b9888f12731a3a.jpg"
+                                       },
+                                       {
+                                           "apiName":  "41_CharKill_TachySkill",
+                                           "displayName":  "Revenging Agent",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/6a0d5aa41e2604d75c64f9f72c9e67aeaef597ff.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/b3d9ddf2623431b57f42af0d458b361ca2ee6a50.jpg"
+                                       },
+                                       {
+                                           "apiName":  "42_CharKill_RangeSkill",
+                                           "displayName":  "Cold-blooded Sniper",
+                                           "description":  "Defeated 150 enemies with ranged attacks.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/d86f93e8d6acbe7b05403093ae80ef212d528101.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/3bec5987bcd74e1394a72a1cf0f1d7fc97eb206a.jpg"
+                                       },
+                                       {
+                                           "apiName":  "43_KillCharacter",
+                                           "displayName":  "Cruel Liberator",
+                                           "description":  "Defeated 1,500 enemies.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/85bd0961f3ee9596a1709b90d6e9d32997c101f0.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/359e03479fd923790adc9b4d48b43a6df9817def.jpg"
+                                       },
+                                       {
+                                           "apiName":  "44_Complete_NewGamePlus",
+                                           "displayName":  "Repeating Protocols",
+                                           "description":  "Completed New Game +.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/307edc2977f8c0301b550d40a4aa7bbabb8c89ac.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/d97530a9865419d333894726a7cf97436c5c95ac.jpg"
+                                       },
+                                       {
+                                           "apiName":  "45_Acquire_AllSkill_NewGamePlus",
+                                           "displayName":  "Infinite Blade",
+                                           "description":  "Learned all skills in New Game +.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/90f3a5eda284e03ce6bb34bc79314bdb463480ea.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3489700/889d6afa736b1b69b4c46b9b5e4b43c3e90bc18a.jpg"
+                                       }
+                                   ]
+                     }
+}

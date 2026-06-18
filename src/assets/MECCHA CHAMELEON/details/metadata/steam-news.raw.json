@@ -1,0 +1,79 @@
+﻿{
+    "appnews":  {
+                    "appid":  4704690,
+                    "newsitems":  [
+                                      {
+                                          "gid":  "1835871199299254",
+                                          "title":  "update1.3.1",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1835871199299254",
+                                          "is_external_url":  true,
+                                          "author":  "lemorion1224",
+                                          "contents":  "・Fixed an issue where nameplate display settings would change on their own.\n・Fixed an issue where Survivor debris would not disappear.\n・Fixed an issue where Survivor debris was being highlighted.\n・Fixed several glitches.",
+                                          "feedlabel":  "Community Announcements",
+                                          "date":  1781660933,
+                                          "feedname":  "steam_community_announcements",
+                                          "feed_type":  1,
+                                          "appid":  4704690,
+                                          "tags":  [
+                                                       "patchnotes"
+                                                   ]
+                                      },
+                                      {
+                                          "gid":  "1835236783574913",
+                                          "title":  "Thank you for 3 million copies sold!",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1835236783574913",
+                                          "is_external_url":  true,
+                                          "author":  "lemorion1224",
+                                          "contents":  "[p]Thank you for 3 million copies sold![/p][p]A new map will be added today or tomorrow.[/p]",
+                                          "feedlabel":  "Community Announcements",
+                                          "date":  1781626984,
+                                          "feedname":  "steam_community_announcements",
+                                          "feed_type":  1,
+                                          "appid":  4704690
+                                      },
+                                      {
+                                          "gid":  "1835236783574609",
+                                          "title":  "1.3.0",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1835236783574609",
+                                          "is_external_url":  true,
+                                          "author":  "lemorion1224",
+                                          "contents":  "・In “Basic” and “Growing Demon” modes, players can now see everyone\u0027s hiding spots after the game ends\n・Reduced the shotgun firing sound\n・Fixed the shotgun firing effect as seen by third-person players",
+                                          "feedlabel":  "Community Announcements",
+                                          "date":  1781621504,
+                                          "feedname":  "steam_community_announcements",
+                                          "feed_type":  1,
+                                          "appid":  4704690,
+                                          "tags":  [
+                                                       "patchnotes"
+                                                   ]
+                                      },
+                                      {
+                                          "gid":  "1835236783574749",
+                                          "title":  "Please help us find the players hiding in these screenshots of million-selling painterly stealth game Meccha Chameleon",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/Rock, Paper, Shotgun/1835236783574749",
+                                          "is_external_url":  true,
+                                          "author":  "",
+                                          "contents":  "\u003cimg src=\"https://assetsio.gnwcdn.com/Rockman.jpg?width=690\u0026quality=85\u0026format=jpg\u0026auto=webp\" /\u003e \u003cp\u003eLast week saw \u003ca href=\"https://www.rockpapershotgun.com/this-week-in-pc-games-some-enormous-space-sims-and-strategy-games-plus-a-cheery-prop-hunt-where-you-paint-your-own-camouflage\"\u003ethe release of Meccha Chameleon\u003c/a\u003e, a Japanese indie game in which groups of players hide from other players armed with shotguns. The twist over similar prop hunt games (that I\u0027ve played, anyway) is that you can pose and freely paint your character\u0027s body, disguising them within each map\u0027s colourful scenery. I had a feeling the idea might catch on – it\u0027s the kind of novelty item that makes for good Youtubage. I wasn\u0027t expecting it to sell two million copies. \u003c/p\u003e\n\u003cp\u003eOne of the game\u0027s loveliest qualities is that, strictly speaking, you don\u0027t need to play it to \u003cem\u003eplay\u003c/em\u003e it. You can just skim through the screenshots of exceptionally skilled or foolish feats of camouflage on Reddit and the Steam forums. Here\u0027s a few that made me chuckle.\u003c/p\u003e \u003cp\u003e\u003ca href=\"https://www.rockpapershotgun.com/please-help-us-find-the-players-hiding-in-these-screenshots-of-million-selling-painterly-stealth-game-meccha-chameleon\"\u003eRead more\u003c/a\u003e\u003c/p\u003e",
+                                          "feedlabel":  "Rock, Paper, Shotgun",
+                                          "date":  1781620222,
+                                          "feedname":  "Rock, Paper, Shotgun",
+                                          "feed_type":  0,
+                                          "appid":  4704690
+                                      },
+                                      {
+                                          "gid":  "1835236783574345",
+                                          "title":  "Steam Global Top Sellers for week of 9 Jun — 16 June 2026",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/SteamDB/1835236783574345",
+                                          "is_external_url":  true,
+                                          "author":  "SteamDB",
+                                          "contents":  "\u003ca href=\"https://steamdb.info/topsellers/2026W25/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003e\u003cimg src=\"https://steamdb.info/topsellers/2026W25.png\"\u003e\u003c/a\u003e\u003col\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/4704690/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eMECCHA CHAMELEON\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/2483190/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eForza Horizon 6\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/1675200/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eSteam Deck\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/2694490/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003ePath of Exile 2\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/3405690/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eEA SPORTS FC™ 26\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/3186540/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eDestiny 2: Renegades\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/1462040/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eFINAL FANTASY VII REMAKE INTERGRADE\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/3768760/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003e007 First Light\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/1297900/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eGothic 1 Remake\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/3844970/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eBurglin\u0027 Gnomes\u003c/a\u003e\u003c/li\u003e\u003c/ol\u003e\u003cbr\u003e\u003ci\u003e* excluding free to play games\u003c/i\u003e\u003cbr\u003e\u003ca href=\"https://steamdb.info/topsellers/2026W25/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eView top 100 on SteamDB\u003c/a\u003e",
+                                          "feedlabel":  "SteamDB",
+                                          "date":  1781600400,
+                                          "feedname":  "SteamDB",
+                                          "feed_type":  0,
+                                          "appid":  1297900
+                                      }
+                                  ],
+                    "count":  22
+                }
+}

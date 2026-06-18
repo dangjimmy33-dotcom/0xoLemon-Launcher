@@ -2,7 +2,7 @@ use std::env;
 use std::path::PathBuf;
 
 use first_light_launcher::asset_pack::{
-    build_default_pack, default_asset_source, default_pack_output,
+    build_all_packs, default_asset_source, default_pack_output,
 };
 
 fn main() {
@@ -14,7 +14,21 @@ fn main() {
         .map(PathBuf::from)
         .unwrap_or_else(default_pack_output);
 
-    match build_default_pack(&source, &output) {
+    let mut sources = Vec::new();
+    if let Ok(entries) = std::fs::read_dir(&source) {
+        for entry in entries.flatten() {
+            if entry.file_type().map(|ft| ft.is_dir()).unwrap_or(false) {
+                let name = entry.file_name().to_string_lossy().to_string();
+                if name != "fonts" && name != "images" {
+                    sources.push(entry.path());
+                }
+            }
+        }
+    } else {
+        sources.push(source);
+    }
+
+    match build_all_packs(&sources, &output) {
         Ok(summary) => {
             println!(
                 "built {} with {} game(s), {} asset(s), {} achievement image(s)",

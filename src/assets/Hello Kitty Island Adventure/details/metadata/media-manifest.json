@@ -1,0 +1,302 @@
+﻿[
+    {
+        "role":  "header",
+        "title":  "Steam header",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/header.jpg?t=1776719582",
+        "file":  "store_art/header.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-18T06:05:19.484Z"
+    },
+    {
+        "role":  "capsule",
+        "title":  "Steam capsule",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/capsule_231x87.jpg?t=1776719582",
+        "file":  "store_art/capsule.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-18T06:05:19.489Z"
+    },
+    {
+        "role":  "capsule-v5",
+        "title":  "Steam capsule v5",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/capsule_184x69.jpg?t=1776719582",
+        "file":  "store_art/capsule-v5.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-18T06:05:19.490Z"
+    },
+    {
+        "role":  "background",
+        "title":  "Steam background",
+        "sourceUrl":  "https://store.akamai.steamstatic.com/images/storepagebackground/app/2495100?t=1776719582",
+        "file":  "store_art/background.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-18T06:05:19.490Z"
+    },
+    {
+        "role":  "background-raw",
+        "title":  "Steam background raw",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/page_bg_raw.jpg?t=1776719582",
+        "file":  "store_art/background-raw.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-18T06:05:19.490Z"
+    },
+    {
+        "role":  "description-image",
+        "title":  "Description image 1",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/8d86db7aaab7a8424102785b3042c98b.avif?t=1776719582",
+        "file":  "description_images/001_8d86db7aaab7a8424102785b3042c98b.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-18T06:05:19.505Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 1",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/ss_4b2dee4ba9d74ebff886cff692a718632db7ebfa.1920x1080.jpg?t=1776719582",
+        "file":  "screenshots/001_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-18T06:05:19.512Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 2",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/63ac4ec151b232b1c98cd824701085ac2f5891db/ss_63ac4ec151b232b1c98cd824701085ac2f5891db.1920x1080.jpg?t=1776719582",
+        "file":  "screenshots/002_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-18T06:05:19.512Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 3",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/ss_2d09d4ec03a940000d7822fd685042cb32f7c71b.1920x1080.jpg?t=1776719582",
+        "file":  "screenshots/003_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-18T06:05:19.512Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 4",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/c74ff473990059b03cc16ec0f1f46814e8b0d23b/ss_c74ff473990059b03cc16ec0f1f46814e8b0d23b.1920x1080.jpg?t=1776719582",
+        "file":  "screenshots/004_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-18T06:05:19.513Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 5",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/ss_8014b677be3122d13141db61413bdab940ea31a0.1920x1080.jpg?t=1776719582",
+        "file":  "screenshots/005_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-18T06:05:19.513Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 6",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/ss_0289e97d97c26cc5ea15c7ab402c10e9a54e7e3c.1920x1080.jpg?t=1776719582",
+        "file":  "screenshots/006_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-18T06:05:19.513Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 7",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/14b5b9caa0db812d6442072468c4a5c86d54827d/ss_14b5b9caa0db812d6442072468c4a5c86d54827d.1920x1080.jpg?t=1776719582",
+        "file":  "screenshots/007_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-18T06:05:19.514Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 8",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/6b57146d98765d716b132705c93b82253808ae15/ss_6b57146d98765d716b132705c93b82253808ae15.1920x1080.jpg?t=1776719582",
+        "file":  "screenshots/008_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-18T06:05:19.516Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 9",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/ss_8ba458abbed42e011124cd65a122a2e61d632ed6.1920x1080.jpg?t=1776719582",
+        "file":  "screenshots/009_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-18T06:05:19.518Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 10",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/ss_7e8d31eea55c753995df45cd6f4caa70b615bc8e.1920x1080.jpg?t=1776719582",
+        "file":  "screenshots/010_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-18T06:05:19.520Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 11",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/ss_486f340ed20189d0282b3a70118895a8ebb13da0.1920x1080.jpg?t=1776719582",
+        "file":  "screenshots/011_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-18T06:05:19.522Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 12",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/ss_2ea1cca956ff76d8944ee79c66b4267abfba22cf.1920x1080.jpg?t=1776719582",
+        "file":  "screenshots/012_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-18T06:05:19.525Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 13",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/ss_1802c42dc93a6f022858f34bac2bb7bfa8bfb9e1.1920x1080.jpg?t=1776719582",
+        "file":  "screenshots/013_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-18T06:05:19.525Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 14",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/ss_4e13fc99432b6beac8032fc5038094433ec9bbb8.1920x1080.jpg?t=1776719582",
+        "file":  "screenshots/014_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-18T06:05:19.526Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 15",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/ss_426e0c253aa9d710ef30fda43049ce8e3843b3f9.1920x1080.jpg?t=1776719582",
+        "file":  "screenshots/015_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-18T06:05:19.526Z"
+    },
+    {
+        "role":  "video",
+        "title":  "Launch Trailer - Hello Kitty Island Adventure",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/2495100/820791/88bcc7a13d116b9955543b06bdfb90618f6f663e/1750815872/hls_264_master.m3u8?t=1738267161",
+        "file":  "videos/001_launch-trailer-hello-kitty-island-adventure.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-18T06:05:19.543Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "Launch Trailer - Hello Kitty Island Adventure",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257093517/68d347e308ea755cbb8b8891ae04ff87902225e7/movie_600x337.jpg?t=1738267161",
+        "file":  "video_thumbnails/001_launch-trailer-hello-kitty-island-adventure_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-18T06:05:19.543Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "Launch Trailer - Hello Kitty Island Adventure",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257093517/68d347e308ea755cbb8b8891ae04ff87902225e7/movie_600x337.jpg?t=1738267161",
+        "file":  "video_thumbnails/001_launch-trailer-hello-kitty-island-adventure_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-18T06:05:19.543Z"
+    },
+    {
+        "role":  "video",
+        "title":  "Gameplay Reel - Hello Kitty Island Adventure",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/2495100/820324/77819ce2700358510e52fbb4ecb77b9b30146a48/1750815869/hls_264_master.m3u8?t=1738357300",
+        "file":  "videos/002_gameplay-reel-hello-kitty-island-adventure.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-18T06:05:19.545Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "Gameplay Reel - Hello Kitty Island Adventure",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257093243/8ccdf902f9a3bced90e37d7495c4dac4f4945c72/movie_600x337.jpg?t=1738357300",
+        "file":  "video_thumbnails/002_gameplay-reel-hello-kitty-island-adventure_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-18T06:05:19.545Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "Gameplay Reel - Hello Kitty Island Adventure",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257093243/8ccdf902f9a3bced90e37d7495c4dac4f4945c72/movie_600x337.jpg?t=1738357300",
+        "file":  "video_thumbnails/002_gameplay-reel-hello-kitty-island-adventure_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-18T06:05:19.545Z"
+    },
+    {
+        "role":  "video",
+        "title":  "Hello Kitty Island Adventure -- Announcement Trailer",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/2495100/781933/b79b6e453029f684f2e9f0e305e7e6cb4bb6448b/1750815868/hls_264_master.m3u8?t=1731707035",
+        "file":  "videos/003_hello-kitty-island-adventure-announcement-trailer.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-18T06:05:19.558Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "Hello Kitty Island Adventure -- Announcement Trailer",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257071187/ff7478adaef79eca23537ceb99629d7dcdc3ec4c/movie_600x337.jpg?t=1731707035",
+        "file":  "video_thumbnails/003_hello-kitty-island-adventure-announcement-trailer_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-18T06:05:19.559Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "Hello Kitty Island Adventure -- Announcement Trailer",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257071187/ff7478adaef79eca23537ceb99629d7dcdc3ec4c/movie_600x337.jpg?t=1731707035",
+        "file":  "video_thumbnails/003_hello-kitty-island-adventure-announcement-trailer_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-18T06:05:19.559Z"
+    }
+]

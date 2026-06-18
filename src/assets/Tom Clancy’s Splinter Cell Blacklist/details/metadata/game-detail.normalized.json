@@ -1,0 +1,400 @@
+﻿{
+    "appId":  235600,
+    "title":  "Tom Clancy’s Splinter Cell Blacklist",
+    "steamMetadataCountry":  "us",
+    "steamMetadataLanguage":  "english",
+    "type":  "game",
+    "requiredAge":  0,
+    "isFree":  false,
+    "shortDescription":  "In this stealth-action thriller, a terrorist group known as the Engineers launches the Blacklist, a series of escalating attacks on US interests. Only one man can stop them: legendary covert agent Sam Fisher.",
+    "detailedDescriptionHtml":  "\u003cp class=\"bb_paragraph\" \u003eOPERATE WITHOUT RESTRICTIONS\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eSam is back in his tactical suit and goggles, more lethal and agile than ever. Granted the freedom to do whatever it takes to stop the Blacklist, he races across the globe to uncover the source of this devastating threat.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eOWN YOUR PLAYSTYLE\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eTom Clancy\u0027s Splinter Cell: Blacklist builds on the franchise’s stealth roots while expanding into action and adventure. Players can define their own playstyle and are rewarded accordingly:\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e- Ghost players remain undetected.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e- Assault players confront threats head-on.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e- Panther players strike silently and lethally with precision.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eTOOLS OF THE TRADE\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eTake down the Engineers using advanced gadgets like the upgraded Snake Cam and the Micro-trirotor Drone. Fan favorites return, including the Sticky Shocker and the brutal curved Karambit knife. Stealth enthusiasts can abduct and carry enemies, while the Killing in Motion system lets players mark and execute multiple targets in one fluid, cinematic move.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eBUILD A NEW ECHELON\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eSam is forming a new Echelon unit: his team, his rules. Anna “Grim” Grímsdóttir returns as technical operations manager, CIA operative Isaac Briggs brings firepower, and hacker Charlie Cole rounds out the crew. Fourth Echelon operates from the Paladin, a repurposed stealth airliner equipped with unlimited resources and cutting-edge tech.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003ePlease note: online features for this game are no longer supported. Multiplayer and co-op modes are no longer functional.\u003c/p\u003e",
+    "aboutTheGameHtml":  "\u003cp class=\"bb_paragraph\" \u003eOPERATE WITHOUT RESTRICTIONS\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eSam is back in his tactical suit and goggles, more lethal and agile than ever. Granted the freedom to do whatever it takes to stop the Blacklist, he races across the globe to uncover the source of this devastating threat.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eOWN YOUR PLAYSTYLE\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eTom Clancy\u0027s Splinter Cell: Blacklist builds on the franchise’s stealth roots while expanding into action and adventure. Players can define their own playstyle and are rewarded accordingly:\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e- Ghost players remain undetected.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e- Assault players confront threats head-on.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e- Panther players strike silently and lethally with precision.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eTOOLS OF THE TRADE\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eTake down the Engineers using advanced gadgets like the upgraded Snake Cam and the Micro-trirotor Drone. Fan favorites return, including the Sticky Shocker and the brutal curved Karambit knife. Stealth enthusiasts can abduct and carry enemies, while the Killing in Motion system lets players mark and execute multiple targets in one fluid, cinematic move.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eBUILD A NEW ECHELON\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eSam is forming a new Echelon unit: his team, his rules. Anna “Grim” Grímsdóttir returns as technical operations manager, CIA operative Isaac Briggs brings firepower, and hacker Charlie Cole rounds out the crew. Fourth Echelon operates from the Paladin, a repurposed stealth airliner equipped with unlimited resources and cutting-edge tech.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003ePlease note: online features for this game are no longer supported. Multiplayer and co-op modes are no longer functional.\u003c/p\u003e",
+    "supportedLanguagesHtml":  "English\u003cstrong\u003e*\u003c/strong\u003e, German\u003cstrong\u003e*\u003c/strong\u003e, French\u003cstrong\u003e*\u003c/strong\u003e, Italian\u003cstrong\u003e*\u003c/strong\u003e, Spanish - Spain\u003cstrong\u003e*\u003c/strong\u003e, Traditional Chinese, Russian\u003cstrong\u003e*\u003c/strong\u003e, Japanese\u003cstrong\u003e*\u003c/strong\u003e, Polish, Danish, Dutch, Norwegian, Swedish, Hungarian, Czech, Portuguese - Brazil\u003cstrong\u003e*\u003c/strong\u003e\u003cbr\u003e\u003cstrong\u003e*\u003c/strong\u003elanguages with full audio support",
+    "pcRequirements":  {
+                           "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cstrong\u003eOS *:\u003c/strong\u003eOriginally released for Windows 7, the game can be played on Windows 10 and Windows 11 OS\u003cbr\u003e\t\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e2.53 GHz Intel® Core™2 Duo E6400 or 2.80 GHz AMD Athlon™ 64 X2 5600+ or better\u003cbr\u003e\t\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e2 GB RAM\u003cbr\u003e\t\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e512 MB DirectX® 10–compliant with Shader Model 4.0 or higher\u003cbr\u003e\t\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eDirectX®:\u003c/strong\u003e9\u003cbr\u003e\t\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eHard Drive:\u003c/strong\u003e25 GB HD space\u003cbr\u003e\t\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eSound:\u003c/strong\u003eDirectX 10–compliant DirectX 9.0c–compliant\u003cbr\u003e\t\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eAdditional:\u003c/strong\u003ePeripherals Supported: Windows-compatible keyboard, mouse, headset, optional controller (Xbox 360 Controller for Windows recommended). Requires UPLAY account.\u003c/li\u003e\u003c/ul\u003e",
+                           "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e2.66 GHz Intel® Core™2 Quad Q8400 or 3.00 GHz AMD Phenom™ II X4 940 or better\u003cbr\u003e\t\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e4 GB RAM\u003cbr\u003e\t\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eDirectX®:\u003c/strong\u003e11\u003cbr\u003e\t\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eHard Drive:\u003c/strong\u003e25 GB HD space\u003cbr\u003e\t\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eSound:\u003c/strong\u003e(5.1 surround sound recommended)\u003cbr\u003e\t\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOther Requirements:\u003c/strong\u003eBroadband Internet connection\u003cbr\u003e\t\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eAdditional:\u003c/strong\u003ePeripherals Supported: Windows-compatible keyboard, mouse, headset, optional controller (Xbox 360 Controller for Windows recommended). Requires UPLAY account..\u003c/li\u003e\u003c/ul\u003e"
+                       },
+    "macRequirements":  [
+
+                        ],
+    "linuxRequirements":  [
+
+                          ],
+    "dlc":  null,
+    "website":  "http://www.splintercell.com",
+    "developers":  "Ubisoft Toronto",
+    "publishers":  "Ubisoft",
+    "releaseDate":  {
+                        "coming_soon":  false,
+                        "date":  "Aug 20, 2013"
+                    },
+    "genres":  "Action, Adventure",
+    "categories":  [
+                       "Single-player",
+                       "Multi-player",
+                       "Co-op",
+                       "Steam Achievements"
+                   ],
+    "platforms":  {
+                      "windows":  true,
+                      "mac":  false,
+                      "linux":  false
+                  },
+    "metacritic":  null,
+    "recommendations":  {
+                            "total":  19040
+                        },
+    "reviewsSummary":  null,
+    "newsItems":  [
+                      {
+                          "gid":  "1797820624628362",
+                          "title":  "Splinter Cell lives... in the form of Steam achievements for the 12 year old Blacklist",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/Rock, Paper, Shotgun/1797820624628362",
+                          "is_external_url":  true,
+                          "author":  "",
+                          "contents":  "\u003cimg src=\"https://assetsio.gnwcdn.com/splinter-cell-blacklist_b6EMrbD.jpg?width=1920\u0026height=1920\u0026fit=bounds\u0026quality=70\u0026format=jpg\u0026auto=webp\" /\u003e \u003cp\u003e\nIf a \u003ca href=\"https://www.rockpapershotgun.com/games/splinter-cell-remake\"\u003eSplinter Cell\u003c/a\u003e remake fell in the woods, would over the top industry secrecy and NDAs even allow us to hear it? That\u0027s the million dollar question literally no one is asking, because who phrases things that way, but enough about that game that may or may not exist at this point in time, we\u0027ve got a different \u003ca data-keyword=\"true\" href=\"https://www.rockpapershotgun.com/games/splinter-cell\"\u003eSplinter Cell\u003c/a\u003e to talk about: \u003ca href=\"https://www.rockpapershotgun.com/games/tom-clancys-splinter-cell-blacklist\"\u003eBlacklist\u003c/a\u003e. Yes, the, technically speaking, most recent entry in the series just received a little update on Steam yesterday which… \u003ca href=\"https://store.steampowered.com/news/app/235600/view/519711795144819220\"\u003eadds achievements into the game\u003c/a\u003e.\n\u003c/p\u003e\n \u003cp\u003e\u003ca href=\"https://www.rockpapershotgun.com/splinter-cell-lives-in-the-form-of-steam-achievements-for-the-12-year-old-blacklist\"\u003eRead more\u003c/a\u003e\u003c/p\u003e",
+                          "feedlabel":  "Rock, Paper, Shotgun",
+                          "date":  1745945836,
+                          "feedname":  "Rock, Paper, Shotgun",
+                          "feed_type":  0,
+                          "appid":  235600
+                      },
+                      {
+                          "gid":  "1797820624591921",
+                          "title":  "Achievements Added to Splinter Cell Blacklist",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1797820624591921",
+                          "is_external_url":  true,
+                          "author":  "UbiArcane",
+                          "contents":  "Agents,\n\nWe are pleased to announce that Steam Achievements are now available for Splinter Cell: Blacklist!\n\nAs a heads up, achievements will be retroactively earned for the accomplishments already completed in your game. For the sync to happen, you need to launch the game once. Once synced, the previously unlocked Ubisoft Connect achievements will be automatically unlocked on Steam. \n\nTo ensure that you can complete 100% of the Steam Achievements for Splinter Cell: Blacklist, we\u0027ve removed 19 achievements that required online services that are no longer available for the game.\n",
+                          "feedlabel":  "Community Announcements",
+                          "date":  1745851215,
+                          "feedname":  "steam_community_announcements",
+                          "feed_type":  1,
+                          "appid":  235600
+                      },
+                      {
+                          "gid":  "2095718613781356771",
+                          "title":  "Daily Deal - Tom Clancy s Splinter Cell Blacklist, 70% Off",
+                          "url":  "http://store.steampowered.com/news/32230/",
+                          "is_external_url":  false,
+                          "author":  "Valve",
+                          "contents":  "Today\u0027s Deal: Save 70% on \u003ca href=\u0027http://store.steampowered.com/app/235600/\u0027\u003eTom Clancy\u0026#146;s Splinter Cell Blacklist\u003c/a\u003e!*\u003cbr\u003e\u003cbr\u003eLook for the deals each day on the front page of Steam.  Or follow us on \u003ca href=\u0027http://twitter.com/steam_games\u0027\u003etwitter\u003c/a\u003e or \u003ca href=\u0027http://www.facebook.com/Steam\u0027\u003eFacebook\u003c/a\u003e for instant notifications wherever you are!\u003cbr\u003e\u003cbr\u003e*Offer ends Wednesday at 10AM Pacific Time\u003cbr\u003e\u003ca href=\"http://store.steampowered.com/app/235600/\"\u003e\u003cimg src=\"https://steamcdn-a.akamaihd.net/steam/apps/235600/capsule_467x181.jpg\" style=\" float: left; margin-right: 12px; height: 181px; width: 467px;\"\u003e\u003c/a\u003e",
+                          "feedlabel":  "Announcement",
+                          "date":  1504544400,
+                          "feedname":  "steam_announce",
+                          "feed_type":  0,
+                          "appid":  235600
+                      },
+                      {
+                          "gid":  "212060165292223883",
+                          "title":  "Weekend Deal - Tom Clancy s Splinter Cell Franchise, 75% Off",
+                          "url":  "http://store.steampowered.com/news/25222/",
+                          "is_external_url":  false,
+                          "author":  "Valve",
+                          "contents":  "Save 75% on \u003ca href=\u0027http://store.steampowered.com//sale/splintercell\u0027\u003eTom Clancy\u0026#146;s Splinter Cell Franchise\u003c/a\u003e as part of this week\u0027s Weekend Deal*!\u003cbr\u003e\u003cbr\u003e*Offer ends Monday at 10AM Pacific Time\u003cbr\u003e\u003ca href=\"http://store.steampowered.com//sale/splintercell\"\u003e\u003cimg src=\"https://steamcdn-a.akamaihd.net/steam/news/25222/NewsPost.png?t=1477588327\" style=\" float: left; margin-right: 12px; height: 204px; width: 563px;\"\u003e\u003c/a\u003e",
+                          "feedlabel":  "Announcement",
+                          "date":  1477588080,
+                          "feedname":  "steam_announce",
+                          "feed_type":  0,
+                          "appid":  235600
+                      },
+                      {
+                          "gid":  "3189986872583436511",
+                          "title":  "Daily Deal - Tom Clancy’s Splinter Cell Blacklist, 66% Off",
+                          "url":  "http://store.steampowered.com/news/13669/",
+                          "is_external_url":  false,
+                          "author":  "Valve",
+                          "contents":  " \nToday\u0027s Deal: Save 66% on \u003ca href=\u0027http://store.steampowered.com/app/235600/\u0027\u003eTom Clancy\u0026#146;s Splinter Cell Blacklist\u003c/a\u003e!*\u003cbr\u003e\u003cbr\u003eLook for the deals each day on the front page of Steam.  Or follow us on \u003ca href=\u0027http://twitter.com/steam_games\u0027\u003etwitter\u003c/a\u003e or \u003ca href=\u0027http://www.facebook.com/Steam\u0027\u003eFacebook\u003c/a\u003e for instant notifications wherever you are!\u003cbr\u003e\u003cbr\u003e*Offer ends Monday at 10AM Pacific Time\u003cbr\u003e\u003ca href=\"http://store.steampowered.com/app/235600/\"\u003e\u003cimg src=\"http://cdn.akamai.steamstatic.com/steam/apps/235600/capsule_467x181.jpg\" style=\" float: left; margin-right: 12px; height: 181px; width: 467px;\"\u003e\u003c/a\u003e\t\t\t\t",
+                          "feedlabel":  "Announcement",
+                          "date":  1402765200,
+                          "feedname":  "steam_announce",
+                          "feed_type":  0,
+                          "appid":  235600
+                      }
+                  ],
+    "achievements":  {
+                         "total":  28,
+                         "items":  [
+                                       {
+                                           "apiName":  "SCBL_Ach_1",
+                                           "displayName":  "Asset Retrieval",
+                                           "description":  "Complete Safehouse on any difficulty",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/95da094a613d60e77e36e0680b86d9c53bc90a86.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/0e430eb2d8e1856a7ba7785a0755c4e7eef2754c.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SCBL_Ach_2",
+                                           "displayName":  "Ambush Escaped",
+                                           "description":  "Complete Insurgent Stronghold on any difficulty",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/43274ae38d14135749240bb16286c6431398465e.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/7caaf57599b43a7be3734b86039125daf7b2d8a2.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SCBL_Ach_3",
+                                           "displayName":  "American Consumption Prevented",
+                                           "description":  "Complete American Consumption on any difficulty",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/2258422d8f2be40e838fa9010eb1b3598fd3d411.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/19df31303f667334fe2d29580a54c3f1af943827.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SCBL_Ach_4",
+                                           "displayName":  "Terrorist Factor Turned",
+                                           "description":  "Complete Private Estate on any difficulty",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/ad805b766da638c1504f8c29fe3328695f691ea4.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/b572c5b20f013add5d9d65610685f802c626a22a.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SCBL_Ach_5",
+                                           "displayName":  "Tracker Placed",
+                                           "description":  "Complete Abandoned Mill on any difficulty",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/4fb634121308e2984a33a2240fcfb43ddf75952a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/e278150949e6dc727d297a28149e6048f650a3d5.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SCBL_Ach_6",
+                                           "displayName":  "Iranian Intel Retrieved",
+                                           "description":  "Complete Special Missions HQ on any difficulty",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/e5aa0e721f7cb838051925b88db9a1ad676a586d.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/36dae3a7192ff73f93ead65dace497521a9dec4e.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SCBL_Ach_7",
+                                           "displayName":  "American Freedom Averted",
+                                           "description":  "Complete Transit Yards on any difficulty",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/ed9277c68cab35b2636e651c4bb6ecc431877549.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/1385c2498c498da8389bc91b04376f32f551734a.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SCBL_Ach_8",
+                                           "displayName":  "Infiltration/Interrogation",
+                                           "description":  "Complete Detention Facility on any difficulty",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/40b712eaa861099393428abbaffb26286fb06d50.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/b10ad6ba4c2e5149ae2e0884e246021f41e8cd28.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SCBL_Ach_9",
+                                           "displayName":  "Paladin Restored",
+                                           "description":  "Survive the attack on Paladin",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/6fea899e1e7f4e689054ac1c4cf43f9cf04ec4d8.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/299511af3df67582c459e28d831a3b8643763fef.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SCBL_Ach_10",
+                                           "displayName":  "American Fuel Engaged",
+                                           "description":  "Complete LNG Terminal on any difficulty",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/cb0d0130163a1fc1660437c2e900801664d5ab34.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/10fa605b73c766afcfb5c153e361fc1dd25b7e41.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SCBL_Ach_11",
+                                           "displayName":  "4th Echelon Status Confirmed",
+                                           "description":  "Complete the single player campaign",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/440181f0e9741f0c5efc1a07528a8e29734cf25b.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/19aa9a9502a893dd7b6d8a5bc48f1cc2cb356688.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SCBL_Ach_12",
+                                           "displayName":  "4th Echelon Commendation",
+                                           "description":  "Complete every single player mission on Realistic difficulty",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/02753b648e0f5edd1e676ec6e74a637786062051.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/1cc6fd68a7ff7a438cb7f80ba5d1e2ff21d9b8f6.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SCBL_Ach_13",
+                                           "displayName":  "4th Echelon Officer",
+                                           "description":  "Complete every single player mission on Perfectionist difficulty",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/761132da6e0e3b0b8c6aeb4e438bd64b569730c1.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/f95c3ecf44cf3ae116a0001d28753c6369a3b6ad.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SCBL_Ach_18",
+                                           "displayName":  "C\u0026C Optimized",
+                                           "description":  "Fully upgrade your headquarters",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/4879c98e4fff92083c8d93b4b85d771b07134ff1.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/90abc655b048784e19dc74d81487805fefb3cf78.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SCBL_Ach_19",
+                                           "displayName":  "Tactical Style: Ghost",
+                                           "description":  "Master Ghost playstyle on 7 missions",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/b7f284e34c3279d7e52f247c9078af05d1a2f9e7.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/e1d85930f10a431cfd652fe6dcee51293a4f3c63.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SCBL_Ach_20",
+                                           "displayName":  "Tactical Style: Panther",
+                                           "description":  "Master Panther playstyle on 7 missions",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/f2f7b0e4c5ef46dc70d53afa26608464c9c68c6d.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/abd4e8cb23cb35de3a976b998cc903e67d5e2836.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SCBL_Ach_21",
+                                           "displayName":  "Tactical Style: Assault",
+                                           "description":  "Master Assault playstyle on 7 missions",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/ea79c26cd3dfd934dc9d17cc945b409a61680651.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/14d657698ed759559220d51525c27afe1738df83.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SCBL_Ach_22",
+                                           "displayName":  "Evidence Concealed",
+                                           "description":  "Hide 5 bodies in containers",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/1f7a71917fdeedbb78976c13645dbd6c0f686591.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/1e64dd22cd0f5c7d45636e5781a301c772607686.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SCBL_Ach_23",
+                                           "displayName":  "No Kill Option Engaged",
+                                           "description":  "Complete the single player campaign without killing anyone as Sam Fisher",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/890a3857425a15ad50378a6e1cf9e2d9ea065f71.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/92d096e75893cac560d8aa10a5be6349f348977a.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SCBL_Ach_24",
+                                           "displayName":  "Distraction Tactician",
+                                           "description":  "Call an enemy over, then take them down undetected when they investigate",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/e8c0f87f4298a25b8bd041a585ea0a50f36fbbc3.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/4f4a20456d3b70c281bb5c1d99dd3cd6ddcdb96b.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SCBL_Ach_25",
+                                           "displayName":  "Tri-Rotor Functionality",
+                                           "description":  "Disable a security device using the Tri-Rotor",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/d78039dac06619a19a976f1e5942388b3a851bfe.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/6aba658646c3a8a30968f92b64f8325cc7936161.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SCBL_Ach_26",
+                                           "displayName":  "Enhanced Lethality Demonstrated",
+                                           "description":  "Using Mark \u0026 Execute, take down 6 enemies in under 14 seconds",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/65b1a01bcc802e770f3a1bca54fdf37ab994592c.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/d19f05a4908454f7bf56d93351456462265df4c2.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SCBL_Ach_27",
+                                           "displayName":  "Hostile Shield Secured",
+                                           "description":  "Take down a Shielded Infantryman hand to hand and take his shield",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/8fdfbf9724b9dd4800d3ece47a922c1f32d5e2f5.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/c3cce8be719382533b668193d2e86cb76a5f303a.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SCBL_Ach_28",
+                                           "displayName":  "Hostages Secured",
+                                           "description":  "Save the hostages in the Transit Yards",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/f664b01d87d213d6bb86eab50fde66437bb13a10.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/aebe36f0b3bd89dc5294b945bebdbfc6e84e9aca.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SCBL_Ach_29",
+                                           "displayName":  "Mission Footprint Zero",
+                                           "description":  "Complete a single player mission without being detected during gameplay",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/5bfc978553f1341d431bcaac4ff2a3ce8f665a53.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/6c9468b89bfd8d533e44e6b594e3a48c58911cea.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SCBL_Ach_31",
+                                           "displayName":  "Hunter Operator",
+                                           "description":  "Complete all 4th Echelon Missions from Andriy Kobin",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/99d1305d3011e1d4bbfea4eecd30913a66e24dfe.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/bcec38b849153798d3db1bd1aa3fa698beba76b2.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SCBL_Ach_32",
+                                           "displayName":  "Infiltration Operator",
+                                           "description":  "Complete all 4th Echelon Missions from Anna Grímsdóttir",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/ca397ff4329af4b75f6944e3fe18beecd30eb2d3.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/466cd58795aa56f1489ed542ac20ee4ac2639206.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SCBL_Ach_33",
+                                           "displayName":  "Extraction Operator",
+                                           "description":  "Complete all 4th Echelon Missions from Charlie Cole",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/58d5c99489f69854f0b6c2e63cee9db97ed7b943.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/3d6f3921252f173f8315c859af3cfba1e916d81c.jpg"
+                                       }
+                                   ]
+                     }
+}

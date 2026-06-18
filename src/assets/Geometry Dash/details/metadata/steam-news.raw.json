@@ -1,0 +1,76 @@
+﻿{
+    "appnews":  {
+                    "appid":  322170,
+                    "newsitems":  [
+                                      {
+                                          "gid":  "1828894815564441",
+                                          "title":  "Geometry Dash Duality Gauntlet Contest",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1828894815564441",
+                                          "is_external_url":  true,
+                                          "author":  "RobTop Games",
+                                          "contents":  "[p]The Duality Gauntlet Contest is here! Watch the video for more info :)[/p][p][/p][previewyoutube=\"nDBhWpen-eU;full\"][/previewyoutube]",
+                                          "feedlabel":  "Community Announcements",
+                                          "date":  1775429450,
+                                          "feedname":  "steam_community_announcements",
+                                          "feed_type":  1,
+                                          "appid":  322170
+                                      },
+                                      {
+                                          "gid":  "1828894815561656",
+                                          "title":  "GeometryDash.com is Live!",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1828894815561656",
+                                          "is_external_url":  true,
+                                          "author":  "RobTop Games",
+                                          "contents":  "[p][url=\"https://t.co/aGw9LKrD6o\"]GeometryDash.com[/url] is live! Play Stereo Madness for free in your browser, explore news, check the Top 1000 leaderboards and more :) /RubRub[/p][p][img src=\"{STEAM_CLAN_IMAGE}/7432088/a724197eee9f3af13c6ca5d86e41653749f05ea2.png\"][/img][/p]",
+                                          "feedlabel":  "Community Announcements",
+                                          "date":  1775268242,
+                                          "feedname":  "steam_community_announcements",
+                                          "feed_type":  1,
+                                          "appid":  322170
+                                      },
+                                      {
+                                          "gid":  "1825727806713980",
+                                          "title":  "The Geometry Dash Awards 2025: Winners",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1825727806713980",
+                                          "is_external_url":  true,
+                                          "author":  "RobTop Games",
+                                          "contents":  "[p]The winners of The Geometry Dash Awards 2025 have been decided! [/p][p]Watch the video to see the best that Geometry Dash had to offer in 2025.[/p][p][/p][previewyoutube=\"gU2VMt0UVJ0;full\"][/previewyoutube]",
+                                          "feedlabel":  "Community Announcements",
+                                          "date":  1772311194,
+                                          "feedname":  "steam_community_announcements",
+                                          "feed_type":  1,
+                                          "appid":  322170
+                                      },
+                                      {
+                                          "gid":  "1824644522842639",
+                                          "title":  "The Geometry Dash Awards 2025: Nominees",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1824644522842639",
+                                          "is_external_url":  true,
+                                          "author":  "RobTop Games",
+                                          "contents":  "[p]The nominees for The Geometry Dash Awards 2025 have been announced![/p][p]Vote to decide the winners [url=\"https://robtopgames.com/vote\"]here[/url]. [/p][p][/p][p]Before voting, you can watch the video below to see all the nominees. You can also find lists of all the nominated levels under \"Top Lists\" in-game.[/p][p][/p][previewyoutube=\"V-mMeI8aq4U;full\"][/previewyoutube]",
+                                          "feedlabel":  "Community Announcements",
+                                          "date":  1771108484,
+                                          "feedname":  "steam_community_announcements",
+                                          "feed_type":  1,
+                                          "appid":  322170
+                                      },
+                                      {
+                                          "gid":  "1822556746155781",
+                                          "title":  "Update 2.2081",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1822556746155781",
+                                          "is_external_url":  true,
+                                          "author":  "RobTop Games",
+                                          "contents":  "This update includes some tweaks to Click Between / On Steps, performance improvements, and various bugfixes.\n\nBefore reporting any bugs, make sure that you have fully uninstalled any third-party unofficial extensions, as they can cause unexpected behavior.\n\n/RubRub",
+                                          "feedlabel":  "Community Announcements",
+                                          "date":  1768962355,
+                                          "feedname":  "steam_community_announcements",
+                                          "feed_type":  1,
+                                          "appid":  322170,
+                                          "tags":  [
+                                                       "patchnotes"
+                                                   ]
+                                      }
+                                  ],
+                    "count":  91
+                }
+}

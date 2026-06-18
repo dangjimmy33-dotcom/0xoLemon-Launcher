@@ -11,9 +11,11 @@ use sha2::{Digest, Sha256};
 use thiserror::Error;
 use walkdir::WalkDir;
 
+use crate::depot_crypto::{self, key_id_from_material, DEPOT_ENCRYPTION_ALGORITHM, DEPOT_KEY_ENV};
 use crate::manifest::{
-    Catalog, CatalogVersion, ChunkRef, FileEntry, PackRecord, VersionManifest, CHUNK_MAX_SIZE,
-    CHUNK_MIN_SIZE, CHUNK_TARGET_SIZE, FORMAT_VERSION, PACK_TARGET_SIZE,
+    Catalog, CatalogVersion, ChunkEncryption, ChunkRef, FileEntry, PackRecord, VersionManifest,
+    CHUNK_MAX_SIZE, CHUNK_MIN_SIZE, CHUNK_TARGET_SIZE, FORMAT_VERSION,
+    PACK_TARGET_SIZE as DEFAULT_PACK_TARGET_SIZE,
 };
 use crate::scanner::normalize_relative;
 
@@ -31,6 +33,8 @@ pub enum BuildError {
     Json(#[from] serde_json::Error),
     #[error("publish error: {0}")]
     Publish(String),
+    #[error("crypto error: {0}")]
+    Crypto(String),
 }
 
 #[derive(Debug, Clone)]
@@ -41,6 +45,23 @@ pub struct BuildVersionInput {
 }
 
 #[derive(Debug, Clone)]
+pub struct DepotEncryptionConfig {
+    pub enabled: bool,
+    pub key_material: Option<String>,
+    pub key_id: Option<String>,
+}
+
+impl Default for DepotEncryptionConfig {
+    fn default() -> Self {
+        Self {
+            enabled: true,
+            key_material: None,
+            key_id: None,
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct BuildDepotInput {
     pub game_id: String,
     pub latest_version: String,
@@ -48,6 +69,10 @@ pub struct BuildDepotInput {
     pub versions: Vec<BuildVersionInput>,
     pub publish: Option<PublishTarget>,
     pub extend_existing: bool,
+    pub encryption: DepotEncryptionConfig,
+    pub pack_target_size: u64,
+    pub pack_id_prefix: String,
+    pub start_pack_index: Option<usize>,
 }
 
 #[derive(Debug, Clone)]
@@ -76,6 +101,7 @@ struct ChunkLocation {
     compressed_size: u64,
     compressed_sha256: String,
     uncompressed_size: u64,
+    encryption: Option<ChunkEncryption>,
 }
 
 struct PackWriter {
@@ -87,8 +113,8 @@ struct PackWriter {
 }
 
 impl PackWriter {
-    fn create(pack_dir: &Path, index: usize) -> Result<Self, io::Error> {
-        let id = format!("pack-{index:05}");
+    fn create(pack_dir: &Path, id_prefix: &str, index: usize) -> Result<Self, io::Error> {
+        let id = format!("{id_prefix}{index:05}");
         let path = pack_dir.join(format!("{id}.bin"));
         let file = File::create(&path)?;
         Ok(Self {
@@ -158,8 +184,21 @@ pub fn build_depot(input: BuildDepotInput) -> Result<BuildReport, BuildError> {
             &mut chunk_locations,
         )?;
     }
+    let pack_target_size = effective_pack_target_size(input.pack_target_size);
+    let pack_id_prefix = normalize_pack_id_prefix(&input.pack_id_prefix);
+    let requested_start_index = input.start_pack_index.unwrap_or(0);
     let mut current_pack: Option<PackWriter> = None;
-    let mut next_pack_index = next_pack_index(&pack_records);
+    let mut next_pack_index = if input.extend_existing {
+        next_pack_index(&pack_records, &pack_id_prefix).max(requested_start_index)
+    } else {
+        requested_start_index
+    };
+    eprintln!(
+        "[DEPOT] pack target: {} MiB | pack prefix: {} | start index: {}",
+        pack_target_size / 1024 / 1024,
+        pack_id_prefix,
+        next_pack_index
+    );
     let replacing_versions = input
         .versions
         .iter()
@@ -203,6 +242,9 @@ pub fn build_depot(input: BuildDepotInput) -> Result<BuildReport, BuildError> {
                 &mut pack_records,
                 &mut chunk_locations,
                 input.publish.as_ref(),
+                &input.encryption,
+                pack_target_size,
+                &pack_id_prefix,
             )?;
             total_size += file_entry.size;
             files.push(file_entry);
@@ -239,7 +281,12 @@ pub fn build_depot(input: BuildDepotInput) -> Result<BuildReport, BuildError> {
                 "fileCount": manifest.files.len(),
                 "chunkCount": chunk_count,
                 "chunkTargetSize": CHUNK_TARGET_SIZE,
-                "packTargetSize": PACK_TARGET_SIZE
+                "packTargetSize": pack_target_size,
+                "packTargetSizeMiB": pack_target_size / 1024 / 1024,
+                "packIdPrefix": pack_id_prefix.clone(),
+                "packStartIndex": requested_start_index,
+                "encryptedPacks": input.encryption.enabled,
+                "depotKeyEnv": DEPOT_KEY_ENV
             }),
         )?;
         metadata_uploads.push((
@@ -271,6 +318,7 @@ pub fn build_depot(input: BuildDepotInput) -> Result<BuildReport, BuildError> {
                 &input.output_dir,
                 input.publish.as_ref(),
                 &mut pack_records,
+                input.encryption.enabled,
             )?;
         }
     }
@@ -312,6 +360,9 @@ fn build_file_entry(
     pack_records: &mut Vec<PackRecord>,
     chunk_locations: &mut HashMap<String, ChunkLocation>,
     publish: Option<&PublishTarget>,
+    encryption: &DepotEncryptionConfig,
+    pack_target_size: u64,
+    pack_id_prefix: &str,
 ) -> Result<FileEntry, BuildError> {
     let metadata = fs::metadata(file_path)?;
     let source = File::open(file_path)?;
@@ -324,37 +375,76 @@ fn build_file_entry(
         file_hasher.update(&chunk.data);
         let hash = blake3::hash(&chunk.data).to_hex().to_string();
 
-        let location = if let Some(existing) = chunk_locations.get(&hash) {
-            existing.clone()
+        let reusable_existing = chunk_locations
+            .get(&hash)
+            .filter(|existing| chunk_location_matches_encryption(existing, encryption))
+            .cloned();
+
+        let location = if let Some(existing) = reusable_existing {
+            existing
         } else {
             let compressed = zstd::bulk::compress(&chunk.data, 10)?;
-            let compressed_sha256 = sha256_bytes(&compressed);
+            let plaintext_compressed_sha256 = sha256_bytes(&compressed);
+            let plaintext_compressed_size = compressed.len() as u64;
             let uncompressed_size = chunk.data.len() as u64;
+
+            let (transport_bytes, encryption_meta) = if encryption.enabled {
+                let key_material =
+                    depot_crypto::resolve_key_material(encryption.key_material.as_deref());
+                let key_id = encryption
+                    .key_id
+                    .clone()
+                    .filter(|value| !value.trim().is_empty())
+                    .unwrap_or_else(|| key_id_from_material(&key_material));
+                let (encrypted, nonce) = depot_crypto::encrypt_compressed_chunk(
+                    &compressed,
+                    &hash,
+                    &plaintext_compressed_sha256,
+                    &key_material,
+                )
+                .map_err(|err| BuildError::Crypto(err.to_string()))?;
+                (
+                    encrypted,
+                    Some(ChunkEncryption {
+                        algorithm: DEPOT_ENCRYPTION_ALGORITHM.to_string(),
+                        key_id,
+                        nonce,
+                        plaintext_compressed_size,
+                        plaintext_compressed_sha256: plaintext_compressed_sha256.clone(),
+                    }),
+                )
+            } else {
+                (compressed, None)
+            };
+            let compressed_sha256 = sha256_bytes(&transport_bytes);
 
             if current_pack
                 .as_ref()
-                .map(|pack| pack.size + compressed.len() as u64 > PACK_TARGET_SIZE && pack.size > 0)
+                .map(|pack| {
+                    pack.size + transport_bytes.len() as u64 > pack_target_size && pack.size > 0
+                })
                 .unwrap_or(true)
             {
                 if let Some(pack) = current_pack.take() {
                     if pack.size > 0 {
-                        finalize_pack(pack, output_dir, publish, pack_records)?;
+                        finalize_pack(pack, output_dir, publish, pack_records, encryption.enabled)?;
                     }
                 }
-                let pack = PackWriter::create(pack_dir, *next_pack_index)?;
+                let pack = PackWriter::create(pack_dir, pack_id_prefix, *next_pack_index)?;
                 *next_pack_index += 1;
                 *current_pack = Some(pack);
             }
 
             let pack = current_pack.as_mut().expect("pack writer must exist");
-            let pack_offset = pack.write_chunk(&compressed)?;
+            let pack_offset = pack.write_chunk(&transport_bytes)?;
             let location = ChunkLocation {
                 hash: hash.clone(),
                 pack_id: pack.id.clone(),
                 pack_offset,
-                compressed_size: compressed.len() as u64,
+                compressed_size: transport_bytes.len() as u64,
                 compressed_sha256,
                 uncompressed_size,
+                encryption: encryption_meta,
             };
             chunk_locations.insert(hash.clone(), location.clone());
             location
@@ -368,6 +458,7 @@ fn build_file_entry(
             pack_offset: location.pack_offset,
             compressed_size: location.compressed_size,
             compressed_sha256: location.compressed_sha256,
+            encryption: location.encryption,
         });
     }
 
@@ -386,10 +477,19 @@ fn finalize_pack(
     output_dir: &Path,
     publish: Option<&PublishTarget>,
     pack_records: &mut Vec<PackRecord>,
+    expect_encrypted: bool,
 ) -> Result<(), BuildError> {
     let record = pack.finalize(output_dir)?;
+    let local_path = output_dir.join(relative_to_path(&record.path));
+
+    if expect_encrypted && pack_starts_with_zstd_magic(&local_path)? {
+        return Err(BuildError::Crypto(format!(
+            "encryption was enabled, but {} starts with ZSTD magic 28 B5 2F FD; refusing to upload plain pack",
+            record.path
+        )));
+    }
+
     if let Some(publish) = publish {
-        let local_path = output_dir.join(relative_to_path(&record.path));
         upload_owned_file(publish, &local_path, &record.path)?;
         if publish.delete_local_packs {
             fs::remove_file(&local_path)?;
@@ -397,6 +497,37 @@ fn finalize_pack(
     }
     pack_records.push(record);
     Ok(())
+}
+
+fn pack_starts_with_zstd_magic(path: &Path) -> Result<bool, BuildError> {
+    use std::io::Read;
+    let mut file = File::open(path)?;
+    let mut magic = [0_u8; 4];
+    let read = file.read(&mut magic)?;
+    Ok(read == 4 && magic == [0x28, 0xB5, 0x2F, 0xFD])
+}
+
+fn chunk_location_matches_encryption(
+    existing: &ChunkLocation,
+    encryption: &DepotEncryptionConfig,
+) -> bool {
+    if encryption.enabled {
+        let Some(meta) = existing.encryption.as_ref() else {
+            return false;
+        };
+        if meta.algorithm != DEPOT_ENCRYPTION_ALGORITHM {
+            return false;
+        }
+        let key_material = depot_crypto::resolve_key_material(encryption.key_material.as_deref());
+        let expected_key_id = encryption
+            .key_id
+            .clone()
+            .filter(|value| !value.trim().is_empty())
+            .unwrap_or_else(|| key_id_from_material(&key_material));
+        meta.key_id == expected_key_id
+    } else {
+        existing.encryption.is_none()
+    }
 }
 
 fn upload_owned_file(
@@ -480,6 +611,7 @@ fn seed_chunk_locations_from_existing_manifests(
                         compressed_size: chunk.compressed_size,
                         compressed_sha256: chunk.compressed_sha256,
                         uncompressed_size: chunk.uncompressed_size,
+                        encryption: chunk.encryption,
                     });
             }
         }
@@ -487,17 +619,41 @@ fn seed_chunk_locations_from_existing_manifests(
     Ok(())
 }
 
-fn next_pack_index(packs: &[PackRecord]) -> usize {
+fn next_pack_index(packs: &[PackRecord], id_prefix: &str) -> usize {
     packs
         .iter()
         .filter_map(|pack| {
             pack.id
-                .strip_prefix("pack-")
+                .strip_prefix(id_prefix)
                 .and_then(|suffix| suffix.parse::<usize>().ok())
         })
         .max()
         .map(|index| index + 1)
         .unwrap_or(0)
+}
+
+fn effective_pack_target_size(value: u64) -> u64 {
+    if value == 0 {
+        DEFAULT_PACK_TARGET_SIZE
+    } else {
+        value
+    }
+}
+
+fn normalize_pack_id_prefix(value: &str) -> String {
+    let mut out = value
+        .trim()
+        .chars()
+        .filter_map(|ch| match ch {
+            'a'..='z' | 'A'..='Z' | '0'..='9' | '-' | '_' => Some(ch),
+            ' ' | '.' => Some('-'),
+            _ => None,
+        })
+        .collect::<String>();
+    if out.is_empty() {
+        out = "pack-".to_string();
+    }
+    out
 }
 
 fn sha256_bytes(bytes: &[u8]) -> String {

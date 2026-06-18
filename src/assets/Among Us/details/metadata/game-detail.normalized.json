@@ -1,674 +1,467 @@
-{
-  "appId": 945360,
-  "title": "Among Us",
-  "type": "game",
-  "requiredAge": 0,
-  "isFree": false,
-  "shortDescription": "An online and local party game of teamwork and betrayal for 4-15 players...in space!",
-  "detailedDescriptionHtml": "<span class=\"bb_img_ctn\"><img class=\"bb_img\" src=\"asset:description_images\\001_6bbe13c19eac2f3aeaadddbc7bb40fdc.webp\" width=620 height=330 /></span><br><br>Play with 4-15 player online or via local WiFi as you attempt to prepare your spaceship for departure, but beware as one or more random players among the Crew are Impostors bent on killing everyone!<br><br>Originally created as a party game, we recommend playing with friends at a LAN party or online using voice chat. Enjoy cross-platform play between Android, iOS, PC, and console.<br><br><span class=\"bb_img_ctn\"><img class=\"bb_img\" src=\"asset:description_images\\002_76bef22d1af309e719a8f2b578ef63dc.webp\" width=600 height=124 /></span><br><ul class=\"bb_ul\"><li> Win by completing tasks to prepare the ship or ejecting all Impostors.<br></li><li> React quickly to undo the Impostor's sabotages.<br></li><li> Check the Admin map and Security cameras to keep tabs on other Crewmates.<br></li><li> Report any dead bodies immediately to start discussion of who the suspected Impostor is.<br></li><li> Call emergency meetings to discuss suspicious behavior.<br></li><li> Vote to eject suspected Impostors.</li></ul><br><br><span class=\"bb_img_ctn\"><img class=\"bb_img\" src=\"asset:description_images\\003_a00136b10c71226d0cb43d07d88efbf7.webp\" width=600 height=125 /></span><br><ul class=\"bb_ul\"><li> Kill Crewmates and frame bystanders.<br></li><li> Pretend to run tasks to blend in with the crewmates.<br></li><li> Sneak through the vents to quickly move about the ship.<br></li><li> Use sabotages to cause chaos and divide the crew.<br></li><li> Close doors to trap victims and kill in private.</li></ul><br><span class=\"bb_img_ctn\"><img class=\"bb_img\" src=\"asset:description_images\\004_c2ae1f9084de411d71d9c73d345d9622.webp\" width=600 height=315 /></span><h2 class=\"bb_tag\" >Features</h2><ul class=\"bb_ul\"><li> Customization: Pick your color, hat, visor, skin, and pet.<br></li><li> Lots of game options: Add more Impostors, more tasks, different roles, and so much more!<br></li><li> Different modes to choose from: Classic or Hide n Seek. <br></li><li> 4 different maps to play in: The Skeld, MIRA HQ, Polus, and the Airship.<br></li><li> Quickly find a game online from the host list.<br></li><li> In-game text chat.<br></li><li> Rich Discord integration.<br></li><li> Cross-platform play between PC, console, Android, and iOS!</li></ul>",
-  "aboutTheGameHtml": "<span class=\"bb_img_ctn\"><img class=\"bb_img\" src=\"asset:description_images\\001_6bbe13c19eac2f3aeaadddbc7bb40fdc.webp\" width=620 height=330 /></span><br><br>Play with 4-15 player online or via local WiFi as you attempt to prepare your spaceship for departure, but beware as one or more random players among the Crew are Impostors bent on killing everyone!<br><br>Originally created as a party game, we recommend playing with friends at a LAN party or online using voice chat. Enjoy cross-platform play between Android, iOS, PC, and console.<br><br><span class=\"bb_img_ctn\"><img class=\"bb_img\" src=\"asset:description_images\\002_76bef22d1af309e719a8f2b578ef63dc.webp\" width=600 height=124 /></span><br><ul class=\"bb_ul\"><li> Win by completing tasks to prepare the ship or ejecting all Impostors.<br></li><li> React quickly to undo the Impostor's sabotages.<br></li><li> Check the Admin map and Security cameras to keep tabs on other Crewmates.<br></li><li> Report any dead bodies immediately to start discussion of who the suspected Impostor is.<br></li><li> Call emergency meetings to discuss suspicious behavior.<br></li><li> Vote to eject suspected Impostors.</li></ul><br><br><span class=\"bb_img_ctn\"><img class=\"bb_img\" src=\"asset:description_images\\003_a00136b10c71226d0cb43d07d88efbf7.webp\" width=600 height=125 /></span><br><ul class=\"bb_ul\"><li> Kill Crewmates and frame bystanders.<br></li><li> Pretend to run tasks to blend in with the crewmates.<br></li><li> Sneak through the vents to quickly move about the ship.<br></li><li> Use sabotages to cause chaos and divide the crew.<br></li><li> Close doors to trap victims and kill in private.</li></ul><br><span class=\"bb_img_ctn\"><img class=\"bb_img\" src=\"asset:description_images\\004_c2ae1f9084de411d71d9c73d345d9622.webp\" width=600 height=315 /></span><h2 class=\"bb_tag\" >Features</h2><ul class=\"bb_ul\"><li> Customization: Pick your color, hat, visor, skin, and pet.<br></li><li> Lots of game options: Add more Impostors, more tasks, different roles, and so much more!<br></li><li> Different modes to choose from: Classic or Hide n Seek. <br></li><li> 4 different maps to play in: The Skeld, MIRA HQ, Polus, and the Airship.<br></li><li> Quickly find a game online from the host list.<br></li><li> In-game text chat.<br></li><li> Rich Discord integration.<br></li><li> Cross-platform play between PC, console, Android, and iOS!</li></ul>",
-  "supportedLanguagesHtml": "English, Portuguese - Brazil, Spanish - Latin America, Spanish - Spain, Korean, Russian, French, Italian, German, Dutch, Japanese, Portuguese - Portugal, Simplified Chinese, Traditional Chinese",
-  "website": "http://innersloth.com/gameAmongUs.php",
-  "developers": "Innersloth",
-  "publishers": "Innersloth",
-  "releaseDate": {
-    "coming_soon": false,
-    "date": "Nov 16, 2018"
-  },
-  "genres": "Casual",
-  "categories": [
-    "Multi-player",
-    "PvP",
-    "Online PvP",
-    "LAN PvP",
-    "Co-op",
-    "Online Co-op",
-    "LAN Co-op",
-    "Cross-Platform Multiplayer",
-    "Steam Achievements",
-    "Full controller support",
-    "Steam Trading Cards",
-    "In-App Purchases",
-    "Remote Play on Phone",
-    "Remote Play on Tablet",
-    "Family Sharing"
-  ],
-  "platforms": {
-    "windows": true,
-    "mac": false,
-    "linux": false
-  },
-  "metacritic": {
-    "score": 85,
-    "url": "https://www.metacritic.com/game/pc/among-us?ftag=MCD-06-10aaa1f"
-  },
-  "recommendations": {
-    "total": 645130
-  },
-  "achievements": {
-    "total": 33,
-    "items": [
-      {
-        "apiName": "kills_first",
-        "displayName": "A TASTE FOR IT",
-        "description": "Get your first kill",
-        "hidden": false,
-        "iconFile": "achievement_images/001_kills-first.jpg",
-        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/28d77d90c1978829c159eae6fe799a191c34be83.jpg",
-        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/c56b0ced741a29491e86e63e2399e3d161f7aa30.jpg"
-      },
-      {
-        "apiName": "kills_easy",
-        "displayName": "KILLER",
-        "description": "Get 5 total kills",
-        "hidden": false,
-        "iconFile": "achievement_images/002_kills-easy.jpg",
-        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/f2b99effc0a886290c7b86e1d13bf8fb8df9552c.jpg",
-        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/e3c2d55d9d2ebb6b918c443aee7ff9807c8db9d6.jpg"
-      },
-      {
-        "apiName": "kills_medium",
-        "displayName": "ASSASSIN",
-        "description": "Get 50 total kills",
-        "hidden": false,
-        "iconFile": "achievement_images/003_kills-medium.jpg",
-        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/c56c94c6016eaa474ba59118c0c70b814156fe20.jpg",
-        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/3bfa10b9461b7c4dcbe5d1a75c4973d8034c6fce.jpg"
-      },
-      {
-        "apiName": "kills_hard",
-        "displayName": "SCOURGE",
-        "description": "",
-        "hidden": true,
-        "iconFile": "achievement_images/004_kills-hard.jpg",
-        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/6a0dd8539784b692366028f41774673397d04c13.jpg",
-        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/afbceff91aaf5f9370fad840d7bab3f377af2670.jpg"
-      },
-      {
-        "apiName": "task_complete_easy",
-        "displayName": "INTERN",
-        "description": "Complete 10 total tasks",
-        "hidden": false,
-        "iconFile": "achievement_images/005_task-complete-easy.jpg",
-        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/11d6a7da14eaa7036982b4375ea7caba288339ce.jpg",
-        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/92bbf0ca8e83c2e5aea0e22ea28fa786fb9219a9.jpg"
-      },
-      {
-        "apiName": "task_complete_medium",
-        "displayName": "MANAGER",
-        "description": "Complete 100 total tasks",
-        "hidden": false,
-        "iconFile": "achievement_images/006_task-complete-medium.jpg",
-        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/fb8ff2604057a9cc13acf74166c52ff945354803.jpg",
-        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/b7e20af007f9f24bd749e233a49195a403d0d990.jpg"
-      },
-      {
-        "apiName": "task_complete_hard",
-        "displayName": "TASKMASTER",
-        "description": "",
-        "hidden": true,
-        "iconFile": "achievement_images/007_task-complete-hard.jpg",
-        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/c7782fd07440b564df902fb0d80daa292f06ee9e.jpg",
-        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/29745d3324fb6675789cb0104aeefa84eebde23d.jpg"
-      },
-      {
-        "apiName": "wins_skeld",
-        "displayName": "A SHIP ADRIFT",
-        "description": "Win 3 games on Skeld",
-        "hidden": false,
-        "iconFile": "achievement_images/008_wins-skeld.jpg",
-        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/1c1b96b03b075eb3b42e368ebbdf257e19ef9087.jpg",
-        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/3fe2fa8522f171ba3d14faaccd014015ff2d91c2.jpg"
-      },
-      {
-        "apiName": "wins_mira",
-        "displayName": "CORPORATE LOCKDOWN",
-        "description": "Win 3 games on MIRA",
-        "hidden": false,
-        "iconFile": "achievement_images/009_wins-mira.jpg",
-        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/144c10dcf276eaffe8a7c03553c7d8a63c0de116.jpg",
-        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/db5fd29f80f19e3a4d7b017a12953f6fbfcfb9b0.jpg"
-      },
-      {
-        "apiName": "wins_polus",
-        "displayName": "UNEARTHED",
-        "description": "Win 3 games on Polus",
-        "hidden": false,
-        "iconFile": "achievement_images/010_wins-polus.jpg",
-        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/4d3d812ce857674d5013fb8c499bfacfd063277c.jpg",
-        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/df802d7bdec5147ddfbe9f88dd150f44fa0ff0b8.jpg"
-      },
-      {
-        "apiName": "wins_airship",
-        "displayName": "TOPPAT CREWMATES",
-        "description": "Win 3 games on The Airship",
-        "hidden": false,
-        "iconFile": "achievement_images/011_wins-airship.jpg",
-        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/78c3fd6c3f272601db4023d546f4e0879c3880c3.jpg",
-        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/7c01e1b09e9eaa6aa0134cd98c36fed3fc6922a7.jpg"
-      },
-      {
-        "apiName": "survive_two_impostors",
-        "displayName": "NEVER SUSPECT A THING",
-        "description": "",
-        "hidden": true,
-        "iconFile": "achievement_images/012_survive-two-impostors.jpg",
-        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/9c5048637cd0aecf7f9fcd4ac4f46c0d0c1d7541.jpg",
-        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/651c64d193b6fbb83f29774af46b5e7ce6505309.jpg"
-      },
-      {
-        "apiName": "win_all_tasks",
-        "displayName": "A WELL-OILED MACHINE",
-        "description": "Win a game by completing all tasks as a crewmate",
-        "hidden": false,
-        "iconFile": "achievement_images/013_win-all-tasks.jpg",
-        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/6d277eed63e041a20b28e090f8d258f84bb71daf.jpg",
-        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/2edf1ad6047e2020c3e64a4fca7f66728f804f9b.jpg"
-      },
-      {
-        "apiName": "win_sabotage",
-        "displayName": "SABOTEUR",
-        "description": "Win a game by sabotaging a critical system as Impostor.",
-        "hidden": false,
-        "iconFile": "achievement_images/014_win-sabotage.jpg",
-        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/6062188e86a7cf3c7ef46f0b3e575861a26bbb46.jpg",
-        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/b350cf33a97104167c9aac0c60079f2946396a91.jpg"
-      },
-      {
-        "apiName": "win_kills",
-        "displayName": "SLASHER",
-        "description": "Win a game by killing all crewmates as Impostor.",
-        "hidden": false,
-        "iconFile": "achievement_images/015_win-kills.jpg",
-        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/cbf1cacf0178c63aa2f8545030d53b5f9891aeb0.jpg",
-        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/1f40fda42c6f94d3c7b3c4e918c505c912deb77c.jpg"
-      },
-      {
-        "apiName": "survive_crewmate",
-        "displayName": "SURVIVOR",
-        "description": "Survive and win a game as a crewmate",
-        "hidden": false,
-        "iconFile": "achievement_images/016_survive-crewmate.jpg",
-        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/36b531782d1eba6166eb54769d36f42a3e87ace0.jpg",
-        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/1ec721a4e56994c379be9d3517b386df87814303.jpg"
-      },
-      {
-        "apiName": "win_impostor_vote",
-        "displayName": "SMOOTH TALKER",
-        "description": "Win a game by vote as Impostor",
-        "hidden": false,
-        "iconFile": "achievement_images/017_win-impostor-vote.jpg",
-        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/e2bf2b4ca2e03bbf1b48a9a8c72dd2fde4ee7e68.jpg",
-        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/d57f432e94a7e3ef5cf1c42ad2997fdde0103d54.jpg"
-      },
-      {
-        "apiName": "card_first_try",
-        "displayName": "IMPOSSIBLE TASK",
-        "description": "",
-        "hidden": true,
-        "iconFile": "achievement_images/018_card-first-try.jpg",
-        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/c486b2f15c031a9929e6193a334c8f947b326009.jpg",
-        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/377f77e19968f9d7fec4c1aeffb38815a659eb17.jpg"
-      },
-      {
-        "apiName": "kill_during_lights",
-        "displayName": "LIGHTS OUT",
-        "description": "Get a kill during a lights sabotage",
-        "hidden": false,
-        "iconFile": "achievement_images/019_kill-during-lights.jpg",
-        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/6d53ce190945abd26dc4d5cf265cda396196e736.jpg",
-        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/704ff65764606c74aef094fc6dd965952e4f3f88.jpg"
-      },
-      {
-        "apiName": "die_during_medscan",
-        "displayName": "WATCH ME SCAN",
-        "description": "",
-        "hidden": true,
-        "iconFile": "achievement_images/020_die-during-medscan.jpg",
-        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/bf78b9db17985ba127345ac32258f3116ed7ec00.jpg",
-        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/2b297edb4fc38bdfb458e14c74048c28a67cfb6f.jpg"
-      },
-      {
-        "apiName": "fix_own_sabotage",
-        "displayName": "CREWPOSTOR",
-        "description": "",
-        "hidden": true,
-        "iconFile": "achievement_images/021_fix-own-sabotage.jpg",
-        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/cb4695fda4b61e880404ba5051185a1c154e6156.jpg",
-        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/69b62a24754bd1dc28bf51e0a855696710b65b26.jpg"
-      },
-      {
-        "apiName": "three_kills_before_meeting",
-        "displayName": "H U N G E R",
-        "description": "",
-        "hidden": true,
-        "iconFile": "achievement_images/022_three-kills-before-meeting.jpg",
-        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/f5a1d827b0b4c4709d3a16a6e5a309a302ca4187.jpg",
-        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/7407736424058a1a0c06821bd7bb1a8f97b68f2b.jpg"
-      },
-      {
-        "apiName": "win_always_correct_votes",
-        "displayName": "SHERLOCK",
-        "description": "Win a game as crew with your only votes being for the Impostor",
-        "hidden": false,
-        "iconFile": "achievement_images/023_win-always-correct-votes.jpg",
-        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/970151abaa23e371daaea0423122126184346103.jpg",
-        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/2137274ff67c3d513c9e131bff6a5438a9d8a364.jpg"
-      },
-      {
-        "apiName": "no_vents_impostor_win",
-        "displayName": "CIRCUMVENTER",
-        "description": "",
-        "hidden": true,
-        "iconFile": "achievement_images/024_no-vents-impostor-win.jpg",
-        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/d98da75d64e92504c70b54339a17ab98b8b732fa.jpg",
-        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/7e15b6428da3e3edbcdea760cb01a5f0c2e9ac00.jpg"
-      },
-      {
-        "apiName": "hns_survive_crewmate",
-        "displayName": "HIDDEN TALENT",
-        "description": "Survive a Game as Crew in Hide n Seek Mode",
-        "hidden": false,
-        "iconFile": "achievement_images/025_hns-survive-crewmate.jpg",
-        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/7428551173ce6c4ba93f2b0c7acd226ce208e18a.jpg",
-        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/bfea0ec6e1e21c905d032eb8e5f1a354a9600083.jpg"
-      },
-      {
-        "apiName": "hns_impostor_kill_all",
-        "displayName": "NO ESCAPE",
-        "description": "Kill all hiders as impostor in Hide n Seek Mode",
-        "hidden": false,
-        "iconFile": "achievement_images/026_hns-impostor-kill-all.jpg",
-        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/2529465727f1115c5d69e58bb5f7df53aa11c03f.jpg",
-        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/1b9cc75bef0f2d3c9666a658304735eb86783d8f.jpg"
-      },
-      {
-        "apiName": "hns_complete_all_tasks",
-        "displayName": "PERFORM UNDER PRESSURE",
-        "description": "Do all your tasks in Hide n Seek Mode",
-        "hidden": false,
-        "iconFile": "achievement_images/027_hns-complete-all-tasks.jpg",
-        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/9dca2128c2fc0bab1dac0b075daabfb5bc2312db.jpg",
-        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/4f3b552ac6ab7e1986fc89043d7f4619005b99e3.jpg"
-      },
-      {
-        "apiName": "kill_while_shifted",
-        "displayName": "TRUST NO ONE",
-        "description": "Kill Someone while disguised as them",
-        "hidden": false,
-        "iconFile": "achievement_images/028_kill-while-shifted.jpg",
-        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/8f9010c15a71df86b2750757565f7217f05261b2.jpg",
-        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/d40f4fafc7838afc8ccb8f90ce97b24518098086.jpg"
-      },
-      {
-        "apiName": "block_kill_as_guardian",
-        "displayName": "I CAN BE YOUR ANGLE",
-        "description": "Block a kill as a guardian angel",
-        "hidden": false,
-        "iconFile": "achievement_images/029_block-kill-as-guardian.jpg",
-        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/90221101a3a9b33c742711741e0585c887f7d791.jpg",
-        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/5b34bcd7e8495fd8493a1805407a04b3ec7b1fd2.jpg"
-      },
-      {
-        "apiName": "hns_crewmate_wins_easy",
-        "displayName": "YOU CAN'T RUN",
-        "description": "10 wins as a hider in Hide n Seek Mode",
-        "hidden": false,
-        "iconFile": "achievement_images/030_hns-crewmate-wins-easy.jpg",
-        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/12a62b22955b0aeac6f250a7e736dc0e82e1d5e7.jpg",
-        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/0007446eff8607648b66658c984d5d4fdd6740cb.jpg"
-      },
-      {
-        "apiName": "hns_crewmate_wins_hard",
-        "displayName": "BUT YOU CAN HIDE",
-        "description": "50 wins as a hider in Hide n Seek Mode",
-        "hidden": false,
-        "iconFile": "achievement_images/031_hns-crewmate-wins-hard.jpg",
-        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/78f031450563a755346a47c36531806df024c0be.jpg",
-        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/38a89336b3ce67d98296ea40a609ad6e285ecf78.jpg"
-      },
-      {
-        "apiName": "hns_impostor_kills_easy",
-        "displayName": "YOU CAN RUN",
-        "description": "100 kills as a seeker in Hide n Seek Mode",
-        "hidden": false,
-        "iconFile": "achievement_images/032_hns-impostor-kills-easy.jpg",
-        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/bef1f16697da915b6edb6546ef86a48ef461b19d.jpg",
-        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/b5d7f62a454b6b57fc25704a2148b3f8ebd11f46.jpg"
-      },
-      {
-        "apiName": "hns_impostor_kills_hard",
-        "displayName": "BUT YOU CAN'T HIDE",
-        "description": "200 kills as a seeker in Hide n Seek Mode",
-        "hidden": false,
-        "iconFile": "achievement_images/033_hns-impostor-kills-hard.jpg",
-        "steamIcon": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/cd35efbab2dec93d23dd90eb296cc95bd6373e29.jpg",
-        "steamIconGray": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/42e9cf46caa4d881206ae70089ca5b4df648dd00.jpg"
-      }
-    ]
-  },
-  "pcRequirements": {
-    "minimum": "<strong>Minimum:</strong><br><ul class=\"bb_ul\"><li><strong>OS:</strong> Windows 10 x32bit<br></li><li><strong>Processor:</strong> INTEL i3-4330<br></li><li><strong>Memory:</strong> 1 GB RAM<br></li><li><strong>Graphics:</strong> INTEL HD Graphics 4600</li></ul>",
-    "recommended": "<strong>Recommended:</strong><br><ul class=\"bb_ul\"><li><strong>OS:</strong> Windows 10 x64bit<br></li><li><strong>Processor:</strong> INTEL i3-4330<br></li><li><strong>Memory:</strong> 4 GB RAM<br></li><li><strong>Graphics:</strong> Nvidia GTX 650</li></ul>"
-  },
-  "macRequirements": [],
-  "linuxRequirements": [],
-  "contentDescriptors": {
-    "ids": [],
-    "notes": null
-  },
-  "supportInfo": {
-    "url": "https://innersloth.zendesk.com/hc/en-us",
-    "email": "support@innersloth.com"
-  },
-  "media": [
-    {
-      "role": "header",
-      "title": "Steam header",
-      "sourceUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/header.jpg?t=1781287930",
-      "file": "store_art/header.webp",
-      "sizeBytes": 14304,
-      "sha256": "92935f8a040d53b0fcd83f410965a28123f20fa4ede5fbc37f542f26ca236b63",
-      "lastWriteTimeUtc": "2026-06-13T12:44:18.217Z"
-    },
-    {
-      "role": "capsule",
-      "title": "Steam capsule",
-      "sourceUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/capsule_231x87.jpg?t=1781287930",
-      "file": "store_art/capsule.webp",
-      "sizeBytes": 5714,
-      "sha256": "723701f2396afe22cdba03864f1fbe09977735e03fdb81a745df75f42f364173",
-      "lastWriteTimeUtc": "2026-06-13T12:44:18.141Z"
-    },
-    {
-      "role": "capsule-v5",
-      "title": "Steam capsule v5",
-      "sourceUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/capsule_184x69.jpg?t=1781287930",
-      "file": "store_art/capsule-v5.webp",
-      "sizeBytes": 4080,
-      "sha256": "fd188a692a8fff456239f4b0e1ac1f5b3eaa9b7374c43c010838a5e2881a480b",
-      "lastWriteTimeUtc": "2026-06-13T12:44:18.173Z"
-    },
-    {
-      "role": "background",
-      "title": "Steam background",
-      "sourceUrl": "https://store.akamai.steamstatic.com/images/storepagebackground/app/945360?t=1781287930",
-      "file": "store_art/background.webp",
-      "sizeBytes": 6310,
-      "sha256": "089b0ea0b0416eaae6ca0e85dbda1628565ff71375caa9df614679b07d40ed9d",
-      "lastWriteTimeUtc": "2026-06-13T12:44:17.997Z"
-    },
-    {
-      "role": "background-raw",
-      "title": "Steam background raw",
-      "sourceUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/page_bg_raw.jpg?t=1781287930",
-      "file": "store_art/background-raw.webp",
-      "sizeBytes": 29420,
-      "sha256": "8f3821fc9f0029a120380f970f646dea06e86ce6b1ff485821ff030e9148d227",
-      "lastWriteTimeUtc": "2026-06-13T12:44:18.107Z"
-    },
-    {
-      "role": "screenshot",
-      "title": "Screenshot 1",
-      "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_b7374128e5b786a302a716bca038d604b00ffe46.1920x1080.jpg?t=1781287930",
-      "file": "screenshots/001_screenshot.webp",
-      "sizeBytes": 82292,
-      "sha256": "a5a735aec1983e9c2d9f2cca82d8254331ad01eea737a2fd348bd5089f6fa1c8",
-      "lastWriteTimeUtc": "2026-06-13T12:44:18.419Z"
-    },
-    {
-      "role": "screenshot",
-      "title": "Screenshot 2",
-      "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_719484b5e0314cc2ae43793786448e032056a31d.1920x1080.jpg?t=1781287930",
-      "file": "screenshots/002_screenshot.webp",
-      "sizeBytes": 62766,
-      "sha256": "78d228c88fa5b774fac863067e2bf1835c33867b31c61668675152f6635ba3ce",
-      "lastWriteTimeUtc": "2026-06-13T12:44:18.590Z"
-    },
-    {
-      "role": "screenshot",
-      "title": "Screenshot 3",
-      "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_ffd9c8926cbd7fce3ca5e5efb4399c47bb196bc8.1920x1080.jpg?t=1781287930",
-      "file": "screenshots/003_screenshot.webp",
-      "sizeBytes": 49928,
-      "sha256": "1c3526d2ed4968c65090ddf537385d4f856f9004900311b6b2502b0d43ce6bfe",
-      "lastWriteTimeUtc": "2026-06-13T12:44:18.729Z"
-    },
-    {
-      "role": "screenshot",
-      "title": "Screenshot 4",
-      "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_1fbd9dc9fd6a2710d233a088ef426a6d78fcf884.1920x1080.jpg?t=1781287930",
-      "file": "screenshots/004_screenshot.webp",
-      "sizeBytes": 86496,
-      "sha256": "75490eca4d34e0b6faaed59021775c7f6d5c9c8f8ec36269dd4d2fca058b0c47",
-      "lastWriteTimeUtc": "2026-06-13T12:44:18.904Z"
-    },
-    {
-      "role": "screenshot",
-      "title": "Screenshot 5",
-      "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_9d11502fa973580a82b532b25f1901b8425c28f9.1920x1080.jpg?t=1781287930",
-      "file": "screenshots/005_screenshot.webp",
-      "sizeBytes": 124056,
-      "sha256": "0239153c005c0ce3242ace37eebaf38319fe507ad321ed5dc45e93b5609a83ca",
-      "lastWriteTimeUtc": "2026-06-13T12:44:19.131Z"
-    },
-    {
-      "role": "screenshot",
-      "title": "Screenshot 6",
-      "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_17be75e178e3520c986504504ada8535de19cc0d.1920x1080.jpg?t=1781287930",
-      "file": "screenshots/006_screenshot.webp",
-      "sizeBytes": 78844,
-      "sha256": "f55b1ff14848dd6336d6b40c2fe1164269b52b49485b8808ec795322cdb736a2",
-      "lastWriteTimeUtc": "2026-06-13T12:44:19.319Z"
-    },
-    {
-      "role": "screenshot",
-      "title": "Screenshot 7",
-      "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_a1872c1c594ad4e5885d248516919d85243d9c1f.1920x1080.jpg?t=1781287930",
-      "file": "screenshots/007_screenshot.webp",
-      "sizeBytes": 51354,
-      "sha256": "681edfe0461652b0de1c67ee200c021cb979590806390157042cd1753e19e458",
-      "lastWriteTimeUtc": "2026-06-13T12:44:19.485Z"
-    },
-    {
-      "role": "screenshot",
-      "title": "Screenshot 8",
-      "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_7ccc894b8f95091f608fa012450549091cce2423.1920x1080.jpg?t=1781287930",
-      "file": "screenshots/008_screenshot.webp",
-      "sizeBytes": 75812,
-      "sha256": "df56ac60856fd73b68995f4e3c1ef416b4bfd41beb40ec1beab32c67164b2b1c",
-      "lastWriteTimeUtc": "2026-06-13T12:44:19.674Z"
-    },
-    {
-      "role": "screenshot",
-      "title": "Screenshot 9",
-      "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_13ec9b7b0ad4d154a99a8cbbc4a0c12c02d0421f.1920x1080.jpg?t=1781287930",
-      "file": "screenshots/009_screenshot.webp",
-      "sizeBytes": 45876,
-      "sha256": "f7609b8ec5430ab2358164f30c5cf4d70f21eee92f7fb92394634edd28289348",
-      "lastWriteTimeUtc": "2026-06-13T12:44:19.821Z"
-    },
-    {
-      "role": "screenshot",
-      "title": "Screenshot 10",
-      "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/945360/ss_41c3f20fa1faf5c9c7548b38a22c449bcfa9bc5e.1920x1080.jpg?t=1781287930",
-      "file": "screenshots/010_screenshot.webp",
-      "sizeBytes": 70206,
-      "sha256": "0ecd3bd632dacac0a6b31a447820da2de8b24cfba674c08cdb027afb9c6ef541",
-      "lastWriteTimeUtc": "2026-06-13T12:44:20.003Z"
-    },
-    {
-      "role": "video",
-      "title": "Detective and Viper",
-      "sourceUrl": "https://video.fastly.steamstatic.com/store_trailers/945360/1500936740/ab4e8e0e92771daaa6e83ee679314df2ee84d72d/1757443796/hls_264_master.m3u8?t=1757444890",
-      "file": "videos/001_detective-and-viper.mp4",
-      "sizeBytes": 1816045,
-      "sha256": "6641c98c7c3f71937588d64d29fbaa6457f8f59e9f460e7d31afcb6d564b0a06",
-      "lastWriteTimeUtc": "2026-06-13T13:44:50.892Z"
-    },
-    {
-      "role": "video-thumbnail",
-      "title": "Detective and Viper",
-      "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/257195243/2cb7c83c4a037599c78d5fef912da987dde4aedc/movie_232x130.jpg?t=1757444890",
-      "file": "video_thumbnails/001_detective-and-viper_thumb.webp",
-      "sizeBytes": 9190,
-      "sha256": "5d56d6d821eb53fe358de1996af6c85aeb69f403eca3770986fdea6054fd2322",
-      "lastWriteTimeUtc": "2026-06-13T12:44:20.160Z"
-    },
-    {
-      "role": "video-poster",
-      "title": "Detective and Viper",
-      "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/257195243/2cb7c83c4a037599c78d5fef912da987dde4aedc/movie_600x337.jpg?t=1757444890",
-      "file": "video_thumbnails/001_detective-and-viper_poster.webp",
-      "sizeBytes": 29240,
-      "sha256": "3afbeda0ea0903710cb16b2961ed60665f887abdc043ee75088e22804d048805",
-      "lastWriteTimeUtc": "2026-06-13T12:44:20.124Z"
-    },
-    {
-      "role": "video",
-      "title": "Phantom, Tracker, Noisemaker",
-      "sourceUrl": "https://video.fastly.steamstatic.com/store_trailers/945360/715586/1a15416526c3077d895d4b9a54ddbb35c2a2ddec/1750599426/hls_264_master.m3u8?t=1757444893",
-      "file": "videos/002_phantom-tracker-noisemaker.mp4",
-      "sizeBytes": 3009234,
-      "sha256": "b4ee45b50106dda818d96aa1f1398b39310d96dd8a40fe5caab502abbdde8f30",
-      "lastWriteTimeUtc": "2026-06-13T13:44:55.896Z"
-    },
-    {
-      "role": "video-thumbnail",
-      "title": "Phantom, Tracker, Noisemaker",
-      "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/257032139/316eca9d700911b9961ea8f724c54eb895ef557a/movie_232x130.jpg?t=1757444893",
-      "file": "video_thumbnails/002_phantom-tracker-noisemaker_thumb.webp",
-      "sizeBytes": 6688,
-      "sha256": "bc41dcbf2eae991992e2703139bc404e545c91db203d681d8ae07a90a56186f6",
-      "lastWriteTimeUtc": "2026-06-13T12:44:20.306Z"
-    },
-    {
-      "role": "video-poster",
-      "title": "Phantom, Tracker, Noisemaker",
-      "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/257032139/316eca9d700911b9961ea8f724c54eb895ef557a/movie_600x337.jpg?t=1757444893",
-      "file": "video_thumbnails/002_phantom-tracker-noisemaker_poster.webp",
-      "sizeBytes": 24166,
-      "sha256": "72d6cf76fbeb0d5b379803fb699f74a92016c3b6832d414763987f061f7a7039",
-      "lastWriteTimeUtc": "2026-06-13T12:44:20.271Z"
-    },
-    {
-      "role": "video",
-      "title": "The Fungle Launch",
-      "sourceUrl": "https://video.fastly.steamstatic.com/store_trailers/945360/622287/11e6bbffbc31caf648fc8f2ae1cb26b7254bcfc0/1750599424/hls_264_master.m3u8?t=1698177291",
-      "file": "videos/003_the-fungle-launch.mp4",
-      "sizeBytes": 2147579,
-      "sha256": "cfbb49b6cc7d76e521df44fab76f2bd8003f3d196c0355c874f00f6eba5a95ad",
-      "lastWriteTimeUtc": "2026-06-13T13:44:59.535Z"
-    },
-    {
-      "role": "video-thumbnail",
-      "title": "The Fungle Launch",
-      "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/256978016/movie.184x123.jpg?t=1698177291",
-      "file": "video_thumbnails/003_the-fungle-launch_thumb.webp",
-      "sizeBytes": 6816,
-      "sha256": "c1ca06f0bfc51c471a1e6d3f336de3c556ac3ee7b8ef3d99148032eea46a5dfd",
-      "lastWriteTimeUtc": "2026-06-13T12:44:20.419Z"
-    },
-    {
-      "role": "video-poster",
-      "title": "The Fungle Launch",
-      "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/256978016/movie.293x165.jpg?t=1698177291",
-      "file": "video_thumbnails/003_the-fungle-launch_poster.webp",
-      "sizeBytes": 14126,
-      "sha256": "826dc06f606c87b780a0eb03b388e3fa595c0e489c21b31f97aa87849dc52648",
-      "lastWriteTimeUtc": "2026-06-13T12:44:20.386Z"
-    },
-    {
-      "role": "video",
-      "title": "Hide n Seek",
-      "sourceUrl": "https://video.fastly.steamstatic.com/store_trailers/945360/528132/fc1a92c9ff1e4ec24d9a71a880db04f59c0e3ce0/1750599423/hls_264_master.m3u8?t=1684189580",
-      "file": "videos/004_hide-n-seek.mp4",
-      "sizeBytes": 2469314,
-      "sha256": "83f75484c9be53df110a4b574018daa21ac8ff1d29ed2224d231c64d0bf7b140",
-      "lastWriteTimeUtc": "2026-06-13T13:45:04.039Z"
-    },
-    {
-      "role": "video-thumbnail",
-      "title": "Hide n Seek",
-      "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/256924476/movie.184x123.jpg?t=1684189580",
-      "file": "video_thumbnails/004_hide-n-seek_thumb.webp",
-      "sizeBytes": 4030,
-      "sha256": "c8b7e310a4fd94153de767d917733debb2ec05ce2852dae01982cb886964c319",
-      "lastWriteTimeUtc": "2026-06-13T12:44:20.520Z"
-    },
-    {
-      "role": "video-poster",
-      "title": "Hide n Seek",
-      "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/256924476/movie.293x165.jpg?t=1684189580",
-      "file": "video_thumbnails/004_hide-n-seek_poster.webp",
-      "sizeBytes": 7790,
-      "sha256": "5ce9fa4ed367dfbe2f37c18ee67d2d86abc60c39d3400446104000faca67cf79",
-      "lastWriteTimeUtc": "2026-06-13T12:44:20.489Z"
-    },
-    {
-      "role": "video",
-      "title": "Release Trailer",
-      "sourceUrl": "https://video.fastly.steamstatic.com/store_trailers/945360/192206/43dae26ff3a8974bb7ec4a1550f0f6c4a692f988/1750599336/hls_264_master.m3u8?t=1684189588",
-      "file": "videos/005_release-trailer.mp4",
-      "sizeBytes": 1234505,
-      "sha256": "bdc50a02a34bad366ddc008aa0058243ed743b4fa6726f20b981b1d5b7532b83",
-      "lastWriteTimeUtc": "2026-06-13T13:45:06.621Z"
-    },
-    {
-      "role": "video-thumbnail",
-      "title": "Release Trailer",
-      "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/256733242/movie.184x123.jpg?t=1684189588",
-      "file": "video_thumbnails/005_release-trailer_thumb.webp",
-      "sizeBytes": 3128,
-      "sha256": "10cbe5a53a3e1e18f1dc7f6826895e43ccba06bda8d7a1b80da0273f35257e2f",
-      "lastWriteTimeUtc": "2026-06-13T12:44:20.623Z"
-    },
-    {
-      "role": "video-poster",
-      "title": "Release Trailer",
-      "sourceUrl": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/256733242/movie.293x165.jpg?t=1684189588",
-      "file": "video_thumbnails/005_release-trailer_poster.webp",
-      "sizeBytes": 6440,
-      "sha256": "ec495e8187d771f4bc58a056df567a975b4384b757a4eda0fc508325f21cb062",
-      "lastWriteTimeUtc": "2026-06-13T12:44:20.592Z"
-    },
-    {
-      "role": "description-image",
-      "title": "Description image 1",
-      "sourceUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/extras/6bbe13c19eac2f3aeaadddbc7bb40fdc.avif?t=1781287930",
-      "file": "description_images/001_6bbe13c19eac2f3aeaadddbc7bb40fdc.webp",
-      "sizeBytes": 12766,
-      "sha256": "9d7bd7d246f9106189a5cda3db25239bb9616127fa0a9bf4602dd16cbd966a7b",
-      "lastWriteTimeUtc": "2026-06-13T12:46:47.962Z"
-    },
-    {
-      "role": "description-image",
-      "title": "Description image 2",
-      "sourceUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/extras/76bef22d1af309e719a8f2b578ef63dc.avif?t=1781287930",
-      "file": "description_images/002_76bef22d1af309e719a8f2b578ef63dc.webp",
-      "sizeBytes": 11156,
-      "sha256": "8df2d8b022cec7251ab327fb1139c6887d967eaaf9d50a9369f30f36d3f9819b",
-      "lastWriteTimeUtc": "2026-06-13T12:46:48.044Z"
-    },
-    {
-      "role": "description-image",
-      "title": "Description image 3",
-      "sourceUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/extras/a00136b10c71226d0cb43d07d88efbf7.avif?t=1781287930",
-      "file": "description_images/003_a00136b10c71226d0cb43d07d88efbf7.webp",
-      "sizeBytes": 7522,
-      "sha256": "3f078b65ad20fb5e18620f84a193d7296fe74bfa0d90e8b8db701d0dda4989c7",
-      "lastWriteTimeUtc": "2026-06-13T12:46:48.110Z"
-    },
-    {
-      "role": "description-image",
-      "title": "Description image 4",
-      "sourceUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/945360/extras/c2ae1f9084de411d71d9c73d345d9622.avif?t=1781287930",
-      "file": "description_images/004_c2ae1f9084de411d71d9c73d345d9622.webp",
-      "sizeBytes": 18118,
-      "sha256": "050a6c8a6a76b92340c4cd5937c8ab048232fa7b9be98ab08f601be9852da745",
-      "lastWriteTimeUtc": "2026-06-13T12:46:48.198Z"
-    }
-  ],
-  "fetchedAt": "2026-06-13T12:48:58.1398990Z",
-  "source": "steam-store+steam-carousel+steam-achievements"
+﻿{
+    "appId":  945360,
+    "title":  "Among Us",
+    "type":  "game",
+    "requiredAge":  0,
+    "isFree":  false,
+    "shortDescription":  "An online and local party game of teamwork and betrayal for 4-15 players...in space!",
+    "detailedDescriptionHtml":  "\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"asset:description_images/001_6bbe13c19eac2f3aeaadddbc7bb40fdc.webp\" width=620 height=330 /\u003e\u003c/span\u003e\u003cbr\u003e\u003cbr\u003ePlay with 4-15 player online or via local WiFi as you attempt to prepare your spaceship for departure, but beware as one or more random players among the Crew are Impostors bent on killing everyone!\u003cbr\u003e\u003cbr\u003eOriginally created as a party game, we recommend playing with friends at a LAN party or online using voice chat. Enjoy cross-platform play between Android, iOS, PC, and console.\u003cbr\u003e\u003cbr\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"asset:description_images/002_76bef22d1af309e719a8f2b578ef63dc.webp\" width=600 height=124 /\u003e\u003c/span\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e Win by completing tasks to prepare the ship or ejecting all Impostors.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e React quickly to undo the Impostor\u0027s sabotages.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Check the Admin map and Security cameras to keep tabs on other Crewmates.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Report any dead bodies immediately to start discussion of who the suspected Impostor is.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Call emergency meetings to discuss suspicious behavior.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Vote to eject suspected Impostors.\u003c/li\u003e\u003c/ul\u003e\u003cbr\u003e\u003cbr\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"asset:description_images/003_a00136b10c71226d0cb43d07d88efbf7.webp\" width=600 height=125 /\u003e\u003c/span\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e Kill Crewmates and frame bystanders.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Pretend to run tasks to blend in with the crewmates.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Sneak through the vents to quickly move about the ship.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Use sabotages to cause chaos and divide the crew.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Close doors to trap victims and kill in private.\u003c/li\u003e\u003c/ul\u003e\u003cbr\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"asset:description_images/004_c2ae1f9084de411d71d9c73d345d9622.webp\" width=600 height=315 /\u003e\u003c/span\u003e\u003ch2 class=\"bb_tag\" \u003eFeatures\u003c/h2\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e Customization: Pick your color, hat, visor, skin, and pet.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Lots of game options: Add more Impostors, more tasks, different roles, and so much more!\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Different modes to choose from: Classic or Hide n Seek. \u003cbr\u003e\u003c/li\u003e\u003cli\u003e 4 different maps to play in: The Skeld, MIRA HQ, Polus, and the Airship.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Quickly find a game online from the host list.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e In-game text chat.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Rich Discord integration.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Cross-platform play between PC, console, Android, and iOS!\u003c/li\u003e\u003c/ul\u003e",
+    "aboutTheGameHtml":  "\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"asset:description_images/001_6bbe13c19eac2f3aeaadddbc7bb40fdc.webp\" width=620 height=330 /\u003e\u003c/span\u003e\u003cbr\u003e\u003cbr\u003ePlay with 4-15 player online or via local WiFi as you attempt to prepare your spaceship for departure, but beware as one or more random players among the Crew are Impostors bent on killing everyone!\u003cbr\u003e\u003cbr\u003eOriginally created as a party game, we recommend playing with friends at a LAN party or online using voice chat. Enjoy cross-platform play between Android, iOS, PC, and console.\u003cbr\u003e\u003cbr\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"asset:description_images/002_76bef22d1af309e719a8f2b578ef63dc.webp\" width=600 height=124 /\u003e\u003c/span\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e Win by completing tasks to prepare the ship or ejecting all Impostors.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e React quickly to undo the Impostor\u0027s sabotages.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Check the Admin map and Security cameras to keep tabs on other Crewmates.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Report any dead bodies immediately to start discussion of who the suspected Impostor is.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Call emergency meetings to discuss suspicious behavior.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Vote to eject suspected Impostors.\u003c/li\u003e\u003c/ul\u003e\u003cbr\u003e\u003cbr\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"asset:description_images/003_a00136b10c71226d0cb43d07d88efbf7.webp\" width=600 height=125 /\u003e\u003c/span\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e Kill Crewmates and frame bystanders.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Pretend to run tasks to blend in with the crewmates.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Sneak through the vents to quickly move about the ship.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Use sabotages to cause chaos and divide the crew.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Close doors to trap victims and kill in private.\u003c/li\u003e\u003c/ul\u003e\u003cbr\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"asset:description_images/004_c2ae1f9084de411d71d9c73d345d9622.webp\" width=600 height=315 /\u003e\u003c/span\u003e\u003ch2 class=\"bb_tag\" \u003eFeatures\u003c/h2\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e Customization: Pick your color, hat, visor, skin, and pet.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Lots of game options: Add more Impostors, more tasks, different roles, and so much more!\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Different modes to choose from: Classic or Hide n Seek. \u003cbr\u003e\u003c/li\u003e\u003cli\u003e 4 different maps to play in: The Skeld, MIRA HQ, Polus, and the Airship.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Quickly find a game online from the host list.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e In-game text chat.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Rich Discord integration.\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Cross-platform play between PC, console, Android, and iOS!\u003c/li\u003e\u003c/ul\u003e",
+    "supportedLanguagesHtml":  "English, Portuguese - Brazil, Spanish - Latin America, Spanish - Spain, Korean, Russian, French, Italian, German, Dutch, Japanese, Portuguese - Portugal, Simplified Chinese, Traditional Chinese",
+    "pcRequirements":  {
+                           "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows 10 x32bit\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e INTEL i3-4330\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 1 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e INTEL HD Graphics 4600\u003c/li\u003e\u003c/ul\u003e",
+                           "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows 10 x64bit\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e INTEL i3-4330\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 4 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e Nvidia GTX 650\u003c/li\u003e\u003c/ul\u003e"
+                       },
+    "macRequirements":  [
+
+                        ],
+    "linuxRequirements":  [
+
+                          ],
+    "dlc":  null,
+    "website":  "http://innersloth.com/gameAmongUs.php",
+    "developers":  "Innersloth",
+    "publishers":  "Innersloth",
+    "releaseDate":  {
+                        "coming_soon":  false,
+                        "date":  "16 Nov, 2018"
+                    },
+    "genres":  "Casual",
+    "categories":  [
+                       "Multi-player",
+                       "PvP",
+                       "Online PvP",
+                       "LAN PvP",
+                       "Co-op",
+                       "Online Co-op",
+                       "LAN Co-op",
+                       "Cross-Platform Multiplayer",
+                       "Steam Achievements",
+                       "Full controller support",
+                       "Steam Trading Cards",
+                       "In-App Purchases",
+                       "Remote Play on Phone",
+                       "Remote Play on Tablet",
+                       "Family Sharing"
+                   ],
+    "platforms":  {
+                      "windows":  true,
+                      "mac":  false,
+                      "linux":  false
+                  },
+    "metacritic":  {
+                       "score":  85,
+                       "url":  "https://www.metacritic.com/game/pc/among-us?ftag=MCD-06-10aaa1f"
+                   },
+    "recommendations":  {
+                            "total":  645597
+                        },
+    "reviewsSummary":  null,
+    "newsItems":  [
+                      {
+                          "gid":  "1835236783571295",
+                          "title":  "Among Us Turns 8! | New Demo \u0026 Cosmetic 🥳",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1835236783571295",
+                          "is_external_url":  true,
+                          "author":  "Dors",
+                          "contents":  "[p]DO YOU KNOW WHAT TODAY IS CREWMATES?![/p][p][/p][p align=\"start\"]It’s time to celebrate! Today, Among Us is the big age of 8 years old. That means our spacebeans are allowed to…. well, still betray you and take out the trash. Keep reading to see the fun and exciting ways we’re going to celebrate the big day.[/p][p][/p][p][img src=\"{STEAM_CLAN_IMAGE}/33836086/3233894b015d4b1b286c6b162017152f1e72532f.png\"][/img][/p][p][/p][h2][b]Among Us Story: On Guard Demo[/b][/h2][previewyoutube=\"QkQrwf8sfaY;full\"][/previewyoutube][p][/p][p align=\"start\"]Are you ready for new adventure in the Among Us universe? No? WELL TOO BAD! [i](Who says no to free presents anyway?)[/i] As a birthday treat, [b]we’ve released the demo[/b] for our BRAND NEW GAME, [b]Among Us Story: On Guard[/b]![/p][p][/p][p align=\"start\"]In this narrative adventure, you’ll be joining MIRA R\u0026D as the highly trained Guard. It will be up to you shed light on secrets aboard the ship, and learn about your fellow Crewmates who are [i]absolutely not[/i] Impostors. And even [i]if[/i] one of them did commit a murder, you’re still on the hook for your own tasks. Don’t worry, it’s all in the employee handbook…[/p][p][/p][p align=\"start\"][url=\"https://store.steampowered.com/app/2842310\"]Try out the demo today[/url] before it\u0027s gone on June 22nd![/p][p align=\"start\"][/p][h2][b]Lucky Number 8[/b][/h2][p align=\"start\"][img src=\"{STEAM_CLAN_IMAGE}/33836086/daa7e17f48e03c86ca2311d93c55c5d7a0d30609.png\"][/img][/p][p align=\"start\"]This year, in honor of putting 8 candles on the pizza-cake, we’re giving you special gift! Log in to Among Us between now and [b]July 15th, 06:59 UTC[/b] to receive the [b]Lucky Number 8 Hat[/b]. This new piece of headwear is inspired by hat of the Guard from our upcoming game, [b]Among Us Story: On Guard.[/b][/p][p align=\"start\"][/p][h2][b]Bean Stream[/b][/h2][p align=\"start\"]Last year we held an awesome stream where we chilled with you, Victoria, and our pizza-cake making Impostor! Well, this year we have another stream featuring news, guests, and of course a lil dash of chaos. And the cool news is that you can watch it right now![/p][previewyoutube=\"bgpu2h2xch0;full\"][/previewyoutube][p align=\"start\"]We can’t thank you enough for being a part of our amazing crew. Seeing our space beans grow up and seeing all the love you have for them always warms our hearts. We wouldn’t be here without you. \u003c3[/p][p][/p][h2][b]Cosmicubes Galore[/b][/h2][p][/p][p align=\"start\"]With all of this excitement going on you may have missed that we dropped 2 new Cosmicubes. First up is our [b]Showbiz Cosmicube[/b] themed after the [b]Among Us Animated Show[/b]. It’s available right now for [b]4,000 Beans[/b].[/p][p][/p][p align=\"start\"]Our second Cosmicube is the space themed [b]Cosmic Cosmicube[/b]! This one is available for [b]70 Stars[/b]. Both of them are here as permanent addition to the cosmetic lineup. You can find all the details on those here.[/p][p][/p][p align=\"start\"]As always, if you have any trouble or spot a bug, remember to send us a message at our [url=\"https://innersloth.zendesk.com/hc/en-us/requests/new\"]helpdesk[/url].[/p][p][/p][p][img src=\"{STEAM_CLAN_IMAGE}/33836086/e5b8d6f1bc7b554860da0867fa83d9fe2f39d462.png\"][/img][/p][p align=\"start\"]It wouldn’t feel quite right to end the celebrating here. You know what would spice it up? Really fun community art! Let’s get our visor’s on some of your creations below.[/p][p align=\"start\"]Our first piece is from [b]Kim in our [/b][url=\"https://discord.com/invite/innersloth\"]official Discord[/url]! This might be a spoiler for the show so avert your eyes (but come back and feast on this once you’ve seen the show).[/p][p][img src=\"https://www.innersloth.com/wp-content/uploads/2026/06/kim-henry-1024x616.png\" style=\"max-height: 1e+06px; box-sizing: inherit; height: auto; max-width: 100%; border: 0px; vertical-align: bottom; margin: 0px 0px 14px; border-radius: inherit;\"][/img][/p][p align=\"start\"]Our next piece I feel that I have an obligation to post as one of many Blue and Lime ships. Is it Blime? Is it Lume? I’m partial to sublime. This piece is by [url=\"https://x.com/justpinkiiie/status/2063808206510453060?s=20\"]Pinkie over on Twitter[/url].[/p][p][/p][p][img src=\"{STEAM_CLAN_IMAGE}/33836086/ea4e6c2040ee4592cf4d6c66aadb8a3b91089cd3.jpg\"][/img][/p][p align=\"start\"]And why have one ship when you could have more? Who doesn’t love Black and Cyan?! Or the dynamic cooking duo of Yellow and Brown? [url=\"https://x.com/CreativeHandle_/status/2064867738175103240?s=20\"]CreativeApple on twitter[/url] cooked up a fun piece.[/p][p][/p][p][img src=\"{STEAM_CLAN_IMAGE}/33836086/17f3d13617e9f738bf2c5f5c4a8ab54645528c5c.jpg\"][/img][/p][p align=\"start\"]We really love the pieces y’all come up with. BIG respect to the time and effort you put into your creations. You make this community Crewmate (and the whole team) proud![/p][p][/p][p]Off to try my new hat,[/p][p][/p][p align=\"start\"]Dors[/p][p][img src=\"{STEAM_CLAN_IMAGE}/33836086/1fbadaf92bea2c5244decd770ceaca08cd2f8c85.png\"][/img][/p]",
+                          "feedlabel":  "Community Announcements",
+                          "date":  1781542815,
+                          "feedname":  "steam_community_announcements",
+                          "feed_type":  1,
+                          "appid":  945360,
+                          "tags":  [
+                                       "mod_reviewed",
+                                       "ModAct_871423085_1781546938_0",
+                                       "mod_require_rereview"
+                                   ]
+                      },
+                      {
+                          "gid":  "1834602721192823",
+                          "title":  "It\u0027s not an Imposter, it\u0027s a spin-off: multiplayer backstabbing game Among Us has spawned a single player detective story",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/Rock, Paper, Shotgun/1834602721192823",
+                          "is_external_url":  true,
+                          "author":  "",
+                          "contents":  "\u003cimg src=\"https://assetsio.gnwcdn.com/among-us-stories-on-guard.jpg?width=690\u0026quality=85\u0026format=jpg\u0026auto=webp\" /\u003e \u003cp\u003e\nGood news, people who suck at getting away with murder in quintessential pandemic lockdown game \u003ca href=\"https://www.rockpapershotgun.com/games/among-us\"\u003eAmong Us\u003c/a\u003e. Developers Innersloth have announced a single player detective spin-off, Among Us Story: On Guard, in which you play a spaceship security guy trying to catch an Imposter – possibly, more than one Imposter - before they gut the whole crew. You\u0027ll need to prove your own innocence, too.\u003c/p\u003e \u003cp\u003e\u003ca href=\"https://www.rockpapershotgun.com/its-not-an-imposter-its-a-spin-off-multiplayer-backstabbing-game-among-us-is-becoming-a-single-player-detective-story\"\u003eRead more\u003c/a\u003e\u003c/p\u003e",
+                          "feedlabel":  "Rock, Paper, Shotgun",
+                          "date":  1780708285,
+                          "feedname":  "Rock, Paper, Shotgun",
+                          "feed_type":  0,
+                          "appid":  945360
+                      },
+                      {
+                          "gid":  "1834602721192450",
+                          "title":  "The Among Us Animated Show Arrives! | Emergency Meeting #42",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1834602721192450",
+                          "is_external_url":  true,
+                          "author":  "Dors",
+                          "contents":  "[p]IT’S FINALLY HERE CREWMATES!![/p][p][/p][p align=\"start\"]At LOOOOOOOOOONG last, we can finally say the words so many of you have waited to hear:[/p][p align=\"start\"][/p][h2][b]THE AMONG US ANIMATED SHOW IS OUT NOW![/b][/h2][p align=\"start\"][/p][p align=\"start\"]The entire show is available on Paramount+, with the first episode free now on their YouTube page.[/p][previewyoutube=\"XBW8vsscafM;full\"][/previewyoutube][p align=\"start\"][/p][p align=\"start\"]We’ve been so amazed by the work of CBS, Owen Dennis, and Titmouse. We couldn’t have gotten here without our producers Carl Neisser, and of course, Fortebass and Puffballs. We hope you love the show as much as we do! [url=\"https://www.youtube.com/watch?v=gDq4g_jzmGg\"]Watch the first episode NOW on YouTube![/url][/p][previewyoutube=\"gDq4g_jzmGg;full\"][/previewyoutube][p][/p][p align=\"start\"]Keep reading further down to get the details on the new Showbiz Cosmicube.[/p][p align=\"start\"]Tell us what you think about the show on [url=\"https://x.com/AmongUsGame?s=20\"]Twitter[/url], [url=\"https://bsky.app/profile/amongus.innersloth.com\"]Bluesky[/url], [url=\"https://www.instagram.com/innerslothdevs/\"]Instagram[/url], [url=\"https://www.facebook.com/InnerSloth/\"]Facebook[/url], and [url=\"https://www.tiktok.com/@amongus\"]TikTok[/url].[/p][p][/p][p][img src=\"{STEAM_CLAN_IMAGE}/33836086/9ce6b0a32df65dd11cb47d49adbcadde896ca81c.png\"][/img][/p][p][/p][h2][b]Story Time[/b][/h2][previewyoutube=\"QkQrwf8sfaY;full\"][/previewyoutube][p align=\"start\"][/p][p align=\"start\"]Guess who’s working on a brand new game! WE ARE! Innersloth is happy to present our new narrative adventure, [url=\"http://store.steampowered.com/app/2842310\"]Among Us Story: On Guard[/url].[/p][p align=\"start\"][/p][p align=\"start\"]As a part of MIRA R\u0026D you’ll be stepping into our new Crewmate training program as The Guard. In this story game, there are tasks that need doing, secrets that need revealing, and new Crewmates to learn about. There’s probably no murder to worry about. That would be against company policy. Don’t worry, we’ll cover the rest once you’re on the job.[/p][p align=\"start\"][/p][p align=\"start\"]You’ll be able to get hands on with the game with a demo releasing on Among Us’s 8th birthday, [b]June 15th 2026[/b]!\n\nAnd if you like the sound of that, we have just the thing to keep you grooving when the demo drops! You can listen to the the [url=\"https://found.ee/among-us-story\"]original soundtrack[/url] starting on the 15th too![/p][p align=\"start\"][/p][p align=\"start\"]For now, [url=\"http://store.steampowered.com/app/2842310\"]wishlist the game on Steam[/url] while you wait for the demo.[/p][p][/p][p][img src=\"{STEAM_CLAN_IMAGE}/33836086/d6c6faa405a581cc9377f15a10c9601c9a9e2ea9.png\"][/img][/p][p][/p][h2][b]Showbiz Cosmicube[/b][/h2][p align=\"start\"][img src=\"{STEAM_CLAN_IMAGE}/33836086/8c79bba3da432a883ffea98c575670637e3ab693.png\"][/img][/p][p align=\"start\"]Once you’ve watched the show enough to memorize all the lines, why not pop into Among Us and continue all the mischief? The new [b]Showbiz Cosmicube[/b] is available right now via the in-game store for [b]4,000 Beans[/b]. Themed after the show, you’ll be able to rock the fits of your favorite character(s). Once you’ve purchased, activate the Cosmicube to start earning pods for: [/p][list][*][p]Brown’s Apron Skin[/p][/*][*][p]Line Cook Hat[/p][/*][*][p]White’s Polo Skin[/p][/*][*][p]Lime’s Bandana Hat[/p][/*][*][p]Lines of Wisdom Visor[/p][/*][*][p]Lime’s Work Gear Skin[/p][/*][*][p]Blue’s Mirror Hat[/p][/*][*][p]Blue’s Labcoat Skin[/p][/*][*][p]Red’s Captain’s Hat[/p][/*][*][p]Red’s Uniform Skin[/p][/*][*][p]Purple’s Cap[/p][/*][*][p]Purple’s Uniform Skin[/p][/*][*][p]Orange’s Jacket Skin[/p][/*][*][p]Black’s Eyeliner Visor[/p][/*][*][p]Black’s Choker Skin[/p][/*][*][p]Cyan’s Headband[/p][/*][*][p]Cyan’s Tie-dye Skin[/p][/*][*][p]Green’s Cap[/p][/*][*][p]Green’s Hoodie Skin[/p][/*][*][p]Yellow’s Apron Skin[/p][/*][*][p]Trust Ball Pet[/p][/*][*][p]It’s Right Behind You! Nameplate[/p][/*][/list][p align=\"start\"]Fire up a lobby with your friends and recreate scenes from the show with the map decorations placed around The Skeld. Just remember to update to [b]v17.4.0[/b] so you can get the Cosmicube and decorations. And don’t worry, these cosmetics will be in the store [i]FOREVER[/i] so you have plenty of time to gather your Beans.[/p][p][/p][h2][b]Cosmic Cosmicube[/b][/h2][p align=\"start\"][img src=\"{STEAM_CLAN_IMAGE}/33836086/d6eb77b757894f415ef057ce775ad5df7e4dc523.png\"][/img][/p][p align=\"start\"]If you thought the first announcement was out of this world, take a gander at our [b]BRAND NEW[/b] space themed [b]Cosmic Cosmicube[/b] for [b]70 Stars[/b]. Let your Crewmate take a trip in a little rocket ship, or chill with an Alien Space Cat. Just like space, this Cosmicube will go on forever! Once purchased and activated, start earning Pods so you can get:[/p][list][*][p]Crash Landing Hat[/p][/*][*][p]Feeling Extra Hat[/p][/*][*][p]Get Galactic Nameplate[/p][/*][*][p]Heavy Impact Hat[/p][/*][*][p]Hubble-Bubble Visor[/p][/*][*][p]I’m Seeing Stars Visor[/p][/*][*][p]I’ve Seen Too Much Visor[/p][/*][*][p]In Your Orbit Hat[/p][/*][*][p]It Actually is Rocket Science Hat[/p][/*][*][p]Light Up Your Life Hat[/p][/*][*][p]Nebulous Nameplate[/p][/*][*][p]Put a Ring on it Hat[/p][/*][*][p]Rocket Man Skin[/p][/*][*][p]Solar Advisor Visor[/p][/*][*][p]Space Scream Hat[/p][/*][*][p]Spacecat – Alien Pet[/p][/*][*][p]Spaced Out Visor[/p][/*][*][p]SPF Warning Hat[/p][/*][*][p]Stardusted Hat[/p][/*][*][p]Stargazer Hat[/p][/*][*][p]Take Me to Your Leader Hat[/p][/*][*][p]Taking Off Nameplate[/p][/*][*][p]To Infinity Visor[/p][/*][*][p]UR A STAR Hat[/p][/*][*][p]Waxing On and On Hat[/p][/*][/list][p align=\"start\"]Just remember that even though they are spaced themed, these cosmetics don’t protect you from the vast emptiness of space or ejections! We hope you love the new drip for your Crewmates and all the taskmaxxing they’ll accomplish [strike]if the Impostor doesn’t get them first[/strike].[/p][p align=\"start\"][/p][p align=\"start\"][b]If you need a reminder on how to use Cosmicubes, check out our [url=\"https://innersloth.zendesk.com/hc/en-us/articles/13597476135700-How-do-I-use-Cosmicubes-and-get-cosmetics\"]handy helpdesk article[/url].[/b] If you have questions or run into any bugs, remember to send us a [url=\"https://innersloth.zendesk.com/hc/en-us/requests/new\"]helpdesk ticket[/url]![/p][p align=\"start\"][/p][p align=\"start\"][i]Woooooooooooh[/i] – that’s a whole lot of stuff!! We can’t wait to hear what all of you think about the new Cosmicubes and, of course, Among Us Story: On Guard. And if you haven’t already, remember to watch the Among Us Animated Show on Paramount+.[/p][p align=\"start\"][/p][p align=\"start\"]Off to read the R\u0026D employee handbook,[/p][p align=\"start\"][/p][p align=\"start\"]Dors[/p][p][img src=\"{STEAM_CLAN_IMAGE}/33836086/1fbadaf92bea2c5244decd770ceaca08cd2f8c85.png\"][/img][/p]",
+                          "feedlabel":  "Community Announcements",
+                          "date":  1780701447,
+                          "feedname":  "steam_community_announcements",
+                          "feed_type":  1,
+                          "appid":  945360
+                      },
+                      {
+                          "gid":  "1834602721192420",
+                          "title":  "The Among Us Show is OUT NOW! 📺",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1834602721192420",
+                          "is_external_url":  true,
+                          "author":  "Dors",
+                          "contents":  "[p]EMERGENCY MEEEEEEETING!!! 🗣️📢[/p][p][/p][p align=\"start\"]The Among Us animated show is OUT NOW on Paramount+, and the [url=\"https://www.youtube.com/watch?v=gDq4g_jzmGg\"]first episode is FREE on YouTube[/url]. I’m so nervous-excited I’m going to smash my visor against the airlock.[/p][previewyoutube=\"gDq4g_jzmGg;full\"][/previewyoutube][p align=\"start\"][/p][p align=\"start\"]This is a show about teamwork and betrayal. Crewmates of a ship transporting Ore+ across the galaxy must root out an Impostor in their midst before they fall victim to its villainous designs.[/p][p align=\"start\"][/p][p align=\"start\"]We’re thrilled to have produced this in partnership with CBS Studios, with Owen Dennis (Infinity Train) as showrunner and Titmouse as the animation studio. Plus, the voices of Yvette Nicole Brown, Kimiko Glenn, Liv Hewson, Ashley Johnson, Wayne Knight, Phil LaMarr, Randall Park, Dan Stevens, Debra Wilson, Elijah Wood, and Patton Oswalt! Thank you. You’re all Crewmates to us. We promise never to vote you out in an Emergency Meeting. ❤️[/p][p align=\"start\"][/p][p align=\"start\"][img src=\"{STEAM_CLAN_IMAGE}/33836086/65292ca1245f2f757abfe33d6fc3b69e0389e641.png\"][/img][/p][p align=\"start\"]A lot of love and hardwork was put into this, and it’s honestly insane to us that Among Us has made it to this point. An animated show!!! Who would’ve guessed??? It’s so rare to see a game, let alone an indie game, get made into something like this. We’re eternally grateful for your support – we only could do it because you played Among Us. Thank you thank you thank you thank you.[/p][p align=\"start\"][/p][p align=\"start\"]Please give the show a watch and let us know what you think! We hope you love it.[/p][p align=\"start\"][/p][p align=\"start\"]If you want to talk about it, hop onto our official Discord or poke me on our official social media channels:[/p][list][*][p][url=\"https://twitter.com/AmongUsGame\"]Twitter/X[/url][/p][/*][*][p][url=\"https://bsky.app/profile/amongus.innersloth.com\"]Bluesky[/url][/p][/*][*][p][url=\"https://www.tiktok.com/@amongus\"]TikTok[/url][/p][/*][*][p][url=\"https://www.instagram.com/theamongusdevs/\"]Instagram[/url][/p][/*][/list][p align=\"start\"]Okay I’m gonna go watch episode 1 on YouTube on repeat so we get 1 billion views or something.[/p][p align=\"start\"][/p][p align=\"start\"]BYE,[/p][p align=\"start\"][/p][p align=\"start\"]Victoria[/p][p][img src=\"{STEAM_CLAN_IMAGE}/33836086/3c7bb7a20f092646c8193e0fa669c30d1a1d7b11.png\"][/img][/p]",
+                          "feedlabel":  "Community Announcements",
+                          "date":  1780700803,
+                          "feedname":  "steam_community_announcements",
+                          "feed_type":  1,
+                          "appid":  945360
+                      },
+                      {
+                          "gid":  "1834602721192232",
+                          "title":  "Among Us Story: On Guard 🔪 The Reveal!",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1834602721192232",
+                          "is_external_url":  true,
+                          "author":  "Dors",
+                          "contents":  "[p align=\"start\"]New game, who dis?[/p][p align=\"start\"]Ready to experience Among Us in a whole new way? Welcome to[b] Among Us Story: On Guard![/b][/p][previewyoutube=\"QkQrwf8sfaY;full\"][/previewyoutube][p align=\"start\"]For ages, you’ve asked us for [i]more.[/i] More stories about the Crewmates! More lore! More ways to play! More ways to live life in this universe, but single player. We wanted to see what that would be like too.[/p][p][/p][p align=\"start\"][b]So good news: [/b]You can [url=\"https://store.steampowered.com/app/2842310\"][b]wishlist[/b][/url] the game now.[/p][p align=\"start\"][b]Even better news: [/b]You can [b]play the demo on June 15[/b] as part of our Among Us birthday celebration! It’s our big present to you. 🎁[/p][p][/p][p]And if you like the sound of that, we have just the thing to keep you grooving when the demo drops! You can listen to the [url=\"https://found.ee/among-us-story\"]original soundtrack[/url] starting on the 15th too![/p][p][/p][p align=\"start\"]Interested in hearing more about the game? Okay![/p][p][/p][p][img src=\"{STEAM_CLAN_IMAGE}/33836086/50400ac04dce61958ef1c4bc55b6d365308be3e4.png\"][/img][/p][p align=\"start\"]Welcome to MIRA Research \u0026 Development! Take a step into our simulator to start the new Crewmate training program. Your first task? Become Guard! You’re in charge of shipwide security and ensuring the crew gets to their destination safely. Everything will be fine, provided an Impostor doesn’t start murdering Crewmates! But just hypothetically, if that does happen? You’ll need to prove your innocence and find the Impostor before it can get to the rest of the crew… and you. We advise solving murders The MIRA Way!   [/p][list][*][p][b]M – eet the Among Us universe in a whole new way.[/b] Step into the world of the Guard, tasked with maintaining security on the ship. You’re the first and last line of defense against a universe that wants to kill the crew.  [/p][/*][*][p][b]I – dentify the Impostor. [/b]You’ve trained for this. Murders? False accusations? This might be difficult for someone who [i]hasn’t [/i]already been honed into a tool of vengeance and detection by years of Emergency Meetings. Admin didn’t raise, emotionally neglect, and eventually abandon a [i]quitter[/i]. [/p][/*][*][p][b]R – eap the rewards of your investigation.[/b] Who is an Impostor (there might be more than you think) and which Crewmates can you trust? Inside the simulation, explore three unique endings that are paramount to improving safety for the good of all Crewmates. Probably. [/p][/*][*][p][b]A – nd complete tasks. [/b]As per the Crewmate Handbook you definitely agreed to, murder and murder accusations do not absolve you of your workplace duties. Complete tasks to progress through your mission and discover clues to build your case against the Impostor. [/p][/*][/list][p][/p][h3][b]And to get ahead of some frequently asked questions…[/b][/h3][list][*][p][b]What platforms will this be available on?[/b]\nRight now our plans are for PC and the Nintendo Switch and Nintendo Switch 2! It’s likely we’ll have more in the future, but don’t worry about it for now. You have much bigger, more murder-y things to worry about first.[/p][/*][*][p][b]How much will this cost?[/b]\nYour life. And some money. But we haven’t nailed down a price yet.[/p][/*][*][p][b]Who is the Impostor?[/b]\nThere are no Impostors.[/p][/*][*][p][b]Will this be a super long game?[/b]\nNo! While there will be different endings and you may want to replay it, we also want to respect your time. As a single player narrative game it’ll be a chaotic, silly, and beansized experience for your enjoyment.[/p][/*][/list][p][/p][p][img src=\"{STEAM_CLAN_IMAGE}/33836086/9ddfba6a81492311a59172d9059bcc82eeae70a0.png\"][/img][/p][p align=\"start\"]Meet a colorful cast of Crewmates and find out which one of them puts the “I” in “Impostor”. Have fun getting to know everyone! (Try to ignore that any of them might be plotting your death.)[/p][list][*][p][b]Operator: [/b]That’s you! Help MIRA with their new Crewmate training program as you navigate life as Guard.[/p][/*][*][p][b]Management: [/b]Your lovable, caring, committed, always-approachable boss who might possibly have written this description.[/p][/*][*][p][b]Guard:[/b] A hard-boiled private eye you control as part of the simulation. Cynical and suspicious – exactly who you need in charge of shipwide security.[/p][/*][*][p][b]Cook: [/b]Sweet, innocent, kind, and just a few days from retirement. Definitely not about to get murdered by an Impostor…[/p][/*][*][p][b]Scientist: A[/b]lways going on about plants and science and stuff. Just be careful they don’t talk you… to death![/p][/*][*][p][b]Engineer: [/b]Wrote a long bullet-pointed summary of their skills and responsibilities , but we didn’t read it.[/p][/*][*][p][b]Doctor: [/b]When not working, they’re a streamer. (Sometimes even when they are working, they’re a streamer.)[/p][/*][*][p][b]Captain: [/b]Not really into confrontation, but they are into care-frontation! \u003c3[/p][/*][/list][p align=\"start\"]Aaand that’s it! If you want to keep up-to-date on our latest announcements, you can find more on our [url=\"https://discord.com/invite/innersloth\"]official Discord[/url] or any of these Among Us Story accounts:[/p][list][*][p][url=\"https://x.com/amongusstory\"]Twitter/X[/url][/p][/*][*][p][url=\"https://bsky.app/profile/amongusstory.bsky.social\"]Bluesky[/url][/p][/*][*][p][url=\"https://www.tiktok.com/@amongus\"]TikTok[/url][/p][/*][*][p][url=\"https://www.instagram.com/theamongusdevs/\"]Instagram[/url][/p][/*][/list][p align=\"start\"]I finally am free from the chains of secrecy. I’m so glad I could tell you what we’ve been working on after sooo long. HOPE YOU ENJOY! DON’T FORGET TO [url=\"https://store.steampowered.com/app/2842310\"]WISHLIST[/url] AND TRY OUT THE DEMOOOO ON JUNE 15 OK!!!![/p][p][/p][p align=\"start\"]Not an Impostor,[/p][p][/p][p align=\"start\"]Victoria[/p][p][img src=\"{STEAM_CLAN_IMAGE}/33836086/3c7bb7a20f092646c8193e0fa669c30d1a1d7b11.png\"][/img][/p]",
+                          "feedlabel":  "Community Announcements",
+                          "date":  1780698000,
+                          "feedname":  "steam_community_announcements",
+                          "feed_type":  1,
+                          "appid":  945360
+                      }
+                  ],
+    "achievements":  {
+                         "total":  33,
+                         "items":  [
+                                       {
+                                           "apiName":  "kills_first",
+                                           "displayName":  "A TASTE FOR IT",
+                                           "description":  "Get your first kill",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/28d77d90c1978829c159eae6fe799a191c34be83.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/c56b0ced741a29491e86e63e2399e3d161f7aa30.jpg"
+                                       },
+                                       {
+                                           "apiName":  "kills_easy",
+                                           "displayName":  "KILLER",
+                                           "description":  "Get 5 total kills",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/f2b99effc0a886290c7b86e1d13bf8fb8df9552c.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/e3c2d55d9d2ebb6b918c443aee7ff9807c8db9d6.jpg"
+                                       },
+                                       {
+                                           "apiName":  "kills_medium",
+                                           "displayName":  "ASSASSIN",
+                                           "description":  "Get 50 total kills",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/c56c94c6016eaa474ba59118c0c70b814156fe20.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/3bfa10b9461b7c4dcbe5d1a75c4973d8034c6fce.jpg"
+                                       },
+                                       {
+                                           "apiName":  "kills_hard",
+                                           "displayName":  "SCOURGE",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/6a0dd8539784b692366028f41774673397d04c13.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/afbceff91aaf5f9370fad840d7bab3f377af2670.jpg"
+                                       },
+                                       {
+                                           "apiName":  "task_complete_easy",
+                                           "displayName":  "INTERN",
+                                           "description":  "Complete 10 total tasks",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/11d6a7da14eaa7036982b4375ea7caba288339ce.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/92bbf0ca8e83c2e5aea0e22ea28fa786fb9219a9.jpg"
+                                       },
+                                       {
+                                           "apiName":  "task_complete_medium",
+                                           "displayName":  "MANAGER",
+                                           "description":  "Complete 100 total tasks",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/fb8ff2604057a9cc13acf74166c52ff945354803.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/b7e20af007f9f24bd749e233a49195a403d0d990.jpg"
+                                       },
+                                       {
+                                           "apiName":  "task_complete_hard",
+                                           "displayName":  "TASKMASTER",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/c7782fd07440b564df902fb0d80daa292f06ee9e.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/29745d3324fb6675789cb0104aeefa84eebde23d.jpg"
+                                       },
+                                       {
+                                           "apiName":  "wins_skeld",
+                                           "displayName":  "A SHIP ADRIFT",
+                                           "description":  "Win 3 games on Skeld",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/1c1b96b03b075eb3b42e368ebbdf257e19ef9087.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/3fe2fa8522f171ba3d14faaccd014015ff2d91c2.jpg"
+                                       },
+                                       {
+                                           "apiName":  "wins_mira",
+                                           "displayName":  "CORPORATE LOCKDOWN",
+                                           "description":  "Win 3 games on MIRA",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/144c10dcf276eaffe8a7c03553c7d8a63c0de116.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/db5fd29f80f19e3a4d7b017a12953f6fbfcfb9b0.jpg"
+                                       },
+                                       {
+                                           "apiName":  "wins_polus",
+                                           "displayName":  "UNEARTHED",
+                                           "description":  "Win 3 games on Polus",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/4d3d812ce857674d5013fb8c499bfacfd063277c.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/df802d7bdec5147ddfbe9f88dd150f44fa0ff0b8.jpg"
+                                       },
+                                       {
+                                           "apiName":  "wins_airship",
+                                           "displayName":  "TOPPAT CREWMATES",
+                                           "description":  "Win 3 games on The Airship",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/78c3fd6c3f272601db4023d546f4e0879c3880c3.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/7c01e1b09e9eaa6aa0134cd98c36fed3fc6922a7.jpg"
+                                       },
+                                       {
+                                           "apiName":  "survive_two_impostors",
+                                           "displayName":  "NEVER SUSPECT A THING",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/9c5048637cd0aecf7f9fcd4ac4f46c0d0c1d7541.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/651c64d193b6fbb83f29774af46b5e7ce6505309.jpg"
+                                       },
+                                       {
+                                           "apiName":  "win_all_tasks",
+                                           "displayName":  "A WELL-OILED MACHINE",
+                                           "description":  "Win a game by completing all tasks as a crewmate",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/6d277eed63e041a20b28e090f8d258f84bb71daf.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/2edf1ad6047e2020c3e64a4fca7f66728f804f9b.jpg"
+                                       },
+                                       {
+                                           "apiName":  "win_sabotage",
+                                           "displayName":  "SABOTEUR",
+                                           "description":  "Win a game by sabotaging a critical system as Impostor.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/6062188e86a7cf3c7ef46f0b3e575861a26bbb46.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/b350cf33a97104167c9aac0c60079f2946396a91.jpg"
+                                       },
+                                       {
+                                           "apiName":  "win_kills",
+                                           "displayName":  "SLASHER",
+                                           "description":  "Win a game by killing all crewmates as Impostor.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/cbf1cacf0178c63aa2f8545030d53b5f9891aeb0.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/1f40fda42c6f94d3c7b3c4e918c505c912deb77c.jpg"
+                                       },
+                                       {
+                                           "apiName":  "survive_crewmate",
+                                           "displayName":  "SURVIVOR",
+                                           "description":  "Survive and win a game as a crewmate",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/36b531782d1eba6166eb54769d36f42a3e87ace0.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/1ec721a4e56994c379be9d3517b386df87814303.jpg"
+                                       },
+                                       {
+                                           "apiName":  "win_impostor_vote",
+                                           "displayName":  "SMOOTH TALKER",
+                                           "description":  "Win a game by vote as Impostor",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/e2bf2b4ca2e03bbf1b48a9a8c72dd2fde4ee7e68.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/d57f432e94a7e3ef5cf1c42ad2997fdde0103d54.jpg"
+                                       },
+                                       {
+                                           "apiName":  "card_first_try",
+                                           "displayName":  "IMPOSSIBLE TASK",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/c486b2f15c031a9929e6193a334c8f947b326009.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/377f77e19968f9d7fec4c1aeffb38815a659eb17.jpg"
+                                       },
+                                       {
+                                           "apiName":  "kill_during_lights",
+                                           "displayName":  "LIGHTS OUT",
+                                           "description":  "Get a kill during a lights sabotage",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/6d53ce190945abd26dc4d5cf265cda396196e736.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/704ff65764606c74aef094fc6dd965952e4f3f88.jpg"
+                                       },
+                                       {
+                                           "apiName":  "die_during_medscan",
+                                           "displayName":  "WATCH ME SCAN",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/bf78b9db17985ba127345ac32258f3116ed7ec00.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/2b297edb4fc38bdfb458e14c74048c28a67cfb6f.jpg"
+                                       },
+                                       {
+                                           "apiName":  "fix_own_sabotage",
+                                           "displayName":  "CREWPOSTOR",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/cb4695fda4b61e880404ba5051185a1c154e6156.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/69b62a24754bd1dc28bf51e0a855696710b65b26.jpg"
+                                       },
+                                       {
+                                           "apiName":  "three_kills_before_meeting",
+                                           "displayName":  "H U N G E R",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/f5a1d827b0b4c4709d3a16a6e5a309a302ca4187.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/7407736424058a1a0c06821bd7bb1a8f97b68f2b.jpg"
+                                       },
+                                       {
+                                           "apiName":  "win_always_correct_votes",
+                                           "displayName":  "SHERLOCK",
+                                           "description":  "Win a game as crew with your only votes being for the Impostor",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/970151abaa23e371daaea0423122126184346103.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/2137274ff67c3d513c9e131bff6a5438a9d8a364.jpg"
+                                       },
+                                       {
+                                           "apiName":  "no_vents_impostor_win",
+                                           "displayName":  "CIRCUMVENTER",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/d98da75d64e92504c70b54339a17ab98b8b732fa.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/7e15b6428da3e3edbcdea760cb01a5f0c2e9ac00.jpg"
+                                       },
+                                       {
+                                           "apiName":  "hns_survive_crewmate",
+                                           "displayName":  "HIDDEN TALENT",
+                                           "description":  "Survive a Game as Crew in Hide n Seek Mode",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/7428551173ce6c4ba93f2b0c7acd226ce208e18a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/bfea0ec6e1e21c905d032eb8e5f1a354a9600083.jpg"
+                                       },
+                                       {
+                                           "apiName":  "hns_impostor_kill_all",
+                                           "displayName":  "NO ESCAPE",
+                                           "description":  "Kill all hiders as impostor in Hide n Seek Mode",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/2529465727f1115c5d69e58bb5f7df53aa11c03f.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/1b9cc75bef0f2d3c9666a658304735eb86783d8f.jpg"
+                                       },
+                                       {
+                                           "apiName":  "hns_complete_all_tasks",
+                                           "displayName":  "PERFORM UNDER PRESSURE",
+                                           "description":  "Do all your tasks in Hide n Seek Mode",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/9dca2128c2fc0bab1dac0b075daabfb5bc2312db.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/4f3b552ac6ab7e1986fc89043d7f4619005b99e3.jpg"
+                                       },
+                                       {
+                                           "apiName":  "kill_while_shifted",
+                                           "displayName":  "TRUST NO ONE",
+                                           "description":  "Kill Someone while disguised as them",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/8f9010c15a71df86b2750757565f7217f05261b2.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/d40f4fafc7838afc8ccb8f90ce97b24518098086.jpg"
+                                       },
+                                       {
+                                           "apiName":  "block_kill_as_guardian",
+                                           "displayName":  "I CAN BE YOUR ANGLE",
+                                           "description":  "Block a kill as a guardian angel",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/90221101a3a9b33c742711741e0585c887f7d791.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/5b34bcd7e8495fd8493a1805407a04b3ec7b1fd2.jpg"
+                                       },
+                                       {
+                                           "apiName":  "hns_crewmate_wins_easy",
+                                           "displayName":  "YOU CAN\u0027T RUN",
+                                           "description":  "10 wins as a hider in Hide n Seek Mode",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/12a62b22955b0aeac6f250a7e736dc0e82e1d5e7.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/0007446eff8607648b66658c984d5d4fdd6740cb.jpg"
+                                       },
+                                       {
+                                           "apiName":  "hns_crewmate_wins_hard",
+                                           "displayName":  "BUT YOU CAN HIDE",
+                                           "description":  "50 wins as a hider in Hide n Seek Mode",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/78f031450563a755346a47c36531806df024c0be.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/38a89336b3ce67d98296ea40a609ad6e285ecf78.jpg"
+                                       },
+                                       {
+                                           "apiName":  "hns_impostor_kills_easy",
+                                           "displayName":  "YOU CAN RUN",
+                                           "description":  "100 kills as a seeker in Hide n Seek Mode",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/bef1f16697da915b6edb6546ef86a48ef461b19d.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/b5d7f62a454b6b57fc25704a2148b3f8ebd11f46.jpg"
+                                       },
+                                       {
+                                           "apiName":  "hns_impostor_kills_hard",
+                                           "displayName":  "BUT YOU CAN\u0027T HIDE",
+                                           "description":  "200 kills as a seeker in Hide n Seek Mode",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/cd35efbab2dec93d23dd90eb296cc95bd6373e29.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/945360/42e9cf46caa4d881206ae70089ca5b4df648dd00.jpg"
+                                       }
+                                   ]
+                     }
 }

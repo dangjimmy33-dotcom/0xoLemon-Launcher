@@ -1,0 +1,297 @@
+﻿{
+    "322170":  {
+                   "success":  true,
+                   "data":  {
+                                "type":  "game",
+                                "name":  "Geometry Dash",
+                                "steam_appid":  322170,
+                                "required_age":  0,
+                                "is_free":  false,
+                                "detailed_description":  "Jump and fly your way through danger in this rhythm-based action platformer!\u003cbr\u003e\u003cbr\u003ePrepare for a near impossible challenge in the world of Geometry Dash. Push your skills to the limit as you jump, fly and flip your way through dangerous passages and spiky obstacles.\u003ch2 class=\"bb_tag\" \u003eGame Features\u003c/h2\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e Rhythm-based Action Platforming!\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Lots of levels with unique soundtracks!\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Build and share your own levels using the level editor!\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Thousands of high quality user generated levels!\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Unlock new icons and colors to customize your character!\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Fly rockets, flip gravity and much more!\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Use practice mode to sharpen your skills!\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Lots of achievements and rewards!\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Challenge yourself with the near impossible!\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Steam users get two exclusive unlockable icons!\u003c/li\u003e\u003c/ul\u003e",
+                                "about_the_game":  "Jump and fly your way through danger in this rhythm-based action platformer!\u003cbr\u003e\u003cbr\u003ePrepare for a near impossible challenge in the world of Geometry Dash. Push your skills to the limit as you jump, fly and flip your way through dangerous passages and spiky obstacles.\u003ch2 class=\"bb_tag\" \u003eGame Features\u003c/h2\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e Rhythm-based Action Platforming!\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Lots of levels with unique soundtracks!\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Build and share your own levels using the level editor!\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Thousands of high quality user generated levels!\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Unlock new icons and colors to customize your character!\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Fly rockets, flip gravity and much more!\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Use practice mode to sharpen your skills!\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Lots of achievements and rewards!\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Challenge yourself with the near impossible!\u003cbr\u003e\u003c/li\u003e\u003cli\u003e Steam users get two exclusive unlockable icons!\u003c/li\u003e\u003c/ul\u003e",
+                                "short_description":  "Jump and fly your way through danger in this rhythm-based action platformer!",
+                                "supported_languages":  "English",
+                                "reviews":  "“Frustratingly wonderful”\u003cbr\u003eKotaku\u003cbr\u003e\u003cbr\u003e“Geometry Dash is a fast-paced platformer that will leave you screaming in frustration, but you’ll keep coming back for more.”\u003cbr\u003eAppAdvice\u003cbr\u003e\u003cbr\u003e“Geometry Dash isn\u0027t your typical rhythm-based game, it actually requires skill on top of good timing.”\u003cbr\u003eDroidGamers\u003cbr\u003e",
+                                "header_image":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/322170/header.jpg?t=1775300400",
+                                "capsule_image":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/322170/capsule_231x87.jpg?t=1775300400",
+                                "capsule_imagev5":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/322170/capsule_184x69.jpg?t=1775300400",
+                                "website":  "https://geometrydash.com",
+                                "pc_requirements":  {
+                                                        "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cstrong\u003eOS *:\u003c/strong\u003e Windows XP\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e 2.0+ GHz\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 512 MB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e OpenGL 2.0 support\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 100 MB available space\u003c/li\u003e\u003c/ul\u003e"
+                                                    },
+                                "mac_requirements":  {
+                                                         "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Mac OS X 10.7\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e 2.0+ GHz\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 512 MB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e OpenGL 2.0 support\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 100 MB available space\u003c/li\u003e\u003c/ul\u003e"
+                                                     },
+                                "linux_requirements":  [
+
+                                                       ],
+                                "developers":  [
+                                                   "RobTop Games"
+                                               ],
+                                "publishers":  [
+                                                   "RobTop Games"
+                                               ],
+                                "price_overview":  {
+                                                       "currency":  "VND",
+                                                       "initial":  7350000,
+                                                       "final":  7350000,
+                                                       "discount_percent":  0,
+                                                       "initial_formatted":  "",
+                                                       "final_formatted":  "73.500₫"
+                                                   },
+                                "packages":  [
+                                                 50572
+                                             ],
+                                "package_groups":  [
+                                                       {
+                                                           "name":  "default",
+                                                           "title":  "Buy Geometry Dash",
+                                                           "description":  "",
+                                                           "selection_text":  "Select a purchase option",
+                                                           "save_text":  "",
+                                                           "display_type":  0,
+                                                           "is_recurring_subscription":  "false",
+                                                           "subs":  [
+                                                                        {
+                                                                            "packageid":  50572,
+                                                                            "percent_savings_text":  " ",
+                                                                            "percent_savings":  0,
+                                                                            "option_text":  "Geometry Dash - 73.500₫",
+                                                                            "option_description":  "",
+                                                                            "can_get_free_license":  "0",
+                                                                            "is_free_license":  false,
+                                                                            "price_in_cents_with_discount":  7350000
+                                                                        }
+                                                                    ]
+                                                       }
+                                                   ],
+                                "platforms":  {
+                                                  "windows":  true,
+                                                  "mac":  true,
+                                                  "linux":  false
+                                              },
+                                "categories":  [
+                                                   {
+                                                       "id":  2,
+                                                       "description":  "Single-player"
+                                                   },
+                                                   {
+                                                       "id":  22,
+                                                       "description":  "Steam Achievements"
+                                                   },
+                                                   {
+                                                       "id":  29,
+                                                       "description":  "Steam Trading Cards"
+                                                   },
+                                                   {
+                                                       "id":  18,
+                                                       "description":  "Partial Controller Support"
+                                                   },
+                                                   {
+                                                       "id":  17,
+                                                       "description":  "Includes level editor"
+                                                   },
+                                                   {
+                                                       "id":  41,
+                                                       "description":  "Remote Play on Phone"
+                                                   },
+                                                   {
+                                                       "id":  42,
+                                                       "description":  "Remote Play on Tablet"
+                                                   },
+                                                   {
+                                                       "id":  62,
+                                                       "description":  "Family Sharing"
+                                                   }
+                                               ],
+                                "genres":  [
+                                               {
+                                                   "id":  "1",
+                                                   "description":  "Action"
+                                               },
+                                               {
+                                                   "id":  "23",
+                                                   "description":  "Indie"
+                                               }
+                                           ],
+                                "screenshots":  [
+                                                    {
+                                                        "id":  0,
+                                                        "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/322170/ss_05cb182b93131a5faf0516232a7ad27c83f2c0e8.600x338.jpg?t=1775300400",
+                                                        "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/322170/ss_05cb182b93131a5faf0516232a7ad27c83f2c0e8.1920x1080.jpg?t=1775300400"
+                                                    },
+                                                    {
+                                                        "id":  1,
+                                                        "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/322170/ss_5aa7c52b6f29b138712c0e89c7f9f2791ec289a9.600x338.jpg?t=1775300400",
+                                                        "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/322170/ss_5aa7c52b6f29b138712c0e89c7f9f2791ec289a9.1920x1080.jpg?t=1775300400"
+                                                    },
+                                                    {
+                                                        "id":  2,
+                                                        "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/322170/ss_267a8eff67ed643e4f1d49054da5102a07b7ffae.600x338.jpg?t=1775300400",
+                                                        "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/322170/ss_267a8eff67ed643e4f1d49054da5102a07b7ffae.1920x1080.jpg?t=1775300400"
+                                                    },
+                                                    {
+                                                        "id":  3,
+                                                        "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/322170/ss_0e841fa6622be28851d8aa9624bb0d727c533029.600x338.jpg?t=1775300400",
+                                                        "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/322170/ss_0e841fa6622be28851d8aa9624bb0d727c533029.1920x1080.jpg?t=1775300400"
+                                                    },
+                                                    {
+                                                        "id":  4,
+                                                        "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/322170/ss_1e5328e6955e4037c4e1dfbe761dbb34f3d293da.600x338.jpg?t=1775300400",
+                                                        "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/322170/ss_1e5328e6955e4037c4e1dfbe761dbb34f3d293da.1920x1080.jpg?t=1775300400"
+                                                    },
+                                                    {
+                                                        "id":  5,
+                                                        "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/322170/ss_d542f0b64117d289239b068582b7f94f2764063c.600x338.jpg?t=1775300400",
+                                                        "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/322170/ss_d542f0b64117d289239b068582b7f94f2764063c.1920x1080.jpg?t=1775300400"
+                                                    },
+                                                    {
+                                                        "id":  6,
+                                                        "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/322170/ss_f8428bf7ccc0e1412a8d9eee24d5c483df38ab54.600x338.jpg?t=1775300400",
+                                                        "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/322170/ss_f8428bf7ccc0e1412a8d9eee24d5c483df38ab54.1920x1080.jpg?t=1775300400"
+                                                    },
+                                                    {
+                                                        "id":  7,
+                                                        "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/322170/ss_028ecd756e15877b154a8c9d7ddc784759f18458.600x338.jpg?t=1775300400",
+                                                        "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/322170/ss_028ecd756e15877b154a8c9d7ddc784759f18458.1920x1080.jpg?t=1775300400"
+                                                    },
+                                                    {
+                                                        "id":  8,
+                                                        "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/322170/ss_7a7d8cbd27ed24bbb2cb8dfff13a056e38b0f6c3.600x338.jpg?t=1775300400",
+                                                        "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/322170/ss_7a7d8cbd27ed24bbb2cb8dfff13a056e38b0f6c3.1920x1080.jpg?t=1775300400"
+                                                    },
+                                                    {
+                                                        "id":  9,
+                                                        "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/322170/ss_8b81e998c1cf04d55aa4c40d2de8a933257c93e1.600x338.jpg?t=1775300400",
+                                                        "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/322170/ss_8b81e998c1cf04d55aa4c40d2de8a933257c93e1.1920x1080.jpg?t=1775300400"
+                                                    },
+                                                    {
+                                                        "id":  10,
+                                                        "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/322170/ss_0a095a513c727a8d7ee133dddb37476308f67ac6.600x338.jpg?t=1775300400",
+                                                        "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/322170/ss_0a095a513c727a8d7ee133dddb37476308f67ac6.1920x1080.jpg?t=1775300400"
+                                                    }
+                                                ],
+                                "movies":  [
+                                               {
+                                                   "id":  2036304,
+                                                   "name":  "Trailer",
+                                                   "thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2036304/movie.293x165.jpg?t=1447366408",
+                                                   "dash_av1":  "https://video.akamai.steamstatic.com/store_trailers/322170/29035/284ed61dccab2abafb237feefd9c67217532899a/1750507867/dash_av1.mpd?t=1447366408",
+                                                   "dash_h264":  "https://video.akamai.steamstatic.com/store_trailers/322170/29035/284ed61dccab2abafb237feefd9c67217532899a/1750507867/dash_h264.mpd?t=1447366408",
+                                                   "hls_h264":  "https://video.akamai.steamstatic.com/store_trailers/322170/29035/284ed61dccab2abafb237feefd9c67217532899a/1750507867/hls_264_master.m3u8?t=1447366408",
+                                                   "highlight":  true
+                                               }
+                                           ],
+                                "recommendations":  {
+                                                        "total":  562434
+                                                    },
+                                "achievements":  {
+                                                     "total":  547,
+                                                     "highlighted":  [
+                                                                         {
+                                                                             "icon":  "1c0e3f5e6bd757409d9cf06b081632bac7c761be.jpg",
+                                                                             "localized_name":  "Stereo Bump",
+                                                                             "name":  "Stereo Bump",
+                                                                             "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/322170/1c0e3f5e6bd757409d9cf06b081632bac7c761be.jpg"
+                                                                         },
+                                                                         {
+                                                                             "icon":  "c13a227b5fa2c0f7b8056480d429c7a961f315fd.jpg",
+                                                                             "localized_name":  "Stereo Madness!",
+                                                                             "name":  "Stereo Madness!",
+                                                                             "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/322170/c13a227b5fa2c0f7b8056480d429c7a961f315fd.jpg"
+                                                                         },
+                                                                         {
+                                                                             "icon":  "2b00242aefd91fc6f50ddbd1fbbf1d7e0a552ce4.jpg",
+                                                                             "localized_name":  "On my way",
+                                                                             "name":  "On my way",
+                                                                             "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/322170/2b00242aefd91fc6f50ddbd1fbbf1d7e0a552ce4.jpg"
+                                                                         },
+                                                                         {
+                                                                             "icon":  "12e7c0b67d0400ba79834c193abb9e382e7b476b.jpg",
+                                                                             "localized_name":  "Back On Track!",
+                                                                             "name":  "Back On Track!",
+                                                                             "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/322170/12e7c0b67d0400ba79834c193abb9e382e7b476b.jpg"
+                                                                         },
+                                                                         {
+                                                                             "icon":  "9c6850220bfdb9b92db2b4eaa8165dc2c22afe6a.jpg",
+                                                                             "localized_name":  "Polarbear",
+                                                                             "name":  "Polarbear",
+                                                                             "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/322170/9c6850220bfdb9b92db2b4eaa8165dc2c22afe6a.jpg"
+                                                                         },
+                                                                         {
+                                                                             "icon":  "d551ff66c6511371696a9deb128c22915b190889.jpg",
+                                                                             "localized_name":  "Polargeist!",
+                                                                             "name":  "Polargeist!",
+                                                                             "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/322170/d551ff66c6511371696a9deb128c22915b190889.jpg"
+                                                                         },
+                                                                         {
+                                                                             "icon":  "67ab9e8daf2590a34fcc4bab8f783f040b0749f8.jpg",
+                                                                             "localized_name":  "Dehydrated",
+                                                                             "name":  "Dehydrated",
+                                                                             "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/322170/67ab9e8daf2590a34fcc4bab8f783f040b0749f8.jpg"
+                                                                         },
+                                                                         {
+                                                                             "icon":  "b84257883b55e4a219a65e14db56bd8cdebe584e.jpg",
+                                                                             "localized_name":  "Dry Out!",
+                                                                             "name":  "Dry Out!",
+                                                                             "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/322170/b84257883b55e4a219a65e14db56bd8cdebe584e.jpg"
+                                                                         },
+                                                                         {
+                                                                             "icon":  "edf0bb56be97431352d6b68daf0bfcc8df9bef86.jpg",
+                                                                             "localized_name":  "All your base...",
+                                                                             "name":  "All your base...",
+                                                                             "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/322170/edf0bb56be97431352d6b68daf0bfcc8df9bef86.jpg"
+                                                                         },
+                                                                         {
+                                                                             "icon":  "99c3a08d8cd4d8d40e7c6acd9a25dda4e1dc8f5b.jpg",
+                                                                             "localized_name":  "Base After Base!",
+                                                                             "name":  "Base After Base!",
+                                                                             "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/322170/99c3a08d8cd4d8d40e7c6acd9a25dda4e1dc8f5b.jpg"
+                                                                         }
+                                                                     ]
+                                                 },
+                                "release_date":  {
+                                                     "coming_soon":  false,
+                                                     "date":  "22 Dec, 2014"
+                                                 },
+                                "support_info":  {
+                                                     "url":  "http://www.robtopgames.com",
+                                                     "email":  "support@robtopgames.com"
+                                                 },
+                                "background":  "https://store.akamai.steamstatic.com/images/storepagebackground/app/322170?t=1775300400",
+                                "background_raw":  "https://store.akamai.steamstatic.com/images/storepagebackground/app/322170?t=1775300400",
+                                "content_descriptors":  {
+                                                            "ids":  [
+
+                                                                    ],
+                                                            "notes":  null
+                                                        },
+                                "ratings":  {
+                                                "dejus":  {
+                                                              "rating_generated":  "1",
+                                                              "rating":  "14",
+                                                              "required_age":  "14",
+                                                              "banned":  "0",
+                                                              "use_age_gate":  "0",
+                                                              "descriptors":  ""
+                                                          },
+                                                "steam_germany":  {
+                                                                      "rating_generated":  "1",
+                                                                      "rating":  "12",
+                                                                      "required_age":  "12",
+                                                                      "banned":  "0",
+                                                                      "use_age_gate":  "0",
+                                                                      "descriptors":  ""
+                                                                  },
+                                                "igrs":  {
+                                                             "rating_generated":  "1",
+                                                             "rating":  "18",
+                                                             "required_age":  "18",
+                                                             "banned":  "0",
+                                                             "use_age_gate":  "0",
+                                                             "descriptors":  "Interaksi Daring"
+                                                         }
+                                            }
+                            }
+               }
+}

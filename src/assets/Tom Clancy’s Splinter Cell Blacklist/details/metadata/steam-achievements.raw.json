@@ -1,0 +1,262 @@
+﻿{
+    "game":  {
+                 "gameName":  "Tom Clancy\u0027s Splinter Cell Blacklist",
+                 "gameVersion":  "3",
+                 "availableGameStats":  {
+                                            "achievements":  [
+                                                                 {
+                                                                     "name":  "SCBL_Ach_1",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Asset Retrieval",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete Safehouse on any difficulty",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/95da094a613d60e77e36e0680b86d9c53bc90a86.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/0e430eb2d8e1856a7ba7785a0755c4e7eef2754c.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SCBL_Ach_2",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Ambush Escaped",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete Insurgent Stronghold on any difficulty",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/43274ae38d14135749240bb16286c6431398465e.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/7caaf57599b43a7be3734b86039125daf7b2d8a2.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SCBL_Ach_3",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "American Consumption Prevented",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete American Consumption on any difficulty",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/2258422d8f2be40e838fa9010eb1b3598fd3d411.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/19df31303f667334fe2d29580a54c3f1af943827.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SCBL_Ach_4",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Terrorist Factor Turned",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete Private Estate on any difficulty",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/ad805b766da638c1504f8c29fe3328695f691ea4.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/b572c5b20f013add5d9d65610685f802c626a22a.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SCBL_Ach_5",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Tracker Placed",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete Abandoned Mill on any difficulty",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/4fb634121308e2984a33a2240fcfb43ddf75952a.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/e278150949e6dc727d297a28149e6048f650a3d5.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SCBL_Ach_6",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Iranian Intel Retrieved",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete Special Missions HQ on any difficulty",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/e5aa0e721f7cb838051925b88db9a1ad676a586d.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/36dae3a7192ff73f93ead65dace497521a9dec4e.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SCBL_Ach_7",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "American Freedom Averted",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete Transit Yards on any difficulty",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/ed9277c68cab35b2636e651c4bb6ecc431877549.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/1385c2498c498da8389bc91b04376f32f551734a.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SCBL_Ach_8",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Infiltration/Interrogation",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete Detention Facility on any difficulty",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/40b712eaa861099393428abbaffb26286fb06d50.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/b10ad6ba4c2e5149ae2e0884e246021f41e8cd28.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SCBL_Ach_9",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Paladin Restored",
+                                                                     "hidden":  0,
+                                                                     "description":  "Survive the attack on Paladin",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/6fea899e1e7f4e689054ac1c4cf43f9cf04ec4d8.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/299511af3df67582c459e28d831a3b8643763fef.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SCBL_Ach_10",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "American Fuel Engaged",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete LNG Terminal on any difficulty",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/cb0d0130163a1fc1660437c2e900801664d5ab34.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/10fa605b73c766afcfb5c153e361fc1dd25b7e41.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SCBL_Ach_11",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "4th Echelon Status Confirmed",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete the single player campaign",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/440181f0e9741f0c5efc1a07528a8e29734cf25b.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/19aa9a9502a893dd7b6d8a5bc48f1cc2cb356688.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SCBL_Ach_12",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "4th Echelon Commendation",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete every single player mission on Realistic difficulty",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/02753b648e0f5edd1e676ec6e74a637786062051.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/1cc6fd68a7ff7a438cb7f80ba5d1e2ff21d9b8f6.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SCBL_Ach_13",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "4th Echelon Officer",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete every single player mission on Perfectionist difficulty",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/761132da6e0e3b0b8c6aeb4e438bd64b569730c1.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/f95c3ecf44cf3ae116a0001d28753c6369a3b6ad.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SCBL_Ach_18",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "C\u0026C Optimized",
+                                                                     "hidden":  0,
+                                                                     "description":  "Fully upgrade your headquarters",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/4879c98e4fff92083c8d93b4b85d771b07134ff1.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/90abc655b048784e19dc74d81487805fefb3cf78.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SCBL_Ach_19",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Tactical Style: Ghost",
+                                                                     "hidden":  0,
+                                                                     "description":  "Master Ghost playstyle on 7 missions",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/b7f284e34c3279d7e52f247c9078af05d1a2f9e7.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/e1d85930f10a431cfd652fe6dcee51293a4f3c63.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SCBL_Ach_20",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Tactical Style: Panther",
+                                                                     "hidden":  0,
+                                                                     "description":  "Master Panther playstyle on 7 missions",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/f2f7b0e4c5ef46dc70d53afa26608464c9c68c6d.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/abd4e8cb23cb35de3a976b998cc903e67d5e2836.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SCBL_Ach_21",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Tactical Style: Assault",
+                                                                     "hidden":  0,
+                                                                     "description":  "Master Assault playstyle on 7 missions",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/ea79c26cd3dfd934dc9d17cc945b409a61680651.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/14d657698ed759559220d51525c27afe1738df83.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SCBL_Ach_22",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Evidence Concealed",
+                                                                     "hidden":  0,
+                                                                     "description":  "Hide 5 bodies in containers",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/1f7a71917fdeedbb78976c13645dbd6c0f686591.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/1e64dd22cd0f5c7d45636e5781a301c772607686.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SCBL_Ach_23",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "No Kill Option Engaged",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete the single player campaign without killing anyone as Sam Fisher",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/890a3857425a15ad50378a6e1cf9e2d9ea065f71.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/92d096e75893cac560d8aa10a5be6349f348977a.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SCBL_Ach_24",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Distraction Tactician",
+                                                                     "hidden":  0,
+                                                                     "description":  "Call an enemy over, then take them down undetected when they investigate",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/e8c0f87f4298a25b8bd041a585ea0a50f36fbbc3.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/4f4a20456d3b70c281bb5c1d99dd3cd6ddcdb96b.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SCBL_Ach_25",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Tri-Rotor Functionality",
+                                                                     "hidden":  0,
+                                                                     "description":  "Disable a security device using the Tri-Rotor",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/d78039dac06619a19a976f1e5942388b3a851bfe.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/6aba658646c3a8a30968f92b64f8325cc7936161.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SCBL_Ach_26",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Enhanced Lethality Demonstrated",
+                                                                     "hidden":  0,
+                                                                     "description":  "Using Mark \u0026 Execute, take down 6 enemies in under 14 seconds",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/65b1a01bcc802e770f3a1bca54fdf37ab994592c.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/d19f05a4908454f7bf56d93351456462265df4c2.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SCBL_Ach_27",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Hostile Shield Secured",
+                                                                     "hidden":  0,
+                                                                     "description":  "Take down a Shielded Infantryman hand to hand and take his shield",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/8fdfbf9724b9dd4800d3ece47a922c1f32d5e2f5.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/c3cce8be719382533b668193d2e86cb76a5f303a.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SCBL_Ach_28",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Hostages Secured",
+                                                                     "hidden":  0,
+                                                                     "description":  "Save the hostages in the Transit Yards",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/f664b01d87d213d6bb86eab50fde66437bb13a10.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/aebe36f0b3bd89dc5294b945bebdbfc6e84e9aca.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SCBL_Ach_29",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Mission Footprint Zero",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete a single player mission without being detected during gameplay",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/5bfc978553f1341d431bcaac4ff2a3ce8f665a53.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/6c9468b89bfd8d533e44e6b594e3a48c58911cea.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SCBL_Ach_31",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Hunter Operator",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete all 4th Echelon Missions from Andriy Kobin",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/99d1305d3011e1d4bbfea4eecd30913a66e24dfe.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/bcec38b849153798d3db1bd1aa3fa698beba76b2.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SCBL_Ach_32",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Infiltration Operator",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete all 4th Echelon Missions from Anna Grímsdóttir",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/ca397ff4329af4b75f6944e3fe18beecd30eb2d3.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/466cd58795aa56f1489ed542ac20ee4ac2639206.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SCBL_Ach_33",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Extraction Operator",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete all 4th Echelon Missions from Charlie Cole",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/58d5c99489f69854f0b6c2e63cee9db97ed7b943.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/235600/3d6f3921252f173f8315c859af3cfba1e916d81c.jpg"
+                                                                 }
+                                                             ]
+                                        }
+             }
+}

@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>007 Launcher - Tutorial Studio</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --surface-hover: #334155;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --danger: #ef4444;
+            --warning: #eab308;
+            --success: #22c55e;
+            --radius: 8px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            width: 100%;
+        }
+
+        .sidebar {
+            width: 450px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            padding: 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .preview-area {
+            flex: 1;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            overflow-y: auto;
+        }
+
+        h1, h2, h3 {
+            margin: 0 0 8px 0;
+            color: var(--text);
+        }
+
+        h1 { font-size: 20px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 10px 12px;
+            border-radius: var(--radius);
+            font-size: 14px;
+            box-sizing: border-box;
+            transition: all 0.2s;
+        }
+
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+            font-family: inherit;
+        }
+
+        .button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: var(--radius);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .button:hover { background: var(--primary-hover); }
+        .button.secondary { background: var(--surface-hover); color: var(--text); border: 1px solid var(--border); }
+        .button.secondary:hover { background: #475569; }
+        .button.danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.2); }
+        .button.danger:hover { background: var(--danger); color: white; }
+
+        .step-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .step-item {
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            position: relative;
+        }
+
+        .step-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .step-item-title { font-weight: 600; font-size: 14px; }
+
+        .code-block {
+            background: #1e1e1e;
+            padding: 16px;
+            border-radius: var(--radius);
+            overflow-x: auto;
+            font-family: "Fira Code", Consolas, monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            color: #d4d4d4;
+            border: 1px solid var(--border);
+            height: 100%;
+            white-space: pre-wrap;
+        }
+
+        .info-box {
+            background: rgba(59, 130, 246, 0.1);
+            border-left: 3px solid var(--primary);
+            padding: 12px 16px;
+            border-radius: 0 var(--radius) var(--radius) 0;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        /* Mockup styles to match the Launcher's Modal */
+        .mock-modal-overlay {
+            background: rgba(0,0,0,0.5);
+            padding: 40px;
+            border-radius: var(--radius);
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .mock-modal-content {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 650px;
+            padding: 24px;
+            color: #e2e8f0;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        .mock-modal-content h2 { color: white; border-bottom: 1px solid #334155; padding-bottom: 12px; margin-bottom: 16px; font-size: 20px;}
+        .mock-modal-content ol { padding-left: 20px; }
+        .mock-modal-content li { margin-bottom: 8px; }
+        .mock-modal-content code { background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+        .mock-modal-content img { max-width: 100%; border-radius: 8px; margin: 8px 0; border: 1px solid #334155; }
+
+        .mock-warning-box {
+            background: rgba(234, 179, 8, 0.1);
+            border-left: 4px solid #eab308;
+            padding: 12px 16px;
+            margin-top: 24px;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 2px;
+            background: var(--border);
+            padding: 2px;
+            border-radius: var(--radius);
+            margin-bottom: 16px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: transparent;
+            color: var(--text-muted);
+            border: none;
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .tab-btn.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+
+        .form-group { margin-bottom: 16px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Sidebar for Inputs -->
+        <div class="sidebar">
+            <h1>🎨 Tutorial Studio</h1>
+            <p style="font-size: 13px; color: var(--text-muted); margin-top: -10px;">Tạo hướng dẫn siêu tốc cho từng game và lấy Code React dán thẳng vào file <br/><code>src/components/TutorialModal.tsx</code></p>
+
+            <div class="info-box" style="margin-bottom: 8px;">
+                Cú pháp chèn ảnh: <code>{IMG:E:\duong\dan\anh.png}</code><br/>
+                Cú pháp chèn code: <code>{CODE:Noi dung code}</code><br/>
+                Cú pháp in đậm: <code>**Nội dung**</code>
+            </div>
+
+            <div class="form-group">
+                <label>Game ID (Khớp với thư viện, vd: <i>among_us_1</i>)</label>
+                <input type="text" id="gameId" placeholder="VD: among_us_1" value="among_us_1">
+            </div>
+
+            <div class="form-group">
+                <label>Tên Hàm (Tự sinh ra)</label>
+                <input type="text" id="funcName" placeholder="VD: AmongUsTutorial" value="AmongUsTutorial">
+            </div>
+
+            <div class="form-group">
+                <label>Tiêu đề Hướng dẫn</label>
+                <input type="text" id="tutTitle" placeholder="📖 Hướng dẫn sửa lỗi..." value="📖 Hướng dẫn sửa lỗi đăng nhập Among Us">
+            </div>
+
+            <div class="form-group">
+                <label>Lời dẫn / Mô tả mở đầu</label>
+                <textarea id="tutIntro" rows="3">🤖 Cách 2: Sử dụng công cụ sửa lỗi tự động
+Nếu bạn không muốn mất công tạo các tệp không có đuôi mở rộng thủ công, mình đã biên dịch một ứng dụng mã nguồn mở siêu nhỏ để tự động hóa. Cập nhật xong bạn có thể xóa nó đi ngay lập tức.</textarea>
+            </div>
+
+            <hr style="border-color: var(--border); width: 100%;">
+
+            <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <h3 style="margin: 0; font-size: 15px;">🕹️ Các bước thực hiện</h3>
+                    <button class="button secondary" style="padding: 4px 10px; font-size: 12px;" onclick="addStep()">+ Thêm bước</button>
+                </div>
+
+                <div class="step-list" id="stepList">
+                    <!-- Steps injected here -->
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 12px;">
+                <label>💡 Lưu ý nhỏ (Khung màu vàng ở cuối)</label>
+                <textarea id="tutWarning" rows="2">Hãy nhớ đóng hoàn toàn và khởi động lại Among Us sau khi chạy công cụ sửa lỗi nếu bạn đang mở game trong lúc thực hiện nhé!</textarea>
+            </div>
+
+        </div>
+
+        <!-- Preview & Code Area -->
+        <div class="preview-area">
+            <div class="tab-buttons">
+                <button class="tab-btn active" id="tabPreviewBtn" onclick="switchTab('preview')">👁️ Live Preview</button>
+                <button class="tab-btn" id="tabCodeBtn" onclick="switchTab('code')">💻 React Code</button>
+            </div>
+
+            <!-- Visual Preview -->
+            <div id="previewTab" class="mock-modal-overlay">
+                <div class="mock-modal-content" id="modalPreviewContent">
+                    <!-- Rendered by JS -->
+                </div>
+            </div>
+
+            <!-- Code Output -->
+            <div id="codeTab" style="display: none; flex: 1; flex-direction: column;">
+                <p style="margin: 0 0 10px 0; font-size: 14px; color: var(--text-muted);">Copy đoạn code Component dưới đây và dán vào phần trên của file <code>src/components/TutorialModal.tsx</code>. Sau đó thêm case vào hàm <code>TutorialModal</code> chính.</p>
+                <button class="button" onclick="copyCode()" style="align-self: flex-start; margin-bottom: 10px;">📋 Copy Code</button>
+                <div class="code-block" id="codeOutput"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let steps = [
+            "Mở ứng dụng {CODE:Itch_Login_Fixer.exe}.\n{IMG:E:\\Screenshot_2026-06-13_172202.webp}",
+            "Nhấp vào nút \"Login with itch.io\". (Sẽ mở một web).",
+            "Trên web, nhấp vào \"Authorize AU-Launcher\" để ứng dụng nhận mã token.",
+            "Giữ nguyên tab đó cho đến khi màn hình báo \"AUTHORIZATION COMPLETE\".",
+            "Quay trở lại ứng dụng, trạng thái sẽ chuyển thành: \"Login fixed! You can launch Among Us now\".",
+            "Đóng và xóa ứng dụng. Tệp xác thực hiện đã nằm vĩnh viễn trong thư mục game của bạn."
+        ];
+
+        // Helpers to parse syntax
+        function parseRichText(text, forReact = false) {
+            let html = text
+                .replace(/\*\*(.*?)\*\*/g, forReact ? "<strong>$1</strong>" : "<strong>$1</strong>")
+                .replace(/\{CODE:(.*?)\}/g, forReact ? "<code>$1</code>" : "<code>$1</code>")
+                .replace(/\n/g, forReact ? "<br/>\n" : "<br/>");
+
+            if (forReact) {
+                // For React, images need to use convertFileSrc
+                html = html.replace(/\{IMG:(.*?)\}/g, `<br/>\n<img src={convertFileSrc('$1')} alt="Tutorial Image" style={{ maxWidth: '100%', borderRadius: 8, marginTop: 8, marginBottom: 8 }} />`);
+            } else {
+                // For HTML preview, we just show a placeholder box since we can't reliably load local E: files without Tauri
+                html = html.replace(/\{IMG:(.*?)\}/g, `<br/><div style="display:inline-flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.3); border:1px dashed #475569; border-radius:8px; padding:20px; width:100%; margin:8px 0; box-sizing:border-box; color:#94a3b8; font-size:12px;">[Image Preview Muted: $1]</div>`);
+            }
+            return html;
+        }
+
+        function escapeReactJSX(text) {
+            // Very basic escape for curly braces if they aren't part of our custom syntax
+            // Actually it's simpler to just let the user not use raw { } or we can sanitize.
+            return text;
+        }
+
+        function renderSidebarSteps() {
+            const list = document.getElementById('stepList');
+            list.innerHTML = '';
+            steps.forEach((step, index) => {
+                const stepEl = document.createElement('div');
+                stepEl.className = 'step-item';
+                stepEl.innerHTML = `
+                    <div class="step-item-header">
+                        <span class="step-item-title">Bước ${index + 1}</span>
+                        <button class="button danger" style="padding: 2px 6px; font-size: 11px;" onclick="removeStep(${index})">Xóa</button>
+                    </div>
+                    <textarea rows="3" onkeyup="updateStep(${index}, this.value)" onchange="updateStep(${index}, this.value)">${step}</textarea>
+                `;
+                list.appendChild(stepEl);
+            });
+            generateAll();
+        }
+
+        function addStep() {
+            steps.push("Bước mới...");
+            renderSidebarSteps();
+        }
+
+        function removeStep(index) {
+            steps.splice(index, 1);
+            renderSidebarSteps();
+        }
+
+        function updateStep(index, val) {
+            steps[index] = val;
+            generateAll();
+        }
+
+        // Generate Preview
+        function generatePreview() {
+            const title = document.getElementById('tutTitle').value;
+            const intro = document.getElementById('tutIntro').value;
+            const warning = document.getElementById('tutWarning').value;
+
+            const previewHTML = `
+                <button style="float: right; background:none; border:none; color:white; font-size:18px; cursor:pointer;">✕</button>
+                <h2>${title}</h2>
+                <div style="line-height: 1.6;">
+                    <p>${parseRichText(intro)}</p>
+                    <p style="margin-top: 16px;"><strong>🕹️ Cách sử dụng:</strong></p>
+                    <ol>
+                        ${steps.map(s => `<li>${parseRichText(s)}</li>`).join('')}
+                    </ol>
+                    ${warning ? `
+                    <div class="mock-warning-box">
+                        <p style="margin: 0; color: #fef08a;"><strong>💡 Lưu ý nhỏ:</strong> ${parseRichText(warning)}</p>
+                    </div>` : ''}
+                </div>
+                <button class="button" style="width: 100%; margin-top: 24px; padding: 12px; border-radius: 8px;">Got it!</button>
+            `;
+            document.getElementById('modalPreviewContent').innerHTML = previewHTML;
+        }
+
+        // Generate React Code
+        function generateCode() {
+            const funcName = document.getElementById('funcName').value || 'NewGameTutorial';
+            const title = document.getElementById('tutTitle').value;
+            const intro = document.getElementById('tutIntro').value;
+            const warning = document.getElementById('tutWarning').value;
+
+            // Helper to format string properly for JSX
+            const formatLines = (str) => {
+                let parsed = parseRichText(str, true);
+                // Convert <br/>\n to just <br/> for JSX text or split
+                return parsed;
+            };
+
+            const reactCode = `
+export function ${funcName}() {
+  return (
+    <>
+      <h2>${title}</h2>
+
+      <div style={{ marginTop: 16, lineHeight: 1.6, color: '#e2e8f0' }}>
+        <p>
+          ${formatLines(intro).split('\n').join('\n          ')}
+        </p>
+
+        <p style={{ marginTop: 16 }}><strong>🕹️ Cách sử dụng:</strong></p>
+        <ol style={{ paddingLeft: 20 }}>
+${steps.map(s => `          <li>${formatLines(s)}</li>`).join('\n')}
+        </ol>
+
+${warning ? `        <div style={{ background: 'rgba(234, 179, 8, 0.1)', borderLeft: '4px solid #eab308', padding: '12px 16px', marginTop: 24, borderRadius: '0 8px 8px 0' }}>
+          <p style={{ margin: 0, color: '#fef08a' }}><strong>💡 Lưu ý nhỏ:</strong> ${formatLines(warning)}</p>
+        </div>` : ''}
+      </div>
+    </>
+  )
+}
+`;
+            document.getElementById('codeOutput').textContent = reactCode.trim();
+        }
+
+        function generateAll() {
+            generatePreview();
+            generateCode();
+        }
+
+        // Switch Tabs
+        function switchTab(tab) {
+            document.getElementById('tabPreviewBtn').classList.toggle('active', tab === 'preview');
+            document.getElementById('tabCodeBtn').classList.toggle('active', tab === 'code');
+            document.getElementById('previewTab').style.display = tab === 'preview' ? 'flex' : 'none';
+            document.getElementById('codeTab').style.display = tab === 'code' ? 'flex' : 'none';
+        }
+
+        function copyCode() {
+            const code = document.getElementById('codeOutput').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                alert("Đã copy code Component! Hãy dán vào src/components/TutorialModal.tsx");
+            });
+        }
+
+        // Setup event listeners for inputs
+        document.querySelectorAll('input, textarea').forEach(el => {
+            el.addEventListener('input', generateAll);
+        });
+
+        // Initialize
+        renderSidebarSteps();
+
+        // Game ID auto-fill function name
+        document.getElementById('gameId').addEventListener('input', function(e) {
+            const id = e.target.value;
+            // Convert something like among_us_1 to AmongUs1Tutorial
+            const camelCase = id.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('');
+            document.getElementById('funcName').value = camelCase ? camelCase + 'Tutorial' : '';
+            generateAll();
+        });
+
+    </script>
+</body>
+</html>

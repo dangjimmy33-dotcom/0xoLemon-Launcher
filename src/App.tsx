@@ -1,464 +1,84 @@
-import { useEffect, useMemo, useState, useRef, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import { open } from '@tauri-apps/plugin-dialog'
-import { getCurrentWindow } from '@tauri-apps/api/window'
-
-function CustomTitleBar() {
-  const win = isTauriRuntime() ? getCurrentWindow() : null
-
-  function handleMinimize(e: React.MouseEvent) {
-    e.stopPropagation()
-    void win?.minimize()
-  }
-  function handleMaximize(e: React.MouseEvent) {
-    e.stopPropagation()
-    void win?.toggleMaximize()
-  }
-  function handleClose(e: React.MouseEvent) {
-    e.stopPropagation()
-    void win?.close()
-  }
-
-  return (
-    <div data-tauri-drag-region className="custom-titlebar">
-      <div className="titlebar-drag-area" data-tauri-drag-region>
-        <span className="titlebar-label">0xoLemon Launcher</span>
-      </div>
-      <div className="titlebar-actions">
-        <button
-          className="titlebar-btn minimize-btn"
-          title="Thu nhỏ"
-          onMouseDown={(e) => e.stopPropagation()}
-          onClick={handleMinimize}
-        >
-          <svg width="10" height="1" viewBox="0 0 10 1"><rect width="10" height="1" fill="currentColor"/></svg>
-        </button>
-        <button
-          className="titlebar-btn maximize-btn"
-          title="Phóng to"
-          onMouseDown={(e) => e.stopPropagation()}
-          onClick={handleMaximize}
-        >
-          <svg width="10" height="10" viewBox="0 0 10 10"><rect x="0.5" y="0.5" width="9" height="9" fill="none" stroke="currentColor"/></svg>
-        </button>
-        <button
-          className="titlebar-btn close-btn"
-          title="Đóng"
-          onMouseDown={(e) => e.stopPropagation()}
-          onClick={handleClose}
-        >
-          <svg width="10" height="10" viewBox="0 0 10 10"><line x1="0" y1="0" x2="10" y2="10" stroke="currentColor" strokeWidth="1.2"/><line x1="10" y1="0" x2="0" y2="10" stroke="currentColor" strokeWidth="1.2"/></svg>
-        </button>
-      </div>
-    </div>
-  )
-}
-import {
-  Archive,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  Check,
-  CheckCircle2,
-  CircleAlert,
-  Database,
-  Download,
-  FolderOpen,
-  Gauge,
-  HardDrive,
-  Image as ImageIcon,
-  Library,
-  Pause,
-  Play,
-  RefreshCcw,
-  RotateCcw,
-  Search,
-  Settings,
-  ShieldCheck,
-  Square,
-  TerminalSquare,
-  Trophy,
-  Plus,
-  Wifi,
-  X,
-} from 'lucide-react'
-import { enUS as t } from './i18n/en-US'
+import { CircleAlert, Download, X } from 'lucide-react'
 import './App.css'
+import type {
+  AssetBlob,
+  GameCatalog,
+  GameDetail,
+  GameInstallState,
+  GameSummary,
+  JobJournal,
+  LaunchReport,
+  LauncherUpdateInfo,
+  LauncherUpdateProgress,
+  LaunchSplashState,
+  ResolvedGameLaunchConfig,
+  ShortcutLaunchPayload,
+  Snapshot,
+  SteamEnvironmentInfo,
+  TabId,
+  UninstallReport,
+  VerifyInstallReport,
+  VerifyProgressPayload,
+  VerifyUiStatus,
+} from './types'
+import { DEFAULT_GAME_ID, DEFAULT_STORE_ROOT, fallbackCatalog, fallbackInstall, fallbackSnapshot, gameFolderName, installMetadataForStoreRoot } from './lib/installPaths'
+import { collectAssetIds, contentServiceLabel, downloadPathForInstallRoot, fallbackDetailFromSummary, firstMediaUrl, isTauriRuntime, versionOptions } from './lib/gameMeta'
+import { createIdleJob, getPhaseProgress } from './lib/jobProgress'
+import { gameHasTag } from './lib/gameTags'
+import { DEFAULT_LAUNCHER_PREFERENCES, loadLauncherPreferences, saveLauncherPreferences, type LauncherPreferences } from './lib/preferences'
+import { ActiveView, CustomTitleBar, DriveLibraryPickerModal, InstallOptionsDialog, LaunchOptionsModal, LaunchSplash, OperationHero, SettingsView, Sidebar } from './components'
 
-declare global {
-  interface Window {
-    __TAURI_INTERNALS__?: unknown
-  }
-}
+const initialLauncherPreferences = loadLauncherPreferences()
+const emptyCatalog: GameCatalog = { defaultLocale: 'en-US', games: [] }
+type CatalogLoadState = 'loading' | 'ready' | 'error'
 
-type JobStatus =
-  | 'planned'
-  | 'running'
-  | 'paused'
-  | 'downloading'
-  | 'assembling'
-  | 'verified'
-  | 'committed'
-  | 'canceled'
-  | 'failed'
-
-type StepStatus = 'waiting' | 'running' | 'completed' | 'paused' | 'failed'
-
-type JobStep = {
-  name: string
-  detail: string
-  status: StepStatus
-  progress: number
-  retryCount: number
-}
-
-type JobLog = {
-  at: string
-  level: string
-  message: string
-}
-
-type PhaseProgress = {
-  name: string
-  detail: string
-  percent: number
-  overallPercent: number
-  bytesDone: number
-  bytesTotal: number
-  rateBytesPerSecond: number
-  etaSeconds: number | null
-  isDownloading: boolean
-}
-
-type JobJournal = {
-  id: string
-  gameId: string
-  kind: string
-  status: JobStatus
-  installPath: string
-  fromVersion: string
-  toVersion: string
-  phase: string
-  overallProgress: number
-  bytesDone: number
-  bytesTotal: number
-  retryCount: number
-  resumable: boolean
-  updatedAt: string
-  steps: JobStep[]
-  logs: JobLog[]
-}
-
-type ChangedFile = {
-  path: string
-  oldSize: number
-  newSize: number
-}
-
-type Snapshot = {
-  currentVersion: string
-  latestVersion: string
-  availableVersions: string[]
-  detectedInstallPath: string | null
-  updateSize: number
-  proxyStatus: string
-  cache: {
-    cacheSize: number
-    freeSpace: number
-    healthPercent: number
-    rollbackReady: boolean
-    rollbackMissingBytes: number
-  }
-  changedFiles: ChangedFile[]
-  lastJob: JobJournal | null
-}
-
-type GameCatalog = {
-  defaultLocale: string
-  games: GameSummary[]
-}
-
-type GameSummary = {
-  id: string
-  title: string
-  subtitle: string
-  developer: string
-  publisher: string
-  latestVersion: string
-  availableVersions: GameVersionInfo[]
-  gridAssetId: string
-  heroAssetId: string
-  logoAssetId: string
-  iconAssetId: string
-  install: GameInstallMetadata
-  assetPackPath: string
-}
-
-type GameVersionInfo = {
-  version: string
-  label: string
-  buildId: string
-  sizeBytes: number
-  latest: boolean
-}
-
-type GameInstallMetadata = {
-  defaultStoreRoot: string
-  defaultInstallFolder: string
-  defaultDownloadingFolder: string
-  storageLabel: string
-  supportsResume: boolean
-  launchExecutable: string
-}
-
-type GameDetail = {
-  gameId: string
-  locale: string
-  title: string
-  shortDescription: string
-  detailedDescription: string
-  developers: string[]
-  publishers: string[]
-  releaseDate: string
-  genres: string[]
-  categories: string[]
-  ratings: GameRating[]
-  media: GameMedia[]
-  achievements: GameAchievement[]
-  sounds: GameSound[]
-  install: GameInstallMetadata
-  descriptionImages: string[]
-  versions: GameVersionInfo[]
-  metadataSource: string
-}
-
-type GameRating = {
-  source: string
-  score: string
-}
-
-type GameMedia = {
-  id: string
-  role: string
-  title: string
-  mimeType: string
-  assetId: string
-}
-
-type LauncherUpdateInfo = {
-  version: string
-  notes: string
-  downloadUrl: string
-  publishedAt: string
-}
-
-type GameAchievement = {
-  id: string
-  name: string
-  description: string
-  iconAssetId: string
-  hidden: boolean
-}
-
-type GameSound = {
-  id: string
-  role: string
-  mimeType: string
-  assetId: string
-}
-
-type AssetBlob = {
-  mimeType: string
-  dataBase64: string
-}
-
-type GameInstallState = {
-  gameId: string
-  installed: boolean
-  currentVersion: string
-  installPath: string
-  launchExecutable: string
-}
-
-type VerifyInstallReport = {
-  ok: boolean
-  checkedFiles: number
-  missingFiles: string[]
-  mismatchedFiles: string[]
-}
-
-type VerifyUiStatus = {
-  gameId: string
-  state: 'running' | 'ok' | 'failed'
-  message: string
-  percent: number
-  currentFile?: string | null
-  checkedFiles?: number
-  totalFiles?: number
-  checkedBytes?: number
-  totalBytes?: number
-  missingFiles?: string[]
-  mismatchedFiles?: string[]
-}
-
-type VerifyProgressPayload = {
-  gameId: string
-  phase: string
-  currentFile: string | null
-  checkedFiles: number
-  totalFiles: number
-  checkedBytes: number
-  totalBytes: number
-  percent: number
-}
-
-type UninstallReport = {
-  gameId: string
-  removedFiles: number
-  removedDirs: number
-  installPath: string
-}
-
-type LaunchReport = {
-  gameId: string
-  executable: string
-  shortcutPath: string | null
-  dependenciesInstalled: string[]
-}
-
-type LaunchSplashState = {
-  title: string
-  heroUrl?: string
-  iconUrl?: string
-}
-
-type ShortcutLaunchPayload = {
-  gameId: string
-  installPath: string
-  launchExecutable?: string | null
-}
-
-type TabId = 'Library' | 'Updates' | 'Downloads' | 'Cache' | 'Settings'
-
-const DEFAULT_GAME_ID = '007-first-light'
-const DEFAULT_STORE_ROOT = 'E:\\0xoLemon store'
-const DEFAULT_COMMON_GAME = `${DEFAULT_STORE_ROOT}\\common\\007 First Light`
-const DEFAULT_DOWNLOADING_GAME = `${DEFAULT_STORE_ROOT}\\downloading\\007 First Light`
-const CUSTOM_DOWNLOADING_RELATIVE = '.0xolemon\\downloading'
-
-const fallbackSnapshot: Snapshot = {
-  currentVersion: 'not scanned',
-  latestVersion: 'unknown',
-  availableVersions: [],
-  detectedInstallPath: null,
-  updateSize: 0,
-  proxyStatus: 'Depot not checked',
-  cache: {
-    cacheSize: 0,
-    freeSpace: 0,
-    healthPercent: 0,
-    rollbackReady: false,
-    rollbackMissingBytes: 0,
-  },
-  changedFiles: [],
-  lastJob: null,
-}
-
-const fallbackInstall: GameInstallMetadata = {
-  defaultStoreRoot: DEFAULT_STORE_ROOT,
-  defaultInstallFolder: DEFAULT_COMMON_GAME,
-  defaultDownloadingFolder: DEFAULT_DOWNLOADING_GAME,
-  storageLabel: 'SSD',
-  supportsResume: true,
-  launchExecutable: 'Retail\\007FirstLight.exe',
-}
-
-function gameFolderName(game: Pick<GameSummary, 'id' | 'title'>) {
-  if (game.id === DEFAULT_GAME_ID) return '007 First Light'
-  const cleaned = game.title
-    .replace(/[<>:"/\\|?*]/g, ' ')
-    .split('')
-    .filter((char) => char.charCodeAt(0) >= 32)
-    .join('')
-    .replace(/\s+/g, ' ')
-    .trim()
-  return cleaned || game.id
-}
-
-function normalizeInstallMetadata(
-  game: Pick<GameSummary, 'id' | 'title'> | null | undefined,
-  install: GameInstallMetadata = fallbackInstall,
-) {
-  if (!game) return install
-  const folderName = gameFolderName(game)
-  const launchExecutable =
-    game.id === DEFAULT_GAME_ID
-      ? 'Retail\\007FirstLight.exe'
-      : install.launchExecutable && install.launchExecutable !== fallbackInstall.launchExecutable
-        ? install.launchExecutable
-        : `${folderName}.exe`
-
-  return {
-    ...install,
-    defaultStoreRoot: DEFAULT_STORE_ROOT,
-    defaultInstallFolder: `${DEFAULT_STORE_ROOT}\\common\\${folderName}`,
-    defaultDownloadingFolder: `${DEFAULT_STORE_ROOT}\\downloading\\${folderName}`,
-    launchExecutable,
-  }
-}
-
-const fallbackCatalog: GameCatalog = {
-  defaultLocale: 'en-US',
-  games: [
-    {
-      id: DEFAULT_GAME_ID,
-      title: '007 First Light',
-      subtitle: 'IO Interactive A/S',
-      developer: 'IO Interactive A/S',
-      publisher: 'IO Interactive A/S',
-      latestVersion: 'v1.2',
-      availableVersions: [
-        { version: 'v1.0', label: 'Release Patch', buildId: '2338871', sizeBytes: 49_690_000_000, latest: false },
-        { version: 'v1.1', label: 'Update 1.1', buildId: '23531465', sizeBytes: 49_690_000_000, latest: false },
-        { version: 'v1.2', label: 'Update 1.2', buildId: '23600000', sizeBytes: 49_690_000_000, latest: true },
-      ],
-      gridAssetId: '',
-      heroAssetId: '',
-      logoAssetId: '',
-      iconAssetId: '',
-      install: fallbackInstall,
-      assetPackPath: 'assets/games/007-first-light/core.0xo',
-    },
-  ],
-}
-
-function App() {
+export default function App() {
   const [snapshot, setSnapshot] = useState<Snapshot>(fallbackSnapshot)
   const [job, setJob] = useState<JobJournal | null>(fallbackSnapshot.lastJob)
   const [installPath, setInstallPath] = useState('')
   const [scanStatus, setScanStatus] = useState('No install found')
-  const [hasScanned, setHasScanned] = useState(false)
-  const [activeTab, setActiveTab] = useState<TabId>('Library')
+  const [, setHasScanned] = useState(false)
+  const [preferences, setPreferences] = useState<LauncherPreferences>(initialLauncherPreferences)
+  const [activeTab, setActiveTab] = useState<TabId>(initialLauncherPreferences.startupPage)
   const [selectedVersion, setSelectedVersion] = useState('')
   const [showInstallOptions, setShowInstallOptions] = useState(false)
-  const [installRoot, setInstallRoot] = useState(DEFAULT_COMMON_GAME)
-  const [catalog, setCatalog] = useState<GameCatalog>(fallbackCatalog)
+  const [installRoot, setInstallRoot] = useState(`${initialLauncherPreferences.defaultLibraryRoot}\\common\\007 First Light`)
+  const [catalog, setCatalog] = useState<GameCatalog>(() => (isTauriRuntime() ? emptyCatalog : fallbackCatalog))
+  const [catalogLoadState, setCatalogLoadState] = useState<CatalogLoadState>(
+    isTauriRuntime() ? 'loading' : 'ready',
+  )
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null)
   const [detail, setDetail] = useState<GameDetail | null>(null)
   const [assetUrls, setAssetUrls] = useState<Record<string, string>>({})
+  const assetUrlsRef = useRef<Record<string, string>>({})
+  const assetRequestRef = useRef<Set<string>>(new Set())
+  const assetDelaySlotRef = useRef(0)
   const [installStates, setInstallStates] = useState<Record<string, GameInstallState>>({})
-  const [catalogStatus, setCatalogStatus] = useState(
-    isTauriRuntime() ? 'Loading asset pack' : 'Browser preview uses fallback metadata',
-  )
-  const downloadSampleRef = useRef<{ jobId: string; bytesDone: number; at: number } | null>(null)
+  const latestJobRef = useRef<JobJournal | null>(job)
+  const downloadRateWindowRef = useRef<{ jobId: string; points: Array<{ bytesDone: number; at: number }> } | null>(null)
+  const canceledJobIdRef = useRef<string | null>(null)
+  const selectedGameIdRef = useRef<string | null>(selectedGameId)
+  const versionPlanSequenceRef = useRef(0)
   const [downloadRate, setDownloadRate] = useState(0)
   const [verifyStatus, setVerifyStatus] = useState<VerifyUiStatus | null>(null)
   const [launchSplash, setLaunchSplash] = useState<LaunchSplashState | null>(null)
+  const [launchOptions, setLaunchOptions] = useState<ResolvedGameLaunchConfig | null>(null)
   const [launcherUpdate, setLauncherUpdate] = useState<LauncherUpdateInfo | null>(null)
   const [launcherUpdateStatus, setLauncherUpdateStatus] = useState<string | null>(null)
+  const [settingsUpdateStatus, setSettingsUpdateStatus] = useState<string | null>(null)
   const [showDrivePicker, setShowDrivePicker] = useState(false)
   const [showUninstallConfirm, setShowUninstallConfirm] = useState(false)
+  const [playingGames, setPlayingGames] = useState<Record<string, boolean>>({})
+  const [showSpacewarPrompt, setShowSpacewarPrompt] = useState(false)
+  const [spacewarDownloading, setSpacewarDownloading] = useState(false)
+  const [showSteamRecommendation, setShowSteamRecommendation] = useState(false)
+  const [steamOpening, setSteamOpening] = useState(false)
+  const [steamEnvironment, setSteamEnvironment] = useState<SteamEnvironmentInfo | null>(null)
+  const [steamSettingsStatus, setSteamSettingsStatus] = useState<string | null>(null)
   // Library locations the user has added (persisted to localStorage)
   const [libraries, setLibraries] = useState<string[]>(() => {
     try {
@@ -470,33 +90,142 @@ function App() {
   })
 
   useEffect(() => {
+    assetUrlsRef.current = assetUrls
+  }, [assetUrls])
+
+  useEffect(() => {
+    selectedGameIdRef.current = selectedGameId
+  }, [selectedGameId])
+
+  useEffect(() => {
+    saveLauncherPreferences(preferences)
+  }, [preferences])
+
+  const requestGameAsset = useCallback((game: GameSummary | null | undefined, assetId: string | undefined, urgent = false) => {
+    if (!game || !assetId || !isTauriRuntime()) {
+      return
+    }
+    if (assetUrlsRef.current[assetId] || assetRequestRef.current.has(assetId)) {
+      return
+    }
+    assetRequestRef.current.add(assetId)
+    const delay = urgent ? 0 : Math.min(1200, assetDelaySlotRef.current++ * 90)
+    window.setTimeout(async () => {
+      try {
+        const blob = await invoke<AssetBlob>('get_game_asset', { gameId: game.id, assetId })
+        const url = `data:${blob.mimeType};base64,${blob.dataBase64}`
+        setAssetUrls((current) => {
+          if (current[assetId]) return current
+          return { ...current, [assetId]: url }
+        })
+      } catch {
+        // Ignore individual image failures; placeholders stay visible.
+      }
+    }, delay)
+  }, [])
+
+  const loadCatalog = useCallback(async () => {
     if (!isTauriRuntime()) {
+      setCatalogLoadState('ready')
       return
     }
 
-    invoke<GameCatalog>('get_game_catalog')
-      .then((next) => {
-        setCatalog(next)
-        setCatalogStatus('Asset pack loaded')
-      })
-      .catch((error) => {
-        setCatalogStatus(String(error))
-        setCatalog(fallbackCatalog)
-      })
-
-    invoke<LauncherUpdateInfo | null>('check_launcher_update')
-      .then((info) => {
-        if (info) setLauncherUpdate(info)
-      })
-      .catch(console.error)
+    queueMicrotask(() => setCatalogLoadState('loading'))
+    try {
+      const next = await invoke<GameCatalog>('get_game_catalog')
+      setCatalog(next)
+      setCatalogLoadState('ready')
+    } catch (error) {
+      console.error('Unable to load the game catalog:', error)
+      setCatalogLoadState('error')
+    }
   }, [])
 
-  async function refreshInstallState(gameId: string) {
+  const refreshSteamEnvironment = useCallback(async (announce = false) => {
+    if (!isTauriRuntime()) {
+      setSteamSettingsStatus('Steam integration diagnostics require the desktop launcher.')
+      return
+    }
+    if (announce) setSteamSettingsStatus('Refreshing Steam status...')
+    try {
+      const environment = await invoke<SteamEnvironmentInfo>('get_steam_environment')
+      setSteamEnvironment(environment)
+      if (announce) {
+        setSteamSettingsStatus(
+          environment.installed
+            ? environment.running
+              ? 'Steam is installed and running.'
+              : 'Steam is installed but not running.'
+            : 'Steam installation was not detected.',
+        )
+      }
+    } catch (error) {
+      setSteamSettingsStatus(`Steam status failed: ${String(error)}`)
+    }
+  }, [])
+
+  useEffect(() => {
+    queueMicrotask(() => void loadCatalog())
+  }, [loadCatalog])
+
+  useEffect(() => {
+    if (activeTab === 'Settings') {
+      queueMicrotask(() => void refreshSteamEnvironment())
+    }
+  }, [activeTab, refreshSteamEnvironment])
+
+  useEffect(() => {
+    if (!isTauriRuntime()) return
+    let unlisten: (() => void) | undefined
+    listen<LauncherUpdateProgress>('launcher://update-progress', (event) => {
+      if (event.payload.phase === 'installing') {
+        setLauncherUpdateStatus('Download verified. Installing and restarting...')
+        return
+      }
+      const total = event.payload.totalBytes ?? 0
+      const percent = total > 0 ? Math.min(100, Math.round((event.payload.downloadedBytes / total) * 100)) : null
+      setLauncherUpdateStatus(percent === null ? 'Downloading update...' : `Downloading update... ${percent}%`)
+    })
+      .then((dispose) => {
+        unlisten = dispose
+      })
+      .catch(console.error)
+    return () => unlisten?.()
+  }, [])
+
+  useEffect(() => {
+    if (!isTauriRuntime() || !preferences.autoCheckLauncherUpdates) {
+      return
+    }
+
+    const updateTimer = window.setTimeout(() => {
+      invoke<LauncherUpdateInfo | null>('check_launcher_update')
+        .then((info) => {
+          if (info) setLauncherUpdate(info)
+        })
+        .catch(console.error)
+    }, 1800)
+
+    return () => window.clearTimeout(updateTimer)
+  }, [preferences.autoCheckLauncherUpdates])
+
+  async function refreshInstallState(gameId: string, committedInstallPath?: string) {
     if (!isTauriRuntime()) {
       return
     }
     const state = await invoke<GameInstallState>('get_game_install_state', { gameId })
-    setInstallStates((current) => ({ ...current, [gameId]: state }))
+    setInstallStates((current) => {
+      const existing = current[gameId]
+      if (
+        committedInstallPath &&
+        !state.installed &&
+        existing?.installed &&
+        existing.installPath === committedInstallPath
+      ) {
+        return current
+      }
+      return { ...current, [gameId]: state }
+    })
   }
 
   useEffect(() => {
@@ -505,31 +234,78 @@ function App() {
     }
 
     let disposed = false
-    Promise.all(
-      catalog.games.map((game) =>
-        invoke<GameInstallState>('get_game_install_state', { gameId: game.id }).catch(() => null),
-      ),
-    ).then((states) => {
-      if (disposed) return
-      const next: Record<string, GameInstallState> = {}
-      for (const state of states) {
-        if (state) next[state.gameId] = state
-      }
-      setInstallStates(next)
-    })
+    const gameIds = catalog.games.map((game) => game.id)
+    invoke<GameInstallState[]>('get_game_install_states', { gameIds })
+      .then((states) => {
+        if (disposed) return
+        const next: Record<string, GameInstallState> = {}
+        for (const state of states) {
+          next[state.gameId] = state
+        }
+        setInstallStates(next)
+      })
+      .catch(() => {
+        // Compatibility fallback for older backends: stagger single calls so the
+        // WebView is not hammered by N simultaneous IPC requests at startup.
+        gameIds.forEach((gameId, index) => {
+          window.setTimeout(() => {
+            if (!disposed) void refreshInstallState(gameId).catch(() => undefined)
+          }, index * 120)
+        })
+      })
 
     return () => {
       disposed = true
     }
   }, [catalog.games])
 
+  const updateReadyGameIds = useMemo(() => {
+    return catalog.games
+      .filter((game) => {
+        const state = installStates[game.id]
+        if (!state?.installed || state.currentVersion === 'unknown' || state.currentVersion === 'not installed') {
+          return false
+        }
+        const latest = game.availableVersions.find((version) => version.latest)?.version ?? game.latestVersion
+        return Boolean(latest && latest !== 'unknown' && state.currentVersion !== latest)
+      })
+      .map((game) => game.id)
+  }, [catalog.games, installStates])
+  const updatesCatalog = useMemo(
+    () => ({ ...catalog, games: catalog.games.filter((game) => updateReadyGameIds.includes(game.id)) }),
+    [catalog, updateReadyGameIds],
+  )
+
+  const effectiveGameId = useMemo(() => {
+    if (activeTab === 'Settings') {
+      return null
+    }
+    const activeJobGameId = job?.gameId || snapshot.lastJob?.gameId
+    if (activeTab === 'Downloads') {
+      return activeJobGameId ?? null
+    }
+    if (activeTab === 'Updates') {
+      const activeUpdateGameId =
+        job?.kind === 'update'
+          ? job.gameId
+          : snapshot.lastJob?.kind === 'update'
+            ? snapshot.lastJob.gameId
+            : null
+      if (activeUpdateGameId) {
+        return activeUpdateGameId
+      }
+      return selectedGameId && updateReadyGameIds.includes(selectedGameId) ? selectedGameId : null
+    }
+    return selectedGameId
+  }, [activeTab, job?.gameId, job?.kind, snapshot.lastJob?.gameId, snapshot.lastJob?.kind, selectedGameId, updateReadyGameIds])
+
   useEffect(() => {
-    if (!selectedGameId) {
+    if (!effectiveGameId) {
       return
     }
 
     if (!isTauriRuntime()) {
-      const game = catalog.games.find((candidate) => candidate.id === selectedGameId)
+      const game = catalog.games.find((candidate) => candidate.id === effectiveGameId)
       let disposed = false
       Promise.resolve().then(() => {
         if (!disposed && game) {
@@ -541,19 +317,27 @@ function App() {
       }
     }
 
-    invoke<GameDetail>('get_game_detail', { gameId: selectedGameId, locale: 'en-US' })
-      .then(setDetail)
+    let disposed = false
+    invoke<GameDetail>('get_game_detail', { gameId: effectiveGameId, locale: 'en-US' })
+      .then((nextDetail) => {
+        if (!disposed) setDetail(nextDetail)
+      })
       .catch((error) => {
-        setCatalogStatus(String(error))
-        const game = catalog.games.find((candidate) => candidate.id === selectedGameId)
+        if (disposed) return
+        console.error(`Unable to load details for ${effectiveGameId}:`, error)
+        const game = catalog.games.find((candidate) => candidate.id === effectiveGameId)
         setDetail(game ? fallbackDetailFromSummary(game) : null)
       })
-  }, [catalog.games, selectedGameId])
+    return () => {
+      disposed = true
+    }
+  }, [catalog.games, effectiveGameId])
 
   const selectedGame = useMemo(
-    () => (selectedGameId ? catalog.games.find((game) => game.id === selectedGameId) ?? null : null),
-    [catalog.games, selectedGameId],
+    () => (effectiveGameId ? catalog.games.find((game) => game.id === effectiveGameId) ?? null : null),
+    [catalog.games, effectiveGameId],
   )
+  const activeDetail = detail?.gameId === effectiveGameId ? detail : null
 
   useEffect(() => {
     if (!isTauriRuntime()) {
@@ -563,6 +347,8 @@ function App() {
     let disposed = false
     let unlistenLaunch: (() => void) | undefined
     let unlistenError: (() => void) | undefined
+    let unlistenSteamRecommendation: (() => void) | undefined
+    let unlistenSpacewarRequired: (() => void) | undefined
 
     listen<ShortcutLaunchPayload>('launcher://shortcut-launch', (event) => {
       const payload = event.payload
@@ -597,10 +383,32 @@ function App() {
       }
     })
 
+    listen<ShortcutLaunchPayload>('launcher://steam-recommendation-required', () => {
+      setShowSteamRecommendation(true)
+    }).then((fn) => {
+      if (disposed) {
+        fn()
+      } else {
+        unlistenSteamRecommendation = fn
+      }
+    })
+
+    listen<ShortcutLaunchPayload>('launcher://spacewar-required', () => {
+      setShowSpacewarPrompt(true)
+    }).then((fn) => {
+      if (disposed) {
+        fn()
+      } else {
+        unlistenSpacewarRequired = fn
+      }
+    })
+
     return () => {
       disposed = true
       unlistenLaunch?.()
       unlistenError?.()
+      unlistenSteamRecommendation?.()
+      unlistenSpacewarRequired?.()
     }
   }, [assetUrls, catalog.games])
 
@@ -621,7 +429,7 @@ function App() {
         setScanStatus(`Installed ${state.currentVersion}`)
       } else {
         setInstallPath('')
-        setInstallRoot(normalizeInstallMetadata(selectedGame, selectedGame.install).defaultInstallFolder)
+        setInstallRoot(installMetadataForStoreRoot(selectedGame, selectedGame.install, preferences.defaultLibraryRoot).defaultInstallFolder)
         setHasScanned(false)
         setScanStatus('No install found')
       }
@@ -629,105 +437,75 @@ function App() {
     return () => {
       disposed = true
     }
-  }, [installStates, selectedGame])
+  }, [installStates, preferences.defaultLibraryRoot, selectedGame])
+
+  // Scale mode: selected game assets are urgent; browse cards request their
+  // thumbnails only when they become visible. This avoids reading every .0xo
+  // image at launcher startup.
+  useEffect(() => {
+    if (!isTauriRuntime() || catalog.games.length === 0 || !selectedGameId) return
+    const selected = catalog.games.find((game) => game.id === selectedGameId)
+    if (!selected) return
+    ;[selected.heroAssetId, selected.logoAssetId, selected.iconAssetId, selected.gridAssetId].forEach((assetId) => {
+      requestGameAsset(selected, assetId, true)
+    })
+  }, [catalog.games, requestGameAsset, selectedGameId])
 
   useEffect(() => {
-    const ids = catalog.games.flatMap((game) => [game.gridAssetId, game.logoAssetId, game.iconAssetId]).filter(Boolean)
-    const missing = ids.filter((id) => !assetUrls[id])
-    if (!isTauriRuntime() || missing.length === 0) {
+    if (!selectedGame || !activeDetail) {
       return
     }
-
-    let disposed = false
-    Promise.all(
-      missing.map(async (assetId) => {
-        const game = catalog.games.find((candidate) =>
-          [candidate.gridAssetId, candidate.logoAssetId, candidate.iconAssetId].includes(assetId),
-        )
-        if (!game) return null
-        const blob = await invoke<AssetBlob>('get_game_asset', { gameId: game.id, assetId })
-        return [assetId, `data:${blob.mimeType};base64,${blob.dataBase64}`] as const
-      }),
-    )
-      .then((loaded) => {
-        if (disposed) return
-        setAssetUrls((current) => {
-          const next = { ...current }
-          for (const item of loaded) {
-            if (item) {
-              const [assetId, url] = item
-              next[assetId] = url
-            }
-          }
-          return next
-        })
-      })
-      .catch((error) => setCatalogStatus(String(error)))
-
-    return () => {
-      disposed = true
+    const ids = collectAssetIds(selectedGame)
+    for (const assetId of ids) {
+      requestGameAsset(selectedGame, assetId, true)
     }
-  }, [assetUrls, catalog.games])
-
-  useEffect(() => {
-    if (!selectedGame || !detail) {
-      return
-    }
-    const ids = collectAssetIds(selectedGame, detail)
-    const missing = ids.filter((id) => id && !assetUrls[id])
-    if (!isTauriRuntime() || missing.length === 0) {
-      return
-    }
-
-    let disposed = false
-    Promise.all(
-      missing.map(async (assetId) => {
-        const blob = await invoke<AssetBlob>('get_game_asset', { gameId: selectedGame.id, assetId })
-        return [assetId, `data:${blob.mimeType};base64,${blob.dataBase64}`] as const
-      }),
-    )
-      .then((loaded) => {
-        if (disposed) return
-        setAssetUrls((current) => {
-          const next = { ...current }
-          for (const [assetId, url] of loaded) {
-            next[assetId] = url
-          }
-          return next
-        })
-      })
-      .catch((error) => setCatalogStatus(String(error)))
-
-    return () => {
-      disposed = true
-    }
-  }, [assetUrls, detail, selectedGame])
+  }, [activeDetail, requestGameAsset, selectedGame])
 
   useEffect(() => {
     if (!isTauriRuntime()) {
       return
     }
 
-    invoke<Snapshot>('get_launcher_snapshot')
-      .then((next) => {
-        setSnapshot(next)
-        setJob(next.lastJob)
-        if (next.detectedInstallPath) {
-          setInstallPath(next.detectedInstallPath)
-          setInstallRoot(next.detectedInstallPath)
-          setHasScanned(next.currentVersion !== 'unknown' && next.currentVersion !== 'not installed')
-          setScanStatus(`0xoLemon store install recognized (${next.currentVersion})`)
-        }
-      })
-      .catch(() => {
-        setSnapshot(fallbackSnapshot)
-      })
-
     let disposed = false
+    const snapshotTimer = window.setTimeout(() => {
+      invoke<Snapshot>('get_launcher_snapshot')
+        .then((next) => {
+          if (disposed) return
+          setSnapshot(next)
+          setJob(next.lastJob)
+          if (next.detectedInstallPath) {
+            setInstallPath(next.detectedInstallPath)
+            setInstallRoot(next.detectedInstallPath)
+            setHasScanned(next.currentVersion !== 'unknown' && next.currentVersion !== 'not installed')
+            setScanStatus(`0xoLemon store install recognized (${next.currentVersion})`)
+          }
+        })
+        .catch(() => {
+          if (!disposed) setSnapshot(fallbackSnapshot)
+        })
+    }, 250)
+
     let unsubscribe: (() => void) | undefined
+    let unsubscribeJobCleared: (() => void) | undefined
     listen<JobJournal>('launcher://job', (event) => {
       const nextJob = event.payload
+      if (canceledJobIdRef.current === nextJob.id) {
+        return
+      }
+      if (canceledJobIdRef.current && canceledJobIdRef.current !== nextJob.id) {
+        canceledJobIdRef.current = null
+      }
       setJob(nextJob)
+      if (
+        selectedGameIdRef.current === nextJob.gameId &&
+        nextJob.toVersion &&
+        nextJob.toVersion !== 'unknown'
+      ) {
+        // The job target is authoritative while install/update/repair is active.
+        // Keep the picker on that exact version instead of letting a delayed
+        // planning response or an old marker make the UI jump backwards.
+        setSelectedVersion(nextJob.toVersion)
+      }
       if (nextJob.status === 'committed') {
         setInstallPath(nextJob.installPath)
         setInstallRoot(nextJob.installPath)
@@ -744,7 +522,9 @@ function App() {
             launchExecutable: current[nextJob.gameId]?.launchExecutable ?? '',
           },
         }))
-        void refreshInstallState(nextJob.gameId)
+        window.setTimeout(() => {
+          void refreshInstallState(nextJob.gameId, nextJob.installPath).catch(() => undefined)
+        }, 350)
         setSnapshot((current) => ({
           ...current,
           currentVersion: nextJob.toVersion,
@@ -780,9 +560,24 @@ function App() {
       }
     })
 
+    listen('launcher://job-cleared', () => {
+      setJob(null)
+      setDownloadRate(0)
+      downloadRateWindowRef.current = null
+      setVerifyStatus((current) => (current?.state === 'running' ? null : current))
+    }).then((fn) => {
+      if (disposed) {
+        fn()
+      } else {
+        unsubscribeJobCleared = fn
+      }
+    })
+
     return () => {
       disposed = true
+      window.clearTimeout(snapshotTimer)
       unsubscribe?.()
+      unsubscribeJobCleared?.()
     }
   }, [])
 
@@ -833,24 +628,48 @@ function App() {
   }, [])
 
   const activeJob = job ?? createIdleJob(snapshot)
+  latestJobRef.current = activeJob
+
   useEffect(() => {
     if (activeJob.status !== 'downloading') {
-      downloadSampleRef.current = null
+      downloadRateWindowRef.current = null
       return
     }
 
-    const now = performance.now()
-    const previous = downloadSampleRef.current
-    if (previous && previous.jobId === activeJob.id && activeJob.bytesDone >= previous.bytesDone) {
-      const deltaBytes = activeJob.bytesDone - previous.bytesDone
-      const deltaMs = now - previous.at
-      if (deltaBytes > 0 && deltaMs > 0) {
-        const instantRate = (deltaBytes * 1000) / deltaMs
-        setDownloadRate((current) => (current > 0 ? current * 0.95 + instantRate * 0.05 : instantRate))
+    const sampleWindowMs = 10_000
+    const tick = () => {
+      const current = latestJobRef.current
+      if (!current || current.status !== 'downloading' || current.id !== activeJob.id) {
+        return
       }
+
+      const now = performance.now()
+      let windowState = downloadRateWindowRef.current
+      if (!windowState || windowState.jobId !== current.id) {
+        windowState = { jobId: current.id, points: [] }
+      }
+
+      const lastPoint = windowState.points[windowState.points.length - 1]
+      if (!lastPoint || current.bytesDone !== lastPoint.bytesDone || now - lastPoint.at >= 900) {
+        windowState.points.push({ bytesDone: current.bytesDone, at: now })
+      }
+      windowState.points = windowState.points.filter((point) => now - point.at <= sampleWindowMs)
+      if (windowState.points.length > 12) {
+        windowState.points.splice(0, windowState.points.length - 12)
+      }
+      downloadRateWindowRef.current = windowState
+
+      const first = windowState.points[0]
+      const last = windowState.points[windowState.points.length - 1]
+      const elapsedMs = last && first ? last.at - first.at : 0
+      const transferred = last && first ? Math.max(last.bytesDone - first.bytesDone, 0) : 0
+      setDownloadRate(elapsedMs >= 900 ? (transferred * 1000) / elapsedMs : 0)
     }
-    downloadSampleRef.current = { jobId: activeJob.id, bytesDone: activeJob.bytesDone, at: now }
-  }, [activeJob.id, activeJob.status, activeJob.bytesDone])
+
+    tick()
+    const timer = window.setInterval(tick, 1000)
+    return () => window.clearInterval(timer)
+  }, [activeJob.id, activeJob.status])
 
   const phaseProgress = getPhaseProgress(activeJob, activeJob.status === 'downloading' ? downloadRate : 0)
   const progress = phaseProgress.percent
@@ -859,8 +678,8 @@ function App() {
   const selectedInstallState = selectedGame ? installStates[selectedGame.id] : undefined
   const selectedInstalled = Boolean(selectedInstallState?.installed)
   const gameInstall = useMemo(
-    () => normalizeInstallMetadata(selectedGame, detail?.install ?? selectedGame?.install ?? fallbackInstall),
-    [detail?.install, selectedGame],
+    () => installMetadataForStoreRoot(selectedGame, activeDetail?.install ?? selectedGame?.install ?? fallbackInstall, preferences.defaultLibraryRoot),
+    [activeDetail?.install, preferences.defaultLibraryRoot, selectedGame],
   )
   const selectedInstallPath = selectedInstalled
     ? selectedInstallState?.installPath || gameInstall.defaultInstallFolder
@@ -868,26 +687,47 @@ function App() {
   const selectedCurrentVersion = selectedInstalled ? selectedInstallState?.currentVersion ?? 'installed' : 'not installed'
   const selectedVerifyStatus = selectedGame && verifyStatus?.gameId === selectedGame.id ? verifyStatus : null
   const availableVersions = selectedGame ? versionOptions(snapshot, selectedGame, isDefaultGame) : []
+  const latestCatalogVersion =
+    selectedGame?.availableVersions.find((version) => version.latest)?.version ??
+    activeDetail?.versions.find((version) => version.latest)?.version ??
+    selectedGame?.latestVersion ??
+    availableVersions[availableVersions.length - 1] ??
+    'unknown'
   const fallbackTargetVersion = isDefaultGame && availableVersions.includes(snapshot.latestVersion)
     ? snapshot.latestVersion
-    : selectedGame?.latestVersion || availableVersions[availableVersions.length - 1] || 'select game'
-  const targetVersion = selectedVersion && availableVersions.includes(selectedVersion) ? selectedVersion : fallbackTargetVersion
+    : latestCatalogVersion !== 'unknown'
+      ? latestCatalogVersion
+      : availableVersions[availableVersions.length - 1] || 'select game'
+  const requestedTargetVersion =
+    selectedVersion && availableVersions.includes(selectedVersion) ? selectedVersion : fallbackTargetVersion
+  // Keep the selected target for both fresh installs and installed games. This
+  // allows the same version picker to perform upgrades, reinstalls and downgrades.
+  const targetVersion = requestedTargetVersion
   const selectedVersionInfo =
     selectedGame?.availableVersions.find((version) => version.version === targetVersion) ??
-    detail?.versions.find((version) => version.version === targetVersion)
+    activeDetail?.versions.find((version) => version.version === targetVersion)
   const installMode = !selectedInstalled
   const updateReady =
     selectedInstalled &&
     selectedCurrentVersion !== 'unknown' &&
-    targetVersion !== 'unknown' &&
-    selectedCurrentVersion !== targetVersion
+    selectedCurrentVersion !== 'not installed' &&
+    latestCatalogVersion !== 'unknown' &&
+    selectedCurrentVersion !== latestCatalogVersion
   const isPaused = activeJob.status === 'paused'
   const isRunning = job !== null && ['running', 'downloading', 'assembling', 'paused'].includes(activeJob.status)
-  const canUpdate = Boolean(selectedGame && detail) && !isRunning && targetVersion !== 'unknown' && targetVersion !== 'select game' && (installMode || updateReady)
+  const hasVersionChoices = availableVersions.length > 1
+  const canUpdate =
+    Boolean(selectedGame && activeDetail) &&
+    !isRunning &&
+    availableVersions.length > 0 &&
+    targetVersion !== 'unknown' &&
+    targetVersion !== 'select game'
+  const canApplySelectedVersion =
+    canUpdate && (installMode || targetVersion !== selectedCurrentVersion)
   const effectiveDownloadSize =
     isDefaultGame && updateReady && snapshot.updateSize > 0
       ? snapshot.updateSize
-      : selectedVersionInfo?.sizeBytes ?? detail?.versions[0]?.sizeBytes ?? 0
+      : selectedVersionInfo?.sizeBytes ?? activeDetail?.versions[0]?.sizeBytes ?? 0
   const displayedInstallTarget =
     selectedInstalled
       ? selectedInstallPath
@@ -930,15 +770,22 @@ function App() {
     }
 
     try {
-      const report = await invoke<{ fileCount: number; detectedVersion?: string | null; warnings: string[] }>('scan_install', {
-        path,
-      })
-      const version = report.detectedVersion ? `detected ${report.detectedVersion}` : 'version needs manifest verify'
-      setScanStatus(`${report.fileCount} files, ${version}`)
-      const planned = await invoke<Snapshot>('plan_install_update', { path, targetVersion, gameId: selectedGame.id })
+      const gameId = selectedGame.id
+      const [report, planned] = await Promise.all([
+        invoke<{ fileCount: number; detectedVersion?: string | null; warnings: string[] }>('scan_install', {
+          path,
+        }),
+        invoke<Snapshot>('plan_install_update', { path, targetVersion, gameId }),
+      ])
+      const plannedVersion =
+        planned.currentVersion !== 'unknown' && planned.currentVersion !== 'not installed'
+          ? planned.currentVersion
+          : report.detectedVersion
+      const versionLabel = plannedVersion ? `installed ${plannedVersion}` : 'version state not found'
+      setScanStatus(`${report.fileCount} files, ${versionLabel}`)
       setSnapshot(planned)
       setJob(planned.lastJob)
-      setHasScanned(Boolean(report.detectedVersion))
+      setHasScanned(Boolean(plannedVersion))
     } catch (error) {
       setScanStatus(String(error))
       setHasScanned(false)
@@ -950,20 +797,33 @@ function App() {
       setScanStatus('Select a game first')
       return
     }
+    const gameId = selectedGame.id
+    const requestSequence = ++versionPlanSequenceRef.current
     setSelectedVersion(version)
     if (!isTauriRuntime()) {
       return
     }
 
     try {
-      const planned =
-        installMode || !installPath || !hasScanned
-          ? await invoke<Snapshot>('plan_fresh_install', { targetVersion: version, gameId: selectedGame.id })
-          : await invoke<Snapshot>('plan_install_update', { path: installPath, targetVersion: version, gameId: selectedGame.id })
+      const planned = selectedInstalled
+        ? await invoke<Snapshot>('plan_install_update', {
+            path: selectedInstallPath,
+            targetVersion: version,
+            gameId,
+          })
+        : await invoke<Snapshot>('plan_fresh_install', { targetVersion: version, gameId })
+      if (
+        requestSequence !== versionPlanSequenceRef.current ||
+        selectedGameIdRef.current !== gameId
+      ) {
+        return
+      }
       setSnapshot(planned)
       setJob(planned.lastJob)
     } catch (error) {
-      setScanStatus(String(error))
+      if (requestSequence === versionPlanSequenceRef.current) {
+        setScanStatus(String(error))
+      }
     }
   }
 
@@ -998,13 +858,121 @@ function App() {
     }
   }
 
-  async function startUpdate() {
-    if (!selectedGame || !detail) {
+  function updatePreference<K extends keyof LauncherPreferences>(key: K, value: LauncherPreferences[K]) {
+    setPreferences((current) => ({ ...current, [key]: value }))
+  }
+
+  async function chooseDefaultLibraryRoot() {
+    try {
+      const selected = await open({
+        directory: true,
+        multiple: false,
+        title: 'Choose default game library',
+        defaultPath: preferences.defaultLibraryRoot,
+      })
+      if (typeof selected !== 'string') return
+      const root = selected.trim().replace(/[\\/]+$/, '') || DEFAULT_STORE_ROOT
+      updatePreference('defaultLibraryRoot', root)
+      setSettingsUpdateStatus(`Default library changed to ${root}`)
+
+      const drive = root.match(/^([A-Za-z]:)/)?.[1]?.toUpperCase()
+      if (drive && !libraries.includes(drive)) {
+        const next = [...libraries, drive]
+        setLibraries(next)
+        localStorage.setItem('0xo_libraries', JSON.stringify(next))
+      }
+
+      if (selectedGame && !selectedInstalled) {
+        setInstallRoot(installMetadataForStoreRoot(selectedGame, activeDetail?.install ?? selectedGame.install, root).defaultInstallFolder)
+      }
+    } catch (error) {
+      setSettingsUpdateStatus(`Could not change library: ${String(error)}`)
+    }
+  }
+
+  async function openDefaultLibraryRoot() {
+    if (!isTauriRuntime()) {
+      setSettingsUpdateStatus(preferences.defaultLibraryRoot)
+      return
+    }
+    try {
+      await invoke('open_folder', { path: preferences.defaultLibraryRoot })
+    } catch (error) {
+      setSettingsUpdateStatus(`Could not open library: ${String(error)}`)
+    }
+  }
+
+  async function checkLauncherUpdateNow() {
+    if (!isTauriRuntime()) {
+      setSettingsUpdateStatus('Update checks require the desktop launcher.')
+      return
+    }
+    setSettingsUpdateStatus('Checking for launcher updates...')
+    try {
+      const info = await invoke<LauncherUpdateInfo | null>('check_launcher_update')
+      setLauncherUpdate(info)
+      setSettingsUpdateStatus(info ? `Version ${info.version} is available.` : 'Launcher is up to date.')
+    } catch (error) {
+      setSettingsUpdateStatus(`Update check failed: ${String(error)}`)
+    }
+  }
+
+  async function openSteamFromSettings(command: 'open_steam' | 'open_steam_big_picture') {
+    if (!isTauriRuntime()) {
+      setSteamSettingsStatus('Steam actions require the desktop launcher.')
+      return
+    }
+    setSteamSettingsStatus(command === 'open_steam' ? 'Opening Steam...' : 'Opening Steam Big Picture...')
+    try {
+      await invoke(command)
+      window.setTimeout(() => void refreshSteamEnvironment(), 1800)
+    } catch (error) {
+      setSteamSettingsStatus(`Steam action failed: ${String(error)}`)
+    }
+  }
+
+  function resetLauncherPreferences() {
+    const defaults = { ...DEFAULT_LAUNCHER_PREFERENCES }
+    setPreferences(defaults)
+    setSettingsUpdateStatus('Default launcher settings restored.')
+    if (selectedGame && !selectedInstalled) {
+      setInstallRoot(
+        installMetadataForStoreRoot(
+          selectedGame,
+          activeDetail?.install ?? selectedGame.install,
+          defaults.defaultLibraryRoot,
+        ).defaultInstallFolder,
+      )
+    }
+  }
+
+  async function openVersionOptions() {
+    if (!selectedGame || !activeDetail) {
       setScanStatus('Select a game first')
       return
     }
-    if (installMode && !showInstallOptions) {
-      setShowInstallOptions(true)
+
+    const preferredVersion = selectedInstalled
+      ? updateReady && latestCatalogVersion !== 'unknown'
+        ? latestCatalogVersion
+        : availableVersions.includes(selectedCurrentVersion)
+          ? selectedCurrentVersion
+          : targetVersion
+      : targetVersion
+
+    setShowInstallOptions(true)
+    if (preferredVersion && preferredVersion !== 'unknown' && preferredVersion !== 'select game') {
+      await changeTargetVersion(preferredVersion)
+    }
+  }
+
+  async function startUpdate() {
+    if (!selectedGame || !activeDetail) {
+      setScanStatus('Select a game first')
+      return
+    }
+    if (!installMode && targetVersion === selectedCurrentVersion) {
+      setScanStatus(`${targetVersion} is already installed. Choose another version to upgrade or downgrade.`)
       return
     }
 
@@ -1030,15 +998,27 @@ function App() {
     }
 
     try {
+      const versionToApply = targetVersion
+      setSelectedVersion(versionToApply)
       const next = installMode
-        ? await invoke<JobJournal>('start_install_job', { gameId: selectedGame.id, targetVersion, installPath: installRoot })
-        : await invoke<JobJournal>('start_update_job', { gameId: selectedGame.id, installPath: selectedInstallPath, targetVersion })
+        ? await invoke<JobJournal>('start_install_job', {
+            gameId: selectedGame.id,
+            targetVersion: versionToApply,
+            installPath: installRoot,
+          })
+        : await invoke<JobJournal>('start_update_job', {
+            gameId: selectedGame.id,
+            installPath: selectedInstallPath,
+            targetVersion: versionToApply,
+          })
       setJob(next)
-      setActiveTab('Downloads')
+      if (preferences.openDownloadsOnJobStart) {
+        setActiveTab('Downloads')
+      }
       setShowInstallOptions(false)
       if (installMode) {
         setInstallPath(installRoot)
-        setScanStatus(`Installing ${targetVersion}`)
+        setScanStatus(`Installing ${versionToApply}`)
       }
     } catch (error) {
       setScanStatus(String(error))
@@ -1046,7 +1026,7 @@ function App() {
   }
 
   async function playSelectedGame() {
-    if (!selectedGame || !detail) {
+    if (!selectedGame || !activeDetail) {
       setScanStatus('Select a game first')
       return
     }
@@ -1059,10 +1039,109 @@ function App() {
       return
     }
 
+    if (gameHasTag(selectedGame.id, 'online')) {
+      try {
+        const spacewarOk = await invoke<boolean>('check_spacewar_installed')
+        if (!spacewarOk) {
+          setShowSpacewarPrompt(true)
+          return
+        }
+      } catch {
+        // If the Steam library probe itself fails, do not block the game.
+      }
+
+      try {
+        const steamRunning = await invoke<boolean>('is_steam_running')
+        if (!steamRunning) {
+          setShowSteamRecommendation(true)
+          return
+        }
+      } catch {
+        // If process detection is unavailable, continue with normal launch.
+      }
+    }
+
+    await continuePlaySelectedGame()
+  }
+
+  async function continuePlaySelectedGame() {
+    if (!selectedGame || !activeDetail) return
+
+    try {
+      const config = await invoke<ResolvedGameLaunchConfig>('get_game_launch_config', {
+        gameId: selectedGame.id,
+        installPath: selectedInstallPath,
+        launchExecutable: selectedInstallState?.launchExecutable || gameInstall.launchExecutable,
+      })
+      const availableOptions = config.options.filter((option) => option.available)
+      if (availableOptions.length === 0) {
+        const reason = config.options
+          .map((option) => option.unavailableReason)
+          .filter(Boolean)
+          .join('; ')
+        setScanStatus(reason || 'No launch option is available for this game')
+        return
+      }
+
+      const shouldShowPicker =
+        config.pickerMode === 'always' ||
+        (config.pickerMode !== 'never' && config.options.length > 1)
+
+      if (shouldShowPicker) {
+        setLaunchOptions(config)
+        return
+      }
+
+      const selectedOption =
+        availableOptions.find((option) => option.id === config.defaultOptionId) ??
+        availableOptions.find((option) => option.recommended) ??
+        availableOptions[0]
+      await doLaunchGame(selectedOption.id, selectedOption.title)
+    } catch (error) {
+      setScanStatus(String(error))
+    }
+  }
+
+  async function openSteamAndContinue() {
+    setSteamOpening(true)
+    try {
+      await invoke('open_steam')
+      const deadline = Date.now() + 20_000
+      while (Date.now() < deadline) {
+        const running = await invoke<boolean>('is_steam_running').catch(() => false)
+        if (running) {
+          setShowSteamRecommendation(false)
+          await continuePlaySelectedGame()
+          return
+        }
+        await new Promise((resolve) => window.setTimeout(resolve, 700))
+      }
+      setScanStatus("We're recommended you to open Steam to play online")
+    } catch (error) {
+      setScanStatus(`Could not open Steam: ${String(error)}`)
+    } finally {
+      setSteamOpening(false)
+    }
+  }
+
+  async function doLaunchGame(launchOptionId?: string, launchOptionTitle?: string) {
+    if (!selectedGame || !activeDetail) return
+
+    if (preferences.pauseDownloadsBeforeLaunch && isRunning && !isPaused) {
+      try {
+        await invoke('pause_job')
+        setJob((current) => (current ? { ...current, status: 'paused' } : current))
+        setScanStatus('Active download paused before launching the game.')
+      } catch (error) {
+        setScanStatus(`Could not pause the active download: ${String(error)}`)
+        return
+      }
+    }
+
     const splashStartedAt = performance.now()
     setLaunchSplash({
-      title: selectedGame.title,
-      heroUrl: assetUrls[selectedGame.heroAssetId] || firstMediaUrl(detail, assetUrls),
+      title: launchOptionTitle ? `${selectedGame.title} — ${launchOptionTitle}` : selectedGame.title,
+      heroUrl: assetUrls[selectedGame.heroAssetId] || firstMediaUrl(activeDetail, assetUrls),
       iconUrl: assetUrls[selectedGame.iconAssetId] || assetUrls[selectedGame.gridAssetId],
     })
 
@@ -1071,13 +1150,21 @@ function App() {
         gameId: selectedGame.id,
         installPath: selectedInstallPath,
         launchExecutable: selectedInstallState?.launchExecutable || gameInstall.launchExecutable,
+        launchOptionId: launchOptionId || null,
       })
       const dependencyText =
         report.dependenciesInstalled.length > 0
           ? `Installed ${report.dependenciesInstalled.length} dependency package(s), then started`
           : 'Started'
-      setScanStatus(`${dependencyText} ${selectedGame.title}`)
-      const remainingMs = Math.max(1200, 2600 - (performance.now() - splashStartedAt))
+      const optionText = report.launchOptionTitle ? ` (${report.launchOptionTitle})` : ''
+      setScanStatus(`${dependencyText} ${selectedGame.title}${optionText}`)
+
+      setPlayingGames((prev) => ({ ...prev, [selectedGame.id]: true }))
+      setTimeout(() => {
+        setPlayingGames((prev) => ({ ...prev, [selectedGame.id]: false }))
+      }, 15000)
+
+      const remainingMs = Math.max(0, 4200 - (performance.now() - splashStartedAt))
       window.setTimeout(() => setLaunchSplash(null), remainingMs)
     } catch (error) {
       setLaunchSplash(null)
@@ -1173,11 +1260,15 @@ function App() {
     }
   }
 
-    function uninstallSelectedGame() {
+  function uninstallSelectedGame() {
     if (!selectedGame || !selectedInstalled) {
       return
     }
-    setShowUninstallConfirm(true)
+    if (preferences.confirmBeforeUninstall) {
+      setShowUninstallConfirm(true)
+      return
+    }
+    void executeUninstall()
   }
 
   async function executeUninstall() {
@@ -1190,6 +1281,7 @@ function App() {
       return
     }
     try {
+      await invoke('abort_and_clean_job', { gameId: selectedGame.id }).catch(() => undefined)
       const report = await invoke<UninstallReport>('uninstall_game', {
         gameId: selectedGame.id,
         installPath: selectedInstallPath,
@@ -1207,7 +1299,9 @@ function App() {
       setInstallPath('')
       setInstallRoot(gameInstall.defaultInstallFolder)
       setHasScanned(false)
-      setScanStatus(`Uninstalled ${selectedGame.title}: removed ${report.removedFiles} files`)
+      const desktopShortcutText = report.removedShortcuts > 0 ? `, removed ${report.removedShortcuts} shortcut${report.removedShortcuts === 1 ? '' : 's'}` : ''
+      const steamShortcutText = report.steamShortcutRemoved ? ', removed/queued Steam shortcut cleanup' : ''
+      setScanStatus(`Uninstalled ${selectedGame.title}: removed ${report.removedFiles} files${desktopShortcutText}${steamShortcutText}`)
     } catch (error) {
       setScanStatus(String(error))
     }
@@ -1228,6 +1322,21 @@ function App() {
     }
   }
 
+  async function resumeFailedJob() {
+    if (!isTauriRuntime()) {
+      setJob((current) => (current ? { ...current, status: 'downloading', phase: 'Download packs' } : current))
+      return
+    }
+
+    try {
+      await invoke('resume_job')
+      setJob((current) => (current ? { ...current, status: 'downloading', phase: current.phase || 'Download packs' } : current))
+      setScanStatus('Resuming download...')
+    } catch (error) {
+      setScanStatus(String(error))
+    }
+  }
+
   async function cancelJob() {
     if (!isTauriRuntime()) {
       setJob((current) => (current ? { ...current, status: 'canceled', phase: 'Canceled' } : current))
@@ -1238,19 +1347,30 @@ function App() {
       return
     }
 
-    if (selectedGameId) {
-      await invoke('abort_and_clean_job', { gameId: selectedGameId }).catch(() => undefined)
-    } else {
-      await invoke('cancel_job').catch(() => undefined)
+    canceledJobIdRef.current = job?.id ?? null
+
+    try {
+      if (selectedGameId) {
+        await invoke('abort_and_clean_job', { gameId: selectedGameId })
+      } else {
+        await invoke('cancel_job')
+      }
+      setScanStatus('Download canceled and temporary data cleanup started.')
+    } catch (error) {
+      setScanStatus(`Download canceled, but cleanup reported: ${String(error)}`)
+    } finally {
+      // Clear immediately; the backend job-cleared event repeats this after the
+      // journal is removed and again when the worker has fully exited.
+      setJob(null)
+      setDownloadRate(0)
+      downloadRateWindowRef.current = null
+      setVerifyStatus(null)
     }
-    
-    setJob(null)
-    setVerifyStatus(null)
   }
 
   return (
-    <div className="app-root">
-      <CustomTitleBar />
+    <div className={preferences.reduceMotion ? 'app-root reduce-motion' : 'app-root'}>
+      <CustomTitleBar closeBehavior={preferences.closeBehavior} />
       <main className="launcher-shell">
         {launcherUpdate ? (
           <div className="launcher-update-banner">
@@ -1266,7 +1386,7 @@ function App() {
               className="primary-control small"
               onClick={() => {
                 setLauncherUpdateStatus('Downloading...')
-                invoke('apply_launcher_update', { downloadUrl: launcherUpdate.downloadUrl })
+                invoke('apply_launcher_update')
                   .catch((e) => setLauncherUpdateStatus(`Failed: ${e}`))
               }}
               disabled={!!launcherUpdateStatus}
@@ -1279,51 +1399,72 @@ function App() {
         serviceStatus={contentServiceLabel(snapshot.proxyStatus)}
         activeTab={activeTab}
         onSelect={setActiveTab}
-        updateCount={updateReady ? 1 : 0}
+        updateCount={updateReadyGameIds.length}
         downloadCount={hasVisibleJob ? 1 : 0}
       />
       <section className="workspace">
-        {activeTab !== 'Library' && selectedGame && detail ? (
+        {activeTab !== 'Library' && activeTab !== 'Settings' && selectedGame && activeDetail ? (
           <OperationHero
             game={selectedGame}
-            detail={detail}
+            detail={activeDetail}
             assets={assetUrls}
-            currentVersion={snapshot.currentVersion}
-            latestVersion={snapshot.latestVersion}
+            currentVersion={selectedCurrentVersion}
+            latestVersion={latestCatalogVersion}
             updateReady={updateReady}
+            showVersionAction={selectedInstalled && hasVersionChoices}
             updateSize={effectiveDownloadSize}
-            onUpdate={startUpdate}
+            onUpdate={openVersionOptions}
             onPlay={playSelectedGame}
-            isRunning={isRunning}
+            isJobRunning={isRunning}
+            isGameRunning={playingGames[selectedGame.id] || false}
             canUpdate={canUpdate}
             installMode={installMode}
-            selectedInstalled={selectedInstalled}
             selectedVersion={targetVersion}
           />
         ) : null}
 
+        {activeTab === 'Settings' ? (
+          <SettingsView
+            preferences={preferences}
+            onChange={updatePreference}
+            onChooseLibrary={() => void chooseDefaultLibraryRoot()}
+            onOpenLibrary={() => void openDefaultLibraryRoot()}
+            onOpenCache={() => setActiveTab('Cache')}
+            onCheckForUpdates={() => void checkLauncherUpdateNow()}
+            steamEnvironment={steamEnvironment}
+            steamStatus={steamSettingsStatus}
+            onRefreshSteam={() => void refreshSteamEnvironment(true)}
+            onOpenSteam={() => void openSteamFromSettings('open_steam')}
+            onOpenBigPicture={() => void openSteamFromSettings('open_steam_big_picture')}
+            onReset={resetLauncherPreferences}
+            updateStatus={settingsUpdateStatus}
+          />
+        ) : (
         <ActiveView
           activeTab={activeTab}
-          catalog={catalog}
-          catalogStatus={catalogStatus}
+          catalog={activeTab === 'Updates' ? updatesCatalog : catalog}
+          catalogLoadState={catalogLoadState}
+          onRetryCatalog={() => void loadCatalog()}
           selectedGame={selectedGame}
           selectedGameId={selectedGameId}
           onSelectGame={(gameId) => {
-            setDetail(null)
+            versionPlanSequenceRef.current += 1
             setSelectedGameId(gameId)
             setShowInstallOptions(false)
+            setLaunchOptions(null)
             const game = catalog.games.find((candidate) => candidate.id === gameId)
             if (game) {
               const latest = game.availableVersions.find((version) => version.latest)?.version ?? game.latestVersion
               setSelectedVersion(latest)
-              setInstallRoot(normalizeInstallMetadata(game, game.install).defaultInstallFolder)
+              setInstallRoot(installMetadataForStoreRoot(game, game.install, preferences.defaultLibraryRoot).defaultInstallFolder)
               if (game.id !== DEFAULT_GAME_ID) {
                 setInstallPath('')
                 setScanStatus('No install found')
               }
             }
           }}
-          detail={detail}
+          onRequestAsset={requestGameAsset}
+          detail={activeDetail}
           assets={assetUrls}
           snapshot={snapshot}
           installPath={installPath}
@@ -1336,10 +1477,13 @@ function App() {
           verifyStatus={selectedVerifyStatus}
           installMode={installMode}
           updateReady={updateReady}
+          showVersionAction={selectedInstalled && hasVersionChoices}
           canUpdate={canUpdate}
+          isJobRunning={isRunning}
+          isGameRunning={selectedGame ? playingGames[selectedGame.id] || false : false}
           onBrowse={chooseInstallFolder}
           onScan={() => scanFolder()}
-          onPrimaryAction={startUpdate}
+          onPrimaryAction={openVersionOptions}
           onPlay={playSelectedGame}
           onVerify={verifySelectedGame}
           onUninstall={uninstallSelectedGame}
@@ -1350,22 +1494,27 @@ function App() {
           updateSize={effectiveDownloadSize}
           isRunning={isRunning}
           onOpenInstallOptions={() => {
-            setShowInstallOptions(true)
+            void openVersionOptions()
           }}
           onPause={pauseOrResume}
           onCancel={cancelJob}
+          onResume={resumeFailedJob}
           isPaused={isPaused}
           logs={activeJob.logs}
         />
-        {showInstallOptions && installMode && selectedGame && detail ? (
+        )}
+        {showInstallOptions && selectedGame && activeDetail ? (
           <InstallOptionsDialog
-            detail={detail}
+            detail={activeDetail}
+            mode={installMode ? 'install' : 'version'}
+            currentVersion={selectedCurrentVersion}
             selectedVersion={targetVersion}
             availableVersions={availableVersions}
-            versionInfos={selectedGame.availableVersions.length > 0 ? selectedGame.availableVersions : detail.versions}
+            versionInfos={selectedGame.availableVersions.length > 0 ? selectedGame.availableVersions : activeDetail.versions}
             downloadSize={effectiveDownloadSize}
-            installRoot={installRoot}
-            downloadingRoot={downloadPathForInstallRoot(installRoot, gameInstall)}
+            installRoot={installMode ? installRoot : selectedInstallPath}
+            downloadingRoot={downloadPathForInstallRoot(installMode ? installRoot : selectedInstallPath, gameInstall)}
+            canStart={canApplySelectedVersion}
             onVersionChange={changeTargetVersion}
             onChangeInstallRoot={chooseInstallTarget}
             onStart={startUpdate}
@@ -1380,6 +1529,17 @@ function App() {
             onSelect={applyLibraryDrive}
             onAddDrive={addLibraryDrive}
             onClose={() => setShowDrivePicker(false)}
+          />
+        ) : null}
+        {launchOptions && selectedGame ? (
+          <LaunchOptionsModal
+            gameTitle={selectedGame.title}
+            config={launchOptions}
+            onClose={() => setLaunchOptions(null)}
+            onLaunch={(optionId, optionTitle) => {
+              setLaunchOptions(null)
+              void doLaunchGame(optionId, optionTitle)
+            }}
           />
         ) : null}
         {launchSplash ? <LaunchSplash splash={launchSplash} /> : null}
@@ -1412,1833 +1572,98 @@ function App() {
             </section>
           </div>
         ) : null}
+
+        {showSteamRecommendation && (
+          <div className="dialog-backdrop" role="presentation">
+            <section className="install-modal" role="dialog" aria-modal="true" aria-labelledby="steam-recommendation-title">
+              <div className="modal-handle" />
+              <header>
+                <button type="button" onClick={() => setShowSteamRecommendation(false)} aria-label="Cancel">
+                  <X size={17} />
+                </button>
+                <h2 id="steam-recommendation-title">Steam recommended</h2>
+                <p>We're recommended you to open Steam to play online</p>
+              </header>
+              <div className="install-modal-body">
+                <div style={{ background: 'rgba(77, 164, 255, 0.1)', border: '1px solid rgba(77, 164, 255, 0.35)', padding: '16px', borderRadius: '8px', color: '#b3d8ff', lineHeight: 1.7 }}>
+                  Steam is not running. Opening it first improves compatibility for online play and Steam-based services.
+                </div>
+              </div>
+              <footer>
+                <button
+                  type="button"
+                  className="secondary"
+                  disabled={steamOpening}
+                  onClick={() => {
+                    setShowSteamRecommendation(false)
+                    void continuePlaySelectedGame()
+                  }}
+                >
+                  Continue anyway
+                </button>
+                <button
+                  type="button"
+                  className="primary-control downloading-btn"
+                  disabled={steamOpening}
+                  onClick={() => void openSteamAndContinue()}
+                >
+                  {steamOpening ? 'Opening Steam...' : 'Open Steam and Play'}
+                </button>
+              </footer>
+            </section>
+          </div>
+        )}
+
+        {showSpacewarPrompt && (
+          <div className="dialog-backdrop" role="presentation">
+            <section className="install-modal" role="dialog" aria-modal="true" aria-labelledby="spacewar-title">
+              <div className="modal-handle" />
+              <header>
+                <button type="button" onClick={() => setShowSpacewarPrompt(false)} aria-label="Cancel">
+                  <X size={17} />
+                </button>
+                <h2 id="spacewar-title">⚙️ Yêu cầu: Spacewar (App 480)</h2>
+                <p>Launcher cần <strong>Spacewar</strong> được cài trên Steam để khởi chạy game. Đây là game miễn phí, mọi tài khoản Steam đều có thể tải.</p>
+              </header>
+              <div className="install-modal-body">
+                <div style={{ background: 'rgba(77, 164, 255, 0.1)', border: '1px solid rgba(77, 164, 255, 0.35)', padding: '16px', borderRadius: '8px', color: '#b3d8ff', lineHeight: 1.7 }}>
+                  <p style={{ margin: 0 }}>
+                    🎮 Nhấn <strong>"Tải Spacewar"</strong> → Steam sẽ mở và tự động tải về.<br />
+                    Sau khi tải xong (chỉ ~15MB), nhấn <strong>Play</strong> lại trên Launcher.
+                  </p>
+                </div>
+              </div>
+              <footer>
+                <button type="button" className="secondary" onClick={() => setShowSpacewarPrompt(false)}>
+                  Hủy
+                </button>
+                <button
+                  type="button"
+                  className="primary-control downloading-btn"
+                  style={{ padding: '8px 20px', borderRadius: '6px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}
+                  disabled={spacewarDownloading}
+                  onClick={async () => {
+                    setSpacewarDownloading(true)
+                    try {
+                      await invoke('install_spacewar')
+                      setScanStatus('Steam đang tải Spacewar (app 480). Vui lòng chờ Steam xong rồi nhấn Play lại.')
+                    } catch (e) {
+                      setScanStatus('Không thể mở Steam: ' + String(e))
+                    } finally {
+                      setSpacewarDownloading(false)
+                      setShowSpacewarPrompt(false)
+                    }
+                  }}
+                >
+                  <Download size={16} />
+                  {spacewarDownloading ? 'Đang mở Steam...' : 'Tải Spacewar qua Steam'}
+                </button>
+              </footer>
+            </section>
+          </div>
+        )}
       </section>
     </main>
     </div>
   )
 }
-
-function LaunchSplash({ splash }: { splash: LaunchSplashState }) {
-  return (
-    <div className="launch-splash" role="status" aria-live="polite">
-      <section className="launch-splash-card">
-        {splash.heroUrl ? <img className="launch-splash-hero" src={splash.heroUrl} alt="" /> : null}
-        <div className="launch-splash-shade" />
-        <div className="launch-splash-content">
-          {splash.iconUrl ? <img className="launch-splash-icon" src={splash.iconUrl} alt="" /> : null}
-          <div>
-            <strong>{splash.title}</strong>
-            <span>Chúc bạn chơi game vui vẻ</span>
-          </div>
-        </div>
-      </section>
-    </div>
-  )
-}
-
-function useSmoothNumber(target: number, durationMs = 420) {
-  const [value, setValue] = useState(target)
-  const valueRef = useRef(target)
-  const safeTarget = Number.isFinite(target) ? target : 0
-
-  useEffect(() => {
-    const start = valueRef.current
-    const end = safeTarget
-    if (Math.abs(end - start) < 0.08) {
-      valueRef.current = end
-      const raf = requestAnimationFrame(() => setValue(end))
-      return () => cancelAnimationFrame(raf)
-    }
-
-    let raf = 0
-    const startedAt = performance.now()
-    const tick = (now: number) => {
-      const elapsed = Math.min((now - startedAt) / durationMs, 1)
-      const eased = 1 - Math.pow(1 - elapsed, 3)
-      const next = start + (end - start) * eased
-      valueRef.current = next
-      setValue(next)
-      if (elapsed < 1) {
-        raf = requestAnimationFrame(tick)
-      } else {
-        valueRef.current = end
-        setValue(end)
-      }
-    }
-    raf = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(raf)
-  }, [durationMs, safeTarget])
-
-  return value
-}
-
-function ActiveView({
-  activeTab,
-  catalog,
-  catalogStatus,
-  selectedGame,
-  selectedGameId,
-  onSelectGame,
-  detail,
-  assets,
-  snapshot,
-  installPath,
-  installTarget,
-  scanStatus,
-  selectedVersion,
-  selectedCurrentVersion,
-  selectedVersionInfo,
-  selectedInstallState,
-  verifyStatus,
-  installMode,
-  updateReady,
-  canUpdate,
-  onBrowse,
-  onScan,
-  onPrimaryAction,
-  onPlay,
-  onVerify,
-  onUninstall,
-  job,
-  hasJob,
-  progress,
-  phaseProgress,
-  updateSize,
-  isRunning,
-  onOpenInstallOptions,
-  onPause,
-  onCancel,
-  isPaused,
-  logs,
-}: {
-  activeTab: TabId
-  catalog: GameCatalog
-  catalogStatus: string
-  selectedGame: GameSummary | null
-  selectedGameId: string | null
-  onSelectGame: (gameId: string | null) => void
-  detail: GameDetail | null
-  assets: Record<string, string>
-  snapshot: Snapshot
-  installPath: string
-  installTarget: string
-  scanStatus: string
-  selectedVersion: string
-  selectedCurrentVersion: string
-  selectedVersionInfo?: GameVersionInfo
-  selectedInstallState?: GameInstallState
-  verifyStatus: VerifyUiStatus | null
-  installMode: boolean
-  updateReady: boolean
-  canUpdate: boolean
-  onBrowse: () => void
-  onScan: () => void
-  onPrimaryAction: () => void
-  onPlay: () => void
-  onVerify: () => void
-  onUninstall: () => void
-  job: JobJournal
-  hasJob: boolean
-  progress: number
-  phaseProgress: PhaseProgress
-  updateSize: number
-  isRunning: boolean
-  onOpenInstallOptions: () => void
-  onPause: () => void
-  onCancel: () => void
-  isPaused: boolean
-  logs: JobLog[]
-}) {
-  const hasSelectedDetail = Boolean(selectedGame && detail)
-
-  if (activeTab === 'Library') {
-    return (
-      <StoreLibraryView
-        catalog={catalog}
-        catalogStatus={catalogStatus}
-        selectedGame={selectedGame}
-        selectedGameId={selectedGameId}
-        onSelectGame={onSelectGame}
-        detail={detail}
-        assets={assets}
-        selectedVersion={selectedVersion}
-        selectedCurrentVersion={selectedCurrentVersion}
-        selectedVersionInfo={selectedVersionInfo}
-        selectedInstallState={selectedInstallState}
-        verifyStatus={verifyStatus}
-        updateReady={updateReady}
-        canUpdate={canUpdate}
-        updateSize={updateSize}
-        onPrimaryAction={onPrimaryAction}
-        onPlay={onPlay}
-        onVerify={onVerify}
-        onUninstall={onUninstall}
-        onOpenInstallOptions={onOpenInstallOptions}
-      />
-    )
-  }
-
-  if (activeTab === 'Cache') {
-    return (
-      <section className="single-view cache-tab-view">
-        <CachePanel snapshot={snapshot} />
-        {selectedGame && detail ? (
-          <>
-            <RollbackPanel snapshot={snapshot} rollbackVersion={rollbackVersionFor(detail, selectedVersion)} />
-            {installMode ? (
-              <InstallSummaryPanel selectedVersion={selectedVersion} downloadSize={updateSize} />
-            ) : (
-              <ChangedFiles files={snapshot.changedFiles} />
-            )}
-          </>
-        ) : (
-          <ScopedTabEmptyState
-            icon={<Database size={34} />}
-            title="No game selected"
-            body="Choose a game in Library to inspect rollback and changed-file cache state."
-          />
-        )}
-      </section>
-    )
-  }
-
-  if (activeTab === 'Downloads' || activeTab === 'Updates') {
-    if (!hasSelectedDetail) {
-      return (
-        <TabEmptyState
-          activeTab={activeTab}
-          catalog={catalog}
-          catalogStatus={catalogStatus}
-          onSelectGame={onSelectGame}
-          assets={assets}
-        />
-      )
-    }
-
-    return (
-      <section className="content-grid single-main">
-        <div className="main-column">
-          {!installMode || hasJob ? (
-              <InstallBar
-                installPath={installPath}
-                installTarget={installTarget}
-                scanStatus={scanStatus}
-                installMode={installMode}
-              onBrowse={onBrowse}
-              onScan={onScan}
-            />
-          ) : null}
-          {activeTab === 'Downloads' ? (
-            <DownloadQueuePanel
-              gameTitle={selectedGame?.title ?? 'Selected game'}
-              job={job}
-              hasJob={hasJob}
-              progress={progress}
-              phaseProgress={phaseProgress}
-              selectedVersion={selectedVersion}
-              downloadSize={updateSize}
-              isRunning={isRunning}
-              onOpenOptions={onOpenInstallOptions}
-            />
-          ) : null}
-          {hasJob || activeTab === 'Updates' ? (
-            <>
-              <JobCenter
-                job={job}
-                hasJob={hasJob}
-                progress={progress}
-                phaseProgress={phaseProgress}
-                onPause={onPause}
-                onCancel={onCancel}
-                isPaused={isPaused}
-              />
-              {hasJob ? <JobLogPanel logs={logs} /> : null}
-            </>
-          ) : null}
-        </div>
-      </section>
-    )
-  }
-
-  return (
-    <section className="settings-view">
-      <section className="panel settings-panel">
-        <header className="side-header">
-          <Settings size={17} />
-          <strong>SETTINGS</strong>
-        </header>
-        <div className="settings-card-grid">
-          <StatusTile label="Content service" value={contentServiceLabel(snapshot.proxyStatus)} />
-          <StatusTile label="Asset catalog" value={catalogStatusLabel(catalogStatus)} />
-          <StatusTile label="Selected game" value={selectedGame?.title ?? 'None'} />
-          <StatusTile label="Install state" value={snapshot.detectedInstallPath ? 'Installed game detected' : 'Not configured'} />
-          <StatusTile label="Target version" value={hasSelectedDetail ? selectedVersion : 'Choose game first'} />
-          <StatusTile label="Downloads" value={hasJob ? 'Active job' : 'Idle'} />
-        </div>
-        <div className="settings-actions">
-          <button type="button" onClick={onBrowse} disabled={!hasSelectedDetail}>
-            <FolderOpen size={16} />
-            LOCATE EXISTING INSTALL
-          </button>
-          <button type="button" onClick={onScan} disabled={!installPath}>
-            <Gauge size={16} />
-            SCAN SELECTED FOLDER
-          </button>
-        </div>
-      </section>
-    </section>
-  )
-}
-
-function Sidebar({
-  serviceStatus,
-  activeTab,
-  onSelect,
-  updateCount,
-  downloadCount,
-}: {
-  serviceStatus: string
-  activeTab: TabId
-  onSelect: (tab: TabId) => void
-  updateCount: number
-  downloadCount: number
-}) {
-  const items = [
-    [t.nav.library, Library],
-    [t.nav.updates, RefreshCcw],
-    [t.nav.downloads, Download],
-    [t.nav.cache, Database],
-    [t.nav.settings, Settings],
-  ] as const
-
-  return (
-    <aside className="sidebar">
-      <nav>
-        {items.map(([label, Icon]) => (
-          <button
-            className={activeTab === label ? 'nav-item active' : 'nav-item'}
-            key={label}
-            type="button"
-            onClick={() => onSelect(label)}
-          >
-            <Icon size={20} />
-            <span>{label}</span>
-            {label === 'Updates' && updateCount > 0 ? <span className="nav-badge">{updateCount}</span> : null}
-            {label === 'Downloads' && downloadCount > 0 ? <span className="nav-badge">{downloadCount}</span> : null}
-          </button>
-        ))}
-      </nav>
-      <div className="sidebar-status">
-        <div className="status-line">
-          <Wifi size={16} />
-          <span>Online</span>
-        </div>
-        <div className="status-line proxy">
-          <ShieldCheck size={16} />
-          <span>{serviceStatus}</span>
-        </div>
-        <small>Launcher 0.1.0</small>
-      </div>
-    </aside>
-  )
-}
-
-function TabEmptyState({
-  activeTab,
-  catalog,
-  catalogStatus,
-  onSelectGame,
-  assets,
-}: {
-  activeTab: TabId
-  catalog: GameCatalog
-  catalogStatus: string
-  onSelectGame: (gameId: string | null) => void
-  assets: Record<string, string>
-}) {
-  return (
-    <section className="tab-empty-view">
-      <header className="tab-empty-header">
-        <div>
-          <strong>{activeTab}</strong>
-          <span>Select a game to load its jobs and version state.</span>
-        </div>
-        <small>{catalogStatusLabel(catalogStatus)}</small>
-      </header>
-      <div className="tab-game-list">
-        {catalog.games.map((game) => (
-          <button className="tab-game-row" key={game.id} type="button" onClick={() => onSelectGame(game.id)}>
-            {assets[game.gridAssetId] ? (
-              <img src={assets[game.gridAssetId]} alt="" />
-            ) : (
-              <div className="tab-game-art">
-                <ImageIcon size={22} />
-              </div>
-            )}
-            <span>
-              <strong>{game.title}</strong>
-              <small>{game.developer}</small>
-            </span>
-            <Download size={16} />
-          </button>
-        ))}
-      </div>
-    </section>
-  )
-}
-
-function ScopedTabEmptyState({ icon, title, body }: { icon: ReactNode; title: string; body: string }) {
-  return (
-    <section className="panel scoped-empty-state">
-      <div>{icon}</div>
-      <strong>{title}</strong>
-      <span>{body}</span>
-    </section>
-  )
-}
-
-function StatusTile({ label, value }: { label: string; value: string }) {
-  return (
-    <article className="settings-tile">
-      <span>{label}</span>
-      <strong>{value}</strong>
-    </article>
-  )
-}
-
-function StoreLibraryView({
-  catalog,
-  catalogStatus,
-  selectedGame,
-  selectedGameId,
-  onSelectGame,
-  detail,
-  assets,
-  selectedVersion,
-  selectedCurrentVersion,
-  selectedVersionInfo,
-  selectedInstallState,
-  verifyStatus,
-  updateReady,
-  canUpdate,
-  updateSize,
-  onPrimaryAction,
-  onPlay,
-  onVerify,
-  onUninstall,
-  onOpenInstallOptions,
-}: {
-  catalog: GameCatalog
-  catalogStatus: string
-  selectedGame: GameSummary | null
-  selectedGameId: string | null
-  onSelectGame: (gameId: string | null) => void
-  detail: GameDetail | null
-  assets: Record<string, string>
-  selectedVersion: string
-  selectedCurrentVersion: string
-  selectedVersionInfo?: GameVersionInfo
-  selectedInstallState?: GameInstallState
-  verifyStatus: VerifyUiStatus | null
-  updateReady: boolean
-  canUpdate: boolean
-  updateSize: number
-  onPrimaryAction: () => void
-  onPlay: () => void
-  onVerify: () => void
-  onUninstall: () => void
-  onOpenInstallOptions: () => void
-}) {
-  const [query, setQuery] = useState('')
-  const visibleGames = useMemo(() => {
-    const needle = query.trim().toLowerCase()
-    if (!needle) return catalog.games
-    return catalog.games.filter((game) =>
-      [game.title, game.subtitle, game.developer, game.publisher].some((value) => value.toLowerCase().includes(needle)),
-    )
-  }, [catalog.games, query])
-  const visibleStatus = catalogStatusLabel(catalogStatus)
-  const actionDockRef = useRef<HTMLDivElement>(null)
-  const [stickyVisible, setStickyVisible] = useState(false)
-
-  useEffect(() => {
-    if (!selectedGameId || !detail?.gameId || typeof IntersectionObserver === 'undefined') {
-      return
-    }
-
-    const el = actionDockRef.current
-    if (!el) {
-      return
-    }
-
-    const observer = new IntersectionObserver(([entry]) => setStickyVisible(!entry.isIntersecting), {
-      threshold: 0,
-      rootMargin: '-64px 0px 0px 0px',
-    })
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [selectedGameId, detail?.gameId])
-
-  const renderGameCard = (game: GameSummary, variant: 'compact' | 'browse') => (
-    <button
-      className={[
-        'store-game-card',
-        variant === 'browse' ? 'browse-game-card' : '',
-        game.id === selectedGameId ? 'active' : '',
-      ]
-        .filter(Boolean)
-        .join(' ')}
-      key={game.id}
-      type="button"
-      onClick={() => onSelectGame(game.id)}
-    >
-      {assets[game.gridAssetId] ? (
-        <img src={assets[game.gridAssetId]} alt="" />
-      ) : (
-        <div className="asset-placeholder">
-          <ImageIcon size={variant === 'browse' ? 34 : 26} />
-        </div>
-      )}
-      <span>
-        <strong>{game.title}</strong>
-        <small>{game.developer}</small>
-      </span>
-    </button>
-  )
-
-  if (!selectedGame) {
-    return (
-      <section className="library-browse-view">
-        <header className="library-browse-toolbar">
-          <div className="library-browse-heading">
-            <strong>{t.library.availableGames}</strong>
-            <span>
-              {visibleGames.length} game{visibleGames.length === 1 ? '' : 's'} - {visibleStatus}
-            </span>
-          </div>
-          <label className="store-search">
-            <Search size={16} />
-            <input aria-label="Search games" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search..." />
-          </label>
-        </header>
-
-        <div className="library-browse-grid">
-          {visibleGames.map((game) => renderGameCard(game, 'browse'))}
-          {visibleGames.length === 0 ? (
-            <div className="library-empty-inline">
-              <Search size={24} />
-              <strong>No matching games</strong>
-            </div>
-          ) : null}
-        </div>
-      </section>
-    )
-  }
-
-  if (!detail) {
-    return (
-      <section className="game-detail-loading-view">
-        <button className="back-to-library" type="button" onClick={() => onSelectGame(null)}>
-          <Library size={16} />
-          Library
-        </button>
-        <div>
-          <ImageIcon size={34} />
-          <h1>Loading game details</h1>
-          <p>Opening cooked media and version metadata.</p>
-        </div>
-      </section>
-    )
-  }
-
-  const hero = firstMediaUrl(detail, assets) || assets[selectedGame.heroAssetId]
-  const logo = assets[selectedGame.logoAssetId]
-  const installed = Boolean(selectedInstallState?.installed)
-  const actionLabel = !installed ? t.library.chooseInstall : updateReady ? t.library.update : t.library.play
-  const stateLabel = !installed ? t.library.readyToInstall : updateReady ? t.library.readyToUpdate : t.library.readyToPlay
-  const primaryAction = !installed ? onOpenInstallOptions : updateReady ? onPrimaryAction : onPlay
-  const primaryDisabled = !installed && !canUpdate
-  const primaryIcon = installed && !updateReady ? <Play size={17} /> : <Download size={17} />
-  const downloadSize = updateSize || selectedVersionInfo?.sizeBytes || 0
-  const isVerifying = verifyStatus?.state === 'running'
-  const verifyLabel = isVerifying ? 'Verifying...' : t.library.verifyIntegrity
-  const VerifyIcon = verifyStatus?.state === 'failed' ? CircleAlert : ShieldCheck
-  const missingCount = verifyStatus?.missingFiles?.length ?? 0
-  const changedCount = verifyStatus?.mismatchedFiles?.length ?? 0
-
-  const gridAsset = assets[selectedGame.gridAssetId]
-  const iconAsset = assets[selectedGame.iconAssetId]
-
-  return (
-    <section className="game-detail-view">
-      {/* ── Sticky Floating Bar ── */}
-      <div className={`sticky-action-bar${stickyVisible ? ' visible' : ''}`}>
-        {(iconAsset || gridAsset) && (
-          <img
-            className="sticky-bar-icon"
-            src={iconAsset || gridAsset}
-            alt=""
-          />
-        )}
-        <div className="sticky-bar-info">
-          <strong>{detail.title}</strong>
-          <span>v{selectedVersion}</span>
-        </div>
-        <div className="sticky-bar-actions">
-          <button type="button" onClick={onVerify} disabled={!installed || isVerifying}>
-            <VerifyIcon size={15} />
-            {verifyLabel}
-          </button>
-          <button
-            className="primary-control"
-            type="button"
-            onClick={primaryAction}
-            disabled={primaryDisabled}
-          >
-            {installed && !updateReady ? <Play size={15} /> : <Download size={15} />}
-            {actionLabel}
-          </button>
-          {installed ? (
-            <button className="danger-control" type="button" onClick={onUninstall}>
-              <X size={15} />
-              {t.library.uninstall}
-            </button>
-          ) : null}
-        </div>
-      </div>
-
-      <section className="game-detail-main">
-        <button className="back-to-library" type="button" onClick={() => onSelectGame(null)}>
-          <Library size={16} />
-          Library
-        </button>
-        <div className="detail-hero">
-          {hero ? <img src={hero} alt="" /> : <div className="detail-placeholder"><ImageIcon size={40} /></div>}
-          <div className="detail-hero-shade" />
-          <div className="detail-copy">
-            <span className="storage-pill">
-              <HardDrive size={14} />
-              {detail.install.storageLabel}
-            </span>
-            {logo ? <img className="detail-logo" src={logo} alt={detail.title} /> : <h1>{detail.title}</h1>}
-            <p>{detail.shortDescription}</p>
-            <div className="library-meta-row">
-              <span>Version {selectedVersion}</span>
-              <span>{formatBytes(downloadSize)}</span>
-              {detail.install.supportsResume ? <span>{t.library.resumeSupported}</span> : null}
-            </div>
-          </div>
-          <div className="store-action-dock" ref={actionDockRef}>
-            <button type="button" onClick={onVerify} disabled={!installed || isVerifying}>
-              <VerifyIcon size={17} />
-              {verifyLabel}
-            </button>
-            <button className="primary-control" type="button" onClick={primaryAction} disabled={primaryDisabled}>
-              {primaryIcon}
-              {actionLabel}
-            </button>
-            {installed ? (
-              <button className="danger-control" type="button" onClick={onUninstall}>
-                <X size={17} />
-                {t.library.uninstall}
-              </button>
-            ) : null}
-          </div>
-        </div>
-        <MediaRail detail={detail} assets={assets} />
-
-        <section className="detail-body">
-          <div className="detail-description">
-            <h2>{detail.title}</h2>
-            <div
-              className="description-html"
-              dangerouslySetInnerHTML={{ __html: processDescriptionHtml(detail.detailedDescription, assets) }}
-            />
-          </div>
-        </section>
-      </section>
-
-      <aside className="store-info-column">
-        <section className="panel status-card">
-          <header className="side-header">
-            <CheckCircle2 size={17} />
-            <strong>{stateLabel}</strong>
-          </header>
-          <dl className="metric-list">
-            <div>
-              <dt>{t.library.currentVersion}</dt>
-              <dd>{installed ? selectedCurrentVersion : t.library.notInstalled}</dd>
-            </div>
-            <div>
-              <dt>{t.library.latestVersion}</dt>
-              <dd>{selectedGame.latestVersion}</dd>
-            </div>
-            <div>
-              <dt>{t.library.targetVersion}</dt>
-              <dd>{selectedVersion}</dd>
-            </div>
-            <div>
-              <dt>Install size</dt>
-              <dd>{formatBytes(downloadSize)}</dd>
-            </div>
-          </dl>
-        </section>
-        <InstallSummaryPanel selectedVersion={selectedVersion} downloadSize={downloadSize} />
-        {verifyStatus ? (
-          <section className={`panel verify-feedback ${verifyStatus.state}`}>
-            <header className="side-header">
-              <VerifyIcon size={17} />
-              <strong>{isVerifying ? 'Verifying install' : 'Verify result'}</strong>
-            </header>
-            <p>{verifyStatus.message}</p>
-            {verifyStatus.state === 'failed' ? (
-              <div className="verify-count-summary">
-                <span>
-                  <strong>{missingCount}</strong>
-                  missing
-                </span>
-                <span>
-                  <strong>{changedCount}</strong>
-                  changed
-                </span>
-              </div>
-            ) : null}
-            <div className="verify-progress">
-              <div className="mini-track">
-                <span style={{ width: `${Math.round((verifyStatus.percent ?? 0) * 100)}%` }} />
-              </div>
-              <small>
-                {Math.round((verifyStatus.percent ?? 0) * 100)}%
-                {verifyStatus.totalBytes ? ` - ${formatBytes(verifyStatus.checkedBytes ?? 0)} / ${formatBytes(verifyStatus.totalBytes)}` : ''}
-              </small>
-            </div>
-            {verifyStatus.currentFile ? <small className="verify-current-file">{verifyStatus.currentFile}</small> : null}
-          </section>
-        ) : null}
-        <GameDetailsPanel detail={detail} />
-        <AchievementPreview achievements={detail.achievements} assets={assets} />
-      </aside>
-    </section>
-  )
-}
-
-function OperationHero({
-  game,
-  detail,
-  assets,
-  currentVersion,
-  latestVersion,
-  updateReady,
-  updateSize,
-  onUpdate,
-  onPlay,
-  isRunning,
-  canUpdate,
-  installMode,
-  selectedInstalled,
-  selectedVersion,
-}: {
-  game: GameSummary
-  detail: GameDetail
-  assets: Record<string, string>
-  currentVersion: string
-  latestVersion: string
-  updateReady: boolean
-  updateSize: number
-  onUpdate: () => void
-  onPlay: () => void
-  isRunning: boolean
-  canUpdate: boolean
-  installMode: boolean
-  selectedInstalled: boolean
-  selectedVersion: string
-}) {
-  const hero = firstMediaUrl(detail, assets) || assets[game.heroAssetId]
-  const stateLabel = installMode ? t.library.readyToInstall : updateReady ? t.library.readyToUpdate : t.library.readyToPlay
-  const buttonLabel = isRunning ? 'RUNNING' : installMode ? t.library.chooseInstall : updateReady ? t.library.update : t.library.play
-  const buttonAction = selectedInstalled && !updateReady ? onPlay : onUpdate
-  const buttonDisabled = isRunning || (!selectedInstalled && !canUpdate)
-
-  return (
-    <section className="hero-panel">
-      {hero ? <img src={hero} alt="" /> : null}
-      <div className="game-strip">
-        <div className="game-emblem">
-          {assets[game.iconAssetId] ? <img src={assets[game.iconAssetId]} alt="" /> : <ImageIcon size={28} />}
-        </div>
-        <div>
-          <h1>{game.title}</h1>
-          <div className="version-row">
-            <VersionStat label={t.library.currentVersion} value={currentVersion} />
-            <VersionStat label={t.library.latestVersion} value={latestVersion} highlight />
-            <VersionStat label={t.library.targetVersion} value={selectedVersion} />
-            <div className="ready-state">
-              <CheckCircle2 size={20} />
-              <span>{stateLabel}</span>
-              <small>{formatBytes(updateSize)}</small>
-            </div>
-          </div>
-        </div>
-        <button className="update-button" type="button" onClick={buttonAction} disabled={buttonDisabled}>
-          <span>{buttonLabel}</span>
-          {selectedInstalled && !updateReady ? <Play size={18} /> : <Download size={18} />}
-        </button>
-      </div>
-    </section>
-  )
-}
-
-function VersionStat({ label, value, highlight = false }: { label: string; value: string; highlight?: boolean }) {
-  return (
-    <div className="version-stat">
-      <small>{label}</small>
-      <strong className={highlight ? 'gold-text' : ''}>{value}</strong>
-    </div>
-  )
-}
-
-function MediaRail({ detail, assets }: { detail: GameDetail; assets: Record<string, string> }) {
-  // Build a thumb map: video item id -> thumbnail URL
-  // e.g. "movie-00" -> URL from item with id "movie-thumb-00"
-  const videoThumbMap = useMemo(() => {
-    const map: Record<string, string> = {}
-    for (const item of detail.media) {
-      if (item.role === 'video-thumb' && assets[item.assetId]) {
-        // item.id is like "movie-thumb-00", derive video id "movie-00"
-        const videoId = item.id.replace('movie-thumb-', 'movie-')
-        map[videoId] = assets[item.assetId]
-      }
-    }
-    return map
-  }, [detail.media, assets])
-
-  const media = detail.media
-    .filter((item) => isCarouselMedia(item) && assets[item.assetId])
-    .sort((left, right) => mediaPriority(left) - mediaPriority(right))
-    .map((item) => ({ ...item, url: assets[item.assetId] }))
-  const [activeIndex, setActiveIndex] = useState(0)
-
-  if (media.length === 0) {
-    return null
-  }
-  const safeActiveIndex = Math.min(activeIndex, media.length - 1)
-  const active = media[safeActiveIndex]
-  const go = (direction: -1 | 1) => {
-    setActiveIndex((current) => (current + direction + media.length) % media.length)
-  }
-
-  return (
-    <section className="media-section media-carousel-section">
-      <header>
-        <strong>{t.library.media}</strong>
-        <small>
-          {media.length} items - {detail.metadataSource}
-        </small>
-      </header>
-      <div className="media-carousel">
-        <div className="media-stage">
-          {active.mimeType.startsWith('video/') ? (
-            <video src={active.url} controls muted preload="metadata" />
-          ) : (
-            <>
-              <img src={active.url} alt="" />
-              {active.role === 'video-preview' ? (
-                <span className="media-play-badge" aria-hidden="true">
-                  <Play size={22} />
-                </span>
-              ) : null}
-            </>
-          )}
-          <button className="media-nav prev" type="button" onClick={() => go(-1)} aria-label="Previous media">
-            <ChevronLeft size={22} />
-          </button>
-          <button className="media-nav next" type="button" onClick={() => go(1)} aria-label="Next media">
-            <ChevronRight size={22} />
-          </button>
-          <div className="media-stage-caption">
-            <strong>{active.title}</strong>
-            <span>{active.role}</span>
-          </div>
-        </div>
-        <div className="media-thumb-rail">
-          {media.map((item, index) => {
-            const isVideo = item.mimeType.startsWith('video/')
-            const thumbUrl = isVideo ? (videoThumbMap[item.id] ?? null) : null
-
-            return (
-              <button
-                className={index === safeActiveIndex ? 'media-thumb active' : 'media-thumb'}
-                key={item.id}
-                type="button"
-                onClick={() => setActiveIndex(index)}
-              >
-                {isVideo ? (
-                  <span className="image-video-thumb">
-                    {thumbUrl ? (
-                      <img src={thumbUrl} alt="" />
-                    ) : (
-                      <span className="video-thumb-placeholder"><Play size={24} /></span>
-                    )}
-                    <Play size={16} className="video-thumb-overlay" />
-                  </span>
-                ) : (
-                  <img src={item.url} alt="" />
-                )}
-              </button>
-            )
-          })}
-        </div>
-      </div>
-      <div className="media-rail legacy-hidden">
-        {media.map((item) => (
-          <article key={item.id}>
-            {item.mimeType.startsWith('video/') ? (
-              <video src={item.url} muted controls />
-            ) : (
-              <img src={item.url} alt="" />
-            )}
-            <span>{item.title}</span>
-          </article>
-        ))}
-      </div>
-    </section>
-  )
-}
-
-function isCarouselMedia(item: GameMedia) {
-  return item.role === 'video' || item.role === 'video-preview' || item.role === 'screenshot' || item.role === 'gif'
-}
-
-function mediaPriority(item: GameMedia) {
-  switch (item.role) {
-    case 'video':
-      return 0
-    case 'video-preview':
-      return 1
-    case 'screenshot':
-      return 2
-    case 'gif':
-      return 3
-    default:
-      return 99
-  }
-}
-
-function AchievementPreview({
-  achievements,
-  assets,
-}: {
-  achievements: GameAchievement[]
-  assets: Record<string, string>
-}) {
-  const [showAll, setShowAll] = useState(false)
-  const available = achievements.filter((achievement) => assets[achievement.iconAssetId])
-  const preview = available.slice(0, 10)
-  if (available.length === 0) {
-    return null
-  }
-
-  return (
-    <section className="achievement-section">
-      <header>
-        <strong>{t.library.achievements}</strong>
-        <div className="achievement-header-actions">
-          <small>{achievements.length} total</small>
-          <button type="button" onClick={() => setShowAll(true)}>
-            <Trophy size={15} />
-            See all
-          </button>
-        </div>
-      </header>
-      <div className="achievement-grid">
-        {preview.map((achievement) => (
-          <article key={achievement.id}>
-            <img src={assets[achievement.iconAssetId]} alt="" />
-            <div>
-              <strong>{achievement.name}</strong>
-              <small>{achievement.hidden ? 'Hidden' : achievement.description}</small>
-            </div>
-          </article>
-        ))}
-      </div>
-      {showAll ? (
-        <div className="dialog-backdrop" role="presentation" onClick={() => setShowAll(false)}>
-          <section className="achievement-modal" role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
-            <header>
-              <div>
-                <strong>{t.library.achievements}</strong>
-                <span>{available.length} unlocked-image entries packed locally</span>
-              </div>
-              <button type="button" onClick={() => setShowAll(false)}>
-                <X size={17} />
-              </button>
-            </header>
-            <div className="achievement-all-grid">
-              {available.map((achievement) => (
-                <article key={achievement.id}>
-                  <img src={assets[achievement.iconAssetId]} alt="" />
-                  <div>
-                    <strong>{achievement.name}</strong>
-                    <small>{achievement.hidden ? 'Hidden' : achievement.description}</small>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </section>
-        </div>
-      ) : null}
-    </section>
-  )
-}
-
-function InstallBar({
-  installPath,
-  installTarget,
-  scanStatus,
-  installMode,
-  onBrowse,
-  onScan,
-}: {
-  installPath: string
-  installTarget: string
-  scanStatus: string
-  installMode: boolean
-  onBrowse: () => void
-  onScan: () => void
-}) {
-  const label = installMode ? 'Install target' : 'Installed folder'
-  const path = installMode ? installTarget : installPath || 'No installed folder selected'
-
-  return (
-    <section className={installMode ? 'install-bar install-mode' : 'install-bar'}>
-      <div className="install-path">
-        <FolderOpen size={18} />
-        <div>
-          <small>{label}</small>
-          <span>{path}</span>
-        </div>
-      </div>
-      <span className="scan-status">{scanStatus}</span>
-      {!installMode ? (
-        <>
-          <button type="button" onClick={onScan} disabled={!installPath}>
-            <Gauge size={16} />
-            Scan
-          </button>
-          <button type="button" onClick={onBrowse}>
-            <FolderOpen size={16} />
-            Browse
-          </button>
-        </>
-      ) : null}
-    </section>
-  )
-}
-
-function InstallOptionsDialog({
-  detail,
-  selectedVersion,
-  availableVersions,
-  versionInfos,
-  downloadSize,
-  installRoot,
-  downloadingRoot,
-  onVersionChange,
-  onChangeInstallRoot,
-  onStart,
-  onClose,
-}: {
-  detail: GameDetail
-  selectedVersion: string
-  availableVersions: string[]
-  versionInfos: GameVersionInfo[]
-  downloadSize: number
-  installRoot: string
-  downloadingRoot: string
-  onVersionChange: (version: string) => void
-  onChangeInstallRoot: () => void
-  onStart: () => void
-  onClose: () => void
-}) {
-  const [versionMenuOpen, setVersionMenuOpen] = useState(false)
-  const infos =
-    versionInfos.length > 0
-      ? versionInfos
-      : availableVersions.map((version) => ({
-          version,
-          label: version,
-          buildId: version,
-          sizeBytes: downloadSize,
-          latest: version === availableVersions[availableVersions.length - 1],
-        }))
-  const selectedInfo = infos.find((info) => info.version === selectedVersion) ?? infos[0]
-
-  return (
-    <div className="dialog-backdrop" role="presentation">
-      <section className="install-modal" role="dialog" aria-modal="true" aria-labelledby="install-options-title">
-        <div className="modal-handle" />
-        <header>
-          <button type="button" onClick={onClose} aria-label="Close install options">
-            <X size={17} />
-          </button>
-          <h2 id="install-options-title">{t.install.title}</h2>
-          <p>{t.install.subtitle}</p>
-        </header>
-        <div className="install-modal-body">
-          <div className={versionMenuOpen ? 'version-dropdown open' : 'version-dropdown'}>
-            <small>{t.install.version}</small>
-            <button
-              className="version-dropdown-trigger"
-              type="button"
-              aria-haspopup="listbox"
-              aria-expanded={versionMenuOpen}
-              onClick={() => setVersionMenuOpen((open) => !open)}
-            >
-              <span>
-                <strong>{selectedInfo?.label || selectedVersion}</strong>
-                <small>Build {selectedInfo?.buildId || selectedVersion}</small>
-              </span>
-              {selectedInfo?.latest ? <em>{t.install.latest}</em> : null}
-              <ChevronDown size={17} />
-            </button>
-            {versionMenuOpen ? (
-              <div className="version-dropdown-menu" role="listbox" aria-label="Choose install version">
-                {infos.map((info) => (
-                  <button
-                    className={info.version === selectedVersion ? 'version-dropdown-option active' : 'version-dropdown-option'}
-                    key={info.version}
-                    type="button"
-                    role="option"
-                    aria-selected={info.version === selectedVersion}
-                    onClick={() => {
-                      onVersionChange(info.version)
-                      setVersionMenuOpen(false)
-                    }}
-                  >
-                    <CheckCircle2 size={17} />
-                    <span>
-                      <strong>{info.label || info.version}</strong>
-                      <small>Build {info.buildId}</small>
-                    </span>
-                    {info.latest ? <em>{t.install.latest}</em> : null}
-                  </button>
-                ))}
-              </div>
-            ) : null}
-          </div>
-          <div className="install-options-grid">
-            <div>
-              <small>{t.install.version}</small>
-              <strong>{selectedVersion}</strong>
-            </div>
-            <div>
-              <small>{t.install.downloadSize}</small>
-              <strong>{formatBytes(downloadSize)}</strong>
-            </div>
-            <div>
-              <small>{t.install.resumeBehavior}</small>
-              <strong>{t.install.journalCache}</strong>
-            </div>
-            <div>
-              <small>Game</small>
-              <strong>{detail.title}</strong>
-            </div>
-            <div className="wide-option">
-              <small>{t.install.installFolder}</small>
-              <strong>{installRoot}</strong>
-              <button type="button" onClick={onChangeInstallRoot}>
-                <FolderOpen size={16} />
-                {t.install.change}
-              </button>
-            </div>
-            <div className="wide-option">
-              <small>{t.install.downloadingFolder}</small>
-              <strong>{downloadingRoot}</strong>
-            </div>
-          </div>
-        </div>
-        <footer>
-          <button type="button" onClick={onClose}>
-            {t.install.cancel}
-          </button>
-          <button className="primary-control" type="button" onClick={onStart}>
-            <Download size={17} />
-            {t.install.startDownload}
-          </button>
-        </footer>
-      </section>
-    </div>
-  )
-}
-
-function DownloadQueuePanel({
-  gameTitle,
-  job,
-  hasJob,
-  progress,
-  phaseProgress,
-  selectedVersion,
-  downloadSize,
-  isRunning,
-  onOpenOptions,
-}: {
-  gameTitle: string
-  job: JobJournal
-  hasJob: boolean
-  progress: number
-  phaseProgress: PhaseProgress
-  selectedVersion: string
-  downloadSize: number
-  isRunning: boolean
-  onOpenOptions: () => void
-}) {
-  const displayProgress = useSmoothNumber(progress)
-
-  if (!hasJob) {
-    return (
-      <section className="panel download-queue-panel">
-        <header className="panel-header compact">
-          <strong>DOWNLOADS</strong>
-          <span>No queued downloads</span>
-        </header>
-        <div className="downloads-empty">
-          <div className="queue-art">
-            <Download size={19} />
-          </div>
-          <div>
-            <strong>No active download</strong>
-            <span>
-              {gameTitle} {selectedVersion} is available, {formatBytes(downloadSize)} required.
-            </span>
-          </div>
-          <button type="button" onClick={onOpenOptions}>
-            {t.library.chooseInstall}
-          </button>
-        </div>
-      </section>
-    )
-  }
-
-  const queuedLabel = `${job.kind === 'install' ? 'Install' : 'Update'} ${job.toVersion}`
-  const failed = job.status === 'failed'
-  const canceled = job.status === 'canceled'
-
-  return (
-    <section className="panel download-queue-panel">
-      <header className="panel-header compact">
-        <strong>DOWNLOADS</strong>
-        <span>{failed ? 'Download failed' : canceled ? 'Download canceled' : 'Active queue'}</span>
-      </header>
-      <article className={failed ? 'queue-row failed' : 'queue-row active'}>
-        <div className="queue-art">
-          {failed ? <CircleAlert size={19} /> : <Download size={19} />}
-        </div>
-        <div className="queue-copy">
-          <strong>{gameTitle}</strong>
-          <span>{queuedLabel}</span>
-          <small>
-            {failed ? 'Network error. Resume will reuse staged chunks.' : `${phaseProgress.name} - ${phaseProgress.detail}`}
-          </small>
-        </div>
-        <div className="queue-progress">
-          <div className="mini-track">
-            <span style={{ width: `${displayProgress}%` }} />
-          </div>
-          <div className="queue-transfer">
-            <span>{displayProgress.toFixed(1)}%</span>
-            <span>
-              {formatBytes(phaseProgress.bytesDone)} / {formatBytes(phaseProgress.bytesTotal)}
-            </span>
-            <span>{phaseProgress.isDownloading ? `${formatBytes(phaseProgress.rateBytesPerSecond)}/s` : 'Phase progress'}</span>
-          </div>
-        </div>
-        {failed || canceled ? (
-          <button type="button" onClick={onOpenOptions}>
-            {failed ? 'Resume' : t.library.chooseInstall}
-          </button>
-        ) : (
-          <span className={isRunning ? 'queue-pill running' : 'queue-pill'}>{isRunning ? 'DOWNLOADING' : job.status}</span>
-        )}
-      </article>
-    </section>
-  )
-}
-
-function JobCenter({
-  job,
-  hasJob,
-  progress,
-  phaseProgress,
-  onPause,
-  onCancel,
-  isPaused,
-}: {
-  job: JobJournal
-  hasJob: boolean
-  progress: number
-  phaseProgress: PhaseProgress
-  onPause: () => void
-  onCancel: () => void
-  isPaused: boolean
-}) {
-  const displayProgress = useSmoothNumber(progress)
-  const displayOverall = useSmoothNumber(phaseProgress.overallPercent)
-  const canControl = hasJob && ['running', 'downloading', 'assembling', 'paused'].includes(job.status)
-  const jobTitle = job.kind === 'install' ? `INSTALL JOB: ${job.toVersion}` : `UPDATE JOB: ${job.fromVersion} -> ${job.toVersion}`
-
-  return (
-    <section className="panel job-panel">
-      <header className="panel-header">
-        <div>
-          <strong>{hasJob ? jobTitle : t.jobs.noActiveJob}</strong>
-          <span>{hasJob ? `${phaseProgress.name} - ${phaseProgress.detail}` : t.jobs.chooseVersion}</span>
-        </div>
-        <div className="progress-summary">
-          <span>Current phase</span>
-          <strong>{displayProgress.toFixed(1)}%</strong>
-          <span>Overall {displayOverall.toFixed(1)}%</span>
-        </div>
-      </header>
-      <div className="track">
-        <span style={{ width: `${displayProgress}%` }} />
-      </div>
-      <div className="phase-transfer-row">
-        <span>
-          Downloaded <strong>{formatBytes(phaseProgress.bytesDone)}</strong> / {formatBytes(phaseProgress.bytesTotal)}
-        </span>
-        <span>
-          Speed <strong>{phaseProgress.isDownloading ? `${formatBytes(phaseProgress.rateBytesPerSecond)}/s` : '--'}</strong>
-        </span>
-        <span>
-          ETA <strong>{formatDuration(phaseProgress.etaSeconds)}</strong>
-        </span>
-      </div>
-      <div className="steps">
-        {job.steps.map((step, index) => (
-          <StepRow key={step.name} index={index + 1} step={step} />
-        ))}
-      </div>
-      <footer className="job-actions">
-        {canControl ? (
-          <>
-            <button className="primary-control" type="button" onClick={onPause}>
-              {isPaused ? <Play size={17} /> : <Pause size={17} />}
-              {isPaused ? t.jobs.resume : t.jobs.pause}
-            </button>
-            <button type="button" onClick={onCancel}>
-              <X size={17} />
-              {t.jobs.cancel}
-            </button>
-            <span className="resume-state">{t.jobs.resumable}</span>
-          </>
-        ) : (
-          <span className="resume-state idle">No running download, assemble, or repair job.</span>
-        )}
-      </footer>
-    </section>
-  )
-}
-
-function StepRow({ index, step }: { index: number; step: JobStep }) {
-  const displayProgress = useSmoothNumber(step.progress * 100)
-  const Icon = useMemo(() => {
-    if (step.status === 'completed') return CheckCircle2
-    if (step.status === 'failed') return CircleAlert
-    if (step.name.includes('Download')) return Download
-    if (step.name.includes('Verify')) return ShieldCheck
-    if (step.name.includes('Assemble')) return Archive
-    return TerminalSquare
-  }, [step.name, step.status])
-
-  return (
-    <article className={`step-row ${step.status}`}>
-      <div className="step-icon">
-        <Icon size={21} />
-      </div>
-      <span className="step-index">{index}</span>
-      <div className="step-copy">
-        <strong>{step.name}</strong>
-        <small>{step.detail}</small>
-      </div>
-      <div className="mini-track">
-        <span style={{ width: `${displayProgress}%` }} />
-      </div>
-      <strong className="step-percent">{Math.round(displayProgress)}%</strong>
-      <span className="retry-count">{step.retryCount} retry</span>
-    </article>
-  )
-}
-
-function CachePanel({ snapshot }: { snapshot: Snapshot }) {
-  const radius = 38
-  const circumference = 2 * Math.PI * radius
-  const offset = circumference - (circumference * snapshot.cache.healthPercent) / 100
-
-  return (
-    <section className="panel metric-panel">
-      <header className="side-header">
-        <HardDrive size={17} />
-        <strong>CACHE HEALTH</strong>
-      </header>
-      <div className="cache-meter">
-        <svg viewBox="0 0 96 96" aria-hidden="true">
-          <circle cx="48" cy="48" r={radius} />
-          <circle cx="48" cy="48" r={radius} style={{ strokeDasharray: circumference, strokeDashoffset: offset }} />
-        </svg>
-        <strong>{snapshot.cache.healthPercent}%</strong>
-      </div>
-      <dl className="metric-list">
-        <div>
-          <dt>Cache size</dt>
-          <dd>{formatBytes(snapshot.cache.cacheSize)}</dd>
-        </div>
-        <div>
-          <dt>Free space</dt>
-          <dd>{formatBytes(snapshot.cache.freeSpace)}</dd>
-        </div>
-      </dl>
-      <button type="button" disabled={snapshot.cache.cacheSize === 0}>
-        {snapshot.cache.cacheSize === 0 ? 'NO CACHE ITEMS' : 'MANAGE CACHE'}
-      </button>
-    </section>
-  )
-}
-
-function RollbackPanel({ snapshot, rollbackVersion }: { snapshot: Snapshot; rollbackVersion: string }) {
-  const rollbackKnown = snapshot.cache.rollbackReady || snapshot.cache.rollbackMissingBytes > 0
-
-  return (
-    <section className="panel rollback-panel">
-      <header className="side-header">
-        <RotateCcw size={17} />
-        <strong>ROLLBACK READINESS</strong>
-      </header>
-      <div className="rollback-state">
-        <span className={snapshot.cache.rollbackReady ? 'ready-pill' : 'warn-pill'}>
-          {snapshot.cache.rollbackReady ? 'READY' : rollbackKnown ? 'NEEDS DOWNLOAD' : 'NOT PREPARED'}
-        </span>
-        <div>
-          <strong>{snapshot.cache.rollbackReady ? `${rollbackVersion} rollback ready` : 'Rollback not staged'}</strong>
-          <small>
-            {snapshot.cache.rollbackReady
-              ? 'All required chunks are cached.'
-              : rollbackKnown
-                ? `${formatBytes(snapshot.cache.rollbackMissingBytes)} required from proxy.`
-                : 'Run verify/cache analysis before rollback.'}
-          </small>
-        </div>
-      </div>
-      <button type="button" disabled={!snapshot.cache.rollbackReady}>
-        ROLLBACK TO {rollbackVersion}
-      </button>
-    </section>
-  )
-}
-
-function GameDetailsPanel({ detail }: { detail: GameDetail }) {
-  return (
-    <section className="panel game-info-panel">
-      <header className="side-header">
-        <ShieldCheck size={17} />
-        <strong>{t.library.details}</strong>
-      </header>
-      <dl className="game-info-list">
-        <div>
-          <dt>Developer</dt>
-          <dd>{detail.developers.join(', ')}</dd>
-        </div>
-        <div>
-          <dt>Publisher</dt>
-          <dd>{detail.publishers.join(', ')}</dd>
-        </div>
-        <div>
-          <dt>Release date</dt>
-          <dd>{detail.releaseDate}</dd>
-        </div>
-        <div>
-          <dt>Genres</dt>
-          <dd>
-            {detail.genres.map((genre) => (
-              <span key={genre}>{genre}</span>
-            ))}
-          </dd>
-        </div>
-      </dl>
-      {detail.ratings.map((rating) => (
-        <div className="rating-strip" key={rating.source}>
-          <strong>{rating.score}</strong>
-          <span>{rating.source}</span>
-        </div>
-      ))}
-    </section>
-  )
-}
-
-function InstallSummaryPanel({
-  selectedVersion,
-  downloadSize,
-}: {
-  selectedVersion: string
-  downloadSize: number
-}) {
-  return (
-    <section className="panel install-summary-panel">
-      <header className="side-header">
-        <Download size={17} />
-        <strong>{t.library.install}</strong>
-      </header>
-      <dl className="metric-list">
-        <div>
-          <dt>Version</dt>
-          <dd>{selectedVersion}</dd>
-        </div>
-        <div>
-          <dt>Install size</dt>
-          <dd>{formatBytes(downloadSize)}</dd>
-        </div>
-      </dl>
-    </section>
-  )
-}
-
-function ChangedFiles({ files }: { files: ChangedFile[] }) {
-  return (
-    <section className="panel changed-panel">
-      <header className="side-header">
-        <Square size={17} />
-        <strong>CHANGED FILES ({files.length})</strong>
-      </header>
-      <div className="changed-list">
-        {files.map((file) => (
-          <article key={file.path}>
-            <Archive size={18} />
-            <div>
-              <strong>{file.path}</strong>
-              <small>
-                {formatBytes(file.oldSize)} {'->'} {formatBytes(file.newSize)}
-              </small>
-            </div>
-            <span>{formatDelta(file.newSize - file.oldSize)}</span>
-          </article>
-        ))}
-      </div>
-      <button type="button" disabled={files.length === 0}>
-        {files.length === 0 ? 'NO CHANGED FILES' : 'VIEW ALL FILES'}
-      </button>
-    </section>
-  )
-}
-
-function JobLogPanel({ logs }: { logs: JobLog[] }) {
-  return (
-    <section className="panel log-panel">
-      <header className="panel-header compact">
-        <strong>JOB LOG</strong>
-        <button type="button">CLEAR</button>
-      </header>
-      <div className="log-list">
-        {logs.slice(-7).map((log, index) => (
-          <div className={`log-row ${log.level}`} key={`${log.at}-${index}`}>
-            <span>[{log.at}]</span>
-            <CheckCircle2 size={15} />
-            <p>{log.message}</p>
-          </div>
-        ))}
-      </div>
-    </section>
-  )
-}
-
-function createIdleJob(snapshot: Snapshot): JobJournal {
-  return {
-    id: 'idle',
-    gameId: DEFAULT_GAME_ID,
-    kind: 'update',
-    status: 'planned',
-    installPath: '',
-    fromVersion: snapshot.currentVersion,
-    toVersion: snapshot.latestVersion,
-    phase: 'Ready',
-    overallProgress: 0,
-    bytesDone: 0,
-    bytesTotal: snapshot.updateSize,
-    retryCount: 0,
-    resumable: true,
-    updatedAt: new Date().toISOString(),
-    steps: [
-      { name: 'Scan', detail: 'Find local files and detect version', status: 'waiting', progress: 0, retryCount: 0 },
-      { name: 'Verify', detail: 'Hash manifest-owned files', status: 'waiting', progress: 0, retryCount: 0 },
-      { name: 'Download packs', detail: 'Resume missing byte ranges from proxy', status: 'waiting', progress: 0, retryCount: 0 },
-      { name: 'Assemble files', detail: 'Rebuild files into verified temp outputs', status: 'waiting', progress: 0, retryCount: 0 },
-      { name: 'Finalize', detail: 'Replace only after full-file hash match', status: 'waiting', progress: 0, retryCount: 0 },
-    ],
-    logs: [
-      { at: new Date().toLocaleTimeString(), level: 'info', message: 'No launcher job is running.' },
-      { at: new Date().toLocaleTimeString(), level: 'info', message: 'Select a target version or scan an existing install.' },
-      { at: new Date().toLocaleTimeString(), level: 'info', message: 'Install uses 0xoLemon store; update uses the selected game folder.' },
-    ],
-  }
-}
-
-function versionOptions(snapshot: Snapshot, game: GameSummary, useSnapshot: boolean) {
-  if (useSnapshot && snapshot.availableVersions.length > 0) {
-    return snapshot.availableVersions
-  }
-  if (game.availableVersions.length > 0) {
-    return game.availableVersions.map((version) => version.version)
-  }
-  return snapshot.latestVersion === 'unknown' ? [] : [snapshot.latestVersion]
-}
-
-function collectAssetIds(game: GameSummary, detail: GameDetail) {
-  return Array.from(
-    new Set(
-      [
-        game.gridAssetId,
-        game.heroAssetId,
-        game.logoAssetId,
-        game.iconAssetId,
-        ...detail.media.slice(0, 24).map((item) => item.assetId),
-        ...detail.achievements.map((achievement) => achievement.iconAssetId),
-        ...(detail.descriptionImages || []),
-      ].filter(Boolean),
-    ),
-  )
-}
-
-function fallbackDetailFromSummary(game: GameSummary): GameDetail {
-  return {
-    gameId: game.id,
-    locale: 'en-US',
-    title: game.title,
-    shortDescription: game.subtitle || 'Game details are packaged for the desktop launcher.',
-    detailedDescription:
-      'Open the desktop launcher build to load the cooked .0xo media pack, Steam detail metadata, achievements, version data, and install workflow.',
-    developers: [game.developer].filter(Boolean),
-    publishers: [game.publisher].filter(Boolean),
-    releaseDate: 'Pack metadata required',
-    genres: [],
-    categories: [],
-    ratings: [],
-    media: [],
-    achievements: [],
-    sounds: [],
-    install: game.install,
-    descriptionImages: [],
-    versions: game.availableVersions,
-    metadataSource: 'preview',
-  }
-}
-
-function firstMediaUrl(detail: GameDetail, assets: Record<string, string>) {
-  const first = detail.media.find((item) => isCarouselMedia(item) && item.mimeType.startsWith('image/') && assets[item.assetId])
-  return first ? assets[first.assetId] : undefined
-}
-
-function processDescriptionHtml(html: string, assets: Record<string, string>) {
-  if (!html) return '<p>No description available.</p>';
-  let processed = html;
-
-  // Replace asset tokens with base64 data URLs - asset IDs contain colons e.g. "007-first-light:desc-img-0"
-  processed = processed.replace(/asset:([a-zA-Z0-9_:/-]+)/g, (_match, assetId) => {
-    return assets[assetId] ? assets[assetId] : '';
-  });
-
-  // Clean up Steam-specific tags into readable HTML
-  processed = processed
-    .replace(/\[h[123]\](.*?)\[\/h[123]\]/gi, '<h3>$1</h3>')
-    .replace(/\[b\](.*?)\[\/b\]/gi, '<strong>$1</strong>')
-    .replace(/\[i\](.*?)\[\/i\]/gi, '<em>$1</em>')
-    .replace(/\[u\](.*?)\[\/u\]/gi, '<u>$1</u>')
-    .replace(/\[url=([^\]]+)\](.*?)\[\/url\]/gi, '<a href="$1" target="_blank">$2</a>')
-    .replace(/\[list\]([\s\S]*?)\[\/list\]/gi, '<ul>$1</ul>')
-    .replace(/\[\*\]/gi, '<li>')
-    .replace(/\[img\](.*?)\[\/img\]/gi, '')  // remove raw steam image tags
-    .replace(/<img[^>]+src="(?!data:)[^"]*"[^>]*>/gi, ''); // strip unresolved external img
-
-  return processed;
-}
-
-function downloadPathForInstallRoot(root: string, install: GameInstallMetadata = fallbackInstall) {
-  return root === install.defaultInstallFolder ? install.defaultDownloadingFolder : `${root}\\${CUSTOM_DOWNLOADING_RELATIVE}`
-}
-
-function isTauriRuntime() {
-  return typeof window !== 'undefined' && Boolean(window.__TAURI_INTERNALS__)
-}
-
-function contentServiceLabel(value: string) {
-  const normalized = value.toLowerCase()
-  if (normalized.includes('missing') || normalized.includes('failed') || normalized.includes('error')) {
-    return 'Content service unavailable'
-  }
-  if (normalized.includes('ready') || normalized.includes('local') || normalized.includes('auth')) {
-    return 'Content service ready'
-  }
-  return 'Content service checking'
-}
-
-function catalogStatusLabel(value: string) {
-  const normalized = value.toLowerCase()
-  if (normalized.includes('loaded')) return 'Asset pack loaded'
-  if (normalized.includes('fallback') || normalized.includes('preview')) return 'Preview metadata'
-  if (normalized.includes('failed') || normalized.includes('error') || normalized.includes('invalid')) return 'Asset pack unavailable'
-  return 'Asset pack checking'
-}
-
-function rollbackVersionFor(detail: GameDetail, selectedVersion: string) {
-  const versions = detail.versions.map((item) => item.version)
-  const selectedIndex = versions.indexOf(selectedVersion)
-  if (selectedIndex > 0) return versions[selectedIndex - 1]
-  return detail.versions.find((item) => !item.latest)?.version ?? 'previous version'
-}
-
-function getPhaseProgress(job: JobJournal, rateBytesPerSecond: number): PhaseProgress {
-  const runningStep =
-    job.steps.find((step) => step.status === 'running' || step.status === 'paused') ??
-    job.steps.find((step) => step.status !== 'completed') ??
-    job.steps[job.steps.length - 1]
-  const isDownloading = job.status === 'downloading'
-  const phasePercent = isDownloading
-    ? bytePercent(job.bytesDone, job.bytesTotal)
-    : clampPercent((runningStep?.progress ?? job.overallProgress) * 100)
-  const remainingBytes = Math.max(job.bytesTotal - job.bytesDone, 0)
-
-  return {
-    name: runningStep?.name ?? job.phase,
-    detail: job.phase,
-    percent: job.status === 'committed' ? 100 : phasePercent,
-    overallPercent: clampPercent(job.overallProgress * 100),
-    bytesDone: job.bytesDone,
-    bytesTotal: job.bytesTotal,
-    rateBytesPerSecond,
-    etaSeconds: isDownloading && rateBytesPerSecond > 1 ? remainingBytes / rateBytesPerSecond : null,
-    isDownloading,
-  }
-}
-
-function bytePercent(done: number, total: number) {
-  if (total <= 0) return 0
-  return clampPercent((done / total) * 100)
-}
-
-function clampPercent(value: number) {
-  return Math.min(Math.max(value, 0), 100)
-}
-
-function formatBytes(value: number) {
-  if (value <= 0) return '0 B'
-  const units = ['B', 'KB', 'MB', 'GB', 'TB']
-  const index = Math.min(Math.floor(Math.log(value) / Math.log(1024)), units.length - 1)
-  return `${(value / 1024 ** index).toFixed(index === 0 ? 0 : 2)} ${units[index]}`
-}
-
-function formatDuration(seconds: number | null) {
-  if (seconds === null || !Number.isFinite(seconds) || seconds <= 0) return '--'
-  const rounded = Math.max(1, Math.round(seconds))
-  const hours = Math.floor(rounded / 3600)
-  const minutes = Math.floor((rounded % 3600) / 60)
-  const secs = rounded % 60
-  if (hours > 0) return `${hours}h ${minutes}m`
-  if (minutes > 0) return `${minutes}m ${secs}s`
-  return `${secs}s`
-}
-
-function formatDelta(value: number) {
-  const sign = value >= 0 ? '+' : '-'
-  return `${sign}${formatBytes(Math.abs(value))}`
-}
-
-function DriveLibraryPickerModal({
-  libraries,
-  gameName,
-  currentRoot,
-  onSelect,
-  onAddDrive,
-  onClose,
-}: {
-  libraries: string[]
-  gameName: string
-  currentRoot: string
-  onSelect: (driveLetter: string) => void
-  onAddDrive: () => void
-  onClose: () => void
-}) {
-  type DriveInfo = { letter: string; label: string; free_bytes: number; total_bytes: number }
-  const [driveInfos, setDriveInfos] = useState<Record<string, DriveInfo>>({})
-
-  useEffect(() => {
-    invoke<DriveInfo[]>('list_system_drives')
-      .then((drives) => {
-        const map: Record<string, DriveInfo> = {}
-        for (const d of drives) map[d.letter] = d
-        setDriveInfos(map)
-      })
-      .catch(() => {/* ignore if not in tauri */})
-  }, [])
-
-  return (
-    <div className="dialog-backdrop" role="presentation" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
-      <section className="drive-picker-modal" role="dialog" aria-modal="true" aria-label="Choose install library">
-        <header>
-          <h2>Choose Install Location</h2>
-          <button type="button" onClick={onClose} aria-label="Close"><X size={17} /></button>
-        </header>
-        <p className="drive-picker-hint">
-          Game will be installed to: <code>Drive:\0xoLemon store\common\{gameName}</code>
-        </p>
-        <div className="drive-list">
-          {libraries.map((lib) => {
-            const info = driveInfos[lib]
-            const isSelected = currentRoot.toUpperCase().startsWith(lib.toUpperCase())
-            const freeGB = info ? (info.free_bytes / 1024 / 1024 / 1024).toFixed(1) : null
-            const totalGB = info ? (info.total_bytes / 1024 / 1024 / 1024).toFixed(0) : null
-            const usedPct = info ? Math.round(((info.total_bytes - info.free_bytes) / info.total_bytes) * 100) : 0
-
-            return (
-              <button
-                key={lib}
-                className={`drive-entry${isSelected ? ' selected' : ''}`}
-                type="button"
-                onClick={() => onSelect(lib)}
-              >
-                <div className="drive-icon">
-                  <HardDrive size={28} />
-                </div>
-                <div className="drive-details">
-                  <div className="drive-label">
-                    <strong>{lib}</strong>
-                    {info ? <span>{info.label}</span> : null}
-                  </div>
-                  {info ? (
-                    <>
-                      <div className="drive-space-bar">
-                        <div className="drive-space-fill" style={{ width: `${usedPct}%` }} />
-                      </div>
-                      <div className="drive-space-text">
-                        {freeGB} GB free of {totalGB} GB
-                      </div>
-                    </>
-                  ) : (
-                    <div className="drive-space-text muted">Checking…</div>
-                  )}
-                  <div className="drive-path-preview">
-                    {lib}\0xoLemon store\common\{gameName}
-                  </div>
-                </div>
-                {isSelected && <div className="drive-check"><Check size={16} /></div>}
-              </button>
-            )
-          })}
-        </div>
-        <footer>
-          <button type="button" className="add-drive-btn" onClick={onAddDrive}>
-            <Plus size={15} /> Add Drive
-          </button>
-        </footer>
-      </section>
-    </div>
-  )
-}
-
-export default App

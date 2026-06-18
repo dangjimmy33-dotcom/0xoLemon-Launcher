@@ -1,0 +1,369 @@
+﻿{
+    "2495100":  {
+                    "success":  true,
+                    "data":  {
+                                 "type":  "game",
+                                 "name":  "Hello Kitty Island Adventure",
+                                 "steam_appid":  2495100,
+                                 "required_age":  0,
+                                 "is_free":  false,
+                                 "controller_support":  "full",
+                                 "dlc":  [
+                                             4055140,
+                                             3890520
+                                         ],
+                                 "detailed_description":  "\u003ch1\u003eDeluxe Edition\u003c/h1\u003e\u003cp\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/b628539a33ab0833102d4073e04dd926.avif?t=1776719582\" data-big-src=https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras_big/b628539a33ab0833102d4073e04dd926.avif?t=1776719582 width=800 height=450 /\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eJump in with the Deluxe Edition, which includes Hello Kitty Island Adventure, the base game, and three Deluxe Bundles offering a super-charged start and spectacular Legacy Event items.\u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eDeluxe Event Bundle\u003c/strong\u003e\u003c/h2\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003eOver 300 Unique Items and Rewards upfront–no need to wait!\u003c/p\u003e\u003c/li\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003eOne Year of Legacy Clothing, Furniture, and other cosmetics early from events like:\u003c/p\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003e2023 Spooky Celebration\u003c/p\u003e\u003c/li\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003e2023 Give \u0026amp; Gather Celebration\u003c/p\u003e\u003c/li\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003e2024 Luck \u0026amp; Lantern Celebration\u003c/p\u003e\u003c/li\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003e2024 Hugs \u0026amp; Hearts Celebration\u003c/p\u003e\u003c/li\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003e2024 Month of Meh, featuring gudetama\u003c/p\u003e\u003c/li\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003e2024 Under the Sea Celebration\u003c/p\u003e\u003c/li\u003e\u003c/ul\u003e\u003c/li\u003e\u003c/ul\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003eAnd so many more!\u003c/p\u003e\u003c/li\u003e\u003c/ul\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eDeluxe Starter Bundle\u003c/strong\u003e\u003c/h2\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003e10x Friendship Blossoms\u003c/p\u003e\u003c/li\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003e3x Friendship Bouquets\u003c/p\u003e\u003c/li\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003e10x Island Bouquets\u003c/p\u003e\u003c/li\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003e50x Strawberry Crates\u003c/p\u003e\u003c/li\u003e\u003c/ul\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eDeluxe Crafting Bundle\u003c/strong\u003e\u003c/h2\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003e50x of each Dye color\u003c/p\u003e\u003c/li\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003e100 Sticks\u003c/p\u003e\u003c/li\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003e45 Iron Ore\u003c/p\u003e\u003c/li\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003e50 Rubber\u003c/p\u003e\u003c/li\u003e\u003c/ul\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eCollect your bundles once you start playing, through cute quests!\u003c/p\u003e\u003c/p\u003e\u003cbr\u003e\u003ch1\u003eAbout the Game\u003c/h1\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/8d86db7aaab7a8424102785b3042c98b.avif?t=1776719582\" data-big-src=https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras_big/8d86db7aaab7a8424102785b3042c98b.avif?t=1776719582 width=800 height=310 /\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline crossorigin=\"anonymous\" poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/a7373c30c1f1ddccca5c8c53c0a86203.poster.avif?t=1776719582\" width=800 height=333 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/a7373c30c1f1ddccca5c8c53c0a86203.webm?t=1776719582\" type=\"video/webm; codecs=vp9\"\u003e\u003c/video\u003e\u003c/span\u003e \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e \u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eExplore a Massive World with 80+ Hours of Heartfelt Quests\u003c/strong\u003e\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003eDiscover eight unique regions, from the ocean\u0027s depths to an island in the clouds! Run, float, swim, and dive around the world to uncover hidden treasures and mysteries, all while listening to over 50 tracks of original music.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eEngage with stories both epic and cozy, from braving volcanoes filled with treacherous lava to throwing birthday parties for all your new friends, all while piecing together the ultimate secret behind Friendship Island. \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline crossorigin=\"anonymous\" poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/ae181245335da55334a8805744435a4d.poster.avif?t=1776719582\" width=800 height=333 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/ae181245335da55334a8805744435a4d.webm?t=1776719582\" type=\"video/webm; codecs=vp9\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eBefriend Iconic Characters and Create Their Perfect Gifts\u003c/strong\u003e\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003eWhether it’s cheerful Hello Kitty, mischievous Kuromi, or sweet Cinnamoroll, there are over 40 iconic Hello Kitty and Friends characters to meet, befriend, and adventure alongside. How do you improve friendship? Cooking and crafting galore! Create beautiful recipes at cooking stations or craft the items you find into the perfect gifts for all your new friends! \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eEach character has a unique role on the island and their own likes, activities, and interests. Once you’ve bolstered your friendship, invite your favorite characters to adventure alongside you and gain their special power-ups and abilities!\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eRenovate cabins and decorate them to attract new visitors to the island, like Hello Kitty’s twin sister Mimmy. These new visitors can unlock special quests and even entire new storylines!\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline crossorigin=\"anonymous\" poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/f9f7a99142340a737ac99bc59235f6ae.poster.avif?t=1776719582\" width=800 height=333 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/f9f7a99142340a737ac99bc59235f6ae.webm?t=1776719582\" type=\"video/webm; codecs=vp9\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eBe Who You Like and Live In Style\u003c/strong\u003e\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003eCreate your perfect avatar. Choose from six species with different face options, inclusive body types, and unique colors and patterns—all based on the Hello Kitty \u0026amp; Friends world. Collect, discover, and customize hundreds of clothing options to find your favorite look!\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eBuy and tailor furniture to create your dream home aesthetic, with over 30 furniture sets to mix and match and countless ways to change color, pattern, and style.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline crossorigin=\"anonymous\" poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/04a36e65bde43c1cdf3d9eab81e3cd7b.poster.avif?t=1776719582\" width=800 height=332 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/04a36e65bde43c1cdf3d9eab81e3cd7b.webm?t=1776719582\" type=\"video/webm; codecs=vp9\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eDiscover a Dynamic, Living World Teeming with Events\u003c/strong\u003e\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003eThere’s always something new to do on the Island with year-round events. Whether you’re celebrating the joys of summertime, ringing in a holiday, or throwing a party for a character’s special birthday, there are always new festivals (and rewards!) around the corner.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eKeep your eye on the weather, too! Weather events like Starfall, Rainstorms, and Steamy days will encourage new critters to appear, chests to spawn, rewards to collect, and other surprises.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline crossorigin=\"anonymous\" poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/e52ee63f5c360e6caf09abcf321a930a.poster.avif?t=1776719582\" width=800 height=333 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/e52ee63f5c360e6caf09abcf321a930a.webm?t=1776719582\" type=\"video/webm; codecs=vp9\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eEnjoy Hidden Puzzles, Relaxing Gardening, and Adorable Critter Collecting\u003c/strong\u003e\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003eHidden puzzle ruins are scattered all over the island—test your skills to unlock bonus rewards and solve the island’s mysteries.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eWatch your island spring to life with flowers of all shapes and sizes! Cultivate your gardens to breed rare and exotic varieties, colors, and patterns to impress your friends (and because gardening is fun).\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eThe island is teeming with life—kick back and fish in the clear waters or hunt for rare critters with your net. Donate them to the Nature Preserve to give them a safe place to live and grow your collection.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline crossorigin=\"anonymous\" poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/d2950b0ba0bfb9aaab3a82531de38c5e.poster.avif?t=1776719582\" width=800 height=333 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/d2950b0ba0bfb9aaab3a82531de38c5e.webm?t=1776719582\" type=\"video/webm; codecs=vp9\"\u003e\u003c/video\u003e\u003c/span\u003e \u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003ePlay Together—It’s Even Better!\u003c/strong\u003e\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003eDive into a multiplayer game with real-world friends. Team up to explore, get bonuses, and solve challenges together. Complete social quests to level up your friendship, unlock unique emotes, and gain special bonuses like trading rare items and clothing. \u003c/p\u003e",
+                                 "about_the_game":  "\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/8d86db7aaab7a8424102785b3042c98b.avif?t=1776719582\" data-big-src=https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras_big/8d86db7aaab7a8424102785b3042c98b.avif?t=1776719582 width=800 height=310 /\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline crossorigin=\"anonymous\" poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/a7373c30c1f1ddccca5c8c53c0a86203.poster.avif?t=1776719582\" width=800 height=333 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/a7373c30c1f1ddccca5c8c53c0a86203.webm?t=1776719582\" type=\"video/webm; codecs=vp9\"\u003e\u003c/video\u003e\u003c/span\u003e \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e \u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eExplore a Massive World with 80+ Hours of Heartfelt Quests\u003c/strong\u003e\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003eDiscover eight unique regions, from the ocean\u0027s depths to an island in the clouds! Run, float, swim, and dive around the world to uncover hidden treasures and mysteries, all while listening to over 50 tracks of original music.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eEngage with stories both epic and cozy, from braving volcanoes filled with treacherous lava to throwing birthday parties for all your new friends, all while piecing together the ultimate secret behind Friendship Island. \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline crossorigin=\"anonymous\" poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/ae181245335da55334a8805744435a4d.poster.avif?t=1776719582\" width=800 height=333 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/ae181245335da55334a8805744435a4d.webm?t=1776719582\" type=\"video/webm; codecs=vp9\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eBefriend Iconic Characters and Create Their Perfect Gifts\u003c/strong\u003e\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003eWhether it’s cheerful Hello Kitty, mischievous Kuromi, or sweet Cinnamoroll, there are over 40 iconic Hello Kitty and Friends characters to meet, befriend, and adventure alongside. How do you improve friendship? Cooking and crafting galore! Create beautiful recipes at cooking stations or craft the items you find into the perfect gifts for all your new friends! \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eEach character has a unique role on the island and their own likes, activities, and interests. Once you’ve bolstered your friendship, invite your favorite characters to adventure alongside you and gain their special power-ups and abilities!\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eRenovate cabins and decorate them to attract new visitors to the island, like Hello Kitty’s twin sister Mimmy. These new visitors can unlock special quests and even entire new storylines!\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline crossorigin=\"anonymous\" poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/f9f7a99142340a737ac99bc59235f6ae.poster.avif?t=1776719582\" width=800 height=333 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/f9f7a99142340a737ac99bc59235f6ae.webm?t=1776719582\" type=\"video/webm; codecs=vp9\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eBe Who You Like and Live In Style\u003c/strong\u003e\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003eCreate your perfect avatar. Choose from six species with different face options, inclusive body types, and unique colors and patterns—all based on the Hello Kitty \u0026amp; Friends world. Collect, discover, and customize hundreds of clothing options to find your favorite look!\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eBuy and tailor furniture to create your dream home aesthetic, with over 30 furniture sets to mix and match and countless ways to change color, pattern, and style.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline crossorigin=\"anonymous\" poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/04a36e65bde43c1cdf3d9eab81e3cd7b.poster.avif?t=1776719582\" width=800 height=332 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/04a36e65bde43c1cdf3d9eab81e3cd7b.webm?t=1776719582\" type=\"video/webm; codecs=vp9\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eDiscover a Dynamic, Living World Teeming with Events\u003c/strong\u003e\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003eThere’s always something new to do on the Island with year-round events. Whether you’re celebrating the joys of summertime, ringing in a holiday, or throwing a party for a character’s special birthday, there are always new festivals (and rewards!) around the corner.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eKeep your eye on the weather, too! Weather events like Starfall, Rainstorms, and Steamy days will encourage new critters to appear, chests to spawn, rewards to collect, and other surprises.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline crossorigin=\"anonymous\" poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/e52ee63f5c360e6caf09abcf321a930a.poster.avif?t=1776719582\" width=800 height=333 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/e52ee63f5c360e6caf09abcf321a930a.webm?t=1776719582\" type=\"video/webm; codecs=vp9\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eEnjoy Hidden Puzzles, Relaxing Gardening, and Adorable Critter Collecting\u003c/strong\u003e\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003eHidden puzzle ruins are scattered all over the island—test your skills to unlock bonus rewards and solve the island’s mysteries.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eWatch your island spring to life with flowers of all shapes and sizes! Cultivate your gardens to breed rare and exotic varieties, colors, and patterns to impress your friends (and because gardening is fun).\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eThe island is teeming with life—kick back and fish in the clear waters or hunt for rare critters with your net. Donate them to the Nature Preserve to give them a safe place to live and grow your collection.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline crossorigin=\"anonymous\" poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/d2950b0ba0bfb9aaab3a82531de38c5e.poster.avif?t=1776719582\" width=800 height=333 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/extras/d2950b0ba0bfb9aaab3a82531de38c5e.webm?t=1776719582\" type=\"video/webm; codecs=vp9\"\u003e\u003c/video\u003e\u003c/span\u003e \u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003ePlay Together—It’s Even Better!\u003c/strong\u003e\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003eDive into a multiplayer game with real-world friends. Team up to explore, get bonuses, and solve challenges together. Complete social quests to level up your friendship, unlock unique emotes, and gain special bonuses like trading rare items and clothing. \u003c/p\u003e",
+                                 "short_description":  "Embark on a cozy, open-world adventure with Hello Kitty and Friends. Befriend beloved characters as you explore and restore a mysterious island, solve ancient puzzles, cook delicious dishes, customize yourself and your cabins, and so much more.",
+                                 "supported_languages":  "English, French, Italian, German, Spanish - Spain, Arabic, Dutch, Japanese, Korean, Portuguese - Brazil, Russian, Simplified Chinese, Traditional Chinese, Turkish",
+                                 "header_image":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/33b3efa148506359eb8d6e973f59a38cb95cc794/header.jpg?t=1776719582",
+                                 "capsule_image":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/55b66fcd8f6ea7575c41a7e0a97e849d54eb8450/capsule_231x87.jpg?t=1776719582",
+                                 "capsule_imagev5":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/55b66fcd8f6ea7575c41a7e0a97e849d54eb8450/capsule_184x69.jpg?t=1776719582",
+                                 "website":  "https://www.hellokittyislandadventure.com/",
+                                 "pc_requirements":  {
+                                                         "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003eRequires a 64-bit processor and operating system\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows 10\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e Intel Core i5-4360U or equivalent\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 6 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e NVIDIA GeForce 650, 1GB AMD Radeon HD 7750, 1 GB\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eDirectX:\u003c/strong\u003e Version 11\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 5 GB available space\u003c/li\u003e\u003c/ul\u003e",
+                                                         "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003eRequires a 64-bit processor and operating system\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows 10\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e Intel Core i5-4690 or AMD Ryzen 3 1300X\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 6 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e NVIDIA GeForce GTX 960, 4 GB or AMD Radeon R9 380, 4 GB\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eDirectX:\u003c/strong\u003e Version 11\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 5 GB available space\u003c/li\u003e\u003c/ul\u003e"
+                                                     },
+                                 "mac_requirements":  {
+                                                          "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e",
+                                                          "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e"
+                                                      },
+                                 "linux_requirements":  {
+                                                            "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e",
+                                                            "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e"
+                                                        },
+                                 "legal_notice":  "© 2024 Sunblink. All Rights Reserved.\u003cbr /\u003e\r\n© 2024 SANRIO CO., LTD.   Used Under License.",
+                                 "drm_notice":  "Denuvo",
+                                 "developers":  [
+                                                    "Sunblink"
+                                                ],
+                                 "publishers":  [
+                                                    "Sunblink"
+                                                ],
+                                 "price_overview":  {
+                                                        "currency":  "USD",
+                                                        "initial":  3999,
+                                                        "final":  3999,
+                                                        "discount_percent":  0,
+                                                        "initial_formatted":  "",
+                                                        "final_formatted":  "$39.99"
+                                                    },
+                                 "packages":  [
+                                                  897882
+                                              ],
+                                 "package_groups":  [
+                                                        {
+                                                            "name":  "default",
+                                                            "title":  "Buy Hello Kitty Island Adventure",
+                                                            "description":  "",
+                                                            "selection_text":  "Select a purchase option",
+                                                            "save_text":  "",
+                                                            "display_type":  0,
+                                                            "is_recurring_subscription":  "false",
+                                                            "subs":  [
+                                                                         {
+                                                                             "packageid":  897882,
+                                                                             "percent_savings_text":  " ",
+                                                                             "percent_savings":  0,
+                                                                             "option_text":  "Hello Kitty Island Adventure - $39.99",
+                                                                             "option_description":  "",
+                                                                             "can_get_free_license":  "0",
+                                                                             "is_free_license":  false,
+                                                                             "price_in_cents_with_discount":  3999
+                                                                         }
+                                                                     ]
+                                                        }
+                                                    ],
+                                 "platforms":  {
+                                                   "windows":  true,
+                                                   "mac":  false,
+                                                   "linux":  false
+                                               },
+                                 "categories":  [
+                                                    {
+                                                        "id":  2,
+                                                        "description":  "Single-player"
+                                                    },
+                                                    {
+                                                        "id":  1,
+                                                        "description":  "Multi-player"
+                                                    },
+                                                    {
+                                                        "id":  9,
+                                                        "description":  "Co-op"
+                                                    },
+                                                    {
+                                                        "id":  38,
+                                                        "description":  "Online Co-op"
+                                                    },
+                                                    {
+                                                        "id":  22,
+                                                        "description":  "Steam Achievements"
+                                                    },
+                                                    {
+                                                        "id":  28,
+                                                        "description":  "Full controller support"
+                                                    },
+                                                    {
+                                                        "id":  23,
+                                                        "description":  "Steam Cloud"
+                                                    },
+                                                    {
+                                                        "id":  62,
+                                                        "description":  "Family Sharing"
+                                                    }
+                                                ],
+                                 "genres":  [
+                                                {
+                                                    "id":  "1",
+                                                    "description":  "Action"
+                                                },
+                                                {
+                                                    "id":  "25",
+                                                    "description":  "Adventure"
+                                                },
+                                                {
+                                                    "id":  "4",
+                                                    "description":  "Casual"
+                                                },
+                                                {
+                                                    "id":  "23",
+                                                    "description":  "Indie"
+                                                },
+                                                {
+                                                    "id":  "3",
+                                                    "description":  "RPG"
+                                                },
+                                                {
+                                                    "id":  "28",
+                                                    "description":  "Simulation"
+                                                }
+                                            ],
+                                 "screenshots":  [
+                                                     {
+                                                         "id":  0,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/ss_4b2dee4ba9d74ebff886cff692a718632db7ebfa.600x338.jpg?t=1776719582",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/ss_4b2dee4ba9d74ebff886cff692a718632db7ebfa.1920x1080.jpg?t=1776719582"
+                                                     },
+                                                     {
+                                                         "id":  1,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/63ac4ec151b232b1c98cd824701085ac2f5891db/ss_63ac4ec151b232b1c98cd824701085ac2f5891db.600x338.jpg?t=1776719582",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/63ac4ec151b232b1c98cd824701085ac2f5891db/ss_63ac4ec151b232b1c98cd824701085ac2f5891db.1920x1080.jpg?t=1776719582"
+                                                     },
+                                                     {
+                                                         "id":  2,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/ss_2d09d4ec03a940000d7822fd685042cb32f7c71b.600x338.jpg?t=1776719582",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/ss_2d09d4ec03a940000d7822fd685042cb32f7c71b.1920x1080.jpg?t=1776719582"
+                                                     },
+                                                     {
+                                                         "id":  3,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/c74ff473990059b03cc16ec0f1f46814e8b0d23b/ss_c74ff473990059b03cc16ec0f1f46814e8b0d23b.600x338.jpg?t=1776719582",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/c74ff473990059b03cc16ec0f1f46814e8b0d23b/ss_c74ff473990059b03cc16ec0f1f46814e8b0d23b.1920x1080.jpg?t=1776719582"
+                                                     },
+                                                     {
+                                                         "id":  4,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/ss_8014b677be3122d13141db61413bdab940ea31a0.600x338.jpg?t=1776719582",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/ss_8014b677be3122d13141db61413bdab940ea31a0.1920x1080.jpg?t=1776719582"
+                                                     },
+                                                     {
+                                                         "id":  5,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/ss_0289e97d97c26cc5ea15c7ab402c10e9a54e7e3c.600x338.jpg?t=1776719582",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/ss_0289e97d97c26cc5ea15c7ab402c10e9a54e7e3c.1920x1080.jpg?t=1776719582"
+                                                     },
+                                                     {
+                                                         "id":  6,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/14b5b9caa0db812d6442072468c4a5c86d54827d/ss_14b5b9caa0db812d6442072468c4a5c86d54827d.600x338.jpg?t=1776719582",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/14b5b9caa0db812d6442072468c4a5c86d54827d/ss_14b5b9caa0db812d6442072468c4a5c86d54827d.1920x1080.jpg?t=1776719582"
+                                                     },
+                                                     {
+                                                         "id":  7,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/6b57146d98765d716b132705c93b82253808ae15/ss_6b57146d98765d716b132705c93b82253808ae15.600x338.jpg?t=1776719582",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/6b57146d98765d716b132705c93b82253808ae15/ss_6b57146d98765d716b132705c93b82253808ae15.1920x1080.jpg?t=1776719582"
+                                                     },
+                                                     {
+                                                         "id":  8,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/ss_8ba458abbed42e011124cd65a122a2e61d632ed6.600x338.jpg?t=1776719582",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/ss_8ba458abbed42e011124cd65a122a2e61d632ed6.1920x1080.jpg?t=1776719582"
+                                                     },
+                                                     {
+                                                         "id":  9,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/ss_7e8d31eea55c753995df45cd6f4caa70b615bc8e.600x338.jpg?t=1776719582",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/ss_7e8d31eea55c753995df45cd6f4caa70b615bc8e.1920x1080.jpg?t=1776719582"
+                                                     },
+                                                     {
+                                                         "id":  10,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/ss_486f340ed20189d0282b3a70118895a8ebb13da0.600x338.jpg?t=1776719582",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/ss_486f340ed20189d0282b3a70118895a8ebb13da0.1920x1080.jpg?t=1776719582"
+                                                     },
+                                                     {
+                                                         "id":  11,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/ss_2ea1cca956ff76d8944ee79c66b4267abfba22cf.600x338.jpg?t=1776719582",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/ss_2ea1cca956ff76d8944ee79c66b4267abfba22cf.1920x1080.jpg?t=1776719582"
+                                                     },
+                                                     {
+                                                         "id":  12,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/ss_1802c42dc93a6f022858f34bac2bb7bfa8bfb9e1.600x338.jpg?t=1776719582",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/ss_1802c42dc93a6f022858f34bac2bb7bfa8bfb9e1.1920x1080.jpg?t=1776719582"
+                                                     },
+                                                     {
+                                                         "id":  13,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/ss_4e13fc99432b6beac8032fc5038094433ec9bbb8.600x338.jpg?t=1776719582",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/ss_4e13fc99432b6beac8032fc5038094433ec9bbb8.1920x1080.jpg?t=1776719582"
+                                                     },
+                                                     {
+                                                         "id":  14,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/ss_426e0c253aa9d710ef30fda43049ce8e3843b3f9.600x338.jpg?t=1776719582",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/ss_426e0c253aa9d710ef30fda43049ce8e3843b3f9.1920x1080.jpg?t=1776719582"
+                                                     }
+                                                 ],
+                                 "movies":  [
+                                                {
+                                                    "id":  257093517,
+                                                    "name":  "Launch Trailer - Hello Kitty Island Adventure",
+                                                    "thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257093517/68d347e308ea755cbb8b8891ae04ff87902225e7/movie_600x337.jpg?t=1738267161",
+                                                    "dash_av1":  "https://video.akamai.steamstatic.com/store_trailers/2495100/820791/88bcc7a13d116b9955543b06bdfb90618f6f663e/1750815872/dash_av1.mpd?t=1738267161",
+                                                    "dash_h264":  "https://video.akamai.steamstatic.com/store_trailers/2495100/820791/88bcc7a13d116b9955543b06bdfb90618f6f663e/1750815872/dash_h264.mpd?t=1738267161",
+                                                    "hls_h264":  "https://video.akamai.steamstatic.com/store_trailers/2495100/820791/88bcc7a13d116b9955543b06bdfb90618f6f663e/1750815872/hls_264_master.m3u8?t=1738267161",
+                                                    "highlight":  true
+                                                },
+                                                {
+                                                    "id":  257093243,
+                                                    "name":  "Gameplay Reel - Hello Kitty Island Adventure",
+                                                    "thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257093243/8ccdf902f9a3bced90e37d7495c4dac4f4945c72/movie_600x337.jpg?t=1738357300",
+                                                    "dash_av1":  "https://video.akamai.steamstatic.com/store_trailers/2495100/820324/77819ce2700358510e52fbb4ecb77b9b30146a48/1750815869/dash_av1.mpd?t=1738357300",
+                                                    "dash_h264":  "https://video.akamai.steamstatic.com/store_trailers/2495100/820324/77819ce2700358510e52fbb4ecb77b9b30146a48/1750815869/dash_h264.mpd?t=1738357300",
+                                                    "hls_h264":  "https://video.akamai.steamstatic.com/store_trailers/2495100/820324/77819ce2700358510e52fbb4ecb77b9b30146a48/1750815869/hls_264_master.m3u8?t=1738357300",
+                                                    "highlight":  true
+                                                },
+                                                {
+                                                    "id":  257071187,
+                                                    "name":  "Hello Kitty Island Adventure -- Announcement Trailer",
+                                                    "thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257071187/ff7478adaef79eca23537ceb99629d7dcdc3ec4c/movie_600x337.jpg?t=1731707035",
+                                                    "dash_av1":  "https://video.akamai.steamstatic.com/store_trailers/2495100/781933/b79b6e453029f684f2e9f0e305e7e6cb4bb6448b/1750815868/dash_av1.mpd?t=1731707035",
+                                                    "dash_h264":  "https://video.akamai.steamstatic.com/store_trailers/2495100/781933/b79b6e453029f684f2e9f0e305e7e6cb4bb6448b/1750815868/dash_h264.mpd?t=1731707035",
+                                                    "hls_h264":  "https://video.akamai.steamstatic.com/store_trailers/2495100/781933/b79b6e453029f684f2e9f0e305e7e6cb4bb6448b/1750815868/hls_264_master.m3u8?t=1731707035",
+                                                    "highlight":  false
+                                                }
+                                            ],
+                                 "recommendations":  {
+                                                         "total":  9113
+                                                     },
+                                 "achievements":  {
+                                                      "total":  53,
+                                                      "highlighted":  [
+                                                                          {
+                                                                              "icon":  "eba5e5f552c52e31fadd8aede013c9a8c7704f6c.jpg",
+                                                                              "localized_name":  "Happy Landing!",
+                                                                              "name":  "Happy Landing!",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2495100/eba5e5f552c52e31fadd8aede013c9a8c7704f6c.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "e985040dfb39ae094dad4e2cc3672dca2208a18f.jpg",
+                                                                              "localized_name":  "Dinosaurs Not Included",
+                                                                              "name":  "Dinosaurs Not Included",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2495100/e985040dfb39ae094dad4e2cc3672dca2208a18f.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "4d50ed7a9259a64c3237dd96b27dcc9b29ac086c.jpg",
+                                                                              "localized_name":  "Bog Champ",
+                                                                              "name":  "Bog Champ",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2495100/4d50ed7a9259a64c3237dd96b27dcc9b29ac086c.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "0d46fdcbbab7922296a9d531edf4163abc877e10.jpg",
+                                                                              "localized_name":  "Definitely Haunted",
+                                                                              "name":  "Definitely Haunted",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2495100/0d46fdcbbab7922296a9d531edf4163abc877e10.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "8851e0fadfbf5cb646f33f257e6cbd455d0323f4.jpg",
+                                                                              "localized_name":  "A New Home",
+                                                                              "name":  "A New Home",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2495100/8851e0fadfbf5cb646f33f257e6cbd455d0323f4.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "28c3441623eadf8892cf1230304a89cdd0e9dabb.jpg",
+                                                                              "localized_name":  "Reef Revival",
+                                                                              "name":  "Reef Revival",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2495100/28c3441623eadf8892cf1230304a89cdd0e9dabb.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "4005068ecfce3f961d4f88113ba5590b4894d158.jpg",
+                                                                              "localized_name":  "Mermaids are Real",
+                                                                              "name":  "Mermaids are Real",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2495100/4005068ecfce3f961d4f88113ba5590b4894d158.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "dc8963df7fcab8a96ef9eba6cbc17fa09d6551ef.jpg",
+                                                                              "localized_name":  "Swing Partners",
+                                                                              "name":  "Swing Partners",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2495100/dc8963df7fcab8a96ef9eba6cbc17fa09d6551ef.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "6b54947151fa1148b6e4d38629d34893711c57b0.jpg",
+                                                                              "localized_name":  "Paradise in the Desert",
+                                                                              "name":  "Paradise in the Desert",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2495100/6b54947151fa1148b6e4d38629d34893711c57b0.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "e0fcde04c2e7472025158abb1f70e4128f8d3e1e.jpg",
+                                                                              "localized_name":  "Rage Mode",
+                                                                              "name":  "Rage Mode",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2495100/e0fcde04c2e7472025158abb1f70e4128f8d3e1e.jpg"
+                                                                          }
+                                                                      ]
+                                                  },
+                                 "release_date":  {
+                                                      "coming_soon":  false,
+                                                      "date":  "Jan 30, 2025"
+                                                  },
+                                 "support_info":  {
+                                                      "url":  "",
+                                                      "email":  "support@sunblink.com"
+                                                  },
+                                 "background":  "https://store.akamai.steamstatic.com/images/storepagebackground/app/2495100?t=1776719582",
+                                 "background_raw":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2495100/edbc6f1d97d3b5ece976c9fbd25b27fc55a7965f/page_bg_raw.jpg?t=1776719582",
+                                 "content_descriptors":  {
+                                                             "ids":  [
+
+                                                                     ],
+                                                             "notes":  null
+                                                         },
+                                 "ratings":  {
+                                                 "esrb":  {
+                                                              "rating":  "e"
+                                                          },
+                                                 "pegi":  {
+                                                              "rating":  "3"
+                                                          },
+                                                 "usk":  {
+                                                             "rating":  "0"
+                                                         },
+                                                 "dejus":  {
+                                                               "rating_generated":  "1",
+                                                               "rating":  "6",
+                                                               "required_age":  "6",
+                                                               "banned":  "0",
+                                                               "use_age_gate":  "0",
+                                                               "descriptors":  ""
+                                                           },
+                                                 "steam_germany":  {
+                                                                       "rating_generated":  "1",
+                                                                       "rating":  "12",
+                                                                       "required_age":  "12",
+                                                                       "banned":  "0",
+                                                                       "use_age_gate":  "0",
+                                                                       "descriptors":  ""
+                                                                   },
+                                                 "igrs":  {
+                                                              "rating_generated":  "1",
+                                                              "rating":  "3",
+                                                              "required_age":  "3",
+                                                              "banned":  "0",
+                                                              "use_age_gate":  "0",
+                                                              "descriptors":  "Interaksi Daring"
+                                                          }
+                                             }
+                             }
+                }
+}
