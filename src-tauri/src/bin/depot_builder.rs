@@ -68,6 +68,13 @@ fn pack_start_index(args: &[String]) -> Option<usize> {
         .and_then(|value| value.trim().parse::<usize>().ok())
 }
 
+fn depot_format_version(args: &[String]) -> u32 {
+    take_arg(args, "--format-version")
+        .ok()
+        .and_then(|value| value.trim().parse::<u32>().ok())
+        .unwrap_or(1)
+}
+
 fn build_pair(args: &[String]) -> Result<(), String> {
     let old_input = take_arg(&args, "--old-input")?;
     let old_version = take_arg(&args, "--old-version").unwrap_or_else(|_| "v1.0".to_string());
@@ -109,6 +116,7 @@ fn build_pair(args: &[String]) -> Result<(), String> {
         pack_target_size: pack_target_size(args),
         pack_id_prefix: pack_id_prefix(args),
         start_pack_index: pack_start_index(args),
+        format_version: depot_format_version(args),
     })
     .map_err(|err| err.to_string())?;
 
@@ -151,6 +159,7 @@ fn build_version(args: &[String]) -> Result<(), String> {
         pack_target_size: pack_target_size(args),
         pack_id_prefix: pack_id_prefix(args),
         start_pack_index: pack_start_index(args),
+        format_version: depot_format_version(args),
     })
     .map_err(|err| err.to_string())?;
 
@@ -174,6 +183,6 @@ fn take_arg(args: &[String], name: &str) -> Result<String, String> {
 
 fn print_usage() {
     eprintln!(
-        "usage:\n  depot_builder build-pair --old-input <path> --new-input <path> --out <path> [--old-version v1.0] [--new-version v1.1] [--game-id 007-first-light] [--launch-executable <relative-exe>] [--upload-repo owner/repo --repo-type dataset --repo-prefix 007-first-light] [--keep-local-packs] [--extend-existing] [--pack-target-mb 128] [--pack-id-prefix pack-] [--pack-start-index 0] [--encrypt-packs|--encryption-key <key>|--no-encrypt-packs]\n  depot_builder build-version --input <path> --version <version> --out <path> --game-id <game-id> [--launch-executable <relative-exe>] [--upload-repo owner/repo --repo-type dataset --repo-prefix <prefix>] [--keep-local-packs] [--extend-existing] [--pack-target-mb 128] [--pack-id-prefix pack-] [--pack-start-index 0] [--encrypt-packs|--encryption-key <key>|--no-encrypt-packs]"
+        "usage:\n  depot_builder build-pair --old-input <path> --new-input <path> --out <path> [--old-version v1.0] [--new-version v1.1] [--game-id 007-first-light] [--format-version 1|2] [--launch-executable <relative-exe>] [--upload-repo owner/repo --repo-type dataset --repo-prefix 007-first-light] [--keep-local-packs] [--extend-existing] [--pack-target-mb 128] [--pack-id-prefix pack-] [--pack-start-index 0] [--encrypt-packs|--encryption-key <key>|--no-encrypt-packs]\n  depot_builder build-version --input <path> --version <version> --out <path> --game-id <game-id> [--format-version 1|2] [--launch-executable <relative-exe>] [--upload-repo owner/repo --repo-type dataset --repo-prefix <prefix>] [--keep-local-packs] [--extend-existing] [--pack-target-mb 128] [--pack-id-prefix pack-] [--pack-start-index 0] [--encrypt-packs|--encryption-key <key>|--no-encrypt-packs]"
     );
 }

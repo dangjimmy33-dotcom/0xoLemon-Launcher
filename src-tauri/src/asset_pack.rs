@@ -569,6 +569,7 @@ fn build_manifest_and_assets(source: &Path) -> Result<SourceAssetBuild, AssetPac
         apply_remote_metadata_overlay(&mut detail, remote, &mut assets);
     }
     detail.launch = launch.clone();
+    let cloud_save = detail.cloud_save.clone();
 
     let summary = GameSummary {
         id: DEFAULT_GAME_ID.to_string(),
@@ -596,6 +597,7 @@ fn build_manifest_and_assets(source: &Path) -> Result<SourceAssetBuild, AssetPac
         icon_asset_id: icon_id,
         install,
         launch,
+        cloud_save,
         asset_pack_path: format!("assets/games/{DEFAULT_GAME_ID}/{GAME_CORE_PART}.0xo"),
     };
 
@@ -1240,6 +1242,7 @@ fn default_game_detail(
         sounds,
         install: install.clone(),
         launch: GameLaunchConfig::default(),
+        cloud_save: crate::cloud_save::CloudSaveMetadata::default(),
         description_images: vec![],
         versions: versions.to_vec(),
         metadata_source: "local-default".to_string(),
@@ -2001,5 +2004,30 @@ mod tests {
         let last = corrupt.len() - 1;
         corrupt[last] ^= 0x7d;
         assert!(parse_pack(corrupt).is_err());
+    }
+
+    #[test]
+    fn first_light_core_pack_contains_distinct_cloud_save_roots() {
+        let core = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("assets")
+            .join("games")
+            .join("007-first-light")
+            .join("core.0xo");
+        let loaded = parse_pack(std::fs::read(core).expect("read First Light core pack"))
+            .expect("parse First Light core pack");
+        let detail = loaded
+            .manifest
+            .details
+            .get("007-first-light")
+            .expect("First Light detail metadata");
+
+        assert_eq!(
+            detail.cloud_save.save_roots,
+            vec![
+                r"{steamUserData}\3768760\remote",
+                r"{appData}\GSE Saves\3768760\remote",
+                r"{installDir}\Retail\userdata\22202\3768760",
+            ]
+        );
     }
 }

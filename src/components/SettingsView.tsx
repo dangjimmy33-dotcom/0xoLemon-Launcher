@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import {
   Bell,
+  Cloud,
   Download,
   FolderOpen,
   Gamepad2,
@@ -14,7 +15,7 @@ import {
   Sparkles,
 } from 'lucide-react'
 import type { LauncherPreferences } from '../lib/preferences'
-import type { SteamEnvironmentInfo } from '../types'
+import type { LauncherSettings, SteamEnvironmentInfo } from '../types'
 
 function Toggle({
   checked,
@@ -61,10 +62,14 @@ function SettingRow({
 
 export function SettingsView({
   preferences,
+  launcherSettings,
   onChange,
+  onLauncherSettingChange,
   onChooseLibrary,
   onOpenLibrary,
   onOpenCache,
+  onChooseCloudRoot,
+  onOpenCloudRoot,
   onCheckForUpdates,
   steamEnvironment,
   steamStatus,
@@ -75,10 +80,14 @@ export function SettingsView({
   updateStatus,
 }: {
   preferences: LauncherPreferences
+  launcherSettings: LauncherSettings
   onChange: <K extends keyof LauncherPreferences>(key: K, value: LauncherPreferences[K]) => void
+  onLauncherSettingChange: <K extends keyof LauncherSettings>(key: K, value: LauncherSettings[K]) => void
   onChooseLibrary: () => void
   onOpenLibrary: () => void
   onOpenCache: () => void
+  onChooseCloudRoot: () => void
+  onOpenCloudRoot: () => void
   onCheckForUpdates: () => void
   steamEnvironment: SteamEnvironmentInfo | null
   steamStatus: string | null
@@ -122,6 +131,7 @@ export function SettingsView({
                 value={preferences.startupPage}
                 onChange={(event) => onChange('startupPage', event.target.value as LauncherPreferences['startupPage'])}
               >
+                <option value="Store">Store</option>
                 <option value="Library">Library</option>
                 <option value="Updates">Updates</option>
                 <option value="Downloads">Downloads</option>
@@ -143,6 +153,50 @@ export function SettingsView({
                 onChange={(checked) => onChange('confirmBeforeUninstall', checked)}
                 label="Confirm before uninstall"
               />
+            </SettingRow>
+          </div>
+        </section>
+
+        <section className="settings-group">
+          <header>
+            <Cloud size={18} />
+            <div>
+              <strong>Cloud saves</strong>
+              <span>Folder-based sync for OneDrive, Google Drive Desktop, NAS or mapped drives</span>
+            </div>
+          </header>
+          <div className="settings-group-body">
+            <SettingRow
+              title="Cloud Save root"
+              description={
+                launcherSettings.cloudSaveRoot
+                  ? 'Each game is isolated under 0xoLemon Cloud Saves inside this folder.'
+                  : 'Choose a locally synchronized folder before enabling cloud saves for a game.'
+              }
+            >
+              <div className="settings-path-control">
+                <span title={launcherSettings.cloudSaveRoot}>
+                  {launcherSettings.cloudSaveRoot || 'Not configured'}
+                </span>
+                <button
+                  type="button"
+                  onClick={onOpenCloudRoot}
+                  title="Open cloud save folder"
+                  disabled={!launcherSettings.cloudSaveRoot}
+                >
+                  <FolderOpen size={15} />
+                </button>
+                <button type="button" onClick={onChooseCloudRoot}>Change</button>
+              </div>
+            </SettingRow>
+            <SettingRow
+              title="Provider"
+              description="Folder sync remains available, while Google Drive backup uses the private app-data area of the signed-in account."
+            >
+              <div className="settings-static-value">
+                <Cloud size={14} />
+                Folder + Google Drive (ready)
+              </div>
             </SettingRow>
           </div>
         </section>
@@ -242,6 +296,78 @@ export function SettingsView({
                 label="Open Downloads when a job starts"
               />
             </SettingRow>
+            <SettingRow
+              title="Game update mode"
+              description="Automatic updates run when the launcher is idle; manual mode only updates when you request it."
+            >
+              <select
+                className="settings-select"
+                value={launcherSettings.gameUpdateMode}
+                onChange={(event) =>
+                  onLauncherSettingChange(
+                    'gameUpdateMode',
+                    event.target.value as LauncherSettings['gameUpdateMode'],
+                  )
+                }
+              >
+                <option value="automatic">Automatic</option>
+                <option value="scheduled">Scheduled window</option>
+                <option value="manual">Manual only</option>
+              </select>
+            </SettingRow>
+            {launcherSettings.gameUpdateMode === 'scheduled' ? (
+              <SettingRow
+                title="Update window"
+                description="Updates may start daily inside this local-time window. Overnight windows are supported."
+              >
+                <div className="settings-time-range">
+                  <input
+                    type="time"
+                    value={launcherSettings.gameUpdateScheduleStart}
+                    onChange={(event) =>
+                      onLauncherSettingChange('gameUpdateScheduleStart', event.target.value)
+                    }
+                  />
+                  <span>to</span>
+                  <input
+                    type="time"
+                    value={launcherSettings.gameUpdateScheduleEnd}
+                    onChange={(event) =>
+                      onLauncherSettingChange('gameUpdateScheduleEnd', event.target.value)
+                    }
+                  />
+                </div>
+              </SettingRow>
+            ) : null}
+            <SettingRow
+              title="Download profile"
+              description={`${launcherSettings.downloadWorkers} workers · ${launcherSettings.downloadQueueMb} MiB memory budget`}
+            >
+              <select
+                className="settings-select"
+                value={launcherSettings.downloadProfile}
+                onChange={(event) =>
+                  onLauncherSettingChange(
+                    'downloadProfile',
+                    event.target.value as LauncherSettings['downloadProfile'],
+                  )
+                }
+              >
+                <option value="eco">Eco</option>
+                <option value="balanced">Balanced</option>
+                <option value="turbo">Turbo</option>
+              </select>
+            </SettingRow>
+            <SettingRow
+              title="Downloader V2 preview"
+              description="Write verified chunks directly into resumable staging files. Turn this off to use the V1 chunk-cache fallback."
+            >
+              <Toggle
+                checked={launcherSettings.directToStaging}
+                onChange={(checked) => onLauncherSettingChange('directToStaging', checked)}
+                label="Downloader V2 preview"
+              />
+            </SettingRow>
             <SettingRow title="Pause downloads before launching a game" description="Pause the active job before starting a game to reduce disk and network contention.">
               <Toggle
                 checked={preferences.pauseDownloadsBeforeLaunch}
@@ -281,6 +407,13 @@ export function SettingsView({
               <div className="settings-static-value">
                 <Bell size={14} /> In-app
               </div>
+            </SettingRow>
+            <SettingRow title="Installation complete sound" description="Play a short notification after a new game installation commits successfully.">
+              <Toggle
+                checked={preferences.playInstallCompleteSound}
+                onChange={(checked) => onChange('playInstallCompleteSound', checked)}
+                label="Play installation complete sound"
+              />
             </SettingRow>
           </div>
         </section>

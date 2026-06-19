@@ -60,6 +60,17 @@ export type JobJournal = {
   updatedAt: string
   steps: JobStep[]
   logs: JobLog[]
+  metrics?: {
+    pipeline: string
+    payloadBytes: number
+    networkBytes: number
+    overfetchBytes: number
+    retryWaitMs: number
+    rateLimitWaitMs: number
+    peakInFlightBytes: number
+    throughputP50BytesPerSecond: number
+    throughputP95BytesPerSecond: number
+  }
 }
 
 export type ChangedFile = {
@@ -74,6 +85,9 @@ export type Snapshot = {
   availableVersions: string[]
   detectedInstallPath: string | null
   updateSize: number
+  installSize: number
+  temporarySpace: number
+  requiredFreeSpace: number
   proxyStatus: string
   cache: {
     cacheSize: number
@@ -85,6 +99,76 @@ export type Snapshot = {
   }
   changedFiles: ChangedFile[]
   lastJob: JobJournal | null
+}
+
+export type DownloadProfile = 'eco' | 'balanced' | 'turbo'
+export type GameUpdateMode = 'automatic' | 'scheduled' | 'manual'
+
+export type LauncherSettings = {
+  defaultLibrary: string
+  downloadWorkers: number
+  downloadRetries: number
+  packRangeMb: number
+  keepChunkCache: boolean
+  notificationsEnabled: boolean
+  autoVerifyAfterInstall: boolean
+  downloadProfile: DownloadProfile
+  downloadQueueMb: number
+  directToStaging: boolean
+  cloudSaveRoot: string
+  gameUpdateMode: GameUpdateMode
+  gameUpdateScheduleStart: string
+  gameUpdateScheduleEnd: string
+}
+
+export type CloudSaveMetadata = {
+  enabled: boolean
+  saveRoots: string[]
+  include: string[]
+  exclude: string[]
+}
+
+export type CloudSaveRoot = {
+  path: string
+  label: string
+}
+
+export type CloudSaveConflict = {
+  id: string
+  createdAt: string
+  localFileCount: number
+  cloudFileCount: number
+  localBytes: number
+  cloudBytes: number
+}
+
+export type CloudSaveSnapshot = {
+  id: string
+  createdAt: string
+  source: string
+  fileCount: number
+  bytes: number
+}
+
+export type CloudSaveStatus = {
+  gameId: string
+  enabled: boolean
+  syncRoot: string
+  saveRoots: CloudSaveRoot[]
+  include: string[]
+  exclude: string[]
+  state: 'disabled' | 'ready' | 'conflict' | string
+  lastSyncAt: string | null
+  lastMessage: string
+  conflicts: CloudSaveConflict[]
+  snapshots: CloudSaveSnapshot[]
+  canSync: boolean
+  gameRunning: boolean
+  googleDriveConfigured: boolean
+  googleDriveConnected: boolean
+  googleDriveLastBackupAt: string | null
+  googleDriveLastRestoreCount: number
+  googleDriveMessage: string
 }
 
 export type GameCatalog = {
@@ -105,6 +189,7 @@ export type GameSummary = {
   logoAssetId: string
   iconAssetId: string
   install: GameInstallMetadata
+  cloudSave: CloudSaveMetadata
   assetPackPath: string
 }
 
@@ -141,6 +226,7 @@ export type GameDetail = {
   achievements: GameAchievement[]
   sounds: GameSound[]
   install: GameInstallMetadata
+  cloudSave: CloudSaveMetadata
   descriptionImages: string[]
   versions: GameVersionInfo[]
   metadataSource: string
@@ -292,6 +378,6 @@ export type ShortcutLaunchPayload = {
   launchExecutable?: string | null
 }
 
-export type TabId = 'Library' | 'Updates' | 'Downloads' | 'Cache' | 'Settings'
+export type TabId = 'Store' | 'Library' | 'Updates' | 'Downloads' | 'Cache' | 'Settings'
 
 export {}

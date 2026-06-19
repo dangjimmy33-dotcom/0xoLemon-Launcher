@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Database, Download, Image as ImageIcon, Library, RefreshCcw, Settings, Wifi } from 'lucide-react'
+import { Database, Download, Image as ImageIcon, Library, RefreshCcw, Settings, ShoppingBag, Wifi } from 'lucide-react'
 import { enUS as t } from '../i18n/en-US'
 import type { GameCatalog, TabId } from '../types'
 
@@ -23,6 +23,7 @@ export function Sidebar({
       ? 'Connecting'
       : 'Online'
   const items = [
+    [t.nav.store, ShoppingBag],
     [t.nav.library, Library],
     [t.nav.updates, RefreshCcw],
     [t.nav.downloads, Download],
@@ -38,6 +39,8 @@ export function Sidebar({
             className={activeTab === label ? 'nav-item active' : 'nav-item'}
             key={label}
             type="button"
+            aria-label={label}
+            title={label}
             onClick={() => onSelect(label)}
           >
             <Icon size={20} />

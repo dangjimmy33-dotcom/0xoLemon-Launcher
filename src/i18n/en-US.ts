@@ -1,5 +1,6 @@
 export const enUS = {
   nav: {
+    store: 'Store',
     library: 'Library',
     updates: 'Updates',
     downloads: 'Downloads',
@@ -7,7 +8,7 @@ export const enUS = {
     settings: 'Settings',
   },
   library: {
-    availableGames: 'Available games',
+    availableGames: 'Store',
     chooseInstall: 'Choose install',
     update: 'Update',
     upToDate: 'Up to date',

@@ -12,6 +12,9 @@ export const fallbackSnapshot: Snapshot = {
   availableVersions: [],
   detectedInstallPath: null,
   updateSize: 0,
+  installSize: 0,
+  temporarySpace: 0,
+  requiredFreeSpace: 0,
   proxyStatus: 'Depot not checked',
   cache: {
     cacheSize: 0,
@@ -105,6 +108,7 @@ export const fallbackCatalog: GameCatalog = {
       logoAssetId: '',
       iconAssetId: '',
       install: fallbackInstall,
+      cloudSave: { enabled: false, saveRoots: [], include: [], exclude: [] },
       assetPackPath: 'assets/games/007-first-light/core.0xo',
     },
   ],

@@ -11,6 +11,34 @@ use tauri::{AppHandle, Emitter, Manager};
 const PLATFORM_STATE_FILE: &str = "platform-state.json";
 const PLATFORM_STATE_SCHEMA: u32 = 1;
 
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum DownloadProfile {
+    Eco,
+    Balanced,
+    Turbo,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum GameUpdateMode {
+    Automatic,
+    Scheduled,
+    Manual,
+}
+
+impl Default for GameUpdateMode {
+    fn default() -> Self {
+        Self::Automatic
+    }
+}
+
+impl Default for DownloadProfile {
+    fn default() -> Self {
+        Self::Balanced
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default, rename_all = "camelCase")]
 pub struct LauncherSettings {
@@ -21,6 +49,13 @@ pub struct LauncherSettings {
     pub keep_chunk_cache: bool,
     pub notifications_enabled: bool,
     pub auto_verify_after_install: bool,
+    pub download_profile: DownloadProfile,
+    pub download_queue_mb: u64,
+    pub direct_to_staging: bool,
+    pub cloud_save_root: String,
+    pub game_update_mode: GameUpdateMode,
+    pub game_update_schedule_start: String,
+    pub game_update_schedule_end: String,
 }
 
 impl Default for LauncherSettings {
@@ -33,6 +68,13 @@ impl Default for LauncherSettings {
             keep_chunk_cache: true,
             notifications_enabled: true,
             auto_verify_after_install: false,
+            download_profile: DownloadProfile::Balanced,
+            download_queue_mb: 128,
+            direct_to_staging: false,
+            cloud_save_root: String::new(),
+            game_update_mode: GameUpdateMode::Automatic,
+            game_update_schedule_start: "02:00".to_string(),
+            game_update_schedule_end: "06:00".to_string(),
         }
     }
 }
@@ -43,11 +85,32 @@ impl LauncherSettings {
         if self.default_library.is_empty() {
             self.default_library = LauncherSettings::default().default_library;
         }
-        self.download_workers = self.download_workers.clamp(1, 64);
+        let (workers, queue_mb) = match self.download_profile {
+            DownloadProfile::Eco => (4, 64),
+            DownloadProfile::Balanced => (8, 128),
+            DownloadProfile::Turbo => (12, 256),
+        };
+        self.download_workers = workers;
+        self.download_queue_mb = queue_mb;
         self.download_retries = self.download_retries.clamp(0, 12);
-        self.pack_range_mb = self.pack_range_mb.clamp(4, 64);
+        self.pack_range_mb = self.pack_range_mb.clamp(8, 64);
+        self.cloud_save_root = self.cloud_save_root.trim().to_string();
+        if !valid_clock_time(&self.game_update_schedule_start) {
+            self.game_update_schedule_start = "02:00".to_string();
+        }
+        if !valid_clock_time(&self.game_update_schedule_end) {
+            self.game_update_schedule_end = "06:00".to_string();
+        }
         self
     }
+}
+
+fn valid_clock_time(value: &str) -> bool {
+    let Some((hour, minute)) = value.split_once(':') else {
+        return false;
+    };
+    hour.parse::<u8>().is_ok_and(|value| value < 24)
+        && minute.parse::<u8>().is_ok_and(|value| value < 60)
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

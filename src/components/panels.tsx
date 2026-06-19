@@ -114,9 +114,13 @@ export function GameDetailsPanel({ detail }: { detail: GameDetail }) {
 export function InstallSummaryPanel({
   selectedVersion,
   downloadSize,
+  installSize,
+  temporarySpace,
 }: {
   selectedVersion: string
   downloadSize: number
+  installSize: number
+  temporarySpace: number
 }) {
   return (
     <section className="panel install-summary-panel">
@@ -130,8 +134,16 @@ export function InstallSummaryPanel({
           <dd>{selectedVersion}</dd>
         </div>
         <div>
-          <dt>Install size</dt>
+          <dt>Network download</dt>
           <dd>{formatBytes(downloadSize)}</dd>
+        </div>
+        <div>
+          <dt>Installed size</dt>
+          <dd>{formatBytes(installSize)}</dd>
+        </div>
+        <div>
+          <dt>Temporary space</dt>
+          <dd>{formatBytes(temporarySpace)}</dd>
         </div>
       </dl>
     </section>

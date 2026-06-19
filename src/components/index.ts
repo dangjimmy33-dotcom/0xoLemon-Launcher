@@ -8,3 +8,4 @@ export { InstallOptionsDialog, DriveLibraryPickerModal } from './install'
 export { LaunchOptionsModal } from './LaunchOptionsModal'
 
 export { SettingsView } from './SettingsView'
+export { CloudSavePanel } from './CloudSavePanel'

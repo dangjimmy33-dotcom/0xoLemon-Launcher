@@ -81,6 +81,7 @@ export function fallbackDetailFromSummary(game: GameSummary): GameDetail {
     media: [],
     achievements: [],
     sounds: [],
+    cloudSave: game.cloudSave ?? { enabled: false, saveRoots: [], include: [], exclude: [] },
     install: game.install,
     descriptionImages: [],
     versions: game.availableVersions,

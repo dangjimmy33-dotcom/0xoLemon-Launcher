@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { invoke } from '@tauri-apps/api/core'
-import { BookOpen, CheckCircle2, ChevronLeft, ChevronRight, CircleAlert, Download, FolderOpen, HardDrive, Image as ImageIcon, Library, Play, RefreshCcw, Search, ShieldCheck, Trophy, X } from 'lucide-react'
+import { BookOpen, CheckCircle2, ChevronLeft, ChevronRight, CircleAlert, Download, FolderOpen, HardDrive, Image as ImageIcon, Library, Play, RefreshCcw, Search, ShieldCheck, ShoppingBag, Trophy, X } from 'lucide-react'
 import { TutorialModal } from './TutorialModal'
 import { enUS as t } from '../i18n/en-US'
-import type { GameAchievement, GameCatalog, GameDetail, GameSummary, GameInstallState, GameVersionInfo, VerifyUiStatus } from '../types'
+import type { CloudSaveStatus, GameAchievement, GameCatalog, GameDetail, GameSummary, GameInstallState, GameVersionInfo, VerifyUiStatus } from '../types'
 import { assetUrlForId, firstMediaUrl, isCarouselMedia, mediaPriority, processDescriptionHtml } from '../lib/gameMeta'
 import { formatBytes } from '../lib/format'
 import { getGameTags } from '../lib/gameTags'
 import { GameDetailsPanel, InstallSummaryPanel } from './panels'
+import { CloudSavePanel } from './CloudSavePanel'
 
 
 function LazyGameCardImage({
@@ -53,12 +54,12 @@ function LazyGameCardImage({
   )
 }
 
-function LibraryLoadingView() {
+function CatalogLoadingView({ viewMode }: { viewMode: 'store' | 'library' }) {
   return (
-    <section className="library-browse-view library-loading-view" aria-busy="true" aria-label="Loading library">
+    <section className="library-browse-view library-loading-view" aria-busy="true" aria-label={`Loading ${viewMode}`}>
       <header className="library-browse-toolbar">
         <div className="library-browse-heading">
-          <strong>{t.nav.library}</strong>
+          <strong>{viewMode === 'store' ? t.nav.store : t.nav.library}</strong>
         </div>
         <div className="library-search-skeleton" aria-hidden="true" />
       </header>
@@ -75,17 +76,17 @@ function LibraryLoadingView() {
   )
 }
 
-function LibraryUnavailableView({ onRetry }: { onRetry: () => void }) {
+function CatalogUnavailableView({ viewMode, onRetry }: { viewMode: 'store' | 'library'; onRetry: () => void }) {
   return (
     <section className="library-browse-view">
       <header className="library-browse-toolbar">
         <div className="library-browse-heading">
-          <strong>{t.nav.library}</strong>
+          <strong>{viewMode === 'store' ? t.nav.store : t.nav.library}</strong>
         </div>
       </header>
       <div className="library-unavailable">
         <CircleAlert size={28} />
-        <strong>Library unavailable</strong>
+        <strong>{viewMode === 'store' ? 'Store unavailable' : 'Library unavailable'}</strong>
         <span>Please try again.</span>
         <button type="button" onClick={onRetry}>
           <RefreshCcw size={16} />
@@ -100,10 +101,12 @@ function GameDetailLoadingView({
   game,
   assets,
   onBack,
+  viewMode,
 }: {
   game: GameSummary
   assets: Record<string, string>
   onBack: () => void
+  viewMode: 'store' | 'library'
 }) {
   const hero = assets[game.heroAssetId]
   const icon = assets[game.iconAssetId] || assets[game.gridAssetId]
@@ -111,8 +114,8 @@ function GameDetailLoadingView({
   return (
     <section className="game-detail-loading-view" aria-busy="true" aria-label={`Opening ${game.title}`}>
       <button className="back-to-library" type="button" onClick={onBack}>
-        <Library size={16} />
-        Library
+        {viewMode === 'store' ? <ShoppingBag size={16} /> : <Library size={16} />}
+        {viewMode === 'store' ? 'Store' : 'Library'}
       </button>
       <div className="detail-loading-layout" aria-hidden="true">
         <div className="detail-loading-main">
@@ -143,6 +146,7 @@ function GameDetailLoadingView({
 }
 
 export function StoreLibraryView({
+  viewMode,
   catalog,
   catalogLoadState,
   onRetryCatalog,
@@ -161,6 +165,8 @@ export function StoreLibraryView({
   showVersionAction,
   canUpdate,
   updateSize,
+  installSize,
+  temporarySpace,
   isJobRunning,
   isGameRunning,
   onPrimaryAction,
@@ -168,7 +174,22 @@ export function StoreLibraryView({
   onVerify,
   onUninstall,
   onOpenInstallOptions,
+  onOpenStore,
+  cloudSaveStatus,
+  cloudSaveBusy,
+  cloudLaunchBlocked,
+  onToggleCloudSave,
+  onAddCloudSaveFolder,
+  onSyncCloudSave,
+  onResolveCloudConflict,
+  onRestoreCloudSnapshot,
+  onLaunchWithoutCloudSync,
+  onConnectGoogleDrive,
+  onDisconnectGoogleDrive,
+  onBackupGoogleDrive,
+  onRestoreMissingSaveFiles,
 }: {
+  viewMode: 'store' | 'library'
   catalog: GameCatalog
   catalogLoadState: 'loading' | 'ready' | 'error'
   onRetryCatalog: () => void
@@ -187,6 +208,8 @@ export function StoreLibraryView({
   showVersionAction: boolean
   canUpdate: boolean
   updateSize: number
+  installSize: number
+  temporarySpace: number
   isJobRunning: boolean
   isGameRunning: boolean
   onPrimaryAction: () => void
@@ -194,6 +217,20 @@ export function StoreLibraryView({
   onVerify: () => void
   onUninstall: () => void
   onOpenInstallOptions: () => void
+  onOpenStore: () => void
+  cloudSaveStatus: CloudSaveStatus | null
+  cloudSaveBusy: boolean
+  cloudLaunchBlocked: boolean
+  onToggleCloudSave: (enabled: boolean) => void
+  onAddCloudSaveFolder: () => void
+  onSyncCloudSave: () => void
+  onResolveCloudConflict: (conflictId: string, resolution: 'local' | 'cloud') => void
+  onRestoreCloudSnapshot: (snapshotId: string) => void
+  onLaunchWithoutCloudSync: () => void
+  onConnectGoogleDrive: () => void
+  onDisconnectGoogleDrive: () => void
+  onBackupGoogleDrive: () => void
+  onRestoreMissingSaveFiles: () => void
 }) {
   const [query, setQuery] = useState('')
   const [tutorialVisible, setTutorialVisible] = useState(false)
@@ -276,18 +313,18 @@ export function StoreLibraryView({
 
   if (!selectedGame) {
     if (catalogLoadState === 'loading' && catalog.games.length === 0) {
-      return <LibraryLoadingView />
+      return <CatalogLoadingView viewMode={viewMode} />
     }
 
     if (catalogLoadState === 'error' && catalog.games.length === 0) {
-      return <LibraryUnavailableView onRetry={onRetryCatalog} />
+      return <CatalogUnavailableView viewMode={viewMode} onRetry={onRetryCatalog} />
     }
 
     return (
       <section className="library-browse-view">
         <header className="library-browse-toolbar">
           <div className="library-browse-heading">
-            <strong>{t.library.availableGames}</strong>
+            <strong>{viewMode === 'store' ? 'Store' : 'Installed games'}</strong>
             <span>
               {visibleGames.length} game{visibleGames.length === 1 ? '' : 's'}
             </span>
@@ -300,7 +337,17 @@ export function StoreLibraryView({
 
         <div className="library-browse-grid">
           {visibleGames.map((game) => renderGameCard(game, 'browse'))}
-          {visibleGames.length === 0 ? (
+          {visibleGames.length === 0 && viewMode === 'library' ? (
+            <div className="library-empty-inline library-empty-installed">
+              <Library size={28} />
+              <strong>No installed games</strong>
+              <span>Games installed from Store will appear here.</span>
+              <button type="button" onClick={onOpenStore}>
+                <ShoppingBag size={15} />
+                Open Store
+              </button>
+            </div>
+          ) : visibleGames.length === 0 ? (
             <div className="library-empty-inline">
               <Search size={24} />
               <strong>No matching games</strong>
@@ -312,7 +359,7 @@ export function StoreLibraryView({
   }
 
   if (!detail) {
-    return <GameDetailLoadingView game={selectedGame} assets={assets} onBack={() => onSelectGame(null)} />
+    return <GameDetailLoadingView game={selectedGame} assets={assets} viewMode={viewMode} onBack={() => onSelectGame(null)} />
   }
 
   const hero = assetUrlForId(selectedGame.heroAssetId, assets) || firstMediaUrl(detail, assets)
@@ -373,7 +420,7 @@ export function StoreLibraryView({
         )}
         <div className="sticky-bar-info">
           <strong>{detail.title}</strong>
-          <span>v{displayedVersion} (Build 23244517)</span>
+          <span>{displayedVersion} (Build 23244517)</span>
         </div>
         <div className="sticky-bar-actions">
           {installed && selectedGame?.id.includes('among') && (
@@ -423,8 +470,8 @@ export function StoreLibraryView({
 
       <section className="game-detail-main">
         <button className="back-to-library" type="button" onClick={() => onSelectGame(null)}>
-          <Library size={16} />
-          Library
+          {viewMode === 'store' ? <ShoppingBag size={16} /> : <Library size={16} />}
+          {viewMode === 'store' ? 'Store' : 'Library'}
         </button>
         <div className="detail-hero">
           {hero ? <img src={hero} alt="" loading="eager" /> : <div className="detail-placeholder"><ImageIcon size={40} /></div>}
@@ -515,7 +562,12 @@ export function StoreLibraryView({
             </div>
           </dl>
         </section>
-        <InstallSummaryPanel selectedVersion={selectedVersion} downloadSize={downloadSize} />
+        <InstallSummaryPanel
+          selectedVersion={selectedVersion}
+          downloadSize={downloadSize}
+          installSize={installSize || selectedVersionInfo?.sizeBytes || downloadSize}
+          temporarySpace={temporarySpace || selectedVersionInfo?.sizeBytes || downloadSize}
+        />
         {verifyStatus ? (
           <section className={`panel verify-feedback ${verifyStatus.state}`}>
             <header className="side-header">
@@ -548,6 +600,23 @@ export function StoreLibraryView({
           </section>
         ) : null}
         <GameDetailsPanel detail={detail} />
+        {installed && viewMode === 'library' ? (
+          <CloudSavePanel
+            status={cloudSaveStatus}
+            busy={cloudSaveBusy}
+            launchBlocked={cloudLaunchBlocked}
+            onToggle={onToggleCloudSave}
+            onAddFolder={onAddCloudSaveFolder}
+            onSync={onSyncCloudSave}
+            onResolve={onResolveCloudConflict}
+            onRestore={onRestoreCloudSnapshot}
+            onLaunchWithoutSync={onLaunchWithoutCloudSync}
+            onConnectGoogleDrive={onConnectGoogleDrive}
+            onDisconnectGoogleDrive={onDisconnectGoogleDrive}
+            onBackupGoogleDrive={onBackupGoogleDrive}
+            onRestoreMissingFiles={onRestoreMissingSaveFiles}
+          />
+        ) : null}
         <AchievementPreview achievements={detail.achievements} assets={assets} />
       </aside>
       {tutorialVisible && selectedGame ? (

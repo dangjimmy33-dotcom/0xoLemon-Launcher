@@ -15,7 +15,14 @@ fn main() {
         .unwrap_or_else(default_pack_output);
 
     let mut sources = Vec::new();
-    if let Ok(entries) = std::fs::read_dir(&source) {
+    let source_is_game = source
+        .join("details")
+        .join("metadata")
+        .join("game-detail.normalized.json")
+        .is_file();
+    if source_is_game {
+        sources.push(source.clone());
+    } else if let Ok(entries) = std::fs::read_dir(&source) {
         for entry in entries.flatten() {
             if entry.file_type().map(|ft| ft.is_dir()).unwrap_or(false) {
                 let name = entry.file_name().to_string_lossy().to_string();

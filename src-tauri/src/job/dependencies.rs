@@ -3,7 +3,7 @@ use std::ffi::OsStr;
 use std::fs::{self, File};
 use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
-use std::process::{Command, Stdio};
+use std::process::{Child, Command, Stdio};
 use std::time::Duration;
 
 use reqwest::blocking::Client;
@@ -446,10 +446,16 @@ pub(super) fn launch_option_processes(
     game_id: &str,
     install_root: &Path,
     option: &GameLaunchOption,
-) -> Result<Vec<PathBuf>, JobError> {
+) -> Result<LaunchedProcessSet, JobError> {
     let mut launched = Vec::new();
+    let mut main_child = None;
+    let main_index = option
+        .processes
+        .iter()
+        .position(|process| process.role.eq_ignore_ascii_case("main"))
+        .or_else(|| option.processes.len().checked_sub(1));
 
-    for process in &option.processes {
+    for (index, process) in option.processes.iter().enumerate() {
         if process.delay_before_ms > 0 {
             std::thread::sleep(Duration::from_millis(process.delay_before_ms));
         }
@@ -516,7 +522,7 @@ pub(super) fn launch_option_processes(
                 process.wait_for_exit,
             )?;
         } else {
-            run_configured_process(
+            let child = run_configured_process(
                 &executable,
                 &args,
                 &working_dir,
@@ -524,6 +530,9 @@ pub(super) fn launch_option_processes(
                 hidden,
                 process.wait_for_exit,
             )?;
+            if main_index == Some(index) {
+                main_child = child;
+            }
         }
 
         launched.push(executable);
@@ -537,7 +546,15 @@ pub(super) fn launch_option_processes(
             "the selected launch option did not start any process".to_string(),
         ));
     }
-    Ok(launched)
+    Ok(LaunchedProcessSet {
+        paths: launched,
+        main_child,
+    })
+}
+
+pub(super) struct LaunchedProcessSet {
+    pub(super) paths: Vec<PathBuf>,
+    pub(super) main_child: Option<Child>,
 }
 
 fn run_configured_process(
@@ -547,7 +564,7 @@ fn run_configured_process(
     environment: &[(String, String)],
     hidden: bool,
     wait: bool,
-) -> Result<(), JobError> {
+) -> Result<Option<Child>, JobError> {
     let mut command = if is_script_path(executable) {
         let mut command = Command::new("cmd.exe");
         command.args(["/D", "/S", "/C"]);
@@ -588,10 +605,10 @@ fn run_configured_process(
                 executable.display()
             )));
         }
+        Ok(None)
     } else {
-        command.spawn()?;
+        Ok(Some(command.spawn()?))
     }
-    Ok(())
 }
 
 fn run_configured_process_elevated(

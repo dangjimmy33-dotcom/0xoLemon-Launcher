@@ -109,17 +109,17 @@ export function DownloadQueuePanel({
               className="queue-pause-control"
               type="button"
               onClick={onPause}
-              aria-label={isPaused ? 'Tiếp tục tải xuống' : 'Tạm dừng tải xuống'}
+              aria-label={isPaused ? 'Resume download' : 'Pause download'}
             >
               {isPaused ? <Play size={16} fill="currentColor" /> : <Pause size={16} fill="currentColor" />}
-              <span>{isPaused ? 'TIẾP TỤC' : 'TẠM DỪNG'}</span>
+              <span>{isPaused ? 'RESUME' : 'PAUSE'}</span>
             </button>
             <button
               className="queue-cancel-control"
               type="button"
               onClick={onCancel}
-              aria-label="Hủy tải xuống"
-              title="Hủy tải xuống"
+              aria-label="Cancel download"
+              title="Cancel download"
             >
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <circle cx="12" cy="12" r="8.25" />

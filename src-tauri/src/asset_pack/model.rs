@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
+use crate::cloud_save::CloudSaveMetadata;
 use crate::launch::GameLaunchConfig;
 
 #[derive(Debug, Error)]
@@ -47,6 +48,8 @@ pub struct GameSummary {
     pub install: GameInstallMetadata,
     #[serde(default)]
     pub launch: GameLaunchConfig,
+    #[serde(default)]
+    pub cloud_save: CloudSaveMetadata,
     pub asset_pack_path: String,
 }
 
@@ -92,6 +95,8 @@ pub struct GameDetail {
     pub install: GameInstallMetadata,
     #[serde(default)]
     pub launch: GameLaunchConfig,
+    #[serde(default)]
+    pub cloud_save: CloudSaveMetadata,
     pub description_images: Vec<String>,
     pub versions: Vec<GameVersionInfo>,
     pub metadata_source: String,

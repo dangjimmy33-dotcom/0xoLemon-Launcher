@@ -13,9 +13,9 @@ use walkdir::WalkDir;
 
 use crate::depot_crypto::{self, key_id_from_material, DEPOT_ENCRYPTION_ALGORITHM, DEPOT_KEY_ENV};
 use crate::manifest::{
-    Catalog, CatalogVersion, ChunkEncryption, ChunkRef, FileEntry, PackRecord, VersionManifest,
-    CHUNK_MAX_SIZE, CHUNK_MIN_SIZE, CHUNK_TARGET_SIZE, FORMAT_VERSION,
-    PACK_TARGET_SIZE as DEFAULT_PACK_TARGET_SIZE,
+    Catalog, CatalogVersion, ChunkCodec, ChunkEncryption, ChunkRef, FileEntry, PackRecord,
+    VersionManifest, CHUNK_MAX_SIZE, CHUNK_MIN_SIZE, CHUNK_TARGET_SIZE, FORMAT_VERSION,
+    LEGACY_FORMAT_VERSION, PACK_TARGET_SIZE as DEFAULT_PACK_TARGET_SIZE,
 };
 use crate::scanner::normalize_relative;
 
@@ -73,6 +73,9 @@ pub struct BuildDepotInput {
     pub pack_target_size: u64,
     pub pack_id_prefix: String,
     pub start_pack_index: Option<usize>,
+    /// V1 remains the default in the CLI so repositories used by older launcher
+    /// builds never receive raw-coded chunks accidentally. V2 must be explicit.
+    pub format_version: u32,
 }
 
 #[derive(Debug, Clone)]
@@ -101,6 +104,7 @@ struct ChunkLocation {
     compressed_size: u64,
     compressed_sha256: String,
     uncompressed_size: u64,
+    codec: ChunkCodec,
     encryption: Option<ChunkEncryption>,
 }
 
@@ -154,6 +158,12 @@ impl PackWriter {
 }
 
 pub fn build_depot(input: BuildDepotInput) -> Result<BuildReport, BuildError> {
+    if !matches!(input.format_version, LEGACY_FORMAT_VERSION | FORMAT_VERSION) {
+        return Err(BuildError::Chunking(format!(
+            "unsupported depot format version: {}",
+            input.format_version
+        )));
+    }
     for version in &input.versions {
         if !version.root.exists() {
             return Err(BuildError::MissingInput(version.root.display().to_string()));
@@ -243,6 +253,7 @@ pub fn build_depot(input: BuildDepotInput) -> Result<BuildReport, BuildError> {
                 &mut chunk_locations,
                 input.publish.as_ref(),
                 &input.encryption,
+                input.format_version,
                 pack_target_size,
                 &pack_id_prefix,
             )?;
@@ -252,7 +263,7 @@ pub fn build_depot(input: BuildDepotInput) -> Result<BuildReport, BuildError> {
 
         let chunk_count = files.iter().map(|file| file.chunks.len()).sum();
         let manifest = VersionManifest {
-            format_version: FORMAT_VERSION,
+            format_version: input.format_version,
             game_id: input.game_id.clone(),
             version: version_input.version.clone(),
             created_at: created_at.clone(),
@@ -286,6 +297,7 @@ pub fn build_depot(input: BuildDepotInput) -> Result<BuildReport, BuildError> {
                 "packIdPrefix": pack_id_prefix.clone(),
                 "packStartIndex": requested_start_index,
                 "encryptedPacks": input.encryption.enabled,
+                "formatVersion": input.format_version,
                 "depotKeyEnv": DEPOT_KEY_ENV
             }),
         )?;
@@ -324,7 +336,7 @@ pub fn build_depot(input: BuildDepotInput) -> Result<BuildReport, BuildError> {
     }
 
     let catalog = Catalog {
-        format_version: FORMAT_VERSION,
+        format_version: input.format_version,
         game_id: input.game_id.clone(),
         latest_version: Some(input.latest_version.clone()),
         versions: catalog_versions.clone(),
@@ -361,6 +373,7 @@ fn build_file_entry(
     chunk_locations: &mut HashMap<String, ChunkLocation>,
     publish: Option<&PublishTarget>,
     encryption: &DepotEncryptionConfig,
+    format_version: u32,
     pack_target_size: u64,
     pack_id_prefix: &str,
 ) -> Result<FileEntry, BuildError> {
@@ -383,9 +396,9 @@ fn build_file_entry(
         let location = if let Some(existing) = reusable_existing {
             existing
         } else {
-            let compressed = zstd::bulk::compress(&chunk.data, 10)?;
-            let plaintext_compressed_sha256 = sha256_bytes(&compressed);
-            let plaintext_compressed_size = compressed.len() as u64;
+            let (codec, encoded) = encode_chunk_payload(&chunk.data, format_version)?;
+            let plaintext_compressed_sha256 = sha256_bytes(&encoded);
+            let plaintext_compressed_size = encoded.len() as u64;
             let uncompressed_size = chunk.data.len() as u64;
 
             let (transport_bytes, encryption_meta) = if encryption.enabled {
@@ -397,7 +410,7 @@ fn build_file_entry(
                     .filter(|value| !value.trim().is_empty())
                     .unwrap_or_else(|| key_id_from_material(&key_material));
                 let (encrypted, nonce) = depot_crypto::encrypt_compressed_chunk(
-                    &compressed,
+                    &encoded,
                     &hash,
                     &plaintext_compressed_sha256,
                     &key_material,
@@ -414,7 +427,7 @@ fn build_file_entry(
                     }),
                 )
             } else {
-                (compressed, None)
+                (encoded, None)
             };
             let compressed_sha256 = sha256_bytes(&transport_bytes);
 
@@ -444,6 +457,7 @@ fn build_file_entry(
                 compressed_size: transport_bytes.len() as u64,
                 compressed_sha256,
                 uncompressed_size,
+                codec,
                 encryption: encryption_meta,
             };
             chunk_locations.insert(hash.clone(), location.clone());
@@ -458,6 +472,7 @@ fn build_file_entry(
             pack_offset: location.pack_offset,
             compressed_size: location.compressed_size,
             compressed_sha256: location.compressed_sha256,
+            codec: location.codec,
             encryption: location.encryption,
         });
     }
@@ -611,6 +626,7 @@ fn seed_chunk_locations_from_existing_manifests(
                         compressed_size: chunk.compressed_size,
                         compressed_sha256: chunk.compressed_sha256,
                         uncompressed_size: chunk.uncompressed_size,
+                        codec: chunk.codec,
                         encryption: chunk.encryption,
                     });
             }
@@ -662,8 +678,60 @@ fn sha256_bytes(bytes: &[u8]) -> String {
     hex::encode(hasher.finalize())
 }
 
+fn encode_chunk_payload(
+    data: &[u8],
+    format_version: u32,
+) -> Result<(ChunkCodec, Vec<u8>), io::Error> {
+    let compressed = zstd::bulk::compress(data, 10)?;
+    let use_raw = format_version >= FORMAT_VERSION
+        && compressed.len().saturating_mul(10_000) >= data.len().saturating_mul(9_850);
+    if use_raw {
+        Ok((ChunkCodec::Raw, data.to_vec()))
+    } else {
+        Ok((ChunkCodec::Zstd, compressed))
+    }
+}
+
 fn write_json_pretty<T: Serialize>(path: &Path, value: &T) -> Result<(), BuildError> {
     let file = File::create(path)?;
     serde_json::to_writer_pretty(file, value)?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn v1_always_uses_zstd_for_backward_compatibility() {
+        let mut data = vec![0_u8; 64 * 1024];
+        for (index, byte) in data.iter_mut().enumerate() {
+            *byte = (index.wrapping_mul(73) ^ index.wrapping_mul(19).rotate_left(3)) as u8;
+        }
+        let (codec, _) = encode_chunk_payload(&data, LEGACY_FORMAT_VERSION).unwrap();
+        assert_eq!(codec, ChunkCodec::Zstd);
+    }
+
+    #[test]
+    fn v2_keeps_compressible_chunks_as_zstd() {
+        let data = vec![b'A'; 64 * 1024];
+        let (codec, encoded) = encode_chunk_payload(&data, FORMAT_VERSION).unwrap();
+        assert_eq!(codec, ChunkCodec::Zstd);
+        assert!(encoded.len() < data.len() / 10);
+    }
+
+    #[test]
+    fn v2_stores_incompressible_chunks_raw() {
+        let mut state = 0x1234_5678_u32;
+        let mut data = vec![0_u8; 64 * 1024];
+        for byte in &mut data {
+            state ^= state << 13;
+            state ^= state >> 17;
+            state ^= state << 5;
+            *byte = state as u8;
+        }
+        let (codec, encoded) = encode_chunk_payload(&data, FORMAT_VERSION).unwrap();
+        assert_eq!(codec, ChunkCodec::Raw);
+        assert_eq!(encoded, data);
+    }
 }

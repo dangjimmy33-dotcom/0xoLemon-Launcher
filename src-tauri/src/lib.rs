@@ -1,5 +1,6 @@
 pub mod asset_pack;
 pub mod builder;
+pub mod cloud_save;
 pub mod depot_crypto;
 pub mod game_tags;
 pub mod job;
@@ -171,6 +172,111 @@ fn get_launcher_snapshot(app: AppHandle) -> Result<LauncherSnapshot, String> {
 }
 
 #[tauri::command]
+fn get_launcher_settings(app: AppHandle) -> Result<platform::LauncherSettings, String> {
+    platform::get_settings(&app)
+}
+
+#[tauri::command]
+fn set_launcher_settings(
+    app: AppHandle,
+    settings: platform::LauncherSettings,
+) -> Result<platform::LauncherSettings, String> {
+    platform::set_settings(&app, settings)
+}
+
+#[tauri::command]
+fn get_cloud_save_status(
+    app: AppHandle,
+    game_id: String,
+) -> Result<cloud_save::CloudSaveStatus, String> {
+    cloud_save::get_status(&app, &game_id)
+}
+
+#[tauri::command]
+fn set_cloud_save_config(
+    app: AppHandle,
+    game_id: String,
+    enabled: bool,
+    save_roots: Vec<cloud_save::CloudSaveRoot>,
+    include: Vec<String>,
+    exclude: Vec<String>,
+) -> Result<cloud_save::CloudSaveStatus, String> {
+    cloud_save::set_config(&app, &game_id, enabled, save_roots, include, exclude)
+}
+
+#[tauri::command]
+fn sync_cloud_save(
+    app: AppHandle,
+    game_id: String,
+    direction: Option<String>,
+) -> Result<cloud_save::CloudSaveStatus, String> {
+    cloud_save::sync_manual(&app, &game_id, direction.as_deref())
+}
+
+#[tauri::command]
+fn resolve_cloud_save_conflict(
+    app: AppHandle,
+    game_id: String,
+    conflict_id: String,
+    resolution: String,
+) -> Result<cloud_save::CloudSaveStatus, String> {
+    cloud_save::resolve_conflict(&app, &game_id, &conflict_id, &resolution)
+}
+
+#[tauri::command]
+fn restore_cloud_save_snapshot(
+    app: AppHandle,
+    game_id: String,
+    snapshot_id: String,
+) -> Result<cloud_save::CloudSaveStatus, String> {
+    cloud_save::restore_snapshot(&app, &game_id, &snapshot_id)
+}
+
+#[tauri::command]
+async fn connect_google_drive(
+    app: AppHandle,
+    game_id: String,
+) -> Result<cloud_save::CloudSaveStatus, String> {
+    tauri::async_runtime::spawn_blocking(move || cloud_save::connect_google_drive(&app, &game_id))
+        .await
+        .map_err(|error| error.to_string())?
+}
+
+#[tauri::command]
+async fn disconnect_google_drive(
+    app: AppHandle,
+    game_id: String,
+) -> Result<cloud_save::CloudSaveStatus, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        cloud_save::disconnect_google_drive(&app, &game_id)
+    })
+    .await
+    .map_err(|error| error.to_string())?
+}
+
+#[tauri::command]
+async fn backup_save_game_to_google_drive(
+    app: AppHandle,
+    game_id: String,
+) -> Result<cloud_save::CloudSaveStatus, String> {
+    tauri::async_runtime::spawn_blocking(move || cloud_save::backup_to_google_drive(&app, &game_id))
+        .await
+        .map_err(|error| error.to_string())?
+}
+
+#[tauri::command]
+async fn restore_missing_save_files(
+    app: AppHandle,
+    game_id: String,
+) -> Result<cloud_save::CloudSaveStatus, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        cloud_save::restore_missing_from_google_drive(&app, &game_id)
+    })
+    .await
+    .map_err(|error| error.to_string())?
+}
+
+#[tauri::command]
 fn plan_install_update(
     app: AppHandle,
     path: String,
@@ -255,6 +361,7 @@ fn launch_game(
     install_path: String,
     launch_executable: Option<String>,
     launch_option_id: Option<String>,
+    skip_cloud_sync: Option<bool>,
 ) -> Result<LaunchReport, String> {
     job::launch_game(
         &app,
@@ -262,6 +369,7 @@ fn launch_game(
         PathBuf::from(install_path).as_path(),
         launch_executable,
         launch_option_id,
+        skip_cloud_sync.unwrap_or(false),
     )
     .map_err(|err| err.to_string())
 }
@@ -429,6 +537,17 @@ pub fn run() {
             check_launcher_update,
             apply_launcher_update,
             get_launcher_snapshot,
+            get_launcher_settings,
+            set_launcher_settings,
+            get_cloud_save_status,
+            set_cloud_save_config,
+            sync_cloud_save,
+            resolve_cloud_save_conflict,
+            restore_cloud_save_snapshot,
+            connect_google_drive,
+            disconnect_google_drive,
+            backup_save_game_to_google_drive,
+            restore_missing_save_files,
             plan_install_update,
             plan_fresh_install,
             scan_install,
@@ -463,6 +582,9 @@ pub fn run() {
             platform::initialize(app.handle())
                 .map_err(|error| std::io::Error::new(std::io::ErrorKind::Other, error))?;
             steam_integration::start_pending_worker(app.handle().clone());
+            let job_control = app.state::<LauncherState>().job_control.clone();
+            job::start_auto_update_scheduler(app.handle().clone(), job_control);
+            cloud_save::start_google_drive_restore_monitor(app.handle().clone());
             let shortcut_request = parse_shortcut_launch_request();
             // When the main launcher starts, migrate existing desktop shortcuts away
             // from the legacy AppData bootstrap and point them at the game directory.
@@ -495,6 +617,7 @@ pub fn run() {
                         install_path.as_path(),
                         request.launch_executable.clone(),
                         None,
+                        false,
                     ) {
                         let _ = handle.emit("launcher://shortcut-launch-error", err.to_string());
                     }

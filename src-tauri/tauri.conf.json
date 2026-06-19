@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "0xoLemon",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "identifier": "0xoLemon",
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -41,7 +41,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDQ2QjAwM0RBNTE5RjFGMQpSV1R4OFJtbFBRQnJCSzczTGJjYTVHaTZOZ3FSQzU3SHRVU2tXRmVIRkVUS3lYOW1PZHQxRTJwaQo=",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDhCNDVDODI1MThGRUY5QUEKUldTcStmNFlKY2hGaTJSV0tna3IzMGhWTHlxWC9hM0dlclJ6c0dhUEtDKzBNN1NYS3NMeDlrZysK",
       "endpoints": [
         "https://github.com/dangjimmy33-dotcom/0xoLemon-Launcher/releases/latest/download/latest.json"
       ],

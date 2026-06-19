@@ -10,9 +10,9 @@ use std::sync::{mpsc, Arc, Mutex, OnceLock};
 use std::thread;
 use std::time::{Duration, Instant};
 
-use chrono::Utc;
+use chrono::{Local, Timelike, Utc};
 use reqwest::blocking::Client;
-use reqwest::header::{AUTHORIZATION, CONTENT_RANGE, RANGE, USER_AGENT};
+use reqwest::header::{HeaderMap, AUTHORIZATION, CONTENT_RANGE, RANGE, RETRY_AFTER, USER_AGENT};
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -27,7 +27,10 @@ use crate::launch::{
     option_unavailable_reason, process_path, resolve_launch_config, select_launch_option,
     GameLaunchConfig, ResolvedGameLaunchConfig,
 };
-use crate::manifest::{Catalog, ChunkRef, FileEntry, VersionManifest};
+use crate::manifest::{
+    Catalog, ChunkCodec, ChunkRef, FileEntry, VersionManifest, FORMAT_VERSION,
+    LEGACY_FORMAT_VERSION,
+};
 use crate::scanner::safe_join;
 
 #[cfg(target_os = "windows")]
@@ -47,26 +50,40 @@ const INSTALLED_MANIFEST_FILE: &str = "manifest.0xo";
 const DOWNLOAD_SESSION_FILE: &str = "depot-session.json";
 const STATE_MAGIC: &[u8] = b"0XOSTATE1\n";
 const STATE_KEY: &[u8] = b"0xoLemon-local-install-state-v1";
-const DEFAULT_DOWNLOAD_WORKERS: usize = 8;
 const MAX_DOWNLOAD_WORKERS: usize = 64;
-const DEFAULT_DOWNLOAD_RETRIES: u32 = 5;
 const MAX_DOWNLOAD_RETRIES: u32 = 12;
 const PACK_RANGE_MERGE_GAP: u64 = 4 * 1024 * 1024;
-const DEFAULT_PACK_RANGE_TASK_BYTES: u64 = 16 * 1024 * 1024;
-const MIN_PACK_RANGE_TASK_BYTES: u64 = 4 * 1024 * 1024;
+const MIN_PACK_RANGE_TASK_BYTES: u64 = 8 * 1024 * 1024;
 const MAX_PACK_RANGE_TASK_BYTES: u64 = 64 * 1024 * 1024;
+const MIN_ADAPTIVE_RANGE_BYTES: u64 = 8 * 1024 * 1024;
 const VERIFY_PROGRESS_EVENT: &str = "launcher://verify-progress";
 const VERIFY_READ_BUFFER_BYTES: usize = 4 * 1024 * 1024;
+const DOWNLOAD_CHECKPOINT_BYTES: u64 = 64 * 1024 * 1024;
+const DOWNLOAD_CHECKPOINT_MIN_INTERVAL: Duration = Duration::from_secs(1);
+const DOWNLOAD_CHECKPOINT_MAX_INTERVAL: Duration = Duration::from_secs(5);
+const CIRCUIT_BREAKER_FAILURES: u32 = 3;
+const CIRCUIT_BREAKER_COOLDOWN: Duration = Duration::from_secs(30);
 
 mod dependencies;
+mod direct;
 mod paths;
 mod progress;
 
 use dependencies::{
     create_game_shortcut, ensure_game_dependencies, launch_option_processes, remove_game_shortcut,
 };
+use direct::DirectStagePlan;
 use paths::*;
 use progress::*;
+
+#[derive(Debug)]
+struct AdaptiveRangeState {
+    range_bytes: u64,
+    ewma_rate: f64,
+    successful_samples: u32,
+}
+
+static ADAPTIVE_RANGE_STATE: OnceLock<Mutex<AdaptiveRangeState>> = OnceLock::new();
 
 #[derive(Default)]
 pub struct JobControl {
@@ -132,8 +149,28 @@ pub enum JobError {
     Http(#[from] reqwest::Error),
     #[error("depot error: {0}")]
     Depot(String),
+    #[error("rate limited: {detail}")]
+    RateLimited { detail: String, retry_after_ms: u64 },
+    #[error("authorization failed: {0}")]
+    Unauthorized(String),
+    #[error("remote object not found: {0}")]
+    NotFound(String),
+    #[error("transient download failure: {0}")]
+    Transient(String),
     #[error("job canceled")]
     Canceled,
+}
+
+impl JobError {
+    fn retry_delay(&self, retry_count: u32) -> Option<Duration> {
+        match self {
+            Self::RateLimited { retry_after_ms, .. } => {
+                Some(Duration::from_millis((*retry_after_ms).max(250)))
+            }
+            Self::Transient(_) => Some(download_retry_delay(retry_count)),
+            _ => None,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -144,10 +181,151 @@ pub struct LauncherSnapshot {
     pub available_versions: Vec<String>,
     pub detected_install_path: Option<String>,
     pub update_size: u64,
+    pub install_size: u64,
+    pub temporary_space: u64,
+    pub required_free_space: u64,
     pub proxy_status: String,
     pub cache: CacheSnapshot,
     pub changed_files: Vec<ChangedFile>,
     pub last_job: Option<JobJournal>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct AutoUpdateEvent {
+    state: String,
+    message: String,
+    game_id: Option<String>,
+}
+
+pub fn start_auto_update_scheduler(app: AppHandle, control: Arc<JobControl>) {
+    thread::spawn(move || {
+        let mut last_attempts = HashMap::<String, Instant>::new();
+        thread::sleep(Duration::from_secs(20));
+        loop {
+            if let Err(error) = auto_update_tick(&app, &control, &mut last_attempts) {
+                let _ = app.emit(
+                    "launcher://auto-update",
+                    AutoUpdateEvent {
+                        state: "error".to_string(),
+                        message: error,
+                        game_id: None,
+                    },
+                );
+            }
+            thread::sleep(Duration::from_secs(300));
+        }
+    });
+}
+
+fn auto_update_tick(
+    app: &AppHandle,
+    control: &Arc<JobControl>,
+    last_attempts: &mut HashMap<String, Instant>,
+) -> Result<(), String> {
+    let settings = crate::platform::current_settings();
+    if settings.game_update_mode == crate::platform::GameUpdateMode::Manual {
+        return Ok(());
+    }
+    if settings.game_update_mode == crate::platform::GameUpdateMode::Scheduled
+        && !time_in_update_window(
+            Local::now().hour() as u16 * 60 + Local::now().minute() as u16,
+            &settings.game_update_schedule_start,
+            &settings.game_update_schedule_end,
+        )
+    {
+        return Ok(());
+    }
+    if control.is_running() {
+        return Ok(());
+    }
+    if crate::platform::get_runtime_states(app)?
+        .iter()
+        .any(|runtime| runtime.running)
+    {
+        return Ok(());
+    }
+    if read_latest_journal(app)
+        .map_err(|error| error.to_string())?
+        .is_some_and(|journal| {
+            matches!(
+                journal.status,
+                JobStatus::Planned
+                    | JobStatus::Running
+                    | JobStatus::Paused
+                    | JobStatus::Downloading
+                    | JobStatus::Assembling
+            )
+        })
+    {
+        return Ok(());
+    }
+
+    let mut installs = crate::platform::install_records(app)?;
+    installs.sort_by(|left, right| left.game_id.cmp(&right.game_id));
+    for install in installs {
+        if last_attempts
+            .get(&install.game_id)
+            .is_some_and(|attempt| attempt.elapsed() < Duration::from_secs(30 * 60))
+        {
+            continue;
+        }
+        let source = DepotSource::for_game(&install.game_id);
+        let catalog = match source.load_catalog() {
+            Ok(catalog) => catalog,
+            Err(_) => continue,
+        };
+        let Some(latest) = catalog.effective_latest_version().map(str::to_string) else {
+            continue;
+        };
+        if latest == install.version {
+            continue;
+        }
+        last_attempts.insert(install.game_id.clone(), Instant::now());
+        let _ = app.emit(
+            "launcher://auto-update",
+            AutoUpdateEvent {
+                state: "starting".to_string(),
+                message: format!(
+                    "Starting automatic update for {}: {} → {}",
+                    install.game_id, install.version, latest
+                ),
+                game_id: Some(install.game_id.clone()),
+            },
+        );
+        spawn_update_job(
+            app.clone(),
+            control.clone(),
+            install.install_path,
+            Some(latest),
+            Some(install.game_id),
+        )
+        .map_err(|error| error.to_string())?;
+        break;
+    }
+    Ok(())
+}
+
+fn time_in_update_window(now_minutes: u16, start: &str, end: &str) -> bool {
+    let parse = |value: &str| {
+        value.split_once(':').and_then(|(hour, minute)| {
+            Some(hour.parse::<u16>().ok()? * 60 + minute.parse::<u16>().ok()?)
+        })
+    };
+    let Some(start) = parse(start) else {
+        return false;
+    };
+    let Some(end) = parse(end) else {
+        return false;
+    };
+    if start == end {
+        return true;
+    }
+    if start < end {
+        now_minutes >= start && now_minutes < end
+    } else {
+        now_minutes >= start || now_minutes < end
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -247,6 +425,24 @@ pub struct JobJournal {
     pub updated_at: String,
     pub steps: Vec<JobStep>,
     pub logs: Vec<JobLog>,
+    #[serde(default)]
+    pub metrics: DownloadMetrics,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DownloadMetrics {
+    pub pipeline: String,
+    pub payload_bytes: u64,
+    pub network_bytes: u64,
+    pub overfetch_bytes: u64,
+    pub retry_wait_ms: u64,
+    pub rate_limit_wait_ms: u64,
+    pub peak_in_flight_bytes: u64,
+    pub throughput_p50_bytes_per_second: u64,
+    pub throughput_p95_bytes_per_second: u64,
+    #[serde(skip)]
+    throughput_samples: Vec<u64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -324,6 +520,9 @@ pub fn snapshot(app: &AppHandle) -> Result<LauncherSnapshot, JobError> {
         available_versions,
         detected_install_path,
         update_size: 0,
+        install_size: 0,
+        temporary_space: 0,
+        required_free_space: 0,
         proxy_status: source.status_label(),
         cache: CacheSnapshot {
             cache_size,
@@ -354,6 +553,11 @@ pub fn snapshot_for_fresh_install(
         .to_string();
     let cache_free_space = downloading_cache_free_space(&default_install, &source);
 
+    let update_size = estimate_install_download_bytes(
+        Some(&downloading_chunk_cache_path(&default_install, &source)),
+        &manifest,
+    );
+    let temporary_space = planned_temporary_space(&manifest.files, update_size);
     Ok(LauncherSnapshot {
         current_version: "not installed".to_string(),
         latest_version: catalog
@@ -362,10 +566,10 @@ pub fn snapshot_for_fresh_install(
             .to_string(),
         available_versions: catalog_versions(Some(&catalog)),
         detected_install_path: None,
-        update_size: estimate_install_download_bytes(
-            Some(&downloading_chunk_cache_path(&default_install, &source)),
-            &manifest,
-        ),
+        update_size,
+        install_size: manifest.total_size,
+        temporary_space,
+        required_free_space: required_free_space(temporary_space),
         proxy_status: source.status_label(),
         cache: CacheSnapshot {
             cache_size,
@@ -399,14 +603,22 @@ pub fn snapshot_for_install(
         .map(|base| base.version.clone())
         .unwrap_or_else(|| "unknown".to_string());
     let staged_chunks_root = staged_chunk_dir(&downloading_dir_for_install(install_path, &source));
-    let (changed_files, update_size) = match installed_base {
-        None => (Vec::new(), 0),
-        Some(base) if base.version == selected_version => (Vec::new(), 0),
+    let (changed_files, update_size, install_size, temporary_space) = match installed_base {
+        None => (Vec::new(), 0, 0, 0),
+        Some(base) if base.version == selected_version => {
+            (Vec::new(), 0, base.manifest.total_size, 0)
+        }
         Some(base) => {
             let to = source.load_manifest(&catalog, &selected_version)?;
+            let changed_targets = changed_target_files(&base.manifest, &to);
             (
                 changed_files_between(&base.manifest, &to),
                 estimate_missing_download_bytes(Some(&staged_chunks_root), &base.manifest, &to),
+                to.total_size,
+                planned_temporary_space(
+                    &changed_targets,
+                    estimate_missing_download_bytes(Some(&staged_chunks_root), &base.manifest, &to),
+                ),
             )
         }
     };
@@ -422,6 +634,9 @@ pub fn snapshot_for_install(
         available_versions: catalog_versions(Some(&catalog)),
         detected_install_path: Some(install_path.display().to_string()),
         update_size,
+        install_size,
+        temporary_space,
+        required_free_space: required_free_space(temporary_space),
         proxy_status: source.status_label(),
         cache: CacheSnapshot {
             cache_size,
@@ -1076,6 +1291,7 @@ pub fn launch_game(
     install_path: &Path,
     launch_executable: Option<String>,
     launch_option_id: Option<String>,
+    skip_cloud_sync: bool,
 ) -> Result<LaunchReport, JobError> {
     let source = DepotSource::for_game(game_id);
     let marker = read_install_marker(install_path)?
@@ -1123,6 +1339,10 @@ pub fn launch_game(
         )));
     }
 
+    if !skip_cloud_sync {
+        crate::cloud_save::sync_before_launch(app, &source.game_id).map_err(JobError::Depot)?;
+    }
+
     let dependencies_installed = ensure_game_dependencies(app, &source)?;
     let shortcut_path = create_game_shortcut(app, &source, install_path, &executable, &main.path)
         .ok()
@@ -1137,7 +1357,16 @@ pub fn launch_game(
         Some(&executable),
     );
 
-    let launched = launch_option_processes(&source.game_id, install_path, option)?;
+    let mut launched = launch_option_processes(&source.game_id, install_path, option)?;
+    if let Some(mut child) = launched.main_child.take() {
+        crate::cloud_save::mark_game_running(&source.game_id, true);
+        let app_for_exit = app.clone();
+        let game_id_for_exit = source.game_id.clone();
+        thread::spawn(move || {
+            let _ = child.wait();
+            crate::cloud_save::sync_after_exit_async(app_for_exit, game_id_for_exit);
+        });
+    }
     Ok(LaunchReport {
         game_id: source.game_id,
         executable: executable.display().to_string(),
@@ -1146,6 +1375,7 @@ pub fn launch_game(
         launch_option_id: option.id.clone(),
         launch_option_title: option.title.clone(),
         launched_processes: launched
+            .paths
             .into_iter()
             .map(|path| path.display().to_string())
             .collect(),
@@ -1431,6 +1661,7 @@ fn run_real_update_job(
     let install_root = PathBuf::from(&journal.install_path);
     let source = DepotSource::for_game(&journal.game_id);
     let downloading_root = downloading_dir_for_install(&install_root, &source);
+    let staging_root = downloading_root.join("files");
     let staged_chunks_root = staged_chunk_dir(&downloading_root);
     append_log(&mut journal, "info", "Real update job started");
 
@@ -1480,8 +1711,21 @@ fn run_real_update_job(
         ),
     );
     fs::create_dir_all(&staged_chunks_root)?;
-    let missing_chunks = plan_missing_chunks(&local_sources, &staged_chunks_root, &changed)?;
+    let direct_stage = prepare_direct_stage(
+        &downloading_root,
+        &staging_root,
+        &changed,
+        &target_version,
+        &local_sources,
+        &control,
+    )?;
+    let missing_chunks = if let Some(stage) = direct_stage.as_ref() {
+        stage.filter_missing_chunks(&local_sources, &changed)
+    } else {
+        plan_missing_chunks(&local_sources, &staged_chunks_root, &changed)?
+    };
     journal.bytes_total = download_transfer_bytes(&missing_chunks);
+    configure_download_metrics(&mut journal, &missing_chunks, direct_stage.is_some());
     let resumed_in_flight = existing_partial_task_progress(&staged_chunks_root, &missing_chunks);
     journal.bytes_done = resumed_in_flight
         .values()
@@ -1510,27 +1754,39 @@ fn run_real_update_job(
     )?;
     let mut downloaded = 0_u64;
     let mut in_flight = resumed_in_flight;
-    source.download_chunks_to_store_parallel(
-        &staged_chunks_root,
-        &missing_chunks,
-        Arc::clone(&control),
-        |progress| {
-            if progress.clear_in_flight {
-                in_flight.remove(&progress.task_id);
-            } else {
-                in_flight.insert(progress.task_id.clone(), progress.in_flight_bytes);
-            }
-            downloaded += progress.committed_bytes;
-            wait_for_control(app, &control, &mut journal, 2)?;
-            let display_done = downloaded.saturating_add(in_flight.values().copied().sum::<u64>());
-            journal.bytes_done = display_done.min(journal.bytes_total);
-            journal.steps[2].progress = byte_progress(journal.bytes_done, journal.bytes_total);
-            journal.steps[2].retry_count = journal.steps[2].retry_count.max(progress.retry_count);
-            journal.overall_progress = overall_progress(2, journal.steps[2].progress);
-            touch(&mut journal);
-            persist_and_emit(app, &journal)
-        },
-    )?;
+    let mut progress_callback = |progress: DownloadProgress| {
+        if progress.clear_in_flight {
+            in_flight.remove(&progress.task_id);
+        } else {
+            in_flight.insert(progress.task_id.clone(), progress.in_flight_bytes);
+        }
+        downloaded += progress.committed_bytes;
+        wait_for_control(app, &control, &mut journal, 2)?;
+        let display_done = downloaded.saturating_add(in_flight.values().copied().sum::<u64>());
+        observe_download_progress(&mut journal, &progress, in_flight.values().copied().sum());
+        journal.bytes_done = display_done.min(journal.bytes_total);
+        journal.steps[2].progress = byte_progress(journal.bytes_done, journal.bytes_total);
+        journal.steps[2].retry_count = journal.steps[2].retry_count.max(progress.retry_count);
+        journal.overall_progress = overall_progress(2, journal.steps[2].progress);
+        touch(&mut journal);
+        persist_and_emit(app, &journal)
+    };
+    if let Some(stage) = direct_stage.as_ref() {
+        source.download_chunks_direct_to_staging(
+            &staged_chunks_root,
+            stage,
+            &missing_chunks,
+            Arc::clone(&control),
+            &mut progress_callback,
+        )?;
+    } else {
+        source.download_chunks_to_store_parallel(
+            &staged_chunks_root,
+            &missing_chunks,
+            Arc::clone(&control),
+            &mut progress_callback,
+        )?;
+    }
     complete_step(app, &mut journal, 2)?;
 
     set_step_running(
@@ -1540,20 +1796,33 @@ fn run_real_update_job(
         JobStatus::Assembling,
         "Assemble changed files",
     )?;
-    for (index, file) in changed.iter().enumerate() {
+    if let Some(stage) = direct_stage.as_ref() {
         wait_for_control(app, &control, &mut journal, 3)?;
-        append_log(&mut journal, "info", &format!("Assembling {}", file.path));
-        assemble_target_file(
-            &install_root,
-            None,
-            &staged_chunks_root,
-            file,
-            &local_sources,
-        )?;
-        journal.steps[3].progress = progress_fraction(index + 1, changed.len());
-        journal.overall_progress = overall_progress(3, journal.steps[3].progress);
-        touch(&mut journal);
+        append_log(
+            &mut journal,
+            "info",
+            "Verifying and committing direct staging files",
+        );
+        stage.commit_files(&install_root, &changed)?;
+        journal.steps[3].progress = 1.0;
+        journal.overall_progress = overall_progress(3, 1.0);
         persist_and_emit(app, &journal)?;
+    } else {
+        for (index, file) in changed.iter().enumerate() {
+            wait_for_control(app, &control, &mut journal, 3)?;
+            append_log(&mut journal, "info", &format!("Assembling {}", file.path));
+            assemble_target_file(
+                &install_root,
+                None,
+                &staged_chunks_root,
+                file,
+                &local_sources,
+            )?;
+            journal.steps[3].progress = progress_fraction(index + 1, changed.len());
+            journal.overall_progress = overall_progress(3, journal.steps[3].progress);
+            touch(&mut journal);
+            persist_and_emit(app, &journal)?;
+        }
     }
     complete_step(app, &mut journal, 3)?;
 
@@ -1638,8 +1907,21 @@ fn run_real_install_job(
     let target_manifest = source.load_manifest(&catalog, &target_version)?;
     let changed = target_manifest.files.clone();
     let local_sources = HashMap::new();
-    let missing_chunks = plan_missing_chunks(&local_sources, &staged_chunks_root, &changed)?;
+    let direct_stage = prepare_direct_stage(
+        &downloading_root,
+        &staging_root,
+        &changed,
+        &target_version,
+        &local_sources,
+        &control,
+    )?;
+    let missing_chunks = if let Some(stage) = direct_stage.as_ref() {
+        stage.filter_missing_chunks(&local_sources, &changed)
+    } else {
+        plan_missing_chunks(&local_sources, &staged_chunks_root, &changed)?
+    };
     journal.bytes_total = download_transfer_bytes(&missing_chunks);
+    configure_download_metrics(&mut journal, &missing_chunks, direct_stage.is_some());
     let resumed_in_flight = existing_partial_task_progress(&staged_chunks_root, &missing_chunks);
     journal.bytes_done = resumed_in_flight
         .values()
@@ -1674,27 +1956,39 @@ fn run_real_install_job(
     )?;
     let mut downloaded = 0_u64;
     let mut in_flight = resumed_in_flight;
-    source.download_chunks_to_store_parallel(
-        &staged_chunks_root,
-        &missing_chunks,
-        Arc::clone(&control),
-        |progress| {
-            if progress.clear_in_flight {
-                in_flight.remove(&progress.task_id);
-            } else {
-                in_flight.insert(progress.task_id.clone(), progress.in_flight_bytes);
-            }
-            downloaded += progress.committed_bytes;
-            wait_for_control(app, &control, &mut journal, 2)?;
-            let display_done = downloaded.saturating_add(in_flight.values().copied().sum::<u64>());
-            journal.bytes_done = display_done.min(journal.bytes_total);
-            journal.steps[2].progress = byte_progress(journal.bytes_done, journal.bytes_total);
-            journal.steps[2].retry_count = journal.steps[2].retry_count.max(progress.retry_count);
-            journal.overall_progress = overall_progress(2, journal.steps[2].progress);
-            touch(&mut journal);
-            persist_and_emit(app, &journal)
-        },
-    )?;
+    let mut progress_callback = |progress: DownloadProgress| {
+        if progress.clear_in_flight {
+            in_flight.remove(&progress.task_id);
+        } else {
+            in_flight.insert(progress.task_id.clone(), progress.in_flight_bytes);
+        }
+        downloaded += progress.committed_bytes;
+        wait_for_control(app, &control, &mut journal, 2)?;
+        let display_done = downloaded.saturating_add(in_flight.values().copied().sum::<u64>());
+        observe_download_progress(&mut journal, &progress, in_flight.values().copied().sum());
+        journal.bytes_done = display_done.min(journal.bytes_total);
+        journal.steps[2].progress = byte_progress(journal.bytes_done, journal.bytes_total);
+        journal.steps[2].retry_count = journal.steps[2].retry_count.max(progress.retry_count);
+        journal.overall_progress = overall_progress(2, journal.steps[2].progress);
+        touch(&mut journal);
+        persist_and_emit(app, &journal)
+    };
+    if let Some(stage) = direct_stage.as_ref() {
+        source.download_chunks_direct_to_staging(
+            &staged_chunks_root,
+            stage,
+            &missing_chunks,
+            Arc::clone(&control),
+            &mut progress_callback,
+        )?;
+    } else {
+        source.download_chunks_to_store_parallel(
+            &staged_chunks_root,
+            &missing_chunks,
+            Arc::clone(&control),
+            &mut progress_callback,
+        )?;
+    }
     complete_step(app, &mut journal, 2)?;
 
     set_step_running(
@@ -1704,20 +1998,33 @@ fn run_real_install_job(
         JobStatus::Assembling,
         "Assemble install files",
     )?;
-    for (index, file) in changed.iter().enumerate() {
+    if let Some(stage) = direct_stage.as_ref() {
         wait_for_control(app, &control, &mut journal, 3)?;
-        append_log(&mut journal, "info", &format!("Assembling {}", file.path));
-        assemble_target_file(
-            &install_root,
-            Some(&staging_root),
-            &staged_chunks_root,
-            file,
-            &local_sources,
-        )?;
-        journal.steps[3].progress = progress_fraction(index + 1, changed.len());
-        journal.overall_progress = overall_progress(3, journal.steps[3].progress);
-        touch(&mut journal);
+        append_log(
+            &mut journal,
+            "info",
+            "Verifying and committing direct staging files",
+        );
+        stage.commit_files(&install_root, &changed)?;
+        journal.steps[3].progress = 1.0;
+        journal.overall_progress = overall_progress(3, 1.0);
         persist_and_emit(app, &journal)?;
+    } else {
+        for (index, file) in changed.iter().enumerate() {
+            wait_for_control(app, &control, &mut journal, 3)?;
+            append_log(&mut journal, "info", &format!("Assembling {}", file.path));
+            assemble_target_file(
+                &install_root,
+                Some(&staging_root),
+                &staged_chunks_root,
+                file,
+                &local_sources,
+            )?;
+            journal.steps[3].progress = progress_fraction(index + 1, changed.len());
+            journal.overall_progress = overall_progress(3, journal.steps[3].progress);
+            touch(&mut journal);
+            persist_and_emit(app, &journal)?;
+        }
     }
     complete_step(app, &mut journal, 3)?;
 
@@ -1785,8 +2092,22 @@ fn run_real_repair_job(
 
     set_step_running(app, &mut journal, 1, JobStatus::Running, "Plan repair")?;
     let local_sources = HashMap::new();
-    let missing_chunks = plan_missing_chunks(&local_sources, &staged_chunks_root, &repair_files)?;
+    let staging_root = downloading_root.join("files");
+    let direct_stage = prepare_direct_stage(
+        &downloading_root,
+        &staging_root,
+        &repair_files,
+        &journal.to_version,
+        &local_sources,
+        &control,
+    )?;
+    let missing_chunks = if let Some(stage) = direct_stage.as_ref() {
+        stage.filter_missing_chunks(&local_sources, &repair_files)
+    } else {
+        plan_missing_chunks(&local_sources, &staged_chunks_root, &repair_files)?
+    };
     journal.bytes_total = download_transfer_bytes(&missing_chunks);
+    configure_download_metrics(&mut journal, &missing_chunks, direct_stage.is_some());
     let resumed_in_flight = existing_partial_task_progress(&staged_chunks_root, &missing_chunks);
     journal.bytes_done = resumed_in_flight
         .values()
@@ -1820,44 +2141,69 @@ fn run_real_repair_job(
     )?;
     let mut downloaded = 0_u64;
     let mut in_flight = resumed_in_flight;
-    source.download_chunks_to_store_parallel(
-        &staged_chunks_root,
-        &missing_chunks,
-        Arc::clone(&control),
-        |progress| {
-            if progress.clear_in_flight {
-                in_flight.remove(&progress.task_id);
-            } else {
-                in_flight.insert(progress.task_id.clone(), progress.in_flight_bytes);
-            }
-            downloaded += progress.committed_bytes;
-            wait_for_control(app, &control, &mut journal, 2)?;
-            let display_done = downloaded.saturating_add(in_flight.values().copied().sum::<u64>());
-            journal.bytes_done = display_done.min(journal.bytes_total);
-            journal.steps[2].progress = byte_progress(journal.bytes_done, journal.bytes_total);
-            journal.steps[2].retry_count = journal.steps[2].retry_count.max(progress.retry_count);
-            journal.overall_progress = overall_progress(2, journal.steps[2].progress);
-            touch(&mut journal);
-            persist_and_emit(app, &journal)
-        },
-    )?;
+    let mut progress_callback = |progress: DownloadProgress| {
+        if progress.clear_in_flight {
+            in_flight.remove(&progress.task_id);
+        } else {
+            in_flight.insert(progress.task_id.clone(), progress.in_flight_bytes);
+        }
+        downloaded += progress.committed_bytes;
+        wait_for_control(app, &control, &mut journal, 2)?;
+        let display_done = downloaded.saturating_add(in_flight.values().copied().sum::<u64>());
+        observe_download_progress(&mut journal, &progress, in_flight.values().copied().sum());
+        journal.bytes_done = display_done.min(journal.bytes_total);
+        journal.steps[2].progress = byte_progress(journal.bytes_done, journal.bytes_total);
+        journal.steps[2].retry_count = journal.steps[2].retry_count.max(progress.retry_count);
+        journal.overall_progress = overall_progress(2, journal.steps[2].progress);
+        touch(&mut journal);
+        persist_and_emit(app, &journal)
+    };
+    if let Some(stage) = direct_stage.as_ref() {
+        source.download_chunks_direct_to_staging(
+            &staged_chunks_root,
+            stage,
+            &missing_chunks,
+            Arc::clone(&control),
+            &mut progress_callback,
+        )?;
+    } else {
+        source.download_chunks_to_store_parallel(
+            &staged_chunks_root,
+            &missing_chunks,
+            Arc::clone(&control),
+            &mut progress_callback,
+        )?;
+    }
     complete_step(app, &mut journal, 2)?;
 
     set_step_running(app, &mut journal, 3, JobStatus::Assembling, "Repair files")?;
-    for (index, file) in repair_files.iter().enumerate() {
+    if let Some(stage) = direct_stage.as_ref() {
         wait_for_control(app, &control, &mut journal, 3)?;
-        append_log(&mut journal, "info", &format!("Repairing {}", file.path));
-        assemble_target_file(
-            &install_root,
-            None,
-            &staged_chunks_root,
-            file,
-            &local_sources,
-        )?;
-        journal.steps[3].progress = progress_fraction(index + 1, repair_files.len());
-        journal.overall_progress = overall_progress(3, journal.steps[3].progress);
-        touch(&mut journal);
+        append_log(
+            &mut journal,
+            "info",
+            "Verifying and committing repaired staging files",
+        );
+        stage.commit_files(&install_root, &repair_files)?;
+        journal.steps[3].progress = 1.0;
+        journal.overall_progress = overall_progress(3, 1.0);
         persist_and_emit(app, &journal)?;
+    } else {
+        for (index, file) in repair_files.iter().enumerate() {
+            wait_for_control(app, &control, &mut journal, 3)?;
+            append_log(&mut journal, "info", &format!("Repairing {}", file.path));
+            assemble_target_file(
+                &install_root,
+                None,
+                &staged_chunks_root,
+                file,
+                &local_sources,
+            )?;
+            journal.steps[3].progress = progress_fraction(index + 1, repair_files.len());
+            journal.overall_progress = overall_progress(3, journal.steps[3].progress);
+            touch(&mut journal);
+            persist_and_emit(app, &journal)?;
+        }
     }
     complete_step(app, &mut journal, 3)?;
 
@@ -1900,6 +2246,75 @@ fn run_real_repair_job(
     Ok(journal)
 }
 
+#[derive(Debug, Default)]
+struct HostRateState {
+    blocked_until: Option<Instant>,
+    circuit_open_until: Option<Instant>,
+    consecutive_transient_failures: u32,
+}
+
+#[derive(Debug, Default)]
+struct RateCoordinator {
+    hosts: Mutex<HashMap<String, HostRateState>>,
+}
+
+impl RateCoordinator {
+    fn wait_until_ready(
+        &self,
+        base_url: &str,
+        control: Option<&JobControl>,
+    ) -> Result<(), JobError> {
+        loop {
+            if control.is_some_and(JobControl::is_canceled) {
+                return Err(JobError::Canceled);
+            }
+            let delay = self.hosts.lock().ok().and_then(|hosts| {
+                let state = hosts.get(base_url)?;
+                let now = Instant::now();
+                [state.blocked_until, state.circuit_open_until]
+                    .into_iter()
+                    .flatten()
+                    .filter_map(|deadline| deadline.checked_duration_since(now))
+                    .max()
+            });
+            let Some(delay) = delay else {
+                return Ok(());
+            };
+            thread::sleep(delay.min(Duration::from_millis(250)));
+        }
+    }
+
+    fn record_success(&self, base_url: &str) {
+        if let Ok(mut hosts) = self.hosts.lock() {
+            let state = hosts.entry(base_url.to_string()).or_default();
+            state.consecutive_transient_failures = 0;
+            state.circuit_open_until = None;
+        }
+    }
+
+    fn record_transient_failure(&self, base_url: &str) {
+        if let Ok(mut hosts) = self.hosts.lock() {
+            let state = hosts.entry(base_url.to_string()).or_default();
+            state.consecutive_transient_failures =
+                state.consecutive_transient_failures.saturating_add(1);
+            if state.consecutive_transient_failures >= CIRCUIT_BREAKER_FAILURES {
+                state.circuit_open_until = Some(Instant::now() + CIRCUIT_BREAKER_COOLDOWN);
+                state.consecutive_transient_failures = 0;
+            }
+        }
+    }
+
+    fn block_for(&self, base_url: &str, delay: Duration) {
+        if let Ok(mut hosts) = self.hosts.lock() {
+            let state = hosts.entry(base_url.to_string()).or_default();
+            let deadline = Instant::now() + delay;
+            if state.blocked_until.is_none_or(|current| deadline > current) {
+                state.blocked_until = Some(deadline);
+            }
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 struct DepotSource {
     game_id: String,
@@ -1909,6 +2324,7 @@ struct DepotSource {
     token: Option<String>,
     local_root: Option<PathBuf>,
     client: OnceLock<Client>,
+    rate_coordinator: Arc<RateCoordinator>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -1978,6 +2394,7 @@ impl DepotSource {
                 .or_else(|| env::var("HF_TOKEN").ok()),
             local_root,
             client: OnceLock::new(),
+            rate_coordinator: Arc::new(RateCoordinator::default()),
         }
     }
 
@@ -2035,8 +2452,89 @@ impl DepotSource {
         }
     }
 
+    fn send_remote_get(
+        &self,
+        base_url: &str,
+        url: &str,
+        range: Option<(u64, u64)>,
+        control: Option<&JobControl>,
+    ) -> Result<reqwest::blocking::Response, JobError> {
+        self.rate_coordinator.wait_until_ready(base_url, control)?;
+        let send = |with_token: bool| {
+            let mut request = self
+                .get_client()
+                .get(url)
+                .header(USER_AGENT, "0xolemon-launcher/0.2");
+            if let Some((start, end)) = range {
+                request = request.header(RANGE, format!("bytes={start}-{end}"));
+            }
+            if with_token {
+                if let Some(token) = self
+                    .token
+                    .as_deref()
+                    .filter(|value| !value.trim().is_empty())
+                {
+                    request = request.header(AUTHORIZATION, format!("Bearer {token}"));
+                }
+            }
+            request.send()
+        };
+
+        let mut response = send(self.token.is_some()).map_err(|error| {
+            self.rate_coordinator.record_transient_failure(base_url);
+            JobError::Transient(format!("{url}: {error}"))
+        })?;
+
+        if matches!(
+            response.status(),
+            StatusCode::UNAUTHORIZED | StatusCode::FORBIDDEN
+        ) && self.token.is_some()
+        {
+            // Public Hugging Face repositories remain usable when a stale inherited
+            // HF_TOKEN is present. Private repositories still fail clearly below.
+            response = send(false).map_err(|error| {
+                self.rate_coordinator.record_transient_failure(base_url);
+                JobError::Transient(format!("{url}: anonymous retry failed ({error})"))
+            })?;
+        }
+
+        let status = response.status();
+        let rate_delay = rate_limit_delay(response.headers());
+        if let Some(delay) =
+            rate_delay.filter(|_| rate_limit_remaining(response.headers()) == Some(0))
+        {
+            self.rate_coordinator.block_for(base_url, delay);
+        }
+        if status == StatusCode::TOO_MANY_REQUESTS {
+            let delay = rate_delay.unwrap_or(Duration::from_secs(30));
+            self.rate_coordinator.block_for(base_url, delay);
+            return Err(JobError::RateLimited {
+                detail: format!("{url}: HTTP 429"),
+                retry_after_ms: delay.as_millis().min(u128::from(u64::MAX)) as u64,
+            });
+        }
+        if matches!(status, StatusCode::UNAUTHORIZED | StatusCode::FORBIDDEN) {
+            return Err(JobError::Unauthorized(format!("{url}: HTTP {status}")));
+        }
+        if status == StatusCode::NOT_FOUND {
+            return Err(JobError::NotFound(format!("{url}: HTTP 404")));
+        }
+        if status == StatusCode::REQUEST_TIMEOUT || status.is_server_error() {
+            self.rate_coordinator.record_transient_failure(base_url);
+            return Err(JobError::Transient(format!("{url}: HTTP {status}")));
+        }
+        if !status.is_success() {
+            return Err(JobError::Depot(format!("{url}: HTTP {status}")));
+        }
+
+        self.rate_coordinator.record_success(base_url);
+        Ok(response)
+    }
+
     fn load_catalog(&self) -> Result<Catalog, JobError> {
-        self.load_json("catalog.json")
+        let catalog: Catalog = self.load_json("catalog.json")?;
+        validate_format_version(catalog.format_version, "catalog")?;
+        Ok(catalog)
     }
 
     fn load_local_catalog(&self) -> Result<Catalog, JobError> {
@@ -2045,7 +2543,9 @@ impl DepotSource {
             .as_ref()
             .ok_or_else(|| JobError::Depot("local depot is not configured".to_string()))?;
         let bytes = fs::read(root.join("catalog.json"))?;
-        Ok(serde_json::from_slice(&bytes)?)
+        let catalog: Catalog = serde_json::from_slice(&bytes)?;
+        validate_format_version(catalog.format_version, "catalog")?;
+        Ok(catalog)
     }
 
     fn load_local_manifest(
@@ -2065,6 +2565,7 @@ impl DepotSource {
             .ok_or_else(|| JobError::Depot(format!("version not found in catalog: {version}")))?;
         let bytes = fs::read(root.join(relative_to_path(path)))?;
         let manifest: VersionManifest = serde_json::from_slice(&bytes)?;
+        validate_format_version(manifest.format_version, "manifest")?;
         Ok(canonicalize_manifest_version(manifest, version))
     }
 
@@ -2076,6 +2577,7 @@ impl DepotSource {
             .map(|entry| entry.manifest_path.as_str())
             .ok_or_else(|| JobError::Depot(format!("version not found in catalog: {version}")))?;
         let manifest: VersionManifest = self.load_json(path)?;
+        validate_format_version(manifest.format_version, "manifest")?;
         Ok(canonicalize_manifest_version(manifest, version))
     }
 
@@ -2096,26 +2598,15 @@ impl DepotSource {
                 base_url.trim_end_matches('/'),
                 encoded_relative_path
             );
-            let mut request = self
-                .get_client()
-                .get(&url)
-                .header(USER_AGENT, "0xolemon-launcher/0.1");
-            if let Some(token) = &self.token {
-                request = request.header(AUTHORIZATION, format!("Bearer {token}"));
-            }
-
-            match request.send() {
-                Ok(response) => match response.error_for_status() {
-                    Ok(response) => match response.json::<T>() {
-                        Ok(value) => {
-                            self.mark_active_base_url(&base_url);
-                            return Ok(value);
-                        }
-                        Err(err) => failures.push(format!("{url}: invalid JSON ({err})")),
-                    },
-                    Err(err) => failures.push(format!("{url}: {err}")),
+            match self.send_remote_get(&base_url, &url, None, None) {
+                Ok(response) => match response.json::<T>() {
+                    Ok(value) => {
+                        self.mark_active_base_url(&base_url);
+                        return Ok(value);
+                    }
+                    Err(err) => failures.push(format!("{url}: invalid JSON ({err})")),
                 },
-                Err(err) => failures.push(format!("{url}: {err}")),
+                Err(err) => failures.push(err.to_string()),
             }
         }
 
@@ -2152,7 +2643,7 @@ impl DepotSource {
         if let Some(root) = &self.local_root {
             let path = root.join(relative_to_path(relative_path));
             if path.exists() {
-                let existing = partial_file_len(partial_path).min(expected_len);
+                let existing = durable_partial_len(partial_path).min(expected_len);
                 let mut file = File::open(path)?;
                 file.seek(SeekFrom::Start(start.saturating_add(existing)))?;
                 append_stream_to_partial(
@@ -2172,7 +2663,7 @@ impl DepotSource {
         let mut failures = Vec::new();
         for base_url in self.ordered_base_urls() {
             normalize_partial_file(partial_path, expected_len)?;
-            let existing = partial_file_len(partial_path).min(expected_len);
+            let existing = durable_partial_len(partial_path).min(expected_len);
             if existing == expected_len {
                 return read_completed_partial(partial_path, expected_len, pack_id);
             }
@@ -2184,25 +2675,26 @@ impl DepotSource {
                 base_url.trim_end_matches('/'),
                 encoded_relative_path
             );
-            let mut request = self
-                .get_client()
-                .get(&url)
-                .header(USER_AGENT, "0xolemon-launcher/0.1")
-                .header(RANGE, format!("bytes={request_start}-{end}"));
-            if let Some(token) = &self.token {
-                request = request.header(AUTHORIZATION, format!("Bearer {token}"));
-            }
-
-            let mut response = match request.send() {
-                Ok(response) => match response.error_for_status() {
-                    Ok(response) => response,
-                    Err(err) => {
-                        failures.push(format!("{url}: {err}"));
-                        continue;
-                    }
-                },
+            let mut response = match self.send_remote_get(
+                &base_url,
+                &url,
+                Some((request_start, end)),
+                Some(control),
+            ) {
+                Ok(response) => response,
+                Err(JobError::NotFound(err)) => {
+                    failures.push(err);
+                    continue;
+                }
+                Err(JobError::Unauthorized(err)) => {
+                    failures.push(err);
+                    continue;
+                }
+                Err(err @ JobError::RateLimited { .. }) | Err(err @ JobError::Transient(_)) => {
+                    return Err(err)
+                }
                 Err(err) => {
-                    failures.push(format!("{url}: {err}"));
+                    failures.push(err.to_string());
                     continue;
                 }
             };
@@ -2267,7 +2759,13 @@ impl DepotSource {
         }
 
         let tasks = build_pack_download_tasks(chunks);
-        let worker_count = download_worker_count().min(tasks.len()).max(1);
+        let settings = crate::platform::current_settings();
+        let queue_budget = settings.download_queue_mb.saturating_mul(1024 * 1024);
+        let workers_by_budget = (queue_budget / pack_range_task_bytes()).max(1) as usize;
+        let worker_count = download_worker_count()
+            .min(workers_by_budget)
+            .min(tasks.len())
+            .max(1);
         let tasks = Arc::new(Mutex::new(VecDeque::from(tasks)));
         let abort = Arc::new(AtomicBool::new(false));
         let (tx, rx) = mpsc::channel::<Result<DownloadProgress, String>>();
@@ -2318,16 +2816,38 @@ impl DepotSource {
                             &tx,
                         ) {
                             Ok(()) => break,
-                            Err(_) if retry_count < max_retries && !control.is_canceled() => {
-                                retry_count += 1;
+                            Err(err) if retry_count < max_retries && !control.is_canceled() => {
+                                let next_retry = retry_count.saturating_add(1);
+                                let Some(delay) = err.retry_delay(next_retry) else {
+                                    abort.store(true, Ordering::SeqCst);
+                                    let _ = tx.send(Err(err.to_string()));
+                                    break;
+                                };
+                                retry_count = next_retry;
+                                observe_adaptive_range(0, true);
                                 let _ = tx.send(Ok(DownloadProgress {
                                     task_id: task_id.clone(),
                                     committed_bytes: 0,
                                     in_flight_bytes: 0,
                                     clear_in_flight: true,
                                     retry_count,
+                                    rate_bytes_per_second: 0,
+                                    retry_wait_ms: delay.as_millis().min(u128::from(u64::MAX))
+                                        as u64,
+                                    rate_limit_wait_ms: if matches!(
+                                        err,
+                                        JobError::RateLimited { .. }
+                                    ) {
+                                        delay.as_millis().min(u128::from(u64::MAX)) as u64
+                                    } else {
+                                        0
+                                    },
                                 }));
-                                thread::sleep(download_retry_delay(retry_count));
+                                if let Err(err) = sleep_with_control(delay, &control) {
+                                    abort.store(true, Ordering::SeqCst);
+                                    let _ = tx.send(Err(err.to_string()));
+                                    break;
+                                }
                             }
                             Err(err) => {
                                 abort.store(true, Ordering::SeqCst);
@@ -2416,9 +2936,11 @@ impl DepotSource {
 
         if let Err(err) = write_result {
             let _ = fs::remove_file(&partial_path);
+            let _ = fs::remove_file(partial_checkpoint_path(&partial_path));
             return Err(err);
         }
         let _ = fs::remove_file(&partial_path);
+        let _ = fs::remove_file(partial_checkpoint_path(&partial_path));
         progress_tx
             .send(Ok(DownloadProgress {
                 task_id: task_id.to_string(),
@@ -2426,6 +2948,9 @@ impl DepotSource {
                 in_flight_bytes: 0,
                 clear_in_flight: true,
                 retry_count: 0,
+                rate_bytes_per_second: 0,
+                retry_wait_ms: 0,
+                rate_limit_wait_ms: 0,
             }))
             .map_err(|err| JobError::Depot(err.to_string()))?;
         Ok(())
@@ -2476,9 +3001,52 @@ fn partial_file_len(path: &Path) -> u64 {
         .unwrap_or(0)
 }
 
+fn partial_checkpoint_path(path: &Path) -> PathBuf {
+    let file_name = path
+        .file_name()
+        .map(|name| name.to_string_lossy())
+        .unwrap_or_default();
+    path.with_file_name(format!("{file_name}.checkpoint"))
+}
+
+fn durable_partial_len(path: &Path) -> u64 {
+    let actual = partial_file_len(path);
+    let checkpoint = fs::read_to_string(partial_checkpoint_path(path))
+        .ok()
+        .and_then(|value| value.trim().parse::<u64>().ok());
+    checkpoint.unwrap_or(actual).min(actual)
+}
+
+fn persist_partial_checkpoint(path: &Path, durable_len: u64) -> Result<(), JobError> {
+    let checkpoint = partial_checkpoint_path(path);
+    let temporary = checkpoint.with_extension("checkpoint.tmp");
+    {
+        let mut file = File::create(&temporary)?;
+        write!(file, "{durable_len}")?;
+        file.sync_all()?;
+    }
+    if checkpoint.exists() {
+        fs::remove_file(&checkpoint)?;
+    }
+    fs::rename(temporary, checkpoint)?;
+    Ok(())
+}
+
 fn normalize_partial_file(path: &Path, expected_len: u64) -> Result<(), JobError> {
     if path.exists() && partial_file_len(path) > expected_len {
         fs::remove_file(path)?;
+        let checkpoint = partial_checkpoint_path(path);
+        if checkpoint.exists() {
+            fs::remove_file(checkpoint)?;
+        }
+    } else if path.exists() {
+        let durable = durable_partial_len(path).min(expected_len);
+        let file = OpenOptions::new().write(true).open(path)?;
+        if file.metadata()?.len() != durable {
+            file.set_len(durable)?;
+            file.sync_all()?;
+        }
+        persist_partial_checkpoint(path, durable)?;
     }
     Ok(())
 }
@@ -2488,6 +3056,11 @@ fn read_completed_partial(
     expected_len: u64,
     pack_id: &str,
 ) -> Result<Vec<u8>, JobError> {
+    if durable_partial_len(path) != expected_len {
+        return Err(JobError::Depot(format!(
+            "partial range for {pack_id} is not durably checkpointed"
+        )));
+    }
     let bytes = fs::read(path)?;
     if bytes.len() as u64 != expected_len {
         return Err(JobError::Depot(format!(
@@ -2514,6 +3087,32 @@ fn content_range_starts_at(response: &reqwest::blocking::Response, expected_star
         .is_some_and(|start| start == expected_start)
 }
 
+fn rate_limit_remaining(headers: &HeaderMap) -> Option<u64> {
+    let value = headers.get("ratelimit")?.to_str().ok()?;
+    value.split(';').find_map(|part| {
+        part.trim()
+            .strip_prefix("r=")
+            .and_then(|value| value.trim_matches('"').parse::<u64>().ok())
+    })
+}
+
+fn rate_limit_delay(headers: &HeaderMap) -> Option<Duration> {
+    if let Some(seconds) = headers
+        .get(RETRY_AFTER)
+        .and_then(|value| value.to_str().ok())
+        .and_then(|value| value.trim().parse::<u64>().ok())
+    {
+        return Some(Duration::from_secs(seconds.clamp(1, 3600)));
+    }
+    let value = headers.get("ratelimit")?.to_str().ok()?;
+    value.split(';').find_map(|part| {
+        part.trim()
+            .strip_prefix("t=")
+            .and_then(|value| value.trim_matches('"').parse::<u64>().ok())
+            .map(|seconds| Duration::from_secs(seconds.clamp(1, 3600)))
+    })
+}
+
 fn append_stream_to_partial<R: Read>(
     reader: &mut R,
     partial_path: &Path,
@@ -2528,34 +3127,40 @@ fn append_stream_to_partial<R: Read>(
         .append(true)
         .open(partial_path)?;
     let mut written = existing_len.min(expected_len);
+    let mut durable = written;
     let mut unsynced = 0_u64;
     let mut last_progress_emit = Instant::now();
+    let mut last_progress_bytes = written;
+    let mut last_checkpoint = Instant::now();
 
     progress_tx
         .send(Ok(DownloadProgress {
             task_id: task_id.to_string(),
             committed_bytes: 0,
-            in_flight_bytes: written,
+            in_flight_bytes: durable,
             clear_in_flight: false,
             retry_count: 0,
+            rate_bytes_per_second: 0,
+            retry_wait_ms: 0,
+            rate_limit_wait_ms: 0,
         }))
         .map_err(|err| JobError::Depot(err.to_string()))?;
 
     let mut scratch = [0_u8; 256 * 1024];
     while written < expected_len {
         if control.is_canceled() {
-            let _ = output.flush();
-            let _ = output.sync_data();
+            let _ = checkpoint_partial(&mut output, partial_path, written);
             return Err(JobError::Canceled);
         }
         if control.is_paused() {
-            output.flush()?;
-            output.sync_data()?;
+            checkpoint_partial(&mut output, partial_path, written)?;
+            durable = written;
+            unsynced = 0;
+            last_checkpoint = Instant::now();
         }
         while control.is_paused() {
             if control.is_canceled() {
-                let _ = output.flush();
-                let _ = output.sync_data();
+                let _ = checkpoint_partial(&mut output, partial_path, written);
                 return Err(JobError::Canceled);
             }
             thread::sleep(Duration::from_millis(150));
@@ -2566,8 +3171,7 @@ fn append_stream_to_partial<R: Read>(
         let read = match reader.read(&mut scratch[..read_len]) {
             Ok(read) => read,
             Err(error) => {
-                let _ = output.flush();
-                let _ = output.sync_data();
+                let _ = checkpoint_partial(&mut output, partial_path, written);
                 return Err(error.into());
             }
         };
@@ -2577,27 +3181,46 @@ fn append_stream_to_partial<R: Read>(
         output.write_all(&scratch[..read])?;
         written = written.saturating_add(read as u64);
         unsynced = unsynced.saturating_add(read as u64);
-        if unsynced >= 4 * 1024 * 1024 {
-            output.flush()?;
-            output.sync_data()?;
+        let checkpoint_due = (unsynced >= DOWNLOAD_CHECKPOINT_BYTES
+            && last_checkpoint.elapsed() >= DOWNLOAD_CHECKPOINT_MIN_INTERVAL)
+            || last_checkpoint.elapsed() >= DOWNLOAD_CHECKPOINT_MAX_INTERVAL;
+        if checkpoint_due {
+            checkpoint_partial(&mut output, partial_path, written)?;
+            durable = written;
             unsynced = 0;
+            last_checkpoint = Instant::now();
         }
         if last_progress_emit.elapsed() >= Duration::from_millis(250) || written == expected_len {
+            let elapsed = last_progress_emit.elapsed().as_secs_f64();
+            let rate = if elapsed > 0.0 {
+                ((written.saturating_sub(last_progress_bytes)) as f64 / elapsed) as u64
+            } else {
+                0
+            };
             progress_tx
                 .send(Ok(DownloadProgress {
                     task_id: task_id.to_string(),
                     committed_bytes: 0,
-                    in_flight_bytes: written,
+                    in_flight_bytes: durable,
                     clear_in_flight: false,
                     retry_count: 0,
+                    rate_bytes_per_second: rate,
+                    retry_wait_ms: 0,
+                    rate_limit_wait_ms: 0,
                 }))
                 .map_err(|err| JobError::Depot(err.to_string()))?;
             last_progress_emit = Instant::now();
+            last_progress_bytes = written;
         }
     }
+    checkpoint_partial(&mut output, partial_path, written)?;
+    Ok(written)
+}
+
+fn checkpoint_partial(output: &mut File, path: &Path, written: u64) -> Result<(), JobError> {
     output.flush()?;
     output.sync_data()?;
-    Ok(written)
+    persist_partial_checkpoint(path, written)
 }
 
 fn existing_partial_task_progress(
@@ -2609,7 +3232,7 @@ fn existing_partial_task_progress(
         .filter_map(|task| {
             let expected = task.range_end.saturating_sub(task.range_start);
             let existing =
-                partial_file_len(&partial_range_path(staged_chunks_root, &task)).min(expected);
+                durable_partial_len(&partial_range_path(staged_chunks_root, &task)).min(expected);
             (existing > 0).then(|| (task.id(), existing))
         })
         .collect()
@@ -2622,6 +3245,9 @@ struct DownloadProgress {
     in_flight_bytes: u64,
     clear_in_flight: bool,
     retry_count: u32,
+    rate_bytes_per_second: u64,
+    retry_wait_ms: u64,
+    rate_limit_wait_ms: u64,
 }
 
 #[derive(Debug, Clone)]
@@ -2946,6 +3572,22 @@ fn plan_missing_chunks(
     Ok(missing)
 }
 
+fn prepare_direct_stage(
+    downloading_root: &Path,
+    staging_root: &Path,
+    files: &[FileEntry],
+    target_version: &str,
+    local_sources: &HashMap<String, LocalChunkSource>,
+    control: &JobControl,
+) -> Result<Option<DirectStagePlan>, JobError> {
+    if !crate::platform::current_settings().direct_to_staging {
+        return Ok(None);
+    }
+    let stage = DirectStagePlan::prepare(downloading_root, staging_root, files, target_version)?;
+    stage.write_local_chunks(files, local_sources, control)?;
+    Ok(Some(stage))
+}
+
 fn build_pack_download_tasks(chunks: &[ChunkRef]) -> Vec<PackDownloadTask> {
     let mut by_pack: HashMap<String, Vec<ChunkRef>> = HashMap::new();
     for chunk in chunks {
@@ -3012,36 +3654,121 @@ fn build_pack_download_tasks(chunks: &[ChunkRef]) -> Vec<PackDownloadTask> {
 }
 
 fn download_worker_count() -> usize {
+    let settings = crate::platform::current_settings();
     env::var("OXO_DOWNLOAD_WORKERS")
         .ok()
         .or_else(|| env::var("OXO_HF_DOWNLOAD_WORKERS").ok())
         .and_then(|value| value.trim().parse::<usize>().ok())
-        .unwrap_or(DEFAULT_DOWNLOAD_WORKERS)
+        .unwrap_or(settings.download_workers)
         .clamp(1, MAX_DOWNLOAD_WORKERS)
 }
 
 fn download_retry_count() -> u32 {
+    let settings = crate::platform::current_settings();
     env::var("OXO_DOWNLOAD_RETRIES")
         .ok()
         .or_else(|| env::var("OXO_HF_DOWNLOAD_RETRIES").ok())
         .and_then(|value| value.trim().parse::<u32>().ok())
-        .unwrap_or(DEFAULT_DOWNLOAD_RETRIES)
+        .unwrap_or(settings.download_retries)
         .clamp(0, MAX_DOWNLOAD_RETRIES)
 }
 
 fn download_retry_delay(retry_count: u32) -> Duration {
     let capped = retry_count.min(6);
-    Duration::from_millis(500_u64.saturating_mul(1_u64 << capped))
+    let ceiling = 500_u64.saturating_mul(1_u64 << capped);
+    let entropy = Utc::now()
+        .timestamp_nanos_opt()
+        .unwrap_or_default()
+        .unsigned_abs();
+    Duration::from_millis(entropy % ceiling.max(1))
+}
+
+fn sleep_with_control(delay: Duration, control: &JobControl) -> Result<(), JobError> {
+    let deadline = Instant::now() + delay;
+    while Instant::now() < deadline {
+        if control.is_canceled() {
+            return Err(JobError::Canceled);
+        }
+        while control.is_paused() {
+            if control.is_canceled() {
+                return Err(JobError::Canceled);
+            }
+            thread::sleep(Duration::from_millis(150));
+        }
+        let remaining = deadline.saturating_duration_since(Instant::now());
+        thread::sleep(remaining.min(Duration::from_millis(250)));
+    }
+    Ok(())
 }
 
 fn pack_range_task_bytes() -> u64 {
-    env::var("OXO_PACK_RANGE_MB")
+    let settings = crate::platform::current_settings();
+    if let Some(bytes) = env::var("OXO_PACK_RANGE_MB")
         .ok()
         .or_else(|| env::var("OXO_HF_RANGE_MB").ok())
         .and_then(|value| value.trim().parse::<u64>().ok())
         .map(|value| value.saturating_mul(1024 * 1024))
-        .unwrap_or(DEFAULT_PACK_RANGE_TASK_BYTES)
-        .clamp(MIN_PACK_RANGE_TASK_BYTES, MAX_PACK_RANGE_TASK_BYTES)
+    {
+        return bytes.clamp(MIN_PACK_RANGE_TASK_BYTES, MAX_PACK_RANGE_TASK_BYTES);
+    }
+    let initial = settings
+        .pack_range_mb
+        .saturating_mul(1024 * 1024)
+        .clamp(MIN_ADAPTIVE_RANGE_BYTES, MAX_PACK_RANGE_TASK_BYTES);
+    ADAPTIVE_RANGE_STATE
+        .get_or_init(|| {
+            Mutex::new(AdaptiveRangeState {
+                range_bytes: initial,
+                ewma_rate: 0.0,
+                successful_samples: 0,
+            })
+        })
+        .lock()
+        .map(|state| state.range_bytes)
+        .unwrap_or(initial)
+}
+
+fn observe_adaptive_range(rate_bytes_per_second: u64, failed: bool) {
+    let initial = crate::platform::current_settings()
+        .pack_range_mb
+        .saturating_mul(1024 * 1024)
+        .clamp(MIN_ADAPTIVE_RANGE_BYTES, MAX_PACK_RANGE_TASK_BYTES);
+    let Ok(mut state) = ADAPTIVE_RANGE_STATE
+        .get_or_init(|| {
+            Mutex::new(AdaptiveRangeState {
+                range_bytes: initial,
+                ewma_rate: 0.0,
+                successful_samples: 0,
+            })
+        })
+        .lock()
+    else {
+        return;
+    };
+    if failed {
+        state.range_bytes = (state.range_bytes / 2).max(MIN_ADAPTIVE_RANGE_BYTES);
+        state.successful_samples = 0;
+        return;
+    }
+    if rate_bytes_per_second == 0 {
+        return;
+    }
+    let rate = rate_bytes_per_second as f64;
+    state.ewma_rate = if state.ewma_rate == 0.0 {
+        rate
+    } else {
+        state.ewma_rate * 0.8 + rate * 0.2
+    };
+    state.successful_samples = state.successful_samples.saturating_add(1);
+    if state.successful_samples >= 8 {
+        if state.ewma_rate >= 80.0 * 1024.0 * 1024.0 {
+            state.range_bytes =
+                (state.range_bytes.saturating_mul(2)).min(MAX_PACK_RANGE_TASK_BYTES);
+        } else if state.ewma_rate <= 8.0 * 1024.0 * 1024.0 {
+            state.range_bytes = (state.range_bytes / 2).max(MIN_ADAPTIVE_RANGE_BYTES);
+        }
+        state.successful_samples = 0;
+    }
 }
 
 fn download_transfer_bytes(chunks: &[ChunkRef]) -> u64 {
@@ -3049,6 +3776,64 @@ fn download_transfer_bytes(chunks: &[ChunkRef]) -> u64 {
         .iter()
         .map(|task| task.range_end - task.range_start)
         .sum()
+}
+
+fn configure_download_metrics(
+    journal: &mut JobJournal,
+    chunks: &[ChunkRef],
+    direct_to_staging: bool,
+) {
+    let payload_bytes = chunks
+        .iter()
+        .map(|chunk| chunk.compressed_size)
+        .sum::<u64>();
+    journal.metrics = DownloadMetrics {
+        pipeline: if direct_to_staging {
+            "direct-v2".to_string()
+        } else {
+            "chunk-cache-v1".to_string()
+        },
+        payload_bytes,
+        overfetch_bytes: journal.bytes_total.saturating_sub(payload_bytes),
+        ..DownloadMetrics::default()
+    };
+}
+
+fn observe_download_progress(
+    journal: &mut JobJournal,
+    progress: &DownloadProgress,
+    in_flight_bytes: u64,
+) {
+    let metrics = &mut journal.metrics;
+    metrics.network_bytes = metrics
+        .network_bytes
+        .saturating_add(progress.committed_bytes);
+    metrics.retry_wait_ms = metrics.retry_wait_ms.saturating_add(progress.retry_wait_ms);
+    metrics.rate_limit_wait_ms = metrics
+        .rate_limit_wait_ms
+        .saturating_add(progress.rate_limit_wait_ms);
+    metrics.peak_in_flight_bytes = metrics.peak_in_flight_bytes.max(in_flight_bytes);
+    if progress.rate_bytes_per_second > 0 {
+        observe_adaptive_range(progress.rate_bytes_per_second, false);
+        metrics
+            .throughput_samples
+            .push(progress.rate_bytes_per_second);
+        if metrics.throughput_samples.len() > 128 {
+            metrics.throughput_samples.remove(0);
+        }
+        let mut sorted = metrics.throughput_samples.clone();
+        sorted.sort_unstable();
+        metrics.throughput_p50_bytes_per_second = percentile(&sorted, 50);
+        metrics.throughput_p95_bytes_per_second = percentile(&sorted, 95);
+    }
+}
+
+fn percentile(sorted: &[u64], percentile: usize) -> u64 {
+    if sorted.is_empty() {
+        return 0;
+    }
+    let index = ((sorted.len() - 1) * percentile).div_ceil(100);
+    sorted[index.min(sorted.len() - 1)]
 }
 
 fn estimate_missing_download_bytes(
@@ -3093,6 +3878,30 @@ fn estimate_install_download_bytes(
         })
         .map(|chunk| chunk.compressed_size)
         .sum()
+}
+
+fn planned_temporary_space(files: &[FileEntry], network_bytes: u64) -> u64 {
+    let staged_files = files.iter().map(|file| file.size).sum::<u64>();
+    if crate::platform::current_settings().direct_to_staging {
+        staged_files
+    } else {
+        staged_files.saturating_add(network_bytes)
+    }
+}
+
+fn required_free_space(temporary_space: u64) -> u64 {
+    const TWO_GIB: u64 = 2 * 1024 * 1024 * 1024;
+    let safety_margin = temporary_space.saturating_mul(5).div_ceil(100).max(TWO_GIB);
+    temporary_space.saturating_add(safety_margin)
+}
+
+fn validate_format_version(version: u32, label: &str) -> Result<(), JobError> {
+    if matches!(version, LEGACY_FORMAT_VERSION | FORMAT_VERSION) {
+        return Ok(());
+    }
+    Err(JobError::Depot(format!(
+        "unsupported {label} format version {version}; supported versions are {LEGACY_FORMAT_VERSION} and {FORMAT_VERSION}"
+    )))
 }
 
 fn assemble_target_file(
@@ -3231,7 +4040,7 @@ pub fn abort_and_clean_job(
     Ok(())
 }
 
-pub fn cleanup_committed_download_session(
+fn cleanup_committed_download_session(
     downloading_root: &Path,
     source: &DepotSource,
 ) -> Result<(), JobError> {
@@ -3353,9 +4162,19 @@ fn read_chunk_bytes(
     let transport = fs::read(path)?;
     verify_compressed_chunk_bytes(chunk, &transport)?;
     let compressed = decode_transport_chunk(chunk, &transport)?;
-    let data = zstd::bulk::decompress(&compressed, chunk.uncompressed_size as usize)?;
+    let data = decode_chunk_payload(chunk, &compressed)?;
     verify_chunk_bytes(chunk, &data)?;
     Ok(data)
+}
+
+fn decode_chunk_payload(chunk: &ChunkRef, encoded: &[u8]) -> Result<Vec<u8>, JobError> {
+    match chunk.codec {
+        ChunkCodec::Raw => Ok(encoded.to_vec()),
+        ChunkCodec::Zstd => Ok(zstd::bulk::decompress(
+            encoded,
+            chunk.uncompressed_size as usize,
+        )?),
+    }
 }
 
 fn decode_transport_chunk(chunk: &ChunkRef, transport: &[u8]) -> Result<Vec<u8>, JobError> {
@@ -3880,6 +4699,7 @@ fn default_journal(
             level: "info".to_string(),
             message: "Ready to start resumable update".to_string(),
         }],
+        metrics: DownloadMetrics::default(),
     }
 }
 
@@ -3920,7 +4740,7 @@ fn persist_and_emit(app: &AppHandle, journal: &JobJournal) -> Result<(), JobErro
     {
         let mut file = File::create(&temp)?;
         file.write_all(&data)?;
-        file.flush()?;
+        file.sync_all()?;
     }
     if let Err(first_error) = fs::rename(&temp, &path) {
         // Some Windows filesystems refuse replacement by rename. Fall back to a
@@ -3938,4 +4758,81 @@ fn journal_path(app: &AppHandle) -> Result<PathBuf, JobError> {
         .app_data_dir()?
         .join("journals")
         .join("current-job.json"))
+}
+
+#[cfg(test)]
+mod downloader_v2_tests {
+    use super::*;
+
+    #[test]
+    fn v1_chunk_without_codec_defaults_to_zstd() {
+        let chunk: ChunkRef = serde_json::from_value(serde_json::json!({
+            "hash": "abc",
+            "fileOffset": 0,
+            "uncompressedSize": 3,
+            "packId": "pack-00000",
+            "packOffset": 0,
+            "compressedSize": 3,
+            "compressedSha256": "def"
+        }))
+        .unwrap();
+        assert_eq!(chunk.codec, ChunkCodec::Zstd);
+    }
+
+    #[test]
+    fn rate_limit_headers_drive_shared_cooldown() {
+        let mut headers = HeaderMap::new();
+        headers.insert("ratelimit", "\"resolvers\";r=0;t=271".parse().unwrap());
+        assert_eq!(rate_limit_remaining(&headers), Some(0));
+        assert_eq!(rate_limit_delay(&headers), Some(Duration::from_secs(271)));
+    }
+
+    #[test]
+    fn retry_policy_does_not_retry_terminal_http_failures() {
+        assert!(JobError::NotFound("missing".to_string())
+            .retry_delay(1)
+            .is_none());
+        assert!(JobError::Unauthorized("denied".to_string())
+            .retry_delay(1)
+            .is_none());
+        assert!(JobError::Transient("timeout".to_string())
+            .retry_delay(1)
+            .is_some());
+    }
+
+    #[test]
+    fn disk_admission_includes_two_gib_minimum_margin() {
+        let one_gib = 1024_u64 * 1024 * 1024;
+        assert_eq!(required_free_space(one_gib), 3 * one_gib);
+        let hundred_gib = 100 * one_gib;
+        assert_eq!(required_free_space(hundred_gib), 105 * one_gib);
+    }
+
+    #[test]
+    fn partial_resume_truncates_to_durable_checkpoint() {
+        let root = env::temp_dir().join(format!(
+            "0xolemon-checkpoint-{}",
+            Utc::now().timestamp_nanos_opt().unwrap_or_default()
+        ));
+        fs::create_dir(&root).unwrap();
+        let partial = root.join("range.part");
+        fs::write(&partial, vec![7_u8; 32]).unwrap();
+        persist_partial_checkpoint(&partial, 16).unwrap();
+        normalize_partial_file(&partial, 32).unwrap();
+        assert_eq!(partial_file_len(&partial), 16);
+        assert_eq!(durable_partial_len(&partial), 16);
+        fs::remove_file(partial_checkpoint_path(&partial)).unwrap();
+        fs::remove_file(&partial).unwrap();
+        fs::remove_dir(&root).unwrap();
+    }
+
+    #[test]
+    fn scheduled_update_window_supports_daytime_and_overnight_ranges() {
+        assert!(time_in_update_window(3 * 60, "02:00", "06:00"));
+        assert!(!time_in_update_window(8 * 60, "02:00", "06:00"));
+        assert!(time_in_update_window(23 * 60, "22:00", "04:00"));
+        assert!(time_in_update_window(2 * 60, "22:00", "04:00"));
+        assert!(!time_in_update_window(12 * 60, "22:00", "04:00"));
+        assert!(time_in_update_window(12 * 60, "00:00", "00:00"));
+    }
 }

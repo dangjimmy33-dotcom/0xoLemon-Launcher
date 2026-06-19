@@ -1,5 +1,5 @@
 import { Database } from 'lucide-react'
-import type { GameCatalog, GameDetail, GameInstallState, GameSummary, GameVersionInfo, JobJournal, JobLog, PhaseProgress, Snapshot, TabId, VerifyUiStatus } from '../types'
+import type { CloudSaveStatus, GameCatalog, GameDetail, GameInstallState, GameSummary, GameVersionInfo, JobJournal, JobLog, PhaseProgress, Snapshot, TabId, VerifyUiStatus } from '../types'
 import { rollbackVersionFor } from '../lib/gameMeta'
 import { TabEmptyState, ScopedTabEmptyState } from './layout'
 import { StoreLibraryView } from './library'
@@ -51,6 +51,20 @@ export function ActiveView({
   onResume,
   isPaused,
   logs,
+  onOpenStore,
+  cloudSaveStatus,
+  cloudSaveBusy,
+  cloudLaunchBlocked,
+  onToggleCloudSave,
+  onAddCloudSaveFolder,
+  onSyncCloudSave,
+  onResolveCloudConflict,
+  onRestoreCloudSnapshot,
+  onLaunchWithoutCloudSync,
+  onConnectGoogleDrive,
+  onDisconnectGoogleDrive,
+  onBackupGoogleDrive,
+  onRestoreMissingSaveFiles,
 }: {
   activeTab: TabId
   catalog: GameCatalog
@@ -95,12 +109,27 @@ export function ActiveView({
   onResume?: () => void
   isPaused: boolean
   logs: JobLog[]
+  onOpenStore: () => void
+  cloudSaveStatus: CloudSaveStatus | null
+  cloudSaveBusy: boolean
+  cloudLaunchBlocked: boolean
+  onToggleCloudSave: (enabled: boolean) => void
+  onAddCloudSaveFolder: () => void
+  onSyncCloudSave: () => void
+  onResolveCloudConflict: (conflictId: string, resolution: 'local' | 'cloud') => void
+  onRestoreCloudSnapshot: (snapshotId: string) => void
+  onLaunchWithoutCloudSync: () => void
+  onConnectGoogleDrive: () => void
+  onDisconnectGoogleDrive: () => void
+  onBackupGoogleDrive: () => void
+  onRestoreMissingSaveFiles: () => void
 }) {
   const hasSelectedDetail = Boolean(selectedGame && detail)
 
-  if (activeTab === 'Library') {
+  if (activeTab === 'Store' || activeTab === 'Library') {
     return (
       <StoreLibraryView
+        viewMode={activeTab === 'Store' ? 'store' : 'library'}
         catalog={catalog}
         catalogLoadState={catalogLoadState}
         onRetryCatalog={onRetryCatalog}
@@ -119,6 +148,8 @@ export function ActiveView({
         showVersionAction={showVersionAction}
         canUpdate={canUpdate}
         updateSize={updateSize}
+        installSize={snapshot.installSize}
+        temporarySpace={snapshot.temporarySpace}
         isJobRunning={isJobRunning}
         isGameRunning={isGameRunning}
         onPrimaryAction={onPrimaryAction}
@@ -126,6 +157,20 @@ export function ActiveView({
         onVerify={onVerify}
         onUninstall={onUninstall}
         onOpenInstallOptions={onOpenInstallOptions}
+        onOpenStore={onOpenStore}
+        cloudSaveStatus={cloudSaveStatus}
+        cloudSaveBusy={cloudSaveBusy}
+        cloudLaunchBlocked={cloudLaunchBlocked}
+        onToggleCloudSave={onToggleCloudSave}
+        onAddCloudSaveFolder={onAddCloudSaveFolder}
+        onSyncCloudSave={onSyncCloudSave}
+        onResolveCloudConflict={onResolveCloudConflict}
+        onRestoreCloudSnapshot={onRestoreCloudSnapshot}
+        onLaunchWithoutCloudSync={onLaunchWithoutCloudSync}
+        onConnectGoogleDrive={onConnectGoogleDrive}
+        onDisconnectGoogleDrive={onDisconnectGoogleDrive}
+        onBackupGoogleDrive={onBackupGoogleDrive}
+        onRestoreMissingSaveFiles={onRestoreMissingSaveFiles}
       />
     )
   }
@@ -138,7 +183,12 @@ export function ActiveView({
           <>
             <RollbackPanel snapshot={snapshot} rollbackVersion={rollbackVersionFor(detail, selectedVersion)} />
             {installMode ? (
-              <InstallSummaryPanel selectedVersion={selectedVersion} downloadSize={updateSize} />
+              <InstallSummaryPanel
+                selectedVersion={selectedVersion}
+                downloadSize={updateSize}
+                installSize={snapshot.installSize}
+                temporarySpace={snapshot.temporarySpace}
+              />
             ) : (
               <ChangedFiles files={snapshot.changedFiles} />
             )}

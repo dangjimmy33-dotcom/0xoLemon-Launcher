@@ -59,7 +59,8 @@ button:focus-visible {
   background: var(--gold-strong);
 }
 .launcher-update-banner {
-  background: var(--primary-accent);
+  flex-shrink: 0;
+  background: var(--primary-accent, #9a6a22);
   color: white;
   padding: 10px 20px;
   display: flex;
@@ -75,7 +76,7 @@ button:focus-visible {
 }
 .launcher-update-banner button {
   background: white;
-  color: var(--primary-accent);
+  color: var(--primary-accent, #6f4816);
   border: none;
   border-radius: 4px;
   padding: 6px 12px;

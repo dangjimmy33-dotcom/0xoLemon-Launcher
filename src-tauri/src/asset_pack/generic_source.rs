@@ -5,6 +5,7 @@ use std::path::{Path, PathBuf};
 use chrono::Utc;
 use serde_json::Value;
 
+use crate::cloud_save::CloudSaveMetadata;
 use crate::launch::load_source_launch_config;
 use crate::manifest::{Catalog, VersionManifest};
 use crate::remote_paths::launch_executable_for_game_id;
@@ -27,6 +28,10 @@ pub(super) fn build_generic_manifest_and_assets(
         .join("details")
         .join("metadata")
         .join("media-manifest.json");
+    let cloud_save_path = source
+        .join("details")
+        .join("metadata")
+        .join("cloud-save.json");
     let metadata: Value =
         read_json_file(&metadata_path).unwrap_or_else(|_| fallback_metadata(source));
     let media_manifest: Value =
@@ -45,6 +50,16 @@ pub(super) fn build_generic_manifest_and_assets(
         })
         .unwrap_or_default();
     let install = generic_install_metadata(&game_id, &title);
+    let cloud_save = read_json_file(&cloud_save_path)
+        .ok()
+        .and_then(|value| serde_json::from_value::<CloudSaveMetadata>(value).ok())
+        .or_else(|| {
+            metadata
+                .get("cloudSave")
+                .cloned()
+                .and_then(|value| serde_json::from_value::<CloudSaveMetadata>(value).ok())
+        })
+        .unwrap_or_default();
     let launch = load_source_launch_config(source, &game_id, &install.launch_executable)
         .map_err(AssetPackError::InvalidPack)?;
     let versions = detect_generic_versions(&game_id, app_id);
@@ -120,6 +135,7 @@ pub(super) fn build_generic_manifest_and_assets(
         sounds,
         install: install.clone(),
         launch: launch.clone(),
+        cloud_save: cloud_save.clone(),
         description_images: description_images.values().cloned().collect::<Vec<_>>(),
         versions: versions.clone(),
         metadata_source: value_string(metadata.get("source"))
@@ -152,6 +168,7 @@ pub(super) fn build_generic_manifest_and_assets(
         icon_asset_id: icon_id,
         install,
         launch,
+        cloud_save,
         asset_pack_path: format!("assets/games/{game_id}/core.0xo"),
     };
 

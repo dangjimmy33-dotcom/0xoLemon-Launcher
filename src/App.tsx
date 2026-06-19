@@ -6,6 +6,8 @@ import { CircleAlert, Download, X } from 'lucide-react'
 import './App.css'
 import type {
   AssetBlob,
+  CloudSaveRoot,
+  CloudSaveStatus,
   GameCatalog,
   GameDetail,
   GameInstallState,
@@ -14,6 +16,7 @@ import type {
   LaunchReport,
   LauncherUpdateInfo,
   LauncherUpdateProgress,
+  LauncherSettings,
   LaunchSplashState,
   ResolvedGameLaunchConfig,
   ShortcutLaunchPayload,
@@ -25,6 +28,7 @@ import type {
   VerifyProgressPayload,
   VerifyUiStatus,
 } from './types'
+import installCompleteSoundUrl from './assets/sounds/desktop_toast_default.wav?url'
 import { DEFAULT_GAME_ID, DEFAULT_STORE_ROOT, fallbackCatalog, fallbackInstall, fallbackSnapshot, gameFolderName, installMetadataForStoreRoot } from './lib/installPaths'
 import { collectAssetIds, contentServiceLabel, downloadPathForInstallRoot, fallbackDetailFromSummary, firstMediaUrl, isTauriRuntime, versionOptions } from './lib/gameMeta'
 import { createIdleJob, getPhaseProgress } from './lib/jobProgress'
@@ -35,6 +39,22 @@ import { ActiveView, CustomTitleBar, DriveLibraryPickerModal, InstallOptionsDial
 const initialLauncherPreferences = loadLauncherPreferences()
 const emptyCatalog: GameCatalog = { defaultLocale: 'en-US', games: [] }
 type CatalogLoadState = 'loading' | 'ready' | 'error'
+const defaultLauncherSettings: LauncherSettings = {
+  defaultLibrary: DEFAULT_STORE_ROOT,
+  downloadWorkers: 8,
+  downloadRetries: 5,
+  packRangeMb: 16,
+  keepChunkCache: true,
+  notificationsEnabled: true,
+  autoVerifyAfterInstall: false,
+  downloadProfile: 'balanced',
+  downloadQueueMb: 128,
+  directToStaging: false,
+  cloudSaveRoot: '',
+  gameUpdateMode: 'automatic',
+  gameUpdateScheduleStart: '02:00',
+  gameUpdateScheduleEnd: '06:00',
+}
 
 export default function App() {
   const [snapshot, setSnapshot] = useState<Snapshot>(fallbackSnapshot)
@@ -43,6 +63,7 @@ export default function App() {
   const [scanStatus, setScanStatus] = useState('No install found')
   const [, setHasScanned] = useState(false)
   const [preferences, setPreferences] = useState<LauncherPreferences>(initialLauncherPreferences)
+  const [launcherSettings, setLauncherSettings] = useState<LauncherSettings>(defaultLauncherSettings)
   const [activeTab, setActiveTab] = useState<TabId>(initialLauncherPreferences.startupPage)
   const [selectedVersion, setSelectedVersion] = useState('')
   const [showInstallOptions, setShowInstallOptions] = useState(false)
@@ -59,6 +80,11 @@ export default function App() {
   const assetDelaySlotRef = useRef(0)
   const [installStates, setInstallStates] = useState<Record<string, GameInstallState>>({})
   const latestJobRef = useRef<JobJournal | null>(job)
+  const preferencesRef = useRef<LauncherPreferences>(preferences)
+  const installCompleteAudioRef = useRef<HTMLAudioElement | null>(null)
+  const installCompleteSoundJobsRef = useRef<Set<string>>(new Set())
+  const audibleInstallJobIdsRef = useRef<Set<string>>(new Set())
+  const pendingCloudLaunchRef = useRef<{ optionId?: string; optionTitle?: string } | null>(null)
   const downloadRateWindowRef = useRef<{ jobId: string; points: Array<{ bytesDone: number; at: number }> } | null>(null)
   const canceledJobIdRef = useRef<string | null>(null)
   const selectedGameIdRef = useRef<string | null>(selectedGameId)
@@ -79,6 +105,9 @@ export default function App() {
   const [steamOpening, setSteamOpening] = useState(false)
   const [steamEnvironment, setSteamEnvironment] = useState<SteamEnvironmentInfo | null>(null)
   const [steamSettingsStatus, setSteamSettingsStatus] = useState<string | null>(null)
+  const [cloudSaveStatus, setCloudSaveStatus] = useState<CloudSaveStatus | null>(null)
+  const [cloudSaveBusy, setCloudSaveBusy] = useState(false)
+  const [cloudLaunchBlocked, setCloudLaunchBlocked] = useState(false)
   // Library locations the user has added (persisted to localStorage)
   const [libraries, setLibraries] = useState<string[]>(() => {
     try {
@@ -98,8 +127,74 @@ export default function App() {
   }, [selectedGameId])
 
   useEffect(() => {
+    preferencesRef.current = preferences
     saveLauncherPreferences(preferences)
   }, [preferences])
+
+  useEffect(() => {
+    const audio = new Audio(installCompleteSoundUrl)
+    audio.preload = 'auto'
+    installCompleteAudioRef.current = audio
+    return () => {
+      audio.pause()
+      installCompleteAudioRef.current = null
+    }
+  }, [])
+
+  const primeInstallCompleteSound = useCallback(() => {
+    if (!preferencesRef.current.playInstallCompleteSound) return
+    const audio = installCompleteAudioRef.current
+    if (!audio) return
+    const previousMuted = audio.muted
+    audio.muted = true
+    audio.currentTime = 0
+    void audio.play()
+      .then(() => {
+        audio.pause()
+        audio.currentTime = 0
+        audio.muted = previousMuted
+      })
+      .catch(() => {
+        audio.muted = previousMuted
+      })
+  }, [])
+
+  const playInstallCompleteSound = useCallback((completedJob: JobJournal) => {
+    if (
+      completedJob.status !== 'committed' ||
+      completedJob.kind !== 'install' ||
+      !preferencesRef.current.playInstallCompleteSound ||
+      !audibleInstallJobIdsRef.current.has(completedJob.id) ||
+      installCompleteSoundJobsRef.current.has(completedJob.id)
+    ) {
+      return
+    }
+    installCompleteSoundJobsRef.current.add(completedJob.id)
+    audibleInstallJobIdsRef.current.delete(completedJob.id)
+    const audio = installCompleteAudioRef.current
+    if (!audio) return
+    audio.muted = false
+    audio.currentTime = 0
+    void audio.play().catch(() => undefined)
+  }, [])
+
+  useEffect(() => {
+    if (!isTauriRuntime()) return
+    invoke<LauncherSettings>('get_launcher_settings')
+      .then(setLauncherSettings)
+      .catch((error) => setSettingsUpdateStatus(`Could not load downloader settings: ${String(error)}`))
+  }, [])
+
+  useEffect(() => {
+    if (!isTauriRuntime()) return
+    let unlisten: (() => void) | undefined
+    listen<{ state: string; message: string; gameId: string | null }>('launcher://auto-update', (event) => {
+      setSettingsUpdateStatus(event.payload.message)
+    }).then((dispose) => {
+      unlisten = dispose
+    })
+    return () => unlisten?.()
+  }, [])
 
   const requestGameAsset = useCallback((game: GameSummary | null | undefined, assetId: string | undefined, urgent = false) => {
     if (!game || !assetId || !isTauriRuntime()) {
@@ -275,10 +370,20 @@ export default function App() {
     () => ({ ...catalog, games: catalog.games.filter((game) => updateReadyGameIds.includes(game.id)) }),
     [catalog, updateReadyGameIds],
   )
+  const libraryCatalog = useMemo(
+    () => ({ ...catalog, games: catalog.games.filter((game) => installStates[game.id]?.installed) }),
+    [catalog, installStates],
+  )
 
   const effectiveGameId = useMemo(() => {
     if (activeTab === 'Settings') {
       return null
+    }
+    if (activeTab === 'Store') {
+      return selectedGameId
+    }
+    if (activeTab === 'Library') {
+      return selectedGameId && installStates[selectedGameId]?.installed ? selectedGameId : null
     }
     const activeJobGameId = job?.gameId || snapshot.lastJob?.gameId
     if (activeTab === 'Downloads') {
@@ -297,7 +402,7 @@ export default function App() {
       return selectedGameId && updateReadyGameIds.includes(selectedGameId) ? selectedGameId : null
     }
     return selectedGameId
-  }, [activeTab, job?.gameId, job?.kind, snapshot.lastJob?.gameId, snapshot.lastJob?.kind, selectedGameId, updateReadyGameIds])
+  }, [activeTab, installStates, job?.gameId, job?.kind, snapshot.lastJob?.gameId, snapshot.lastJob?.kind, selectedGameId, updateReadyGameIds])
 
   useEffect(() => {
     if (!effectiveGameId) {
@@ -356,6 +461,16 @@ export default function App() {
       setSelectedGameId(payload.gameId)
       setInstallPath(payload.installPath)
       setInstallRoot(payload.installPath)
+      setInstallStates((current) => ({
+        ...current,
+        [payload.gameId]: {
+          gameId: payload.gameId,
+          installed: true,
+          currentVersion: current[payload.gameId]?.currentVersion ?? 'installed',
+          installPath: payload.installPath,
+          launchExecutable: payload.launchExecutable ?? current[payload.gameId]?.launchExecutable ?? '',
+        },
+      }))
       setActiveTab('Library')
       setScanStatus(`Starting ${game?.title ?? payload.gameId}`)
       setLaunchSplash({
@@ -507,6 +622,7 @@ export default function App() {
         setSelectedVersion(nextJob.toVersion)
       }
       if (nextJob.status === 'committed') {
+        playInstallCompleteSound(nextJob)
         setInstallPath(nextJob.installPath)
         setInstallRoot(nextJob.installPath)
         setHasScanned(true)
@@ -579,7 +695,7 @@ export default function App() {
       unsubscribe?.()
       unsubscribeJobCleared?.()
     }
-  }, [])
+  }, [playInstallCompleteSound])
 
   useEffect(() => {
     if (!isTauriRuntime()) {
@@ -725,7 +841,7 @@ export default function App() {
   const canApplySelectedVersion =
     canUpdate && (installMode || targetVersion !== selectedCurrentVersion)
   const effectiveDownloadSize =
-    isDefaultGame && updateReady && snapshot.updateSize > 0
+    snapshot.updateSize > 0
       ? snapshot.updateSize
       : selectedVersionInfo?.sizeBytes ?? activeDetail?.versions[0]?.sizeBytes ?? 0
   const displayedInstallTarget =
@@ -734,6 +850,62 @@ export default function App() {
       : hasVisibleJob && activeJob.installPath
         ? activeJob.installPath
         : installRoot || gameInstall.defaultInstallFolder
+
+  const refreshCloudSaveStatus = useCallback(async (gameId: string) => {
+    if (!isTauriRuntime()) {
+      setCloudSaveStatus(null)
+      return
+    }
+    try {
+      const status = await invoke<CloudSaveStatus>('get_cloud_save_status', { gameId })
+      setCloudSaveStatus(status)
+      setCloudLaunchBlocked(status.conflicts.length > 0)
+    } catch (error) {
+      setCloudSaveStatus(null)
+      setScanStatus(`Could not load cloud save status: ${String(error)}`)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (activeTab !== 'Library' || !selectedGame || !selectedInstalled) {
+      queueMicrotask(() => {
+        setCloudSaveStatus(null)
+        setCloudLaunchBlocked(false)
+      })
+      return
+    }
+    queueMicrotask(() => void refreshCloudSaveStatus(selectedGame.id))
+  }, [activeTab, refreshCloudSaveStatus, selectedGame, selectedInstalled])
+
+  useEffect(() => {
+    if (!isTauriRuntime()) return
+    let disposed = false
+    let unlistenStatus: (() => void) | undefined
+    let unlistenError: (() => void) | undefined
+
+    listen<{ gameId: string; status: CloudSaveStatus }>('launcher://cloud-save', (event) => {
+      if (disposed || event.payload.gameId !== selectedGameIdRef.current) return
+      setCloudSaveStatus(event.payload.status)
+      setCloudLaunchBlocked(event.payload.status.conflicts.length > 0)
+    }).then((dispose) => {
+      if (disposed) dispose()
+      else unlistenStatus = dispose
+    })
+
+    listen<{ gameId: string; message: string }>('launcher://cloud-save-error', (event) => {
+      if (disposed || event.payload.gameId !== selectedGameIdRef.current) return
+      setScanStatus(event.payload.message)
+    }).then((dispose) => {
+      if (disposed) dispose()
+      else unlistenError = dispose
+    })
+
+    return () => {
+      disposed = true
+      unlistenStatus?.()
+      unlistenError?.()
+    }
+  }, [])
 
   async function chooseInstallFolder() {
     if (!isTauriRuntime()) {
@@ -862,6 +1034,30 @@ export default function App() {
     setPreferences((current) => ({ ...current, [key]: value }))
   }
 
+  async function updateLauncherSetting<K extends keyof LauncherSettings>(
+    key: K,
+    value: LauncherSettings[K],
+  ) {
+    const profilePreset =
+      key === 'downloadProfile'
+        ? value === 'eco'
+          ? { downloadWorkers: 4, downloadQueueMb: 64 }
+          : value === 'turbo'
+            ? { downloadWorkers: 12, downloadQueueMb: 256 }
+            : { downloadWorkers: 8, downloadQueueMb: 128 }
+        : {}
+    const next = { ...launcherSettings, [key]: value, ...profilePreset }
+    setLauncherSettings(next)
+    if (!isTauriRuntime()) return
+    try {
+      const saved = await invoke<LauncherSettings>('set_launcher_settings', { settings: next })
+      setLauncherSettings(saved)
+      setSettingsUpdateStatus('Launcher settings saved.')
+    } catch (error) {
+      setSettingsUpdateStatus(`Could not save downloader settings: ${String(error)}`)
+    }
+  }
+
   async function chooseDefaultLibraryRoot() {
     try {
       const selected = await open({
@@ -902,6 +1098,190 @@ export default function App() {
     }
   }
 
+  async function chooseCloudSaveRoot() {
+    try {
+      const selected = await open({
+        directory: true,
+        multiple: false,
+        title: 'Choose synchronized cloud save folder',
+        defaultPath: launcherSettings.cloudSaveRoot || undefined,
+      })
+      if (typeof selected !== 'string') return
+      await updateLauncherSetting('cloudSaveRoot', selected.trim().replace(/[\\/]+$/, ''))
+      setSettingsUpdateStatus('Cloud save provider folder saved.')
+      if (selectedGame && selectedInstalled) {
+        await refreshCloudSaveStatus(selectedGame.id)
+      }
+    } catch (error) {
+      setSettingsUpdateStatus(`Could not change cloud save folder: ${String(error)}`)
+    }
+  }
+
+  async function openCloudSaveRoot() {
+    if (!launcherSettings.cloudSaveRoot) return
+    if (!isTauriRuntime()) {
+      setSettingsUpdateStatus(launcherSettings.cloudSaveRoot)
+      return
+    }
+    try {
+      await invoke('open_folder', { path: launcherSettings.cloudSaveRoot })
+    } catch (error) {
+      setSettingsUpdateStatus(`Could not open cloud save folder: ${String(error)}`)
+    }
+  }
+
+  async function saveCloudConfig(enabled: boolean, saveRoots: CloudSaveRoot[]) {
+    if (!selectedGame || !selectedInstalled || !isTauriRuntime()) return
+    setCloudSaveBusy(true)
+    try {
+      const status = await invoke<CloudSaveStatus>('set_cloud_save_config', {
+        gameId: selectedGame.id,
+        enabled,
+        saveRoots,
+        include: cloudSaveStatus?.include ?? activeDetail?.cloudSave.include ?? [],
+        exclude: cloudSaveStatus?.exclude ?? activeDetail?.cloudSave.exclude ?? [],
+      })
+      setCloudSaveStatus(status)
+      setCloudLaunchBlocked(status.conflicts.length > 0)
+      setScanStatus(status.lastMessage)
+    } catch (error) {
+      setScanStatus(`Cloud save configuration failed: ${String(error)}`)
+    } finally {
+      setCloudSaveBusy(false)
+    }
+  }
+
+  async function toggleCloudSave(enabled: boolean) {
+    if (enabled && !launcherSettings.cloudSaveRoot) {
+      setScanStatus('Choose a Cloud Save root in Settings before enabling sync.')
+      return
+    }
+    await saveCloudConfig(enabled, cloudSaveStatus?.saveRoots ?? [])
+  }
+
+  async function addCloudSaveFolder() {
+    if (!selectedGame || !selectedInstalled) return
+    try {
+      const selected = await open({
+        directory: true,
+        multiple: false,
+        title: `Choose a save folder for ${selectedGame.title}`,
+      })
+      if (typeof selected !== 'string') return
+      const normalized = selected.trim().replace(/[\\/]+$/, '')
+      if (!normalized) return
+      const currentRoots = cloudSaveStatus?.saveRoots ?? []
+      if (currentRoots.some((root) => root.path.toLowerCase() === normalized.toLowerCase())) {
+        setScanStatus('That save folder is already configured.')
+        return
+      }
+      const label = normalized.split(/[\\/]/).filter(Boolean).pop() ?? normalized
+      await saveCloudConfig(cloudSaveStatus?.enabled ?? false, [...currentRoots, { path: normalized, label }])
+    } catch (error) {
+      setScanStatus(`Could not add save folder: ${String(error)}`)
+    }
+  }
+
+  async function syncCloudSave() {
+    if (!selectedGame || !selectedInstalled || !isTauriRuntime()) return
+    setCloudSaveBusy(true)
+    try {
+      const status = await invoke<CloudSaveStatus>('sync_cloud_save', {
+        gameId: selectedGame.id,
+        direction: null,
+      })
+      setCloudSaveStatus(status)
+      setCloudLaunchBlocked(status.conflicts.length > 0)
+      setScanStatus(status.lastMessage)
+    } catch (error) {
+      setScanStatus(`Cloud save sync failed: ${String(error)}`)
+    } finally {
+      setCloudSaveBusy(false)
+    }
+  }
+
+  async function resolveCloudConflict(conflictId: string, resolution: 'local' | 'cloud') {
+    if (!selectedGame || !isTauriRuntime()) return
+    setCloudSaveBusy(true)
+    try {
+      const status = await invoke<CloudSaveStatus>('resolve_cloud_save_conflict', {
+        gameId: selectedGame.id,
+        conflictId,
+        resolution,
+      })
+      setCloudSaveStatus(status)
+      setCloudLaunchBlocked(status.conflicts.length > 0)
+      setScanStatus(status.lastMessage)
+    } catch (error) {
+      setScanStatus(`Could not resolve cloud save conflict: ${String(error)}`)
+    } finally {
+      setCloudSaveBusy(false)
+    }
+  }
+
+  async function restoreCloudSnapshot(snapshotId: string) {
+    if (!selectedGame || !isTauriRuntime()) return
+    setCloudSaveBusy(true)
+    try {
+      const status = await invoke<CloudSaveStatus>('restore_cloud_save_snapshot', {
+        gameId: selectedGame.id,
+        snapshotId,
+      })
+      setCloudSaveStatus(status)
+      setCloudLaunchBlocked(status.conflicts.length > 0)
+      setScanStatus(status.lastMessage)
+    } catch (error) {
+      setScanStatus(`Could not restore cloud save snapshot: ${String(error)}`)
+    } finally {
+      setCloudSaveBusy(false)
+    }
+  }
+
+  async function runGoogleDriveAction(
+    command:
+      | 'connect_google_drive'
+      | 'disconnect_google_drive'
+      | 'backup_save_game_to_google_drive'
+      | 'restore_missing_save_files',
+    pendingMessage: string,
+  ) {
+    if (!selectedGame || !selectedInstalled || !isTauriRuntime()) return
+    setCloudSaveBusy(true)
+    setScanStatus(pendingMessage)
+    try {
+      const status = await invoke<CloudSaveStatus>(command, { gameId: selectedGame.id })
+      setCloudSaveStatus(status)
+      setScanStatus(status.googleDriveMessage || status.lastMessage)
+    } catch (error) {
+      setScanStatus(`Google Drive operation failed: ${String(error)}`)
+    } finally {
+      setCloudSaveBusy(false)
+    }
+  }
+
+  async function connectAndBackupGoogleDrive() {
+    if (!selectedGame || !selectedInstalled || !isTauriRuntime()) return
+    setCloudSaveBusy(true)
+    setScanStatus('Opening Google sign-in in your browser...')
+    try {
+      const connected = await invoke<CloudSaveStatus>('connect_google_drive', {
+        gameId: selectedGame.id,
+      })
+      setCloudSaveStatus(connected)
+      setScanStatus('Google Drive connected. Backing up save files...')
+
+      const backedUp = await invoke<CloudSaveStatus>('backup_save_game_to_google_drive', {
+        gameId: selectedGame.id,
+      })
+      setCloudSaveStatus(backedUp)
+      setScanStatus(backedUp.googleDriveMessage || backedUp.lastMessage)
+    } catch (error) {
+      setScanStatus(`Google Drive backup failed: ${String(error)}`)
+    } finally {
+      setCloudSaveBusy(false)
+    }
+  }
+
   async function checkLauncherUpdateNow() {
     if (!isTauriRuntime()) {
       setSettingsUpdateStatus('Update checks require the desktop launcher.')
@@ -934,6 +1314,12 @@ export default function App() {
   function resetLauncherPreferences() {
     const defaults = { ...DEFAULT_LAUNCHER_PREFERENCES }
     setPreferences(defaults)
+    setLauncherSettings(defaultLauncherSettings)
+    if (isTauriRuntime()) {
+      void invoke<LauncherSettings>('set_launcher_settings', { settings: defaultLauncherSettings })
+        .then(setLauncherSettings)
+        .catch((error) => setSettingsUpdateStatus(`Could not reset downloader settings: ${String(error)}`))
+    }
     setSettingsUpdateStatus('Default launcher settings restored.')
     if (selectedGame && !selectedInstalled) {
       setInstallRoot(
@@ -975,6 +1361,9 @@ export default function App() {
       setScanStatus(`${targetVersion} is already installed. Choose another version to upgrade or downgrade.`)
       return
     }
+    if (installMode) {
+      primeInstallCompleteSound()
+    }
 
     if (!isTauriRuntime()) {
       setScanStatus('Browser preview cannot write local game files')
@@ -985,7 +1374,7 @@ export default function App() {
     try {
       const targetPath = installMode ? installRoot : selectedInstallPath
       const freeSpace = await invoke<number>('get_disk_free_space', { path: targetPath })
-      const requiredSpace = snapshot ? snapshot.updateSize : 0
+      const requiredSpace = snapshot?.requiredFreeSpace || snapshot?.updateSize || 0
       if (freeSpace < requiredSpace) {
         const freeGB = (freeSpace / 1024 / 1024 / 1024).toFixed(2)
         const reqGB = (requiredSpace / 1024 / 1024 / 1024).toFixed(2)
@@ -1012,6 +1401,9 @@ export default function App() {
             targetVersion: versionToApply,
           })
       setJob(next)
+      if (installMode) {
+        audibleInstallJobIdsRef.current.add(next.id)
+      }
       if (preferences.openDownloadsOnJobStart) {
         setActiveTab('Downloads')
       }
@@ -1124,7 +1516,7 @@ export default function App() {
     }
   }
 
-  async function doLaunchGame(launchOptionId?: string, launchOptionTitle?: string) {
+  async function doLaunchGame(launchOptionId?: string, launchOptionTitle?: string, skipCloudSync = false) {
     if (!selectedGame || !activeDetail) return
 
     if (preferences.pauseDownloadsBeforeLaunch && isRunning && !isPaused) {
@@ -1146,12 +1538,16 @@ export default function App() {
     })
 
     try {
+      pendingCloudLaunchRef.current = { optionId: launchOptionId, optionTitle: launchOptionTitle }
       const report = await invoke<LaunchReport>('launch_game', {
         gameId: selectedGame.id,
         installPath: selectedInstallPath,
         launchExecutable: selectedInstallState?.launchExecutable || gameInstall.launchExecutable,
         launchOptionId: launchOptionId || null,
+        skipCloudSync,
       })
+      pendingCloudLaunchRef.current = null
+      setCloudLaunchBlocked(false)
       const dependencyText =
         report.dependenciesInstalled.length > 0
           ? `Installed ${report.dependenciesInstalled.length} dependency package(s), then started`
@@ -1168,8 +1564,26 @@ export default function App() {
       window.setTimeout(() => setLaunchSplash(null), remainingMs)
     } catch (error) {
       setLaunchSplash(null)
-      setScanStatus(String(error))
+      const message = String(error)
+      if (message.includes('CLOUD_SAVE_CONFLICT:')) {
+        setCloudLaunchBlocked(true)
+        setScanStatus('Cloud save conflict detected. Resolve it or choose Launch without sync.')
+        void refreshCloudSaveStatus(selectedGame.id)
+      } else {
+        pendingCloudLaunchRef.current = null
+        setScanStatus(message)
+      }
     }
+  }
+
+  function launchWithoutCloudSync() {
+    const pending = pendingCloudLaunchRef.current
+    if (!pending) {
+      setScanStatus('Start the game again, then choose Launch without sync if the conflict remains.')
+      return
+    }
+    setCloudLaunchBlocked(false)
+    void doLaunchGame(pending.optionId, pending.optionTitle, true)
   }
 
   async function verifySelectedGame() {
@@ -1371,30 +1785,30 @@ export default function App() {
   return (
     <div className={preferences.reduceMotion ? 'app-root reduce-motion' : 'app-root'}>
       <CustomTitleBar closeBehavior={preferences.closeBehavior} />
-      <main className="launcher-shell">
-        {launcherUpdate ? (
-          <div className="launcher-update-banner">
-            <div className="banner-content">
-              <strong>Launcher Update Available (v{launcherUpdate.version})</strong>
-              {launcherUpdateStatus ? (
-                <span>{launcherUpdateStatus}</span>
-              ) : (
-                <span>Restart to apply.</span>
-              )}
-            </div>
-            <button
-              className="primary-control small"
-              onClick={() => {
-                setLauncherUpdateStatus('Downloading...')
-                invoke('apply_launcher_update')
-                  .catch((e) => setLauncherUpdateStatus(`Failed: ${e}`))
-              }}
-              disabled={!!launcherUpdateStatus}
-            >
-              Update Now
-            </button>
+      {launcherUpdate ? (
+        <div className="launcher-update-banner">
+          <div className="banner-content">
+            <strong>Launcher Update Available (v{launcherUpdate.version})</strong>
+            {launcherUpdateStatus ? (
+              <span>{launcherUpdateStatus}</span>
+            ) : (
+              <span>Restart to apply.</span>
+            )}
           </div>
-        ) : null}
+          <button
+            className="primary-control small"
+            onClick={() => {
+              setLauncherUpdateStatus('Downloading...')
+              invoke('apply_launcher_update')
+                .catch((e) => setLauncherUpdateStatus(`Failed: ${e}`))
+            }}
+            disabled={!!launcherUpdateStatus}
+          >
+            Update Now
+          </button>
+        </div>
+      ) : null}
+      <main className="launcher-shell">
         <Sidebar
         serviceStatus={contentServiceLabel(snapshot.proxyStatus)}
         activeTab={activeTab}
@@ -1403,7 +1817,7 @@ export default function App() {
         downloadCount={hasVisibleJob ? 1 : 0}
       />
       <section className="workspace">
-        {activeTab !== 'Library' && activeTab !== 'Settings' && selectedGame && activeDetail ? (
+        {activeTab !== 'Store' && activeTab !== 'Library' && activeTab !== 'Settings' && selectedGame && activeDetail ? (
           <OperationHero
             game={selectedGame}
             detail={activeDetail}
@@ -1426,10 +1840,14 @@ export default function App() {
         {activeTab === 'Settings' ? (
           <SettingsView
             preferences={preferences}
+            launcherSettings={launcherSettings}
             onChange={updatePreference}
+            onLauncherSettingChange={(key, value) => void updateLauncherSetting(key, value)}
             onChooseLibrary={() => void chooseDefaultLibraryRoot()}
             onOpenLibrary={() => void openDefaultLibraryRoot()}
             onOpenCache={() => setActiveTab('Cache')}
+            onChooseCloudRoot={() => void chooseCloudSaveRoot()}
+            onOpenCloudRoot={() => void openCloudSaveRoot()}
             onCheckForUpdates={() => void checkLauncherUpdateNow()}
             steamEnvironment={steamEnvironment}
             steamStatus={steamSettingsStatus}
@@ -1442,7 +1860,7 @@ export default function App() {
         ) : (
         <ActiveView
           activeTab={activeTab}
-          catalog={activeTab === 'Updates' ? updatesCatalog : catalog}
+          catalog={activeTab === 'Updates' ? updatesCatalog : activeTab === 'Library' ? libraryCatalog : catalog}
           catalogLoadState={catalogLoadState}
           onRetryCatalog={() => void loadCatalog()}
           selectedGame={selectedGame}
@@ -1501,6 +1919,29 @@ export default function App() {
           onResume={resumeFailedJob}
           isPaused={isPaused}
           logs={activeJob.logs}
+          onOpenStore={() => {
+            setSelectedGameId(null)
+            setActiveTab('Store')
+          }}
+          cloudSaveStatus={cloudSaveStatus}
+          cloudSaveBusy={cloudSaveBusy}
+          cloudLaunchBlocked={cloudLaunchBlocked}
+          onToggleCloudSave={(enabled) => void toggleCloudSave(enabled)}
+          onAddCloudSaveFolder={() => void addCloudSaveFolder()}
+          onSyncCloudSave={() => void syncCloudSave()}
+          onResolveCloudConflict={(conflictId, resolution) => void resolveCloudConflict(conflictId, resolution)}
+          onRestoreCloudSnapshot={(snapshotId) => void restoreCloudSnapshot(snapshotId)}
+          onLaunchWithoutCloudSync={launchWithoutCloudSync}
+          onConnectGoogleDrive={() => void connectAndBackupGoogleDrive()}
+          onDisconnectGoogleDrive={() =>
+            void runGoogleDriveAction('disconnect_google_drive', 'Disconnecting Google Drive...')
+          }
+          onBackupGoogleDrive={() =>
+            void runGoogleDriveAction('backup_save_game_to_google_drive', 'Backing up save files to Google Drive...')
+          }
+          onRestoreMissingSaveFiles={() =>
+            void runGoogleDriveAction('restore_missing_save_files', 'Checking Google Drive for missing save files...')
+          }
         />
         )}
         {showInstallOptions && selectedGame && activeDetail ? (

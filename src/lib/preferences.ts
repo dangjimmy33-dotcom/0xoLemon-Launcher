@@ -1,6 +1,6 @@
 import { DEFAULT_STORE_ROOT } from './installPaths'
 
-export type StartupPage = 'Library' | 'Updates' | 'Downloads'
+export type StartupPage = 'Store' | 'Library' | 'Updates' | 'Downloads'
 export type CloseBehavior = 'exit' | 'minimize'
 
 export type LauncherPreferences = {
@@ -11,24 +11,27 @@ export type LauncherPreferences = {
   reduceMotion: boolean
   openDownloadsOnJobStart: boolean
   pauseDownloadsBeforeLaunch: boolean
+  playInstallCompleteSound: boolean
   defaultLibraryRoot: string
 }
 
 export const DEFAULT_LAUNCHER_PREFERENCES: LauncherPreferences = {
-  startupPage: 'Library',
+  startupPage: 'Store',
   closeBehavior: 'exit',
   autoCheckLauncherUpdates: true,
   confirmBeforeUninstall: true,
   reduceMotion: false,
   openDownloadsOnJobStart: true,
   pauseDownloadsBeforeLaunch: false,
+  playInstallCompleteSound: true,
   defaultLibraryRoot: DEFAULT_STORE_ROOT,
 }
 
-const STORAGE_KEY = '0xo_launcher_preferences_v1'
+const STORAGE_KEY = '0xo_launcher_preferences_v2'
+const LEGACY_STORAGE_KEY = '0xo_launcher_preferences_v1'
 
 function isStartupPage(value: unknown): value is StartupPage {
-  return value === 'Library' || value === 'Updates' || value === 'Downloads'
+  return value === 'Store' || value === 'Library' || value === 'Updates' || value === 'Downloads'
 }
 
 function isCloseBehavior(value: unknown): value is CloseBehavior {
@@ -44,11 +47,19 @@ function normalizeRoot(value: unknown) {
 export function loadLauncherPreferences(): LauncherPreferences {
   if (typeof window === 'undefined') return DEFAULT_LAUNCHER_PREFERENCES
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY)
+    const currentRaw = window.localStorage.getItem(STORAGE_KEY)
+    const legacyRaw = currentRaw ? null : window.localStorage.getItem(LEGACY_STORAGE_KEY)
+    const raw = currentRaw ?? legacyRaw
     if (!raw) return DEFAULT_LAUNCHER_PREFERENCES
     const parsed = JSON.parse(raw) as Partial<LauncherPreferences>
+    const migratedStartupPage =
+      legacyRaw && parsed.startupPage === 'Library'
+        ? 'Store'
+        : isStartupPage(parsed.startupPage)
+          ? parsed.startupPage
+          : DEFAULT_LAUNCHER_PREFERENCES.startupPage
     return {
-      startupPage: isStartupPage(parsed.startupPage) ? parsed.startupPage : DEFAULT_LAUNCHER_PREFERENCES.startupPage,
+      startupPage: migratedStartupPage,
       closeBehavior: isCloseBehavior(parsed.closeBehavior) ? parsed.closeBehavior : DEFAULT_LAUNCHER_PREFERENCES.closeBehavior,
       autoCheckLauncherUpdates:
         typeof parsed.autoCheckLauncherUpdates === 'boolean'
@@ -68,6 +79,10 @@ export function loadLauncherPreferences(): LauncherPreferences {
         typeof parsed.pauseDownloadsBeforeLaunch === 'boolean'
           ? parsed.pauseDownloadsBeforeLaunch
           : DEFAULT_LAUNCHER_PREFERENCES.pauseDownloadsBeforeLaunch,
+      playInstallCompleteSound:
+        typeof parsed.playInstallCompleteSound === 'boolean'
+          ? parsed.playInstallCompleteSound
+          : DEFAULT_LAUNCHER_PREFERENCES.playInstallCompleteSound,
       defaultLibraryRoot: normalizeRoot(parsed.defaultLibraryRoot),
     }
   } catch {

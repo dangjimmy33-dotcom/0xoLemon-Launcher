@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
-pub const FORMAT_VERSION: u32 = 1;
+pub const LEGACY_FORMAT_VERSION: u32 = 1;
+pub const FORMAT_VERSION: u32 = 2;
 pub const CHUNK_MIN_SIZE: usize = 512 * 1024;
 pub const CHUNK_TARGET_SIZE: usize = 1024 * 1024;
 pub const CHUNK_MAX_SIZE: usize = 2 * 1024 * 1024;
@@ -75,8 +76,27 @@ pub struct ChunkRef {
     pub pack_offset: u64,
     pub compressed_size: u64,
     pub compressed_sha256: String,
+    #[serde(default)]
+    pub codec: ChunkCodec,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub encryption: Option<ChunkEncryption>,
+}
+
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum ChunkCodec {
+    Raw,
+    #[default]
+    Zstd,
+}
+
+impl ChunkCodec {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Raw => "raw",
+            Self::Zstd => "zstd",
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -1,0 +1,10 @@
+{
+  "enabled": false,
+  "saveRoots": [
+    "{steamUserData}\\3768760\\remote",
+    "{appData}\\GSE Saves\\3768760\\remote",
+    "{installDir}\\Retail\\userdata\\22202\\3768760"
+  ],
+  "include": [],
+  "exclude": []
+}
