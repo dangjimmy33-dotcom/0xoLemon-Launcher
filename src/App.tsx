@@ -255,6 +255,9 @@ export default function App() {
     try {
       const next = await invoke<DiscordAuthStatus>('get_discord_auth_status')
       setDiscordAuth(next)
+      if (next.state === 'authorized') {
+        import('@tauri-apps/api/window').then((m) => m.getCurrentWindow().maximize().catch(() => {}))
+      }
     } catch (error) {
       setDiscordAuth((current) => ({
         ...current,
@@ -273,6 +276,9 @@ export default function App() {
       const next = await invoke<DiscordAuthStatus>('login_discord')
       lastDiscordCheckRef.current = Date.now()
       setDiscordAuth(next)
+      if (next.state === 'authorized') {
+        import('@tauri-apps/api/window').then((m) => m.getCurrentWindow().maximize().catch(() => {}))
+      }
     } catch (error) {
       setDiscordAuth((current) => ({
         ...current,
