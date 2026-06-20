@@ -10,6 +10,7 @@ export function PhoneApp() {
   const [catalog, setCatalog] = useState<GameCatalog | null>(null)
   const [installStates, setInstallStates] = useState<Record<string, GameInstallState>>({})
   const [runtimeStates, setRuntimeStates] = useState<GameRuntimeState[]>([])
+  const [assets, setAssets] = useState<Record<string, string>>({})
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null)
 
   useEffect(() => {
@@ -19,7 +20,15 @@ export function PhoneApp() {
         const data = snapshot.data()
         if (data.catalog) setCatalog(data.catalog)
         if (data.installStates) setInstallStates(data.installStates)
-        if (data.runtimeStates) setRuntimeStates(data.runtimeStates)
+        if (data.runtimeStates) {
+          // Gracefully handle older PC app versions that uploaded a Record
+          if (Array.isArray(data.runtimeStates)) {
+            setRuntimeStates(data.runtimeStates)
+          } else {
+            setRuntimeStates(Object.values(data.runtimeStates))
+          }
+        }
+        if (data.assets) setAssets(data.assets)
       }
     })
     return unsub
@@ -94,7 +103,7 @@ export function PhoneApp() {
           onSelectGame={setSelectedGameId}
           onRequestAsset={() => {}}
           detail={null}
-          assets={{}} // Assets are empty, fallback to Icon or HTTP URLs
+          assets={assets} // Pass fetched assets from Firestore to display images correctly
           selectedVersion="unknown"
           selectedCurrentVersion="unknown"
           selectedVersionInfo={undefined}

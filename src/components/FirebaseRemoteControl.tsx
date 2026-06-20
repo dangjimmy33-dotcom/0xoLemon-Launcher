@@ -10,11 +10,13 @@ export function FirebaseRemoteControl({
   catalog,
   installStates,
   runtimeStates,
+  assets,
 }: {
   user: DiscordAuthUser
   catalog: GameCatalog
   installStates: Record<string, GameInstallState>
   runtimeStates: GameRuntimeState[]
+  assets: Record<string, string>
 }) {
   useEffect(() => {
     // ONLY RUN THIS ON PC LAUNCHER
@@ -81,9 +83,10 @@ export function FirebaseRemoteControl({
       catalog,
       installStates,
       runtimeStates,
+      assets, // Upload the base64 assets to Firestore
       updatedAt: serverTimestamp()
     }, { merge: true }).catch(console.error)
-  }, [user.id, catalog, installStates, runtimeStates])
+  }, [user.id, catalog, installStates, runtimeStates, assets])
 
   return null // This is a logic-only component
 }

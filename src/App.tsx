@@ -3012,6 +3012,7 @@ export default function App() {
           catalog={catalog}
           installStates={installStates}
           runtimeStates={runtimeStates}
+          assets={assetUrls}
         />
       ) : null}
     </div>
