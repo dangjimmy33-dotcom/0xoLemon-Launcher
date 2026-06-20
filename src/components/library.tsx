@@ -4,7 +4,7 @@ import { BookOpen, CheckCircle2, ChevronLeft, ChevronRight, CircleAlert, Downloa
 import { TutorialModal } from './TutorialModal'
 import { enUS as t } from '../i18n/en-US'
 import type { CloudSaveStatus, GameAchievement, GameCatalog, GameDetail, GameSummary, GameInstallState, GameVersionInfo, VerifyUiStatus } from '../types'
-import { assetUrlForId, firstMediaUrl, isCarouselMedia, mediaPriority, processDescriptionHtml } from '../lib/gameMeta'
+import { assetUrlForId, firstMediaUrl, isCarouselMedia, mediaPriority, processDescriptionHtml, isTauriRuntime } from '../lib/gameMeta'
 import { formatBytes } from '../lib/format'
 import { getGameTags, gameHasTag } from '../lib/gameTags'
 import { GameDetailsPanel, InstallSummaryPanel } from './panels'
@@ -375,7 +375,7 @@ export function StoreLibraryView({
   const isDownloading = isJobRunning
   const isPlaying = isGameRunning
 
-  let actionLabel: string = installed ? t.library.play : t.library.chooseInstall
+  let actionLabel: string = installed ? t.library.play : (!isTauriRuntime() ? 'Remote Install' : t.library.chooseInstall)
   let actionClass = 'primary-control'
   let primaryDisabled = false
   const stateLabel = !installed ? t.library.readyToInstall : updateReady ? t.library.readyToUpdate : t.library.readyToPlay
@@ -389,11 +389,11 @@ export function StoreLibraryView({
     actionClass = 'primary-control downloading-btn'
     primaryDisabled = true
   } else if (!installed) {
-    actionLabel = t.library.chooseInstall
+    actionLabel = !isTauriRuntime() ? 'Remote Install' : t.library.chooseInstall
     primaryDisabled = !canUpdate
   }
 
-  const primaryActionBtn = !installed ? onOpenInstallOptions : onPlay
+  const primaryActionBtn = !installed ? (!isTauriRuntime() ? () => window.alert('To remote install this game, please enter the 6-digit pairing code shown on your PC launcher.') : onOpenInstallOptions) : onPlay
   const primaryIcon = isPlaying
     ? <Play size={17} />
     : isDownloading
@@ -711,7 +711,7 @@ export function OperationHero({
               onClick={onUpdate}
               disabled={isJobRunning || !canUpdate}
             >
-              <span>{isJobRunning ? 'DOWNLOADING' : t.library.chooseInstall.toUpperCase()}</span>
+              <span>{isJobRunning ? 'DOWNLOADING' : (!isTauriRuntime() ? 'REMOTE INSTALL' : t.library.chooseInstall.toUpperCase())}</span>
               <Download size={18} />
             </button>
           ) : (

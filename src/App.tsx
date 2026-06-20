@@ -606,12 +606,24 @@ export default function App() {
     assetRequestRef.current.add(assetId)
 
     if (!isTauriRuntime()) {
-      import('./lib/gameMeta').then(({ fetchWebAssetUrl }) => {
-        fetchWebAssetUrl(assetId).then((url) => {
-          if (url) {
+      import('./lib/remoteAssets').then(({ fetchRemoteAssetUrl }) => {
+        fetchRemoteAssetUrl(assetId, game).then((remoteUrl) => {
+          if (remoteUrl) {
             setAssetUrls((current) => {
               if (current[assetId]) return current
-              return { ...current, [assetId]: url }
+              return { ...current, [assetId]: remoteUrl }
+            })
+          } else {
+            // Fallback to huggingface / web asset url
+            import('./lib/gameMeta').then(({ fetchWebAssetUrl }) => {
+              fetchWebAssetUrl(assetId).then((url) => {
+                if (url) {
+                  setAssetUrls((current) => {
+                    if (current[assetId]) return current
+                    return { ...current, [assetId]: url }
+                  })
+                }
+              })
             })
           }
         })

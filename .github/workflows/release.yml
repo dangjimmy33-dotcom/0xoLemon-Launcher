@@ -64,3 +64,48 @@ jobs:
           prerelease: false
           updaterJsonPreferNsis: true
           args: --target x86_64-pc-windows-msvc
+
+  build-android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Web App
+        run: npm run build
+
+      - name: Sync Capacitor
+        working-directory: mobile-apk
+        run: |
+          npm ci
+          npx cap sync android
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Build Android APK
+        working-directory: mobile-apk/android
+        run: ./gradlew assembleRelease
+
+      - name: Upload APK Release Asset
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: mobile-apk/android/app/build/outputs/apk/release/app-release-unsigned.apk

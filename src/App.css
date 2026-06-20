@@ -3449,8 +3449,14 @@ button:disabled {
 @media (max-width: 1180px) {
   .sticky-action-bar { left: 76px; }
 }
+@media (max-width: 860px) {
+  .sticky-action-bar { left: 0; padding: 0 16px; top: 0; }
+}
+@media (max-width: 768px) {
+  .sticky-action-bar { top: 0; left: 0; }
+}
 @media (max-width: 600px) {
-  .sticky-action-bar { left: 52px; padding: 0 12px; gap: 8px; }
+  .sticky-action-bar { left: 0; padding: 0 12px; gap: 8px; top: 0; }
   .sticky-bar-info { display: none; }
 }
 @media (min-width: 1600px) {
