@@ -278,3 +278,15 @@ button:focus-visible {
   color: #fff;
   border-color: rgba(255,255,255,0.2);
 }
+
+/* Mobile App Responsive Styles */
+@media (max-width: 768px) {
+  .title-bar { display: none; }
+  .app-content { height: 100vh; padding: 10px; }
+  .game-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
+  .game-card-hero { height: 160px; }
+  .hero-glass { flex-direction: column; padding: 10px; }
+  .nav-sidebar { width: 60px; }
+  .nav-item-label { display: none; }
+}
+

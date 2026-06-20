@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
+import { db } from './firebase'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import { getVersion } from '@tauri-apps/api/app'
@@ -1976,6 +1978,25 @@ export default function App() {
     }
 
     try {
+      if (!isTauriRuntime()) {
+        if (!discordAuth.user) return
+        await addDoc(collection(db, 'users', discordAuth.user.id, 'commands'), {
+          action: 'install',
+          game_id: selectedGame.id,
+          timestamp: serverTimestamp()
+        })
+        setShowInstallOptions(false)
+        addToast({
+          id: Date.now().toString(),
+          title: 'Remote Command Sent',
+          message: `Installation for ${selectedGame.title} will start on your PC shortly.`,
+          level: 'info',
+          createdAt: new Date().toISOString(),
+          read: false
+        })
+        return
+      }
+
       const versionToApply = targetVersion
       setSelectedVersion(versionToApply)
       const next = installMode
@@ -2146,6 +2167,24 @@ export default function App() {
 
   async function doLaunchGame(launchOptionId?: string, launchOptionTitle?: string, skipCloudSync = false) {
     if (!selectedGame || !activeDetail) return
+
+    if (!isTauriRuntime()) {
+      if (!discordAuth.user) return
+      await addDoc(collection(db, 'users', discordAuth.user.id, 'commands'), {
+        action: 'launch',
+        game_id: selectedGame.id,
+        timestamp: serverTimestamp()
+      })
+      addToast({
+        id: Date.now().toString(),
+        title: 'Remote Command Sent',
+        message: `Command to launch ${selectedGame.title} sent to PC.`,
+        level: 'info',
+        createdAt: new Date().toISOString(),
+        read: false
+      })
+      return
+    }
 
     if (preferences.pauseDownloadsBeforeLaunch && isRunning && !isPaused) {
       try {
@@ -2961,6 +3000,9 @@ export default function App() {
         onJoinServer={() => void openUrl(discordAuth.guildInvite)}
         onLogout={() => void executeLogoutDiscord()}
       />
+      {discordAuth.state === 'authorized' && discordAuth.user ? (
+        <FirebaseRemoteControl user={discordAuth.user} />
+      ) : null}
     </div>
     </MotionConfig>
   )
