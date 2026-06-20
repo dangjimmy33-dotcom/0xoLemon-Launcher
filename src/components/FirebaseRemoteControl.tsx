@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { collection, doc, onSnapshot, deleteDoc, setDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '../firebase'
-import { isTauriRuntime } from '../utils'
+import { isTauriRuntime } from '../lib/gameMeta'
 import { invoke } from '@tauri-apps/api/core'
 import type { DiscordAuthUser } from '../types'
 

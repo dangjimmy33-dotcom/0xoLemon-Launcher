@@ -74,6 +74,7 @@ import {
   Sidebar,
   UpdateBanner,
   UpdateCenter,
+  FirebaseRemoteControl,
 } from './components'
 
 const initialLauncherPreferences = loadLauncherPreferences()
@@ -1989,13 +1990,14 @@ export default function App() {
           timestamp: serverTimestamp()
         })
         setShowInstallOptions(false)
-        addToast({
-          id: Date.now().toString(),
+        void publishNotification({
+          category: 'launcher',
+          severity: 'info',
           title: 'Remote Command Sent',
           message: `Installation for ${selectedGame.title} will start on your PC shortly.`,
-          level: 'info',
-          createdAt: new Date().toISOString(),
-          read: false
+          dedupeKey: `remote-install-${selectedGame.id}`,
+          entity: null,
+          action: null
         })
         return
       }
@@ -2178,13 +2180,14 @@ export default function App() {
         game_id: selectedGame.id,
         timestamp: serverTimestamp()
       })
-      addToast({
-        id: Date.now().toString(),
+      void publishNotification({
+        category: 'launcher',
+        severity: 'info',
         title: 'Remote Command Sent',
         message: `Command to launch ${selectedGame.title} sent to PC.`,
-        level: 'info',
-        createdAt: new Date().toISOString(),
-        read: false
+        dedupeKey: `remote-launch-${selectedGame.id}`,
+        entity: null,
+        action: null
       })
       return
     }
