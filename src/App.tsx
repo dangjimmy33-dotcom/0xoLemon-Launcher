@@ -597,13 +597,27 @@ export default function App() {
   }, [])
 
   const requestGameAsset = useCallback((game: GameSummary | null | undefined, assetId: string | undefined, urgent = false) => {
-    if (!game || !assetId || !isTauriRuntime()) {
+    if (!game || !assetId) {
       return
     }
     if (assetUrlsRef.current[assetId] || assetRequestRef.current.has(assetId)) {
       return
     }
     assetRequestRef.current.add(assetId)
+
+    if (!isTauriRuntime()) {
+      import('./lib/gameMeta').then(({ fetchWebAssetUrl }) => {
+        fetchWebAssetUrl(assetId).then((url) => {
+          if (url) {
+            setAssetUrls((current) => {
+              if (current[assetId]) return current
+              return { ...current, [assetId]: url }
+            })
+          }
+        })
+      })
+      return
+    }
     const delay = urgent ? 0 : Math.min(1200, assetDelaySlotRef.current++ * 90)
     window.setTimeout(async () => {
       try {
@@ -3012,7 +3026,6 @@ export default function App() {
           catalog={catalog}
           installStates={installStates}
           runtimeStates={runtimeStates}
-          assets={assetUrls}
           setCatalog={setCatalog}
           setInstallStates={setInstallStates}
           setRuntimeStates={setRuntimeStates}

@@ -1,8 +1,6 @@
 import type { GameDetail, GameInstallMetadata, GameMedia, GameSummary, Snapshot } from '../types'
 import { CUSTOM_DOWNLOADING_RELATIVE, fallbackInstall } from './installPaths'
 
-const staticAssets = import.meta.glob('../assets/**/*.{png,jpg,jpeg,webp,gif,ico}', { eager: true, import: 'default' }) as Record<string, string>
-
 
 export function isRemoteAssetId(assetId: string | null | undefined) {
   return Boolean(assetId?.startsWith('remote64:') || assetId?.startsWith('remote:'))
@@ -22,29 +20,60 @@ export function decodeRemoteAssetId(assetId: string) {
   }
 }
 
+let githubTreeCache: string[] | null = null;
+async function resolveGithubAssetUrl(gameId: string, role: string): Promise<string | undefined> {
+  if (!githubTreeCache) {
+     try {
+        const res = await fetch('https://api.github.com/repos/dangjimmy33-dotcom/0xoLemon-Launcher/git/trees/main?recursive=1');
+        if (!res.ok) return undefined;
+        const data = await res.json();
+        githubTreeCache = data.tree
+          .filter((t: any) => t.path.startsWith('src/assets/'))
+          .map((t: any) => t.path);
+     } catch(e) {
+        return undefined;
+     }
+  }
+  
+  if (!githubTreeCache) return undefined;
+  
+  const targetSlug = gameId.toLowerCase().replace(/[^a-z0-9]/g, '');
+  for (const path of githubTreeCache) {
+     const parts = path.split('/');
+     const folderName = parts[2];
+     if (!folderName) continue;
+     const folderSlug = folderName.toLowerCase().replace(/[^a-z0-9]/g, '');
+     if (folderSlug === targetSlug && path.toLowerCase().includes(role.toLowerCase())) {
+        return `https://raw.githubusercontent.com/dangjimmy33-dotcom/0xoLemon-Launcher/main/${encodeURI(path)}`;
+     }
+  }
+  return undefined;
+}
+
+const resolvedAssetUrls: Record<string, string> = {};
+
+export async function fetchWebAssetUrl(assetId: string): Promise<string | undefined> {
+  if (resolvedAssetUrls[assetId]) return resolvedAssetUrls[assetId];
+  if (!assetId.startsWith('asset:')) return undefined;
+  
+  const parts = assetId.slice(6).split('/');
+  if (parts.length < 2) return undefined;
+  const gameId = parts[0];
+  const role = parts.slice(1).join('/');
+  
+  const url = await resolveGithubAssetUrl(gameId, role);
+  if (url) {
+     resolvedAssetUrls[assetId] = url;
+     return url;
+  }
+  return undefined;
+}
+
 export function assetUrlForId(assetId: string | null | undefined, assets: Record<string, string>) {
   if (!assetId) return undefined
   if (assetId.startsWith('http://') || assetId.startsWith('https://')) return assetId
   if (isRemoteAssetId(assetId)) return decodeRemoteAssetId(assetId)
   
-  if (typeof window !== 'undefined' && !window.__TAURI_INTERNALS__ && assetId.startsWith('asset:')) {
-    const parts = assetId.slice(6).split('/')
-    if (parts.length >= 2) {
-      const gameId = parts[0]
-      const role = parts.slice(1).join('/')
-      const targetSlug = gameId.toLowerCase().replace(/[^a-z0-9]/g, '')
-      for (const [path, url] of Object.entries(staticAssets)) {
-        const folderName = path.split('/')[2] // e.g. "Among Us"
-        if (!folderName) continue
-        const folderSlug = folderName.toLowerCase().replace(/[^a-z0-9]/g, '')
-        
-        if (folderSlug === targetSlug && path.toLowerCase().includes(role.toLowerCase())) {
-          return url
-        }
-      }
-    }
-  }
-
   return assets[assetId]
 }
 
