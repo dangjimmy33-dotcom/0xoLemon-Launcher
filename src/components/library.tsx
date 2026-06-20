@@ -6,7 +6,7 @@ import { enUS as t } from '../i18n/en-US'
 import type { CloudSaveStatus, GameAchievement, GameCatalog, GameDetail, GameSummary, GameInstallState, GameVersionInfo, VerifyUiStatus } from '../types'
 import { assetUrlForId, firstMediaUrl, isCarouselMedia, mediaPriority, processDescriptionHtml } from '../lib/gameMeta'
 import { formatBytes } from '../lib/format'
-import { getGameTags } from '../lib/gameTags'
+import { getGameTags, gameHasTag } from '../lib/gameTags'
 import { GameDetailsPanel, InstallSummaryPanel } from './panels'
 import { CloudSavePanel } from './CloudSavePanel'
 
@@ -275,19 +275,23 @@ export function StoreLibraryView({
     return () => observer.disconnect()
   }, [selectedGameId, detail?.gameId])
 
-  const renderGameCard = (game: GameSummary, variant: 'compact' | 'browse') => (
-    <button
-      className={[
-        'store-game-card',
-        variant === 'browse' ? 'browse-game-card' : '',
-        game.id === selectedGameId ? 'active' : '',
-      ]
-        .filter(Boolean)
-        .join(' ')}
-      key={game.id}
-      type="button"
-      onClick={() => onSelectGame(game.id)}
-    >
+  const renderGameCard = (game: GameSummary, variant: 'compact' | 'browse') => {
+    const isComingSoon = gameHasTag(game.id, 'coming soon')
+    return (
+      <button
+        className={[
+          'store-game-card',
+          variant === 'browse' ? 'browse-game-card' : '',
+          game.id === selectedGameId ? 'active' : '',
+          isComingSoon ? 'coming-soon' : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+        key={game.id}
+        type="button"
+        disabled={isComingSoon}
+        onClick={() => !isComingSoon && onSelectGame(game.id)}
+      >
       <div className="store-game-card-media">
         <LazyGameCardImage
           game={game}
@@ -309,7 +313,8 @@ export function StoreLibraryView({
         <small>{game.developer}</small>
       </span>
     </button>
-  )
+    )
+  }
 
   if (!selectedGame) {
     if (catalogLoadState === 'loading' && catalog.games.length === 0) {
