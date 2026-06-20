@@ -1,6 +1,9 @@
 import type { GameDetail, GameInstallMetadata, GameMedia, GameSummary, Snapshot } from '../types'
 import { CUSTOM_DOWNLOADING_RELATIVE, fallbackInstall } from './installPaths'
 
+const staticAssets = import.meta.glob('../assets/**/*.{png,jpg,jpeg,webp,gif,ico}', { eager: true, import: 'default' }) as Record<string, string>
+
+
 export function isRemoteAssetId(assetId: string | null | undefined) {
   return Boolean(assetId?.startsWith('remote64:') || assetId?.startsWith('remote:'))
 }
@@ -23,6 +26,20 @@ export function assetUrlForId(assetId: string | null | undefined, assets: Record
   if (!assetId) return undefined
   if (assetId.startsWith('http://') || assetId.startsWith('https://')) return assetId
   if (isRemoteAssetId(assetId)) return decodeRemoteAssetId(assetId)
+  
+  if (typeof window !== 'undefined' && !window.__TAURI_INTERNALS__ && assetId.startsWith('asset:')) {
+    const parts = assetId.slice(6).split('/')
+    if (parts.length >= 2) {
+      const gameId = parts[0] === '007-first-light' ? '007 first light' : parts[0]
+      const role = parts.slice(1).join('/')
+      for (const [path, url] of Object.entries(staticAssets)) {
+        if (path.includes(`/${gameId}/`) && path.toLowerCase().includes(role.toLowerCase())) {
+          return url
+        }
+      }
+    }
+  }
+
   return assets[assetId]
 }
 
