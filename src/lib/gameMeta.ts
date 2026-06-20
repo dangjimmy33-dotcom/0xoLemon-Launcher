@@ -30,10 +30,15 @@ export function assetUrlForId(assetId: string | null | undefined, assets: Record
   if (typeof window !== 'undefined' && !window.__TAURI_INTERNALS__ && assetId.startsWith('asset:')) {
     const parts = assetId.slice(6).split('/')
     if (parts.length >= 2) {
-      const gameId = parts[0] === '007-first-light' ? '007 first light' : parts[0]
+      const gameId = parts[0]
       const role = parts.slice(1).join('/')
+      const targetSlug = gameId.toLowerCase().replace(/[^a-z0-9]/g, '')
       for (const [path, url] of Object.entries(staticAssets)) {
-        if (path.includes(`/${gameId}/`) && path.toLowerCase().includes(role.toLowerCase())) {
+        const folderName = path.split('/')[2] // e.g. "Among Us"
+        if (!folderName) continue
+        const folderSlug = folderName.toLowerCase().replace(/[^a-z0-9]/g, '')
+        
+        if (folderSlug === targetSlug && path.toLowerCase().includes(role.toLowerCase())) {
           return url
         }
       }
