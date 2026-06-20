@@ -249,7 +249,10 @@ export default function App() {
     (preferences.motionMode === 'system' && systemReducedMotion)
 
   const refreshDiscordAccess = useCallback(async (force = false) => {
-    if (!isTauriRuntime()) return
+    if (!isTauriRuntime()) {
+      setDiscordAuth((prev) => ({ ...prev }))
+      return
+    }
     const now = Date.now()
     if (!force && now - lastDiscordCheckRef.current < 60_000) return
     lastDiscordCheckRef.current = now

@@ -128,9 +128,36 @@ export function DiscordAccessGate({
         ) : null}
 
         {notConfigured ? (
-          <div className="discord-access-policy">
-            Set the public build variable <strong>OXO_DISCORD_CLIENT_ID</strong> and register
-            <code>http://127.0.0.1:48176/discord/callback</code> in the Discord Developer Portal.
+          <div className="discord-access-policy" style={{ textAlign: 'center' }}>
+            <p style={{ marginBottom: '16px', color: '#ccc' }}>
+              To remote control your PC, please enter your Discord User ID below.
+              You can find this by right-clicking your profile in Discord and selecting "Copy User ID".
+            </p>
+            <input 
+              type="text" 
+              id="manual-discord-id"
+              placeholder="e.g. 123456789012345678" 
+              style={{ padding: '10px', width: '100%', borderRadius: '4px', border: '1px solid #444', background: '#222', color: '#fff', marginBottom: '12px' }}
+            />
+            <button 
+              type="button" 
+              className="discord-primary"
+              onClick={() => {
+                const val = (document.getElementById('manual-discord-id') as HTMLInputElement)?.value;
+                if (val && val.trim().length > 10) {
+                  // Hack to authorize web app instantly with the typed ID
+                  Object.assign(status, {
+                    state: 'authorized',
+                    user: { id: val.trim(), username: 'Remote User', displayName: 'Remote User', avatarUrl: '', accountAgeDays: 100 }
+                  });
+                  onRefresh(); // Trigger a re-render
+                } else {
+                  alert('Please enter a valid Discord ID');
+                }
+              }}
+            >
+              Connect to PC
+            </button>
           </div>
         ) : null}
 
