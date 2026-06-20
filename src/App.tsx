@@ -3007,7 +3007,12 @@ export default function App() {
         onLogout={() => void executeLogoutDiscord()}
       />
       {discordAuth.state === 'authorized' && discordAuth.user ? (
-        <FirebaseRemoteControl user={discordAuth.user} />
+        <FirebaseRemoteControl
+          user={discordAuth.user}
+          catalog={catalog}
+          installStates={installStates}
+          runtimeStates={runtimeStates}
+        />
       ) : null}
     </div>
     </MotionConfig>

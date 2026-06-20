@@ -2,10 +2,12 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
+import { PhoneApp } from './PhoneApp.tsx'
+import { isTauriRuntime } from './lib/gameMeta.ts'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    {isTauriRuntime() ? <App /> : <PhoneApp />}
   </StrictMode>,
 )
 

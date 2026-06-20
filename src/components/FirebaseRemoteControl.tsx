@@ -3,12 +3,18 @@ import { collection, doc, onSnapshot, deleteDoc, setDoc, serverTimestamp } from 
 import { db } from '../firebase'
 import { isTauriRuntime } from '../lib/gameMeta'
 import { invoke } from '@tauri-apps/api/core'
-import type { DiscordAuthUser } from '../types'
+import type { DiscordAuthUser, GameCatalog, GameInstallState, GameRuntimeState } from '../types'
 
 export function FirebaseRemoteControl({
   user,
+  catalog,
+  installStates,
+  runtimeStates,
 }: {
   user: DiscordAuthUser
+  catalog: GameCatalog
+  installStates: Record<string, GameInstallState>
+  runtimeStates: GameRuntimeState[]
 }) {
   useEffect(() => {
     // ONLY RUN THIS ON PC LAUNCHER
@@ -66,6 +72,18 @@ export function FirebaseRemoteControl({
       setDoc(statusRef, { online: false, lastSeen: serverTimestamp() }, { merge: true }).catch(console.error)
     }
   }, [user.id])
+
+  useEffect(() => {
+    if (!isTauriRuntime() || !user.id || catalog.games.length === 0) return
+
+    const stateRef = doc(db, 'users', user.id, 'pc_state', 'current')
+    setDoc(stateRef, {
+      catalog,
+      installStates,
+      runtimeStates,
+      updatedAt: serverTimestamp()
+    }, { merge: true }).catch(console.error)
+  }, [user.id, catalog, installStates, runtimeStates])
 
   return null // This is a logic-only component
 }
