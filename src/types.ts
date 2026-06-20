@@ -252,9 +252,59 @@ export type LauncherUpdateInfo = {
 }
 
 export type LauncherUpdateProgress = {
-  phase: 'downloading' | 'installing' | string
+  version: string
+  phase: 'checking' | 'downloading' | 'verifying' | 'installing' | 'restarting' | 'failed' | string
   downloadedBytes: number
   totalBytes: number | null
+  timestamp: string
+  error: string | null
+}
+
+export type GameRuntimeState = {
+  gameId: string
+  running: boolean
+  pid: number | null
+  totalPlaytimeSeconds: number
+  currentSessionStartedAt: string | null
+  lastPlayedAt: string | null
+  launchCount: number
+}
+
+export type NotificationCategory =
+  | 'launcher'
+  | 'installs'
+  | 'downloads'
+  | 'cloudSaves'
+  | 'storage'
+  | 'achievements'
+  | 'errors'
+
+export type NotificationSeverity = 'info' | 'success' | 'warning' | 'error'
+
+export type NotificationAction = {
+  kind: string
+  tab: TabId | null
+  gameId: string | null
+}
+
+export type NotificationRecord = {
+  id: string
+  category: NotificationCategory
+  severity: NotificationSeverity
+  title: string
+  message: string
+  timestamp: string
+  read: boolean
+  dedupeKey: string
+  entity: { kind: string; id: string } | null
+  action: NotificationAction | null
+}
+
+export type NewNotification = Omit<NotificationRecord, 'id' | 'timestamp' | 'read'>
+
+export type PushNotificationResult = {
+  record: NotificationRecord
+  inserted: boolean
 }
 
 export type SteamEnvironmentInfo = {
@@ -338,6 +388,12 @@ export type UninstallReport = {
   installPath: string
 }
 
+export type ClearCacheReport = {
+  removedFiles: number
+  removedBytes: number
+  cachePath: string
+}
+
 export type ResolvedGameLaunchConfig = {
   schemaVersion: number
   gameId: string
@@ -378,6 +434,14 @@ export type ShortcutLaunchPayload = {
   launchExecutable?: string | null
 }
 
-export type TabId = 'Store' | 'Library' | 'Updates' | 'Downloads' | 'Cache' | 'Settings'
+export type TabId =
+  | 'Home'
+  | 'Store'
+  | 'Library'
+  | 'Updates'
+  | 'Downloads'
+  | 'Cloud Saves'
+  | 'Cache'
+  | 'Settings'
 
 export {}

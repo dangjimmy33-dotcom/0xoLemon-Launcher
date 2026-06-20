@@ -1,9 +1,11 @@
 export const enUS = {
   nav: {
+    home: 'Home',
     store: 'Store',
     library: 'Library',
     updates: 'Updates',
     downloads: 'Downloads',
+    cloudSaves: 'Cloud Saves',
     cache: 'Cache',
     settings: 'Settings',
   },

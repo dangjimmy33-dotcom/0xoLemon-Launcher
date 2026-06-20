@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Database, Download, Image as ImageIcon, Library, RefreshCcw, Settings, ShoppingBag, Wifi } from 'lucide-react'
+import { Cloud, Database, Download, Home, Image as ImageIcon, Library, RefreshCcw, Settings, ShoppingBag, Wifi } from 'lucide-react'
 import { enUS as t } from '../i18n/en-US'
 import type { GameCatalog, TabId } from '../types'
 
@@ -23,10 +23,12 @@ export function Sidebar({
       ? 'Connecting'
       : 'Online'
   const items = [
+    [t.nav.home, Home],
     [t.nav.store, ShoppingBag],
     [t.nav.library, Library],
     [t.nav.updates, RefreshCcw],
     [t.nav.downloads, Download],
+    [t.nav.cloudSaves, Cloud],
     [t.nav.cache, Database],
     [t.nav.settings, Settings],
   ] as const

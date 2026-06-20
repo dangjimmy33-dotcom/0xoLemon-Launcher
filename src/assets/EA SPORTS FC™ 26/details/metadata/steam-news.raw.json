@@ -1,0 +1,76 @@
+﻿{
+    "appnews":  {
+                    "appid":  3405690,
+                    "newsitems":  [
+                                      {
+                                          "gid":  "1835871199307800",
+                                          "title":  "Festival of Football: Greats of the Game",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1835871199307800",
+                                          "is_external_url":  true,
+                                          "author":  "TEAM",
+                                          "contents":  "Relive their finest moments. Festival of Football: Greats of the Game honours big name players who defined eras of The World’s Game and introduces two new ICONs, Mario Kempes and Rivellino, to EA SPORTS FC™ 26 Football Ultimate Team™.\n\n[img]{STEAM_CLAN_IMAGE}/45702522/f26c6f5c90ec3c5137efc0528c0e3b0c0cac7991.png[/img]\n\n[img]{STEAM_CLAN_IMAGE}/45702522/d431384983962819ddb9a997c2afc5ef961cf8f6.png[/img]\n\n[img]{STEAM_CLAN_IMAGE}/45702522/183c36935d74e4036312fa6166edd2017e927e75.png[/img]\n\n[img]{STEAM_CLAN_IMAGE}/45702522/8a5bde76e11dee4b496d9b508a5c756276e8625b.png[/img]\n\nhttps://store.steampowered.com/app/3405690/EA_SPORTS_FC_26/",
+                                          "feedlabel":  "Community Announcements",
+                                          "date":  1781889260,
+                                          "feedname":  "steam_community_announcements",
+                                          "feed_type":  1,
+                                          "appid":  3405690
+                                      },
+                                      {
+                                          "gid":  "1835871199306790",
+                                          "title":  "Score unlimited access to EA SPORTS FC™ 26 with EA Play",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1835871199306790",
+                                          "is_external_url":  true,
+                                          "author":  "TEAM",
+                                          "contents":  "Welcome to the Club. Members can shape their legacy with unlimited access to an overhauled gameplay experience powered by community feedback, Manager Live Challenges that bring fresh scenarios to the new season, and so much more. Plus, experience The World\u0027s Game like never before and take on a brand-new international tournament mode.\n\nWhen you’re ready for more, dive into a collection of EA’s top titles available in The Play List and discover more trials of select new releases. Find out more about upcoming EA Play* benefits at https://store.steampowered.com/subscriptions/ea or follow us on X (Twitter) and Instagram @eaplay.\n\n*Conditions, limitations and exclusions apply. See https://tos.ea.com/legalapp/eaplay/us/en/pc/ for details.\n\nhttps://store.steampowered.com/app/1289670/EA_Play/",
+                                          "feedlabel":  "Community Announcements",
+                                          "date":  1781868561,
+                                          "feedname":  "steam_community_announcements",
+                                          "feed_type":  1,
+                                          "appid":  3405690
+                                      },
+                                      {
+                                          "gid":  "1835236783574045",
+                                          "title":  "EA SPORTS FC 26 v1.6.2",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1835236783574045",
+                                          "is_external_url":  true,
+                                          "author":  "Rileyy",
+                                          "contents":  "[p]EA SPORTS FC 26 version 1.6.2 is now live and includes the updates below.[/p][p][/p][h3]The World’s Game Made the following changes: [/h3][list][*][p]Added a Tournament Tree widget to the Office Hub within the World’s Game Tournament that becomes visible once the player has entered the Knockout stages. [/p][/*][*][p]Added the ability to access the FC Hub from the Tournament Hub and during an active tournament in The World’s Game mode to view active objectives and track progress.[/p][/*][*][p]Added the tournament stage to the Next Fixture screen in the FC Hub.[/p][/*][*][p]Updated UI elements in the See Tree Overview screen. [/p][/*][/list][p]Addressed the following issues: [/p][list][*][p]In some instances, matches that were completed through penalties would incorrectly display the aggregate score.[/p][/*][*][p]Addressed an issue in The World’s Game Tournament where the completed stage was not correctly displayed beneath the Trophy after finishing the competition.[/p][/*][*][p]Addressed instances of misaligned text.[/p][/*][/list][h3]Clubs[/h3][p]Addressed the following issues: [/p][list][*][p]Addressed instances where creating a new Goalkeeper Clubs Pro could result in the Failed to create your Virtual Pro message appearing.[/p][/*][*][p]Addressed cases of Clubs AI Facility boosts also applying to player-controlled Pros.[/p][/*][/list][h3]Career Mode[/h3][p]Made the following changes:[/p][list][*][p]Re-enabled National Team selection for Manager Career Live Start Points that occurred in May 2026.[/p][/*][/list][p]Addressed the following issues: [/p][list][*][p]In some Manager Career instances, selecting View Fixture for the International Cup Tournament Final from the Calendar could incorrectly display the Third Place match and cause the Final tab to be missing from the standings.[/p][/*][*][p]In Manager Career, the Department filter would incorrectly reset after modifying a Key Role filter within Scout Instructions.[/p][/*][*][p]In Manager Career, certain positions would incorrectly disappear from the Attacker department list when specific Key Role filters were active.[/p][/*][*][p]In Manager Career, Youth Academy scout reports could incorrectly display placeholder min-max values instead of the correct attribute ranges.[/p][/*][*][p]Sometimes, in Manager Career, a social media post can incorrectly display the incorrect kit.[/p][/*][*][p]The Current Team could display a placeholder image on the Player Stats screen for the Men\u0027s International Cup in Manager Career.[/p][/*][*][p]The See More Stats screen could display incorrect information when viewed during the Men\u0027s International Competition in Manager Career.[/p][/*][/list][h3]General, Audio, and Visual[/h3][p]Made the following changes:[/p][list][*][p]Updated some kits, star heads, hair, 2D portraits, badges, stadiums, boots, commentary, crowds, TIFOs and text.[/p][/*][*][p]Addressed the following issues:[/p][/*][*][p]Addressed various stability issues that could have occurred.[/p][/*][*][p]Addressed an issue where the Restore Default option in Display Settings did not function as intended.[/p][/*][*][p]Addressed an issue where the Competitive Gameplay Type setting could be changed to Authentic during a Kick-Off match.[/p][/*][*][p]Addressed instances of incorrect/placeholder text.[/p][/*][/list][p]Want to provide us direct feedback about EA SPORTS FC 26? https://go.ea.com/fc26pfp and let us know what you think, it only takes a few minutes. [/p][p][/p][p]Thanks to those who’ve provided and continue to provide feedback. Throughout the course of the EA SPORTS FC 26 season, we\u0027ll provide you with more information and updates if and when they become available. Be sure to follow [url=\"https://x.com/EASFCDirect\"]@EASFCDIRECT on X[/url] and WhatsApp, and be sure to join the [url=\"https://discord.com/invite/easportsfc\"]EA SPORTS FC Discord Community.[/url][/p][p][/p][p] - The EA SPORTS FC Team[/p]",
+                                          "feedlabel":  "Community Announcements",
+                                          "date":  1781611628,
+                                          "feedname":  "steam_community_announcements",
+                                          "feed_type":  1,
+                                          "appid":  3405690,
+                                          "tags":  [
+                                                       "hide_library_overview"
+                                                   ]
+                                      },
+                                      {
+                                          "gid":  "1835236783574345",
+                                          "title":  "Steam Global Top Sellers for week of 9 Jun — 16 June 2026",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/SteamDB/1835236783574345",
+                                          "is_external_url":  true,
+                                          "author":  "SteamDB",
+                                          "contents":  "\u003ca href=\"https://steamdb.info/topsellers/2026W25/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003e\u003cimg src=\"https://steamdb.info/topsellers/2026W25.png\"\u003e\u003c/a\u003e\u003col\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/4704690/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eMECCHA CHAMELEON\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/2483190/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eForza Horizon 6\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/1675200/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eSteam Deck\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/2694490/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003ePath of Exile 2\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/3405690/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eEA SPORTS FC™ 26\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/3186540/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eDestiny 2: Renegades\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/1462040/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eFINAL FANTASY VII REMAKE INTERGRADE\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/3768760/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003e007 First Light\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/1297900/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eGothic 1 Remake\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/3844970/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eBurglin\u0027 Gnomes\u003c/a\u003e\u003c/li\u003e\u003c/ol\u003e\u003cbr\u003e\u003ci\u003e* excluding free to play games\u003c/i\u003e\u003cbr\u003e\u003ca href=\"https://steamdb.info/topsellers/2026W25/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eView top 100 on SteamDB\u003c/a\u003e",
+                                          "feedlabel":  "SteamDB",
+                                          "date":  1781600400,
+                                          "feedname":  "SteamDB",
+                                          "feed_type":  0,
+                                          "appid":  1297900
+                                      },
+                                      {
+                                          "gid":  "1835236783570647",
+                                          "title":  "Save on EA SPORTS FC™ 26 The World’s Game Edition",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1835236783570647",
+                                          "is_external_url":  true,
+                                          "author":  "TEAM",
+                                          "contents":  "Save on EA SPORTS FC™ 26 The World’s Game Edition and kick off the summer of international football with 3,000 Season Points, a Gold Starting XI Pack, and three untradeable Player Picks.",
+                                          "feedlabel":  "Community Announcements",
+                                          "date":  1781535623,
+                                          "feedname":  "steam_community_announcements",
+                                          "feed_type":  1,
+                                          "appid":  3405690
+                                      }
+                                  ],
+                    "count":  115
+                }
+}

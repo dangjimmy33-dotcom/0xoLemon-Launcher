@@ -9,3 +9,8 @@ export { LaunchOptionsModal } from './LaunchOptionsModal'
 
 export { SettingsView } from './SettingsView'
 export { CloudSavePanel } from './CloudSavePanel'
+export { HomeView } from './HomeView'
+export { UpdateBanner, UpdateCenter } from './UpdateCenter'
+export { NotificationToasts } from './NotificationCenter'
+export { Onboarding } from './Onboarding'
+export { CloudSavesOverview } from './CloudSavesOverview'

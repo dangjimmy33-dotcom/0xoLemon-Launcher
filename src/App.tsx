@@ -1,16 +1,29 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
+import { getVersion } from '@tauri-apps/api/app'
 import { open } from '@tauri-apps/plugin-dialog'
-import { CircleAlert, Download, X } from 'lucide-react'
+import { openUrl } from '@tauri-apps/plugin-opener'
+import {
+  isPermissionGranted,
+  onAction as onNativeNotificationAction,
+  registerActionTypes,
+  requestPermission,
+  sendNotification,
+} from '@tauri-apps/plugin-notification'
+import { MotionConfig } from 'motion/react'
+import { CircleAlert, Download, Heart, X } from 'lucide-react'
 import './App.css'
+import './premium.css'
 import type {
   AssetBlob,
+  ClearCacheReport,
   CloudSaveRoot,
   CloudSaveStatus,
   GameCatalog,
   GameDetail,
   GameInstallState,
+  GameRuntimeState,
   GameSummary,
   JobJournal,
   LaunchReport,
@@ -18,6 +31,10 @@ import type {
   LauncherUpdateProgress,
   LauncherSettings,
   LaunchSplashState,
+  NewNotification,
+  NotificationAction,
+  NotificationRecord,
+  PushNotificationResult,
   ResolvedGameLaunchConfig,
   ShortcutLaunchPayload,
   Snapshot,
@@ -29,12 +46,30 @@ import type {
   VerifyUiStatus,
 } from './types'
 import installCompleteSoundUrl from './assets/sounds/desktop_toast_default.wav?url'
+import donateImage from './assets/donate/donate.png'
 import { DEFAULT_GAME_ID, DEFAULT_STORE_ROOT, fallbackCatalog, fallbackInstall, fallbackSnapshot, gameFolderName, installMetadataForStoreRoot } from './lib/installPaths'
 import { collectAssetIds, contentServiceLabel, downloadPathForInstallRoot, fallbackDetailFromSummary, firstMediaUrl, isTauriRuntime, versionOptions } from './lib/gameMeta'
 import { createIdleJob, getPhaseProgress } from './lib/jobProgress'
+import { formatBytes } from './lib/format'
 import { gameHasTag } from './lib/gameTags'
 import { DEFAULT_LAUNCHER_PREFERENCES, loadLauncherPreferences, saveLauncherPreferences, type LauncherPreferences } from './lib/preferences'
-import { ActiveView, CustomTitleBar, DriveLibraryPickerModal, InstallOptionsDialog, LaunchOptionsModal, LaunchSplash, OperationHero, SettingsView, Sidebar } from './components'
+import {
+  ActiveView,
+  CloudSavesOverview,
+  CustomTitleBar,
+  DriveLibraryPickerModal,
+  HomeView,
+  InstallOptionsDialog,
+  LaunchOptionsModal,
+  LaunchSplash,
+  NotificationToasts,
+  Onboarding,
+  OperationHero,
+  SettingsView,
+  Sidebar,
+  UpdateBanner,
+  UpdateCenter,
+} from './components'
 
 const initialLauncherPreferences = loadLauncherPreferences()
 const emptyCatalog: GameCatalog = { defaultLocale: 'en-US', games: [] }
@@ -76,6 +111,7 @@ export default function App() {
   const [detail, setDetail] = useState<GameDetail | null>(null)
   const [assetUrls, setAssetUrls] = useState<Record<string, string>>({})
   const assetUrlsRef = useRef<Record<string, string>>({})
+  const catalogRef = useRef<GameCatalog>(catalog)
   const assetRequestRef = useRef<Set<string>>(new Set())
   const assetDelaySlotRef = useRef(0)
   const [installStates, setInstallStates] = useState<Record<string, GameInstallState>>({})
@@ -94,7 +130,10 @@ export default function App() {
   const [launchSplash, setLaunchSplash] = useState<LaunchSplashState | null>(null)
   const [launchOptions, setLaunchOptions] = useState<ResolvedGameLaunchConfig | null>(null)
   const [launcherUpdate, setLauncherUpdate] = useState<LauncherUpdateInfo | null>(null)
-  const [launcherUpdateStatus, setLauncherUpdateStatus] = useState<string | null>(null)
+  const [launcherUpdateProgress, setLauncherUpdateProgress] = useState<LauncherUpdateProgress | null>(null)
+  const [launcherUpdateSpeed, setLauncherUpdateSpeed] = useState(0)
+  const [launcherUpdateEta, setLauncherUpdateEta] = useState<number | null>(null)
+  const [showUpdateCenter, setShowUpdateCenter] = useState(false)
   const [settingsUpdateStatus, setSettingsUpdateStatus] = useState<string | null>(null)
   const [showDrivePicker, setShowDrivePicker] = useState(false)
   const [showUninstallConfirm, setShowUninstallConfirm] = useState(false)
@@ -108,6 +147,19 @@ export default function App() {
   const [cloudSaveStatus, setCloudSaveStatus] = useState<CloudSaveStatus | null>(null)
   const [cloudSaveBusy, setCloudSaveBusy] = useState(false)
   const [cloudLaunchBlocked, setCloudLaunchBlocked] = useState(false)
+  const [runtimeStates, setRuntimeStates] = useState<GameRuntimeState[]>([])
+  const [notifications, setNotifications] = useState<NotificationRecord[]>([])
+  const [toastNotifications, setToastNotifications] = useState<NotificationRecord[]>([])
+  const [notificationOpen, setNotificationOpen] = useState(false)
+  const [showDonate, setShowDonate] = useState(false)
+  const [cacheBusy, setCacheBusy] = useState(false)
+  const [appVersion, setAppVersion] = useState('0.2.0')
+  const launcherUpdateRateRef = useRef<Array<{ bytes: number; at: number }>>([])
+  const pendingHomeLaunchRef = useRef<string | null>(null)
+  const playingGamesRef = useRef<Record<string, boolean>>({})
+  const [systemReducedMotion, setSystemReducedMotion] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+  )
   // Library locations the user has added (persisted to localStorage)
   const [libraries, setLibraries] = useState<string[]>(() => {
     try {
@@ -123,6 +175,10 @@ export default function App() {
   }, [assetUrls])
 
   useEffect(() => {
+    catalogRef.current = catalog
+  }, [catalog])
+
+  useEffect(() => {
     selectedGameIdRef.current = selectedGameId
   }, [selectedGameId])
 
@@ -130,6 +186,188 @@ export default function App() {
     preferencesRef.current = preferences
     saveLauncherPreferences(preferences)
   }, [preferences])
+
+  useEffect(() => {
+    playingGamesRef.current = playingGames
+  }, [playingGames])
+
+  useEffect(() => {
+    if (!import.meta.env.DEV || isTauriRuntime()) return
+    const preview = new URLSearchParams(window.location.search).get('preview')
+    if (preview !== 'update') return
+    const info: LauncherUpdateInfo = {
+      version: '0.2.0-preview',
+      notes: 'Premium Home dashboard\nAccurate Update Center phases\nNotification history and Windows notifications',
+      publishedAt: new Date().toISOString(),
+    }
+    queueMicrotask(() => {
+      setLauncherUpdate(info)
+      setLauncherUpdateProgress({
+        version: info.version,
+        phase: 'downloading',
+        downloadedBytes: 128 * 1024 * 1024,
+        totalBytes: 272 * 1024 * 1024,
+        timestamp: new Date().toISOString(),
+        error: null,
+      })
+      setLauncherUpdateSpeed(12.4 * 1024 * 1024)
+      setLauncherUpdateEta(12)
+      setShowUpdateCenter(true)
+    })
+  }, [])
+
+  useEffect(() => {
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const update = () => setSystemReducedMotion(media.matches)
+    media.addEventListener('change', update)
+    return () => media.removeEventListener('change', update)
+  }, [])
+
+  const reducedMotion =
+    preferences.motionMode === 'reduced' ||
+    (preferences.motionMode === 'system' && systemReducedMotion)
+
+  const upsertNotification = useCallback((record: NotificationRecord) => {
+    setNotifications((current) => {
+      const without = current.filter((item) => item.id !== record.id)
+      return [record, ...without].slice(0, 200)
+    })
+  }, [])
+
+  const publishNotification = useCallback(async (notification: NewNotification) => {
+    const currentPreferences = preferencesRef.current
+    if (!currentPreferences.notificationCategories[notification.category]) return
+    const result = isTauriRuntime()
+      ? await invoke<PushNotificationResult>('push_notification', { notification }).catch(() => null)
+      : {
+          inserted: true,
+          record: {
+            ...notification,
+            id: `preview-${Date.now()}`,
+            timestamp: new Date().toISOString(),
+            read: false,
+          },
+        }
+    if (!result?.inserted) return
+    upsertNotification(result.record)
+
+    const gameRunning = Object.values(playingGamesRef.current).some(Boolean)
+    const suppressPopup = currentPreferences.doNotDisturbWhilePlaying && gameRunning
+    if (currentPreferences.inAppNotifications && !suppressPopup) {
+      setToastNotifications((current) => [result.record, ...current].slice(0, 3))
+      window.setTimeout(() => {
+        setToastNotifications((current) => current.filter((item) => item.id !== result.record.id))
+      }, result.record.severity === 'error' ? 9000 : 6000)
+    }
+
+    if (
+      isTauriRuntime() &&
+      currentPreferences.windowsNotifications &&
+      !suppressPopup &&
+      (!document.hasFocus() || document.visibilityState !== 'visible')
+    ) {
+      let granted = await isPermissionGranted().catch(() => false)
+      if (!granted) granted = (await requestPermission().catch(() => 'denied')) === 'granted'
+      if (granted) {
+        sendNotification({
+          id: notificationIdToNumber(result.record.id),
+          title: result.record.title,
+          body: result.record.message,
+          silent: !currentPreferences.notificationSound,
+          actionTypeId: '0xolemon-open',
+          extra: { notificationId: result.record.id },
+        })
+      }
+    }
+  }, [upsertNotification])
+
+  const routeNotificationAction = useCallback((action: NotificationAction | null) => {
+    if (!action) return
+    if (action.gameId) setSelectedGameId(action.gameId)
+    if (action.kind === 'update-center') setShowUpdateCenter(true)
+    if (action.tab) setActiveTab(action.tab)
+    setNotificationOpen(false)
+  }, [])
+
+  const openNotificationRecord = useCallback((notification: NotificationRecord) => {
+    setNotifications((current) =>
+      current.map((item) => (item.id === notification.id ? { ...item, read: true } : item)),
+    )
+    routeNotificationAction(notification.action)
+    if (isTauriRuntime()) {
+      void invoke('open_notification_action', { notificationId: notification.id }).catch(() => undefined)
+    }
+  }, [routeNotificationAction])
+
+  const enableWindowsNotifications = useCallback(async () => {
+    if (!isTauriRuntime()) {
+      setPreferences((current) => ({ ...current, windowsNotifications: false }))
+      return false
+    }
+    let granted = await isPermissionGranted().catch(() => false)
+    if (!granted) granted = (await requestPermission().catch(() => 'denied')) === 'granted'
+    setPreferences((current) => ({ ...current, windowsNotifications: granted }))
+    return granted
+  }, [])
+
+  useEffect(() => {
+    if (!isTauriRuntime()) return
+    void getVersion()
+      .then((version) => {
+        setAppVersion(version)
+        const pendingVersion = window.localStorage.getItem('0xo_pending_launcher_update')
+        if (pendingVersion === version) {
+          window.localStorage.removeItem('0xo_pending_launcher_update')
+          void publishNotification({
+            category: 'launcher',
+            severity: 'success',
+            title: `Launcher updated to ${version}`,
+            message: 'The signed launcher update was installed successfully.',
+            dedupeKey: `launcher-update:${version}:completed`,
+            entity: { kind: 'launcher-update', id: version },
+            action: { kind: 'open-home', tab: 'Home', gameId: null },
+          })
+        }
+      })
+      .catch(() => undefined)
+    void invoke<NotificationRecord[]>('list_notifications').then(setNotifications).catch(() => undefined)
+    void registerActionTypes([
+      {
+        id: '0xolemon-open',
+        actions: [{ id: 'open', title: 'Open launcher', foreground: true }],
+      },
+    ]).catch(() => undefined)
+
+    let disposeNotification: (() => void) | undefined
+    let disposeAction: (() => void) | undefined
+    let disposeNativeAction: (() => void) | undefined
+    listen<NotificationRecord>('launcher://notification', (event) => upsertNotification(event.payload))
+      .then((dispose) => {
+        disposeNotification = dispose
+      })
+      .catch(() => undefined)
+    listen<NotificationAction>('launcher://notification-action', (event) => routeNotificationAction(event.payload))
+      .then((dispose) => {
+        disposeAction = dispose
+      })
+      .catch(() => undefined)
+    onNativeNotificationAction((notification) => {
+      const notificationId = notification.extra?.notificationId
+      if (typeof notificationId === 'string') {
+        void invoke('open_notification_action', { notificationId }).catch(() => undefined)
+      }
+    })
+      .then((dispose) => {
+        disposeNativeAction = dispose.unregister
+      })
+      .catch(() => undefined)
+
+    return () => {
+      disposeNotification?.()
+      disposeAction?.()
+      disposeNativeAction?.()
+    }
+  }, [publishNotification, routeNotificationAction, upsertNotification])
 
   useEffect(() => {
     const audio = new Audio(installCompleteSoundUrl)
@@ -184,6 +422,68 @@ export default function App() {
       .then(setLauncherSettings)
       .catch((error) => setSettingsUpdateStatus(`Could not load downloader settings: ${String(error)}`))
   }, [])
+
+  const refreshRuntimeStates = useCallback(() => {
+    if (!isTauriRuntime()) return Promise.resolve()
+    return invoke<GameRuntimeState[]>('get_game_runtime_states')
+      .then(setRuntimeStates)
+      .catch(() => undefined)
+  }, [])
+
+  useEffect(() => {
+    void refreshRuntimeStates()
+    if (!isTauriRuntime()) return
+    let startedDispose: (() => void) | undefined
+    let exitedDispose: (() => void) | undefined
+    let achievementDispose: (() => void) | undefined
+    let errorDispose: (() => void) | undefined
+
+    listen<{ gameId: string }>('launcher://game-started', (event) => {
+      setPlayingGames((current) => ({ ...current, [event.payload.gameId]: true }))
+      void refreshRuntimeStates()
+    }).then((dispose) => {
+      startedDispose = dispose
+    })
+    listen<{ gameId: string; exitCode: number | null; sessionSeconds: number }>('launcher://game-exited', (event) => {
+      setPlayingGames((current) => ({ ...current, [event.payload.gameId]: false }))
+      void refreshRuntimeStates()
+    }).then((dispose) => {
+      exitedDispose = dispose
+    })
+    listen<{ gameId: string; id: string; name: string; description: string }>('launcher://achievement-unlocked', (event) => {
+      void publishNotification({
+        category: 'achievements',
+        severity: 'success',
+        title: `Achievement unlocked: ${event.payload.name}`,
+        message: event.payload.description || 'A new achievement was recorded.',
+        dedupeKey: `achievement:${event.payload.gameId}:${event.payload.id}`,
+        entity: { kind: 'game', id: event.payload.gameId },
+        action: { kind: 'open-game', tab: 'Library', gameId: event.payload.gameId },
+      })
+    }).then((dispose) => {
+      achievementDispose = dispose
+    })
+    listen<string>('launcher://runtime-error', (event) => {
+      void publishNotification({
+        category: 'errors',
+        severity: 'error',
+        title: 'Game runtime error',
+        message: event.payload,
+        dedupeKey: `runtime-error:${event.payload}`,
+        entity: null,
+        action: { kind: 'open-library', tab: 'Library', gameId: null },
+      })
+    }).then((dispose) => {
+      errorDispose = dispose
+    })
+
+    return () => {
+      startedDispose?.()
+      exitedDispose?.()
+      achievementDispose?.()
+      errorDispose?.()
+    }
+  }, [publishNotification, refreshRuntimeStates])
 
   useEffect(() => {
     if (!isTauriRuntime()) return
@@ -273,20 +573,57 @@ export default function App() {
     if (!isTauriRuntime()) return
     let unlisten: (() => void) | undefined
     listen<LauncherUpdateProgress>('launcher://update-progress', (event) => {
-      if (event.payload.phase === 'installing') {
-        setLauncherUpdateStatus('Download verified. Installing and restarting...')
-        return
+      const progress = event.payload
+      setLauncherUpdateProgress(progress)
+      if (progress.phase === 'downloading') {
+        const now = Date.now()
+        const points = [...launcherUpdateRateRef.current, { bytes: progress.downloadedBytes, at: now }]
+          .filter((point) => now - point.at <= 6000)
+          .slice(-8)
+        launcherUpdateRateRef.current = points
+        if (points.length >= 2) {
+          const first = points[0]
+          const last = points[points.length - 1]
+          const seconds = Math.max((last.at - first.at) / 1000, 0.001)
+          const sampleRate = Math.max(0, (last.bytes - first.bytes) / seconds)
+          setLauncherUpdateSpeed((current) => (current > 0 ? current * 0.65 + sampleRate * 0.35 : sampleRate))
+          if (progress.totalBytes && sampleRate > 1) {
+            setLauncherUpdateEta(Math.max(0, (progress.totalBytes - progress.downloadedBytes) / sampleRate))
+          }
+        }
+      } else {
+        setLauncherUpdateEta(null)
       }
-      const total = event.payload.totalBytes ?? 0
-      const percent = total > 0 ? Math.min(100, Math.round((event.payload.downloadedBytes / total) * 100)) : null
-      setLauncherUpdateStatus(percent === null ? 'Downloading update...' : `Downloading update... ${percent}%`)
+      const total = progress.totalBytes ?? 0
+      const percent = total > 0 ? Math.min(100, Math.round((progress.downloadedBytes / total) * 100)) : null
+      const labels: Record<string, string> = {
+        checking: 'Checking for updates...',
+        downloading: percent === null ? 'Downloading update...' : `Downloading update... ${percent}%`,
+        verifying: 'Download complete. Verifying signature...',
+        installing: 'Signature verified. Installing update...',
+        restarting: 'Update installed. Restarting launcher...',
+        failed: progress.error ? `Update failed: ${progress.error}` : 'Update failed.',
+      }
+      setSettingsUpdateStatus(labels[progress.phase] ?? progress.phase)
+      if (progress.phase === 'failed') {
+        void publishNotification({
+          category: 'errors',
+          severity: 'error',
+          title: 'Launcher update failed',
+          message: progress.error || 'The signed launcher update could not be applied.',
+          dedupeKey: `launcher-update:${progress.version}:failed:${progress.error ?? 'unknown'}`,
+          entity: { kind: 'launcher-update', id: progress.version || 'unknown' },
+          action: { kind: 'update-center', tab: null, gameId: null },
+        })
+        setShowUpdateCenter(true)
+      }
     })
       .then((dispose) => {
         unlisten = dispose
       })
       .catch(console.error)
     return () => unlisten?.()
-  }, [])
+  }, [publishNotification])
 
   useEffect(() => {
     if (!isTauriRuntime() || !preferences.autoCheckLauncherUpdates) {
@@ -296,13 +633,24 @@ export default function App() {
     const updateTimer = window.setTimeout(() => {
       invoke<LauncherUpdateInfo | null>('check_launcher_update')
         .then((info) => {
-          if (info) setLauncherUpdate(info)
+          if (info) {
+            setLauncherUpdate(info)
+            void publishNotification({
+              category: 'launcher',
+              severity: 'info',
+              title: `Launcher ${info.version} is available`,
+              message: 'A signed launcher update is ready to download.',
+              dedupeKey: `launcher-update:${info.version}:available`,
+              entity: { kind: 'launcher-update', id: info.version },
+              action: { kind: 'update-center', tab: null, gameId: null },
+            })
+          }
         })
         .catch(console.error)
     }, 1800)
 
     return () => window.clearTimeout(updateTimer)
-  }, [preferences.autoCheckLauncherUpdates])
+  }, [preferences.autoCheckLauncherUpdates, publishNotification])
 
   async function refreshInstallState(gameId: string, committedInstallPath?: string) {
     if (!isTauriRuntime()) {
@@ -376,7 +724,7 @@ export default function App() {
   )
 
   const effectiveGameId = useMemo(() => {
-    if (activeTab === 'Settings') {
+    if (activeTab === 'Home' || activeTab === 'Cloud Saves' || activeTab === 'Settings') {
       return null
     }
     if (activeTab === 'Store') {
@@ -403,6 +751,14 @@ export default function App() {
     }
     return selectedGameId
   }, [activeTab, installStates, job?.gameId, job?.kind, snapshot.lastJob?.gameId, snapshot.lastJob?.kind, selectedGameId, updateReadyGameIds])
+
+  const requestHomeAsset = useCallback(
+    (gameId: string, assetId: string, urgent = false) => {
+      const game = catalogRef.current.games.find((candidate) => candidate.id === gameId)
+      requestGameAsset(game, assetId, urgent)
+    },
+    [requestGameAsset],
+  )
 
   useEffect(() => {
     if (!effectiveGameId) {
@@ -623,6 +979,23 @@ export default function App() {
       }
       if (nextJob.status === 'committed') {
         playInstallCompleteSound(nextJob)
+        const gameTitle =
+          catalogRef.current.games.find((game) => game.id === nextJob.gameId)?.title ??
+          nextJob.gameId
+        void publishNotification({
+          category: 'installs',
+          severity: 'success',
+          title:
+            nextJob.kind === 'install'
+              ? `${gameTitle} installed`
+              : nextJob.kind === 'repair'
+                ? `${gameTitle} repaired`
+                : `${gameTitle} updated`,
+          message: `Version ${nextJob.toVersion} committed successfully.`,
+          dedupeKey: `job:${nextJob.id}:committed`,
+          entity: { kind: 'game', id: nextJob.gameId },
+          action: { kind: 'open-game', tab: 'Library', gameId: nextJob.gameId },
+        })
         setInstallPath(nextJob.installPath)
         setInstallRoot(nextJob.installPath)
         setHasScanned(true)
@@ -657,6 +1030,18 @@ export default function App() {
           return current
         })
       } else if (nextJob.status === 'failed' || nextJob.status === 'canceled') {
+        const gameTitle =
+          catalogRef.current.games.find((game) => game.id === nextJob.gameId)?.title ??
+          nextJob.gameId
+        void publishNotification({
+          category: nextJob.status === 'failed' ? 'errors' : 'downloads',
+          severity: nextJob.status === 'failed' ? 'error' : 'warning',
+          title: `${titleCase(nextJob.kind)} ${nextJob.status}`,
+          message: `${gameTitle} ${nextJob.kind} job ${nextJob.status}.`,
+          dedupeKey: `job:${nextJob.id}:${nextJob.status}`,
+          entity: { kind: 'job', id: nextJob.id },
+          action: { kind: 'open-downloads', tab: 'Downloads', gameId: nextJob.gameId },
+        })
         setVerifyStatus((current) => {
           if (current?.gameId === nextJob.gameId && current.state === 'running') {
             return {
@@ -695,7 +1080,7 @@ export default function App() {
       unsubscribe?.()
       unsubscribeJobCleared?.()
     }
-  }, [playInstallCompleteSound])
+  }, [playInstallCompleteSound, publishNotification])
 
   useEffect(() => {
     if (!isTauriRuntime()) {
@@ -884,17 +1269,39 @@ export default function App() {
     let unlistenError: (() => void) | undefined
 
     listen<{ gameId: string; status: CloudSaveStatus }>('launcher://cloud-save', (event) => {
-      if (disposed || event.payload.gameId !== selectedGameIdRef.current) return
-      setCloudSaveStatus(event.payload.status)
-      setCloudLaunchBlocked(event.payload.status.conflicts.length > 0)
+      if (disposed) return
+      if (event.payload.gameId === selectedGameIdRef.current) {
+        setCloudSaveStatus(event.payload.status)
+        setCloudLaunchBlocked(event.payload.status.conflicts.length > 0)
+      }
+      if (event.payload.status.conflicts.length > 0) {
+        void publishNotification({
+          category: 'cloudSaves',
+          severity: 'warning',
+          title: 'Cloud save conflict detected',
+          message: `${event.payload.status.conflicts.length} conflict${event.payload.status.conflicts.length === 1 ? '' : 's'} require a decision.`,
+          dedupeKey: `cloud-conflict:${event.payload.gameId}:${event.payload.status.conflicts.map((item) => item.id).join(',')}`,
+          entity: { kind: 'game', id: event.payload.gameId },
+          action: { kind: 'open-cloud-save', tab: 'Library', gameId: event.payload.gameId },
+        })
+      }
     }).then((dispose) => {
       if (disposed) dispose()
       else unlistenStatus = dispose
     })
 
     listen<{ gameId: string; message: string }>('launcher://cloud-save-error', (event) => {
-      if (disposed || event.payload.gameId !== selectedGameIdRef.current) return
-      setScanStatus(event.payload.message)
+      if (disposed) return
+      if (event.payload.gameId === selectedGameIdRef.current) setScanStatus(event.payload.message)
+      void publishNotification({
+        category: 'errors',
+        severity: 'error',
+        title: 'Cloud save failed',
+        message: event.payload.message,
+        dedupeKey: `cloud-error:${event.payload.gameId}:${event.payload.message}`,
+        entity: { kind: 'game', id: event.payload.gameId },
+        action: { kind: 'open-cloud-save', tab: 'Library', gameId: event.payload.gameId },
+      })
     }).then((dispose) => {
       if (disposed) dispose()
       else unlistenError = dispose
@@ -905,7 +1312,7 @@ export default function App() {
       unlistenStatus?.()
       unlistenError?.()
     }
-  }, [])
+  }, [publishNotification])
 
   async function chooseInstallFolder() {
     if (!isTauriRuntime()) {
@@ -1031,6 +1438,10 @@ export default function App() {
   }
 
   function updatePreference<K extends keyof LauncherPreferences>(key: K, value: LauncherPreferences[K]) {
+    if (key === 'windowsNotifications' && value === true) {
+      void enableWindowsNotifications()
+      return
+    }
     setPreferences((current) => ({ ...current, [key]: value }))
   }
 
@@ -1202,6 +1613,13 @@ export default function App() {
 
   async function resolveCloudConflict(conflictId: string, resolution: 'local' | 'cloud') {
     if (!selectedGame || !isTauriRuntime()) return
+    if (
+      resolution === 'cloud' &&
+      preferences.confirmBeforeCloudRestore &&
+      !window.confirm('Use the cloud copy? The current local save will be preserved as a conflict copy before replacement.')
+    ) {
+      return
+    }
     setCloudSaveBusy(true)
     try {
       const status = await invoke<CloudSaveStatus>('resolve_cloud_save_conflict', {
@@ -1212,6 +1630,15 @@ export default function App() {
       setCloudSaveStatus(status)
       setCloudLaunchBlocked(status.conflicts.length > 0)
       setScanStatus(status.lastMessage)
+      void publishNotification({
+        category: 'cloudSaves',
+        severity: 'success',
+        title: 'Cloud save conflict resolved',
+        message: resolution === 'local' ? 'The local save was kept and uploaded.' : 'The cloud save was restored locally.',
+        dedupeKey: `cloud-conflict:${selectedGame.id}:${conflictId}:resolved:${resolution}`,
+        entity: { kind: 'game', id: selectedGame.id },
+        action: { kind: 'open-cloud-save', tab: 'Library', gameId: selectedGame.id },
+      })
     } catch (error) {
       setScanStatus(`Could not resolve cloud save conflict: ${String(error)}`)
     } finally {
@@ -1221,6 +1648,12 @@ export default function App() {
 
   async function restoreCloudSnapshot(snapshotId: string) {
     if (!selectedGame || !isTauriRuntime()) return
+    if (
+      preferences.confirmBeforeCloudRestore &&
+      !window.confirm('Restore this cloud-save snapshot? Current local files will be preserved before replacement.')
+    ) {
+      return
+    }
     setCloudSaveBusy(true)
     try {
       const status = await invoke<CloudSaveStatus>('restore_cloud_save_snapshot', {
@@ -1230,6 +1663,15 @@ export default function App() {
       setCloudSaveStatus(status)
       setCloudLaunchBlocked(status.conflicts.length > 0)
       setScanStatus(status.lastMessage)
+      void publishNotification({
+        category: 'cloudSaves',
+        severity: 'success',
+        title: 'Cloud-save snapshot restored',
+        message: status.lastMessage || 'The selected snapshot was restored successfully.',
+        dedupeKey: `cloud-snapshot:${selectedGame.id}:${snapshotId}:restored`,
+        entity: { kind: 'game', id: selectedGame.id },
+        action: { kind: 'open-cloud-save', tab: 'Library', gameId: selectedGame.id },
+      })
     } catch (error) {
       setScanStatus(`Could not restore cloud save snapshot: ${String(error)}`)
     } finally {
@@ -1292,8 +1734,52 @@ export default function App() {
       const info = await invoke<LauncherUpdateInfo | null>('check_launcher_update')
       setLauncherUpdate(info)
       setSettingsUpdateStatus(info ? `Version ${info.version} is available.` : 'Launcher is up to date.')
+      if (info) {
+        void publishNotification({
+          category: 'launcher',
+          severity: 'info',
+          title: `Launcher ${info.version} is available`,
+          message: 'A signed launcher update is ready to download.',
+          dedupeKey: `launcher-update:${info.version}:available`,
+          entity: { kind: 'launcher-update', id: info.version },
+          action: { kind: 'update-center', tab: null, gameId: null },
+        })
+        setShowUpdateCenter(true)
+      }
     } catch (error) {
       setSettingsUpdateStatus(`Update check failed: ${String(error)}`)
+    }
+  }
+
+  async function applyLauncherUpdate() {
+    if (!launcherUpdate || !isTauriRuntime()) return
+    launcherUpdateRateRef.current = []
+    setLauncherUpdateSpeed(0)
+    setLauncherUpdateEta(null)
+    setSettingsUpdateStatus('Preparing signed update...')
+    setLauncherUpdateProgress({
+      version: launcherUpdate.version,
+      phase: 'downloading',
+      downloadedBytes: 0,
+      totalBytes: null,
+      timestamp: new Date().toISOString(),
+      error: null,
+    })
+    setShowUpdateCenter(true)
+    window.localStorage.setItem('0xo_pending_launcher_update', launcherUpdate.version)
+    try {
+      await invoke('apply_launcher_update')
+    } catch (error) {
+      const message = String(error)
+      setSettingsUpdateStatus(`Update failed: ${message}`)
+      setLauncherUpdateProgress((current) => ({
+        version: launcherUpdate.version,
+        phase: 'failed',
+        downloadedBytes: current?.downloadedBytes ?? 0,
+        totalBytes: current?.totalBytes ?? null,
+        timestamp: new Date().toISOString(),
+        error: message,
+      }))
     }
   }
 
@@ -1493,6 +1979,31 @@ export default function App() {
       setScanStatus(String(error))
     }
   }
+
+  function openHomeGame(gameId: string) {
+    setSelectedGameId(gameId)
+    setActiveTab('Library')
+  }
+
+  function playHomeGame(gameId: string) {
+    pendingHomeLaunchRef.current = gameId
+    setSelectedGameId(gameId)
+    setActiveTab('Library')
+  }
+
+  useEffect(() => {
+    if (
+      pendingHomeLaunchRef.current &&
+      pendingHomeLaunchRef.current === selectedGame?.id &&
+      activeDetail?.gameId === selectedGame.id &&
+      selectedInstalled
+    ) {
+      pendingHomeLaunchRef.current = null
+      void playSelectedGame()
+    }
+    // The launch is deliberately keyed to the selected game/detail transition.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeDetail?.gameId, selectedGame?.id, selectedInstalled])
 
   async function openSteamAndContinue() {
     setSteamOpening(true)
@@ -1716,8 +2227,26 @@ export default function App() {
       const desktopShortcutText = report.removedShortcuts > 0 ? `, removed ${report.removedShortcuts} shortcut${report.removedShortcuts === 1 ? '' : 's'}` : ''
       const steamShortcutText = report.steamShortcutRemoved ? ', removed/queued Steam shortcut cleanup' : ''
       setScanStatus(`Uninstalled ${selectedGame.title}: removed ${report.removedFiles} files${desktopShortcutText}${steamShortcutText}`)
+      void publishNotification({
+        category: 'storage',
+        severity: 'success',
+        title: `${selectedGame.title} uninstalled`,
+        message: `Removed ${report.removedFiles} files${desktopShortcutText}${steamShortcutText}.`,
+        dedupeKey: `uninstall:${selectedGame.id}:${Date.now()}`,
+        entity: { kind: 'game', id: selectedGame.id },
+        action: { kind: 'open-store', tab: 'Store', gameId: selectedGame.id },
+      })
     } catch (error) {
       setScanStatus(String(error))
+      void publishNotification({
+        category: 'errors',
+        severity: 'error',
+        title: 'Uninstall failed',
+        message: String(error),
+        dedupeKey: `uninstall:${selectedGame.id}:failed:${String(error)}`,
+        entity: { kind: 'game', id: selectedGame.id },
+        action: { kind: 'open-game', tab: 'Library', gameId: selectedGame.id },
+      })
     }
   }
 
@@ -1757,7 +2286,10 @@ export default function App() {
       return
     }
 
-    if (!window.confirm('Are you sure you want to cancel the download? This will delete all downloaded data.')) {
+    if (
+      preferences.confirmBeforeCancelCleanup &&
+      !window.confirm('Are you sure you want to cancel the download? This will delete temporary downloaded data for this job.')
+    ) {
       return
     }
 
@@ -1770,8 +2302,26 @@ export default function App() {
         await invoke('cancel_job')
       }
       setScanStatus('Download canceled and temporary data cleanup started.')
+      void publishNotification({
+        category: 'downloads',
+        severity: 'success',
+        title: 'Download canceled',
+        message: 'Temporary data cleanup completed for the canceled job.',
+        dedupeKey: `job:${job?.id ?? selectedGameId ?? 'active'}:cleanup-complete`,
+        entity: job ? { kind: 'job', id: job.id } : null,
+        action: { kind: 'open-downloads', tab: 'Downloads', gameId: selectedGameId },
+      })
     } catch (error) {
       setScanStatus(`Download canceled, but cleanup reported: ${String(error)}`)
+      void publishNotification({
+        category: 'errors',
+        severity: 'error',
+        title: 'Temporary cleanup failed',
+        message: String(error),
+        dedupeKey: `job:${job?.id ?? selectedGameId ?? 'active'}:cleanup-failed:${String(error)}`,
+        entity: job ? { kind: 'job', id: job.id } : null,
+        action: { kind: 'open-downloads', tab: 'Downloads', gameId: selectedGameId },
+      })
     } finally {
       // Clear immediately; the backend job-cleared event repeats this after the
       // journal is removed and again when the worker has fully exited.
@@ -1782,42 +2332,114 @@ export default function App() {
     }
   }
 
+  async function clearLauncherCache() {
+    if (!isTauriRuntime()) {
+      setScanStatus('Cache cleanup requires the desktop launcher.')
+      return
+    }
+    if (isRunning) {
+      setScanStatus('Pause or finish the active download before clearing cache.')
+      return
+    }
+    if (
+      preferences.confirmBeforeClearCache &&
+      !window.confirm(`Clear ${snapshot.cache.cacheSize > 0 ? 'the reusable chunk cache' : 'this cache'}? Installed game files are not affected.`)
+    ) {
+      return
+    }
+    setCacheBusy(true)
+    try {
+      const report = await invoke<ClearCacheReport>('clear_chunk_cache', {
+        cachePath: snapshot.cache.cachePath,
+      })
+      const nextSnapshot = await invoke<Snapshot>('get_launcher_snapshot')
+      setSnapshot(nextSnapshot)
+      setScanStatus(`Cleared ${report.removedFiles} cached files (${formatBytes(report.removedBytes)}).`)
+      void publishNotification({
+        category: 'storage',
+        severity: 'success',
+        title: 'Chunk cache cleared',
+        message: `Removed ${report.removedFiles} files and freed ${formatBytes(report.removedBytes)}.`,
+        dedupeKey: `cache-clear:${report.cachePath}:${Date.now()}`,
+        entity: { kind: 'cache', id: report.cachePath },
+        action: { kind: 'open-cache', tab: 'Cache', gameId: selectedGameId },
+      })
+    } catch (error) {
+      setScanStatus(`Cache cleanup failed: ${String(error)}`)
+      void publishNotification({
+        category: 'errors',
+        severity: 'error',
+        title: 'Cache cleanup failed',
+        message: String(error),
+        dedupeKey: `cache-clear:failed:${snapshot.cache.cachePath}:${String(error)}`,
+        entity: { kind: 'cache', id: snapshot.cache.cachePath },
+        action: { kind: 'open-cache', tab: 'Cache', gameId: selectedGameId },
+      })
+    } finally {
+      setCacheBusy(false)
+    }
+  }
+
   return (
-    <div className={preferences.reduceMotion ? 'app-root reduce-motion' : 'app-root'}>
-      <CustomTitleBar closeBehavior={preferences.closeBehavior} />
-      {launcherUpdate ? (
-        <div className="launcher-update-banner">
-          <div className="banner-content">
-            <strong>Launcher Update Available (v{launcherUpdate.version})</strong>
-            {launcherUpdateStatus ? (
-              <span>{launcherUpdateStatus}</span>
-            ) : (
-              <span>Restart to apply.</span>
-            )}
-          </div>
-          <button
-            className="primary-control small"
-            onClick={() => {
-              setLauncherUpdateStatus('Downloading...')
-              invoke('apply_launcher_update')
-                .catch((e) => setLauncherUpdateStatus(`Failed: ${e}`))
-            }}
-            disabled={!!launcherUpdateStatus}
-          >
-            Update Now
-          </button>
-        </div>
-      ) : null}
-      <main className="launcher-shell">
-        <Sidebar
-        serviceStatus={contentServiceLabel(snapshot.proxyStatus)}
-        activeTab={activeTab}
-        onSelect={setActiveTab}
-        updateCount={updateReadyGameIds.length}
-        downloadCount={hasVisibleJob ? 1 : 0}
+    <MotionConfig reducedMotion={reducedMotion ? 'always' : 'never'}>
+    <div
+      className={[
+        'app-root',
+        reducedMotion ? 'reduce-motion' : '',
+        preferences.glassEffects ? 'glass-effects' : 'no-glass-effects',
+        preferences.scrollEffects ? '' : 'no-scroll-effects',
+      ].filter(Boolean).join(' ')}
+    >
+      <CustomTitleBar
+        closeBehavior={preferences.closeBehavior}
+        serviceOnline={!contentServiceLabel(snapshot.proxyStatus).toLowerCase().includes('unavailable')}
+        job={job}
+        updateProgress={launcherUpdateProgress}
+        notifications={notifications}
+        notificationOpen={notificationOpen}
+        statusPreferences={preferences}
+        onToggleNotifications={() => setNotificationOpen((current) => !current)}
+        onCloseNotifications={() => setNotificationOpen(false)}
+        onOpenNotification={openNotificationRecord}
+        onMarkAllNotificationsRead={() => {
+          setNotifications((current) => current.map((item) => ({ ...item, read: true })))
+          if (isTauriRuntime()) {
+            void invoke<NotificationRecord[]>('mark_all_notifications_read').then(setNotifications).catch(() => undefined)
+          }
+        }}
+        onClearNotifications={() => {
+          setNotifications([])
+          if (isTauriRuntime()) {
+            void invoke<NotificationRecord[]>('clear_notifications').then(setNotifications).catch(() => undefined)
+          }
+        }}
+        onOpenNotificationSettings={() => {
+          setNotificationOpen(false)
+          setActiveTab('Settings')
+          window.setTimeout(() => {
+            setNotificationOpen(false)
+            document.getElementById('notification-settings')?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth' })
+          }, 80)
+        }}
       />
-      <section className="workspace">
-        {activeTab !== 'Store' && activeTab !== 'Library' && activeTab !== 'Settings' && selectedGame && activeDetail ? (
+      {launcherUpdate ? (
+        <UpdateBanner
+          update={launcherUpdate}
+          progress={launcherUpdateProgress}
+          onOpen={() => setShowUpdateCenter(true)}
+          onStart={() => void applyLauncherUpdate()}
+        />
+      ) : null}
+      <main className="launcher-shell premium-shell">
+        <Sidebar
+          serviceStatus={contentServiceLabel(snapshot.proxyStatus)}
+          activeTab={activeTab}
+          onSelect={setActiveTab}
+          updateCount={updateReadyGameIds.length}
+          downloadCount={hasVisibleJob ? 1 : 0}
+        />
+      <section className="workspace premium-workspace">
+        {['Updates', 'Downloads', 'Cache'].includes(activeTab) && selectedGame && activeDetail ? (
           <OperationHero
             game={selectedGame}
             detail={activeDetail}
@@ -1837,7 +2459,33 @@ export default function App() {
           />
         ) : null}
 
-        {activeTab === 'Settings' ? (
+        {activeTab === 'Home' ? (
+          <HomeView
+            catalog={catalog}
+            installStates={installStates}
+            runtimeStates={runtimeStates}
+            assets={assetUrls}
+            job={job}
+            launcherUpdate={launcherUpdate}
+            launcherUpdateProgress={launcherUpdateProgress}
+            preferences={preferences}
+            reducedMotion={reducedMotion}
+            onRequestAsset={requestHomeAsset}
+            onOpenGame={openHomeGame}
+            onPlayGame={playHomeGame}
+            onOpenTab={setActiveTab}
+            onOpenDiscord={() => void openUrl('https://discord.gg/7ZXdTUVsJE')}
+            onOpenDonate={() => setShowDonate(true)}
+          />
+        ) : activeTab === 'Cloud Saves' ? (
+          <CloudSavesOverview
+            catalog={catalog}
+            installStates={installStates}
+            assets={assetUrls}
+            onOpenGame={openHomeGame}
+            onRequestAsset={requestHomeAsset}
+          />
+        ) : activeTab === 'Settings' ? (
           <SettingsView
             preferences={preferences}
             launcherSettings={launcherSettings}
@@ -1855,6 +2503,12 @@ export default function App() {
             onOpenSteam={() => void openSteamFromSettings('open_steam')}
             onOpenBigPicture={() => void openSteamFromSettings('open_steam_big_picture')}
             onReset={resetLauncherPreferences}
+            onResetOnboarding={() => {
+              updatePreference('onboardingCompleted', false)
+              setActiveTab('Home')
+            }}
+            onManageNotifications={() => setNotificationOpen(true)}
+            appVersion={appVersion}
             updateStatus={settingsUpdateStatus}
           />
         ) : (
@@ -1942,6 +2596,8 @@ export default function App() {
           onRestoreMissingSaveFiles={() =>
             void runGoogleDriveAction('restore_missing_save_files', 'Checking Google Drive for missing save files...')
           }
+          cacheBusy={cacheBusy}
+          onClearCache={() => void clearLauncherCache()}
         />
         )}
         {showInstallOptions && selectedGame && activeDetail ? (
@@ -2105,6 +2761,65 @@ export default function App() {
         )}
       </section>
     </main>
+      <UpdateCenter
+        open={showUpdateCenter}
+        update={launcherUpdate}
+        progress={launcherUpdateProgress}
+        speed={launcherUpdateSpeed}
+        eta={launcherUpdateEta}
+        onClose={() => setShowUpdateCenter(false)}
+        onStart={() => void applyLauncherUpdate()}
+        onRetry={() => void applyLauncherUpdate()}
+      />
+      <NotificationToasts
+        notifications={toastNotifications}
+        onOpen={openNotificationRecord}
+        onDismiss={(notificationId) =>
+          setToastNotifications((current) => current.filter((item) => item.id !== notificationId))
+        }
+      />
+      {!preferences.onboardingCompleted ? (
+        <Onboarding
+          onComplete={() => updatePreference('onboardingCompleted', true)}
+          onEnableWindowsNotifications={() => void enableWindowsNotifications()}
+        />
+      ) : null}
+      {showDonate ? (
+        <div className="donate-modal-backdrop" role="presentation" onMouseDown={() => setShowDonate(false)}>
+          <section
+            className="donate-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="donate-title"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <button type="button" className="donate-modal-close" onClick={() => setShowDonate(false)} aria-label="Close">
+              <X size={18} />
+            </button>
+            <div className="donate-modal-copy">
+              <span><Heart size={18} /></span>
+              <h2 id="donate-title">Support 0xoLemon</h2>
+              <p>Scan the QR code with your banking app. Donation is optional and does not unlock launcher features.</p>
+            </div>
+            <img src={donateImage} alt="0xoLemon donation QR code" />
+          </section>
+        </div>
+      ) : null}
     </div>
+    </MotionConfig>
   )
+}
+
+function notificationIdToNumber(value: string) {
+  let hash = 0
+  for (let index = 0; index < value.length; index += 1) {
+    hash = (hash * 31 + value.charCodeAt(index)) | 0
+  }
+  return Math.abs(hash || 1)
+}
+
+function titleCase(value: string) {
+  return value
+    .replace(/[-_]/g, ' ')
+    .replace(/\b\w/g, (letter) => letter.toUpperCase())
 }

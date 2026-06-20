@@ -3,7 +3,15 @@ import { enUS as t } from '../i18n/en-US'
 import type { ChangedFile, GameDetail, Snapshot } from '../types'
 import { formatBytes, formatDelta } from '../lib/format'
 
-export function CachePanel({ snapshot }: { snapshot: Snapshot }) {
+export function CachePanel({
+  snapshot,
+  busy,
+  onClear,
+}: {
+  snapshot: Snapshot
+  busy: boolean
+  onClear: () => void
+}) {
   const radius = 38
   const circumference = 2 * Math.PI * radius
   const offset = circumference - (circumference * snapshot.cache.healthPercent) / 100
@@ -34,8 +42,8 @@ export function CachePanel({ snapshot }: { snapshot: Snapshot }) {
       <p className="cache-location" title={snapshot.cache.cachePath}>
         Stored beside the library in <code>{'downloading\\<game>\\chunks'}</code>, never copied to AppData.
       </p>
-      <button type="button" disabled>
-        {snapshot.cache.cacheSize === 0 ? 'NO STORED CHUNKS' : 'REUSED AUTOMATICALLY'}
+      <button type="button" disabled={busy || snapshot.cache.cacheSize === 0} onClick={onClear}>
+        {busy ? 'CLEARING CACHE...' : snapshot.cache.cacheSize === 0 ? 'NO STORED CHUNKS' : 'CLEAR CHUNK CACHE'}
       </button>
     </section>
   )

@@ -1,0 +1,15 @@
+Validation performed
+====================
+
+Frontend
+- TypeScript project check: PASSED (`npx tsc -b`).
+- Vite production bundle: PASSED using a temporary test index.html because the uploaded replacement set did not include the project's existing index.html.
+- No new npm dependency was added.
+
+Backend
+- Rust syntax parsing: PASSED for all 26 Rust files using tree-sitter-rust.
+- `cargo check` was not run because this environment does not contain a Rust toolchain.
+- No new Cargo dependency was added.
+
+Archive
+- The final ZIP is a replacement source bundle. It intentionally excludes node_modules, dist, and the temporary test index.html.

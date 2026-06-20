@@ -6,11 +6,13 @@ pub mod game_tags;
 pub mod job;
 pub mod launch;
 pub mod manifest;
+pub mod notifications;
 pub mod platform;
 pub mod remote_paths;
 pub mod scanner;
 pub mod security;
 pub mod steam_integration;
+pub mod storage;
 pub mod updater;
 
 use std::path::PathBuf;
@@ -164,6 +166,60 @@ async fn check_launcher_update(
 #[tauri::command]
 async fn apply_launcher_update(app: AppHandle) -> Result<(), String> {
     updater::download_and_apply(&app).await
+}
+
+#[tauri::command]
+fn list_notifications(app: AppHandle) -> Result<Vec<notifications::NotificationRecord>, String> {
+    notifications::list(&app)
+}
+
+#[tauri::command]
+fn push_notification(
+    app: AppHandle,
+    notification: notifications::NewNotification,
+) -> Result<notifications::PushNotificationResult, String> {
+    notifications::push(&app, notification)
+}
+
+#[tauri::command]
+fn mark_notification_read(
+    app: AppHandle,
+    notification_id: String,
+) -> Result<Vec<notifications::NotificationRecord>, String> {
+    notifications::mark_read(&app, &notification_id)
+}
+
+#[tauri::command]
+fn mark_all_notifications_read(
+    app: AppHandle,
+) -> Result<Vec<notifications::NotificationRecord>, String> {
+    notifications::mark_all_read(&app)
+}
+
+#[tauri::command]
+fn clear_notifications(app: AppHandle) -> Result<Vec<notifications::NotificationRecord>, String> {
+    notifications::clear(&app)
+}
+
+#[tauri::command]
+fn open_notification_action(app: AppHandle, notification_id: String) -> Result<(), String> {
+    notifications::open_action(&app, &notification_id)
+}
+
+#[tauri::command]
+fn get_game_runtime_states(app: AppHandle) -> Result<Vec<platform::GameRuntimeState>, String> {
+    platform::get_runtime_states(&app)
+}
+
+#[tauri::command]
+fn clear_chunk_cache(
+    state: State<'_, LauncherState>,
+    cache_path: String,
+) -> Result<storage::ClearCacheReport, String> {
+    if state.job_control.is_running() {
+        return Err("pause or finish the active download before clearing cache".to_string());
+    }
+    storage::clear_chunk_cache(PathBuf::from(cache_path).as_path())
 }
 
 #[tauri::command]
@@ -536,6 +592,14 @@ pub fn run() {
             list_system_drives,
             check_launcher_update,
             apply_launcher_update,
+            list_notifications,
+            push_notification,
+            mark_notification_read,
+            mark_all_notifications_read,
+            clear_notifications,
+            open_notification_action,
+            get_game_runtime_states,
+            clear_chunk_cache,
             get_launcher_snapshot,
             get_launcher_settings,
             set_launcher_settings,
@@ -626,6 +690,7 @@ pub fn run() {
             Ok(())
         })
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .run(tauri::generate_context!())

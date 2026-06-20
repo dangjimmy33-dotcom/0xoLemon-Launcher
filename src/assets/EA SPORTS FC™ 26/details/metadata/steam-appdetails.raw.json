@@ -1,0 +1,527 @@
+﻿{
+    "3405690":  {
+                    "success":  true,
+                    "data":  {
+                                 "type":  "game",
+                                 "name":  "EA SPORTS FC™ 26",
+                                 "steam_appid":  3405690,
+                                 "required_age":  0,
+                                 "is_free":  false,
+                                 "controller_support":  "full",
+                                 "dlc":  [
+                                             3707320
+                                         ],
+                                 "detailed_description":  "\u003ch1\u003eExperience The World’s Game like never before in EA SPORTS FC™ 26.\u003c/h1\u003e\u003cp\u003e\u003cp class=\"bb_paragraph\" style=\"text-align: center\"\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/extras/57a6e5c980e0091e0a1fc4431b0c704e.avif?t=1781720918\" data-big-src=https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/extras_big/57a6e5c980e0091e0a1fc4431b0c704e.avif?t=1781720918 width=1560 height=878 /\u003e\u003c/span\u003e\u003c/p\u003e\u003cbr\u003eThe latest update introduces a brand-new international tournament mode featuring 48 national teams, alongside new authentic stadiums to play in. Take on international-themed Manager Live Challenges, and step into Player Career with new international ICONs and Heroes.\u003c/p\u003e\u003cbr\u003e\u003ch1\u003eEA SPORTS FC™ 26 The World’s Game Edition\u003c/h1\u003e\u003cp\u003e\u003cp class=\"bb_paragraph\" style=\"text-align: center\"\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/extras/5189137ea12684b246696529feaa7378.avif?t=1781720918\" width=780 height=1116 /\u003e\u003c/span\u003e\u003c/p\u003e\u003cbr\u003eEA SPORTS FC™ 26 The World’s Game Edition includes:\u003cbr\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e3,000 Season Points\u003cbr\u003e\u003c/li\u003e\u003cli\u003eOne Gold Starting XI Pack, with 11 untradeable Rare Gold Player Items (1 Goalkeeper, 4 Defenders, 3 Midfielders, 3 Attackers) rated 84 or higher, with at least one guaranteed 86+ rated player\u003c/li\u003e\u003c/ul\u003e\u003cbr\u003eThree Player Picks (all untradeable) from a selection of EA SPORTS FC™ 26 FUT™ campaigns:\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e1 of 5 Elite Campaign Players rated 90–93 OVR §\u003cbr\u003e\u003c/li\u003e\u003cli\u003e1 of 5 ICON or Hero Players rated 90–94 OVR §§\u003cbr\u003e\u003c/li\u003e\u003cli\u003e1 of 12 International TOTS Players rated up to 95 OVR §§§\u003c/li\u003e\u003c/ul\u003e\u003cbr\u003e§ Picks pulled from Knockout Royalty, Fantasy FC, FUT Birthday, Answer the Call and UEFA Road to the Final.\u003cbr\u003e§§ Picks pulled from Knockout Royalty, Fantasy FC, FUT Birthday and Trophy Titans.\u003cbr\u003e§§§ Picks include 1 player from each of; Argentina, Brazil, Canada, England, France, Germany, Mexico, Netherlands, Portugal, Saudi Arabia, Spain, USA.\u003c/p\u003e\u003cbr\u003e\u003ch1\u003eAbout the Game\u003c/h1\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/extras/5a285cb285527f5509258e622316cdde.avif?t=1781720918\" width=610 height=2134 /\u003e\u003c/span\u003e\u003cbr\u003e\u003cbr\u003eThis game includes optional in-game purchases of virtual currency that can be used to acquire virtual in-game items, including a random selection of virtual in-game items.",
+                                 "about_the_game":  "\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/extras/5a285cb285527f5509258e622316cdde.avif?t=1781720918\" width=610 height=2134 /\u003e\u003c/span\u003e\u003cbr\u003e\u003cbr\u003eThis game includes optional in-game purchases of virtual currency that can be used to acquire virtual in-game items, including a random selection of virtual in-game items.",
+                                 "short_description":  "The Club is Yours in EA SPORTS FC™ 26. Play your way with an overhauled gameplay experience powered by community feedback, Manager Live Challenges that bring fresh storylines to the new season, and Archetypes inspired by greats of the game.",
+                                 "supported_languages":  "English\u003cstrong\u003e*\u003c/strong\u003e, French\u003cstrong\u003e*\u003c/strong\u003e, Italian\u003cstrong\u003e*\u003c/strong\u003e, German\u003cstrong\u003e*\u003c/strong\u003e, Spanish - Spain\u003cstrong\u003e*\u003c/strong\u003e, Arabic\u003cstrong\u003e*\u003c/strong\u003e, Dutch\u003cstrong\u003e*\u003c/strong\u003e, Japanese\u003cstrong\u003e*\u003c/strong\u003e, Korean\u003cstrong\u003e*\u003c/strong\u003e, Polish\u003cstrong\u003e*\u003c/strong\u003e, Portuguese - Brazil\u003cstrong\u003e*\u003c/strong\u003e, Simplified Chinese\u003cstrong\u003e*\u003c/strong\u003e, Spanish - Latin America\u003cstrong\u003e*\u003c/strong\u003e, Turkish\u003cstrong\u003e*\u003c/strong\u003e, Czech, Danish, Norwegian, Portuguese - Portugal, Russian, Swedish, Traditional Chinese\u003cbr\u003e\u003cstrong\u003e*\u003c/strong\u003elanguages with full audio support",
+                                 "header_image":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/64d362e71693f1ec7023f52ab94026f9a0d4fbed/header.jpg?t=1781720918",
+                                 "capsule_image":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/b1345663febf4f26fe4744115e8e459da3e9ee2c/capsule_231x87.jpg?t=1781720918",
+                                 "capsule_imagev5":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/b1345663febf4f26fe4744115e8e459da3e9ee2c/capsule_184x69.jpg?t=1781720918",
+                                 "website":  "https://www.ea.com/en/games/ea-sports-fc/fc-26",
+                                 "pc_requirements":  {
+                                                         "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003eRequires a 64-bit processor and operating system\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows 10/11 - 64-Bit (Latest Update).\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e AMD Ryzen 5 1600 or Intel Core i5 6600k\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 8 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e AMD RX 570 or Nvidia GTX 1050 Ti\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eDirectX:\u003c/strong\u003e Version 12\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eNetwork:\u003c/strong\u003e Broadband Internet connection\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 100 GB available space\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eSound Card:\u003c/strong\u003e DirectX: 12 Compatible video card or equivalent (feature level 12_0)\u003c/li\u003e\u003c/ul\u003e",
+                                                         "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003eRequires a 64-bit processor and operating system\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows 10/11 - 64-Bit (Latest Update).\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e AMD Ryzen 7 2700X or Intel Core i7 6700\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 12 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e AMD RX 5600 XT or Nvidia GTX 1660\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eDirectX:\u003c/strong\u003e Version 12\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eNetwork:\u003c/strong\u003e Broadband Internet connection\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 100 GB available space\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eSound Card:\u003c/strong\u003e DirectX: 12 Compatible video card or equivalent (feature level 12_0)\u003c/li\u003e\u003c/ul\u003e"
+                                                     },
+                                 "mac_requirements":  {
+                                                          "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e",
+                                                          "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e"
+                                                      },
+                                 "linux_requirements":  {
+                                                            "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e",
+                                                            "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e"
+                                                        },
+                                 "legal_notice":  "This game includes optional in-game purchases of virtual currency that can be used to acquire virtual in-game items, including a random selection of virtual in-game items.\u003cbr /\u003e\r\n\u003cbr /\u003e\r\nInternet connection; EA Account; Steam Account; acceptance of the EA User Agreement (terms.ea.com); and download \u0026 installation of EA\u0027s client software EA app (ea.com/ea-app) required to play. EA’s Privacy \u0026 Cookie Policy applies to your use of EA\u0027s services. You consent to any personal data collected through your use of EA\u0027s services being transferred to the United States, as further explained in the Privacy \u0026 Cookie Policy. You must link your EA and Steam Accounts to play; EA will share your Account ID and individual game and play records with Steam to validate your purchase and/or refund request. Access to software content is limited to one EA \u0026 one Steam Account \u0026 is non-transferable after purchase. You may need to be 13+ or 16+ to register for an EA Account (age may vary, see o.ea.com/ea/child-access for details) \u0026 The World\u0027s Game Edition content. Some content may require gameplay to unlock. Mandatory updates may be downloaded automatically, incur broadband fees \u0026 require additional storage or purchase to access. EA may provide certain free incremental content \u0026/or updates. EA may retire online features after 30 days notice posted on ea.com/service-updates.\u003cbr /\u003e\r\n\u003cbr /\u003e\r\nEA User Agreement: terms.ea.com/de for German residents and terms.ea.com for all other residents\u003cbr /\u003e\r\nEA Privacy \u0026 Cookie Policy: privacy.ea.com/de for German residents and privacy.ea.com for all other residents\u003cbr /\u003e\r\n\u003cbr /\u003e\r\nYou must redeem your single-use code (if a code is required), log into Ultimate Team, log into Clubs, and create a Career Mode save while connected to EA servers (together these steps are referred to as \"redeem\") to access your Ultimate Edition Content (6,000 FC Points, one (1) Player Evolution slot, one (1) Archetype Unlock Consumable, two (2) double AXP for 10 matches consumables, three (3) ICONs for Career, one (1) 5-star Coach available for hire in Manager Career, one (1) 5-star Youth Scout for hire in Manager Career and Manager Live challenge content). You must be connected to EA servers when creating a new Career Mode save to use the three (3) ICONs for Career, one (1) 5-star Coach available for hire in Manager Career, one (1) 5-star Youth Scout for hire in Manager Career and Manager Live challenge content. FC Points will be distributed in 3 equal increments. The initial distribution will be granted with your initial login into Ultimate Team in the Product, the second distribution will be granted by the end of the subsequent month, and the 3rd distribution will be granted by the end of the following month. You must complete the steps to obtain the initial FC Points distribution by June 15, 2026 to receive all 6,000 FC Points. If you redeem after September 15, 2026, you will not receive any FC Points.\u003cbr /\u003e\r\n\u003cbr /\u003e\r\n‡Conditions \u0026 restrictions apply. See ea.com/games/ea-sports-fc/fc-26/game-disclaimers for details.\u003cbr /\u003e\r\n\u003cbr /\u003e\r\nText and audio commentary for languages other than English and the selected Steam client language requires a separate download.\u003cbr /\u003e\r\n\u003cbr /\u003e\r\nThe World\u0027s Game Edition \u0026 FC Points purchase are not available in Belgium and South Korea.\u003cbr /\u003e\r\n\u003cbr /\u003e\r\n§ Picks pulled from Knockout Royalty, Fantasy FC, FUT Birthday, Answer the Call and UEFA Road to the Final.\u003cbr /\u003e\r\n§§ Picks pulled from Knockout Royalty, Fantasy FC, FUT Birthday and Trophy Titans.\u003cbr /\u003e\r\n§§§ Picks include 1 player from each of; Argentina, Brazil, Canada, England, France, Germany, Mexico, Netherlands, Portugal, Saudi Arabia, Spain, USA.\u003cbr /\u003e\r\n\u003cbr /\u003e\r\n© 2025 Electronic Arts Inc. Electronic Arts, EA, EA SPORTS, the EA SPORTS logo, EA SPORTS FC, the EA SPORTS FC logo, Frostbite, the Frostbite logo, Football Ultimate Team, and Ultimate Team are trademarks of Electronic Arts Inc.",
+                                 "drm_notice":  "EA online activation and EA app software installation and background use required. Denuvo Anti-tamper",
+                                 "developers":  [
+                                                    "EA Canada",
+                                                    "EA Romania"
+                                                ],
+                                 "publishers":  [
+                                                    "Electronic Arts"
+                                                ],
+                                 "demos":  [
+                                               {
+                                                   "appid":  3629260,
+                                                   "description":  ""
+                                               }
+                                           ],
+                                 "price_overview":  {
+                                                        "currency":  "USD",
+                                                        "initial":  6999,
+                                                        "final":  1399,
+                                                        "discount_percent":  80,
+                                                        "initial_formatted":  "$69.99",
+                                                        "final_formatted":  "$13.99"
+                                                    },
+                                 "packages":  [
+                                                  1204710,
+                                                  1566190,
+                                                  1305297,
+                                                  1305364,
+                                                  1305334,
+                                                  1305333,
+                                                  1305295,
+                                                  1305373,
+                                                  1305348,
+                                                  1305296
+                                              ],
+                                 "package_groups":  [
+                                                        {
+                                                            "name":  "default",
+                                                            "title":  "Buy EA SPORTS FC™ 26",
+                                                            "description":  "",
+                                                            "selection_text":  "Select a purchase option",
+                                                            "save_text":  "",
+                                                            "display_type":  0,
+                                                            "is_recurring_subscription":  "false",
+                                                            "subs":  [
+                                                                         {
+                                                                             "packageid":  1204710,
+                                                                             "percent_savings_text":  "-80% ",
+                                                                             "percent_savings":  0,
+                                                                             "option_text":  "EA SPORTS FC™ 26 - \u003cspan class=\"discount_original_price\"\u003e$69.99\u003c/span\u003e $13.99",
+                                                                             "option_description":  "",
+                                                                             "can_get_free_license":  "0",
+                                                                             "is_free_license":  false,
+                                                                             "price_in_cents_with_discount":  1399
+                                                                         },
+                                                                         {
+                                                                             "packageid":  1566190,
+                                                                             "percent_savings_text":  " ",
+                                                                             "percent_savings":  0,
+                                                                             "option_text":  "EA SPORTS FC™ 26 - The World\u0027s Game Edition - $89.99",
+                                                                             "option_description":  "",
+                                                                             "can_get_free_license":  "0",
+                                                                             "is_free_license":  false,
+                                                                             "price_in_cents_with_discount":  8999
+                                                                         }
+                                                                     ]
+                                                        },
+                                                        {
+                                                            "name":  "FCPoints",
+                                                            "title":  "Buy EA SPORTS FC™ 26 - FC Points",
+                                                            "description":  "Click HERE for more information.",
+                                                            "selection_text":  "Select a purchase option",
+                                                            "save_text":  "",
+                                                            "display_type":  "1",
+                                                            "is_recurring_subscription":  "false",
+                                                            "subs":  [
+                                                                         {
+                                                                             "packageid":  1305297,
+                                                                             "percent_savings_text":  " ",
+                                                                             "percent_savings":  0,
+                                                                             "option_text":  "EA SPORTS FC™ 26 - FC Points 100 - $0.99",
+                                                                             "option_description":  "Click HERE for more information.",
+                                                                             "can_get_free_license":  "0",
+                                                                             "is_free_license":  false,
+                                                                             "price_in_cents_with_discount":  99
+                                                                         },
+                                                                         {
+                                                                             "packageid":  1305364,
+                                                                             "percent_savings_text":  " ",
+                                                                             "percent_savings":  0,
+                                                                             "option_text":  "EA SPORTS FC™ 26 - FC Points 500 - $4.99",
+                                                                             "option_description":  "Click HERE for more information.",
+                                                                             "can_get_free_license":  "0",
+                                                                             "is_free_license":  false,
+                                                                             "price_in_cents_with_discount":  499
+                                                                         },
+                                                                         {
+                                                                             "packageid":  1305334,
+                                                                             "percent_savings_text":  " ",
+                                                                             "percent_savings":  0,
+                                                                             "option_text":  "EA SPORTS FC™ 26 - FC Points 1050 - $9.99",
+                                                                             "option_description":  "Click HERE for more information.",
+                                                                             "can_get_free_license":  "0",
+                                                                             "is_free_license":  false,
+                                                                             "price_in_cents_with_discount":  999
+                                                                         },
+                                                                         {
+                                                                             "packageid":  1305333,
+                                                                             "percent_savings_text":  " ",
+                                                                             "percent_savings":  0,
+                                                                             "option_text":  "EA SPORTS FC™ 26 - FC Points 1600 - $14.99",
+                                                                             "option_description":  "Click HERE for more information.",
+                                                                             "can_get_free_license":  "0",
+                                                                             "is_free_license":  false,
+                                                                             "price_in_cents_with_discount":  1499
+                                                                         },
+                                                                         {
+                                                                             "packageid":  1305295,
+                                                                             "percent_savings_text":  " ",
+                                                                             "percent_savings":  0,
+                                                                             "option_text":  "EA SPORTS FC™ 26 - FC Points 2800 - $24.99",
+                                                                             "option_description":  "Click HERE for more information.",
+                                                                             "can_get_free_license":  "0",
+                                                                             "is_free_license":  false,
+                                                                             "price_in_cents_with_discount":  2499
+                                                                         },
+                                                                         {
+                                                                             "packageid":  1305373,
+                                                                             "percent_savings_text":  " ",
+                                                                             "percent_savings":  0,
+                                                                             "option_text":  "EA SPORTS FC™ 26 - FC Points 5900 - $49.99",
+                                                                             "option_description":  "Click HERE for more information.",
+                                                                             "can_get_free_license":  "0",
+                                                                             "is_free_license":  false,
+                                                                             "price_in_cents_with_discount":  4999
+                                                                         },
+                                                                         {
+                                                                             "packageid":  1305348,
+                                                                             "percent_savings_text":  " ",
+                                                                             "percent_savings":  0,
+                                                                             "option_text":  "EA SPORTS FC™ 26 - FC Points 12000 - $99.99",
+                                                                             "option_description":  "Click HERE for more information.",
+                                                                             "can_get_free_license":  "0",
+                                                                             "is_free_license":  false,
+                                                                             "price_in_cents_with_discount":  9999
+                                                                         },
+                                                                         {
+                                                                             "packageid":  1305296,
+                                                                             "percent_savings_text":  " ",
+                                                                             "percent_savings":  0,
+                                                                             "option_text":  "EA SPORTS FC™ 26 - FC Points 18500 - $149.99",
+                                                                             "option_description":  "Click HERE for more information.",
+                                                                             "can_get_free_license":  "0",
+                                                                             "is_free_license":  false,
+                                                                             "price_in_cents_with_discount":  14999
+                                                                         }
+                                                                     ]
+                                                        }
+                                                    ],
+                                 "platforms":  {
+                                                   "windows":  true,
+                                                   "mac":  false,
+                                                   "linux":  false
+                                               },
+                                 "categories":  [
+                                                    {
+                                                        "id":  2,
+                                                        "description":  "Single-player"
+                                                    },
+                                                    {
+                                                        "id":  1,
+                                                        "description":  "Multi-player"
+                                                    },
+                                                    {
+                                                        "id":  49,
+                                                        "description":  "PvP"
+                                                    },
+                                                    {
+                                                        "id":  36,
+                                                        "description":  "Online PvP"
+                                                    },
+                                                    {
+                                                        "id":  37,
+                                                        "description":  "Shared/Split Screen PvP"
+                                                    },
+                                                    {
+                                                        "id":  9,
+                                                        "description":  "Co-op"
+                                                    },
+                                                    {
+                                                        "id":  38,
+                                                        "description":  "Online Co-op"
+                                                    },
+                                                    {
+                                                        "id":  39,
+                                                        "description":  "Shared/Split Screen Co-op"
+                                                    },
+                                                    {
+                                                        "id":  24,
+                                                        "description":  "Shared/Split Screen"
+                                                    },
+                                                    {
+                                                        "id":  27,
+                                                        "description":  "Cross-Platform Multiplayer"
+                                                    },
+                                                    {
+                                                        "id":  22,
+                                                        "description":  "Steam Achievements"
+                                                    },
+                                                    {
+                                                        "id":  28,
+                                                        "description":  "Full controller support"
+                                                    },
+                                                    {
+                                                        "id":  35,
+                                                        "description":  "In-App Purchases"
+                                                    },
+                                                    {
+                                                        "id":  72,
+                                                        "description":  "Chat Speech-to-text"
+                                                    },
+                                                    {
+                                                        "id":  78,
+                                                        "description":  "Adjustable Difficulty"
+                                                    },
+                                                    {
+                                                        "id":  75,
+                                                        "description":  "Keyboard Only Option"
+                                                    },
+                                                    {
+                                                        "id":  69,
+                                                        "description":  "Stereo Sound"
+                                                    },
+                                                    {
+                                                        "id":  65,
+                                                        "description":  "Subtitle Options"
+                                                    },
+                                                    {
+                                                        "id":  61,
+                                                        "description":  "HDR available"
+                                                    }
+                                                ],
+                                 "genres":  [
+                                                {
+                                                    "id":  "28",
+                                                    "description":  "Simulation"
+                                                },
+                                                {
+                                                    "id":  "18",
+                                                    "description":  "Sports"
+                                                }
+                                            ],
+                                 "screenshots":  [
+                                                     {
+                                                         "id":  0,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/1d3064a6f7b0f8e1c00fa8a70307a67e95c090ea/ss_1d3064a6f7b0f8e1c00fa8a70307a67e95c090ea.600x338.jpg?t=1781720918",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/1d3064a6f7b0f8e1c00fa8a70307a67e95c090ea/ss_1d3064a6f7b0f8e1c00fa8a70307a67e95c090ea.1920x1080.jpg?t=1781720918"
+                                                     },
+                                                     {
+                                                         "id":  1,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/b61caa1b54537a4e5ba6ca186ed661a0d03debee/ss_b61caa1b54537a4e5ba6ca186ed661a0d03debee.600x338.jpg?t=1781720918",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/b61caa1b54537a4e5ba6ca186ed661a0d03debee/ss_b61caa1b54537a4e5ba6ca186ed661a0d03debee.1920x1080.jpg?t=1781720918"
+                                                     },
+                                                     {
+                                                         "id":  2,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/5038fb5ee65b4469793f2f477a91d3c4f9af144b/ss_5038fb5ee65b4469793f2f477a91d3c4f9af144b.600x338.jpg?t=1781720918",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/5038fb5ee65b4469793f2f477a91d3c4f9af144b/ss_5038fb5ee65b4469793f2f477a91d3c4f9af144b.1920x1080.jpg?t=1781720918"
+                                                     },
+                                                     {
+                                                         "id":  3,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/725a1067d83dba8514b5ecae4f39d59b4bd73bb2/ss_725a1067d83dba8514b5ecae4f39d59b4bd73bb2.600x338.jpg?t=1781720918",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/725a1067d83dba8514b5ecae4f39d59b4bd73bb2/ss_725a1067d83dba8514b5ecae4f39d59b4bd73bb2.1920x1080.jpg?t=1781720918"
+                                                     },
+                                                     {
+                                                         "id":  4,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/d01fbbd32769bd7cd70215dedd22e4ffb7bc42bc/ss_d01fbbd32769bd7cd70215dedd22e4ffb7bc42bc.600x338.jpg?t=1781720918",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/d01fbbd32769bd7cd70215dedd22e4ffb7bc42bc/ss_d01fbbd32769bd7cd70215dedd22e4ffb7bc42bc.1920x1080.jpg?t=1781720918"
+                                                     },
+                                                     {
+                                                         "id":  5,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/b2bcda2e36966161937db451509f9922901b6145/ss_b2bcda2e36966161937db451509f9922901b6145.600x338.jpg?t=1781720918",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/b2bcda2e36966161937db451509f9922901b6145/ss_b2bcda2e36966161937db451509f9922901b6145.1920x1080.jpg?t=1781720918"
+                                                     },
+                                                     {
+                                                         "id":  6,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/2048e95987d01af065fdcb67c380e7a0e53df069/ss_2048e95987d01af065fdcb67c380e7a0e53df069.600x338.jpg?t=1781720918",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/2048e95987d01af065fdcb67c380e7a0e53df069/ss_2048e95987d01af065fdcb67c380e7a0e53df069.1920x1080.jpg?t=1781720918"
+                                                     },
+                                                     {
+                                                         "id":  7,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/bcf8cde56e46d969dfaff90c8a9d85a22b6342fc/ss_bcf8cde56e46d969dfaff90c8a9d85a22b6342fc.600x338.jpg?t=1781720918",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/bcf8cde56e46d969dfaff90c8a9d85a22b6342fc/ss_bcf8cde56e46d969dfaff90c8a9d85a22b6342fc.1920x1080.jpg?t=1781720918"
+                                                     },
+                                                     {
+                                                         "id":  8,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/7570de99060a6abd39202cd3fe532b2e2d6f0f21/ss_7570de99060a6abd39202cd3fe532b2e2d6f0f21.600x338.jpg?t=1781720918",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/7570de99060a6abd39202cd3fe532b2e2d6f0f21/ss_7570de99060a6abd39202cd3fe532b2e2d6f0f21.1920x1080.jpg?t=1781720918"
+                                                     },
+                                                     {
+                                                         "id":  9,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/bb68762a90b41d0f9f66d570a8cf11c73aa5f598/ss_bb68762a90b41d0f9f66d570a8cf11c73aa5f598.600x338.jpg?t=1781720918",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/bb68762a90b41d0f9f66d570a8cf11c73aa5f598/ss_bb68762a90b41d0f9f66d570a8cf11c73aa5f598.1920x1080.jpg?t=1781720918"
+                                                     },
+                                                     {
+                                                         "id":  10,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/efeed8175e64c95a1a24d9f4b27bffab9a9101c3/ss_efeed8175e64c95a1a24d9f4b27bffab9a9101c3.600x338.jpg?t=1781720918",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/efeed8175e64c95a1a24d9f4b27bffab9a9101c3/ss_efeed8175e64c95a1a24d9f4b27bffab9a9101c3.1920x1080.jpg?t=1781720918"
+                                                     },
+                                                     {
+                                                         "id":  11,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/e746dd5cc1e4c2b36bcc66d6b0780a02e7c55cea/ss_e746dd5cc1e4c2b36bcc66d6b0780a02e7c55cea.600x338.jpg?t=1781720918",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/e746dd5cc1e4c2b36bcc66d6b0780a02e7c55cea/ss_e746dd5cc1e4c2b36bcc66d6b0780a02e7c55cea.1920x1080.jpg?t=1781720918"
+                                                     },
+                                                     {
+                                                         "id":  12,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/a6bccb1a48725a97a2b3ce77435d50996e12e7f9/ss_a6bccb1a48725a97a2b3ce77435d50996e12e7f9.600x338.jpg?t=1781720918",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/a6bccb1a48725a97a2b3ce77435d50996e12e7f9/ss_a6bccb1a48725a97a2b3ce77435d50996e12e7f9.1920x1080.jpg?t=1781720918"
+                                                     }
+                                                 ],
+                                 "movies":  [
+                                                {
+                                                    "id":  257351235,
+                                                    "name":  "EA SPORTS FC 26 | The World\u0027s Game - Trailer",
+                                                    "thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257351235/966515db96dc525a590530e3ad3712bdaf98eecd/movie_600x337.jpg?t=1780657407",
+                                                    "dash_av1":  "https://video.akamai.steamstatic.com/store_trailers/3405690/1156250297/95701ba99ca84ffd9d55933b248f2c367ae30e6e/1780656623/dash_av1.mpd?t=1780657407",
+                                                    "dash_h264":  "https://video.akamai.steamstatic.com/store_trailers/3405690/1156250297/95701ba99ca84ffd9d55933b248f2c367ae30e6e/1780656623/dash_h264.mpd?t=1780657407",
+                                                    "hls_h264":  "https://video.akamai.steamstatic.com/store_trailers/3405690/1156250297/95701ba99ca84ffd9d55933b248f2c367ae30e6e/1780656623/hls_264_master.m3u8?t=1780657407",
+                                                    "highlight":  true
+                                                },
+                                                {
+                                                    "id":  257194796,
+                                                    "name":  "EA SPORTS FC™ 26 | Official Reveal Trailer",
+                                                    "thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257194796/34d3f4af610e407a8e6a55afba81fdb281cc940e/movie_600x337.jpg?t=1761904809",
+                                                    "dash_av1":  "https://video.akamai.steamstatic.com/store_trailers/3405690/237661147/3bb5c19649877457ec2f75c9fd2c2909189d80d3/1757381480/dash_av1.mpd?t=1761904809",
+                                                    "dash_h264":  "https://video.akamai.steamstatic.com/store_trailers/3405690/237661147/3bb5c19649877457ec2f75c9fd2c2909189d80d3/1757381480/dash_h264.mpd?t=1761904809",
+                                                    "hls_h264":  "https://video.akamai.steamstatic.com/store_trailers/3405690/237661147/3bb5c19649877457ec2f75c9fd2c2909189d80d3/1757381480/hls_264_master.m3u8?t=1761904809",
+                                                    "highlight":  true
+                                                },
+                                                {
+                                                    "id":  257209653,
+                                                    "name":  "EA SPORTS FC 26 Official Launch Trailer | The Club is Yours",
+                                                    "thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257209653/965a47d6c72f2261acb5547bf4c6e190eada561b/movie_600x337.jpg?t=1759272928",
+                                                    "dash_av1":  "https://video.akamai.steamstatic.com/store_trailers/3405690/1511561457/f41eb818b7851cfc72dce9043ff16b7251bc9ab4/1759270894/dash_av1.mpd?t=1759272928",
+                                                    "dash_h264":  "https://video.akamai.steamstatic.com/store_trailers/3405690/1511561457/f41eb818b7851cfc72dce9043ff16b7251bc9ab4/1759270894/dash_h264.mpd?t=1759272928",
+                                                    "hls_h264":  "https://video.akamai.steamstatic.com/store_trailers/3405690/1511561457/f41eb818b7851cfc72dce9043ff16b7251bc9ab4/1759270894/hls_264_master.m3u8?t=1759272928",
+                                                    "highlight":  true
+                                                }
+                                            ],
+                                 "recommendations":  {
+                                                         "total":  70524
+                                                     },
+                                 "achievements":  {
+                                                      "total":  43,
+                                                      "highlighted":  [
+                                                                          {
+                                                                              "icon":  "419d412cb37e1e593411210b99c7835230658fb2.jpg",
+                                                                              "localized_name":  "Masterplan",
+                                                                              "name":  "Masterplan",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/3405690/419d412cb37e1e593411210b99c7835230658fb2.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "ec87b2a5ae8b7fd5c30f597050331325c6165440.jpg",
+                                                                              "localized_name":  "Treble Glory",
+                                                                              "name":  "Treble Glory",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/3405690/ec87b2a5ae8b7fd5c30f597050331325c6165440.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "0524c1ca571b5109a285d46f20bec34ddb5308a6.jpg",
+                                                                              "localized_name":  "Challenge Accepted",
+                                                                              "name":  "Challenge Accepted",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/3405690/0524c1ca571b5109a285d46f20bec34ddb5308a6.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "532aa2664bcc035f411d1ca8f123c4dede6c1a32.jpg",
+                                                                              "localized_name":  "Expect the Unexpected",
+                                                                              "name":  "Expect the Unexpected",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/3405690/532aa2664bcc035f411d1ca8f123c4dede6c1a32.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "28151255572ccfd4b1a78339c007cecc339cbd47.jpg",
+                                                                              "localized_name":  "Legend on the Pitch",
+                                                                              "name":  "Legend on the Pitch",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/3405690/28151255572ccfd4b1a78339c007cecc339cbd47.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "8ce410e36111d85b0fe1f5e86a29ce42b48e1150.jpg",
+                                                                              "localized_name":  "European Glory",
+                                                                              "name":  "European Glory",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/3405690/8ce410e36111d85b0fe1f5e86a29ce42b48e1150.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "f9a26e2a58fdc8e640740340c42009bf7ba072ad.jpg",
+                                                                              "localized_name":  "Tactical Sync",
+                                                                              "name":  "Tactical Sync",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/3405690/f9a26e2a58fdc8e640740340c42009bf7ba072ad.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "59867cdb1c96d76cb693fedc2a8f20442aefde6b.jpg",
+                                                                              "localized_name":  "Campeones",
+                                                                              "name":  "Campeones",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/3405690/59867cdb1c96d76cb693fedc2a8f20442aefde6b.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "6f9a58147fe9f2e5ec4010724ce5977295dd25a8.jpg",
+                                                                              "localized_name":  "We\u0027re Going Up",
+                                                                              "name":  "We\u0027re Going Up",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/3405690/6f9a58147fe9f2e5ec4010724ce5977295dd25a8.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "befbb018bee336d0a0fbc4a746fd91d94c500da9.jpg",
+                                                                              "localized_name":  "Top of the Pyramid",
+                                                                              "name":  "Top of the Pyramid",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/3405690/befbb018bee336d0a0fbc4a746fd91d94c500da9.jpg"
+                                                                          }
+                                                                      ]
+                                                  },
+                                 "release_date":  {
+                                                      "coming_soon":  false,
+                                                      "date":  "Sep 25, 2025"
+                                                  },
+                                 "support_info":  {
+                                                      "url":  "https://help.ea.com/",
+                                                      "email":  ""
+                                                  },
+                                 "background":  "https://store.akamai.steamstatic.com/images/storepagebackground/app/3405690?t=1781720918",
+                                 "background_raw":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/a14e10a7888f514ebc7d255a03101e710292bbe0/page_bg_raw.jpg?t=1781720918",
+                                 "content_descriptors":  {
+                                                             "ids":  [
+
+                                                                     ],
+                                                             "notes":  null
+                                                         },
+                                 "ratings":  {
+                                                 "esrb":  {
+                                                              "rating":  "e",
+                                                              "interactive_elements":  "Users Interact, \r\nIn-Game Purchases (Includes Random Items)"
+                                                          },
+                                                 "pegi":  {
+                                                              "rating":  "3",
+                                                              "descriptors":  "In-Game Purchases"
+                                                          },
+                                                 "usk":  {
+                                                             "rating":  "12",
+                                                             "descriptors":  "Erhöhte Kaufanreize\r\nDruck zum Vielspielen"
+                                                         },
+                                                 "fpb":  {
+                                                             "rating":  "PG",
+                                                             "descriptors":  "CI (Competitive Intensity)"
+                                                         },
+                                                 "csrr":  {
+                                                              "rating":  "G"
+                                                          },
+                                                 "oflc":  {
+                                                              "rating":  "m",
+                                                              "descriptors":  "Chance-based \r\nIn-game purchases \r\nOnline interactivity and chat"
+                                                          },
+                                                 "dejus":  {
+                                                               "rating":  "18"
+                                                           },
+                                                 "kgrb":  {
+                                                              "rating":  "all"
+                                                          },
+                                                 "nzoflc":  {
+                                                                "rating":  "m",
+                                                                "descriptors":  "Chance-based \r\nIn-game purchases \r\nOnline interactivity and chat"
+                                                            },
+                                                 "steam_germany":  {
+                                                                       "rating_generated":  "1",
+                                                                       "rating":  "16",
+                                                                       "required_age":  "16",
+                                                                       "banned":  "0",
+                                                                       "use_age_gate":  "0",
+                                                                       "descriptors":  ""
+                                                                   },
+                                                 "igrs":  {
+                                                              "rating_generated":  "1",
+                                                              "rating":  "18",
+                                                              "required_age":  "18",
+                                                              "banned":  "0",
+                                                              "use_age_gate":  "0",
+                                                              "descriptors":  "Interaksi Daring"
+                                                          },
+                                                 "steam_australia":  {
+                                                                         "rating_generated":  "1",
+                                                                         "rating":  "M",
+                                                                         "required_age":  "15",
+                                                                         "banned":  "0",
+                                                                         "use_age_gate":  "0",
+                                                                         "descriptors":  ""
+                                                                     }
+                                             }
+                             }
+                }
+}

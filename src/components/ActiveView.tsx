@@ -65,6 +65,8 @@ export function ActiveView({
   onDisconnectGoogleDrive,
   onBackupGoogleDrive,
   onRestoreMissingSaveFiles,
+  cacheBusy,
+  onClearCache,
 }: {
   activeTab: TabId
   catalog: GameCatalog
@@ -123,6 +125,8 @@ export function ActiveView({
   onDisconnectGoogleDrive: () => void
   onBackupGoogleDrive: () => void
   onRestoreMissingSaveFiles: () => void
+  cacheBusy: boolean
+  onClearCache: () => void
 }) {
   const hasSelectedDetail = Boolean(selectedGame && detail)
 
@@ -178,7 +182,7 @@ export function ActiveView({
   if (activeTab === 'Cache') {
     return (
       <section className="single-view cache-tab-view">
-        <CachePanel snapshot={snapshot} />
+        <CachePanel snapshot={snapshot} busy={cacheBusy} onClear={onClearCache} />
         {selectedGame && detail ? (
           <>
             <RollbackPanel snapshot={snapshot} rollbackVersion={rollbackVersionFor(detail, selectedVersion)} />

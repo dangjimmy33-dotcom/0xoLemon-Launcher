@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import {
   Bell,
+  Clock3,
   Cloud,
   Download,
   FolderOpen,
@@ -9,12 +10,13 @@ import {
   HardDrive,
   Info,
   MonitorCog,
+  PanelTop,
   RefreshCcw,
   RotateCcw,
   Settings,
   Sparkles,
 } from 'lucide-react'
-import type { LauncherPreferences } from '../lib/preferences'
+import type { LauncherPreferences, NotificationCategory } from '../lib/preferences'
 import type { LauncherSettings, SteamEnvironmentInfo } from '../types'
 
 function Toggle({
@@ -77,6 +79,9 @@ export function SettingsView({
   onOpenSteam,
   onOpenBigPicture,
   onReset,
+  onResetOnboarding,
+  onManageNotifications,
+  appVersion,
   updateStatus,
 }: {
   preferences: LauncherPreferences
@@ -95,6 +100,9 @@ export function SettingsView({
   onOpenSteam: () => void
   onOpenBigPicture: () => void
   onReset: () => void
+  onResetOnboarding: () => void
+  onManageNotifications: () => void
+  appVersion: string
   updateStatus: string | null
 }) {
   return (
@@ -131,10 +139,12 @@ export function SettingsView({
                 value={preferences.startupPage}
                 onChange={(event) => onChange('startupPage', event.target.value as LauncherPreferences['startupPage'])}
               >
+                <option value="Home">Home</option>
                 <option value="Store">Store</option>
                 <option value="Library">Library</option>
                 <option value="Updates">Updates</option>
                 <option value="Downloads">Downloads</option>
+                <option value="Cloud Saves">Cloud Saves</option>
               </select>
             </SettingRow>
             <SettingRow title="Close button" description="Choose what the title-bar close button does.">
@@ -154,6 +164,51 @@ export function SettingsView({
                 label="Confirm before uninstall"
               />
             </SettingRow>
+            <SettingRow title="Confirm before cancel cleanup" description="Ask before canceling a job and deleting its temporary downloaded data.">
+              <Toggle
+                checked={preferences.confirmBeforeCancelCleanup}
+                onChange={(checked) => onChange('confirmBeforeCancelCleanup', checked)}
+                label="Confirm before cancel cleanup"
+              />
+            </SettingRow>
+            <SettingRow title="Confirm before clearing cache" description="Ask before removing reusable downloaded chunks.">
+              <Toggle
+                checked={preferences.confirmBeforeClearCache}
+                onChange={(checked) => onChange('confirmBeforeClearCache', checked)}
+                label="Confirm before clearing cache"
+              />
+            </SettingRow>
+            <SettingRow title="Confirm cloud restore" description="Ask before restoring a snapshot over local save files.">
+              <Toggle
+                checked={preferences.confirmBeforeCloudRestore}
+                onChange={(checked) => onChange('confirmBeforeCloudRestore', checked)}
+                label="Confirm before cloud restore"
+              />
+            </SettingRow>
+          </div>
+        </section>
+
+        <section className="settings-group">
+          <header>
+            <PanelTop size={18} />
+            <div>
+              <strong>Home & layout</strong>
+              <span>Choose which dashboard surfaces are visible</span>
+            </div>
+          </header>
+          <div className="settings-group-body">
+            {([
+              ['showContinuePlaying', 'Continue Playing', 'Show the large recent-game hero and quick Play action.'],
+              ['showRecentGames', 'Recent games', 'Show the installed-game carousel on Home.'],
+              ['showActiveTasks', 'Active tasks', 'Show download, update and launcher update progress on Home.'],
+              ['showDiscordCard', 'Discord community', 'Show the official community invitation card.'],
+              ['showDonateCard', 'Support development', 'Show the compact donate card and QR modal.'],
+              ['carouselAutoplay', 'Carousel autoplay', 'Rotate featured installed games every eight seconds.'],
+            ] as const).map(([key, title, description]) => (
+              <SettingRow key={key} title={title} description={description}>
+                <Toggle checked={preferences[key]} onChange={(checked) => onChange(key, checked)} label={title} />
+              </SettingRow>
+            ))}
           </div>
         </section>
 
@@ -393,20 +448,25 @@ export function SettingsView({
             </div>
           </header>
           <div className="settings-group-body">
-            <SettingRow title="Reduce motion" description="Disable non-essential interface transitions and animated effects.">
-              <Toggle
-                checked={preferences.reduceMotion}
-                onChange={(checked) => onChange('reduceMotion', checked)}
-                label="Reduce motion"
-              />
+            <SettingRow title="Motion" description="Use full motion, follow Windows, or disable non-essential movement.">
+              <select
+                className="settings-select"
+                value={preferences.motionMode}
+                onChange={(event) => onChange('motionMode', event.target.value as LauncherPreferences['motionMode'])}
+              >
+                <option value="full">Full</option>
+                <option value="system">Follow Windows</option>
+                <option value="reduced">Reduced</option>
+              </select>
             </SettingRow>
-            <SettingRow title="Theme" description="The launcher currently uses its native dark theme.">
-              <div className="settings-static-value">Dark</div>
+            <SettingRow title="Glass effects" description="Use acrylic blur for temporary panels and popovers.">
+              <Toggle checked={preferences.glassEffects} onChange={(value) => onChange('glassEffects', value)} label="Glass effects" />
             </SettingRow>
-            <SettingRow title="Notifications" description="Download and update status remains visible in the sidebar and queue.">
-              <div className="settings-static-value">
-                <Bell size={14} /> In-app
-              </div>
+            <SettingRow title="Scroll effects" description="Reveal dashboard sections with a restrained depth transition.">
+              <Toggle checked={preferences.scrollEffects} onChange={(value) => onChange('scrollEffects', value)} label="Scroll effects" />
+            </SettingRow>
+            <SettingRow title="Hover hints" description="Show delayed explanations for compact titlebar and toolbar controls.">
+              <Toggle checked={preferences.hoverHints} onChange={(value) => onChange('hoverHints', value)} label="Hover hints" />
             </SettingRow>
             <SettingRow title="Installation complete sound" description="Play a short notification after a new game installation commits successfully.">
               <Toggle
@@ -414,6 +474,96 @@ export function SettingsView({
                 onChange={(checked) => onChange('playInstallCompleteSound', checked)}
                 label="Play installation complete sound"
               />
+            </SettingRow>
+            <SettingRow title="Onboarding" description="Replay the launcher introduction.">
+              <button type="button" className="settings-secondary-button" onClick={onResetOnboarding}>
+                <RefreshCcw size={15} /> Replay introduction
+              </button>
+            </SettingRow>
+          </div>
+        </section>
+
+        <section className="settings-group">
+          <header>
+            <Clock3 size={18} />
+            <div>
+              <strong>Status bar</strong>
+              <span>Clock and live launcher status in the titlebar</span>
+            </div>
+          </header>
+          <div className="settings-group-body">
+            {([
+              ['showClock', 'Clock', 'Show local time in the titlebar.'],
+              ['showDate', 'Date', 'Show the date beneath the clock.'],
+              ['showNetworkStatus', 'Network status', 'Show the real content-service connection state.'],
+              ['showDownloadIndicator', 'Download indicator', 'Show active job or launcher update progress.'],
+              ['showNotificationBell', 'Notification bell', 'Show unread status and notification history.'],
+            ] as const).map(([key, title, description]) => (
+              <SettingRow key={key} title={title} description={description}>
+                <Toggle checked={preferences[key]} onChange={(value) => onChange(key, value)} label={title} />
+              </SettingRow>
+            ))}
+            <SettingRow title="Clock format" description="Use Windows preference or force a 12/24-hour clock.">
+              <select
+                className="settings-select"
+                value={preferences.clockFormat}
+                onChange={(event) => onChange('clockFormat', event.target.value as LauncherPreferences['clockFormat'])}
+              >
+                <option value="system">System</option>
+                <option value="12h">12-hour</option>
+                <option value="24h">24-hour</option>
+              </select>
+            </SettingRow>
+          </div>
+        </section>
+
+        <section className="settings-group" id="notification-settings">
+          <header>
+            <Bell size={18} />
+            <div>
+              <strong>Notifications</strong>
+              <span>Real event history, in-app toasts and Windows notifications</span>
+            </div>
+          </header>
+          <div className="settings-group-body">
+            <SettingRow title="In-app notifications" description="Show a toast while the launcher is visible and keep history under the bell.">
+              <Toggle checked={preferences.inAppNotifications} onChange={(value) => onChange('inAppNotifications', value)} label="In-app notifications" />
+            </SettingRow>
+            <SettingRow title="Windows notifications" description="Use Windows Notification Center when the launcher is minimized or unfocused.">
+              <Toggle checked={preferences.windowsNotifications} onChange={(value) => onChange('windowsNotifications', value)} label="Windows notifications" />
+            </SettingRow>
+            <SettingRow title="Notification sound" description="Allow native and in-app notification sounds where supported.">
+              <Toggle checked={preferences.notificationSound} onChange={(value) => onChange('notificationSound', value)} label="Notification sound" />
+            </SettingRow>
+            <SettingRow title="Do not disturb while playing" description="Keep history but suppress popups while a game is running.">
+              <Toggle checked={preferences.doNotDisturbWhilePlaying} onChange={(value) => onChange('doNotDisturbWhilePlaying', value)} label="Do not disturb while playing" />
+            </SettingRow>
+            {([
+              ['launcher', 'Launcher updates'],
+              ['installs', 'Install, update and repair'],
+              ['downloads', 'Downloads and cleanup'],
+              ['cloudSaves', 'Cloud saves'],
+              ['storage', 'Storage and cache'],
+              ['achievements', 'Achievements'],
+              ['errors', 'Important errors'],
+            ] as Array<[NotificationCategory, string]>).map(([category, label]) => (
+              <SettingRow key={category} title={label} description={`Allow ${label.toLowerCase()} events in notification history.`}>
+                <Toggle
+                  checked={preferences.notificationCategories[category]}
+                  onChange={(value) =>
+                    onChange('notificationCategories', {
+                      ...preferences.notificationCategories,
+                      [category]: value,
+                    })
+                  }
+                  label={label}
+                />
+              </SettingRow>
+            ))}
+            <SettingRow title="Notification history" description="Open the titlebar notification center and review recorded events.">
+              <button type="button" className="settings-secondary-button" onClick={onManageNotifications}>
+                <Bell size={15} /> Manage history
+              </button>
             </SettingRow>
           </div>
         </section>
@@ -450,7 +600,7 @@ export function SettingsView({
           <Info size={18} />
           <div>
             <strong>0xoLemon Launcher</strong>
-            <span>Version 0.1.1 · Multi-game content, install, update and repair client</span>
+            <span>Version {appVersion} · Multi-game content, install, update and repair client</span>
           </div>
           <Download size={17} />
         </section>

@@ -1,0 +1,575 @@
+﻿{
+    "appId":  3405690,
+    "title":  "EA SPORTS FC™ 26",
+    "steamMetadataCountry":  "us",
+    "steamMetadataLanguage":  "english",
+    "type":  "game",
+    "requiredAge":  0,
+    "isFree":  false,
+    "shortDescription":  "The Club is Yours in EA SPORTS FC™ 26. Play your way with an overhauled gameplay experience powered by community feedback, Manager Live Challenges that bring fresh storylines to the new season, and Archetypes inspired by greats of the game.",
+    "detailedDescriptionHtml":  "\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"asset:description_images/001_5a285cb285527f5509258e622316cdde.webp\" width=610 height=2134 /\u003e\u003c/span\u003e\u003cbr\u003e\u003cbr\u003eThis game includes optional in-game purchases of virtual currency that can be used to acquire virtual in-game items, including a random selection of virtual in-game items.",
+    "aboutTheGameHtml":  "\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"asset:description_images/001_5a285cb285527f5509258e622316cdde.webp\" width=610 height=2134 /\u003e\u003c/span\u003e\u003cbr\u003e\u003cbr\u003eThis game includes optional in-game purchases of virtual currency that can be used to acquire virtual in-game items, including a random selection of virtual in-game items.",
+    "supportedLanguagesHtml":  "English\u003cstrong\u003e*\u003c/strong\u003e, French\u003cstrong\u003e*\u003c/strong\u003e, Italian\u003cstrong\u003e*\u003c/strong\u003e, German\u003cstrong\u003e*\u003c/strong\u003e, Spanish - Spain\u003cstrong\u003e*\u003c/strong\u003e, Arabic\u003cstrong\u003e*\u003c/strong\u003e, Dutch\u003cstrong\u003e*\u003c/strong\u003e, Japanese\u003cstrong\u003e*\u003c/strong\u003e, Korean\u003cstrong\u003e*\u003c/strong\u003e, Polish\u003cstrong\u003e*\u003c/strong\u003e, Portuguese - Brazil\u003cstrong\u003e*\u003c/strong\u003e, Simplified Chinese\u003cstrong\u003e*\u003c/strong\u003e, Spanish - Latin America\u003cstrong\u003e*\u003c/strong\u003e, Turkish\u003cstrong\u003e*\u003c/strong\u003e, Czech, Danish, Norwegian, Portuguese - Portugal, Russian, Swedish, Traditional Chinese\u003cbr\u003e\u003cstrong\u003e*\u003c/strong\u003elanguages with full audio support",
+    "pcRequirements":  {
+                           "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003eRequires a 64-bit processor and operating system\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows 10/11 - 64-Bit (Latest Update).\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e AMD Ryzen 5 1600 or Intel Core i5 6600k\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 8 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e AMD RX 570 or Nvidia GTX 1050 Ti\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eDirectX:\u003c/strong\u003e Version 12\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eNetwork:\u003c/strong\u003e Broadband Internet connection\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 100 GB available space\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eSound Card:\u003c/strong\u003e DirectX: 12 Compatible video card or equivalent (feature level 12_0)\u003c/li\u003e\u003c/ul\u003e",
+                           "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003eRequires a 64-bit processor and operating system\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows 10/11 - 64-Bit (Latest Update).\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e AMD Ryzen 7 2700X or Intel Core i7 6700\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 12 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e AMD RX 5600 XT or Nvidia GTX 1660\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eDirectX:\u003c/strong\u003e Version 12\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eNetwork:\u003c/strong\u003e Broadband Internet connection\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 100 GB available space\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eSound Card:\u003c/strong\u003e DirectX: 12 Compatible video card or equivalent (feature level 12_0)\u003c/li\u003e\u003c/ul\u003e"
+                       },
+    "macRequirements":  {
+                            "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e",
+                            "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e"
+                        },
+    "linuxRequirements":  {
+                              "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e",
+                              "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e"
+                          },
+    "dlc":  [
+                3707320
+            ],
+    "website":  "https://www.ea.com/en/games/ea-sports-fc/fc-26",
+    "developers":  [
+                       "EA Canada",
+                       "EA Romania"
+                   ],
+    "publishers":  "Electronic Arts",
+    "releaseDate":  {
+                        "coming_soon":  false,
+                        "date":  "Sep 25, 2025"
+                    },
+    "genres":  "Simulation, Sports",
+    "categories":  [
+                       "Single-player",
+                       "Multi-player",
+                       "PvP",
+                       "Online PvP",
+                       "Shared/Split Screen PvP",
+                       "Co-op",
+                       "Online Co-op",
+                       "Shared/Split Screen Co-op",
+                       "Shared/Split Screen",
+                       "Cross-Platform Multiplayer",
+                       "Steam Achievements",
+                       "Full controller support",
+                       "In-App Purchases",
+                       "Chat Speech-to-text",
+                       "Adjustable Difficulty",
+                       "Keyboard Only Option",
+                       "Stereo Sound",
+                       "Subtitle Options",
+                       "HDR available"
+                   ],
+    "platforms":  {
+                      "windows":  true,
+                      "mac":  false,
+                      "linux":  false
+                  },
+    "metacritic":  null,
+    "recommendations":  {
+                            "total":  70524
+                        },
+    "reviewsSummary":  null,
+    "newsItems":  [
+                      {
+                          "gid":  "1835871199307800",
+                          "title":  "Festival of Football: Greats of the Game",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1835871199307800",
+                          "is_external_url":  true,
+                          "author":  "TEAM",
+                          "contents":  "Relive their finest moments. Festival of Football: Greats of the Game honours big name players who defined eras of The World’s Game and introduces two new ICONs, Mario Kempes and Rivellino, to EA SPORTS FC™ 26 Football Ultimate Team™.\n\n[img]{STEAM_CLAN_IMAGE}/45702522/f26c6f5c90ec3c5137efc0528c0e3b0c0cac7991.png[/img]\n\n[img]{STEAM_CLAN_IMAGE}/45702522/d431384983962819ddb9a997c2afc5ef961cf8f6.png[/img]\n\n[img]{STEAM_CLAN_IMAGE}/45702522/183c36935d74e4036312fa6166edd2017e927e75.png[/img]\n\n[img]{STEAM_CLAN_IMAGE}/45702522/8a5bde76e11dee4b496d9b508a5c756276e8625b.png[/img]\n\nhttps://store.steampowered.com/app/3405690/EA_SPORTS_FC_26/",
+                          "feedlabel":  "Community Announcements",
+                          "date":  1781889260,
+                          "feedname":  "steam_community_announcements",
+                          "feed_type":  1,
+                          "appid":  3405690
+                      },
+                      {
+                          "gid":  "1835871199306790",
+                          "title":  "Score unlimited access to EA SPORTS FC™ 26 with EA Play",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1835871199306790",
+                          "is_external_url":  true,
+                          "author":  "TEAM",
+                          "contents":  "Welcome to the Club. Members can shape their legacy with unlimited access to an overhauled gameplay experience powered by community feedback, Manager Live Challenges that bring fresh scenarios to the new season, and so much more. Plus, experience The World\u0027s Game like never before and take on a brand-new international tournament mode.\n\nWhen you’re ready for more, dive into a collection of EA’s top titles available in The Play List and discover more trials of select new releases. Find out more about upcoming EA Play* benefits at https://store.steampowered.com/subscriptions/ea or follow us on X (Twitter) and Instagram @eaplay.\n\n*Conditions, limitations and exclusions apply. See https://tos.ea.com/legalapp/eaplay/us/en/pc/ for details.\n\nhttps://store.steampowered.com/app/1289670/EA_Play/",
+                          "feedlabel":  "Community Announcements",
+                          "date":  1781868561,
+                          "feedname":  "steam_community_announcements",
+                          "feed_type":  1,
+                          "appid":  3405690
+                      },
+                      {
+                          "gid":  "1835236783574045",
+                          "title":  "EA SPORTS FC 26 v1.6.2",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1835236783574045",
+                          "is_external_url":  true,
+                          "author":  "Rileyy",
+                          "contents":  "[p]EA SPORTS FC 26 version 1.6.2 is now live and includes the updates below.[/p][p][/p][h3]The World’s Game Made the following changes: [/h3][list][*][p]Added a Tournament Tree widget to the Office Hub within the World’s Game Tournament that becomes visible once the player has entered the Knockout stages. [/p][/*][*][p]Added the ability to access the FC Hub from the Tournament Hub and during an active tournament in The World’s Game mode to view active objectives and track progress.[/p][/*][*][p]Added the tournament stage to the Next Fixture screen in the FC Hub.[/p][/*][*][p]Updated UI elements in the See Tree Overview screen. [/p][/*][/list][p]Addressed the following issues: [/p][list][*][p]In some instances, matches that were completed through penalties would incorrectly display the aggregate score.[/p][/*][*][p]Addressed an issue in The World’s Game Tournament where the completed stage was not correctly displayed beneath the Trophy after finishing the competition.[/p][/*][*][p]Addressed instances of misaligned text.[/p][/*][/list][h3]Clubs[/h3][p]Addressed the following issues: [/p][list][*][p]Addressed instances where creating a new Goalkeeper Clubs Pro could result in the Failed to create your Virtual Pro message appearing.[/p][/*][*][p]Addressed cases of Clubs AI Facility boosts also applying to player-controlled Pros.[/p][/*][/list][h3]Career Mode[/h3][p]Made the following changes:[/p][list][*][p]Re-enabled National Team selection for Manager Career Live Start Points that occurred in May 2026.[/p][/*][/list][p]Addressed the following issues: [/p][list][*][p]In some Manager Career instances, selecting View Fixture for the International Cup Tournament Final from the Calendar could incorrectly display the Third Place match and cause the Final tab to be missing from the standings.[/p][/*][*][p]In Manager Career, the Department filter would incorrectly reset after modifying a Key Role filter within Scout Instructions.[/p][/*][*][p]In Manager Career, certain positions would incorrectly disappear from the Attacker department list when specific Key Role filters were active.[/p][/*][*][p]In Manager Career, Youth Academy scout reports could incorrectly display placeholder min-max values instead of the correct attribute ranges.[/p][/*][*][p]Sometimes, in Manager Career, a social media post can incorrectly display the incorrect kit.[/p][/*][*][p]The Current Team could display a placeholder image on the Player Stats screen for the Men\u0027s International Cup in Manager Career.[/p][/*][*][p]The See More Stats screen could display incorrect information when viewed during the Men\u0027s International Competition in Manager Career.[/p][/*][/list][h3]General, Audio, and Visual[/h3][p]Made the following changes:[/p][list][*][p]Updated some kits, star heads, hair, 2D portraits, badges, stadiums, boots, commentary, crowds, TIFOs and text.[/p][/*][*][p]Addressed the following issues:[/p][/*][*][p]Addressed various stability issues that could have occurred.[/p][/*][*][p]Addressed an issue where the Restore Default option in Display Settings did not function as intended.[/p][/*][*][p]Addressed an issue where the Competitive Gameplay Type setting could be changed to Authentic during a Kick-Off match.[/p][/*][*][p]Addressed instances of incorrect/placeholder text.[/p][/*][/list][p]Want to provide us direct feedback about EA SPORTS FC 26? https://go.ea.com/fc26pfp and let us know what you think, it only takes a few minutes. [/p][p][/p][p]Thanks to those who’ve provided and continue to provide feedback. Throughout the course of the EA SPORTS FC 26 season, we\u0027ll provide you with more information and updates if and when they become available. Be sure to follow [url=\"https://x.com/EASFCDirect\"]@EASFCDIRECT on X[/url] and WhatsApp, and be sure to join the [url=\"https://discord.com/invite/easportsfc\"]EA SPORTS FC Discord Community.[/url][/p][p][/p][p] - The EA SPORTS FC Team[/p]",
+                          "feedlabel":  "Community Announcements",
+                          "date":  1781611628,
+                          "feedname":  "steam_community_announcements",
+                          "feed_type":  1,
+                          "appid":  3405690,
+                          "tags":  [
+                                       "hide_library_overview"
+                                   ]
+                      },
+                      {
+                          "gid":  "1835236783574345",
+                          "title":  "Steam Global Top Sellers for week of 9 Jun — 16 June 2026",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/SteamDB/1835236783574345",
+                          "is_external_url":  true,
+                          "author":  "SteamDB",
+                          "contents":  "\u003ca href=\"https://steamdb.info/topsellers/2026W25/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003e\u003cimg src=\"https://steamdb.info/topsellers/2026W25.png\"\u003e\u003c/a\u003e\u003col\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/4704690/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eMECCHA CHAMELEON\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/2483190/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eForza Horizon 6\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/1675200/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eSteam Deck\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/2694490/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003ePath of Exile 2\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/3405690/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eEA SPORTS FC™ 26\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/3186540/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eDestiny 2: Renegades\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/1462040/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eFINAL FANTASY VII REMAKE INTERGRADE\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/3768760/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003e007 First Light\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/1297900/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eGothic 1 Remake\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/3844970/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eBurglin\u0027 Gnomes\u003c/a\u003e\u003c/li\u003e\u003c/ol\u003e\u003cbr\u003e\u003ci\u003e* excluding free to play games\u003c/i\u003e\u003cbr\u003e\u003ca href=\"https://steamdb.info/topsellers/2026W25/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eView top 100 on SteamDB\u003c/a\u003e",
+                          "feedlabel":  "SteamDB",
+                          "date":  1781600400,
+                          "feedname":  "SteamDB",
+                          "feed_type":  0,
+                          "appid":  1297900
+                      },
+                      {
+                          "gid":  "1835236783570647",
+                          "title":  "Save on EA SPORTS FC™ 26 The World’s Game Edition",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1835236783570647",
+                          "is_external_url":  true,
+                          "author":  "TEAM",
+                          "contents":  "Save on EA SPORTS FC™ 26 The World’s Game Edition and kick off the summer of international football with 3,000 Season Points, a Gold Starting XI Pack, and three untradeable Player Picks.",
+                          "feedlabel":  "Community Announcements",
+                          "date":  1781535623,
+                          "feedname":  "steam_community_announcements",
+                          "feed_type":  1,
+                          "appid":  3405690
+                      }
+                  ],
+    "achievements":  {
+                         "total":  43,
+                         "items":  [
+                                       {
+                                           "apiName":  "Achievement_GOSCC_1",
+                                           "displayName":  "Masterplan",
+                                           "description":  "Get hired for a job you\u0027ve added to the Watchlist",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/419d412cb37e1e593411210b99c7835230658fb2.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/af0b3e3c76b701a4384d57e82abe6a0518ff7c20.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_2",
+                                           "displayName":  "Treble Glory",
+                                           "description":  "Win a Treble",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/ec87b2a5ae8b7fd5c30f597050331325c6165440.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/4d72ec853169c88841eb28d2c847939e13d24084.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_3",
+                                           "displayName":  "Challenge Accepted",
+                                           "description":  "Successfully complete your first Challenge",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/0524c1ca571b5109a285d46f20bec34ddb5308a6.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/05b618915c5ee5bc5649223f76dc3aaf19451f6b.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_4",
+                                           "displayName":  "Expect the Unexpected",
+                                           "description":  "Navigate the unknown",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/532aa2664bcc035f411d1ca8f123c4dede6c1a32.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/47666769152d6151304e476a34b9277a9d6f1a48.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_5",
+                                           "displayName":  "Legend on the Pitch",
+                                           "description":  "Field 3 ICONs or Heroes in the same match",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/28151255572ccfd4b1a78339c007cecc339cbd47.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/9a474b99808c4f75d04dffe7258123b2518b4d27.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_6",
+                                           "displayName":  "European Glory",
+                                           "description":  "Win the UEFA Champions League or the UEFA Women\u0027s Champions League in Player or Manager Career",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/8ce410e36111d85b0fe1f5e86a29ce42b48e1150.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/fce84446d2b45aeb1aefc769461f7d1a3ad81379.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_7",
+                                           "displayName":  "Tactical Sync",
+                                           "description":  "Field a starting XI with all the players having a Player Role ++",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/f9a26e2a58fdc8e640740340c42009bf7ba072ad.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/06a4b35a777d68d925570ae4f495fd17d8b61f92.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_8",
+                                           "displayName":  "Campeones",
+                                           "description":  "Finish as the Champion of your Clubs Playoff table",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/59867cdb1c96d76cb693fedc2a8f20442aefde6b.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/302f7793fddabbe50a2ea533544818cf1e6ff971.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_9",
+                                           "displayName":  "We\u0027re Going Up",
+                                           "description":  "Earn a Clubs League Promotion with your Club",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/6f9a58147fe9f2e5ec4010724ce5977295dd25a8.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/cead4c1db6139f65662e15e55aff9c226083cacd.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_10",
+                                           "displayName":  "Top of the Pyramid",
+                                           "description":  "Reach Elite Division with your Club in a Clubs League Season",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/befbb018bee336d0a0fbc4a746fd91d94c500da9.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/3f075415a4c0a70789984c878972ffd559485e1a.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_11",
+                                           "displayName":  "First of Many",
+                                           "description":  "Win your first Clubs League Match",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/8ce410e36111d85b0fe1f5e86a29ce42b48e1150.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/fce84446d2b45aeb1aefc769461f7d1a3ad81379.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_12",
+                                           "displayName":  "Collect Them All",
+                                           "description":  "Unlock 3 Archetypes",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/f9a26e2a58fdc8e640740340c42009bf7ba072ad.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/06a4b35a777d68d925570ae4f495fd17d8b61f92.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_13",
+                                           "displayName":  "Very Particular Set of Skills",
+                                           "description":  "Unlock and equip a Specialization with an Archetype",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/fe3dab3f566e16be56d09be4ccef234944d5f36c.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/7f731ba60d298cff91c473885c7bbf96b99c2e35.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_14",
+                                           "displayName":  "Shop \u0027Til You Drop",
+                                           "description":  "Purchase any Archetype content gated item from the store",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/e44ba212d6a675c9f22060886614007d45fbba38.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/65b9bcfaabc4c9fa978bf429dd0ece048c61aa09.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_15",
+                                           "displayName":  "Gold Standard",
+                                           "description":  "Reach Gold level with an Archetype",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/db08769e7eb7ffbdc01d44146df8db7bdc47254d.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/b8a931b9269ec3bf597fa09c3dab419f36f684ce.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_16",
+                                           "displayName":  "In a Rush",
+                                           "description":  "Improve your Rush Rank in Clubs",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/af61cb4e9b52df3ca8c38bb5a0dffabdd445a47a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/b4dc38f189c23d0273cde1be63fb389c0af9233f.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_17",
+                                           "displayName":  "Football Friend",
+                                           "description":  "Participate in a Clubs Rush Live Event with one or more friends",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/6722b39ba67a593f3754b2bb3609961fa02a0c0d.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/30d62e07047b0ffd87b7129c405cbb8172c35431.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_18",
+                                           "displayName":  "KO Kings",
+                                           "description":  "Win a Clubs Rush Live Event",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/e6a7020cd16eddf1ab488e2e5d50705f831b1585.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/68661c55100daeaa027ceaaa124ae8bace28cda6.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_19",
+                                           "displayName":  "Dead-ball Specialist",
+                                           "description":  "Score a goal from a Free Kick",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/5f7ea835a03486b534d4fda6c052d4513b247be9.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/a6472445634bbcc54ae403f0ee2185f9ec6736a7.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_20",
+                                           "displayName":  "Intuition and Execution",
+                                           "description":  "Win a penalty shoot-out without missing",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/d3d8433c6c61fb32949891d499d193880c99b93f.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/6055d23feb5b34e343a832625cef8e302c292ad0.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_21",
+                                           "displayName":  "Power Shot",
+                                           "description":  "Score a goal using the Power Shot mechanic",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/536f6afd2fb6c32a1aee381c1d5da3705ef0eeff.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/52a8ca61ba35e1ef84c3f22a7856f0798ff3903a.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_22",
+                                           "displayName":  "Bring It On",
+                                           "description":  "Play and win a match on Legendary difficulty with Competitor mode turned on during any offline mode",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/04acf20ceaff5fc4552adf8375bb9b9ad159b56f.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/9f0b6baef46025e1291d46f263eee9e285b64ee7.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_23",
+                                           "displayName":  "Surgical Aim",
+                                           "description":  "Complete 25 Precision Passes",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/393fea9dddd9bcfaa1c30ba1908e82b4d724b105.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/b1bc6329991f22d51c36a330924c20596313a74f.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_24",
+                                           "displayName":  "Bullseye",
+                                           "description":  "Score a goal using Precision Shooting",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/10f27b45f1545db0ba9be593e64e6740adf1aefd.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/dead02e320a039f23b15bf36350bc278192ed230.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_25",
+                                           "displayName":  "PlayStyles+",
+                                           "description":  "Score a goal with an active PlayStyle+",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/f0b58cbdf843469dea7552d4cdd00ca4531ce241.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/d34b362aaa6ffc640274efe76e9d45c8965feed5.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_26",
+                                           "displayName":  "Tactical Mastermind",
+                                           "description":  "Create, customize and name your own Tactic",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/0cd282bc50642806bb9d366ca74aec533565a6a9.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/41cc5c3eda97e9690365aff9b1666067298c4a89.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_27",
+                                           "displayName":  "Clean Sheet",
+                                           "description":  "Get a clean sheet while playing Be-A-Goalkeeper in Career Mode or in Clubs",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/e8ee2be32fd5385252fa69a3c6e34af9e7a8a7c0.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/43ad3d41c86175b94ae029fc4b2d0d386ca79702.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_28",
+                                           "displayName":  "Authenticity",
+                                           "description":  "Play a match with the Authentic Gameplay Type selected in Kick Off, Tournaments or in Career Mode",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/65a0c09c3bd23ab6e9a3de4baea7b0860561a149.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/037d1b770e642d2e48cfe5eb49a10ea73d5fea87.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_29",
+                                           "displayName":  "Squad Builder Extraordinaire",
+                                           "description":  "Complete 10 Squad Building Challenges in Football Ultimate Team",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/d275a4914ea5a053a8b700c3d5de8eb9c9cb80f4.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/beb88f9eaf6f41226b223384661582e2982d16b6.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_30",
+                                           "displayName":  "Bounty Buster",
+                                           "description":  "Successfully complete a Bounty in UT Division Rivals",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/720e09097969c46fdb402e722c786194b46e5b32.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/d3ec34e225e01ba91294469d2231dbeaee320163.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_31",
+                                           "displayName":  "Full Chemistry Charge",
+                                           "description":  "Build a squad with 33 Chemistry Points in Football Ultimate Team. Excludes Concept Players and SBCs",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/82a00b7981af3522a3465156c7154ffc19c27ac4.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/90b2e574066bd3a95452229390c77f3c2bdab0f6.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_32",
+                                           "displayName":  "Tactical Designer",
+                                           "description":  "Create your own custom Tactic in Football Ultimate Team",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/fdc5001423fcd551c672e713837776ef84c7a773.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/80d3dda4118317d183c8846c06d476366472ef7f.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_33",
+                                           "displayName":  "Defensive Dynamo",
+                                           "description":  "Keep 10 clean sheets in UT Squad Battles",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/6811de816520f6b1772567f9b742f752db93dc0b.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/5582dcb27fd01a08cc17d1bc23c8674f5a974e55.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_34",
+                                           "displayName":  "Final Evolutionary Stage",
+                                           "description":  "Complete an Evolution and claim the upgrades in UT",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/b99c00aff91525e549a91167bb96acba68c554f6.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/58031689bca15591f6435d26bebd972fd357d781.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_35",
+                                           "displayName":  "Champion’s Debut",
+                                           "description":  "Play in a Champions Event in Football Ultimate Team",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/6b9092fccd3ba0e5b66d763d9fab67dcc9517830.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/9426727f8de2fa96c90e34c95c114d700679a852.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_36",
+                                           "displayName":  "Mythic Milestone",
+                                           "description":  "Reach 200 Club appearances with a player in Football Ultimate Team",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/50f9bd333e15fa477c48a394980c1ee4a57248b9.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/6be389a7d00db67bde6102b0a5ff2555db372132.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_37",
+                                           "displayName":  "Makeover Maestro",
+                                           "description":  "Successfully complete a Cosmetic Evolution in Football Ultimate Team",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/f64eefad430c309437bc38b17b6e60f96a19816d.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/3a5b885e0f0d7cc07a6e8f9b31d514377a87f9ed.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_38",
+                                           "displayName":  "Event Explorer",
+                                           "description":  "Play in an Event in Football Ultimate Team",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/d275a4914ea5a053a8b700c3d5de8eb9c9cb80f4.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/beb88f9eaf6f41226b223384661582e2982d16b6.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_39",
+                                           "displayName":  "European Legend",
+                                           "description":  "Win the UEFA Champions League Final",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/b36dc1725137823c3f7eadcbe9a7c742e465e197.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/e02df5c320bc35026f0272e991878a6ce8f1f30a.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_40",
+                                           "displayName":  "Best of Five",
+                                           "description":  "Play 5 H2H matches with a friend in Kick Off",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/6553aeb8282a863aa974ab747b1c777a8a1248c3.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/d3c939fb83300620f1af28b4cfff0b7ada9ca35d.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_41",
+                                           "displayName":  "Football is Everything",
+                                           "description":  "Play a Women\u0027s International football match",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/b36dc1725137823c3f7eadcbe9a7c742e465e197.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/e02df5c320bc35026f0272e991878a6ce8f1f30a.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_42",
+                                           "displayName":  "One Season, wonderful!",
+                                           "description":  "Fully complete and unlock all levels in a Season Pass",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/4c75cc5ea17f25f13ac6392362478a5e6a50d282.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/4fb5ae1d6e1a6ea7cf09160e7f5e04683085b65b.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_GOSCC_43",
+                                           "displayName":  "All Aboard the Premium Track!",
+                                           "description":  "Fully complete and unlock all levels in the Premium Pass",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/52c45e99ea572fbb69b49a34fba556e278eab43c.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/1d0150bb4085d8ff05a4d9d8e5a821d46d19f95c.jpg"
+                                       }
+                                   ]
+                     }
+}

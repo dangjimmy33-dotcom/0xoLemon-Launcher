@@ -1,0 +1,282 @@
+﻿[
+    {
+        "role":  "header",
+        "title":  "Steam header",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/header.jpg?t=1781720918",
+        "file":  "store_art/header.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-20T05:00:22.824Z"
+    },
+    {
+        "role":  "capsule",
+        "title":  "Steam capsule",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/capsule_231x87.jpg?t=1781720918",
+        "file":  "store_art/capsule.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-20T05:00:22.828Z"
+    },
+    {
+        "role":  "capsule-v5",
+        "title":  "Steam capsule v5",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/capsule_184x69.jpg?t=1781720918",
+        "file":  "store_art/capsule-v5.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-20T05:00:22.828Z"
+    },
+    {
+        "role":  "background",
+        "title":  "Steam background",
+        "sourceUrl":  "https://store.akamai.steamstatic.com/images/storepagebackground/app/3405690?t=1781720918",
+        "file":  "store_art/background.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-20T05:00:22.829Z"
+    },
+    {
+        "role":  "background-raw",
+        "title":  "Steam background raw",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/page_bg_raw.jpg?t=1781720918",
+        "file":  "store_art/background-raw.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-20T05:00:22.829Z"
+    },
+    {
+        "role":  "description-image",
+        "title":  "Description image 1",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/extras/5a285cb285527f5509258e622316cdde.avif?t=1781720918",
+        "file":  "description_images/001_5a285cb285527f5509258e622316cdde.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-20T05:00:22.845Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 1",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/1d3064a6f7b0f8e1c00fa8a70307a67e95c090ea/ss_1d3064a6f7b0f8e1c00fa8a70307a67e95c090ea.1920x1080.jpg?t=1781720918",
+        "file":  "screenshots/001_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-20T05:00:22.854Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 2",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/b61caa1b54537a4e5ba6ca186ed661a0d03debee/ss_b61caa1b54537a4e5ba6ca186ed661a0d03debee.1920x1080.jpg?t=1781720918",
+        "file":  "screenshots/002_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-20T05:00:22.854Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 3",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/5038fb5ee65b4469793f2f477a91d3c4f9af144b/ss_5038fb5ee65b4469793f2f477a91d3c4f9af144b.1920x1080.jpg?t=1781720918",
+        "file":  "screenshots/003_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-20T05:00:22.856Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 4",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/725a1067d83dba8514b5ecae4f39d59b4bd73bb2/ss_725a1067d83dba8514b5ecae4f39d59b4bd73bb2.1920x1080.jpg?t=1781720918",
+        "file":  "screenshots/004_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-20T05:00:22.858Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 5",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/d01fbbd32769bd7cd70215dedd22e4ffb7bc42bc/ss_d01fbbd32769bd7cd70215dedd22e4ffb7bc42bc.1920x1080.jpg?t=1781720918",
+        "file":  "screenshots/005_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-20T05:00:22.860Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 6",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/b2bcda2e36966161937db451509f9922901b6145/ss_b2bcda2e36966161937db451509f9922901b6145.1920x1080.jpg?t=1781720918",
+        "file":  "screenshots/006_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-20T05:00:22.861Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 7",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/2048e95987d01af065fdcb67c380e7a0e53df069/ss_2048e95987d01af065fdcb67c380e7a0e53df069.1920x1080.jpg?t=1781720918",
+        "file":  "screenshots/007_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-20T05:00:22.862Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 8",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/bcf8cde56e46d969dfaff90c8a9d85a22b6342fc/ss_bcf8cde56e46d969dfaff90c8a9d85a22b6342fc.1920x1080.jpg?t=1781720918",
+        "file":  "screenshots/008_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-20T05:00:22.863Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 9",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/7570de99060a6abd39202cd3fe532b2e2d6f0f21/ss_7570de99060a6abd39202cd3fe532b2e2d6f0f21.1920x1080.jpg?t=1781720918",
+        "file":  "screenshots/009_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-20T05:00:22.864Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 10",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/bb68762a90b41d0f9f66d570a8cf11c73aa5f598/ss_bb68762a90b41d0f9f66d570a8cf11c73aa5f598.1920x1080.jpg?t=1781720918",
+        "file":  "screenshots/010_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-20T05:00:22.865Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 11",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/efeed8175e64c95a1a24d9f4b27bffab9a9101c3/ss_efeed8175e64c95a1a24d9f4b27bffab9a9101c3.1920x1080.jpg?t=1781720918",
+        "file":  "screenshots/011_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-20T05:00:22.867Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 12",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/e746dd5cc1e4c2b36bcc66d6b0780a02e7c55cea/ss_e746dd5cc1e4c2b36bcc66d6b0780a02e7c55cea.1920x1080.jpg?t=1781720918",
+        "file":  "screenshots/012_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-20T05:00:22.867Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 13",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3405690/a6bccb1a48725a97a2b3ce77435d50996e12e7f9/ss_a6bccb1a48725a97a2b3ce77435d50996e12e7f9.1920x1080.jpg?t=1781720918",
+        "file":  "screenshots/013_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-20T05:00:22.868Z"
+    },
+    {
+        "role":  "video",
+        "title":  "EA SPORTS FC 26 | The World\u0027s Game - Trailer",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/3405690/1156250297/95701ba99ca84ffd9d55933b248f2c367ae30e6e/1780656623/hls_264_master.m3u8?t=1780657407",
+        "file":  "videos/001_ea-sports-fc-26-the-worlds-game-trailer.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-20T05:00:22.889Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "EA SPORTS FC 26 | The World\u0027s Game - Trailer",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257351235/966515db96dc525a590530e3ad3712bdaf98eecd/movie_600x337.jpg?t=1780657407",
+        "file":  "video_thumbnails/001_ea-sports-fc-26-the-worlds-game-trailer_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-20T05:00:22.890Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "EA SPORTS FC 26 | The World\u0027s Game - Trailer",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257351235/966515db96dc525a590530e3ad3712bdaf98eecd/movie_600x337.jpg?t=1780657407",
+        "file":  "video_thumbnails/001_ea-sports-fc-26-the-worlds-game-trailer_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-20T05:00:22.890Z"
+    },
+    {
+        "role":  "video",
+        "title":  "EA SPORTS FC™ 26 | Official Reveal Trailer",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/3405690/237661147/3bb5c19649877457ec2f75c9fd2c2909189d80d3/1757381480/hls_264_master.m3u8?t=1761904809",
+        "file":  "videos/002_ea-sports-fc-26-official-reveal-trailer.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-20T05:00:22.891Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "EA SPORTS FC™ 26 | Official Reveal Trailer",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257194796/34d3f4af610e407a8e6a55afba81fdb281cc940e/movie_600x337.jpg?t=1761904809",
+        "file":  "video_thumbnails/002_ea-sports-fc-26-official-reveal-trailer_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-20T05:00:22.891Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "EA SPORTS FC™ 26 | Official Reveal Trailer",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257194796/34d3f4af610e407a8e6a55afba81fdb281cc940e/movie_600x337.jpg?t=1761904809",
+        "file":  "video_thumbnails/002_ea-sports-fc-26-official-reveal-trailer_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-20T05:00:22.891Z"
+    },
+    {
+        "role":  "video",
+        "title":  "EA SPORTS FC 26 Official Launch Trailer | The Club is Yours",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/3405690/1511561457/f41eb818b7851cfc72dce9043ff16b7251bc9ab4/1759270894/hls_264_master.m3u8?t=1759272928",
+        "file":  "videos/003_ea-sports-fc-26-official-launch-trailer-the-club-is-yours.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-20T05:00:22.892Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "EA SPORTS FC 26 Official Launch Trailer | The Club is Yours",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257209653/965a47d6c72f2261acb5547bf4c6e190eada561b/movie_600x337.jpg?t=1759272928",
+        "file":  "video_thumbnails/003_ea-sports-fc-26-official-launch-trailer-the-club-is-yours_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-20T05:00:22.892Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "EA SPORTS FC 26 Official Launch Trailer | The Club is Yours",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257209653/965a47d6c72f2261acb5547bf4c6e190eada561b/movie_600x337.jpg?t=1759272928",
+        "file":  "video_thumbnails/003_ea-sports-fc-26-official-launch-trailer-the-club-is-yours_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-20T05:00:22.892Z"
+    }
+]

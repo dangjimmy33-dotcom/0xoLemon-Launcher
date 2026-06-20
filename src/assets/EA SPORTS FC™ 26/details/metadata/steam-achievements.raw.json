@@ -1,0 +1,614 @@
+﻿{
+    "game":  {
+                 "gameName":  "EA SPORTS FC™ 26",
+                 "gameVersion":  "3",
+                 "availableGameStats":  {
+                                            "stats":  [
+                                                          {
+                                                              "name":  "stat_1",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_2",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_3",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_4",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_5",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_6",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_7",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_8",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_9",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_10",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_11",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_12",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_13",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_14",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_15",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_16",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_17",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_18",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_19",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_20",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_21",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_22",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_23",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_24",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_25",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_26",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_27",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_28",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_29",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_30",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_31",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_32",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_33",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_34",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_35",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_36",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_37",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_38",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_39",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_40",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_41",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_42",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_43",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          }
+                                                      ],
+                                            "achievements":  [
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_1",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Masterplan",
+                                                                     "hidden":  0,
+                                                                     "description":  "Get hired for a job you\u0027ve added to the Watchlist",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/419d412cb37e1e593411210b99c7835230658fb2.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/af0b3e3c76b701a4384d57e82abe6a0518ff7c20.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_2",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Treble Glory",
+                                                                     "hidden":  0,
+                                                                     "description":  "Win a Treble",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/ec87b2a5ae8b7fd5c30f597050331325c6165440.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/4d72ec853169c88841eb28d2c847939e13d24084.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_3",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Challenge Accepted",
+                                                                     "hidden":  0,
+                                                                     "description":  "Successfully complete your first Challenge",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/0524c1ca571b5109a285d46f20bec34ddb5308a6.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/05b618915c5ee5bc5649223f76dc3aaf19451f6b.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_4",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Expect the Unexpected",
+                                                                     "hidden":  0,
+                                                                     "description":  "Navigate the unknown",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/532aa2664bcc035f411d1ca8f123c4dede6c1a32.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/47666769152d6151304e476a34b9277a9d6f1a48.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_5",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Legend on the Pitch",
+                                                                     "hidden":  0,
+                                                                     "description":  "Field 3 ICONs or Heroes in the same match",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/28151255572ccfd4b1a78339c007cecc339cbd47.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/9a474b99808c4f75d04dffe7258123b2518b4d27.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_6",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "European Glory",
+                                                                     "hidden":  0,
+                                                                     "description":  "Win the UEFA Champions League or the UEFA Women\u0027s Champions League in Player or Manager Career",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/8ce410e36111d85b0fe1f5e86a29ce42b48e1150.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/fce84446d2b45aeb1aefc769461f7d1a3ad81379.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_7",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Tactical Sync",
+                                                                     "hidden":  0,
+                                                                     "description":  "Field a starting XI with all the players having a Player Role ++",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/f9a26e2a58fdc8e640740340c42009bf7ba072ad.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/06a4b35a777d68d925570ae4f495fd17d8b61f92.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_8",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Campeones",
+                                                                     "hidden":  0,
+                                                                     "description":  "Finish as the Champion of your Clubs Playoff table",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/59867cdb1c96d76cb693fedc2a8f20442aefde6b.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/302f7793fddabbe50a2ea533544818cf1e6ff971.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_9",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "We\u0027re Going Up",
+                                                                     "hidden":  0,
+                                                                     "description":  "Earn a Clubs League Promotion with your Club",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/6f9a58147fe9f2e5ec4010724ce5977295dd25a8.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/cead4c1db6139f65662e15e55aff9c226083cacd.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_10",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Top of the Pyramid",
+                                                                     "hidden":  0,
+                                                                     "description":  "Reach Elite Division with your Club in a Clubs League Season",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/befbb018bee336d0a0fbc4a746fd91d94c500da9.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/3f075415a4c0a70789984c878972ffd559485e1a.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_11",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "First of Many",
+                                                                     "hidden":  0,
+                                                                     "description":  "Win your first Clubs League Match",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/8ce410e36111d85b0fe1f5e86a29ce42b48e1150.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/fce84446d2b45aeb1aefc769461f7d1a3ad81379.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_12",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Collect Them All",
+                                                                     "hidden":  0,
+                                                                     "description":  "Unlock 3 Archetypes",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/f9a26e2a58fdc8e640740340c42009bf7ba072ad.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/06a4b35a777d68d925570ae4f495fd17d8b61f92.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_13",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Very Particular Set of Skills",
+                                                                     "hidden":  0,
+                                                                     "description":  "Unlock and equip a Specialization with an Archetype",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/fe3dab3f566e16be56d09be4ccef234944d5f36c.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/7f731ba60d298cff91c473885c7bbf96b99c2e35.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_14",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Shop \u0027Til You Drop",
+                                                                     "hidden":  0,
+                                                                     "description":  "Purchase any Archetype content gated item from the store",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/e44ba212d6a675c9f22060886614007d45fbba38.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/65b9bcfaabc4c9fa978bf429dd0ece048c61aa09.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_15",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Gold Standard",
+                                                                     "hidden":  0,
+                                                                     "description":  "Reach Gold level with an Archetype",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/db08769e7eb7ffbdc01d44146df8db7bdc47254d.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/b8a931b9269ec3bf597fa09c3dab419f36f684ce.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_16",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "In a Rush",
+                                                                     "hidden":  0,
+                                                                     "description":  "Improve your Rush Rank in Clubs",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/af61cb4e9b52df3ca8c38bb5a0dffabdd445a47a.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/b4dc38f189c23d0273cde1be63fb389c0af9233f.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_17",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Football Friend",
+                                                                     "hidden":  0,
+                                                                     "description":  "Participate in a Clubs Rush Live Event with one or more friends",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/6722b39ba67a593f3754b2bb3609961fa02a0c0d.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/30d62e07047b0ffd87b7129c405cbb8172c35431.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_18",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "KO Kings",
+                                                                     "hidden":  0,
+                                                                     "description":  "Win a Clubs Rush Live Event",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/e6a7020cd16eddf1ab488e2e5d50705f831b1585.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/68661c55100daeaa027ceaaa124ae8bace28cda6.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_19",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Dead-ball Specialist",
+                                                                     "hidden":  0,
+                                                                     "description":  "Score a goal from a Free Kick",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/5f7ea835a03486b534d4fda6c052d4513b247be9.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/a6472445634bbcc54ae403f0ee2185f9ec6736a7.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_20",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Intuition and Execution",
+                                                                     "hidden":  0,
+                                                                     "description":  "Win a penalty shoot-out without missing",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/d3d8433c6c61fb32949891d499d193880c99b93f.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/6055d23feb5b34e343a832625cef8e302c292ad0.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_21",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Power Shot",
+                                                                     "hidden":  0,
+                                                                     "description":  "Score a goal using the Power Shot mechanic",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/536f6afd2fb6c32a1aee381c1d5da3705ef0eeff.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/52a8ca61ba35e1ef84c3f22a7856f0798ff3903a.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_22",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Bring It On",
+                                                                     "hidden":  0,
+                                                                     "description":  "Play and win a match on Legendary difficulty with Competitor mode turned on during any offline mode",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/04acf20ceaff5fc4552adf8375bb9b9ad159b56f.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/9f0b6baef46025e1291d46f263eee9e285b64ee7.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_23",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Surgical Aim",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete 25 Precision Passes",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/393fea9dddd9bcfaa1c30ba1908e82b4d724b105.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/b1bc6329991f22d51c36a330924c20596313a74f.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_24",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Bullseye",
+                                                                     "hidden":  0,
+                                                                     "description":  "Score a goal using Precision Shooting",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/10f27b45f1545db0ba9be593e64e6740adf1aefd.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/dead02e320a039f23b15bf36350bc278192ed230.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_25",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "PlayStyles+",
+                                                                     "hidden":  0,
+                                                                     "description":  "Score a goal with an active PlayStyle+",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/f0b58cbdf843469dea7552d4cdd00ca4531ce241.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/d34b362aaa6ffc640274efe76e9d45c8965feed5.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_26",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Tactical Mastermind",
+                                                                     "hidden":  0,
+                                                                     "description":  "Create, customize and name your own Tactic",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/0cd282bc50642806bb9d366ca74aec533565a6a9.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/41cc5c3eda97e9690365aff9b1666067298c4a89.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_27",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Clean Sheet",
+                                                                     "hidden":  0,
+                                                                     "description":  "Get a clean sheet while playing Be-A-Goalkeeper in Career Mode or in Clubs",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/e8ee2be32fd5385252fa69a3c6e34af9e7a8a7c0.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/43ad3d41c86175b94ae029fc4b2d0d386ca79702.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_28",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Authenticity",
+                                                                     "hidden":  0,
+                                                                     "description":  "Play a match with the Authentic Gameplay Type selected in Kick Off, Tournaments or in Career Mode",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/65a0c09c3bd23ab6e9a3de4baea7b0860561a149.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/037d1b770e642d2e48cfe5eb49a10ea73d5fea87.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_29",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Squad Builder Extraordinaire",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete 10 Squad Building Challenges in Football Ultimate Team",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/d275a4914ea5a053a8b700c3d5de8eb9c9cb80f4.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/beb88f9eaf6f41226b223384661582e2982d16b6.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_30",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Bounty Buster",
+                                                                     "hidden":  0,
+                                                                     "description":  "Successfully complete a Bounty in UT Division Rivals",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/720e09097969c46fdb402e722c786194b46e5b32.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/d3ec34e225e01ba91294469d2231dbeaee320163.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_31",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Full Chemistry Charge",
+                                                                     "hidden":  0,
+                                                                     "description":  "Build a squad with 33 Chemistry Points in Football Ultimate Team. Excludes Concept Players and SBCs",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/82a00b7981af3522a3465156c7154ffc19c27ac4.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/90b2e574066bd3a95452229390c77f3c2bdab0f6.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_32",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Tactical Designer",
+                                                                     "hidden":  0,
+                                                                     "description":  "Create your own custom Tactic in Football Ultimate Team",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/fdc5001423fcd551c672e713837776ef84c7a773.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/80d3dda4118317d183c8846c06d476366472ef7f.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_33",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Defensive Dynamo",
+                                                                     "hidden":  0,
+                                                                     "description":  "Keep 10 clean sheets in UT Squad Battles",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/6811de816520f6b1772567f9b742f752db93dc0b.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/5582dcb27fd01a08cc17d1bc23c8674f5a974e55.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_34",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Final Evolutionary Stage",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete an Evolution and claim the upgrades in UT",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/b99c00aff91525e549a91167bb96acba68c554f6.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/58031689bca15591f6435d26bebd972fd357d781.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_35",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Champion’s Debut",
+                                                                     "hidden":  0,
+                                                                     "description":  "Play in a Champions Event in Football Ultimate Team",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/6b9092fccd3ba0e5b66d763d9fab67dcc9517830.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/9426727f8de2fa96c90e34c95c114d700679a852.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_36",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Mythic Milestone",
+                                                                     "hidden":  0,
+                                                                     "description":  "Reach 200 Club appearances with a player in Football Ultimate Team",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/50f9bd333e15fa477c48a394980c1ee4a57248b9.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/6be389a7d00db67bde6102b0a5ff2555db372132.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_37",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Makeover Maestro",
+                                                                     "hidden":  0,
+                                                                     "description":  "Successfully complete a Cosmetic Evolution in Football Ultimate Team",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/f64eefad430c309437bc38b17b6e60f96a19816d.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/3a5b885e0f0d7cc07a6e8f9b31d514377a87f9ed.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_38",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Event Explorer",
+                                                                     "hidden":  0,
+                                                                     "description":  "Play in an Event in Football Ultimate Team",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/d275a4914ea5a053a8b700c3d5de8eb9c9cb80f4.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/beb88f9eaf6f41226b223384661582e2982d16b6.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_39",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "European Legend",
+                                                                     "hidden":  0,
+                                                                     "description":  "Win the UEFA Champions League Final",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/b36dc1725137823c3f7eadcbe9a7c742e465e197.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/e02df5c320bc35026f0272e991878a6ce8f1f30a.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_40",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Best of Five",
+                                                                     "hidden":  0,
+                                                                     "description":  "Play 5 H2H matches with a friend in Kick Off",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/6553aeb8282a863aa974ab747b1c777a8a1248c3.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/d3c939fb83300620f1af28b4cfff0b7ada9ca35d.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_41",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Football is Everything",
+                                                                     "hidden":  0,
+                                                                     "description":  "Play a Women\u0027s International football match",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/b36dc1725137823c3f7eadcbe9a7c742e465e197.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/e02df5c320bc35026f0272e991878a6ce8f1f30a.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_42",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "One Season, wonderful!",
+                                                                     "hidden":  0,
+                                                                     "description":  "Fully complete and unlock all levels in a Season Pass",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/4c75cc5ea17f25f13ac6392362478a5e6a50d282.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/4fb5ae1d6e1a6ea7cf09160e7f5e04683085b65b.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_GOSCC_43",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "All Aboard the Premium Track!",
+                                                                     "hidden":  0,
+                                                                     "description":  "Fully complete and unlock all levels in the Premium Pass",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/52c45e99ea572fbb69b49a34fba556e278eab43c.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3405690/1d0150bb4085d8ff05a4d9d8e5a821d46d19f95c.jpg"
+                                                                 }
+                                                             ]
+                                        }
+             }
+}
