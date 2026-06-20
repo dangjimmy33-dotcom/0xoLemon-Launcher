@@ -145,7 +145,7 @@ export function DiscordAccessGate({
                 {busy ? 'Checking...' : 'I joined — check again'}
               </button>
               <button type="button" className="discord-secondary logout-btn-sub" style={{ marginTop: 8 }} onClick={onLogout}>
-                Sign out to switch account
+                Sign out
               </button>
             </>
           ) : tooYoung ? (
@@ -155,7 +155,7 @@ export function DiscordAccessGate({
                 {busy ? 'Checking...' : 'Check again'}
               </button>
               <button type="button" className="discord-secondary logout-btn-sub" style={{ marginTop: 8 }} onClick={onLogout}>
-                Sign out to switch account
+                Sign out
               </button>
             </>
           ) : canLogin ? (

@@ -2959,7 +2959,7 @@ export default function App() {
         onLogin={() => void loginDiscord()}
         onRefresh={() => void refreshDiscordAccess(true)}
         onJoinServer={() => void openUrl(discordAuth.guildInvite)}
-        onLogout={() => void logoutDiscord()}
+        onLogout={() => void executeLogoutDiscord()}
       />
     </div>
     </MotionConfig>
