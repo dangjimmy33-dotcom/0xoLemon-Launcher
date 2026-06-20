@@ -108,8 +108,8 @@ function GameDetailLoadingView({
   onBack: () => void
   viewMode: 'store' | 'library'
 }) {
-  const hero = assets[game.heroAssetId]
-  const icon = assets[game.iconAssetId] || assets[game.gridAssetId]
+  const hero = assetUrlForId(game.heroAssetId, assets)
+  const icon = assetUrlForId(game.iconAssetId, assets) || assetUrlForId(game.gridAssetId, assets)
 
   return (
     <section className="game-detail-loading-view" aria-busy="true" aria-label={`Opening ${game.title}`}>
@@ -292,7 +292,7 @@ export function StoreLibraryView({
         <LazyGameCardImage
           game={game}
           assetId={game.gridAssetId}
-          url={assets[game.gridAssetId]}
+          url={assetUrlForId(game.gridAssetId, assets)}
           variant={variant}
           onRequestAsset={onRequestAsset}
         />
@@ -363,7 +363,7 @@ export function StoreLibraryView({
   }
 
   const hero = assetUrlForId(selectedGame.heroAssetId, assets) || firstMediaUrl(detail, assets)
-  const logo = assets[selectedGame.logoAssetId]
+  const logo = assetUrlForId(selectedGame.logoAssetId, assets)
   const installed = Boolean(selectedInstallState?.installed)
   const isVerifying = verifyStatus?.state === 'running'
 
@@ -404,8 +404,8 @@ export function StoreLibraryView({
   const missingCount = verifyStatus?.missingFiles?.length ?? 0
   const changedCount = verifyStatus?.mismatchedFiles?.length ?? 0
 
-  const gridAsset = assets[selectedGame.gridAssetId]
-  const iconAsset = assets[selectedGame.iconAssetId]
+  const gridAsset = assetUrlForId(selectedGame.gridAssetId, assets)
+  const iconAsset = assetUrlForId(selectedGame.iconAssetId, assets)
 
   return (
     <section className="game-detail-view">
@@ -683,7 +683,7 @@ export function OperationHero({
       {hero ? <img src={hero} alt="" loading="eager" /> : null}
       <div className="game-strip">
         <div className="game-emblem">
-          {assets[game.iconAssetId] ? <img src={assets[game.iconAssetId]} alt="" /> : <ImageIcon size={28} />}
+          {assetUrlForId(game.iconAssetId, assets) ? <img src={assetUrlForId(game.iconAssetId, assets)} alt="" /> : <ImageIcon size={28} />}
         </div>
         <div>
           <h1>{game.title}</h1>
