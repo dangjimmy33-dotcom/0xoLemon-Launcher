@@ -102,7 +102,7 @@ const defaultLauncherSettings: LauncherSettings = {
   autoVerifyAfterInstall: false,
   downloadProfile: 'balanced',
   downloadQueueMb: 128,
-  directToStaging: false,
+  directToStaging: true,
   cloudSaveRoot: '',
   gameUpdateMode: 'automatic',
   gameUpdateScheduleStart: '02:00',

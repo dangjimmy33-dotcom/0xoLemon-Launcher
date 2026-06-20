@@ -70,7 +70,7 @@ impl Default for LauncherSettings {
             auto_verify_after_install: false,
             download_profile: DownloadProfile::Balanced,
             download_queue_mb: 128,
-            direct_to_staging: false,
+            direct_to_staging: true,
             cloud_save_root: String::new(),
             game_update_mode: GameUpdateMode::Automatic,
             game_update_schedule_start: "02:00".to_string(),
