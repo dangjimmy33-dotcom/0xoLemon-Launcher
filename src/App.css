@@ -596,7 +596,7 @@
 .store-game-card.coming-soon {
   filter: brightness(0.5) saturate(0.8);
   opacity: 0.8;
-  cursor: not-allowed !important;
+  cursor: not-allowed;
 }
 
 .store-game-card.coming-soon:hover {
