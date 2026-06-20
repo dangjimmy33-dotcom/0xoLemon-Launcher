@@ -2,12 +2,13 @@ import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyB2xXNcgWWbbUkUgoM4GXtkQZTjcFIU-io",
-  authDomain: "xolemon.firebaseapp.com",
-  projectId: "xolemon",
-  storageBucket: "xolemon.firebasestorage.app",
-  messagingSenderId: "174002283670",
-  appId: "1:174002283670:web:07e033c0b9dc0a74b50eb7"
+  apiKey: "AIzaSyAdqkMDJTjeVAfnwd8twlF2dvrKpWdNlUY",
+  authDomain: "xolemon-b360e.firebaseapp.com",
+  projectId: "xolemon-b360e",
+  storageBucket: "xolemon-b360e.firebasestorage.app",
+  messagingSenderId: "330469620392",
+  appId: "1:330469620392:web:ad6f6e9288820f18ef209d",
+  measurementId: "G-FZTWK4JCKG"
 };
 
 export const app = initializeApp(firebaseConfig);
