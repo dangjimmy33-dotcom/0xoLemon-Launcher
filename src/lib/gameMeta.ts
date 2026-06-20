@@ -21,6 +21,7 @@ export function decodeRemoteAssetId(assetId: string) {
 
 export function assetUrlForId(assetId: string | null | undefined, assets: Record<string, string>) {
   if (!assetId) return undefined
+  if (assetId.startsWith('http://') || assetId.startsWith('https://')) return assetId
   if (isRemoteAssetId(assetId)) return decodeRemoteAssetId(assetId)
   return assets[assetId]
 }
