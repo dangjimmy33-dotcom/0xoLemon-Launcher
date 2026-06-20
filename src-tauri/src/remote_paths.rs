@@ -72,6 +72,12 @@ pub const GAME_PATH_MAPPINGS: &[GamePathMapping] = &[
         hf_dir_name: "hello-kitty-island-adventure",
         launch_executable: "Hello Kitty.exe",
     },
+     GamePathMapping {
+        game_id: "ea-sports-fc-26",
+        install_dir_name: "EA SPORTS FC™ 26",
+        hf_dir_name: "ea-sports-fc-26",
+        launch_executable: "FC26.exe",
+    },
 ];
 
 #[derive(Debug, Clone, Deserialize)]
