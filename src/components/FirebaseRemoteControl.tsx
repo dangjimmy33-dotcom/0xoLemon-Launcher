@@ -11,12 +11,18 @@ export function FirebaseRemoteControl({
   installStates,
   runtimeStates,
   assets,
+  setCatalog,
+  setInstallStates,
+  setRuntimeStates,
 }: {
   user: DiscordAuthUser
   catalog: GameCatalog
   installStates: Record<string, GameInstallState>
   runtimeStates: GameRuntimeState[]
   assets: Record<string, string>
+  setCatalog: (c: GameCatalog) => void
+  setInstallStates: (s: Record<string, GameInstallState>) => void
+  setRuntimeStates: (s: GameRuntimeState[]) => void
 }) {
   useEffect(() => {
     // ONLY RUN THIS ON PC LAUNCHER
@@ -87,6 +93,20 @@ export function FirebaseRemoteControl({
       updatedAt: serverTimestamp()
     }, { merge: true }).catch(console.error)
   }, [user.id, catalog, installStates, runtimeStates, assets])
+
+  useEffect(() => {
+    if (isTauriRuntime() || !user.id) return
+
+    const stateRef = doc(db, 'users', user.id, 'pc_state', 'current')
+    const unsubscribe = onSnapshot(stateRef, (snap) => {
+      const data = snap.data()
+      if (!data) return
+      if (data.catalog) setCatalog(data.catalog)
+      if (data.installStates) setInstallStates(data.installStates)
+      if (data.runtimeStates) setRuntimeStates(data.runtimeStates)
+    })
+    return () => unsubscribe()
+  }, [user.id, setCatalog, setInstallStates, setRuntimeStates])
 
   return null // This is a logic-only component
 }

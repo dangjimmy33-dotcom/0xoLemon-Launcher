@@ -3044,16 +3044,70 @@ button:disabled {
 
 @media (max-width: 860px) {
   .launcher-shell {
-    display: block;
+    display: flex;
+    flex-direction: column-reverse;
   }
 
   .sidebar {
-    position: static;
-    height: auto;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 64px;
+    padding: 0;
+    z-index: 999;
+    background: #0f1419;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-right: none;
+    flex-direction: row;
+  }
+
+  .sidebar-header,
+  .sidebar-status,
+  .sidebar-account {
+    display: none;
   }
 
   .sidebar nav {
-    grid-template-columns: repeat(5, 1fr);
+    flex-direction: row;
+    width: 100%;
+    justify-content: space-around;
+    padding: 0 10px;
+  }
+
+  .nav-item {
+    flex-direction: column;
+    justify-content: center;
+    padding: 0;
+    height: 100%;
+    border-radius: 0;
+    gap: 4px;
+  }
+
+  .nav-item svg {
+    margin: 0;
+    opacity: 0.8;
+  }
+
+  .nav-item span {
+    display: block !important;
+    font-size: 10px;
+    opacity: 0.6;
+  }
+
+  .nav-item.active svg,
+  .nav-item.active span {
+    opacity: 1;
+    color: #4a9eff;
+  }
+  
+  .nav-item.active {
+    background: transparent;
+  }
+
+  .workspace {
+    margin-bottom: 64px;
+    padding: 10px;
   }
 
   .game-strip,
@@ -3107,15 +3161,6 @@ button:disabled {
 
 /* ── Extra small: icon-only sidebar ────────────────────── */
 @media (max-width: 600px) {
-  .launcher-shell {
-    grid-template-columns: 52px minmax(0, 1fr);
-  }
-
-  .nav-item {
-    height: 44px;
-    padding: 0;
-  }
-
   .content-grid,
   .store-layout,
   .game-detail-view,
@@ -3123,6 +3168,23 @@ button:disabled {
     grid-template-columns: 1fr;
     padding: 8px;
     gap: 8px;
+  }
+  
+  .store-hero {
+    height: 250px;
+  }
+  
+  .hero-info h1 {
+    font-size: 28px;
+  }
+  
+  .store-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .game-strip {
+    margin: 100px 12px 12px;
   }
 }
 
