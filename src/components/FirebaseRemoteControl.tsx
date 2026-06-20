@@ -10,7 +10,6 @@ export function FirebaseRemoteControl({
   catalog,
   installStates,
   runtimeStates,
-  assets,
   setCatalog,
   setInstallStates,
   setRuntimeStates,
@@ -19,7 +18,6 @@ export function FirebaseRemoteControl({
   catalog: GameCatalog
   installStates: Record<string, GameInstallState>
   runtimeStates: GameRuntimeState[]
-  assets: Record<string, string>
   setCatalog: (c: GameCatalog) => void
   setInstallStates: (s: Record<string, GameInstallState>) => void
   setRuntimeStates: (s: GameRuntimeState[]) => void
