@@ -118,8 +118,7 @@ export function DiscordWidget({ serverId, onOpenDiscord, reducedMotion }: Discor
       </div>
       <button type="button" onClick={() => {
         if (data.inviteCode) {
-          // Attempt to open the invite directly in browser/Discord
-          window.open(`https://discord.gg/${data.inviteCode}`, '_blank')
+          import('@tauri-apps/plugin-opener').then(m => m.openUrl(`https://discord.gg/${data.inviteCode}`)).catch(() => onOpenDiscord())
         } else {
           onOpenDiscord()
         }
