@@ -531,52 +531,12 @@ def preflight_single_game_build(assets_root: str, game_name: str, app_id: str, w
     ensure_remote_metadata_before_build(str(root), target, game_name, app_id, writer, options)
     preflight_videos_before_build(str(target), writer)
 
-    hold = root.parent / f"{root.name}.__0xo_build_hold_{int(time.time())}"
-    hold.mkdir(parents=True, exist_ok=False)
-    moved: List[tuple[Path, Path]] = []
-
-    for child in list(root.iterdir()):
-        try:
-            if child.resolve() == target:
-                continue
-        except Exception:
-            pass
-        # Never move the active hold dir if user placed assetsRoot oddly.
-        if child.name.startswith(root.name + ".__0xo_build_hold_"):
-            continue
-        dest = hold / child.name
-        try:
-            child.replace(dest)
-            moved.append((dest, root / child.name))
-        except Exception as exc:
-            writer(f"[BUILD] Không thể tạm ẩn {child.name}: {exc}")
-
-    if moved:
-        writer(f"[BUILD] Đã tạm ẩn {len(moved)} mục khác; builder sẽ chỉ thấy: {target.name}")
-    else:
-        writer("[BUILD] Không có asset game khác cần tạm ẩn.")
+    # Note: We now pass target dir directly to asset_pack_builder via --source.
+    # We no longer move/hide other directories which caused WinError 5 locks.
+    writer("[BUILD] Đã truyền trực tiếp thư mục game cho builder.")
 
     def cleanup(write):
-        restored = 0
-        # Restore in reverse order just in case there are nested moves later.
-        for src, dst in reversed(moved):
-            try:
-                if src.exists():
-                    if dst.exists():
-                        # Extremely rare: user created something with same name while build ran.
-                        alt = dst.with_name(dst.name + f".__restore_conflict_{int(time.time())}")
-                        dst.replace(alt)
-                        write(f"[BUILD] Cảnh báo: {dst.name} đã tồn tại, đổi bản mới sang {alt.name}")
-                    src.replace(dst)
-                    restored += 1
-            except Exception as exc:
-                write(f"[BUILD] Không restore được {dst.name}: {exc}")
-        try:
-            if hold.exists() and not any(hold.iterdir()):
-                hold.rmdir()
-        except Exception:
-            pass
-        write(f"[BUILD] Đã khôi phục {restored}/{len(moved)} mục đã tạm ẩn.")
+        pass
 
     return cleanup
 
@@ -913,13 +873,18 @@ class Handler(BaseHTTPRequestHandler):
         app_id = safe_str(body.get("appId"), "").strip()
         asset_folder = safe_str(body.get("assetFolder"), "").strip()
         output_path = str(Path(project_root) / "assets" / "catalog.0xo")
-        args = [cargo, "run", "--bin", "asset_pack_builder", "--", "--source", assets_root, "--output", output_path]
 
         if build_mode == "all":
             title = "Xây dựng tất cả gói asset"
+            args = [cargo, "run", "--bin", "asset_pack_builder", "--", "--source", assets_root, "--output", output_path]
             preflight = lambda write: preflight_videos_before_build(assets_root, write)
         else:
             title = f"Xây dựng gói asset: {asset_folder or game_name or app_id or 'game hiện tại'}"
+            target_dir = find_game_asset_dir(assets_root, game_name, app_id, asset_folder)
+            if target_dir:
+                args = [cargo, "run", "--bin", "asset_pack_builder", "--", "--source", str(target_dir), "--output", output_path]
+            else:
+                args = [cargo, "run", "--bin", "asset_pack_builder", "--", "--source", assets_root, "--output", output_path]
             preflight = lambda write: preflight_single_game_build(assets_root, game_name, app_id, write, asset_folder, body)
 
         self._run_and_stream(

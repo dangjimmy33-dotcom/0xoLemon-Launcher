@@ -731,14 +731,12 @@ fn expanded_save_roots(
         .map(|record| record.install_path)
         .unwrap_or_default();
     let steam_environment = crate::steam_integration::environment_info(app);
-    let steam_user_data = steam_environment
+    let steam_user_data_root = steam_environment
         .root_path
         .as_deref()
-        .zip(steam_environment.active_account_id.as_deref())
-        .map(|(root, account_id)| {
+        .map(|root| {
             PathBuf::from(root)
                 .join("userdata")
-                .join(account_id)
                 .display()
                 .to_string()
         });
@@ -750,11 +748,12 @@ fn expanded_save_roots(
                 &root.path,
                 game_id,
                 &install_dir,
-                steam_user_data.as_deref(),
+                steam_user_data_root.as_deref(),
             )
         })
         .collect::<Result<Vec<_>, _>>()?
         .into_iter()
+        .flatten()
         .filter(|path| path.is_absolute())
         .collect::<Vec<_>>()
         .into_iter()
@@ -807,26 +806,56 @@ fn expand_path_template(
     value: &str,
     game_id: &str,
     install_dir: &str,
-    steam_user_data: Option<&str>,
-) -> Result<PathBuf, String> {
+    steam_user_data_root: Option<&str>,
+) -> Result<Vec<PathBuf>, String> {
     let user_profile = env::var("USERPROFILE").unwrap_or_default();
     let app_data = env::var("APPDATA").unwrap_or_default();
     let local_app_data = env::var("LOCALAPPDATA").unwrap_or_default();
-    let mut expanded = value
+    let expanded = value
         .replace("{gameId}", game_id)
         .replace("{installDir}", install_dir)
         .replace("{userProfile}", &user_profile)
         .replace("{documents}", &format!("{user_profile}\\Documents"))
         .replace("{appData}", &app_data)
         .replace("{localAppData}", &local_app_data);
+
     if expanded.contains("{steamUserData}") {
-        let steam_user_data = steam_user_data.ok_or_else(|| {
-            "Steam userdata path is unavailable because no active Steam account was detected"
+        let steam_user_data_root = steam_user_data_root.ok_or_else(|| {
+            "Steam userdata path is unavailable because Steam installation was not detected"
                 .to_string()
         })?;
-        expanded = expanded.replace("{steamUserData}", steam_user_data);
+        
+        let root_path = Path::new(steam_user_data_root);
+        let mut results = Vec::new();
+        
+        if let Ok(entries) = std::fs::read_dir(root_path) {
+            for entry in entries.flatten() {
+                if let Ok(file_type) = entry.file_type() {
+                    if file_type.is_dir() {
+                        let account_id = entry.file_name().to_string_lossy().to_string();
+                        // Ignore non-numeric folders like '0' or 'anonymous' or 'config' if desired,
+                        // but Steam usually keeps actual IDs as numbers.
+                        if account_id.chars().all(|c| c.is_ascii_digit()) {
+                            let account_path = root_path.join(&account_id).display().to_string();
+                            let replaced = expanded.replace("{steamUserData}", &account_path);
+                            results.push(PathBuf::from(replaced));
+                        }
+                    }
+                }
+            }
+        }
+        
+        // If no numeric folders found, return empty or fallback
+        if results.is_empty() {
+            // fallback so it doesn't just error out silently if they have no login
+            let replaced = expanded.replace("{steamUserData}", &root_path.join("0").display().to_string());
+            results.push(PathBuf::from(replaced));
+        }
+        
+        Ok(results)
+    } else {
+        Ok(vec![PathBuf::from(expanded)])
     }
-    Ok(PathBuf::from(expanded))
 }
 
 fn scan_local_roots(
@@ -1271,9 +1300,34 @@ fn build_status(
 }
 
 fn seed_metadata_defaults(app: &AppHandle, game_id: &str, state: &mut CloudStateFile) -> bool {
-    let metadata = crate::asset_pack::get_game_detail(app, game_id, None)
+    let mut metadata = crate::asset_pack::get_game_detail(app, game_id, None)
         .map(|detail| detail.cloud_save)
         .unwrap_or_default();
+
+    if let Ok(Some(install_record)) = crate::platform::install_record(app, game_id) {
+        let override_path = std::path::PathBuf::from(install_record.install_path).join("0xo-save.json");
+        if override_path.is_file() {
+            if let Ok(content) = std::fs::read_to_string(&override_path) {
+                if let Ok(override_meta) = serde_json::from_str::<CloudSaveMetadata>(&content) {
+                    for root in override_meta.save_roots {
+                        if !metadata.save_roots.contains(&root) {
+                            metadata.save_roots.push(root);
+                        }
+                    }
+                    for inc in override_meta.include {
+                        if !metadata.include.contains(&inc) {
+                            metadata.include.push(inc);
+                        }
+                    }
+                    for exc in override_meta.exclude {
+                        if !metadata.exclude.contains(&exc) {
+                            metadata.exclude.push(exc);
+                        }
+                    }
+                }
+            }
+        }
+    }
     let metadata_roots = metadata
         .save_roots
         .into_iter()
@@ -1814,7 +1868,7 @@ mod tests {
         .unwrap();
         assert_eq!(
             expanded,
-            PathBuf::from(r"C:\Program Files (x86)\Steam\userdata\123456\3768760\remote")
+            vec![PathBuf::from(r"C:\Program Files (x86)\Steam\userdata\123456\0\3768760\remote")]
         );
     }
 
