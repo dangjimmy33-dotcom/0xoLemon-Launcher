@@ -28,8 +28,30 @@ if ($LASTEXITCODE -ne 0) {
     Write-Host "Error: GitHub push failed!" -ForegroundColor Red
     exit $LASTEXITCODE
 }
-Write-Host "Push successful!" -ForegroundColor Green
+Write-Host "Push branch successful!" -ForegroundColor Green
+
+Write-Host "`n=== STEP 4: CREATE RELEASE TAG ===" -ForegroundColor Cyan
+# Bump version in package.json and create a git tag
+$newVersion = npm version patch
+Write-Host "Bumped version to $newVersion" -ForegroundColor Yellow
+
+# Need to update tauri.conf.json manually since npm version doesn't touch it automatically
+$tauriConf = Get-Content "src-tauri\tauri.conf.json" | ConvertFrom-Json
+$tauriConf.version = $newVersion.Replace("v", "")
+$tauriConf | ConvertTo-Json -Depth 10 | Set-Content "src-tauri\tauri.conf.json"
+
+git add src-tauri\tauri.conf.json
+git commit --amend --no-edit
+
+# Force update the tag to the new commit
+git tag -f $newVersion
+git push origin $newVersion
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Error: Push tag failed!" -ForegroundColor Red
+    exit $LASTEXITCODE
+}
+Write-Host "Push tag successful!" -ForegroundColor Green
 
 Write-Host "`n=== COMPLETE ===" -ForegroundColor Green
-Write-Host "The new build will be automatically processed by GitHub Actions for OTA updates!" -ForegroundColor Yellow
+Write-Host "The new build ($newVersion) will be automatically processed by GitHub Actions for OTA updates!" -ForegroundColor Yellow
 pause
