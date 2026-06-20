@@ -10,12 +10,14 @@ export function DiscordAccessGate({
   onLogin,
   onRefresh,
   onJoinServer,
+  onLogout,
 }: {
   status: DiscordAuthStatus
   busy: boolean
   onLogin: () => void
   onRefresh: () => void
   onJoinServer: () => void
+  onLogout: () => void
 }) {
   const [authUrl, setAuthUrl] = useState<string | null>(null)
   const [manualLink, setManualLink] = useState('')
@@ -142,12 +144,20 @@ export function DiscordAccessGate({
                 <RefreshCw size={16} className={busy ? 'is-spinning' : ''} />
                 {busy ? 'Checking...' : 'I joined — check again'}
               </button>
+              <button type="button" className="discord-secondary logout-btn-sub" style={{ marginTop: 8 }} onClick={onLogout}>
+                Sign out to switch account
+              </button>
             </>
           ) : tooYoung ? (
-            <button type="button" className="discord-secondary" disabled={busy} onClick={onRefresh}>
-              <RefreshCw size={16} className={busy ? 'is-spinning' : ''} />
-              {busy ? 'Checking...' : 'Check again'}
-            </button>
+            <>
+              <button type="button" className="discord-secondary" disabled={busy} onClick={onRefresh}>
+                <RefreshCw size={16} className={busy ? 'is-spinning' : ''} />
+                {busy ? 'Checking...' : 'Check again'}
+              </button>
+              <button type="button" className="discord-secondary logout-btn-sub" style={{ marginTop: 8 }} onClick={onLogout}>
+                Sign out to switch account
+              </button>
+            </>
           ) : canLogin ? (
             <div className="oauth-fallback-container">
               <div style={{ textAlign: 'center', marginBottom: 24 }}>
