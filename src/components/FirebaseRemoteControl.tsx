@@ -89,10 +89,10 @@ export function FirebaseRemoteControl({
       catalog,
       installStates,
       runtimeStates,
-      assets, // Upload the base64 assets to Firestore
+      // Do not sync assets (base64 images) as they exceed Firestore 1MB limit
       updatedAt: serverTimestamp()
     }, { merge: true }).catch(console.error)
-  }, [user.id, catalog, installStates, runtimeStates, assets])
+  }, [user.id, catalog, installStates, runtimeStates])
 
   useEffect(() => {
     if (isTauriRuntime() || !user.id) return
