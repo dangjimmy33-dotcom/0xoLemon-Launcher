@@ -1830,3 +1830,81 @@
     grid-column: auto;
   }
 }
+
+/* Discord Widget Styles */
+.community-card.discord-widget {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.discord-widget-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.discord-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  object-fit: cover;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.discord-icon-placeholder {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.discord-info h2 {
+  margin: 0 0 4px 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.discord-stats {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.8rem;
+  color: #9fa6ff;
+}
+
+.discord-stat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-dot.online {
+  background-color: #23a559;
+  box-shadow: 0 0 6px rgba(35, 165, 89, 0.5);
+}
+
+.status-dot.offline {
+  background-color: #80848e;
+}
+
+.community-card.discord-widget button {
+  align-self: flex-start;
+  background-color: #5865F2; /* Official Discord Blurple */
+  color: white;
+  border: none;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.community-card.discord-widget button:hover {
+  background-color: #4752C4;
+}

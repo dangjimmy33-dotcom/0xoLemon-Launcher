@@ -5,7 +5,6 @@ import {
   Download,
   Gamepad2,
   Heart,
-  MessageCircle,
   Play,
   RefreshCcw,
   ShieldCheck,
@@ -13,6 +12,7 @@ import {
 import donateImage from '../assets/donate/donate.png'
 import { formatBytes } from '../lib/format'
 import { MOTION } from '../lib/motion'
+import { DiscordWidget } from './DiscordWidget'
 import type {
   GameCatalog,
   GameInstallState,
@@ -125,9 +125,6 @@ export function HomeView({
 
   return (
     <section className="premium-home">
-      <div style={{ background: '#70a8ff', color: '#fff', padding: '10px', textAlign: 'center', fontWeight: 'bold', borderRadius: '8px', marginBottom: '20px' }}>
-        OTA Updater Test - Version 0.2.1
-      </div>
       {preferences.showContinuePlaying ? (
         <motion.section
           className="home-hero"
@@ -286,14 +283,11 @@ export function HomeView({
           ) : null}
 
           {preferences.showDiscordCard ? (
-            <motion.section className="home-side-card community-card" whileHover={reducedMotion ? undefined : { y: -3 }}>
-              <MessageCircle size={22} />
-              <div>
-                <h2>Join the community</h2>
-                <p>Updates, help and discussion with other 0xoLemon users.</p>
-              </div>
-              <button type="button" onClick={onOpenDiscord}>Open Discord</button>
-            </motion.section>
+            <DiscordWidget 
+              serverId="1492076309323714570" 
+              onOpenDiscord={onOpenDiscord} 
+              reducedMotion={reducedMotion} 
+            />
           ) : null}
 
           {preferences.showDonateCard ? (
