@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread;
-use std::time::{Duration, SystemTime};
+use std::time::{Duration, Instant, SystemTime};
 
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Manager};
@@ -48,6 +48,15 @@ pub struct SteamEnvironmentInfo {
     pub shortcuts_path: Option<String>,
     pub spacewar_installed: bool,
     pub pending_shortcut_actions: usize,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RestartSteamReport {
+    pub was_running: bool,
+    pub forced: bool,
+    pub running: bool,
+    pub message: String,
 }
 
 pub fn environment_info(app: &AppHandle) -> SteamEnvironmentInfo {
@@ -131,13 +140,91 @@ pub fn open_big_picture() -> Result<(), String> {
     open_steam_uri("steam://open/bigpicture")
 }
 
+pub fn restart_steam() -> Result<RestartSteamReport, String> {
+    #[cfg(target_os = "windows")]
+    {
+        let root =
+            find_steam_root().ok_or_else(|| "Steam installation was not found".to_string())?;
+        let executable = root.join("steam.exe");
+        if !executable.is_file() {
+            return Err(format!(
+                "Steam executable was not found at {}",
+                executable.display()
+            ));
+        }
+
+        let was_running = is_steam_running();
+        let mut forced = false;
+        if was_running {
+            let mut shutdown = Command::new(&executable);
+            shutdown.creation_flags(CREATE_NO_WINDOW);
+            let _ = shutdown.arg("-shutdown").spawn();
+
+            if !wait_for_steam_state(false, Duration::from_secs(12)) {
+                let mut terminate = Command::new("taskkill.exe");
+                terminate.creation_flags(CREATE_NO_WINDOW);
+                let output = terminate
+                    .args(["/F", "/IM", "steam.exe"])
+                    .output()
+                    .map_err(|error| format!("Could not force-close Steam: {error}"))?;
+                if !output.status.success() && is_steam_running() {
+                    let detail = String::from_utf8_lossy(&output.stderr).trim().to_string();
+                    return Err(if detail.is_empty() {
+                        "Steam did not close after the force-restart request".to_string()
+                    } else {
+                        format!("Steam did not close: {detail}")
+                    });
+                }
+                forced = true;
+                if !wait_for_steam_state(false, Duration::from_secs(8)) {
+                    return Err("Steam is still running after it was force-closed".to_string());
+                }
+            }
+        }
+
+        thread::sleep(Duration::from_millis(700));
+        Command::new(&executable)
+            .spawn()
+            .map_err(|error| format!("Could not start Steam again: {error}"))?;
+        let running = wait_for_steam_state(true, Duration::from_secs(25));
+        if !running {
+            return Err("Steam was closed, but it did not start again within 25 seconds".to_string());
+        }
+
+        return Ok(RestartSteamReport {
+            was_running,
+            forced,
+            running,
+            message: if forced {
+                "Steam was force-closed and started again.".to_string()
+            } else if was_running {
+                "Steam closed normally and started again.".to_string()
+            } else {
+                "Steam was not running and has now been started.".to_string()
+            },
+        });
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    {
+        Err("Restarting Steam is currently supported only on Windows".to_string())
+    }
+}
+
 pub fn install_spacewar() -> Result<(), String> {
     open_steam_uri("steam://install/480")
 }
 
 pub fn is_spacewar_installed() -> bool {
+    if steam_registry_has_spacewar() {
+        return true;
+    }
+
     steam_library_roots().into_iter().any(|library| {
         let steamapps = library.join("steamapps");
+        if libraryfolders_declares_app(&steamapps.join("libraryfolders.vdf"), "480") {
+            return true;
+        }
         let manifest = steamapps.join("appmanifest_480.acf");
         if manifest.is_file() {
             let text = fs::read_to_string(&manifest).unwrap_or_default();
@@ -151,6 +238,45 @@ pub fn is_spacewar_installed() -> bool {
         }
 
         steamapps.join("common").join("Spacewar").is_dir()
+    })
+}
+
+fn wait_for_steam_state(expected_running: bool, timeout: Duration) -> bool {
+    let deadline = Instant::now() + timeout;
+    loop {
+        if is_steam_running() == expected_running {
+            return true;
+        }
+        if Instant::now() >= deadline {
+            return false;
+        }
+        thread::sleep(Duration::from_millis(350));
+    }
+}
+
+fn steam_registry_has_spacewar() -> bool {
+    registry_string(r"HKCU\Software\Valve\Steam\Apps\480", "Name")
+        .is_some_and(|name| spacewar_registration_name_is_valid(&name))
+        || registry_dword(r"HKCU\Software\Valve\Steam\Apps\480", "Installed")
+            .is_some_and(|installed| installed != 0)
+}
+
+fn spacewar_registration_name_is_valid(value: &str) -> bool {
+    value.trim().eq_ignore_ascii_case("Spacewar")
+}
+
+fn libraryfolders_declares_app(path: &Path, app_id: &str) -> bool {
+    fs::read_to_string(path)
+        .ok()
+        .is_some_and(|text| vdf_declares_app(&text, app_id))
+}
+
+fn vdf_declares_app(text: &str, app_id: &str) -> bool {
+    text.lines().any(|line| {
+        let fields = quoted_fields(line);
+        fields.len() >= 2
+            && fields[0] == app_id
+            && fields[1].chars().all(|character| character.is_ascii_digit())
     })
 }
 
@@ -477,6 +603,30 @@ fn registry_string(key: &str, value: &str) -> Option<String> {
                         return Some(result.to_string());
                     }
                 }
+            }
+        }
+    }
+    let _ = (key, value);
+    None
+}
+
+fn registry_dword(key: &str, value: &str) -> Option<u32> {
+    #[cfg(target_os = "windows")]
+    {
+        let mut command = Command::new("reg.exe");
+        command.creation_flags(CREATE_NO_WINDOW);
+        let output = command.args(["query", key, "/v", value]).output().ok()?;
+        if !output.status.success() {
+            return None;
+        }
+        let text = String::from_utf8_lossy(&output.stdout);
+        for line in text.lines() {
+            if let Some(index) = line.find("REG_DWORD") {
+                let raw = line[index + "REG_DWORD".len()..].trim();
+                return raw
+                    .strip_prefix("0x")
+                    .and_then(|value| u32::from_str_radix(value, 16).ok())
+                    .or_else(|| raw.parse::<u32>().ok());
             }
         }
     }

@@ -182,8 +182,8 @@ pub fn push(
 
 fn sanitize_category(value: &str) -> String {
     match value {
-        "launcher" | "installs" | "downloads" | "cloudSaves" | "storage"
-        | "achievements" | "errors" => value.to_string(),
+        "launcher" | "installs" | "downloads" | "cloudSaves" | "storage" | "achievements"
+        | "errors" => value.to_string(),
         _ => "errors".to_string(),
     }
 }

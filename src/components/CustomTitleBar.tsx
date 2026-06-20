@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import type React from 'react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
-import { Bell, Download, Wifi, WifiOff } from 'lucide-react'
+import { Bell, Download, LogOut, Wifi, WifiOff } from 'lucide-react'
 import { isTauriRuntime } from '../lib/gameMeta'
 import type { ClockFormat, CloseBehavior } from '../lib/preferences'
-import type { JobJournal, LauncherUpdateProgress, NotificationRecord } from '../types'
+import type { DiscordAuthUser, JobJournal, LauncherUpdateProgress, NotificationRecord } from '../types'
 import { NotificationPopover } from './NotificationCenter'
 
 type StatusPreferences = {
@@ -25,6 +25,7 @@ export function CustomTitleBar({
   updateProgress,
   notifications,
   notificationOpen,
+  discordUser,
   statusPreferences,
   onToggleNotifications,
   onCloseNotifications,
@@ -32,6 +33,7 @@ export function CustomTitleBar({
   onMarkAllNotificationsRead,
   onClearNotifications,
   onOpenNotificationSettings,
+  onDiscordLogout,
 }: {
   closeBehavior?: CloseBehavior
   serviceOnline: boolean
@@ -39,6 +41,7 @@ export function CustomTitleBar({
   updateProgress: LauncherUpdateProgress | null
   notifications: NotificationRecord[]
   notificationOpen: boolean
+  discordUser: DiscordAuthUser | null
   statusPreferences: StatusPreferences
   onToggleNotifications: () => void
   onCloseNotifications: () => void
@@ -46,6 +49,7 @@ export function CustomTitleBar({
   onMarkAllNotificationsRead: () => void
   onClearNotifications: () => void
   onOpenNotificationSettings: () => void
+  onDiscordLogout: () => void
 }) {
   const win = isTauriRuntime() ? getCurrentWindow() : null
   const [now, setNow] = useState(() => new Date())
@@ -132,6 +136,20 @@ export function CustomTitleBar({
               <span>{now.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })}</span>
             ) : null}
           </div>
+        ) : null}
+        {discordUser ? (
+          <button
+            type="button"
+            className="titlebar-discord-user"
+            onMouseDown={(event) => event.stopPropagation()}
+            onClick={onDiscordLogout}
+            title="Sign out of Discord"
+            aria-label={`Discord user ${discordUser.displayName}. Sign out`}
+          >
+            <img src={discordUser.avatarUrl} alt="" />
+            <span>{discordUser.displayName}</span>
+            <LogOut size={12} />
+          </button>
         ) : null}
         {statusPreferences.showNotificationBell ? (
           <div className="titlebar-notification-anchor">

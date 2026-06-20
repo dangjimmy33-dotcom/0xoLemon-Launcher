@@ -12,7 +12,6 @@ type DiscordData = {
   iconUrl: string | null
   onlineCount: number
   memberCount: number
-  inviteCode: string | null
 }
 
 export function DiscordWidget({ serverId, onOpenDiscord, reducedMotion }: DiscordWidgetProps) {
@@ -45,8 +44,7 @@ export function DiscordWidget({ serverId, onOpenDiscord, reducedMotion }: Discor
                 name: inviteData.guild.name,
                 iconUrl: inviteData.guild.icon ? `https://cdn.discordapp.com/icons/${inviteData.guild.id}/${inviteData.guild.icon}.png` : null,
                 onlineCount: inviteData.approximate_presence_count || widgetData.presence_count || 0,
-                memberCount: inviteData.approximate_member_count || 0,
-                inviteCode
+                memberCount: inviteData.approximate_member_count || 0
               })
               setLoading(false)
               return
@@ -60,8 +58,7 @@ export function DiscordWidget({ serverId, onOpenDiscord, reducedMotion }: Discor
             name: widgetData.name,
             iconUrl: null, // Widget API doesn't provide standard guild icon hash easily without invite API
             onlineCount: widgetData.presence_count || 0,
-            memberCount: 0,
-            inviteCode
+            memberCount: 0
           })
           setLoading(false)
         }
@@ -116,13 +113,7 @@ export function DiscordWidget({ serverId, onOpenDiscord, reducedMotion }: Discor
           </div>
         </div>
       </div>
-      <button type="button" onClick={() => {
-        if (data.inviteCode) {
-          import('@tauri-apps/plugin-opener').then(m => m.openUrl(`https://discord.gg/${data.inviteCode}`)).catch(() => onOpenDiscord())
-        } else {
-          onOpenDiscord()
-        }
-      }}>Join Server</button>
+      <button type="button" onClick={onOpenDiscord}>Join Server</button>
     </motion.section>
   )
 }

@@ -10,10 +10,8 @@ createRoot(document.getElementById('root')!).render(
 )
 
 // Show the Tauri window only after React has painted — prevents FOUC
-// (sidebar text clipped, placeholder flash before CSS/assets are ready)
 if (typeof window !== 'undefined' && window.__TAURI_INTERNALS__) {
   import('@tauri-apps/api/webviewWindow').then(({ getCurrentWebviewWindow }) => {
     getCurrentWebviewWindow().show().catch(() => undefined)
   }).catch(() => undefined)
 }
-

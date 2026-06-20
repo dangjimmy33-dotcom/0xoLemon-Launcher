@@ -2,6 +2,7 @@ pub mod asset_pack;
 pub mod builder;
 pub mod cloud_save;
 pub mod depot_crypto;
+pub mod discord_auth;
 pub mod game_tags;
 pub mod job;
 pub mod launch;
@@ -10,6 +11,7 @@ pub mod notifications;
 pub mod platform;
 pub mod remote_paths;
 pub mod scanner;
+pub mod secret_store;
 pub mod security;
 pub mod steam_integration;
 pub mod storage;
@@ -28,6 +30,11 @@ use scanner::ScanReport;
 use tauri::{AppHandle, Emitter, Manager, State};
 
 #[tauri::command]
+fn exit_app(app: AppHandle) {
+    app.exit(0);
+}
+
+#[tauri::command]
 fn get_disk_free_space(path: String) -> Result<u64, String> {
     fs2::free_space(PathBuf::from(path)).map_err(|err| err.to_string())
 }
@@ -43,6 +50,27 @@ fn install_spacewar() -> Result<(), String> {
 }
 
 #[tauri::command]
+async fn get_discord_auth_status(
+    app: AppHandle,
+) -> Result<discord_auth::DiscordAuthStatus, String> {
+    tauri::async_runtime::spawn_blocking(move || discord_auth::get_status(&app))
+        .await
+        .map_err(|error| error.to_string())
+}
+
+#[tauri::command]
+async fn login_discord(app: AppHandle) -> Result<discord_auth::DiscordAuthStatus, String> {
+    tauri::async_runtime::spawn_blocking(move || discord_auth::login(&app))
+        .await
+        .map_err(|error| error.to_string())?
+}
+
+#[tauri::command]
+fn logout_discord(app: AppHandle) -> Result<discord_auth::DiscordAuthStatus, String> {
+    discord_auth::logout(&app)
+}
+
+#[tauri::command]
 fn is_steam_running() -> bool {
     steam_integration::is_steam_running()
 }
@@ -55,6 +83,11 @@ fn open_steam() -> Result<(), String> {
 #[tauri::command]
 fn open_steam_big_picture() -> Result<(), String> {
     steam_integration::open_big_picture()
+}
+
+#[tauri::command]
+fn restart_steam() -> Result<steam_integration::RestartSteamReport, String> {
+    steam_integration::restart_steam()
 }
 
 #[tauri::command]
@@ -257,6 +290,7 @@ fn set_cloud_save_config(
     include: Vec<String>,
     exclude: Vec<String>,
 ) -> Result<cloud_save::CloudSaveStatus, String> {
+    discord_auth::require_authorized_session()?;
     cloud_save::set_config(&app, &game_id, enabled, save_roots, include, exclude)
 }
 
@@ -266,6 +300,7 @@ fn sync_cloud_save(
     game_id: String,
     direction: Option<String>,
 ) -> Result<cloud_save::CloudSaveStatus, String> {
+    discord_auth::require_authorized_session()?;
     cloud_save::sync_manual(&app, &game_id, direction.as_deref())
 }
 
@@ -276,6 +311,7 @@ fn resolve_cloud_save_conflict(
     conflict_id: String,
     resolution: String,
 ) -> Result<cloud_save::CloudSaveStatus, String> {
+    discord_auth::require_authorized_session()?;
     cloud_save::resolve_conflict(&app, &game_id, &conflict_id, &resolution)
 }
 
@@ -285,6 +321,7 @@ fn restore_cloud_save_snapshot(
     game_id: String,
     snapshot_id: String,
 ) -> Result<cloud_save::CloudSaveStatus, String> {
+    discord_auth::require_authorized_session()?;
     cloud_save::restore_snapshot(&app, &game_id, &snapshot_id)
 }
 
@@ -293,6 +330,7 @@ async fn connect_google_drive(
     app: AppHandle,
     game_id: String,
 ) -> Result<cloud_save::CloudSaveStatus, String> {
+    discord_auth::require_authorized_session()?;
     tauri::async_runtime::spawn_blocking(move || cloud_save::connect_google_drive(&app, &game_id))
         .await
         .map_err(|error| error.to_string())?
@@ -303,6 +341,7 @@ async fn disconnect_google_drive(
     app: AppHandle,
     game_id: String,
 ) -> Result<cloud_save::CloudSaveStatus, String> {
+    discord_auth::require_authorized_session()?;
     tauri::async_runtime::spawn_blocking(move || {
         cloud_save::disconnect_google_drive(&app, &game_id)
     })
@@ -315,6 +354,7 @@ async fn backup_save_game_to_google_drive(
     app: AppHandle,
     game_id: String,
 ) -> Result<cloud_save::CloudSaveStatus, String> {
+    discord_auth::require_authorized_session()?;
     tauri::async_runtime::spawn_blocking(move || cloud_save::backup_to_google_drive(&app, &game_id))
         .await
         .map_err(|error| error.to_string())?
@@ -325,6 +365,7 @@ async fn restore_missing_save_files(
     app: AppHandle,
     game_id: String,
 ) -> Result<cloud_save::CloudSaveStatus, String> {
+    discord_auth::require_authorized_session()?;
     tauri::async_runtime::spawn_blocking(move || {
         cloud_save::restore_missing_from_google_drive(&app, &game_id)
     })
@@ -419,6 +460,7 @@ fn launch_game(
     launch_option_id: Option<String>,
     skip_cloud_sync: Option<bool>,
 ) -> Result<LaunchReport, String> {
+    discord_auth::require_authorized_session()?;
     job::launch_game(
         &app,
         &game_id,
@@ -452,6 +494,7 @@ fn uninstall_game(
     game_id: String,
     install_path: String,
 ) -> Result<UninstallReport, String> {
+    discord_auth::require_authorized_session()?;
     job::uninstall_game(&app, &game_id, PathBuf::from(install_path).as_path())
         .map_err(|err| err.to_string())
 }
@@ -464,6 +507,7 @@ fn start_update_job(
     target_version: Option<String>,
     game_id: Option<String>,
 ) -> Result<JobJournal, String> {
+    discord_auth::require_authorized_session()?;
     state.job_control.reset();
     job::spawn_update_job(
         app,
@@ -483,6 +527,7 @@ fn start_install_job(
     target_version: Option<String>,
     install_path: Option<String>,
 ) -> Result<JobJournal, String> {
+    discord_auth::require_authorized_session()?;
     state.job_control.reset();
     job::spawn_install_job(
         app,
@@ -503,6 +548,7 @@ fn start_repair_job(
     target_version: Option<String>,
     file_paths: Vec<String>,
 ) -> Result<JobJournal, String> {
+    discord_auth::require_authorized_session()?;
     state.job_control.reset();
     job::spawn_repair_job(
         app,
@@ -635,12 +681,82 @@ pub fn run() {
             open_folder,
             check_spacewar_installed,
             install_spacewar,
+            get_discord_auth_status,
+            login_discord,
+            logout_discord,
             is_steam_running,
             open_steam,
+            restart_steam,
             open_steam_big_picture,
-            get_steam_environment
+            get_steam_environment,
+            exit_app
         ])
         .setup(|app| {
+            let quit_i = tauri::menu::MenuItem::with_id(app, "quit", "Quit 0xoLemon", true, None::<&str>)?;
+            let store_i = tauri::menu::MenuItem::with_id(app, "store", "Store", true, None::<&str>)?;
+            let library_i = tauri::menu::MenuItem::with_id(app, "library", "Library", true, None::<&str>)?;
+            let community_i = tauri::menu::MenuItem::with_id(app, "community", "Community", true, None::<&str>)?;
+            let settings_i = tauri::menu::MenuItem::with_id(app, "settings", "Settings", true, None::<&str>)?;
+            let tray_menu = tauri::menu::Menu::with_items(app, &[
+                &store_i,
+                &library_i,
+                &community_i,
+                &tauri::menu::PredefinedMenuItem::separator(app)?,
+                &settings_i,
+                &tauri::menu::PredefinedMenuItem::separator(app)?,
+                &quit_i,
+            ])?;
+
+            let _tray = tauri::tray::TrayIconBuilder::new()
+                .icon(app.default_window_icon().unwrap().clone())
+                .menu(&tray_menu)
+                .on_menu_event(|app, event| {
+                    match event.id.as_ref() {
+                        "quit" => { app.exit(0); }
+                        id => {
+                            let tab = match id {
+                                "store"     => "Home",
+                                "library"   => "Library",
+                                "community" => "Community",
+                                "settings"  => "Settings",
+                                _ => return,
+                            };
+                            if let Some(win) = app.get_webview_window("main") {
+                                let _ = win.emit("navigate", tab);
+                                let _ = win.show();
+                                let _ = win.set_focus();
+                            }
+                        }
+                    }
+                })
+                .on_tray_icon_event(|tray, event| {
+                    // Left-click: toggle main window
+                    if let tauri::tray::TrayIconEvent::Click {
+                        button: tauri::tray::MouseButton::Left,
+                        button_state: tauri::tray::MouseButtonState::Up,
+                        ..
+                    } = event {
+                        let app = tray.app_handle();
+                        if let Some(win) = app.get_webview_window("main") {
+                            let is_visible = win.is_visible().unwrap_or(false);
+                            if is_visible { let _ = win.hide(); }
+                            else { let _ = win.show(); let _ = win.set_focus(); }
+                        }
+                    }
+                })
+                .build(app)?;
+
+            if let Some(window) = app.get_webview_window("main") {
+                let window_clone = window.clone();
+                window.on_window_event(move |event| match event {
+                    tauri::WindowEvent::CloseRequested { api, .. } => {
+                        window_clone.hide().unwrap();
+                        api.prevent_close();
+                    }
+                    _ => {}
+                });
+            }
+
             let app_dir = app.path().app_data_dir()?;
             std::fs::create_dir_all(app_dir.join("journals"))?;
             platform::initialize(app.handle())
@@ -661,6 +777,14 @@ pub fn run() {
                 let handle = app.handle().clone();
                 std::thread::spawn(move || {
                     std::thread::sleep(std::time::Duration::from_millis(900));
+                    let auth = discord_auth::get_status(&handle);
+                    if auth.state != "authorized" {
+                        let _ = handle.emit(
+                            "launcher://shortcut-launch-error",
+                            "Discord authorization is required before launching a game.",
+                        );
+                        return;
+                    }
                     let _ = handle.emit("launcher://shortcut-launch", request.clone());
                     std::thread::sleep(std::time::Duration::from_millis(1800));
                     if game_tags::game_has_tag(&request.game_id, "online") {

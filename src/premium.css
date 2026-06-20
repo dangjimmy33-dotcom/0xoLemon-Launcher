@@ -150,6 +150,46 @@
   letter-spacing: 0.55px;
 }
 
+.titlebar-discord-user {
+  max-width: 190px;
+  height: 30px;
+  padding: 3px 8px 3px 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid rgba(88, 101, 242, 0.24);
+  border-radius: 9px;
+  color: rgba(239, 242, 248, 0.86);
+  background: rgba(88, 101, 242, 0.09);
+  cursor: pointer;
+}
+
+.titlebar-discord-user:hover {
+  color: #fff;
+  border-color: rgba(112, 126, 255, 0.44);
+  background: rgba(88, 101, 242, 0.17);
+}
+
+.titlebar-discord-user img {
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  object-fit: cover;
+}
+
+.titlebar-discord-user span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: 600 10px/1 var(--sans);
+}
+
+.titlebar-discord-user svg {
+  flex: 0 0 auto;
+  color: rgba(220, 226, 238, 0.5);
+}
+
 .premium-titlebar .titlebar-btn {
   width: 45px;
 }
@@ -1907,4 +1947,499 @@
 
 .community-card.discord-widget button:hover {
   background-color: #4752C4;
+}
+
+/* Mandatory Discord access gate */
+.discord-access-gate {
+  position: fixed;
+  z-index: 25000;
+  inset: 44px 0 0;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+  overflow: auto;
+  background:
+    radial-gradient(circle at 50% 35%, rgba(88, 101, 242, 0.16), transparent 35%),
+    rgba(4, 7, 11, 0.91);
+  backdrop-filter: blur(18px) saturate(105%);
+}
+
+.discord-access-card {
+  width: min(500px, 100%);
+  padding: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 20px;
+  color: #f4f6fa;
+  background:
+    linear-gradient(145deg, rgba(25, 31, 43, 0.98), rgba(12, 16, 23, 0.98));
+  box-shadow: 0 34px 100px rgba(0, 0, 0, 0.62);
+}
+
+.discord-access-brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.discord-access-brand > span {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(227, 181, 95, 0.25);
+  border-radius: 12px;
+  color: #f0c675;
+  background: rgba(227, 181, 95, 0.1);
+}
+
+.discord-access-brand div {
+  display: grid;
+  gap: 3px;
+}
+
+.discord-access-brand small {
+  color: rgba(205, 213, 225, 0.48);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.25px;
+  text-transform: uppercase;
+}
+
+.discord-access-brand strong {
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.discord-access-icon {
+  width: 72px;
+  height: 72px;
+  margin: 34px auto 18px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(112, 126, 255, 0.28);
+  border-radius: 22px;
+  color: #afb8ff;
+  background: linear-gradient(145deg, rgba(88, 101, 242, 0.2), rgba(88, 101, 242, 0.07));
+  box-shadow: 0 16px 45px rgba(50, 60, 180, 0.18);
+}
+
+.discord-access-icon svg {
+  width: 32px;
+  height: 32px;
+}
+
+.discord-access-card h1 {
+  margin: 0;
+  text-align: center;
+  font-size: 24px;
+  letter-spacing: -0.4px;
+}
+
+.discord-access-card > p {
+  max-width: 390px;
+  margin: 10px auto 22px;
+  color: rgba(199, 208, 220, 0.67);
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.discord-access-user {
+  margin: 0 auto 14px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.discord-access-user img {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.discord-access-user div {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.discord-access-user strong,
+.discord-access-user span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.discord-access-user strong {
+  font-size: 13px;
+}
+
+.discord-access-user span {
+  color: rgba(190, 200, 214, 0.52);
+  font-size: 10px;
+}
+
+.discord-access-policy {
+  margin: 12px 0;
+  padding: 11px 13px;
+  border: 1px solid rgba(227, 181, 95, 0.17);
+  border-radius: 10px;
+  color: rgba(230, 220, 199, 0.77);
+  background: rgba(227, 181, 95, 0.065);
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.discord-access-policy code {
+  display: block;
+  margin-top: 7px;
+  overflow-wrap: anywhere;
+  color: #d9e1ee;
+  font-family: var(--mono);
+}
+
+.discord-access-actions {
+  display: grid;
+  gap: 9px;
+}
+
+.discord-access-actions button {
+  min-height: 42px;
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.discord-access-actions button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.discord-primary {
+  border: 1px solid rgba(142, 152, 255, 0.45);
+  color: #fff;
+  background: linear-gradient(135deg, #6875f5, #5865f2);
+  box-shadow: 0 12px 30px rgba(88, 101, 242, 0.22);
+}
+
+.discord-primary:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.discord-secondary {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(235, 239, 245, 0.82);
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.discord-secondary:hover:not(:disabled) {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.075);
+}
+
+.discord-access-checking {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  color: rgba(208, 216, 229, 0.66);
+  font-size: 11px;
+}
+
+.discord-access-card footer {
+  margin-top: 18px;
+  color: rgba(181, 191, 204, 0.42);
+  text-align: center;
+  font-size: 9px;
+  line-height: 1.55;
+}
+
+.is-spinning {
+  animation: discord-spin 900ms linear infinite;
+}
+
+@keyframes discord-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 1220px) {
+  .titlebar-discord-user span {
+    display: none;
+  }
+}
+
+@media (max-height: 760px) {
+  .discord-access-card {
+    padding: 22px;
+  }
+
+  .discord-access-icon {
+    margin-top: 20px;
+  }
+}
+
+/* OAuth Fallback UI */
+.oauth-fallback-container {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  margin-top: 10px;
+}
+
+.oauth-primary-btn {
+  background-color: #2F54EB;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-bottom: 20px;
+}
+
+.oauth-primary-btn:hover:not(:disabled) {
+  background-color: #1D39C4;
+}
+
+.oauth-manual-section label {
+  display: block;
+  font-size: 0.85rem;
+  color: #a0a0a0;
+  margin-bottom: 6px;
+}
+
+.oauth-copy-box, .oauth-paste-box {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.oauth-copy-box input, .oauth-paste-box input {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 8px 12px;
+  color: #fff;
+  font-family: monospace;
+  font-size: 0.85rem;
+}
+
+.oauth-copy-box input:focus, .oauth-paste-box input:focus {
+  outline: none;
+  border-color: #2F54EB;
+}
+
+.oauth-copy-box button, .oauth-paste-box button {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #fff;
+  padding: 0 12px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.oauth-copy-box button:hover, .oauth-paste-box button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.oauth-paste-box button {
+  background: #595959;
+}
+
+.oauth-paste-box button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Logout Modal ─────────────────────────────────────────────────────── */
+.logout-modal {
+  position: relative;
+  width: min(360px, 94vw);
+  padding: 32px 28px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0;
+  border-radius: 16px;
+  background: linear-gradient(145deg, rgba(18, 22, 30, 0.95) 0%, rgba(10, 14, 20, 0.97) 100%);
+  border: 1px solid rgba(88, 101, 242, 0.25);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255,255,255,0.04) inset;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+.logout-modal-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(88, 101, 242, 0.12);
+  border: 1px solid rgba(88, 101, 242, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
+.logout-modal-title {
+  margin: 0 0 10px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #f1f3f5;
+  letter-spacing: 0.01em;
+}
+
+.logout-modal-desc {
+  margin: 0 0 28px;
+  font-size: 0.875rem;
+  color: rgba(200, 210, 225, 0.65);
+  line-height: 1.65;
+}
+
+.logout-modal-actions {
+  width: 100%;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.logout-modal-btn {
+  flex: 1;
+  max-width: 150px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+}
+
+.logout-modal-btn.cancel {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: rgba(220, 225, 235, 0.85);
+}
+
+.logout-modal-btn.cancel:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.logout-modal-btn.confirm {
+  background: linear-gradient(135deg, #ed4245 0%, #c23236 100%);
+  border-color: rgba(237, 66, 69, 0.4);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(237, 66, 69, 0.3);
+}
+
+.logout-modal-btn.confirm:hover {
+  background: linear-gradient(135deg, #f04548 0%, #d0373b 100%);
+  box-shadow: 0 6px 20px rgba(237, 66, 69, 0.45);
+  transform: translateY(-1px);
+}
+
+
+/* ── Custom Tray Menu Window ──────────────────────────────────────────── */
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  overflow: hidden;
+}
+
+.tray-menu-root {
+  width: 100%;
+  height: 100%;
+  padding: 6px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-radius: 12px;
+  background: rgba(12, 16, 24, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255,255,255,0.04) inset;
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  outline: none;
+}
+
+.tray-menu-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: rgba(180, 190, 210, 0.6);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.tray-menu-logo-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #5865f2, #7c3aed);
+  box-shadow: 0 0 6px rgba(88, 101, 242, 0.8);
+  flex-shrink: 0;
+}
+
+.tray-menu-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 3px 8px;
+}
+
+.tray-menu-item {
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: rgba(220, 228, 240, 0.88);
+  font-size: 0.88rem;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.tray-menu-item:hover {
+  background: rgba(255, 255, 255, 0.09);
+  color: #fff;
+}
+
+.tray-menu-item.danger {
+  color: rgba(237, 100, 100, 0.85);
+}
+
+.tray-menu-item.danger:hover {
+  background: rgba(237, 66, 69, 0.15);
+  color: #ff6b6e;
 }

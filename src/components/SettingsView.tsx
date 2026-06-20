@@ -77,6 +77,7 @@ export function SettingsView({
   steamStatus,
   onRefreshSteam,
   onOpenSteam,
+  onRestartSteam,
   onOpenBigPicture,
   onReset,
   onResetOnboarding,
@@ -98,6 +99,7 @@ export function SettingsView({
   steamStatus: string | null
   onRefreshSteam: () => void
   onOpenSteam: () => void
+  onRestartSteam: () => void
   onOpenBigPicture: () => void
   onReset: () => void
   onResetOnboarding: () => void
@@ -316,6 +318,10 @@ export function SettingsView({
                 <button type="button" className="settings-secondary-button" onClick={onOpenSteam}>
                   <MonitorCog size={15} />
                   Open Steam
+                </button>
+                <button type="button" className="settings-secondary-button" onClick={onRestartSteam}>
+                  <RotateCcw size={15} />
+                  Restart Steam
                 </button>
                 <button type="button" className="settings-secondary-button" onClick={onOpenBigPicture}>
                   <Gamepad2 size={15} />

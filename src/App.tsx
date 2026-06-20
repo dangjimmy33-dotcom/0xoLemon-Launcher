@@ -13,6 +13,7 @@ import {
 } from '@tauri-apps/plugin-notification'
 import { MotionConfig } from 'motion/react'
 import { CircleAlert, Download, Heart, X } from 'lucide-react'
+import packageMetadata from '../package.json'
 import './App.css'
 import './premium.css'
 import type {
@@ -20,6 +21,7 @@ import type {
   ClearCacheReport,
   CloudSaveRoot,
   CloudSaveStatus,
+  DiscordAuthStatus,
   GameCatalog,
   GameDetail,
   GameInstallState,
@@ -58,6 +60,7 @@ import {
   CloudSavesOverview,
   CustomTitleBar,
   DriveLibraryPickerModal,
+  DiscordAccessGate,
   HomeView,
   InstallOptionsDialog,
   LaunchOptionsModal,
@@ -73,6 +76,18 @@ import {
 
 const initialLauncherPreferences = loadLauncherPreferences()
 const emptyCatalog: GameCatalog = { defaultLocale: 'en-US', games: [] }
+const initialDiscordAuthStatus: DiscordAuthStatus = {
+  state: isTauriRuntime() ? 'checking' : 'notConfigured',
+  configured: false,
+  message: isTauriRuntime()
+    ? 'Checking your Discord access...'
+    : 'Discord access verification requires the desktop launcher.',
+  user: null,
+  guildId: '1492076309323714570',
+  guildName: null,
+  guildInvite: 'https://discord.gg/7ZXdTUVsJE',
+  eligibleAt: null,
+}
 type CatalogLoadState = 'loading' | 'ready' | 'error'
 const defaultLauncherSettings: LauncherSettings = {
   defaultLibrary: DEFAULT_STORE_ROOT,
@@ -152,11 +167,15 @@ export default function App() {
   const [toastNotifications, setToastNotifications] = useState<NotificationRecord[]>([])
   const [notificationOpen, setNotificationOpen] = useState(false)
   const [showDonate, setShowDonate] = useState(false)
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
+  const [discordAuth, setDiscordAuth] = useState<DiscordAuthStatus>(initialDiscordAuthStatus)
+  const [discordAuthBusy, setDiscordAuthBusy] = useState(false)
   const [cacheBusy, setCacheBusy] = useState(false)
-  const [appVersion, setAppVersion] = useState('0.2.0')
+  const [appVersion, setAppVersion] = useState(packageMetadata.version)
   const launcherUpdateRateRef = useRef<Array<{ bytes: number; at: number }>>([])
   const pendingHomeLaunchRef = useRef<string | null>(null)
   const playingGamesRef = useRef<Record<string, boolean>>({})
+  const lastDiscordCheckRef = useRef(0)
   const [systemReducedMotion, setSystemReducedMotion] = useState(
     () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches,
   )
@@ -196,7 +215,7 @@ export default function App() {
     const preview = new URLSearchParams(window.location.search).get('preview')
     if (preview !== 'update') return
     const info: LauncherUpdateInfo = {
-      version: '0.2.0-preview',
+      version: `${packageMetadata.version}-preview`,
       notes: 'Premium Home dashboard\nAccurate Update Center phases\nNotification history and Windows notifications',
       publishedAt: new Date().toISOString(),
     }
@@ -226,6 +245,75 @@ export default function App() {
   const reducedMotion =
     preferences.motionMode === 'reduced' ||
     (preferences.motionMode === 'system' && systemReducedMotion)
+
+  const refreshDiscordAccess = useCallback(async (force = false) => {
+    if (!isTauriRuntime()) return
+    const now = Date.now()
+    if (!force && now - lastDiscordCheckRef.current < 60_000) return
+    lastDiscordCheckRef.current = now
+    setDiscordAuthBusy(true)
+    try {
+      const next = await invoke<DiscordAuthStatus>('get_discord_auth_status')
+      setDiscordAuth(next)
+    } catch (error) {
+      setDiscordAuth((current) => ({
+        ...current,
+        state: 'error',
+        message: `Discord access check failed: ${String(error)}`,
+      }))
+    } finally {
+      setDiscordAuthBusy(false)
+    }
+  }, [])
+
+  const loginDiscord = useCallback(async () => {
+    if (!isTauriRuntime()) return
+    setDiscordAuthBusy(true)
+    try {
+      const next = await invoke<DiscordAuthStatus>('login_discord')
+      lastDiscordCheckRef.current = Date.now()
+      setDiscordAuth(next)
+    } catch (error) {
+      setDiscordAuth((current) => ({
+        ...current,
+        state: 'error',
+        message: String(error),
+      }))
+    } finally {
+      setDiscordAuthBusy(false)
+    }
+  }, [])
+
+  const logoutDiscord = useCallback(() => {
+    if (!isTauriRuntime()) return
+    setShowLogoutConfirm(true)
+  }, [])
+
+  const executeLogoutDiscord = useCallback(async () => {
+    setShowLogoutConfirm(false)
+    setDiscordAuthBusy(true)
+    try {
+      const next = await invoke<DiscordAuthStatus>('logout_discord')
+      lastDiscordCheckRef.current = 0
+      setDiscordAuth(next)
+    } catch (error) {
+      setDiscordAuth((current) => ({ ...current, state: 'error', message: String(error) }))
+    } finally {
+      setDiscordAuthBusy(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    void refreshDiscordAccess(true)
+    if (!isTauriRuntime()) return
+    const interval = window.setInterval(() => void refreshDiscordAccess(true), 10 * 60_000)
+    const handleFocus = () => void refreshDiscordAccess()
+    window.addEventListener('focus', handleFocus)
+    return () => {
+      window.clearInterval(interval)
+      window.removeEventListener('focus', handleFocus)
+    }
+  }, [refreshDiscordAccess])
 
   const upsertNotification = useCallback((record: NotificationRecord) => {
     setNotifications((current) => {
@@ -1783,14 +1871,23 @@ export default function App() {
     }
   }
 
-  async function openSteamFromSettings(command: 'open_steam' | 'open_steam_big_picture') {
+  async function openSteamFromSettings(command: 'open_steam' | 'open_steam_big_picture' | 'restart_steam') {
     if (!isTauriRuntime()) {
       setSteamSettingsStatus('Steam actions require the desktop launcher.')
       return
     }
-    setSteamSettingsStatus(command === 'open_steam' ? 'Opening Steam...' : 'Opening Steam Big Picture...')
+    setSteamSettingsStatus(
+      command === 'open_steam' ? 'Opening Steam...' : 
+      command === 'restart_steam' ? 'Restarting Steam...' : 
+      'Opening Steam Big Picture...'
+    )
     try {
-      await invoke(command)
+      if (command === 'restart_steam') {
+        const report = await invoke<{ wasRunning: boolean; forced: boolean; running: boolean; message: string }>('restart_steam')
+        setSteamSettingsStatus(report.message)
+      } else {
+        await invoke(command)
+      }
       window.setTimeout(() => void refreshSteamEnvironment(), 1800)
     } catch (error) {
       setSteamSettingsStatus(`Steam action failed: ${String(error)}`)
@@ -1990,6 +2087,20 @@ export default function App() {
     setSelectedGameId(gameId)
     setActiveTab('Library')
   }
+
+  useEffect(() => {
+    if (!isTauriRuntime()) return
+    let unlistenNavigate: (() => void) | undefined
+    listen<string>('navigate', (event) => {
+      setActiveTab(event.payload as any)
+      // We don't need to manually show() the window because the Rust side already calls window.show()
+    }).then((dispose) => {
+      unlistenNavigate = dispose
+    })
+    return () => {
+      unlistenNavigate?.()
+    }
+  }, [])
 
   useEffect(() => {
     if (
@@ -2397,6 +2508,7 @@ export default function App() {
         updateProgress={launcherUpdateProgress}
         notifications={notifications}
         notificationOpen={notificationOpen}
+        discordUser={discordAuth.state === 'authorized' ? discordAuth.user : null}
         statusPreferences={preferences}
         onToggleNotifications={() => setNotificationOpen((current) => !current)}
         onCloseNotifications={() => setNotificationOpen(false)}
@@ -2421,6 +2533,7 @@ export default function App() {
             document.getElementById('notification-settings')?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth' })
           }, 80)
         }}
+        onDiscordLogout={() => void logoutDiscord()}
       />
       {launcherUpdate ? (
         <UpdateBanner
@@ -2501,6 +2614,7 @@ export default function App() {
             steamStatus={steamSettingsStatus}
             onRefreshSteam={() => void refreshSteamEnvironment(true)}
             onOpenSteam={() => void openSteamFromSettings('open_steam')}
+            onRestartSteam={() => void openSteamFromSettings('restart_steam')}
             onOpenBigPicture={() => void openSteamFromSettings('open_steam_big_picture')}
             onReset={resetLauncherPreferences}
             onResetOnboarding={() => {
@@ -2759,6 +2873,34 @@ export default function App() {
             </section>
           </div>
         )}
+
+        {showLogoutConfirm && (
+          <div className="dialog-backdrop" role="presentation" onClick={() => setShowLogoutConfirm(false)}>
+            <section
+              className="logout-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="logout-title"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="logout-modal-icon">
+                <svg width="36" height="36" viewBox="0 0 127.14 96.36" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z" fill="#5865f2"/>
+                </svg>
+              </div>
+              <h3 id="logout-title" className="logout-modal-title">Sign Out of Discord</h3>
+              <p className="logout-modal-desc">Are you sure you want to sign out?<br/>You will need to re-authorize to use online features.</p>
+              <div className="logout-modal-actions">
+                <button type="button" className="logout-modal-btn cancel" onClick={() => setShowLogoutConfirm(false)}>
+                  Cancel
+                </button>
+                <button type="button" className="logout-modal-btn confirm" onClick={() => void executeLogoutDiscord()}>
+                  Sign Out
+                </button>
+              </div>
+            </section>
+          </div>
+        )}
       </section>
     </main>
       <UpdateCenter
@@ -2805,6 +2947,13 @@ export default function App() {
           </section>
         </div>
       ) : null}
+      <DiscordAccessGate
+        status={discordAuth}
+        busy={discordAuthBusy}
+        onLogin={() => void loginDiscord()}
+        onRefresh={() => void refreshDiscordAccess(true)}
+        onJoinServer={() => void openUrl(discordAuth.guildInvite)}
+      />
     </div>
     </MotionConfig>
   )

@@ -319,6 +319,43 @@ export type SteamEnvironmentInfo = {
   pendingShortcutActions: number
 }
 
+export type RestartSteamReport = {
+  wasRunning: boolean
+  forced: boolean
+  running: boolean
+  message: string
+}
+
+export type DiscordAuthState =
+  | 'checking'
+  | 'notConfigured'
+  | 'signedOut'
+  | 'authorized'
+  | 'notMember'
+  | 'accountTooNew'
+  | 'expired'
+  | 'error'
+
+export type DiscordAuthUser = {
+  id: string
+  username: string
+  displayName: string
+  avatarUrl: string
+  accountCreatedAt: string
+  accountAgeDays: number
+}
+
+export type DiscordAuthStatus = {
+  state: DiscordAuthState
+  configured: boolean
+  message: string
+  user: DiscordAuthUser | null
+  guildId: string
+  guildName: string | null
+  guildInvite: string
+  eligibleAt: string | null
+}
+
 export type GameAchievement = {
   id: string
   name: string
