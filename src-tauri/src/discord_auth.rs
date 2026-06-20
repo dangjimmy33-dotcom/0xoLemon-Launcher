@@ -14,7 +14,7 @@ use rand_core::{OsRng, RngCore};
 use reqwest::blocking::{Client, Response};
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
-use tauri::{AppHandle, Manager, Emitter};
+use tauri::{AppHandle, Emitter, Manager};
 use url::Url;
 
 use crate::secret_store::{protect, unprotect};
@@ -205,7 +205,10 @@ pub fn login(app: &AppHandle) -> Result<DiscordAuthStatus, String> {
         Err(_) => {
             if let Some(url) = CURRENT_AUTH_URL.lock().unwrap().as_ref() {
                 let _ = open_system_browser(url);
-                return Err("A Discord sign-in is already in progress. The browser has been reopened.".to_string());
+                return Err(
+                    "A Discord sign-in is already in progress. The browser has been reopened."
+                        .to_string(),
+                );
             }
             return Err("A Discord sign-in is already in progress.".to_string());
         }
@@ -374,11 +377,11 @@ fn validate_token(token: &str) -> Result<DiscordAuthStatus, ApiError> {
     let mut result = status("authorized", true, "Discord access verified.");
     result.user = Some(profile);
     result.guild_name = guild.map(|value| value.name);
-    
+
     if let Ok(mut guard) = CACHED_STATUS.lock() {
         *guard = Some((unix_seconds(), result.clone()));
     }
-    
+
     Ok(result)
 }
 

@@ -629,6 +629,13 @@ struct LauncherState {
 
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.show();
+                let _ = window.unminimize();
+                let _ = window.set_focus();
+            }
+        }))
         .manage(LauncherState {
             job_control: Arc::new(JobControl::default()),
         })
@@ -692,40 +699,48 @@ pub fn run() {
             exit_app
         ])
         .setup(|app| {
-            let quit_i = tauri::menu::MenuItem::with_id(app, "quit", "Quit 0xoLemon", true, None::<&str>)?;
-            let store_i = tauri::menu::MenuItem::with_id(app, "store", "Store", true, None::<&str>)?;
-            let library_i = tauri::menu::MenuItem::with_id(app, "library", "Library", true, None::<&str>)?;
-            let community_i = tauri::menu::MenuItem::with_id(app, "community", "Community", true, None::<&str>)?;
-            let settings_i = tauri::menu::MenuItem::with_id(app, "settings", "Settings", true, None::<&str>)?;
-            let tray_menu = tauri::menu::Menu::with_items(app, &[
-                &store_i,
-                &library_i,
-                &community_i,
-                &tauri::menu::PredefinedMenuItem::separator(app)?,
-                &settings_i,
-                &tauri::menu::PredefinedMenuItem::separator(app)?,
-                &quit_i,
-            ])?;
+            let quit_i =
+                tauri::menu::MenuItem::with_id(app, "quit", "Quit 0xoLemon", true, None::<&str>)?;
+            let store_i =
+                tauri::menu::MenuItem::with_id(app, "store", "Store", true, None::<&str>)?;
+            let library_i =
+                tauri::menu::MenuItem::with_id(app, "library", "Library", true, None::<&str>)?;
+            let community_i =
+                tauri::menu::MenuItem::with_id(app, "community", "Community", true, None::<&str>)?;
+            let settings_i =
+                tauri::menu::MenuItem::with_id(app, "settings", "Settings", true, None::<&str>)?;
+            let tray_menu = tauri::menu::Menu::with_items(
+                app,
+                &[
+                    &store_i,
+                    &library_i,
+                    &community_i,
+                    &tauri::menu::PredefinedMenuItem::separator(app)?,
+                    &settings_i,
+                    &tauri::menu::PredefinedMenuItem::separator(app)?,
+                    &quit_i,
+                ],
+            )?;
 
             let _tray = tauri::tray::TrayIconBuilder::new()
                 .icon(app.default_window_icon().unwrap().clone())
                 .menu(&tray_menu)
-                .on_menu_event(|app, event| {
-                    match event.id.as_ref() {
-                        "quit" => { app.exit(0); }
-                        id => {
-                            let tab = match id {
-                                "store"     => "Home",
-                                "library"   => "Library",
-                                "community" => "Community",
-                                "settings"  => "Settings",
-                                _ => return,
-                            };
-                            if let Some(win) = app.get_webview_window("main") {
-                                let _ = win.emit("navigate", tab);
-                                let _ = win.show();
-                                let _ = win.set_focus();
-                            }
+                .on_menu_event(|app, event| match event.id.as_ref() {
+                    "quit" => {
+                        app.exit(0);
+                    }
+                    id => {
+                        let tab = match id {
+                            "store" => "Home",
+                            "library" => "Library",
+                            "community" => "Community",
+                            "settings" => "Settings",
+                            _ => return,
+                        };
+                        if let Some(win) = app.get_webview_window("main") {
+                            let _ = win.emit("navigate", tab);
+                            let _ = win.show();
+                            let _ = win.set_focus();
                         }
                     }
                 })
@@ -735,12 +750,17 @@ pub fn run() {
                         button: tauri::tray::MouseButton::Left,
                         button_state: tauri::tray::MouseButtonState::Up,
                         ..
-                    } = event {
+                    } = event
+                    {
                         let app = tray.app_handle();
                         if let Some(win) = app.get_webview_window("main") {
                             let is_visible = win.is_visible().unwrap_or(false);
-                            if is_visible { let _ = win.hide(); }
-                            else { let _ = win.show(); let _ = win.set_focus(); }
+                            if is_visible {
+                                let _ = win.hide();
+                            } else {
+                                let _ = win.show();
+                                let _ = win.set_focus();
+                            }
                         }
                     }
                 })

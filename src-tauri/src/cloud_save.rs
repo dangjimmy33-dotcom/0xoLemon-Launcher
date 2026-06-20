@@ -734,12 +734,7 @@ fn expanded_save_roots(
     let steam_user_data_root = steam_environment
         .root_path
         .as_deref()
-        .map(|root| {
-            PathBuf::from(root)
-                .join("userdata")
-                .display()
-                .to_string()
-        });
+        .map(|root| PathBuf::from(root).join("userdata").display().to_string());
     record
         .save_roots
         .iter()
@@ -824,10 +819,10 @@ fn expand_path_template(
             "Steam userdata path is unavailable because Steam installation was not detected"
                 .to_string()
         })?;
-        
+
         let root_path = Path::new(steam_user_data_root);
         let mut results = Vec::new();
-        
+
         if let Ok(entries) = std::fs::read_dir(root_path) {
             for entry in entries.flatten() {
                 if let Ok(file_type) = entry.file_type() {
@@ -844,14 +839,17 @@ fn expand_path_template(
                 }
             }
         }
-        
+
         // If no numeric folders found, return empty or fallback
         if results.is_empty() {
             // fallback so it doesn't just error out silently if they have no login
-            let replaced = expanded.replace("{steamUserData}", &root_path.join("0").display().to_string());
+            let replaced = expanded.replace(
+                "{steamUserData}",
+                &root_path.join("0").display().to_string(),
+            );
             results.push(PathBuf::from(replaced));
         }
-        
+
         Ok(results)
     } else {
         Ok(vec![PathBuf::from(expanded)])
@@ -1305,7 +1303,8 @@ fn seed_metadata_defaults(app: &AppHandle, game_id: &str, state: &mut CloudState
         .unwrap_or_default();
 
     if let Ok(Some(install_record)) = crate::platform::install_record(app, game_id) {
-        let override_path = std::path::PathBuf::from(install_record.install_path).join("0xo-save.json");
+        let override_path =
+            std::path::PathBuf::from(install_record.install_path).join("0xo-save.json");
         if override_path.is_file() {
             if let Ok(content) = std::fs::read_to_string(&override_path) {
                 if let Ok(override_meta) = serde_json::from_str::<CloudSaveMetadata>(&content) {
@@ -1868,7 +1867,9 @@ mod tests {
         .unwrap();
         assert_eq!(
             expanded,
-            vec![PathBuf::from(r"C:\Program Files (x86)\Steam\userdata\123456\0\3768760\remote")]
+            vec![PathBuf::from(
+                r"C:\Program Files (x86)\Steam\userdata\123456\0\3768760\remote"
+            )]
         );
     }
 

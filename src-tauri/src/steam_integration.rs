@@ -188,7 +188,9 @@ pub fn restart_steam() -> Result<RestartSteamReport, String> {
             .map_err(|error| format!("Could not start Steam again: {error}"))?;
         let running = wait_for_steam_state(true, Duration::from_secs(25));
         if !running {
-            return Err("Steam was closed, but it did not start again within 25 seconds".to_string());
+            return Err(
+                "Steam was closed, but it did not start again within 25 seconds".to_string(),
+            );
         }
 
         return Ok(RestartSteamReport {
@@ -276,7 +278,9 @@ fn vdf_declares_app(text: &str, app_id: &str) -> bool {
         let fields = quoted_fields(line);
         fields.len() >= 2
             && fields[0] == app_id
-            && fields[1].chars().all(|character| character.is_ascii_digit())
+            && fields[1]
+                .chars()
+                .all(|character| character.is_ascii_digit())
     })
 }
 
