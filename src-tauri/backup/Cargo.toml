@@ -1,0 +1,59 @@
+[package]
+name = "first-light-smart-launcher"
+version = "0.2.1"
+description = "Steam-like chunk launcher for 007 First Light"
+authors = ["007 Launcher"]
+edition = "2021"
+default-run = "0xoLemon"
+
+[lib]
+name = "first_light_launcher"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[[bin]]
+name = "0xoLemon"
+path = "src/main.rs"
+
+[[bin]]
+name = "depot_builder"
+path = "src/bin/depot_builder.rs"
+
+[[bin]]
+name = "asset_pack_builder"
+path = "src/bin/asset_pack_builder.rs"
+
+[build-dependencies]
+tauri-build = { version = "2.5.3", features = [] }
+
+[dependencies]
+base64 = "0.22.1"
+chacha20poly1305 = { version = "0.10.1", features = ["std"] }
+blake3 = "1.8.2"
+chrono = { version = "0.4.42", features = ["serde"] }
+ed25519-dalek = "3.0.0-rc.0"
+fastcdc = "4.0.1"
+fs2 = "0.4.3"
+hex = "0.4.3"
+rand_core = { version = "0.6.4", features = ["getrandom"] }
+regex = "1.12.4"
+reqwest = { version = "0.12.24", default-features = false, features = ["blocking", "json", "rustls-tls"] }
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.145"
+sha2 = "0.10.9"
+tauri = { version = "2.11.2", features = ["tray-icon"] }
+tauri-plugin-dialog = "2.4.1"
+tauri-plugin-opener = "2.5.2"
+tauri-plugin-updater = "2.10.1"
+thiserror = "2.0.17"
+url = "2.5.7"
+walkdir = "2.5.0"
+zip = { version = "4.6.1", default-features = false, features = ["deflate"] }
+zstd = "0.13.3"
+tauri-plugin-notification = "2.3.3"
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]
+
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-single-instance = "2"

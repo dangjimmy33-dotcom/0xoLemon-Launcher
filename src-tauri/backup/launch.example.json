@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "gameId": "your-game-id",
+  "pickerMode": "auto",
+  "defaultOptionId": "dx12",
+  "options": [
+    {
+      "id": "dx11",
+      "title": "Play with DirectX 11",
+      "description": "Use this mode for older GPUs or if DirectX 12 is unstable.",
+      "recommended": false,
+      "processes": [
+        {
+          "path": "GameDX11.exe",
+          "args": [],
+          "role": "main",
+          "runAsAdmin": false,
+          "hidden": false,
+          "waitForExit": false
+        }
+      ]
+    },
+    {
+      "id": "dx12",
+      "title": "Play with DirectX 12",
+      "description": "Recommended rendering mode.",
+      "recommended": true,
+      "processes": [
+        {
+          "path": "GameDX12.exe",
+          "args": [],
+          "role": "main",
+          "runAsAdmin": false,
+          "hidden": false,
+          "waitForExit": false
+        }
+      ]
+    },
+    {
+      "id": "offline",
+      "title": "Play Offline",
+      "description": "Starts the game without the online helper.",
+      "processes": [
+        {
+          "path": "Game.exe",
+          "args": ["-offline"],
+          "role": "main",
+          "runAsAdmin": false,
+          "hidden": false,
+          "waitForExit": false
+        }
+      ]
+    },
+    {
+      "id": "online",
+      "title": "Play Online",
+      "description": "Starts the dedicated-server helper silently, waits 2.5 seconds, then starts the game.",
+      "processes": [
+        {
+          "path": "DedicatedServer\\start-server.bat",
+          "args": [],
+          "workingDirectory": "DedicatedServer",
+          "role": "helper",
+          "runAsAdmin": false,
+          "hidden": true,
+          "waitForExit": false,
+          "delayAfterMs": 2500
+        },
+        {
+          "path": "Game.exe",
+          "args": ["-online"],
+          "role": "main",
+          "runAsAdmin": false,
+          "hidden": false,
+          "waitForExit": false
+        }
+      ]
+    }
+  ]
+}

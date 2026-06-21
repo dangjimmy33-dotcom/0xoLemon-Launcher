@@ -109,7 +109,10 @@ const defaultLauncherSettings: LauncherSettings = {
   gameUpdateScheduleEnd: '06:00',
 }
 
+import { useRealtimeGameTags } from './hooks/useRealtimeGameTags'
+
 export default function App() {
+  useRealtimeGameTags()
   const [snapshot, setSnapshot] = useState<Snapshot>(fallbackSnapshot)
   const [job, setJob] = useState<JobJournal | null>(fallbackSnapshot.lastJob)
   const [installPath, setInstallPath] = useState('')

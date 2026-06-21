@@ -1,5 +1,5 @@
-import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { initializeApp } from 'firebase/app'
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore'
 
 const firebaseConfig = {
   apiKey: "AIzaSyAdqkMDJTjeVAfnwd8twlF2dvrKpWdNlUY",
@@ -9,7 +9,13 @@ const firebaseConfig = {
   messagingSenderId: "330469620392",
   appId: "1:330469620392:web:ad6f6e9288820f18ef209d",
   measurementId: "G-FZTWK4JCKG"
-};
+}
 
-export const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app);
+export const app = initializeApp(firebaseConfig)
+
+// Khởi tạo Firestore với Smart Cache (Offline Persistence)
+export const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({
+    tabManager: persistentMultipleTabManager()
+  })
+})

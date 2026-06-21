@@ -276,7 +276,8 @@ export function StoreLibraryView({
   }, [selectedGameId, detail?.gameId])
 
   const renderGameCard = (game: GameSummary, variant: 'compact' | 'browse') => {
-    const isComingSoon = gameHasTag(game.id, 'coming soon')
+    const tags = getGameTags(game)
+    const isComingSoon = gameHasTag(game, 'coming soon')
     return (
       <button
         className={[
@@ -300,9 +301,9 @@ export function StoreLibraryView({
           variant={variant}
           onRequestAsset={onRequestAsset}
         />
-        {getGameTags(game.id).length > 0 ? (
+        {tags.length > 0 ? (
           <div className="game-card-tags" aria-label="Game tags">
-            {getGameTags(game.id).map((tag) => (
+            {tags.map((tag) => (
               <i className={`game-card-tag tone-${tag.tone}`} key={tag.id}>{tag.label}</i>
             ))}
           </div>

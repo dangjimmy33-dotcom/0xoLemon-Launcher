@@ -9,6 +9,25 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,ttf}'],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/firestore\.googleapis\.com\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'firebase-firestore-cache',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+        ],
+      },
       includeAssets: ['favicon.svg'],
       manifest: {
         name: '0xoLemon Store',
@@ -32,7 +51,13 @@ export default defineConfig({
     port: 1420,
     strictPort: true,
     watch: {
-      ignored: ['**/src-tauri/**'],
+      ignored: [
+        '**/src-tauri/target/**',
+        '**/src-tauri/assets/**',
+        '**/src-tauri/gen/**',
+        '**/src-tauri/icons/**',
+        '**/src-tauri/src/**',
+      ],
     },
   },
   envPrefix: ['VITE_', 'TAURI_'],
