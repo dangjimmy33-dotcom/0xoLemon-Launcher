@@ -3746,6 +3746,12 @@ button:disabled {
   background: rgba(62, 67, 76, 0.9);
 }
 
+.game-card-tag.tone-warning {
+  border-color: rgba(255, 179, 64, 0.72);
+  background: rgba(199, 131, 23, 0.9);
+  color: #fff;
+}
+
 /* ── Global launcher settings ───────────────────────────── */
 .settings-view-global {
   min-height: 100%;
