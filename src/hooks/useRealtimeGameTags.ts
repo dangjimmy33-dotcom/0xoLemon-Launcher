@@ -4,7 +4,7 @@ import { db } from '../firebase'
 import { updateGameTagTable, type GameTagTable } from '../lib/gameTags'
 
 export function useRealtimeGameTags() {
-  const [isReady, setIsReady] = useState(false)
+  const [tagVersion, setTagVersion] = useState(0)
 
   useEffect(() => {
     // Lắng nghe realtime document "gameTags" trong collection "config"
@@ -15,17 +15,17 @@ export function useRealtimeGameTags() {
           const data = docSnap.data() as Partial<GameTagTable>
           updateGameTagTable(data)
         }
-        setIsReady(true)
+        setTagVersion(v => v + 1)
       },
       (error) => {
         console.error("Lỗi đồng bộ Game Tags:", error)
         // Nếu lỗi mạng, Firestore persistentLocalCache vẫn sẽ trả về data offline nếu có.
-        setIsReady(true)
+        setTagVersion(v => v + 1)
       }
     )
 
     return () => unsubscribe()
   }, [])
 
-  return isReady
+  return tagVersion
 }
