@@ -12,7 +12,7 @@ export function useRealtimeGameTags() {
       doc(db, 'config', 'gameTags'),
       (docSnap) => {
         if (docSnap.exists()) {
-          const data = docSnap.data() as GameTagTable
+          const data = docSnap.data() as Partial<GameTagTable>
           updateGameTagTable(data)
         }
         setIsReady(true)

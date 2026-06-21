@@ -31,8 +31,19 @@ function rebuildIndex() {
 // Initial build
 rebuildIndex()
 
-export function updateGameTagTable(newTable: GameTagTable) {
-  table = newTable
+export function updateGameTagTable(newTable: Partial<GameTagTable>) {
+  table = {
+    ...gameTagTableDefault,
+    ...newTable,
+    definitions: {
+      ...gameTagTableDefault.definitions,
+      ...(newTable.definitions || {})
+    },
+    games: {
+      ...gameTagTableDefault.games,
+      ...(newTable.games || {})
+    }
+  } as GameTagTable
   rebuildIndex()
 }
 
