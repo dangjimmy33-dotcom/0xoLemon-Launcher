@@ -263,40 +263,44 @@ def validate_payload(payload: Dict[str, Any], for_upload: bool = False) -> List[
     depot_key = safe_str(payload.get("depotKey")).strip()
     cargo_manifest = Path(safe_str(payload.get("cargoManifest"))).expanduser()
 
+    upload_only = bool_value(payload.get("uploadOnly", False))
+
     if not game_id:
         msgs.append(("error", "Thiếu Game ID."))
-    if not game_dir.exists():
-        msgs.append(("error", f"Game/New directory không tồn tại: {game_dir}"))
-    elif not game_dir.is_dir():
-        msgs.append(("error", f"Game/New directory không phải thư mục: {game_dir}"))
-    else:
-        msgs.append(("success", f"OK game folder: {game_dir}"))
 
-    if mode == "build-pair":
-        if not old_dir.exists():
-            msgs.append(("error", f"Old directory không tồn tại: {old_dir}"))
-        elif not old_dir.is_dir():
-            msgs.append(("error", f"Old directory không phải thư mục: {old_dir}"))
+    if not upload_only:
+        if not game_dir.exists():
+            msgs.append(("error", f"Game/New directory không tồn tại: {game_dir}"))
+        elif not game_dir.is_dir():
+            msgs.append(("error", f"Game/New directory không phải thư mục: {game_dir}"))
         else:
-            msgs.append(("success", f"OK old folder: {old_dir}"))
+            msgs.append(("success", f"OK game folder: {game_dir}"))
 
-    if exe_name and game_dir.exists():
-        exe_path = game_dir / exe_name
-        if exe_path.exists():
-            msgs.append(("success", f"OK launch executable: {exe_path}"))
+        if mode == "build-pair":
+            if not old_dir.exists():
+                msgs.append(("error", f"Old directory không tồn tại: {old_dir}"))
+            elif not old_dir.is_dir():
+                msgs.append(("error", f"Old directory không phải thư mục: {old_dir}"))
+            else:
+                msgs.append(("success", f"OK old folder: {old_dir}"))
+
+        if exe_name and game_dir.exists():
+            exe_path = game_dir / exe_name
+            if exe_path.exists():
+                msgs.append(("success", f"OK launch executable: {exe_path}"))
+            else:
+                msgs.append(("warn", f"Không thấy launch executable trong game folder: {exe_path}"))
+
+        if not cargo_manifest.exists():
+            msgs.append(("error", f"Không thấy Cargo.toml/src-tauri: {cargo_manifest}"))
         else:
-            msgs.append(("warn", f"Không thấy launch executable trong game folder: {exe_path}"))
+            msgs.append(("success", f"OK Cargo manifest: {cargo_manifest}"))
 
-    if not cargo_manifest.exists():
-        msgs.append(("error", f"Không thấy Cargo.toml/src-tauri: {cargo_manifest}"))
-    else:
-        msgs.append(("success", f"OK Cargo manifest: {cargo_manifest}"))
-
-    cargo = shutil.which("cargo")
-    if cargo:
-        msgs.append(("success", f"OK cargo: {cargo}"))
-    else:
-        msgs.append(("error", "Không tìm thấy cargo trong PATH."))
+        cargo = shutil.which("cargo")
+        if cargo:
+            msgs.append(("success", f"OK cargo: {cargo}"))
+        else:
+            msgs.append(("error", "Không tìm thấy cargo trong PATH."))
 
     py = find_python()
     msgs.append(("success", f"OK python: {py}"))
@@ -496,6 +500,9 @@ def run_publish_script(payload: Dict[str, Any], env: Dict[str, str]) -> int:
         "-PackStartIndex", str(pack_start),
         "-PackIdPrefix", pack_prefix,
     ]
+    if bool_value(payload.get("uploadOnly", False)):
+        args.append("-UploadOnly")
+    
     exe_name = safe_str(payload.get("exeName")).strip()
     if exe_name:
         args += ["-LaunchExecutable", exe_name]
@@ -604,6 +611,18 @@ def run_task(action: str, payload: Dict[str, Any]) -> None:
                     code = run_publish_script(payload, env)
                 else:
                     code = run_direct_builder(payload, env)
+        elif action == "resume_upload":
+            # Just set uploadOnly flag and run the publish script
+            payload["uploadOnly"] = True
+            msgs = validate_payload(payload, for_upload=True)
+            hard_errors = [m for lvl, m in msgs if lvl == "error"]
+            for lvl, msg in msgs:
+                add_log(msg, lvl)
+            if hard_errors:
+                add_log("Có lỗi preflight, chưa chạy resume upload.", "error")
+                code = 1
+            else:
+                code = run_publish_script(payload, env)
         else:
             add_log(f"Action không hợp lệ: {action}", "error")
             code = 1

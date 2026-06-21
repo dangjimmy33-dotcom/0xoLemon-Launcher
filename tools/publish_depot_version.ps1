@@ -22,6 +22,7 @@ param(
   [switch]$NoSyncMetadata,
   [switch]$NoExtendExisting,
   [switch]$UseBuilderUpload,
+  [switch]$UploadOnly,
   [int]$PackTargetMb = 256,
   [int]$PackStartIndex = 0,
   [string]$PackIdPrefix = "pack-"
@@ -52,14 +53,16 @@ if ([string]::IsNullOrWhiteSpace($SyncToolPath)) {
   $SyncToolPath = Join-Path $scriptRoot "sync_hf_depot_metadata.py"
 }
 
-if (-not (Test-Path -LiteralPath $InputDir)) {
-  throw "Input folder does not exist: $InputDir"
-}
+if (-not $UploadOnly) {
+  if (-not (Test-Path -LiteralPath $InputDir)) {
+    throw "Input folder does not exist: $InputDir"
+  }
 
-if (-not [string]::IsNullOrWhiteSpace($LaunchExecutable)) {
-  $exePath = Join-Path $InputDir $LaunchExecutable
-  if (-not (Test-Path -LiteralPath $exePath)) {
-    throw "Launch executable was not found: $exePath"
+  if (-not [string]::IsNullOrWhiteSpace($LaunchExecutable)) {
+    $exePath = Join-Path $InputDir $LaunchExecutable
+    if (-not (Test-Path -LiteralPath $exePath)) {
+      throw "Launch executable was not found: $exePath"
+    }
   }
 }
 
@@ -128,86 +131,90 @@ if (-not $NoSyncMetadata) {
   Write-Host "[SAFE] Skipping remote metadata sync because -NoSyncMetadata was set."
 }
 
-if ($ForceRebuild -and (Test-Path -LiteralPath $builder)) {
-  Write-Host "[SAFE] Force rebuild requested. Removing old builder: $builder"
-  Remove-Item -LiteralPath $builder -Force
-}
+if (-not $UploadOnly) {
+  if ($ForceRebuild -and (Test-Path -LiteralPath $builder)) {
+    Write-Host "[SAFE] Force rebuild requested. Removing old builder: $builder"
+    Remove-Item -LiteralPath $builder -Force
+  }
 
-if (-not (Test-Path -LiteralPath $builder)) {
-  Write-Host "[SAFE] Release depot_builder not found. Building release..."
+  if (-not (Test-Path -LiteralPath $builder)) {
+    Write-Host "[SAFE] Release depot_builder not found. Building release..."
+    Push-Location $srcTauri
+    try {
+      cargo build --release --manifest-path $CargoManifest --bin depot_builder
+    } finally {
+      Pop-Location
+    }
+  } else {
+    Write-Host "[SAFE] Using release builder: $builder"
+  }
+
   Push-Location $srcTauri
   try {
-    cargo build --release --manifest-path $CargoManifest --bin depot_builder
+    $builderArgs = @(
+      "build-version",
+      "--input", $InputDir,
+      "--version", $Version,
+      "--out", $depotOut,
+      "--game-id", $GameId,
+      "--pack-target-mb", ([string]$PackTargetMb),
+      "--pack-id-prefix", $PackIdPrefix,
+      "--pack-start-index", ([string]$PackStartIndex)
+    )
+
+    if ($UseBuilderUpload) {
+      $builderArgs += @("--upload-repo", $Repo, "--repo-type", $RepoType, "--repo-prefix", $RepoPrefix)
+    } else {
+      Write-Host "[SAFE] Builder upload disabled. Build local depot first, then upload incrementally per file."
+    }
+
+    if (-not $NoExtendExisting) {
+      $builderArgs += "--extend-existing"
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($LaunchExecutable)) {
+      $builderArgs += @("--launch-executable", $LaunchExecutable)
+    }
+
+    if ($KeepLocalPacks -or (-not $UseBuilderUpload)) {
+      $builderArgs += "--keep-local-packs"
+    }
+
+    if ($NoEncryptPacks) {
+      $builderArgs += "--no-encrypt-packs"
+    } else {
+      # Explicit flag for readable logs. New builders accept it; old builders ignore it but still default to encryption only if they are actually new.
+      $builderArgs += "--encrypt-packs"
+    }
+
+    Write-Host "[SAFE] Running depot_builder build-version..."
+    if ($NoExtendExisting) { Write-Host "[SAFE] --extend-existing is disabled for this run." }
+    & $builder @builderArgs
+    if ($LASTEXITCODE -ne 0) {
+      throw "depot_builder failed with exit code $LASTEXITCODE"
+    }
   } finally {
     Pop-Location
   }
+
+  # Hard local safety check when encrypted packs are expected. This catches stale/old depot_builder.exe immediately.
+  if (-not $NoEncryptPacks) {
+    $packDir = Join-Path $depotOut "packs"
+    if (Test-Path -LiteralPath $packDir) {
+      $plainPacks = @()
+      Get-ChildItem -LiteralPath $packDir -Filter "*.bin" | ForEach-Object {
+        if (Test-ZstdMagicAtStart $_.FullName) { $plainPacks += $_.Name }
+      }
+      if ($plainPacks.Count -gt 0) {
+        throw "Encryption was requested, but these packs still start with ZSTD magic 28 B5 2F FD: $($plainPacks -join ', '). This means an old/plain builder path is still being used."
+      }
+      Write-Host "[SAFE] Local encrypted-pack sanity check passed. No pack starts with ZSTD magic."
+    } else {
+      Write-Host "[SAFE] Pack folder not present after upload; skip local magic check. Enable KeepLocalPacks for manual verification."
+    }
+  }
 } else {
-  Write-Host "[SAFE] Using release builder: $builder"
-}
-
-Push-Location $srcTauri
-try {
-  $builderArgs = @(
-    "build-version",
-    "--input", $InputDir,
-    "--version", $Version,
-    "--out", $depotOut,
-    "--game-id", $GameId,
-    "--pack-target-mb", ([string]$PackTargetMb),
-    "--pack-id-prefix", $PackIdPrefix,
-    "--pack-start-index", ([string]$PackStartIndex)
-  )
-
-  if ($UseBuilderUpload) {
-    $builderArgs += @("--upload-repo", $Repo, "--repo-type", $RepoType, "--repo-prefix", $RepoPrefix)
-  } else {
-    Write-Host "[SAFE] Builder upload disabled. Build local depot first, then upload incrementally per file."
-  }
-
-  if (-not $NoExtendExisting) {
-    $builderArgs += "--extend-existing"
-  }
-
-  if (-not [string]::IsNullOrWhiteSpace($LaunchExecutable)) {
-    $builderArgs += @("--launch-executable", $LaunchExecutable)
-  }
-
-  if ($KeepLocalPacks -or (-not $UseBuilderUpload)) {
-    $builderArgs += "--keep-local-packs"
-  }
-
-  if ($NoEncryptPacks) {
-    $builderArgs += "--no-encrypt-packs"
-  } else {
-    # Explicit flag for readable logs. New builders accept it; old builders ignore it but still default to encryption only if they are actually new.
-    $builderArgs += "--encrypt-packs"
-  }
-
-  Write-Host "[SAFE] Running depot_builder build-version..."
-  if ($NoExtendExisting) { Write-Host "[SAFE] --extend-existing is disabled for this run." }
-  & $builder @builderArgs
-  if ($LASTEXITCODE -ne 0) {
-    throw "depot_builder failed with exit code $LASTEXITCODE"
-  }
-} finally {
-  Pop-Location
-}
-
-# Hard local safety check when encrypted packs are expected. This catches stale/old depot_builder.exe immediately.
-if (-not $NoEncryptPacks) {
-  $packDir = Join-Path $depotOut "packs"
-  if (Test-Path -LiteralPath $packDir) {
-    $plainPacks = @()
-    Get-ChildItem -LiteralPath $packDir -Filter "*.bin" | ForEach-Object {
-      if (Test-ZstdMagicAtStart $_.FullName) { $plainPacks += $_.Name }
-    }
-    if ($plainPacks.Count -gt 0) {
-      throw "Encryption was requested, but these packs still start with ZSTD magic 28 B5 2F FD: $($plainPacks -join ', '). This means an old/plain builder path is still being used."
-    }
-    Write-Host "[SAFE] Local encrypted-pack sanity check passed. No pack starts with ZSTD magic."
-  } else {
-    Write-Host "[SAFE] Pack folder not present after upload; skip local magic check. Enable KeepLocalPacks for manual verification."
-  }
+  Write-Host "[SAFE] UploadOnly flag is set. Skipping depot builder and proceeding directly to incremental HF uploader."
 }
 
 if (-not $UseBuilderUpload) {
