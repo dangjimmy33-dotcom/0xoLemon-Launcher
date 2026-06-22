@@ -46,6 +46,18 @@ jobs:
             throw "Tag version $tagVersion does not match tauri.conf.json version $($config.version)"
           }
 
+      - name: Inject HuggingFace credentials
+        shell: pwsh
+        env:
+          HF_REPOS_JSON: ${{ secrets.HF_REPOS_JSON }}
+        run: |
+          if (-not $env:HF_REPOS_JSON) {
+            Write-Warning "HF_REPOS_JSON secret not set – HuggingFace downloads will be disabled in this build."
+            $env:HF_REPOS_JSON = '{"repositories":[]}'
+          }
+          $env:HF_REPOS_JSON | Set-Content "src-tauri/huggingface-repos.json" -Encoding UTF8
+          Write-Host "huggingface-repos.json written successfully."
+
       - name: Build, sign, and publish release
         uses: tauri-apps/tauri-action@84b9d35b5fc46c1e45415bdb6144030364f7ebc5 # v0.6.2
         env:
@@ -64,6 +76,7 @@ jobs:
           prerelease: false
           updaterJsonPreferNsis: true
           args: --target x86_64-pc-windows-msvc
+
 
   build-android:
     name: Build Android APK
