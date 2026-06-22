@@ -25,6 +25,19 @@ const DISCORD_AUTHORIZE_ENDPOINT: &str = "https://discord.com/oauth2/authorize";
 const DEFAULT_CLIENT_ID: &str = "1512105027270082651";
 const REQUIRED_GUILD_ID: &str = "1492076309323714570";
 const REQUIRED_GUILD_INVITE: &str = "https://discord.gg/7ZXdTUVsJE";
+
+/// Roles that are allowed access (GOONER and above)
+const ALLOWED_ROLE_IDS: &[&str] = &[
+    "1492080961125355621",
+    "1492130518869999737",
+    "1492130703549267999",
+    "1492131096937238588",
+    "1510584783485403287",
+    "1493617856238063669",
+    "1492082591652909086",
+];
+/// Verify-only role — must NOT have access
+const DENIED_ROLE_ID: &str = "1492078291341803702";
 const CALLBACK_ADDRESS: &str = "127.0.0.1:48176";
 const CALLBACK_URL: &str = "http://127.0.0.1:48176/discord/callback";
 const OAUTH_TIMEOUT: Duration = Duration::from_secs(180);
@@ -84,6 +97,12 @@ struct DiscordUserResponse {
 struct DiscordGuildResponse {
     id: String,
     name: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct GuildMemberResponse {
+    #[serde(default)]
+    roles: Vec<String>,
 }
 
 #[derive(Debug)]
@@ -238,7 +257,7 @@ pub fn login(app: &AppHandle) -> Result<DiscordAuthStatus, String> {
         .append_pair("client_id", &client_id)
         .append_pair("redirect_uri", CALLBACK_URL)
         .append_pair("response_type", "token")
-        .append_pair("scope", "identify guilds")
+        .append_pair("scope", "identify guilds guilds.members.read")
         .append_pair("state", &state_nonce)
         .append_pair("prompt", "consent")
         .append_pair("integration_type", "1");
@@ -373,16 +392,46 @@ fn validate_token(token: &str) -> Result<DiscordAuthStatus, ApiError> {
         return Ok(result);
     }
 
+    // Check role-based access
+    let guild_name = guild.map(|g| g.name);
+    let has_access = check_guild_roles(&client, token);
+    if !has_access {
+        SESSION_AUTHORIZED.store(false, Ordering::Release);
+        let mut result = status(
+            "noRole",
+            true,
+            "Your role in the server does not grant access to the launcher.",
+        );
+        result.user = Some(profile);
+        result.guild_name = guild_name;
+        return Ok(result);
+    }
+
     SESSION_AUTHORIZED.store(true, Ordering::Release);
     let mut result = status("authorized", true, "Discord access verified.");
     result.user = Some(profile);
-    result.guild_name = guild.map(|value| value.name);
+    result.guild_name = guild_name;
 
     if let Ok(mut guard) = CACHED_STATUS.lock() {
         *guard = Some((unix_seconds(), result.clone()));
     }
 
     Ok(result)
+}
+
+/// Returns true if the user has at least one ALLOWED_ROLE and does NOT have DENIED_ROLE.
+fn check_guild_roles(client: &Client, token: &str) -> bool {
+    let url = format!("{DISCORD_API}/users/@me/guilds/{REQUIRED_GUILD_ID}/member");
+    match discord_get::<GuildMemberResponse>(client, token, &url) {
+        Ok(member) => {
+            let has_denied = member.roles.iter().any(|r| r == DENIED_ROLE_ID);
+            if has_denied {
+                return false;
+            }
+            member.roles.iter().any(|r| ALLOWED_ROLE_IDS.contains(&r.as_str()))
+        }
+        Err(_) => false, // If we can't fetch member info, deny access
+    }
 }
 
 fn find_required_guild(

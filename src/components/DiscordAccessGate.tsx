@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Check, Copy, ExternalLink, LockKeyhole, RefreshCw, Send, ShieldCheck, Users } from 'lucide-react'
+import { Check, Copy, ExternalLink, LockKeyhole, RefreshCw, Send, ShieldAlert, ShieldCheck, Users } from 'lucide-react'
 import { motion } from 'motion/react'
 import { listen } from '@tauri-apps/api/event'
 import type { DiscordAuthStatus } from '../types'
@@ -68,7 +68,8 @@ export function DiscordAccessGate({
   const needsMembership = status.state === 'notMember'
   const tooYoung = status.state === 'accountTooNew'
   const notConfigured = status.state === 'notConfigured'
-  const canLogin = !checking && !needsMembership && !tooYoung && !notConfigured
+  const noRole = status.state === 'noRole'
+  const canLogin = !checking && !needsMembership && !tooYoung && !notConfigured && !noRole
 
   return (
     <div className="discord-access-gate" role="presentation">
@@ -93,7 +94,7 @@ export function DiscordAccessGate({
         {!canLogin && (
           <>
             <div className="discord-access-icon" aria-hidden="true">
-              {tooYoung ? <ShieldCheck /> : <Users />}
+              {tooYoung ? <ShieldCheck /> : noRole ? <ShieldAlert /> : <Users />}
             </div>
 
             <h1 id="discord-access-title">
@@ -101,6 +102,8 @@ export function DiscordAccessGate({
                 ? 'Checking your access'
                 : needsMembership
                   ? 'Server membership required'
+                  : noRole
+                    ? 'Role Verification Required'
                   : tooYoung
                     ? 'Account is too new'
                     : notConfigured

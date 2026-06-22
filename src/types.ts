@@ -332,6 +332,7 @@ export type DiscordAuthState =
   | 'signedOut'
   | 'authorized'
   | 'notMember'
+  | 'noRole'
   | 'accountTooNew'
   | 'expired'
   | 'error'
