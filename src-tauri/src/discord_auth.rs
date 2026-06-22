@@ -35,9 +35,8 @@ const ALLOWED_ROLE_IDS: &[&str] = &[
     "1510584783485403287",
     "1493617856238063669",
     "1492082591652909086",
+    "1492568133486252182", // Newly added allowed role
 ];
-/// Verify-only role — must NOT have access
-const DENIED_ROLE_ID: &str = "1492078291341803702";
 const CALLBACK_ADDRESS: &str = "127.0.0.1:48176";
 const CALLBACK_URL: &str = "http://127.0.0.1:48176/discord/callback";
 const OAUTH_TIMEOUT: Duration = Duration::from_secs(180);
@@ -419,15 +418,11 @@ fn validate_token(token: &str) -> Result<DiscordAuthStatus, ApiError> {
     Ok(result)
 }
 
-/// Returns true if the user has at least one ALLOWED_ROLE and does NOT have DENIED_ROLE.
+/// Returns true if the user has at least one ALLOWED_ROLE.
 fn check_guild_roles(client: &Client, token: &str) -> bool {
     let url = format!("{DISCORD_API}/users/@me/guilds/{REQUIRED_GUILD_ID}/member");
     match discord_get::<GuildMemberResponse>(client, token, &url) {
         Ok(member) => {
-            let has_denied = member.roles.iter().any(|r| r == DENIED_ROLE_ID);
-            if has_denied {
-                return false;
-            }
             member.roles.iter().any(|r| ALLOWED_ROLE_IDS.contains(&r.as_str()))
         }
         Err(_) => false, // If we can't fetch member info, deny access
