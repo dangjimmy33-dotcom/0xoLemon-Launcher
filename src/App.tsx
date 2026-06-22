@@ -2041,8 +2041,32 @@ export default function App() {
       primeInstallCompleteSound()
     }
 
+    // Web app: send remote install command to PC launcher via Firebase
     if (!isTauriRuntime()) {
-      setScanStatus('Browser preview cannot write local game files')
+      if (!discordAuth.user) {
+        setScanStatus('Please login with Discord to remote install.')
+        return
+      }
+      try {
+        await addDoc(collection(db, 'users', discordAuth.user.id, 'commands'), {
+          action: 'install',
+          game_id: selectedGame.id,
+          timestamp: serverTimestamp()
+        })
+        setShowInstallOptions(false)
+        void publishNotification({
+          category: 'launcher',
+          severity: 'info',
+          title: 'Remote Command Sent',
+          message: `Installation for ${selectedGame.title} will start on your PC shortly.`,
+          dedupeKey: `remote-install-${selectedGame.id}`,
+          entity: null,
+          action: null
+        })
+      } catch (err) {
+        setScanStatus('Failed to send remote command. Is your PC online?')
+        console.error('Remote install failed:', err)
+      }
       return
     }
 
@@ -2063,25 +2087,6 @@ export default function App() {
     }
 
     try {
-      if (!isTauriRuntime()) {
-        if (!discordAuth.user) return
-        await addDoc(collection(db, 'users', discordAuth.user.id, 'commands'), {
-          action: 'install',
-          game_id: selectedGame.id,
-          timestamp: serverTimestamp()
-        })
-        setShowInstallOptions(false)
-        void publishNotification({
-          category: 'launcher',
-          severity: 'info',
-          title: 'Remote Command Sent',
-          message: `Installation for ${selectedGame.title} will start on your PC shortly.`,
-          dedupeKey: `remote-install-${selectedGame.id}`,
-          entity: null,
-          action: null
-        })
-        return
-      }
 
       const versionToApply = targetVersion
       setSelectedVersion(versionToApply)
