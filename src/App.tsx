@@ -119,16 +119,26 @@ import { useFirestoreDetail } from './hooks/useFirestoreDetail'
 
 export default function App() {
   useEffect(() => {
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), 
-    })
-    function raf(time: number) {
-      lenis.raf(time)
+    let lenis: Lenis | null = null
+    const timer = setTimeout(() => {
+      const wrapper = document.querySelector('.workspace') as HTMLElement | null
+      if (!wrapper) return
+      lenis = new Lenis({
+        wrapper,
+        content: wrapper,
+        duration: 1.2,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), 
+      })
+      function raf(time: number) {
+        lenis?.raf(time)
+        requestAnimationFrame(raf)
+      }
       requestAnimationFrame(raf)
+    }, 50)
+    return () => {
+      clearTimeout(timer)
+      lenis?.destroy()
     }
-    requestAnimationFrame(raf)
-    return () => lenis.destroy()
   }, [])
 
   useRealtimeGameTags()

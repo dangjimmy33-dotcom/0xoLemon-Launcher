@@ -15,6 +15,7 @@ import {
   RotateCcw,
   Settings,
   Sparkles,
+  CircleAlert,
 } from 'lucide-react'
 import type { LauncherPreferences, NotificationCategory } from '../lib/preferences'
 import type { LauncherSettings, SteamEnvironmentInfo } from '../types'
@@ -440,6 +441,22 @@ export function SettingsView({
               <button type="button" className="settings-secondary-button" onClick={onOpenCache}>
                 <Gauge size={15} />
                 Manage cache
+              </button>
+            </SettingRow>
+            <SettingRow title="Reset app data" description="Clear all web cache, local preferences, and cached images to fix loading issues. This will log you out.">
+              <button
+                type="button"
+                style={{ background: '#e02424', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+                onClick={() => {
+                  if (confirm('Are you sure you want to clear all app data and restart?')) {
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    window.location.reload();
+                  }
+                }}
+              >
+                <CircleAlert size={16} />
+                Clear Cache & Restart
               </button>
             </SettingRow>
           </div>
