@@ -15,6 +15,8 @@ import {
 } from '@tauri-apps/plugin-notification'
 import { MotionConfig } from 'motion/react'
 import { CircleAlert, Download, Heart, X } from 'lucide-react'
+import Lenis from 'lenis'
+import 'lenis/dist/lenis.css'
 import packageMetadata from '../package.json'
 import './App.css'
 import './premium.css'
@@ -116,6 +118,19 @@ import { useRealtimeAssets } from './hooks/useRealtimeAssets'
 import { useFirestoreDetail } from './hooks/useFirestoreDetail'
 
 export default function App() {
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), 
+    })
+    function raf(time: number) {
+      lenis.raf(time)
+      requestAnimationFrame(raf)
+    }
+    requestAnimationFrame(raf)
+    return () => lenis.destroy()
+  }, [])
+
   useRealtimeGameTags()
   const assetOverrideVersion = useRealtimeAssets()
   const firestoreCatalog = useFirestoreCatalog(assetOverrideVersion)
