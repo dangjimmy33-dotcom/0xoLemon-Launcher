@@ -55,11 +55,23 @@ export function FirebaseRemoteControl({
           
           try {
             if (commandData.action === 'install' && commandData.game_id) {
-              // Trigger the Tauri download
-              await invoke('request_download_game', { gameId: commandData.game_id })
-              console.log(`Remote install requested for ${commandData.game_id}`)
+              // start_install_job with null version/path → backend uses latest version & default install path
+              await invoke('start_install_job', {
+                gameId: commandData.game_id,
+                targetVersion: null,
+                installPath: null,
+              })
+              console.log(`Remote install started for ${commandData.game_id}`)
             } else if (commandData.action === 'launch' && commandData.game_id) {
-              await invoke('launch_game', { gameId: commandData.game_id })
+              // Need to get install_path before launching
+              const installState = await invoke<{ installPath: string }>('get_game_install_state', { gameId: commandData.game_id })
+              await invoke('launch_game', {
+                gameId: commandData.game_id,
+                installPath: installState.installPath,
+                launchExecutable: null,
+                launchOptionId: null,
+                skipCloudSync: null,
+              })
             }
           } catch (err) {
             console.error('Remote command failed:', err)
