@@ -26,6 +26,10 @@ src-tauri/src-tauri.zip
 tools/tools.zip
 steam_api_utf8.json
 
+# Secrets — never commit tokens (keep local only)
+src-tauri/huggingface-repos.json
+
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

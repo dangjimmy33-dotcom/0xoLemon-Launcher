@@ -60,6 +60,7 @@ export function InstallOptionsDialog({
   installRoot,
   downloadingRoot,
   canStart,
+  statusMessage,
   onVersionChange,
   onChangeInstallRoot,
   onStart,
@@ -75,6 +76,7 @@ export function InstallOptionsDialog({
   installRoot: string
   downloadingRoot: string
   canStart: boolean
+  statusMessage?: string
   onVersionChange: (version: string) => void
   onChangeInstallRoot: () => void
   onStart: () => void
@@ -192,6 +194,11 @@ export function InstallOptionsDialog({
               <strong>{downloadingRoot}</strong>
             </div>
           </div>
+          {statusMessage ? (
+            <div className="install-modal-status" role="status" aria-live="polite">
+              {statusMessage}
+            </div>
+          ) : null}
         </div>
         <footer>
           <button type="button" onClick={onClose}>

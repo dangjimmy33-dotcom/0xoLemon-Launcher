@@ -4139,3 +4139,166 @@ button:disabled {
     grid-column: 1 / -1;
   }
 }
+
+
+/* ??????????????????????????????????????????????????????
+   INTRO SCREEN - cinematic startup splash (Xbox-style)
+   ?????????????????????????????????????????????????????? */
+
+.intro-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  background: #06080b;
+  animation: intro-screen-enter 500ms ease both;
+}
+
+.intro-screen.phase-exit {
+  animation: intro-screen-exit 520ms ease both;
+}
+
+@keyframes intro-screen-enter {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes intro-screen-exit {
+  from { opacity: 1; filter: blur(0px); transform: scale(1); }
+  to   { opacity: 0; filter: blur(6px); transform: scale(1.04); }
+}
+
+.intro-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 48%, rgba(192, 140, 20, 0.09) 0%, transparent 70%),
+    radial-gradient(ellipse 90% 90% at 20% 10%, rgba(30, 60, 80, 0.18) 0%, transparent 60%);
+  animation: intro-bg-pulse 4s ease-in-out infinite alternate;
+}
+
+@keyframes intro-bg-pulse {
+  from { opacity: 0.7; }
+  to   { opacity: 1; }
+}
+
+.intro-glow {
+  position: absolute;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(230, 175, 40, 0.18) 0%, transparent 70%);
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 600ms ease, transform 700ms ease;
+}
+
+.phase-hold .intro-glow,
+.phase-exit .intro-glow {
+  opacity: 1;
+  transform: scale(1);
+  animation: intro-glow-pulse 1.6s ease-in-out infinite alternate;
+}
+
+@keyframes intro-glow-pulse {
+  from { opacity: 0.7; }
+  to   { opacity: 1; }
+}
+
+.intro-logo-wrap {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(0.72);
+  animation: intro-logo-appear 700ms 200ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes intro-logo-appear {
+  from { opacity: 0; transform: scale(0.72); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.intro-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform-origin: center;
+}
+
+.intro-ring-track {
+  stroke: rgba(255, 255, 255, 0.07);
+}
+
+.intro-ring-arc {
+  stroke: #d4a820;
+  stroke-linecap: round;
+  stroke-dasharray: 314;
+  stroke-dashoffset: 314;
+  transform: rotate(-90deg);
+  transform-origin: center;
+  animation: intro-ring-fill 1100ms 300ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes intro-ring-fill {
+  from { stroke-dashoffset: 314; }
+  to   { stroke-dashoffset: 0; }
+}
+
+.intro-logo-icon {
+  position: absolute;
+  width: 68px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 0 12px rgba(230, 185, 40, 0.45));
+}
+
+.intro-logo-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.intro-text-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  opacity: 0;
+  transform: translateY(10px);
+  animation: intro-text-appear 500ms 900ms ease both;
+}
+
+@keyframes intro-text-appear {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.intro-app-name {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #f2eacc;
+  letter-spacing: 0.04em;
+  font-family: 'Arya', 'Segoe UI', sans-serif;
+  text-shadow: 0 0 24px rgba(230, 185, 40, 0.35);
+}
+
+.intro-tagline {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(230, 185, 40, 0.7);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}

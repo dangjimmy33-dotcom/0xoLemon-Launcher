@@ -1,3 +1,4 @@
+pub mod asset_cache;
 pub mod asset_pack;
 pub mod builder;
 pub mod cloud_save;
@@ -672,6 +673,8 @@ pub fn run() {
             get_game_catalog,
             get_game_detail,
             get_game_asset,
+            asset_cache::fetch_asset_cache,
+            asset_cache::clear_game_cache,
             get_game_install_state,
             get_game_install_states,
             get_game_launch_config,
@@ -699,6 +702,7 @@ pub fn run() {
             exit_app
         ])
         .setup(|app| {
+            asset_cache::perform_ttl_cleanup(app.handle());
             let quit_i =
                 tauri::menu::MenuItem::with_id(app, "quit", "Quit 0xoLemon", true, None::<&str>)?;
             let store_i =

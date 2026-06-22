@@ -72,7 +72,7 @@ pub const GAME_PATH_MAPPINGS: &[GamePathMapping] = &[
         hf_dir_name: "hello-kitty-island-adventure",
         launch_executable: "Hello Kitty.exe",
     },
-     GamePathMapping {
+    GamePathMapping {
         game_id: "ea-sports-fc-26",
         install_dir_name: "EA SPORTS FC™ 26",
         hf_dir_name: "ea-sports-fc-26",
@@ -97,6 +97,7 @@ struct HuggingFaceRepoEntry {
     revision: String,
     #[serde(default = "default_enabled")]
     enabled: bool,
+    token: Option<String>,
 }
 
 fn default_repo_type() -> String {
@@ -167,17 +168,17 @@ pub fn fallback_title_from_game_id(game_id: &str) -> String {
 ///
 /// Entries can be either a full `/resolve/<revision>` URL or an `owner/repo` id.
 /// Duplicate entries are removed while preserving order.
-pub fn depot_repo_base_urls() -> Vec<String> {
+pub fn depot_repo_base_urls() -> Vec<(String, Option<String>)> {
     let mut values = Vec::new();
 
     for key in ["OXO_DEPOT_REPO_BASES", "OXO_DEPOT_REPOS"] {
         if let Ok(raw) = env::var(key) {
-            values.extend(split_repo_list(&raw));
+            values.extend(split_repo_list(&raw).into_iter().map(|s| (s, None)));
         }
     }
 
     if let Ok(raw) = env::var("OXO_DEPOT_REPO_BASE") {
-        values.extend(split_repo_list(&raw));
+        values.extend(split_repo_list(&raw).into_iter().map(|s| (s, None)));
     }
 
     if let Ok(config) =
@@ -194,25 +195,28 @@ pub fn depot_repo_base_urls() -> Vec<String> {
         }
     }
 
-    dedupe_preserving_order(
+    dedupe_preserving_order_with_token(
         values
             .into_iter()
-            .filter_map(|value| normalize_repo_base(&value))
+            .filter_map(|(value, token)| normalize_repo_base(&value).map(|norm| (norm, token)))
             .collect(),
     )
 }
 
 /// Returns game-specific depot roots for every configured repository.
 /// Example: `<repo resolve base>/<game folder>`.
-pub fn depot_base_urls_for_game(game_id: &str) -> Vec<String> {
+pub fn depot_base_urls_for_game(game_id: &str) -> Vec<(String, Option<String>)> {
     let remote_prefix = encode_hf_relative_path(&hf_dir_name_for_game_id(game_id));
     depot_repo_base_urls()
         .into_iter()
-        .map(|base| {
+        .map(|(base, token)| {
             if remote_prefix.is_empty() {
-                base
+                (base, token)
             } else {
-                format!("{}/{}", base.trim_end_matches('/'), remote_prefix)
+                (
+                    format!("{}/{}", base.trim_end_matches('/'), remote_prefix),
+                    token,
+                )
             }
         })
         .collect()
@@ -226,7 +230,7 @@ fn split_repo_list(raw: &str) -> Vec<String> {
         .collect()
 }
 
-fn repo_entry_to_base_url(entry: &HuggingFaceRepoEntry) -> Option<String> {
+fn repo_entry_to_base_url(entry: &HuggingFaceRepoEntry) -> Option<(String, Option<String>)> {
     let repo_id = entry.repo_id.trim().trim_matches('/');
     if repo_id.is_empty() {
         return None;
@@ -247,9 +251,12 @@ fn repo_entry_to_base_url(entry: &HuggingFaceRepoEntry) -> Option<String> {
         _ => "datasets/",
     };
 
-    Some(format!(
-        "https://huggingface.co/{prefix}{repo_id}/resolve/{}",
-        encode_hf_relative_path(revision)
+    Some((
+        format!(
+            "https://huggingface.co/{prefix}{repo_id}/resolve/{}",
+            encode_hf_relative_path(revision)
+        ),
+        entry.token.clone(),
     ))
 }
 
@@ -276,7 +283,7 @@ fn normalize_repo_base(value: &str) -> Option<String> {
     }
 
     let repo_id = clean.trim_matches('/');
-    if repo_id.split('/').count() < 2 {
+    if repo_id.is_empty() || !repo_id.contains('/') {
         return None;
     }
 
@@ -285,12 +292,17 @@ fn normalize_repo_base(value: &str) -> Option<String> {
     ))
 }
 
-fn dedupe_preserving_order(values: Vec<String>) -> Vec<String> {
-    let mut seen = HashSet::new();
-    values
-        .into_iter()
-        .filter(|value| seen.insert(value.clone()))
-        .collect()
+fn dedupe_preserving_order_with_token(
+    items: Vec<(String, Option<String>)>,
+) -> Vec<(String, Option<String>)> {
+    let mut seen = std::collections::HashSet::new();
+    let mut result = Vec::new();
+    for (item, token) in items {
+        if seen.insert(item.clone()) {
+            result.push((item, token));
+        }
+    }
+    result
 }
 
 pub fn encode_hf_relative_path(relative_path: &str) -> String {

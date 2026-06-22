@@ -21,16 +21,18 @@ export function decodeRemoteAssetId(assetId: string) {
 }
 
 let githubTreeCache: string[] | null = null;
+type GithubTreeEntry = { path?: string }
+
 async function resolveGithubAssetUrl(gameId: string, role: string): Promise<string | undefined> {
   if (!githubTreeCache) {
      try {
         const res = await fetch('https://api.github.com/repos/dangjimmy33-dotcom/0xoLemon-Launcher/git/trees/main?recursive=1');
         if (!res.ok) return undefined;
-        const data = await res.json();
-        githubTreeCache = data.tree
-          .filter((t: any) => t.path.startsWith('src/assets/'))
-          .map((t: any) => t.path);
-     } catch(e) {
+        const data = (await res.json()) as { tree?: GithubTreeEntry[] };
+        githubTreeCache = (data.tree ?? [])
+          .map((entry) => entry.path)
+          .filter((path): path is string => Boolean(path?.startsWith('src/assets/')));
+     } catch {
         return undefined;
      }
   }
@@ -71,10 +73,11 @@ export async function fetchWebAssetUrl(assetId: string): Promise<string | undefi
 
 export function assetUrlForId(assetId: string | null | undefined, assets: Record<string, string>) {
   if (!assetId) return undefined
+  if (assets[assetId]) return assets[assetId]
   if (assetId.startsWith('http://') || assetId.startsWith('https://')) return assetId
   if (isRemoteAssetId(assetId)) return decodeRemoteAssetId(assetId)
-  
-  return assets[assetId]
+
+  return undefined
 }
 
 export function isCarouselMedia(item: GameMedia) {

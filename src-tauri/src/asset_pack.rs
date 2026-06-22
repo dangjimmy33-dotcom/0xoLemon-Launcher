@@ -67,6 +67,9 @@ pub fn default_pack_output() -> PathBuf {
 }
 
 pub fn get_game_catalog(app: &AppHandle) -> Result<GameCatalog, AssetPackError> {
+    // load_catalog_packs returns Ok([]) when no .0xo packs exist – that is fine.
+    // We intentionally return an empty catalog here so the frontend can merge
+    // with its Firestore catalog without treating the situation as an error.
     let packs = load_catalog_packs(app)?;
     let mut default_locale = "en-US".to_string();
     let mut games = Vec::new();
@@ -85,12 +88,7 @@ pub fn get_game_catalog(app: &AppHandle) -> Result<GameCatalog, AssetPackError> 
         }
     }
 
-    if games.is_empty() {
-        return Err(AssetPackError::InvalidPack(
-            "no games found in asset catalogs".to_string(),
-        ));
-    }
-
+    // No error when games is empty – caller (frontend) will merge with Firestore.
     Ok(GameCatalog {
         default_locale,
         games,
@@ -438,9 +436,9 @@ fn locate_catalog_pack_paths(app: &AppHandle) -> Result<Vec<PathBuf>, AssetPackE
         }
     }
 
-    Err(AssetPackError::InvalidPack(
-        "no per-game core asset packs were found under assets/games".to_string(),
-    ))
+    // No .0xo packs found – return empty list; the frontend will rely on
+    // the Firestore catalog instead of treating this as a fatal error.
+    Ok(Vec::new())
 }
 
 fn game_catalog_pack_paths_in(assets_dir: &Path) -> Result<Vec<PathBuf>, AssetPackError> {
@@ -1741,7 +1739,7 @@ fn fetch_remote_depot_catalog(game_id: &str) -> Option<Catalog> {
         .or_else(|_| std::env::var("FIRST_LIGHT_HF_TOKEN"))
         .ok();
 
-    for base in depot_repo_base_urls() {
+    for (base, repo_token) in depot_repo_base_urls() {
         let url = format!(
             "{}/{}/catalog.json",
             base.trim_end_matches('/'),
@@ -1750,8 +1748,10 @@ fn fetch_remote_depot_catalog(game_id: &str) -> Option<Catalog> {
         let mut request = client
             .get(&url)
             .header("User-Agent", "0xolemon-launcher/0.1");
-        if let Some(token) = &token {
-            request = request.header("Authorization", format!("Bearer {token}"));
+
+        let effective_token = repo_token.as_ref().or(token.as_ref());
+        if let Some(t) = effective_token {
+            request = request.header("Authorization", format!("Bearer {t}"));
         }
         let Ok(response) = request.send() else {
             continue;

@@ -168,7 +168,7 @@ pub(super) fn remote_repo_prefix(game_id: &str) -> String {
     remote_paths::hf_dir_name_for_game_id(game_id)
 }
 
-pub(super) fn remote_repo_base_urls(game_id: &str) -> Vec<String> {
+pub(super) fn remote_repo_base_urls(game_id: &str) -> Vec<(String, Option<String>)> {
     remote_paths::depot_base_urls_for_game(game_id)
 }
 

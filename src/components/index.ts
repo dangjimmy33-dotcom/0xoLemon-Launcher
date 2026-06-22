@@ -1,5 +1,6 @@
 export { CustomTitleBar } from './CustomTitleBar'
 export { LaunchSplash } from './LaunchSplash'
+export { IntroScreen } from './IntroScreen'
 export { ActiveView } from './ActiveView'
 export { Sidebar } from './layout'
 export { StoreLibraryView, OperationHero } from './library'

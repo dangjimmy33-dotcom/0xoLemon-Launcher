@@ -28,7 +28,7 @@ use crate::launch::{
     GameLaunchConfig, ResolvedGameLaunchConfig,
 };
 use crate::manifest::{
-    Catalog, ChunkCodec, ChunkRef, FileEntry, VersionManifest, FORMAT_VERSION,
+    Catalog, CatalogVersion, ChunkCodec, ChunkRef, FileEntry, VersionManifest, FORMAT_VERSION,
     LEGACY_FORMAT_VERSION,
 };
 use crate::scanner::safe_join;
@@ -2373,7 +2373,15 @@ impl DepotSource {
             let path = PathBuf::from(r"E:\007Launcher\depot").join(&game_id);
             path.exists().then_some(path)
         };
-        let mut base_urls = remote_repo_base_urls(&game_id);
+        let base_urls_with_tokens = remote_repo_base_urls(&game_id);
+        let mut extracted_token = None;
+        let mut base_urls = Vec::new();
+        for (url, token) in base_urls_with_tokens {
+            if extracted_token.is_none() && token.is_some() {
+                extracted_token = token;
+            }
+            base_urls.push(url);
+        }
         if is_default {
             if let Ok(legacy_base) = env::var("FIRST_LIGHT_DEPOT_BASE") {
                 let legacy_base = legacy_base.trim().trim_end_matches('/');
@@ -2389,9 +2397,11 @@ impl DepotSource {
             game_id,
             base_urls,
             active_base_url: Arc::new(Mutex::new(None)),
-            token: env::var("FIRST_LIGHT_HF_TOKEN")
-                .ok()
-                .or_else(|| env::var("HF_TOKEN").ok()),
+            token: extracted_token.or_else(|| {
+                env::var("FIRST_LIGHT_HF_TOKEN")
+                    .or_else(|_| env::var("HF_TOKEN"))
+                    .ok()
+            }),
             local_root,
             client: OnceLock::new(),
             rate_coordinator: Arc::new(RateCoordinator::default()),
@@ -2557,10 +2567,7 @@ impl DepotSource {
             .local_root
             .as_ref()
             .ok_or_else(|| JobError::Depot("local depot is not configured".to_string()))?;
-        let path = catalog
-            .versions
-            .iter()
-            .find(|entry| entry.version == version)
+        let path = find_catalog_version_entry(catalog, version)
             .map(|entry| entry.manifest_path.as_str())
             .ok_or_else(|| JobError::Depot(format!("version not found in catalog: {version}")))?;
         let bytes = fs::read(root.join(relative_to_path(path)))?;
@@ -2570,10 +2577,7 @@ impl DepotSource {
     }
 
     fn load_manifest(&self, catalog: &Catalog, version: &str) -> Result<VersionManifest, JobError> {
-        let path = catalog
-            .versions
-            .iter()
-            .find(|entry| entry.version == version)
+        let path = find_catalog_version_entry(catalog, version)
             .map(|entry| entry.manifest_path.as_str())
             .ok_or_else(|| JobError::Depot(format!("version not found in catalog: {version}")))?;
         let manifest: VersionManifest = self.load_json(path)?;
@@ -3392,10 +3396,89 @@ fn catalog_versions(catalog: Option<&Catalog>) -> Vec<String> {
 }
 
 fn catalog_has_version(catalog: &Catalog, version: &str) -> bool {
-    catalog
+    find_catalog_version_entry(catalog, version).is_some()
+}
+
+fn find_catalog_version_entry<'a>(
+    catalog: &'a Catalog,
+    requested_version: &str,
+) -> Option<&'a CatalogVersion> {
+    let requested = requested_version.trim();
+    if requested.is_empty() {
+        return None;
+    }
+
+    if let Some(exact) = catalog
         .versions
         .iter()
-        .any(|entry| entry.version == version)
+        .find(|entry| entry.version == requested)
+    {
+        return Some(exact);
+    }
+
+    // Firestore is the user-facing source of truth, while legacy depot catalogs
+    // can still carry accidental suffixes in their version label. Among Us was
+    // published as `v17.4I` in the remote catalog while Firestore correctly
+    // exposes `v17.4`. We only use this relaxed match after exact lookup fails,
+    // and only when it is unique, so labels like `v1.0-beta` and `v1.0-hotfix`
+    // never collapse into an arbitrary target.
+    let requested_key = version_numeric_core(requested)?;
+    let mut matches = catalog.versions.iter().filter(|entry| {
+        version_numeric_core(&entry.version).as_deref() == Some(requested_key.as_str())
+    });
+
+    let first = matches.next()?;
+    if matches.next().is_some() {
+        return None;
+    }
+
+    Some(first)
+}
+
+fn version_numeric_core(version: &str) -> Option<String> {
+    let mut value = version.trim().to_ascii_lowercase();
+    if let Some(stripped) = value.strip_prefix('v') {
+        value = stripped.to_string();
+    }
+
+    let mut result = String::new();
+    let mut saw_digit = false;
+    let mut last_was_separator = false;
+
+    for ch in value.chars() {
+        if ch.is_ascii_digit() {
+            result.push(ch);
+            saw_digit = true;
+            last_was_separator = false;
+            continue;
+        }
+
+        if saw_digit && matches!(ch, '.' | '-' | '_') {
+            if !last_was_separator {
+                result.push(ch);
+                last_was_separator = true;
+            }
+            continue;
+        }
+
+        if saw_digit {
+            break;
+        }
+
+        if !ch.is_whitespace() {
+            return None;
+        }
+    }
+
+    while result.ends_with(['.', '-', '_']) {
+        result.pop();
+    }
+
+    if saw_digit && !result.is_empty() {
+        Some(result)
+    } else {
+        None
+    }
 }
 
 fn resolve_target_version(
@@ -4834,5 +4917,48 @@ mod downloader_v2_tests {
         assert!(time_in_update_window(2 * 60, "22:00", "04:00"));
         assert!(!time_in_update_window(12 * 60, "22:00", "04:00"));
         assert!(time_in_update_window(12 * 60, "00:00", "00:00"));
+    }
+
+    #[test]
+    fn catalog_version_lookup_accepts_unique_legacy_suffix_alias() {
+        let catalog = test_catalog(&["v17.4I"]);
+        let entry = find_catalog_version_entry(&catalog, "v17.4")
+            .expect("Firestore version should resolve to legacy depot label");
+
+        assert_eq!(entry.version, "v17.4I");
+        assert_eq!(
+            resolve_target_version(&catalog, Some("v17.4".to_string())).unwrap(),
+            "v17.4"
+        );
+        assert!(catalog_has_version(&catalog, "v17.4"));
+    }
+
+    #[test]
+    fn catalog_version_lookup_rejects_ambiguous_suffix_aliases() {
+        let catalog = test_catalog(&["v1.0-beta", "v1.0-hotfix"]);
+
+        assert!(find_catalog_version_entry(&catalog, "v1.0").is_none());
+        assert!(resolve_target_version(&catalog, Some("v1.0".to_string())).is_err());
+    }
+
+    fn test_catalog(versions: &[&str]) -> Catalog {
+        Catalog {
+            format_version: LEGACY_FORMAT_VERSION,
+            game_id: "among-us".to_string(),
+            latest_version: versions.last().map(|value| value.to_string()),
+            versions: versions
+                .iter()
+                .map(|version| CatalogVersion {
+                    version: (*version).to_string(),
+                    manifest_path: format!("versions/{version}/manifest.json"),
+                    total_size: 0,
+                    file_count: 0,
+                    chunk_count: 0,
+                    created_at: "2026-06-22T00:00:00Z".to_string(),
+                })
+                .collect(),
+            packs: Vec::new(),
+            signature: None,
+        }
     }
 }

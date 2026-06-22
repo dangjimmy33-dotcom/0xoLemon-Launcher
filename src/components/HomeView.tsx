@@ -17,12 +17,13 @@ import type {
   GameCatalog,
   GameInstallState,
   GameRuntimeState,
+  GameSummary,
   JobJournal,
   LauncherUpdateInfo,
   LauncherUpdateProgress,
   TabId,
 } from '../types'
-
+import { useRealtimeConfig } from '../hooks/useRealtimeConfig'
 type HomePreferences = {
   showContinuePlaying: boolean
   showRecentGames: boolean
@@ -82,7 +83,16 @@ export function HomeView({
       }),
     [installedGames, runtimeByGame],
   )
-  const heroGames = recentGames.length > 0 ? recentGames : installedGames
+  const realtimeConfig = useRealtimeConfig()
+
+  const featuredGames = useMemo(() => {
+    if (!realtimeConfig.featuredGames || realtimeConfig.featuredGames.length === 0) return null
+    return realtimeConfig.featuredGames
+      .map((id) => catalog.games.find((g) => g.id === id))
+      .filter((g): g is GameSummary => g != null)
+  }, [realtimeConfig.featuredGames, catalog.games])
+
+  const heroGames = featuredGames ?? (recentGames.length > 0 ? recentGames : installedGames)
   const [heroIndex, setHeroIndex] = useState(0)
   const [carouselPaused, setCarouselPaused] = useState(false)
   const resolvedHeroIndex = heroGames.length > 0 ? heroIndex % heroGames.length : 0

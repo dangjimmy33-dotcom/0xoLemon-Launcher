@@ -67,6 +67,7 @@ import {
   InstallOptionsDialog,
   LaunchOptionsModal,
   LaunchSplash,
+  IntroScreen,
   NotificationToasts,
   Onboarding,
   OperationHero,
@@ -110,9 +111,14 @@ const defaultLauncherSettings: LauncherSettings = {
 }
 
 import { useRealtimeGameTags } from './hooks/useRealtimeGameTags'
+import { useFirestoreCatalog } from './hooks/useFirestoreCatalog'
+import { useRealtimeAssets } from './hooks/useRealtimeAssets'
+import { useFirestoreDetail } from './hooks/useFirestoreDetail'
 
 export default function App() {
   useRealtimeGameTags()
+  const assetOverrideVersion = useRealtimeAssets()
+  const firestoreCatalog = useFirestoreCatalog(assetOverrideVersion)
   const [snapshot, setSnapshot] = useState<Snapshot>(fallbackSnapshot)
   const [job, setJob] = useState<JobJournal | null>(fallbackSnapshot.lastJob)
   const [installPath, setInstallPath] = useState('')
@@ -149,6 +155,9 @@ export default function App() {
   const [downloadRate, setDownloadRate] = useState(0)
   const [verifyStatus, setVerifyStatus] = useState<VerifyUiStatus | null>(null)
   const [launchSplash, setLaunchSplash] = useState<LaunchSplashState | null>(null)
+  const [showIntro, setShowIntro] = useState(true)
+  // introExiting: true when exit animation starts (gate should be visible)
+  const [introExiting, setIntroExiting] = useState(false)
   const [launchOptions, setLaunchOptions] = useState<ResolvedGameLaunchConfig | null>(null)
   const [launcherUpdate, setLauncherUpdate] = useState<LauncherUpdateInfo | null>(null)
   const [launcherUpdateProgress, setLauncherUpdateProgress] = useState<LauncherUpdateProgress | null>(null)
@@ -198,6 +207,14 @@ export default function App() {
   useEffect(() => {
     assetUrlsRef.current = assetUrls
   }, [assetUrls])
+
+  // Show window (small, centered) as soon as app mounts — before auth check
+  useEffect(() => {
+    if (!isTauriRuntime()) return
+    import('@tauri-apps/api/window').then((m) => {
+      m.getCurrentWindow().show().catch(() => {})
+    })
+  }, [])
 
   useEffect(() => {
     catalogRef.current = catalog
@@ -318,7 +335,9 @@ export default function App() {
     }
   }, [])
 
+  // Only run Discord auth check after intro starts exiting (2400ms)
   useEffect(() => {
+    if (!introExiting) return
     void refreshDiscordAccess(true)
     if (!isTauriRuntime()) return
     const interval = window.setInterval(() => void refreshDiscordAccess(true), 10 * 60_000)
@@ -328,7 +347,7 @@ export default function App() {
       window.clearInterval(interval)
       window.removeEventListener('focus', handleFocus)
     }
-  }, [refreshDiscordAccess])
+  }, [introExiting, refreshDiscordAccess])
 
   const upsertNotification = useCallback((record: NotificationRecord) => {
     setNotifications((current) => {
@@ -657,7 +676,11 @@ export default function App() {
     queueMicrotask(() => setCatalogLoadState('loading'))
     try {
       const next = await invoke<GameCatalog>('get_game_catalog')
-      setCatalog(next)
+      // If the local .0xo pack returns no games, use Firestore catalog as source
+      // (Firestore catalog is loaded separately via useFirestoreCatalog hook)
+      if (next.games.length > 0) {
+        setCatalog(next)
+      }
       setCatalogLoadState('ready')
     } catch (error) {
       console.error('Unable to load the game catalog:', error)
@@ -687,6 +710,21 @@ export default function App() {
       setSteamSettingsStatus(`Steam status failed: ${String(error)}`)
     }
   }, [])
+
+  // Sync Firestore catalog into local state when it arrives
+  useEffect(() => {
+    if (firestoreCatalog && firestoreCatalog.games.length > 0) {
+      setCatalog((prev) => {
+        // Local .0xo games take priority; Firestore fills in what's missing
+        const localIds = new Set(prev.games.map((g) => g.id))
+        const merged = [
+          ...prev.games,
+          ...firestoreCatalog.games.filter((g) => !localIds.has(g.id)),
+        ]
+        return { ...firestoreCatalog, games: merged }
+      })
+    }
+  }, [firestoreCatalog])
 
   useEffect(() => {
     queueMicrotask(() => void loadCatalog())
@@ -927,7 +965,21 @@ export default function App() {
     () => (effectiveGameId ? catalog.games.find((game) => game.id === effectiveGameId) ?? null : null),
     [catalog.games, effectiveGameId],
   )
-  const activeDetail = detail?.gameId === effectiveGameId ? detail : null
+  // Firestore detail — used when local .0xo pack is absent (metadataSource === 'preview')
+  const firestoreDetail = useFirestoreDetail(effectiveGameId)
+
+  const activeDetail = useMemo(() => {
+    const local = detail?.gameId === effectiveGameId ? detail : null
+    // Prefer Firestore detail when local is only the preview stub
+    if (
+      (!local || local.metadataSource === 'preview') &&
+      firestoreDetail?.gameId === effectiveGameId
+    ) {
+      return firestoreDetail
+    }
+    return local
+  }, [detail, firestoreDetail, effectiveGameId])
+
 
   useEffect(() => {
     if (!isTauriRuntime()) {
@@ -2573,6 +2625,12 @@ export default function App() {
 
   return (
     <MotionConfig reducedMotion={reducedMotion ? 'always' : 'never'}>
+    {showIntro && (
+      <IntroScreen
+        onExiting={() => setIntroExiting(true)}
+        onDone={() => setShowIntro(false)}
+      />
+    )}
     <div
       className={[
         'app-root',
@@ -3027,14 +3085,17 @@ export default function App() {
           </section>
         </div>
       ) : null}
-      <DiscordAccessGate
-        status={discordAuth}
-        busy={discordAuthBusy}
-        onLogin={() => void loginDiscord()}
-        onRefresh={() => void refreshDiscordAccess(true)}
-        onJoinServer={() => void openUrl(discordAuth.guildInvite)}
-        onLogout={() => void executeLogoutDiscord()}
-      />
+      {/* Gate hidden until intro exit animation starts (introExiting=true at 2400ms) */}
+      <div style={!introExiting ? { visibility: 'hidden', pointerEvents: 'none' } : undefined}>
+        <DiscordAccessGate
+          status={discordAuth}
+          busy={discordAuthBusy}
+          onLogin={() => void loginDiscord()}
+          onRefresh={() => void refreshDiscordAccess(true)}
+          onJoinServer={() => void openUrl(discordAuth.guildInvite)}
+          onLogout={() => void executeLogoutDiscord()}
+        />
+      </div>
       {discordAuth.state === 'authorized' && discordAuth.user ? (
         <FirebaseRemoteControl
           user={discordAuth.user}

@@ -9,7 +9,7 @@ import { formatBytes } from '../lib/format'
 import { getGameTags, gameHasTag } from '../lib/gameTags'
 import { GameDetailsPanel, InstallSummaryPanel } from './panels'
 import { CloudSavePanel } from './CloudSavePanel'
-
+import { useRealtimeConfig } from '../hooks/useRealtimeConfig'
 
 function LazyGameCardImage({
   game,
@@ -234,6 +234,7 @@ export function StoreLibraryView({
 }) {
   const [query, setQuery] = useState('')
   const [tutorialVisible, setTutorialVisible] = useState(false)
+  const realtimeConfig = useRealtimeConfig()
 
   useEffect(() => {
     if (selectedGame && selectedInstallState?.installed && selectedGame.id.includes('among')) {
@@ -413,6 +414,8 @@ export function StoreLibraryView({
   const gridAsset = assetUrlForId(selectedGame.gridAssetId, assets)
   const iconAsset = assetUrlForId(selectedGame.iconAssetId, assets)
 
+  const livePlayers = realtimeConfig.livePlayerCount?.[selectedGame.id]
+
   return (
     <section className="game-detail-view">
       {/* ── Sticky Floating Bar ── */}
@@ -426,7 +429,7 @@ export function StoreLibraryView({
         )}
         <div className="sticky-bar-info">
           <strong>{detail.title}</strong>
-          <span>{displayedVersion} (Build 23244517)</span>
+          <span>{displayedVersion} (Build 23244517) {livePlayers !== undefined ? `• ${livePlayers.toLocaleString()} Playing` : ''}</span>
         </div>
         <div className="sticky-bar-actions">
           {installed && selectedGame?.id.includes('among') && (
@@ -493,6 +496,7 @@ export function StoreLibraryView({
               <span>Version {displayedVersion} (Build 23244517)</span>
               <span>{formatBytes(downloadSize)}</span>
               {detail.install.supportsResume ? <span>{t.library.resumeSupported}</span> : null}
+              {livePlayers !== undefined ? <span className="live-players-badge"><span className="pulse-dot"></span>{livePlayers.toLocaleString()} Online</span> : null}
             </div>
           </div>
           <div className="store-action-dock" ref={actionDockRef}>
@@ -750,14 +754,26 @@ export function MediaRail({ detail, assets }: { detail: GameDetail; assets: Reco
   const videoThumbMap = useMemo(() => {
     const map: Record<string, string> = {}
     for (const item of detail.media) {
-      if (item.role === 'video-thumb' && assetUrlForId(item.assetId, assets)) {
-        // item.id is like "movie-thumb-00", derive video id "movie-00"
-        const videoId = item.id.replace('movie-thumb-', 'movie-')
-        map[videoId] = assetUrlForId(item.assetId, assets)!
-      }
+      // Handle all possible thumbnail role names (Firestore may use any of these)
+      const isThumbRole =
+        item.role === 'video-thumb' ||
+        item.role === 'video-thumbnail' ||
+        item.role === 'video-poster'
+      const url = isThumbRole ? assetUrlForId(item.assetId, assets) : undefined
+      if (!url) continue
+      // Derive the video id from the thumb id:
+      //   "movie-thumb-0"     → "movie-0"
+      //   "movie-thumbnail-0" → "movie-0"
+      //   "movie-poster-0"    → "movie-0"
+      const videoId = item.id
+        .replace(/^movie-thumb-/, 'movie-')
+        .replace(/^movie-thumbnail-/, 'movie-')
+        .replace(/^movie-poster-/, 'movie-')
+      if (!map[videoId]) map[videoId] = url  // first wins
     }
     return map
   }, [detail.media, assets])
+
 
   const media = detail.media
     .filter((item) => isCarouselMedia(item) && assetUrlForId(item.assetId, assets))
