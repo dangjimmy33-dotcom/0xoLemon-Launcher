@@ -38,7 +38,9 @@ Write-Host "Bumped version to $newVersion" -ForegroundColor Yellow
 # Need to update tauri.conf.json manually since npm version doesn't touch it automatically
 $tauriConf = Get-Content "src-tauri\tauri.conf.json" | ConvertFrom-Json
 $tauriConf.version = $newVersion.Replace("v", "")
-$tauriConf | ConvertTo-Json -Depth 10 | Set-Content "src-tauri\tauri.conf.json"
+$tauriJson = $tauriConf | ConvertTo-Json -Depth 20
+[System.IO.File]::WriteAllText("$PWD\src-tauri\tauri.conf.json", $tauriJson, [System.Text.UTF8Encoding]::new($false))
+
 
 git add src-tauri\tauri.conf.json
 git commit --amend --no-edit
