@@ -395,7 +395,7 @@ export function StoreLibraryView({
     primaryDisabled = !canUpdate
   }
 
-  const primaryActionBtn = !installed ? (!isTauriRuntime() ? () => window.alert('To remote install this game, please enter the 6-digit pairing code shown on your PC launcher.') : onOpenInstallOptions) : onPlay
+  const primaryActionBtn = !installed ? onOpenInstallOptions : onPlay
   const primaryIcon = isPlaying
     ? <Play size={17} />
     : isDownloading
