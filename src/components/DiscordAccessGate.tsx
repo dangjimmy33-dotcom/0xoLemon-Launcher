@@ -178,7 +178,7 @@ export function DiscordAccessGate({
                 Sign out
               </button>
             </>
-          ) : tooYoung ? (
+          ) : tooYoung || noRole ? (
             <>
               <button type="button" className="discord-secondary" disabled={busy} onClick={onRefresh}>
                 <RefreshCw size={16} className={busy ? 'is-spinning' : ''} />
