@@ -116,6 +116,7 @@ import { useRealtimeGameTags } from './hooks/useRealtimeGameTags'
 import { useFirestoreCatalog } from './hooks/useFirestoreCatalog'
 import { useRealtimeAssets } from './hooks/useRealtimeAssets'
 import { useFirestoreDetail } from './hooks/useFirestoreDetail'
+import { useScrollReveal } from './hooks/useScrollReveal'
 
 export default function App() {
   useEffect(() => {
@@ -127,8 +128,10 @@ export default function App() {
         wrapper,
         content: wrapper,
         duration: 1.2,
-        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), 
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       })
+      // Expose globally so modals can call lenis.stop() / lenis.start()
+      ;(window as unknown as Record<string, unknown>).__lenis = lenis
       function raf(time: number) {
         lenis?.raf(time)
         requestAnimationFrame(raf)
@@ -138,8 +141,13 @@ export default function App() {
     return () => {
       clearTimeout(timer)
       lenis?.destroy()
+      ;(window as unknown as Record<string, unknown>).__lenis = null
     }
   }, [])
+
+
+  // Google Antigravity–style scroll reveal (fade+slide on scroll into view)
+  useScrollReveal()
 
   useRealtimeGameTags()
   const assetOverrideVersion = useRealtimeAssets()
@@ -995,13 +1003,29 @@ export default function App() {
 
   const activeDetail = useMemo(() => {
     const local = detail?.gameId === effectiveGameId ? detail : null
-    // Prefer Firestore detail when local is only the preview stub
-    if (
-      (!local || local.metadataSource === 'preview') &&
-      firestoreDetail?.gameId === effectiveGameId
-    ) {
-      return firestoreDetail
+    const firestore = firestoreDetail?.gameId === effectiveGameId ? firestoreDetail : null
+
+    // If local is missing or is the web preview stub → use Firestore entirely
+    if (!local || local.metadataSource === 'preview') {
+      return firestore ?? local
     }
+
+    // Local is a full pack — but Firestore may have richer fields (achievements, media, genres).
+    // Deep-merge: fill in empty arrays from Firestore so the UI is always as complete as possible.
+    if (firestore) {
+      return {
+        ...local,
+        achievements:  local.achievements?.length  ? local.achievements  : (firestore.achievements  ?? []),
+        media:         local.media?.length          ? local.media         : (firestore.media         ?? []),
+        genres:        local.genres?.length         ? local.genres        : (firestore.genres        ?? []),
+        categories:    local.categories?.length     ? local.categories    : (firestore.categories    ?? []),
+        ratings:       local.ratings?.length        ? local.ratings       : (firestore.ratings       ?? []),
+        shortDescription: local.shortDescription || firestore.shortDescription,
+        detailedDescription: local.detailedDescription || firestore.detailedDescription,
+        releaseDate: local.releaseDate || firestore.releaseDate,
+      }
+    }
+
     return local
   }, [detail, firestoreDetail, effectiveGameId])
 
@@ -2740,6 +2764,7 @@ export default function App() {
           />
         ) : null}
 
+        <div key={activeTab} className={reducedMotion ? undefined : 'tab-enter'}>
         {activeTab === 'Home' ? (
           <HomeView
             catalog={catalog}
@@ -2882,6 +2907,7 @@ export default function App() {
           onClearCache={() => void clearLauncherCache()}
         />
         )}
+        </div>
         {showInstallOptions && selectedGame && activeDetail ? (
           <InstallOptionsDialog
             detail={activeDetail}

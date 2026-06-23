@@ -217,23 +217,22 @@ export function HomeView({
 
       {preferences.showRecentGames ? (
             <motion.section
-              className="home-section"
+              className="home-section reveal"
               initial={reducedMotion ? false : { opacity: 0, y: 12 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.2 }}
             >
-              <div className="home-section-heading">
+              <div className="home-section-heading reveal-clip">
                 <h2>Recent games</h2>
                 <span>{installedGames.length} installed</span>
               </div>
               {recentGames.length > 0 ? (
-                <div className="home-game-rail">
+                <div className="home-game-rail stagger-children">
                   {recentGames.slice(0, 8).map((game) => (
                     <motion.button
                       type="button"
-                      className="home-game-card"
+                      className="home-game-card reveal-scale"
                       key={game.id}
-                      whileHover={reducedMotion ? undefined : { y: -5 }}
                       transition={MOTION.micro}
                       onClick={() => onOpenGame(game.id)}
                     >
@@ -257,7 +256,7 @@ export function HomeView({
       <div className="home-bottom-cards">
           {preferences.showActiveTasks ? (
             <motion.section
-              className="home-side-card active-task-card"
+              className="home-side-card active-task-card reveal-left"
               initial={reducedMotion ? false : { opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
             >
@@ -301,7 +300,7 @@ export function HomeView({
           ) : null}
 
           {preferences.showDonateCard ? (
-            <motion.section className="home-side-card donate-card" whileHover={reducedMotion ? undefined : { y: -3 }}>
+            <motion.section className="home-side-card donate-card reveal-left shimmer-card" whileHover={reducedMotion ? undefined : { y: -3 }}>
               <img src={donateImage} alt="" />
               <div>
                 <h2>Support development</h2>
@@ -313,7 +312,7 @@ export function HomeView({
             </motion.section>
           ) : null}
 
-          <section className="home-side-card cloud-glance-card">
+          <section className="home-side-card cloud-glance-card reveal-left shimmer-card">
             <Cloud size={18} />
             <div>
               <h2>Cloud Saves</h2>

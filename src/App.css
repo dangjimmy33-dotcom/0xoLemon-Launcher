@@ -2361,6 +2361,63 @@ button:disabled {
   padding: 24px;
   background: rgba(0, 0, 0, 0.62);
   backdrop-filter: blur(10px);
+  /* GTA6: animate the backdrop in */
+  animation: backdrop-enter 280ms var(--ease-out-quart, cubic-bezier(.165, .84, .44, 1)) both;
+}
+
+@keyframes backdrop-enter {
+  from { opacity: 0; backdrop-filter: blur(0px); }
+  to   { opacity: 1; backdrop-filter: blur(10px); }
+}
+
+/* GTA6-style scale + fade entrance for modals */
+@keyframes modal-scale-in {
+  from { opacity: 0; transform: scale(0.95) translateY(8px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0); }
+}
+
+.achievement-modal--enter {
+  animation: modal-scale-in 280ms var(--ease-out-expo, cubic-bezier(.19, 1, .22, 1)) both;
+  /* no will-change — avoids stacking context that breaks layout */
+}
+
+/* GTA6 diagonal shimmer sweep — applied to achievement articles on hover */
+.achievement-all-grid article {
+  position: relative;
+  overflow: hidden;
+  transition: border-color 200ms ease, background 200ms ease;
+}
+
+.achievement-all-grid article::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.06) 40%,
+    rgba(255, 255, 255, 0.12) 50%,
+    rgba(255, 255, 255, 0.06) 60%,
+    transparent 100%
+  );
+  transform: translateX(-150%);
+  transition: transform 0ms;
+  pointer-events: none;
+}
+
+.achievement-all-grid article:hover::after {
+  transform: translateX(150%);
+  transition: transform 520ms var(--ease-out-expo, cubic-bezier(.19, 1, .22, 1));
+}
+
+.achievement-all-grid article:hover {
+  border-color: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* Lock body scroll when workspace is scroll-locked by a modal */
+.workspace[data-scroll-locked] {
+  overflow: hidden !important;
 }
 
 .install-modal {

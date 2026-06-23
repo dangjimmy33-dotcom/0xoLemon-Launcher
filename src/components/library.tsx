@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { invoke } from '@tauri-apps/api/core'
 import { BookOpen, CheckCircle2, ChevronLeft, ChevronRight, CircleAlert, Download, FolderOpen, HardDrive, Image as ImageIcon, Library, Play, RefreshCcw, Search, ShieldCheck, ShoppingBag, Trophy, X } from 'lucide-react'
 import { TutorialModal } from './TutorialModal'
@@ -638,7 +639,6 @@ export function StoreLibraryView({
     </section>
   )
 }
-
 export function OperationHero({
   game,
   detail,
@@ -879,6 +879,27 @@ export function AchievementPreview({
   const [showAll, setShowAll] = useState(false)
   const available = achievements.filter((achievement) => assetUrlForId(achievement.iconAssetId, assets))
   const preview = available.slice(0, 10)
+
+  // KHẮC PHỤC CẢNH BÁO LỖI 'any': Định nghĩa kiểu dữ liệu chuẩn cho Lenis
+  useEffect(() => {
+    interface LenisWindow {
+      __lenis?: {
+        stop: () => void
+        start: () => void
+      }
+    }
+    const lenis = (window as unknown as LenisWindow).__lenis
+    
+    if (showAll) {
+      lenis?.stop()
+    } else {
+      lenis?.start()
+    }
+    return () => {
+      lenis?.start()
+    }
+  }, [showAll])
+
   if (available.length === 0) {
     return null
   }
@@ -889,13 +910,16 @@ export function AchievementPreview({
         <strong>{t.library.achievements}</strong>
         <div className="achievement-header-actions">
           <small>{achievements.length} total</small>
-          <button type="button" onClick={() => setShowAll(true)}>
+          {/* Thêm aria-label để sửa cảnh báo vàng của ESLint */}
+          <button type="button" aria-label="See all achievements" onClick={() => setShowAll(true)}>
             <Trophy size={15} />
             See all
           </button>
         </div>
       </header>
-      <div className="achievement-grid">
+
+      {/* SỬA LỖI ĐÈ/CHỒNG CHÉO: Thêm gridAutoRows: 'max-content' */}
+      <div className="achievement-grid" style={{ gridAutoRows: 'max-content' }}>
         {preview.map((achievement) => (
           <article key={achievement.id}>
             <img src={assetUrlForId(achievement.iconAssetId, assets)} alt="" loading="lazy" />
@@ -906,19 +930,24 @@ export function AchievementPreview({
           </article>
         ))}
       </div>
-      {showAll ? (
-        <div className="dialog-backdrop" role="presentation" onClick={() => setShowAll(false)}>
-          <section className="achievement-modal" role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
+
+      {/* Dùng createPortal đẩy popup ra ngoài cùng <body> */}
+      {/* Thêm dấu chấm than (!) vào document.body! để báo cho TS biết nó chắc chắn tồn tại */}
+      {showAll && typeof document !== 'undefined' ? createPortal(
+        <div className="dialog-backdrop" style={{ zIndex: 99999 }} role="presentation" onClick={() => setShowAll(false)}>
+          <section className="achievement-modal achievement-modal--enter" role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
             <header>
               <div>
                 <strong>{t.library.achievements}</strong>
                 <span>{available.length} achievement entries</span>
               </div>
-              <button type="button" onClick={() => setShowAll(false)}>
+              <button type="button" aria-label="Close" onClick={() => setShowAll(false)}>
                 <X size={17} />
               </button>
             </header>
-            <div className="achievement-all-grid">
+            
+            {/* SỬA LỖI ĐÈ/CHỒNG CHÉO: Thêm style={{ gridAutoRows: 'max-content' }} */}
+            <div className="achievement-all-grid" data-lenis-prevent="true" style={{ gridAutoRows: 'max-content' }}>
               {available.map((achievement) => (
                 <article key={achievement.id}>
                   <img src={assetUrlForId(achievement.iconAssetId, assets)} alt="" loading="lazy" />
@@ -930,7 +959,8 @@ export function AchievementPreview({
               ))}
             </div>
           </section>
-        </div>
+        </div>,
+        document.body!
       ) : null}
     </section>
   )

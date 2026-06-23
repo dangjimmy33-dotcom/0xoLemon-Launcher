@@ -7,6 +7,17 @@
   --premium-gold-soft: rgba(227, 181, 95, 0.15);
   --premium-blue: #70a8ff;
   --premium-shadow: 0 24px 70px rgba(0, 0, 0, 0.48);
+
+  /* ── Google Antigravity easing curves ── */
+  --ease-out-quad:   cubic-bezier(.25,  .46, .45, .94);
+  --ease-out-cubic:  cubic-bezier(.215, .61, .355, 1);
+  --ease-out-quart:  cubic-bezier(.165, .84, .44, 1);
+  --ease-out-quint:  cubic-bezier(.23,  1,   .32, 1);
+  --ease-out-expo:   cubic-bezier(.19,  1,   .22, 1);
+  --ease-out-circ:   cubic-bezier(.075, .82, .165, 1);
+  --ease-out-back:   cubic-bezier(.34,  1.85, .64, 1);
+  --ease-in-out-quart: cubic-bezier(.77, 0,  .175, 1);
+  --ease-in-out-expo:  cubic-bezier(1,   0,  0,   1);
 }
 
 .app-root {
@@ -907,11 +918,23 @@
   background: rgba(255, 255, 255, 0.022);
   text-align: left;
   cursor: pointer;
+  transition:
+    transform 380ms var(--ease-out-expo, cubic-bezier(.19, 1, .22, 1)),
+    border-color 220ms ease,
+    background 220ms ease,
+    box-shadow 380ms var(--ease-out-expo, cubic-bezier(.19, 1, .22, 1));
 }
 
 .home-game-card:hover {
   border-color: rgba(227, 181, 95, 0.24);
   background: rgba(255, 255, 255, 0.04);
+  transform: translateY(-4px) scale(1.018);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(227, 181, 95, 0.12);
+}
+
+.home-game-card:active {
+  transform: translateY(-1px) scale(1.006);
+  transition-duration: 80ms;
 }
 
 .home-game-card > img,
@@ -2442,4 +2465,369 @@ html, body, #root {
 .tray-menu-item.danger:hover {
   background: rgba(237, 66, 69, 0.15);
   color: #ff6b6e;
+}
+
+/* ═══════════════════════════════════════════════════════
+   GOOGLE ANTIGRAVITY – SCROLL REVEAL SYSTEM
+   ═══════════════════════════════════════════════════════ */
+
+/* Base hidden state for scroll-reveal elements */
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition:
+    opacity 640ms var(--ease-out-expo, cubic-bezier(.19, 1, .22, 1)),
+    transform 640ms var(--ease-out-expo, cubic-bezier(.19, 1, .22, 1));
+}
+
+/* Variant: slide from left */
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-24px);
+  transition:
+    opacity 600ms var(--ease-out-expo, cubic-bezier(.19, 1, .22, 1)),
+    transform 600ms var(--ease-out-expo, cubic-bezier(.19, 1, .22, 1));
+}
+
+/* Variant: scale up */
+.reveal-scale {
+  opacity: 0;
+  transform: scale(0.95);
+  transition:
+    opacity 500ms var(--ease-out-quint, cubic-bezier(.23, 1, .32, 1)),
+    transform 500ms var(--ease-out-back, cubic-bezier(.34, 1.85, .64, 1));
+}
+
+/* Visible state (added via IntersectionObserver JS) */
+.reveal.is-visible,
+.reveal-left.is-visible,
+.reveal-scale.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Stagger delays for child items (e.g. game rail cards) */
+.stagger-children > *:nth-child(1) { transition-delay:  40ms; }
+.stagger-children > *:nth-child(2) { transition-delay:  90ms; }
+.stagger-children > *:nth-child(3) { transition-delay: 140ms; }
+.stagger-children > *:nth-child(4) { transition-delay: 190ms; }
+.stagger-children > *:nth-child(5) { transition-delay: 240ms; }
+.stagger-children > *:nth-child(6) { transition-delay: 290ms; }
+.stagger-children > *:nth-child(7) { transition-delay: 340ms; }
+.stagger-children > *:nth-child(8) { transition-delay: 390ms; }
+.stagger-children > *:nth-child(n+9) { transition-delay: 440ms; }
+
+/* Tab content transition */
+@keyframes tab-enter {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tab-enter {
+  animation: tab-enter 420ms var(--ease-out-expo, cubic-bezier(.19, 1, .22, 1)) both;
+}
+
+/* Settings section reveal */
+.settings-group {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 560ms var(--ease-out-expo, cubic-bezier(.19, 1, .22, 1)),
+    transform 560ms var(--ease-out-expo, cubic-bezier(.19, 1, .22, 1));
+}
+
+.settings-group.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Sidebar nav item hover micro-animation */
+.nav-item {
+  transition:
+    background 180ms ease,
+    color 180ms ease,
+    transform 200ms var(--ease-out-back, cubic-bezier(.34, 1.85, .64, 1));
+}
+
+.nav-item:hover {
+  transform: translateX(2px);
+}
+
+.nav-item.active {
+  transform: none;
+}
+
+/* Notification bell shake on new notification */
+@keyframes bell-shake {
+  0%   { transform: rotate(0deg); }
+  15%  { transform: rotate(12deg); }
+  30%  { transform: rotate(-10deg); }
+  45%  { transform: rotate(8deg); }
+  60%  { transform: rotate(-6deg); }
+  75%  { transform: rotate(4deg); }
+  90%  { transform: rotate(-2deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.titlebar-bell.has-shake {
+  animation: bell-shake 0.55s var(--ease-out-quint, cubic-bezier(.23, 1, .32, 1)) both;
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .reveal, .reveal-left, .reveal-scale,
+  .settings-group, .tab-enter,
+  .home-game-card {
+    transition: none !important;
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   ROCKSTAR / GTA6 ANIMATION SYSTEM
+   Source: rockstargames.com/VI
+   ═══════════════════════════════════════════════════════ */
+
+:root {
+  /* Rockstar signature easing — the "spring feel" */
+  --ease-rockstar:      cubic-bezier(.32, .72, 0, 1);
+  --ease-rockstar-out:  cubic-bezier(.19, 1, .22, 1);
+  --ease-rockstar-in:   cubic-bezier(.42, 0, .58, 1);
+  /* Rockstar timing tokens */
+  --dur-fast:    0.3s;
+  --dur-normal:  0.5s;
+  --dur-slow:    0.8s;
+  --dur-slower:  1.1s;
+}
+
+/* ── 1. CLIP-PATH SLIDE-UP REVEAL (Rockstar hero text style) ─ */
+@keyframes rstar-clip-up {
+  from {
+    clip-path: inset(100% 0 0 0);
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    clip-path: inset(0% 0 0 0);
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.reveal-clip {
+  opacity: 0;
+  clip-path: inset(100% 0 0 0);
+  transform: translateY(20px);
+  transition:
+    clip-path   var(--dur-slow) var(--ease-rockstar, cubic-bezier(.32, .72, 0, 1)),
+    opacity     var(--dur-slow) var(--ease-rockstar, cubic-bezier(.32, .72, 0, 1)),
+    transform   var(--dur-slow) var(--ease-rockstar, cubic-bezier(.32, .72, 0, 1));
+}
+
+.reveal-clip.is-visible {
+  opacity: 1;
+  clip-path: inset(0% 0 0 0);
+  transform: translateY(0);
+}
+
+/* ── 2. SCALE + FADE (GTA6 modal & card pattern) ─ */
+@keyframes rstar-scale-in {
+  from { opacity: 0; scale: 0.96; }
+  to   { opacity: 1; scale: 1; }
+}
+
+@keyframes rstar-scale-out {
+  from { opacity: 1; scale: 1; }
+  to   { opacity: 0; scale: 0.96; }
+}
+
+/* ── 3. DIAGONAL SHIMMER SWEEP (GTA6 card shine) ─ */
+@keyframes rstar-shimmer {
+  0%   { left: -60%; top: -60%; }
+  92%  { left: 110%; top: 110%; }
+  100% { left: 110%; top: 110%; opacity: 0; }
+}
+
+/* Apply shimmer to any .shimmer-card on hover */
+.shimmer-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer-card::before {
+  content: '';
+  position: absolute;
+  width: 40%;
+  height: 200%;
+  background: linear-gradient(
+    115deg,
+    transparent,
+    rgba(255, 255, 255, 0.07) 40%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0.07) 60%,
+    transparent
+  );
+  transform: rotate(25deg);
+  pointer-events: none;
+  opacity: 0;
+  top: -60%;
+  left: -60%;
+}
+
+.shimmer-card:hover::before {
+  animation: rstar-shimmer 700ms var(--ease-rockstar-out, cubic-bezier(.19, 1, .22, 1)) both;
+}
+
+/* ── 4. GRADIENT TEXT (GTA6 hero heading) ─ */
+.gradient-text {
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-image: radial-gradient(
+    circle at 50% -20%,
+    #ffd687 0%,
+    #e3b55f 35%,
+    #c8953f 65%,
+    #a8742a 100%
+  );
+  will-change: background-position;
+}
+
+/* ── 5. PARALLAX GLOW ORB (Rockstar background radial) ─ */
+.glow-orb {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: -3;
+  will-change: transform, opacity;
+  transform-origin: 50% 50%;
+  opacity: 0.4;
+  background: radial-gradient(50% 50% at 50% 50%, rgba(227, 181, 95, 0.18) 0%, transparent 100%);
+  border-radius: 100%;
+  width: 120vmax;
+  height: 120vmax;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -60%);
+  transition: transform 1.8s var(--ease-rockstar-out, cubic-bezier(.19, 1, .22, 1));
+}
+
+/* ── 6. SECTION HEADING WIPE-IN ─ */
+@keyframes rstar-wipe {
+  from { width: 0; }
+  to   { width: 100%; }
+}
+
+.heading-underline {
+  position: relative;
+  display: inline-block;
+}
+
+.heading-underline::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  height: 2px;
+  width: 0;
+  background: linear-gradient(90deg, var(--premium-gold), transparent);
+  border-radius: 2px;
+}
+
+.heading-underline.is-visible::after {
+  animation: rstar-wipe 600ms var(--ease-rockstar, cubic-bezier(.32, .72, 0, 1)) 200ms both;
+}
+
+/* ── 7. HOME SECTION HEADINGS — apply gradient + underline ─ */
+.home-section-heading h2 {
+  background-image: linear-gradient(
+    90deg,
+    #eef1f3 0%,
+    rgba(238, 241, 243, 0.7) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ── 8. OPERATION HERO BANNER — parallax depth ─ */
+.operation-hero-banner img,
+.hero-bg-image {
+  will-change: transform;
+  transition: transform 0.1s linear;
+}
+
+/* ── 9. HOME GAME CARD — enhanced with shimmer ─ */
+.home-game-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.home-game-card::before {
+  content: '';
+  position: absolute;
+  width: 40%;
+  height: 200%;
+  background: linear-gradient(
+    115deg,
+    transparent,
+    rgba(255, 255, 255, 0.06) 40%,
+    rgba(255, 255, 255, 0.12) 50%,
+    rgba(255, 255, 255, 0.06) 60%,
+    transparent
+  );
+  transform: rotate(25deg);
+  pointer-events: none;
+  opacity: 0;
+  top: -60%;
+  left: -60%;
+  z-index: 1;
+}
+
+.home-game-card:hover::before {
+  animation: rstar-shimmer 600ms var(--ease-rockstar-out, cubic-bezier(.19, 1, .22, 1)) both;
+}
+
+/* ── 11. SETTINGS SECTION REVEAL — delayed stagger ─ */
+.settings-section {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity     560ms var(--ease-rockstar, cubic-bezier(.32, .72, 0, 1)),
+    transform   560ms var(--ease-rockstar, cubic-bezier(.32, .72, 0, 1));
+}
+
+.settings-section.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* ── 12. APPLY reveal-clip to home-section-heading ─ */
+.home-section .home-section-heading {
+  overflow: hidden;
+}
+
+/* ── 13. Reduced motion — kill all Rockstar animations ─ */
+@media (prefers-reduced-motion: reduce) {
+  .reveal-clip,
+  .shimmer-card::before,
+  .home-game-card::before,
+  .heading-underline::after,
+  .glow-orb,
+  .settings-section {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    clip-path: none !important;
+    width: 100% !important;
+  }
 }

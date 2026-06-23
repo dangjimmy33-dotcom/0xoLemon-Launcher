@@ -15,14 +15,22 @@ export function useFirestoreDetail(gameId: string | null): GameDetail | null {
       setDetail(null)
       return
     }
+    console.log('[useFirestoreDetail] subscribing to gameDetails/', gameId)
     let mounted = true
     const unsub = onSnapshot(
       doc(db, 'gameDetails', gameId),
       (snap) => {
         if (!mounted) return
         if (snap.exists()) {
-          setDetail(snap.data() as GameDetail)
+          const data = snap.data() as GameDetail
+          console.log('[useFirestoreDetail] found doc for', gameId, {
+            achievements: data.achievements?.length ?? 0,
+            media: data.media?.length ?? 0,
+            metadataSource: data.metadataSource,
+          })
+          setDetail(data)
         } else {
+          console.warn('[useFirestoreDetail] NO document for gameId:', gameId)
           setDetail(null)
         }
       },

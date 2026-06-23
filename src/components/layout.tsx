@@ -81,7 +81,7 @@ export function TabEmptyState({
           <span>Choose a game to continue.</span>
         </div>
       </header>
-      <div className="tab-game-list">
+      <div className="tab-game-list stagger-children">
         {catalog.games.length === 0 ? (
           <div className="downloads-empty">
             <div className="queue-art">
@@ -98,7 +98,7 @@ export function TabEmptyState({
           </div>
         ) : (
           catalog.games.map((game) => (
-            <button className="tab-game-row" key={game.id} type="button" onClick={() => onSelectGame(game.id)}>
+            <button className="tab-game-row reveal" key={game.id} type="button" onClick={() => onSelectGame(game.id)}>
               {assets[game.gridAssetId] ? (
                 <img src={assets[game.gridAssetId]} alt="" />
               ) : (
