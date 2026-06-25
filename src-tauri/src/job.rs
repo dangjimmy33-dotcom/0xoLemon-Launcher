@@ -2615,12 +2615,23 @@ impl DepotSource {
         }
 
         let detail = if failures.is_empty() {
-            "no Hugging Face repository is configured".to_string()
+            "no download server is configured".to_string()
         } else {
-            failures.join(" | ")
+            // Sanitize URLs to not expose internal server details
+            let sanitized: Vec<String> = failures
+                .iter()
+                .map(|f| {
+                    if let Some(colon_pos) = f.find(": ") {
+                        format!("server error: {}", &f[colon_pos + 2..])
+                    } else {
+                        "server error: download failed".to_string()
+                    }
+                })
+                .collect();
+            sanitized.join(" | ")
         };
         Err(JobError::Depot(format!(
-            "unable to load {relative_path} from configured repositories: {detail}"
+            "unable to load {relative_path}: {detail}"
         )))
     }
 
@@ -2739,12 +2750,23 @@ impl DepotSource {
         }
 
         let detail = if failures.is_empty() {
-            "no Hugging Face repository is configured".to_string()
+            "no download server is configured".to_string()
         } else {
-            failures.join(" | ")
+            // Sanitize URLs to not expose internal server details
+            let sanitized: Vec<String> = failures
+                .iter()
+                .map(|f| {
+                    if let Some(colon_pos) = f.find(": ") {
+                        format!("server error: {}", &f[colon_pos + 2..])
+                    } else {
+                        "server error: download failed".to_string()
+                    }
+                })
+                .collect();
+            sanitized.join(" | ")
         };
         Err(JobError::Depot(format!(
-            "unable to download pack range for {pack_id}: {detail}"
+            "unable to download pack {pack_id}: {detail}"
         )))
     }
 

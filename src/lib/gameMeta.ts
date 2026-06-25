@@ -20,55 +20,55 @@ export function decodeRemoteAssetId(assetId: string) {
   }
 }
 
-let githubTreeCache: string[] | null = null;
+let githubTreeCache: string[] | null = null
 type GithubTreeEntry = { path?: string }
 
 async function resolveGithubAssetUrl(gameId: string, role: string): Promise<string | undefined> {
   if (!githubTreeCache) {
-     try {
-        const res = await fetch('https://api.github.com/repos/dangjimmy33-dotcom/0xoLemon-Launcher/git/trees/main?recursive=1');
-        if (!res.ok) return undefined;
-        const data = (await res.json()) as { tree?: GithubTreeEntry[] };
-        githubTreeCache = (data.tree ?? [])
-          .map((entry) => entry.path)
-          .filter((path): path is string => Boolean(path?.startsWith('src/assets/')));
-     } catch {
-        return undefined;
-     }
+    try {
+      const res = await fetch('https://api.github.com/repos/dangjimmy33-dotcom/0xoLemon-Launcher/git/trees/main?recursive=1')
+      if (!res.ok) return undefined
+      const data = (await res.json()) as { tree?: GithubTreeEntry[] }
+      githubTreeCache = (data.tree ?? [])
+        .map((entry) => entry.path)
+        .filter((path): path is string => Boolean(path?.startsWith('src/assets/')))
+    } catch {
+      return undefined
+    }
   }
-  
-  if (!githubTreeCache) return undefined;
-  
-  const targetSlug = gameId.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+  if (!githubTreeCache) return undefined
+
+  const targetSlug = gameId.toLowerCase().replace(/[^a-z0-9]/g, '')
   for (const path of githubTreeCache) {
-     const parts = path.split('/');
-     const folderName = parts[2];
-     if (!folderName) continue;
-     const folderSlug = folderName.toLowerCase().replace(/[^a-z0-9]/g, '');
-     if (folderSlug === targetSlug && path.toLowerCase().includes(role.toLowerCase())) {
-        return `https://raw.githubusercontent.com/dangjimmy33-dotcom/0xoLemon-Launcher/main/${encodeURI(path)}`;
-     }
+    const parts = path.split('/')
+    const folderName = parts[2]
+    if (!folderName) continue
+    const folderSlug = folderName.toLowerCase().replace(/[^a-z0-9]/g, '')
+    if (folderSlug === targetSlug && path.toLowerCase().includes(role.toLowerCase())) {
+      return `https://raw.githubusercontent.com/dangjimmy33-dotcom/0xoLemon-Launcher/main/${encodeURI(path)}`
+    }
   }
-  return undefined;
+  return undefined
 }
 
-const resolvedAssetUrls: Record<string, string> = {};
+const resolvedAssetUrls: Record<string, string> = {}
 
 export async function fetchWebAssetUrl(assetId: string): Promise<string | undefined> {
-  if (resolvedAssetUrls[assetId]) return resolvedAssetUrls[assetId];
-  if (!assetId.startsWith('asset:')) return undefined;
-  
-  const parts = assetId.slice(6).split('/');
-  if (parts.length < 2) return undefined;
-  const gameId = parts[0];
-  const role = parts.slice(1).join('/');
-  
-  const url = await resolveGithubAssetUrl(gameId, role);
+  if (resolvedAssetUrls[assetId]) return resolvedAssetUrls[assetId]
+  if (!assetId.startsWith('asset:')) return undefined
+
+  const parts = assetId.slice(6).split('/')
+  if (parts.length < 2) return undefined
+  const gameId = parts[0]
+  const role = parts.slice(1).join('/')
+
+  const url = await resolveGithubAssetUrl(gameId, role)
   if (url) {
-     resolvedAssetUrls[assetId] = url;
-     return url;
+    resolvedAssetUrls[assetId] = url
+    return url
   }
-  return undefined;
+  return undefined
 }
 
 export function assetUrlForId(assetId: string | null | undefined, assets: Record<string, string>) {
@@ -152,6 +152,15 @@ export function firstMediaUrl(detail: GameDetail, assets: Record<string, string>
 export function processDescriptionHtml(html: string, assets: Record<string, string>) {
   if (!html) return '<p>No description available.</p>'
   let processed = html
+
+  // Decode HTML entities that may appear double-escaped in source data
+  processed = processed
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&')
 
   processed = processed.replace(/asset:([a-zA-Z0-9_:/-]+)/g, (_match, assetId) => {
     return assetUrlForId(assetId, assets) ?? ''
