@@ -140,6 +140,8 @@
   overflow-y: auto;
   overflow-x: hidden;
   height: 100%;
+  scroll-behavior: smooth;
+  overscroll-behavior: contain;
 }
 
 .library-browse-view {
