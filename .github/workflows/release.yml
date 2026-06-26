@@ -46,17 +46,15 @@ jobs:
             throw "Tag version $tagVersion does not match tauri.conf.json version $($config.version)"
           }
 
-      - name: Inject HuggingFace credentials
+      - name: Verify HuggingFace config is present
         shell: pwsh
-        env:
-          HF_REPOS_JSON: ${{ secrets.HF_REPOS_JSON }}
         run: |
-          if (-not $env:HF_REPOS_JSON) {
-            Write-Warning "HF_REPOS_JSON secret not set – HuggingFace downloads will be disabled in this build."
-            $env:HF_REPOS_JSON = '{"repositories":[]}'
+          $cfg = Get-Content -Raw "src-tauri/huggingface-repos.json" | ConvertFrom-Json
+          $count = ($cfg.repositories | Where-Object { $_.enabled }).Count
+          Write-Host "HuggingFace repos configured: $count"
+          if ($count -eq 0) {
+            Write-Warning "No enabled HuggingFace repositories found in huggingface-repos.json"
           }
-          $env:HF_REPOS_JSON | Set-Content "src-tauri/huggingface-repos.json" -Encoding UTF8
-          Write-Host "huggingface-repos.json written successfully."
 
       - name: Build, sign, and publish release
         uses: tauri-apps/tauri-action@84b9d35b5fc46c1e45415bdb6144030364f7ebc5 # v0.6.2

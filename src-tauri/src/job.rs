@@ -2316,12 +2316,17 @@ impl RateCoordinator {
 }
 
 #[derive(Debug, Clone)]
+struct DepotRemoteBase {
+    url: String,
+    token: Option<String>,
+}
+
+#[derive(Debug, Clone)]
 struct DepotSource {
     game_id: String,
     game_dir_name: String,
-    base_urls: Vec<String>,
+    base_urls: Vec<DepotRemoteBase>,
     active_base_url: Arc<Mutex<Option<String>>>,
-    token: Option<String>,
     local_root: Option<PathBuf>,
     client: OnceLock<Client>,
     rate_coordinator: Arc<RateCoordinator>,
@@ -2353,6 +2358,19 @@ struct DownloadSessionMarker {
     updated_at: String,
 }
 
+fn sanitize_token(token: Option<String>) -> Option<String> {
+    token
+        .map(|value| value.trim().trim_matches('"').to_string())
+        .filter(|value| !value.is_empty())
+}
+
+fn hf_environment_token() -> Option<String> {
+    env::var("FIRST_LIGHT_HF_TOKEN")
+        .or_else(|_| env::var("HF_TOKEN"))
+        .ok()
+        .and_then(|value| sanitize_token(Some(value)))
+}
+
 impl DepotSource {
     fn from_env() -> Self {
         Self::for_game(DEFAULT_GAME_ID)
@@ -2373,21 +2391,32 @@ impl DepotSource {
             let path = PathBuf::from(r"E:\007Launcher\depot").join(&game_id);
             path.exists().then_some(path)
         };
+        let global_token = hf_environment_token();
         let base_urls_with_tokens = remote_repo_base_urls(&game_id);
-        let mut extracted_token = None;
         let mut base_urls = Vec::new();
         for (url, token) in base_urls_with_tokens {
-            if extracted_token.is_none() && token.is_some() {
-                extracted_token = token;
-            }
-            base_urls.push(url);
+            base_urls.push(DepotRemoteBase {
+                url,
+                token: sanitize_token(token).or_else(|| global_token.clone()),
+            });
         }
         if is_default {
             if let Ok(legacy_base) = env::var("FIRST_LIGHT_DEPOT_BASE") {
                 let legacy_base = legacy_base.trim().trim_end_matches('/');
                 if !legacy_base.is_empty() {
-                    base_urls.retain(|candidate| candidate != legacy_base);
-                    base_urls.insert(0, legacy_base.to_string());
+                    let legacy_token = base_urls
+                        .iter()
+                        .find(|candidate| candidate.url == legacy_base)
+                        .and_then(|candidate| candidate.token.clone())
+                        .or_else(|| global_token.clone());
+                    base_urls.retain(|candidate| candidate.url != legacy_base);
+                    base_urls.insert(
+                        0,
+                        DepotRemoteBase {
+                            url: legacy_base.to_string(),
+                            token: legacy_token,
+                        },
+                    );
                 }
             }
         }
@@ -2397,11 +2426,6 @@ impl DepotSource {
             game_id,
             base_urls,
             active_base_url: Arc::new(Mutex::new(None)),
-            token: extracted_token.or_else(|| {
-                env::var("FIRST_LIGHT_HF_TOKEN")
-                    .or_else(|_| env::var("HF_TOKEN"))
-                    .ok()
-            }),
             local_root,
             client: OnceLock::new(),
             rate_coordinator: Arc::new(RateCoordinator::default()),
@@ -2421,10 +2445,11 @@ impl DepotSource {
     }
 
     fn status_label(&self) -> String {
-        match (&self.local_root, &self.token) {
-            (Some(_), Some(_)) | (None, Some(_)) => "Content service ready".to_string(),
-            (Some(_), None) => "Offline metadata ready".to_string(),
-            (None, None) => "Remote content service ready".to_string(),
+        let has_token = self.base_urls.iter().any(|base| base.token.is_some());
+        match (&self.local_root, has_token) {
+            (Some(_), true) | (None, true) => "Content service ready".to_string(),
+            (Some(_), false) => "Offline metadata ready".to_string(),
+            (None, false) => "Remote content service ready".to_string(),
         }
     }
 
@@ -2438,7 +2463,7 @@ impl DepotSource {
         })
     }
 
-    fn ordered_base_urls(&self) -> Vec<String> {
+    fn ordered_base_urls(&self) -> Vec<DepotRemoteBase> {
         let active = self
             .active_base_url
             .lock()
@@ -2446,10 +2471,12 @@ impl DepotSource {
             .and_then(|guard| guard.clone());
         let mut ordered = Vec::with_capacity(self.base_urls.len());
         if let Some(active) = active {
-            ordered.push(active);
+            if let Some(base) = self.base_urls.iter().find(|candidate| candidate.url == active) {
+                ordered.push(base.clone());
+            }
         }
         for candidate in &self.base_urls {
-            if !ordered.iter().any(|existing| existing == candidate) {
+            if !ordered.iter().any(|existing| existing.url == candidate.url) {
                 ordered.push(candidate.clone());
             }
         }
@@ -2464,11 +2491,13 @@ impl DepotSource {
 
     fn send_remote_get(
         &self,
-        base_url: &str,
+        base: &DepotRemoteBase,
         url: &str,
         range: Option<(u64, u64)>,
         control: Option<&JobControl>,
     ) -> Result<reqwest::blocking::Response, JobError> {
+        let base_url = base.url.as_str();
+        let token = base.token.as_deref();
         self.rate_coordinator.wait_until_ready(base_url, control)?;
         let send = |with_token: bool| {
             let mut request = self
@@ -2479,18 +2508,15 @@ impl DepotSource {
                 request = request.header(RANGE, format!("bytes={start}-{end}"));
             }
             if with_token {
-                if let Some(token) = self
-                    .token
-                    .as_deref()
-                    .filter(|value| !value.trim().is_empty())
-                {
+                if let Some(token) = token {
                     request = request.header(AUTHORIZATION, format!("Bearer {token}"));
                 }
             }
             request.send()
         };
 
-        let mut response = send(self.token.is_some()).map_err(|error| {
+        let has_token = token.is_some();
+        let mut response = send(has_token).map_err(|error| {
             self.rate_coordinator.record_transient_failure(base_url);
             JobError::Transient(format!("{url}: {error}"))
         })?;
@@ -2498,7 +2524,7 @@ impl DepotSource {
         if matches!(
             response.status(),
             StatusCode::UNAUTHORIZED | StatusCode::FORBIDDEN
-        ) && self.token.is_some()
+        ) && has_token
         {
             // Public Hugging Face repositories remain usable when a stale inherited
             // HF_TOKEN is present. Private repositories still fail clearly below.
@@ -2596,16 +2622,16 @@ impl DepotSource {
 
         let encoded_relative_path = encode_hf_relative_path(relative_path);
         let mut failures = Vec::new();
-        for base_url in self.ordered_base_urls() {
+        for base in self.ordered_base_urls() {
             let url = format!(
                 "{}/{}",
-                base_url.trim_end_matches('/'),
+                base.url.trim_end_matches('/'),
                 encoded_relative_path
             );
-            match self.send_remote_get(&base_url, &url, None, None) {
+            match self.send_remote_get(&base, &url, None, None) {
                 Ok(response) => match response.json::<T>() {
                     Ok(value) => {
-                        self.mark_active_base_url(&base_url);
+                        self.mark_active_base_url(&base.url);
                         return Ok(value);
                     }
                     Err(err) => failures.push(format!("{url}: invalid JSON ({err})")),
@@ -2676,7 +2702,7 @@ impl DepotSource {
 
         let encoded_relative_path = encode_hf_relative_path(relative_path);
         let mut failures = Vec::new();
-        for base_url in self.ordered_base_urls() {
+        for base in self.ordered_base_urls() {
             normalize_partial_file(partial_path, expected_len)?;
             let existing = durable_partial_len(partial_path).min(expected_len);
             if existing == expected_len {
@@ -2687,11 +2713,11 @@ impl DepotSource {
             let end = end_exclusive - 1;
             let url = format!(
                 "{}/{}",
-                base_url.trim_end_matches('/'),
+                base.url.trim_end_matches('/'),
                 encoded_relative_path
             );
             let mut response = match self.send_remote_get(
-                &base_url,
+                &base,
                 &url,
                 Some((request_start, end)),
                 Some(control),
@@ -2738,7 +2764,7 @@ impl DepotSource {
                 progress_tx,
             ) {
                 Ok(final_len) if final_len == expected_len => {
-                    self.mark_active_base_url(&base_url);
+                    self.mark_active_base_url(&base.url);
                     return read_completed_partial(partial_path, expected_len, pack_id);
                 }
                 Ok(final_len) => failures.push(format!(
