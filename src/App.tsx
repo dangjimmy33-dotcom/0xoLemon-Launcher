@@ -121,25 +121,57 @@ import { useScrollReveal } from './hooks/useScrollReveal'
 export default function App() {
   useEffect(() => {
     let lenis: Lenis | null = null
+    let rafId: number | null = null
+
     const timer = setTimeout(() => {
       const wrapper = document.querySelector('.workspace') as HTMLElement | null
       if (!wrapper) return
+
       lenis = new Lenis({
         wrapper,
         content: wrapper,
         duration: 1.2,
         easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       })
+
       // Expose globally so modals can call lenis.stop() / lenis.start()
       ;(window as unknown as Record<string, unknown>).__lenis = lenis
+
+      // When user drags the native scrollbar, Lenis doesn't know the position
+      // changed → it snaps back on next wheel event. Fix: sync Lenis internal
+      // state whenever a native scroll event fires that Lenis didn't cause.
+      let lenisScrolling = false
+      const unsubscribe = lenis.on('scroll', () => { lenisScrolling = true })
+      const onNativeScroll = () => {
+        if (lenisScrolling) { lenisScrolling = false; return }
+        // Scrollbar was dragged — force-sync Lenis internal positions
+        const l = lenis as unknown as Record<string, number>
+        const top = wrapper.scrollTop
+        l['scroll'] = top
+        l['targetScroll'] = top
+        l['animatedScroll'] = top
+      }
+      wrapper.addEventListener('scroll', onNativeScroll, { passive: true })
+
       function raf(time: number) {
         lenis?.raf(time)
-        requestAnimationFrame(raf)
+        rafId = requestAnimationFrame(raf)
       }
-      requestAnimationFrame(raf)
+      rafId = requestAnimationFrame(raf)
+
+      // Store cleanup refs on lenis instance for teardown
+      ;(lenis as unknown as Record<string, unknown>).__nativeScrollCleanup = () => {
+        wrapper.removeEventListener('scroll', onNativeScroll)
+        unsubscribe()
+      }
     }, 50)
+
     return () => {
       clearTimeout(timer)
+      if (rafId !== null) cancelAnimationFrame(rafId)
+      // Cleanup native scroll listener before destroying
+      const cleanup = (lenis as unknown as Record<string, unknown>)?.__nativeScrollCleanup
+      if (typeof cleanup === 'function') cleanup()
       lenis?.destroy()
       ;(window as unknown as Record<string, unknown>).__lenis = null
     }
