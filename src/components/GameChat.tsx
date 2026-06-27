@@ -49,10 +49,20 @@ function formatDate(ts: number) {
 
 // Discord-style avatar placeholder
 function Avatar({ name, url, size = 36 }: { name: string; url?: string; size?: number }) {
-  if (url) {
-    return <img src={url} alt={name} className="chat-avatar" style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
-  }
+  const [imgError, setImgError] = useState(false)
   const color = `hsl(${[...name].reduce((a, c) => a + c.charCodeAt(0), 0) % 360}, 65%, 55%)`
+
+  if (url && !imgError) {
+    return (
+      <img
+        src={url}
+        alt={name}
+        className="chat-avatar"
+        style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+        onError={() => setImgError(true)}
+      />
+    )
+  }
   return (
     <div className="chat-avatar" style={{ width: size, height: size, borderRadius: '50%', background: color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#fff', fontWeight: 700, fontSize: size * 0.42, textTransform: 'uppercase', fontFamily: 'inherit' }}>
       {name[0] ?? '?'}
@@ -61,15 +71,17 @@ function Avatar({ name, url, size = 36 }: { name: string; url?: string; size?: n
 }
 
 // Group messages by sender+time to avoid repeating sender names (Discord style)
-function groupMessages(messages: ChatMessage[]) {
+function groupMessages(messages: ChatMessage[], mySenderId: string, myAvatar?: string) {
   const groups: Array<{ senderId: string; senderName: string; senderAvatar?: string; date: string; msgs: ChatMessage[] }> = []
   for (const msg of messages) {
     const date = formatDate(msg.timestamp)
     const last = groups[groups.length - 1]
+    // Use live avatar for own messages (in case old messages don't have it stored)
+    const avatar = msg.senderId === mySenderId ? (myAvatar ?? msg.senderAvatar) : msg.senderAvatar
     if (last && last.senderId === msg.senderId && last.date === date) {
       last.msgs.push(msg)
     } else {
-      groups.push({ senderId: msg.senderId, senderName: msg.senderName, senderAvatar: msg.senderAvatar, date, msgs: [msg] })
+      groups.push({ senderId: msg.senderId, senderName: msg.senderName, senderAvatar: avatar, date, msgs: [msg] })
     }
   }
   return groups
@@ -221,7 +233,7 @@ function ChatBody({ gameId, discordUser, compact }: GameChatProps & { compact?: 
     setMessages([])
   }
 
-  const groups = groupMessages(messages)
+  const groups = groupMessages(messages, senderId, senderAvatar)
 
   return (
     <>
