@@ -646,6 +646,8 @@ pub fn run() {
             chat::load_chat_history,
             chat::save_chat_message,
             chat::clear_chat_history,
+            chat::download_from_huggingface,
+            chat::sync_to_huggingface,
             get_disk_free_space,
             list_system_drives,
             check_launcher_update,

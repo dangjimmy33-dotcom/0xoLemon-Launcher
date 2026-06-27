@@ -36,11 +36,23 @@ export function GameChat({ gameId }: { gameId: string }) {
   const senderId = getSenderId()
   const senderName = getSenderName()
 
-  // 1. Load local history
+  // 1. Load local history, then fetch from HF, then reload local history
   useEffect(() => {
-    invoke<ChatMessage[]>('load_chat_history', { gameId }).then((history) => {
-      setMessages(history)
+    let mounted = true
+    const loadLocal = () => {
+      invoke<ChatMessage[]>('load_chat_history', { gameId }).then((history) => {
+        if (mounted) setMessages(history)
+      }).catch(console.error)
+    }
+
+    loadLocal() // Load immediately for instant feedback
+    
+    // Background fetch from cold storage
+    invoke('download_from_huggingface', { gameId }).then(() => {
+      if (mounted) loadLocal() // Reload with newly merged messages
     }).catch(console.error)
+
+    return () => { mounted = false }
   }, [gameId])
 
   // 2. Subscribe to Firebase real-time
