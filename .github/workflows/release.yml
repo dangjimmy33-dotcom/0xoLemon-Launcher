@@ -46,6 +46,17 @@ jobs:
             throw "Tag version $tagVersion does not match tauri.conf.json version $($config.version)"
           }
 
+      - name: Create HuggingFace config from secret
+        shell: pwsh
+        env:
+          HF_REPOS_JSON: ${{ secrets.HF_REPOS_JSON }}
+        run: |
+          if (-not $env:HF_REPOS_JSON) {
+            throw "Secret HF_REPOS_JSON is not set. Please add it in GitHub repo Settings → Secrets and variables → Actions."
+          }
+          $env:HF_REPOS_JSON | Out-File -Encoding utf8 -NoNewline "src-tauri/huggingface-repos.json"
+          Write-Host "HuggingFace config written from secret."
+
       - name: Verify HuggingFace config is present
         shell: pwsh
         run: |
