@@ -645,6 +645,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             chat::load_chat_history,
             chat::save_chat_message,
+            chat::delete_chat_message,
+            chat::edit_chat_message,
             chat::clear_chat_history,
             chat::download_from_huggingface,
             chat::upload_chat_media,
