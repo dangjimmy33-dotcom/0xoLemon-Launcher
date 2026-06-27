@@ -11,6 +11,7 @@ import { getGameTags, gameHasTag } from '../lib/gameTags'
 import { GameDetailsPanel, InstallSummaryPanel } from './panels'
 import { CloudSavePanel } from './CloudSavePanel'
 import { useRealtimeConfig } from '../hooks/useRealtimeConfig'
+import { useFirestoreDetail } from '../hooks/useFirestoreDetail'
 
 function LazyGameCardImage({
   game,
@@ -143,6 +144,113 @@ function GameDetailLoadingView({
         </aside>
       </div>
     </section>
+  )
+}
+
+function HoverCardPopup({
+  game,
+  assets,
+  pos,
+}: {
+  game: GameSummary
+  assets: Record<string, string>
+  pos: { top: number; left: number; right: number; alignRight: boolean }
+}) {
+  const detail = useFirestoreDetail(game.id)
+  const videoMedia = detail?.media?.find(
+    (m) => m.mimeType?.startsWith('video/') || m.role?.startsWith('video'),
+  )
+  const videoUrl = videoMedia ? assetUrlForId(videoMedia.assetId, assets) : null
+  const hero = assetUrlForId(game.heroAssetId, assets)
+  const tags = getGameTags(game)
+
+  const style: React.CSSProperties = {
+    position: 'absolute',
+    top: pos.top,
+    zIndex: 9999,
+  }
+  if (pos.alignRight) {
+    style.right = pos.right
+  } else {
+    style.left = pos.left
+  }
+
+  return (
+    <div className="hover-card-portal" style={style}>
+      <div className="hover-card-media">
+        {videoUrl ? (
+          <video src={videoUrl} autoPlay loop muted playsInline />
+        ) : hero ? (
+          <img src={hero} alt="" />
+        ) : (
+          <div className="hover-card-placeholder" />
+        )}
+      </div>
+      <div className="hover-card-info">
+        <div className="hover-card-header">
+          <strong>{game.title}</strong>
+        </div>
+        <div className="hover-card-dev">{game.developer}</div>
+        <div className="hover-card-tags">
+          {tags.map((t) => (
+            <i key={t.id} className={`tone-${t.tone}`}>
+              {t.label}
+            </i>
+          ))}
+        </div>
+        {detail?.shortDescription ? <p className="hover-card-desc">{detail.shortDescription}</p> : null}
+      </div>
+    </div>
+  )
+}
+
+function GameHoverCard({
+  game,
+  assets,
+  children,
+}: {
+  game: GameSummary
+  assets: Record<string, string>
+  children: React.ReactNode
+}) {
+  const [hovered, setHovered] = useState(false)
+  const [show, setShow] = useState(false)
+  const [pos, setPos] = useState({ top: 0, left: 0, right: 0, alignRight: false })
+  const anchorRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!hovered) {
+      setShow(false)
+      return
+    }
+    const timer = setTimeout(() => {
+      if (anchorRef.current) {
+        const rect = anchorRef.current.getBoundingClientRect()
+        const spaceRight = window.innerWidth - rect.right
+        const spaceLeft = rect.left
+        const alignRight = spaceRight < 340 && spaceLeft > 340
+        setPos({
+          top: rect.top + window.scrollY,
+          left: rect.right + 10,
+          right: window.innerWidth - rect.left + 10,
+          alignRight,
+        })
+      }
+      setShow(true)
+    }, 600)
+    return () => clearTimeout(timer)
+  }, [hovered])
+
+  return (
+    <div
+      ref={anchorRef}
+      className="hover-card-anchor"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {children}
+      {show && createPortal(<HoverCardPopup game={game} assets={assets} pos={pos} />, document.body)}
+    </div>
   )
 }
 
@@ -344,7 +452,11 @@ export function StoreLibraryView({
         </header>
 
         <div className="library-browse-grid">
-          {visibleGames.map((game) => renderGameCard(game, 'browse'))}
+          {visibleGames.map((game) => (
+            <GameHoverCard key={game.id} game={game} assets={assets}>
+              {renderGameCard(game, 'browse')}
+            </GameHoverCard>
+          ))}
           {visibleGames.length === 0 && viewMode === 'library' ? (
             <div className="library-empty-inline library-empty-installed">
               <Library size={28} />
