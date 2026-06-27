@@ -159,20 +159,31 @@ function HoverCardPopup({
   onRequestAsset: (game: GameSummary, assetId: string | undefined, urgent?: boolean) => void
 }) {
   const detail = useFirestoreDetail(game.id)
+  
   const videoMedia = detail?.media?.find(
     (m) => m.mimeType?.startsWith('video/') || m.role?.startsWith('video'),
   )
   const videoAssetId = videoMedia?.assetId
 
+  const thumbMedia = detail?.media?.find(
+    (m) => m.role === 'video-thumb' || m.role === 'video-thumbnail' || m.role === 'video-poster',
+  )
+  const thumbAssetId = thumbMedia?.assetId
+
   useEffect(() => {
     if (videoAssetId) {
       onRequestAsset(game, videoAssetId, true)
     }
+    if (thumbAssetId) {
+      onRequestAsset(game, thumbAssetId, true)
+    }
     onRequestAsset(game, game.heroAssetId, true)
-  }, [game, videoAssetId, onRequestAsset])
+  }, [game, videoAssetId, thumbAssetId, onRequestAsset])
 
   const videoUrl = videoAssetId ? assetUrlForId(videoAssetId, assets) : null
+  const thumbUrl = thumbAssetId ? assetUrlForId(thumbAssetId, assets) : null
   const hero = assetUrlForId(game.heroAssetId, assets)
+  const posterUrl = thumbUrl || hero || undefined
   const tags = getGameTags(game)
 
   const style: React.CSSProperties = {
@@ -185,12 +196,14 @@ function HoverCardPopup({
   } else {
     style.left = pos.left
   }
+  
+  const description = detail?.shortDescription || game.subtitle || ''
 
   return (
     <div className="hover-card-portal" style={style}>
       <div className="hover-card-media">
         {videoUrl ? (
-          <video src={videoUrl} autoPlay loop muted playsInline />
+          <video src={videoUrl} autoPlay loop muted playsInline poster={posterUrl} />
         ) : hero ? (
           <img src={hero} alt="" />
         ) : (
@@ -209,7 +222,7 @@ function HoverCardPopup({
             </i>
           ))}
         </div>
-        {detail?.shortDescription ? <p className="hover-card-desc">{detail.shortDescription}</p> : null}
+        {description ? <p className="hover-card-desc">{description}</p> : null}
       </div>
     </div>
   )
