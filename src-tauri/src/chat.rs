@@ -243,7 +243,21 @@ pub async fn upload_chat_media(filename: String, data: Vec<u8>) -> Result<String
 
 #[tauri::command]
 pub async fn upload_chat_media_from_path(filename: String, filepath: String) -> Result<String, String> {
-    let data = fs::read(&filepath).map_err(|e| format!("Failed to read file: {}", e))?;
+    let metadata = std::fs::metadata(&filepath).map_err(|e| format!("Failed to read file metadata: {}", e))?;
+    let ext = filename.split('.').last().unwrap_or_default().to_lowercase();
+    
+    // Limits
+    let max_size = match ext.as_str() {
+        "zip" | "rar" | "7z" => 100 * 1024 * 1024, // 100MB
+        "mp4" | "webm" => 20 * 1024 * 1024, // 20MB
+        _ => 5 * 1024 * 1024, // 5MB for images/txt/etc
+    };
+
+    if metadata.len() > max_size {
+        return Err(format!("File too large. Max size is {}MB for this file type.", max_size / 1024 / 1024));
+    }
+
+    let data = std::fs::read(&filepath).map_err(|e| format!("Failed to read file: {}", e))?;
     upload_chat_media(filename, data).await
 }
 
