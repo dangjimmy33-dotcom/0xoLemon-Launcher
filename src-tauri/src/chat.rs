@@ -292,3 +292,21 @@ pub async fn delete_chat_media(url: String) -> Result<(), String> {
         
     Ok(())
 }
+
+#[tauri::command]
+pub async fn download_chat_media_to_disk(url: String, filepath: String) -> Result<(), String> {
+    let mut response = reqwest::get(&url).await.map_err(|e| format!("Failed to download: {}", e))?;
+    
+    if !response.status().is_success() {
+        return Err(format!("Download failed with status: {}", response.status()));
+    }
+
+    let mut file = std::fs::File::create(&filepath).map_err(|e| format!("Failed to create file: {}", e))?;
+    
+    use std::io::Write;
+    while let Some(chunk) = response.chunk().await.map_err(|e| e.to_string())? {
+        file.write_all(&chunk).map_err(|e| format!("Failed to write to file: {}", e))?;
+    }
+    
+    Ok(())
+}
