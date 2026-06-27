@@ -20,7 +20,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
 
-import fs from 'fs';
 
 // HuggingFace tokens loaded from huggingface-repos.json (gitignored — never commit tokens)
 const HF_REPOS = JSON.parse(fs.readFileSync('src-tauri/huggingface-repos.json', 'utf8'));
@@ -37,6 +36,7 @@ const FOLDER_MAP = {
   'microsoft-flight-simulator-2020-40th-anniversary-edition': 'Microsoft Flight Simulator (2020) 40th Anniversary Edition',
   'octopath-traveler-0':                                    'OCTOPATH TRAVELER 0',
   'persona-5-royal':                                        'Persona 5 Royal',
+  'persona-3-reload':                                       'persona-3-reload',
   'solo-leveling-arise-overdrive':                          'Solo Leveling ARISE OVERDRIVE',
   'stellar-blade':                                          'Stellar Blade',
   'tom-clancy-s-splinter-cell-blacklist':                   "Tom Clancy’s Splinter Cell Blacklist",
@@ -56,7 +56,7 @@ function readJsonSafe(filePath) {
 
 // Fetch catalog.json từ HuggingFace cho một gameId
 async function fetchHFCatalog(gameId) {
-  for (const { repoId, token } of HF_REPOS) {
+  for (const { repoId, token } of HF_REPOS.repositories) {
     const url = `https://huggingface.co/datasets/${repoId}/resolve/main/${gameId}/catalog.json`;
     try {
       const res = await fetch(url, {

@@ -32,6 +32,7 @@ const FOLDER_MAP = {
   'microsoft-flight-simulator-2020-40th-anniversary-edition': 'Microsoft Flight Simulator (2020) 40th Anniversary Edition',
   'octopath-traveler-0':                                    'OCTOPATH TRAVELER 0',
   'persona-5-royal':                                        'Persona 5 Royal',
+  'persona-3-reload':                                       'persona-3-reload',
   'solo-leveling-arise-overdrive':                          'Solo Leveling ARISE OVERDRIVE',
   'stellar-blade':                                          'Stellar Blade',
   'tom-clancy-s-splinter-cell-blacklist':                   "Tom Clancy’s Splinter Cell Blacklist",
