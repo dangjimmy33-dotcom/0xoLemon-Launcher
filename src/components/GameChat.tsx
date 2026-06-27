@@ -120,6 +120,19 @@ function MessageContent({ text, imageBase64, mediaUrl, mediaType }: { text: stri
     catch { return 'file' }
   }
 
+  const handleDownload = async (url: string) => {
+    try {
+      const { save } = await import('@tauri-apps/plugin-dialog')
+      const { invoke } = await import('@tauri-apps/api/core')
+      const savePath = await save({ defaultPath: getFilename(url) })
+      if (!savePath) return
+      await invoke('download_chat_media_to_disk', { url, filepath: savePath })
+      alert('Tải xuống hoàn tất / Download complete')
+    } catch (e: any) {
+      alert(`Lỗi khi tải file: ${e?.message || e}`)
+    }
+  }
+
   return (
     <div className="msg-content">
       {text && <p className="msg-text">{parseText(text)}</p>}
@@ -142,9 +155,9 @@ function MessageContent({ text, imageBase64, mediaUrl, mediaType }: { text: stri
             <span className="chat-file-name" title={getFilename(mediaUrl)}>{getFilename(mediaUrl)}</span>
             <span className="chat-file-size">{(mediaType || 'unknown').split('/')[1]?.toUpperCase() || 'FILE'}</span>
           </div>
-          <a href={mediaUrl} target="_blank" rel="noopener noreferrer" className="chat-file-download" title="Download">
+          <button onClick={() => handleDownload(mediaUrl)} className="chat-file-download" title="Download">
             <DownloadIcon size={18} />
-          </a>
+          </button>
         </div>
       )}
     </div>
