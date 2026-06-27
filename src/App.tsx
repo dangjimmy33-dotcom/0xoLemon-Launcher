@@ -2902,6 +2902,7 @@ export default function App() {
           }
           cacheBusy={cacheBusy}
           onClearCache={() => void clearLauncherCache()}
+          discordUser={discordAuth.state === 'authorized' ? discordAuth.user : null}
         />
         )}
         </div>

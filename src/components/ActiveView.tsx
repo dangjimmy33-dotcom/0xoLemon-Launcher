@@ -1,5 +1,5 @@
 import { Database } from 'lucide-react'
-import type { CloudSaveStatus, GameCatalog, GameDetail, GameInstallState, GameSummary, GameVersionInfo, JobJournal, JobLog, PhaseProgress, Snapshot, TabId, VerifyUiStatus } from '../types'
+import type { CloudSaveStatus, DiscordAuthUser, GameCatalog, GameDetail, GameInstallState, GameSummary, GameVersionInfo, JobJournal, JobLog, PhaseProgress, Snapshot, TabId, VerifyUiStatus } from '../types'
 import { rollbackVersionFor } from '../lib/gameMeta'
 import { TabEmptyState, ScopedTabEmptyState } from './layout'
 import { StoreLibraryView } from './library'
@@ -67,6 +67,7 @@ export function ActiveView({
   onRestoreMissingSaveFiles,
   cacheBusy,
   onClearCache,
+  discordUser,
 }: {
   activeTab: TabId
   catalog: GameCatalog
@@ -127,6 +128,7 @@ export function ActiveView({
   onRestoreMissingSaveFiles: () => void
   cacheBusy: boolean
   onClearCache: () => void
+  discordUser?: DiscordAuthUser | null
 }) {
   const hasSelectedDetail = Boolean(selectedGame && detail)
 
@@ -175,6 +177,7 @@ export function ActiveView({
         onDisconnectGoogleDrive={onDisconnectGoogleDrive}
         onBackupGoogleDrive={onBackupGoogleDrive}
         onRestoreMissingSaveFiles={onRestoreMissingSaveFiles}
+        discordUser={discordUser}
       />
     )
   }
