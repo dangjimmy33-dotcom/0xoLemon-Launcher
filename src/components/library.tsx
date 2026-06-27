@@ -282,6 +282,8 @@ function GameHoverCard({
   )
 }
 
+import type { DiscordAuthUser } from '../types'
+
 export function StoreLibraryView({
   viewMode,
   catalog,
@@ -325,6 +327,7 @@ export function StoreLibraryView({
   onDisconnectGoogleDrive,
   onBackupGoogleDrive,
   onRestoreMissingSaveFiles,
+  discordUser,
 }: {
   viewMode: 'store' | 'library'
   catalog: GameCatalog
@@ -368,6 +371,7 @@ export function StoreLibraryView({
   onDisconnectGoogleDrive: () => void
   onBackupGoogleDrive: () => void
   onRestoreMissingSaveFiles: () => void
+  discordUser?: DiscordAuthUser | null
 }) {
   const [query, setQuery] = useState('')
   const [tutorialVisible, setTutorialVisible] = useState(false)
@@ -769,7 +773,7 @@ export function StoreLibraryView({
           />
         ) : null}
         <AchievementPreview achievements={detail.achievements} assets={assets} />
-        <GameChat gameId={detail.gameId} />
+        <GameChat gameId={detail.gameId} discordUser={discordUser} />
       </aside>
       {tutorialVisible && selectedGame ? (
         <TutorialModal
