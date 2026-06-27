@@ -60,6 +60,7 @@ export function InstallOptionsDialog({
   installRoot,
   downloadingRoot,
   canStart,
+  isStarting = false,
   statusMessage,
   onVersionChange,
   onChangeInstallRoot,
@@ -76,6 +77,7 @@ export function InstallOptionsDialog({
   installRoot: string
   downloadingRoot: string
   canStart: boolean
+  isStarting?: boolean
   statusMessage?: string
   onVersionChange: (version: string) => void
   onChangeInstallRoot: () => void
@@ -204,13 +206,24 @@ export function InstallOptionsDialog({
           <button type="button" onClick={onClose}>
             {t.install.cancel}
           </button>
-          <button className="primary-control" type="button" onClick={onStart} disabled={!canStart}>
-            <Download size={17} />
-            {isVersionChange
-              ? canStart
-                ? 'Apply selected version'
-                : 'Current version selected'
-              : t.install.startDownload}
+          <button className="primary-control" type="button" onClick={onStart} disabled={!canStart || isStarting}>
+            {isStarting ? (
+              <>
+                <svg className="btn-spinner" viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <circle cx="12" cy="12" r="9" strokeDasharray="40 20" />
+                </svg>
+                Starting…
+              </>
+            ) : (
+              <>
+                <Download size={17} />
+                {isVersionChange
+                  ? canStart
+                    ? 'Apply selected version'
+                    : 'Current version selected'
+                  : t.install.startDownload}
+              </>
+            )}
           </button>
         </footer>
       </section>

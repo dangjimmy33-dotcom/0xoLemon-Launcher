@@ -1766,6 +1766,15 @@ h1 {
   animation: pulse-running 1.8s ease-in-out infinite;
 }
 
+@keyframes btn-spin {
+  to { transform: rotate(360deg); }
+}
+
+.btn-spinner {
+  animation: btn-spin 0.75s linear infinite;
+  flex-shrink: 0;
+}
+
 @keyframes pulse-running {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.82; }

@@ -149,6 +149,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<TabId>(initialLauncherPreferences.startupPage)
   const [selectedVersion, setSelectedVersion] = useState('')
   const [showInstallOptions, setShowInstallOptions] = useState(false)
+  const [isStartingDownload, setIsStartingDownload] = useState(false)
   const [installRoot, setInstallRoot] = useState(`${initialLauncherPreferences.defaultLibraryRoot}\\common\\007 First Light`)
   const [catalog, setCatalog] = useState<GameCatalog>(() => (isTauriRuntime() ? emptyCatalog : fallbackCatalog))
   const [catalogLoadState, setCatalogLoadState] = useState<CatalogLoadState>(
@@ -2077,10 +2078,14 @@ export default function App() {
       primeInstallCompleteSound()
     }
 
+    // Show loading state immediately to prevent spam clicks
+    setIsStartingDownload(true)
+
     // Web app: send remote install command to PC launcher via Firebase
     if (!isTauriRuntime()) {
       if (!discordAuth.user) {
         setScanStatus('Please login with Discord to remote install.')
+        setIsStartingDownload(false)
         return
       }
       try {
@@ -2102,27 +2107,28 @@ export default function App() {
       } catch (err) {
         setScanStatus('Failed to send remote command. Is your PC online?')
         console.error('Remote install failed:', err)
+      } finally {
+        setIsStartingDownload(false)
       }
       return
     }
 
-    // Disk space check
     try {
-      const targetPath = installMode ? installRoot : selectedInstallPath
-      const freeSpace = await invoke<number>('get_disk_free_space', { path: targetPath })
-      const requiredSpace = snapshot?.requiredFreeSpace || snapshot?.updateSize || 0
-      if (freeSpace < requiredSpace) {
-        const freeGB = (freeSpace / 1024 / 1024 / 1024).toFixed(2)
-        const reqGB = (requiredSpace / 1024 / 1024 / 1024).toFixed(2)
-        setScanStatus(`Not enough disk space! Need ${reqGB} GB, but only ${freeGB} GB available.`)
-        return
+      // Disk space check
+      try {
+        const targetPath = installMode ? installRoot : selectedInstallPath
+        const freeSpace = await invoke<number>('get_disk_free_space', { path: targetPath })
+        const requiredSpace = snapshot?.requiredFreeSpace || snapshot?.updateSize || 0
+        if (freeSpace < requiredSpace) {
+          const freeGB = (freeSpace / 1024 / 1024 / 1024).toFixed(2)
+          const reqGB = (requiredSpace / 1024 / 1024 / 1024).toFixed(2)
+          setScanStatus(`Not enough disk space! Need ${reqGB} GB, but only ${freeGB} GB available.`)
+          return
+        }
+      } catch (e) {
+        console.warn('Disk space check failed:', e)
+        // Continue anyway if the check fails (e.g. path doesn't exist yet)
       }
-    } catch (e) {
-      console.warn('Disk space check failed:', e)
-      // Continue anyway if the check fails (e.g. path doesn't exist yet)
-    }
-
-    try {
 
       const versionToApply = targetVersion
       setSelectedVersion(versionToApply)
@@ -2151,6 +2157,8 @@ export default function App() {
       }
     } catch (error) {
       setScanStatus(String(error))
+    } finally {
+      setIsStartingDownload(false)
     }
   }
 
@@ -2907,6 +2915,7 @@ export default function App() {
             installRoot={installMode ? installRoot : selectedInstallPath}
             downloadingRoot={downloadPathForInstallRoot(installMode ? installRoot : selectedInstallPath, gameInstall)}
             canStart={canApplySelectedVersion}
+            isStarting={isStartingDownload}
             onVersionChange={changeTargetVersion}
             onChangeInstallRoot={chooseInstallTarget}
             onStart={startUpdate}

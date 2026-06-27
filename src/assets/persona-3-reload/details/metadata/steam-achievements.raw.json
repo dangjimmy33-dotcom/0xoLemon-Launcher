@@ -1,0 +1,495 @@
+﻿{
+    "game":  {
+                 "gameName":  "Libra",
+                 "gameVersion":  "17",
+                 "availableGameStats":  {
+                                            "achievements":  [
+                                                                 {
+                                                                     "name":  "ACH_ORPHEUS_GET",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Awakened Power",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/72dcd4e4707d8feb2fe31ebabeec7cf177dc1c8e.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/029f16e73ef5944a7af2be5c7baae7752a932700.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_SEES_JOIN",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "SEES the Day",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/307214c3efebe26460daca12c4cb02655289a726.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/029f16e73ef5944a7af2be5c7baae7752a932700.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_DEFEAT_PRIESTESS",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Back on Track",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/0d3f8fb216d4a2db2a33f6cae43fbecbc1cc2e32.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/029f16e73ef5944a7af2be5c7baae7752a932700.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_DEFEAT_EMP_EMP",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Empowered Protector",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/d6d3355c5d8c54d1e63a7451c2251b3387725a0f.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/029f16e73ef5944a7af2be5c7baae7752a932700.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_DEFEAT_HIE_LOV",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Never Toy with Matters of the Heart",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/d8613caadc740915321b59b5dc3568bdc4e4e975.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/029f16e73ef5944a7af2be5c7baae7752a932700.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_DEFEAT_CHA_JUS",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Armor Disarmed",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/7e5fd859d6d84222d6b44d333c7141a45822dc18.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/029f16e73ef5944a7af2be5c7baae7752a932700.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_DEFEAT_HERMIT",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Dodging Lightning",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/cf213da3090699c7cc9d10f150813d73862e7984.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/029f16e73ef5944a7af2be5c7baae7752a932700.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_DEFEAT_FOR_STR",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Twist of Fate",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/f0c23039e31ecb669cb20a0503fe663463d5a50e.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/029f16e73ef5944a7af2be5c7baae7752a932700.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_DEFEAT_HANGEDMAN",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "A Sense of Finality",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/14116fc193364e821577372f10cadb320f2dff40.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/029f16e73ef5944a7af2be5c7baae7752a932700.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_DEFEAT_NUXE",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "The Great Seal",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/39f90bc7ea42a2e2c01572e97356a9e9dde8616a.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/029f16e73ef5944a7af2be5c7baae7752a932700.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_TRUE_END",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "From Shadows into Light",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/0d58f8647e10b903f991df94ba13474dd20e00ee.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/029f16e73ef5944a7af2be5c7baae7752a932700.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_SFL_M_ARCANA_GET_10",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "The Fool\u0027s Journey",
+                                                                     "hidden":  0,
+                                                                     "description":  "Obtained 10 Major Arcana during Shuffle Time.(Persona 3 Reload main story mode only)",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/93c248c226f427043b4f61a2876917bf6f638434.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/95f0686053a185645c790e23b2067700e67163fa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_INV_ELIZABETH",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Distinguished Visitor",
+                                                                     "hidden":  0,
+                                                                     "description":  "Invited Elizabeth to your room.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/eec895da4598ca4112a53ebcc662720154eb1a92.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/95f0686053a185645c790e23b2067700e67163fa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_GET_EXAM_TOP",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Top of the Class",
+                                                                     "hidden":  0,
+                                                                     "description":  "Aced an exam.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/651312569cc478cc05e5ad2c3dab93ffe04e9670.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/95f0686053a185645c790e23b2067700e67163fa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_ALL_COMMU_MAX",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "A Legacy of Friendships",
+                                                                     "hidden":  0,
+                                                                     "description":  "Maxed out all Social Links.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/e13241f5d81d1c58f11e58a934da02e7afe9c1c7.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/95f0686053a185645c790e23b2067700e67163fa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_ALL_COMMU_OPEN",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "People Person",
+                                                                     "hidden":  0,
+                                                                     "description":  "Unlocked all Social Links.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/7ef1f9ef4e48b8c15b9dd83c7b5b7013a19d56ba.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/95f0686053a185645c790e23b2067700e67163fa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_MAKE_LOVERS",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "That Special Someone",
+                                                                     "hidden":  0,
+                                                                     "description":  "Nurtured a romance.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/8f389a34429e46fa8610e80490befefa3a361573.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/95f0686053a185645c790e23b2067700e67163fa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_ONE_COMMU_MAX",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Unbreakable Link",
+                                                                     "hidden":  0,
+                                                                     "description":  "Maxed out one Social Link.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/a779b2dd91bd5f20fe20877381511f901a414c00.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/95f0686053a185645c790e23b2067700e67163fa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_ALL_PERSONA_EVO",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "A Newfound Strength",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/266b23707fa588742cab527fd146d48630a3548f.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/95f0686053a185645c790e23b2067700e67163fa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_SFL_PERSONA_GET_10",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "The Power of Choice",
+                                                                     "hidden":  0,
+                                                                     "description":  "Obtained 10 Personas during Shuffle Time.(Persona 3 Reload main story mode only)",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/64fa46f3f5f22ec1a9286cd9c5bda91b89759f8b.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/95f0686053a185645c790e23b2067700e67163fa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_SHIFT",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "There\u0027s No \"I\" in \"Team\"",
+                                                                     "hidden":  0,
+                                                                     "description":  "Performed a Shift.(Persona 3 Reload main story mode only)",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/d449b1bd7151fa69e3d34e9b42bd3142a8cbb8a4.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/95f0686053a185645c790e23b2067700e67163fa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_ALL_THEURGIA_USE",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "The Strength of Our Hearts",
+                                                                     "hidden":  0,
+                                                                     "description":  "Used all teammates\u0027 Theurgy.(Persona 3 Reload main story mode only)",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/0e663e02f247d96c7831a475cb94207c915edef7.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/95f0686053a185645c790e23b2067700e67163fa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_FIND_MISSING_PERSON",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Extracurricular Excellence",
+                                                                     "hidden":  0,
+                                                                     "description":  "Rescued a missing person.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/7d664bfdec4a112ad18a5d5034918e58eabdff48.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/95f0686053a185645c790e23b2067700e67163fa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_DAMAGE_999",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Get a Load of Those Numbers!",
+                                                                     "hidden":  0,
+                                                                     "description":  "Dealt over 999 damage in a single attack (All-Out Attacks excluded).(Persona 3 Reload main story mode only)",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/f632d1d90c0fa88f1bae1de1cc0361ad1b8eb9f7.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/95f0686053a185645c790e23b2067700e67163fa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_CHANCE_ENC_50",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Shrouded Assassin",
+                                                                     "hidden":  0,
+                                                                     "description":  "Initiated 50 Chance Encounters.(Persona 3 Reload main story mode only)",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/f6c209a43bd4c0a9b31a553e4edd885ac856402a.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/95f0686053a185645c790e23b2067700e67163fa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_DEFEAT_RARE_SHADOW",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "The Thrill of the Hunt",
+                                                                     "hidden":  0,
+                                                                     "description":  "Defeated a rare, golden enemy.(Persona 3 Reload main story mode only)",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/5e5635ae04602803fad7b1f8c195a67a17c82084.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/95f0686053a185645c790e23b2067700e67163fa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_BOKOSUKA_50",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Making the Dream Work",
+                                                                     "hidden":  0,
+                                                                     "description":  "Performed 50 All-Out Attacks.(Persona 3 Reload main story mode only)",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/53e6c89ecef18f0f7e707f51e6471b0eebcf4266.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/95f0686053a185645c790e23b2067700e67163fa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_FORB_DOOR_OPEN_10",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Glimpse of the Depths",
+                                                                     "hidden":  0,
+                                                                     "description":  "Discovered and conquered 10 Monad doors.(Persona 3 Reload main story mode only)",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/d72ecd4ac7caf3c13292345dd8358b8b29cee243.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/95f0686053a185645c790e23b2067700e67163fa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_TREASURE_BOX_50",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Briefcase Burglar",
+                                                                     "hidden":  0,
+                                                                     "description":  "Opened 50 treasure chests.(Persona 3 Reload main story mode only)",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/35de0c8a2dd70cfd8642f86eaaf492515ae13b70.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/95f0686053a185645c790e23b2067700e67163fa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_USE_RAREMEDAL_50",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Shattered Plumes",
+                                                                     "hidden":  0,
+                                                                     "description":  "Used a total of 50 Twilight Fragments.(Persona 3 Reload main story mode only)",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/341fd7756c79958d140be96f485a69ad3134272c.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/95f0686053a185645c790e23b2067700e67163fa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_ENC_HAPPENING",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "The Horror of the Shade",
+                                                                     "hidden":  0,
+                                                                     "description":  "Encountered a Dark Zone in Tartarus.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/917b7ce1ba571df9bd1df739f143dc59399f58f2.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/95f0686053a185645c790e23b2067700e67163fa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_ENC_DEATH",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Reaper Reaped",
+                                                                     "hidden":  0,
+                                                                     "description":  "Defeated the Reaper.(Persona 3 Reload main story mode only)",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/f8b5f66d0dc5c3dfcbe2e2c14044a82bd31b0001.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/95f0686053a185645c790e23b2067700e67163fa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_EXE_2_SPREAD",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "The First of Many",
+                                                                     "hidden":  0,
+                                                                     "description":  "Performed a Dyad Fusion.(Persona 3 Reload main story mode only)",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/6e7494b675cda9e4e49c4f69b6db861215297875.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/95f0686053a185645c790e23b2067700e67163fa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_EXE_3_SPREAD",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Fusion Artisan",
+                                                                     "hidden":  0,
+                                                                     "description":  "Performed a fusion with three or more Personas.(Persona 3 Reload main story mode only)",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/4c95b21722d1de5b705589d939be9f7451d7173e.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/95f0686053a185645c790e23b2067700e67163fa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_GET_CONCEPTION_ITEM",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Birthday Present",
+                                                                     "hidden":  0,
+                                                                     "description":  "Obtained an item from a Persona Conception.(Persona 3 Reload main story mode only)",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/ef63895dfa475a3963084f56ef800536ba252797.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/95f0686053a185645c790e23b2067700e67163fa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_MAKE_MESSIAH",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Path to Salvation",
+                                                                     "hidden":  0,
+                                                                     "description":  "Fused Messiah.(Persona 3 Reload main story mode only)",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/3575a9f250c867eebc28bbdab3df4eef4f0c991d.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/95f0686053a185645c790e23b2067700e67163fa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_SKILL_CHANGE",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Tempting Fate",
+                                                                     "hidden":  0,
+                                                                     "description":  "Triggered a skill change during fusion.(Persona 3 Reload main story mode only)",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/a5d711b734350b9454100e5a98b99d7e8f2e43b8.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/95f0686053a185645c790e23b2067700e67163fa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_HARVEST",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Eat Your Veggies, Peas!",
+                                                                     "hidden":  0,
+                                                                     "description":  "Harvested a crop that you grew with a teammate.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/23a75440bb50db6fc087e447db1fd02810916772.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/95f0686053a185645c790e23b2067700e67163fa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_GET_ARBEIT_50000",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "The Grindset Mindset",
+                                                                     "hidden":  0,
+                                                                     "description":  "Earned over 50,000 yen total from part-time jobs.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/73ad8f86e6847d8874e7aa9622108132cd71a2af.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/95f0686053a185645c790e23b2067700e67163fa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_H_PARAM_ONE_MAX",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Specialist",
+                                                                     "hidden":  0,
+                                                                     "description":  "Maxed out one Social Stat.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/9123883bed538d61e2e7f6bf6fbda9fb66408a0d.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/95f0686053a185645c790e23b2067700e67163fa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_H_PARAM_ALL_MAX",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Peak Performance",
+                                                                     "hidden":  0,
+                                                                     "description":  "Maxed out all Social Stats.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/3a12a681be0c024a4a91cf2a5de9108f72279a89.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/95f0686053a185645c790e23b2067700e67163fa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_PAST_NIGHT_TIME",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Dorm Life",
+                                                                     "hidden":  0,
+                                                                     "description":  "Spent an evening in the dorm with a teammate.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/8b40cd9cbfc265b548bd8bc372d0885c0daac48f.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/95f0686053a185645c790e23b2067700e67163fa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_HIDDEN_MENU_EMP",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Gourmand",
+                                                                     "hidden":  0,
+                                                                     "description":  "Ordered from a secret menu at the Iwatodai strip mall at night.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/75c750c94c51d8ba4a10472cc4b7a22221bf3d41.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/95f0686053a185645c790e23b2067700e67163fa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_CURE_CAT",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Benevolent Purr-tector",
+                                                                     "hidden":  0,
+                                                                     "description":  "Nursed a cat back to full health.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/4f79cf8baba93d056928ef91f448f49f20f0cfa9.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/95f0686053a185645c790e23b2067700e67163fa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_MAIL_INVITATION_5",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "In High Demand",
+                                                                     "hidden":  0,
+                                                                     "description":  "Accepted an invitation to hang out five times.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/ea8f554646de2e4fc0048180e590796f62f8707d.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/95f0686053a185645c790e23b2067700e67163fa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_CHALLENGE_MONADO",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Beyond the Darkness",
+                                                                     "hidden":  0,
+                                                                     "description":  "Unlocked access to the remaining Major Arcana.(Persona 3 Reload main story mode only)",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/0e6f407133cc515e57f87beb86bd249f88c1465e.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/95f0686053a185645c790e23b2067700e67163fa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_PROPERTY_GET_ONE",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Through Thick and Thin",
+                                                                     "hidden":  0,
+                                                                     "description":  "Unlocked a teammate\u0027s Combat Characteristic.(Persona 3 Reload main story mode only)",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/2d5c8c7dc398608fb1f1fa04f72d5604883ff56d.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/95f0686053a185645c790e23b2067700e67163fa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_GET_RAREMEDAL_ALL",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Eagle Eye",
+                                                                     "hidden":  0,
+                                                                     "description":  "Acquired every Twilight Fragment in town.(Persona 3 Reload main story mode only)",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/a856968e661820563bebd0c6208ff1aa3fd07055.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/95f0686053a185645c790e23b2067700e67163fa.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_PRGS_WILD",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Realized Power",
+                                                                     "hidden":  0,
+                                                                     "description":  "Awakened to the power of the wild card.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/e0adf6967450bb2ec8da680f4cc921aac187589c.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/029f16e73ef5944a7af2be5c7baae7752a932700.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_PRGS_COCYTUS",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "The Vengeful One",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/f41856c7ac69f7985875630a6d5c1d3a48fc67e0.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/029f16e73ef5944a7af2be5c7baae7752a932700.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_PRGS_CAINA",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "The Determined One",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/06e5ae9df4f211f231947e9d985f72da4e996177.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/029f16e73ef5944a7af2be5c7baae7752a932700.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_PRGS_ANTENORA",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "The Disillusioned One",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/38f5bb95508fac4dd0a5490b3fd2fcf405d875c6.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/029f16e73ef5944a7af2be5c7baae7752a932700.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_PRGS_PTOLOMEA",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "The Selfless One",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/2c7d0038536f11f16c78e674bf92d358bf410c00.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/029f16e73ef5944a7af2be5c7baae7752a932700.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_PRGS_JUDECCA",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "The Steadfast One",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/5a0be4e98706d45859f3d4c406390de254fb47a2.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/029f16e73ef5944a7af2be5c7baae7752a932700.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_PRGS_EMPIREO",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "The One Who Dreamt",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/7b80e9a905f918a252c4b8348f55eaad0e62897d.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/029f16e73ef5944a7af2be5c7baae7752a932700.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ACH_PRGS_ENDING",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Together, Into Tomorrow",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/5af674b5ebcadbb2382f22bee371ee54758689f4.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2161700/029f16e73ef5944a7af2be5c7baae7752a932700.jpg"
+                                                                 }
+                                                             ]
+                                        }
+             }
+}

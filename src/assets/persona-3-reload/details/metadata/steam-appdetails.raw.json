@@ -1,0 +1,413 @@
+﻿{
+    "2161700":  {
+                    "success":  true,
+                    "data":  {
+                                 "type":  "game",
+                                 "name":  "Persona 3 Reload",
+                                 "steam_appid":  2161700,
+                                 "required_age":  "17",
+                                 "is_free":  false,
+                                 "controller_support":  "full",
+                                 "dlc":  [
+                                             2689210,
+                                             2322840,
+                                             2334530,
+                                             2334531,
+                                             2334532,
+                                             2334533,
+                                             2334534,
+                                             2334536
+                                         ],
+                                 "detailed_description":  "\u003ch1\u003eDigital Deluxe Edition\u003c/h1\u003e\u003cp\u003e\u003cp class=\"bb_paragraph\" style=\"text-align: center\"\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/extras/c91ff917a8ab1924569d2508f0349bf3.avif?t=1764776430\" width=616 height=300 /\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e*Please note that tracks can only be played on the app and cannot be downloaded in any audio format, such as MP3.\u003c/p\u003e\u003c/p\u003e\u003cbr\u003e\u003ch1\u003eDigital Premium Edition\u003c/h1\u003e\u003cp\u003e\u003cp class=\"bb_paragraph\" style=\"text-align: center\"\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/extras/d7c9e2e0c527c2ef47b3e50b1079a8ce.avif?t=1764776430\" width=616 height=300 /\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e*Please note that tracks can only be played on the app and cannot be downloaded in any audio format, such as MP3.\u003c/p\u003e\u003c/p\u003e\u003cbr\u003e\u003ch1\u003eAbout the Game\u003c/h1\u003e\u003cp class=\"bb_paragraph\" style=\"text-align: center\"\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/extras/94e8c02adc6873659a3234e381db60ea.poster.avif?t=1764776430\" width=616 height=346 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/extras/94e8c02adc6873659a3234e381db60ea.webm?t=1764776430\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/extras/94e8c02adc6873659a3234e381db60ea.mp4?t=1764776430\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eStep into the shoes of a transfer student thrust into an unexpected fate when entering the hour \u0026quot;hidden\u0026quot; between one day and the next. Awaken an incredible power and chase the mysteries of the Dark Hour, fight for your friends, and leave a mark on their memories forever.  \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003ePersona 3 Reload is a captivating reimagining of the genre-defining RPG, reborn for the modern era. \u003c/p\u003e\u003cp class=\"bb_paragraph\" style=\"text-align: center\"\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/extras/c41c1c38e2328eaa77319743a92c4835.poster.avif?t=1764776430\" width=616 height=346 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/extras/c41c1c38e2328eaa77319743a92c4835.webm?t=1764776430\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/extras/c41c1c38e2328eaa77319743a92c4835.mp4?t=1764776430\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eKey Features:  \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e- Experience the pivotal game of the Persona series faithfully remade with cutting-edge graphics, modernized quality-of-life features, and signature stylish UI.  \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e-Fully immerse yourself in an emotional, gripping journey with new scenes, character interactions, and additional voiceover. \u003c/p\u003e\u003cp class=\"bb_paragraph\" style=\"text-align: center\"\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/extras/0b1d5f689ad4d6e3ad5d62fec5bd01cb.poster.avif?t=1764776430\" width=616 height=346 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/extras/0b1d5f689ad4d6e3ad5d62fec5bd01cb.webm?t=1764776430\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/extras/0b1d5f689ad4d6e3ad5d62fec5bd01cb.mp4?t=1764776430\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e- Choose how to meaningfully spend each day through various activities, from exploring the Port Island to forging genuine bonds with beloved characters. \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e- Build and command your optimal team to take down otherworldly Shadows and climb closer to the truth. \u003c/p\u003e\u003cp class=\"bb_paragraph\" style=\"text-align: center\"\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/extras/02d61f6767fd90cc751ea2d35baa1c76.poster.avif?t=1764776430\" width=616 height=346 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/extras/02d61f6767fd90cc751ea2d35baa1c76.webm?t=1764776430\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/extras/02d61f6767fd90cc751ea2d35baa1c76.mp4?t=1764776430\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" style=\"text-align: center\"\u003e--- \u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003ePersona 3 Reload Digital Deluxe Edition includes:\u003c/strong\u003e\u003c/h2\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003eBase Game\u003c/p\u003e\u003c/li\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003eDigital Artbook: Filled with 64 pages of character art, concept art, backgrounds and other illustrations from the game!\u003c/p\u003e\u003c/li\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003eDigital Soundtrack: Listen to newly arranged tracks from the original Persona 3 plus all-new tracks from Persona 3 Reload, presented by the Atlus sound team for a total of 60 new songs.\u003c/p\u003e\u003c/li\u003e\u003c/ul\u003e\u003cp class=\"bb_paragraph\" \u003e \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e--- \u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003ePersona 3 Reload Digital Premium Edition includes:\u003c/strong\u003e\u003c/h2\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003eBase Game\u003c/p\u003e\u003c/li\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003eDigital Artbook\u003c/p\u003e\u003c/li\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003eDigital Soundtrack\u003c/p\u003e\u003c/li\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003ePersona 3 Reload DLC Pack:  P5R Phantom Thieves Costume Set, P5R Shujin Academy Costume Set, P5R Persona Set 1, P5R Persona Set 2 , P5R BGM Set, P4G Yasogami High Costume Set, P4G Persona Set\u003c/p\u003e\u003c/li\u003e\u003c/ul\u003e",
+                                 "about_the_game":  "\u003cp class=\"bb_paragraph\" style=\"text-align: center\"\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/extras/94e8c02adc6873659a3234e381db60ea.poster.avif?t=1764776430\" width=616 height=346 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/extras/94e8c02adc6873659a3234e381db60ea.webm?t=1764776430\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/extras/94e8c02adc6873659a3234e381db60ea.mp4?t=1764776430\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eStep into the shoes of a transfer student thrust into an unexpected fate when entering the hour \u0026quot;hidden\u0026quot; between one day and the next. Awaken an incredible power and chase the mysteries of the Dark Hour, fight for your friends, and leave a mark on their memories forever.  \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003ePersona 3 Reload is a captivating reimagining of the genre-defining RPG, reborn for the modern era. \u003c/p\u003e\u003cp class=\"bb_paragraph\" style=\"text-align: center\"\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/extras/c41c1c38e2328eaa77319743a92c4835.poster.avif?t=1764776430\" width=616 height=346 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/extras/c41c1c38e2328eaa77319743a92c4835.webm?t=1764776430\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/extras/c41c1c38e2328eaa77319743a92c4835.mp4?t=1764776430\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eKey Features:  \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e- Experience the pivotal game of the Persona series faithfully remade with cutting-edge graphics, modernized quality-of-life features, and signature stylish UI.  \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e-Fully immerse yourself in an emotional, gripping journey with new scenes, character interactions, and additional voiceover. \u003c/p\u003e\u003cp class=\"bb_paragraph\" style=\"text-align: center\"\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/extras/0b1d5f689ad4d6e3ad5d62fec5bd01cb.poster.avif?t=1764776430\" width=616 height=346 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/extras/0b1d5f689ad4d6e3ad5d62fec5bd01cb.webm?t=1764776430\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/extras/0b1d5f689ad4d6e3ad5d62fec5bd01cb.mp4?t=1764776430\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e- Choose how to meaningfully spend each day through various activities, from exploring the Port Island to forging genuine bonds with beloved characters. \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e- Build and command your optimal team to take down otherworldly Shadows and climb closer to the truth. \u003c/p\u003e\u003cp class=\"bb_paragraph\" style=\"text-align: center\"\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/extras/02d61f6767fd90cc751ea2d35baa1c76.poster.avif?t=1764776430\" width=616 height=346 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/extras/02d61f6767fd90cc751ea2d35baa1c76.webm?t=1764776430\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/extras/02d61f6767fd90cc751ea2d35baa1c76.mp4?t=1764776430\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" style=\"text-align: center\"\u003e--- \u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003ePersona 3 Reload Digital Deluxe Edition includes:\u003c/strong\u003e\u003c/h2\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003eBase Game\u003c/p\u003e\u003c/li\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003eDigital Artbook: Filled with 64 pages of character art, concept art, backgrounds and other illustrations from the game!\u003c/p\u003e\u003c/li\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003eDigital Soundtrack: Listen to newly arranged tracks from the original Persona 3 plus all-new tracks from Persona 3 Reload, presented by the Atlus sound team for a total of 60 new songs.\u003c/p\u003e\u003c/li\u003e\u003c/ul\u003e\u003cp class=\"bb_paragraph\" \u003e \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e--- \u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003ePersona 3 Reload Digital Premium Edition includes:\u003c/strong\u003e\u003c/h2\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003eBase Game\u003c/p\u003e\u003c/li\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003eDigital Artbook\u003c/p\u003e\u003c/li\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003eDigital Soundtrack\u003c/p\u003e\u003c/li\u003e\u003cli\u003e\u003cp class=\"bb_paragraph\" \u003ePersona 3 Reload DLC Pack:  P5R Phantom Thieves Costume Set, P5R Shujin Academy Costume Set, P5R Persona Set 1, P5R Persona Set 2 , P5R BGM Set, P4G Yasogami High Costume Set, P4G Persona Set\u003c/p\u003e\u003c/li\u003e\u003c/ul\u003e",
+                                 "short_description":  "Dive into the Dark Hour and awaken the depths of your heart. Persona 3 Reload is a captivating reimagining of the genre-defining RPG, reborn for the modern era with cutting-edge graphics and gameplay.",
+                                 "supported_languages":  "English\u003cstrong\u003e*\u003c/strong\u003e, French, Italian, German, Spanish - Spain, Japanese\u003cstrong\u003e*\u003c/strong\u003e, Korean, Polish, Portuguese - Brazil, Russian, Simplified Chinese, Traditional Chinese, Turkish\u003cbr\u003e\u003cstrong\u003e*\u003c/strong\u003elanguages with full audio support",
+                                 "header_image":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/header.jpg?t=1764776430",
+                                 "capsule_image":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/capsule_231x87.jpg?t=1764776430",
+                                 "capsule_imagev5":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/capsule_184x69.jpg?t=1764776430",
+                                 "website":  "https://persona.atlus.com/p3r",
+                                 "pc_requirements":  {
+                                                         "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003eRequires a 64-bit processor and operating system\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows 10\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e Intel Core i5-2300, AMD FX-4350\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 8 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e NVIDIA GeForce GTX 650 Ti, 2 GB; AMD Radeon HD 7850, 2 GB\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eDirectX:\u003c/strong\u003e Version 12\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 30 GB available space\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eAdditional Notes:\u003c/strong\u003e Performance Target: 720p, low graphics settings, @ 30 FPS. Microsoft no longer supports Windows 10 or older versions.\u003c/li\u003e\u003c/ul\u003e",
+                                                         "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003eRequires a 64-bit processor and operating system\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows 10\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e Intel Core i7-4790, AMD Ryzen 5 1400\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 8 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e NVIDIA GeForce GTX 1650, 4 GB, AMD Radeon R9 290X, 4 GB\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eDirectX:\u003c/strong\u003e Version 12\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 30 GB available space\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eAdditional Notes:\u003c/strong\u003e Performance Target: 1080p, high graphics settings, @ 60 FPS. Microsoft no longer supports Windows 10 or older versions.\u003c/li\u003e\u003c/ul\u003e"
+                                                     },
+                                 "mac_requirements":  {
+                                                          "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e",
+                                                          "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e"
+                                                      },
+                                 "linux_requirements":  {
+                                                            "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e",
+                                                            "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e"
+                                                        },
+                                 "legal_notice":  "©ATLUS ©SEGA All rights reserved.\u003cbr\u003e\u003cbr\u003e",
+                                 "drm_notice":  "Denuvo",
+                                 "developers":  [
+                                                    "ATLUS"
+                                                ],
+                                 "publishers":  [
+                                                    "SEGA"
+                                                ],
+                                 "demos":  [
+                                               {
+                                                   "appid":  3358440,
+                                                   "description":  ""
+                                               }
+                                           ],
+                                 "price_overview":  {
+                                                        "currency":  "USD",
+                                                        "initial":  5999,
+                                                        "final":  2099,
+                                                        "discount_percent":  65,
+                                                        "initial_formatted":  "$59.99",
+                                                        "final_formatted":  "$20.99"
+                                                    },
+                                 "packages":  [
+                                                  914635,
+                                                  914636,
+                                                  914637,
+                                                  981711
+                                              ],
+                                 "package_groups":  [
+                                                        {
+                                                            "name":  "default",
+                                                            "title":  "Buy Persona 3 Reload",
+                                                            "description":  "",
+                                                            "selection_text":  "Select a purchase option",
+                                                            "save_text":  "",
+                                                            "display_type":  0,
+                                                            "is_recurring_subscription":  "false",
+                                                            "subs":  [
+                                                                         {
+                                                                             "packageid":  914635,
+                                                                             "percent_savings_text":  "-65% ",
+                                                                             "percent_savings":  0,
+                                                                             "option_text":  "Persona 3 Reload - \u003cspan class=\"discount_original_price\"\u003e$59.99\u003c/span\u003e $20.99",
+                                                                             "option_description":  "",
+                                                                             "can_get_free_license":  "0",
+                                                                             "is_free_license":  false,
+                                                                             "price_in_cents_with_discount":  2099
+                                                                         },
+                                                                         {
+                                                                             "packageid":  914636,
+                                                                             "percent_savings_text":  "-65% ",
+                                                                             "percent_savings":  0,
+                                                                             "option_text":  "Persona 3 Reload Digital Deluxe Edition - \u003cspan class=\"discount_original_price\"\u003e$69.99\u003c/span\u003e $24.49",
+                                                                             "option_description":  "",
+                                                                             "can_get_free_license":  "0",
+                                                                             "is_free_license":  false,
+                                                                             "price_in_cents_with_discount":  2449
+                                                                         },
+                                                                         {
+                                                                             "packageid":  914637,
+                                                                             "percent_savings_text":  "-65% ",
+                                                                             "percent_savings":  0,
+                                                                             "option_text":  "Persona 3 Reload Digital Premium Edition - \u003cspan class=\"discount_original_price\"\u003e$89.99\u003c/span\u003e $31.49",
+                                                                             "option_description":  "",
+                                                                             "can_get_free_license":  "0",
+                                                                             "is_free_license":  false,
+                                                                             "price_in_cents_with_discount":  3149
+                                                                         },
+                                                                         {
+                                                                             "packageid":  981711,
+                                                                             "percent_savings_text":  "-50% ",
+                                                                             "percent_savings":  0,
+                                                                             "option_text":  "Persona 3 Reload - DLC Pack - \u003cspan class=\"discount_original_price\"\u003e$26.99\u003c/span\u003e $13.49",
+                                                                             "option_description":  "",
+                                                                             "can_get_free_license":  "0",
+                                                                             "is_free_license":  false,
+                                                                             "price_in_cents_with_discount":  1349
+                                                                         }
+                                                                     ]
+                                                        }
+                                                    ],
+                                 "platforms":  {
+                                                   "windows":  true,
+                                                   "mac":  false,
+                                                   "linux":  false
+                                               },
+                                 "metacritic":  {
+                                                    "score":  89,
+                                                    "url":  "https://www.metacritic.com/game/pc/persona-3-reload?ftag=MCD-06-10aaa1f"
+                                                },
+                                 "categories":  [
+                                                    {
+                                                        "id":  2,
+                                                        "description":  "Single-player"
+                                                    },
+                                                    {
+                                                        "id":  22,
+                                                        "description":  "Steam Achievements"
+                                                    },
+                                                    {
+                                                        "id":  28,
+                                                        "description":  "Full controller support"
+                                                    },
+                                                    {
+                                                        "id":  29,
+                                                        "description":  "Steam Trading Cards"
+                                                    },
+                                                    {
+                                                        "id":  68,
+                                                        "description":  "Custom Volume Controls"
+                                                    },
+                                                    {
+                                                        "id":  78,
+                                                        "description":  "Adjustable Difficulty"
+                                                    },
+                                                    {
+                                                        "id":  75,
+                                                        "description":  "Keyboard Only Option"
+                                                    },
+                                                    {
+                                                        "id":  74,
+                                                        "description":  "Playable without Timed Input"
+                                                    },
+                                                    {
+                                                        "id":  55,
+                                                        "description":  "DualShock Controller Support"
+                                                    },
+                                                    {
+                                                        "id":  56,
+                                                        "description":  "DualShock Controller Support"
+                                                    },
+                                                    {
+                                                        "id":  57,
+                                                        "description":  "DualShock Controller Support"
+                                                    },
+                                                    {
+                                                        "id":  58,
+                                                        "description":  "DualShock Controller Support"
+                                                    },
+                                                    {
+                                                        "id":  69,
+                                                        "description":  "Stereo Sound"
+                                                    },
+                                                    {
+                                                        "id":  70,
+                                                        "description":  "Surround Sound"
+                                                    },
+                                                    {
+                                                        "id":  23,
+                                                        "description":  "Steam Cloud"
+                                                    },
+                                                    {
+                                                        "id":  62,
+                                                        "description":  "Family Sharing"
+                                                    }
+                                                ],
+                                 "genres":  [
+                                                {
+                                                    "id":  "25",
+                                                    "description":  "Adventure"
+                                                },
+                                                {
+                                                    "id":  "3",
+                                                    "description":  "RPG"
+                                                },
+                                                {
+                                                    "id":  "2",
+                                                    "description":  "Strategy"
+                                                }
+                                            ],
+                                 "screenshots":  [
+                                                     {
+                                                         "id":  0,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/ss_7017244fb8319ba927a0ef414959b95a6164356f.600x338.jpg?t=1764776430",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/ss_7017244fb8319ba927a0ef414959b95a6164356f.1920x1080.jpg?t=1764776430"
+                                                     },
+                                                     {
+                                                         "id":  1,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/ss_cfe4b9124ea5e815e7981e3ac29a72a02fd48239.600x338.jpg?t=1764776430",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/ss_cfe4b9124ea5e815e7981e3ac29a72a02fd48239.1920x1080.jpg?t=1764776430"
+                                                     },
+                                                     {
+                                                         "id":  2,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/ss_c123d3e9360f030e6600db27311586d033f65ff7.600x338.jpg?t=1764776430",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/ss_c123d3e9360f030e6600db27311586d033f65ff7.1920x1080.jpg?t=1764776430"
+                                                     },
+                                                     {
+                                                         "id":  3,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/ss_f51fc26c627816bbd87011ca278b1fbbda2d6bc8.600x338.jpg?t=1764776430",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/ss_f51fc26c627816bbd87011ca278b1fbbda2d6bc8.1920x1080.jpg?t=1764776430"
+                                                     },
+                                                     {
+                                                         "id":  4,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/ss_b60f1f21f4794f0ba90bbc55c41aab4637b4103a.600x338.jpg?t=1764776430",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/ss_b60f1f21f4794f0ba90bbc55c41aab4637b4103a.1920x1080.jpg?t=1764776430"
+                                                     },
+                                                     {
+                                                         "id":  5,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/ss_7f066d1c88b826ee72646f2a3dac0719842835b2.600x338.jpg?t=1764776430",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/ss_7f066d1c88b826ee72646f2a3dac0719842835b2.1920x1080.jpg?t=1764776430"
+                                                     },
+                                                     {
+                                                         "id":  6,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/ss_b5b93089686b45d6abee593d025c91389c7dc20e.600x338.jpg?t=1764776430",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/ss_b5b93089686b45d6abee593d025c91389c7dc20e.1920x1080.jpg?t=1764776430"
+                                                     },
+                                                     {
+                                                         "id":  7,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/ss_e5f9b3aedadef82286c34d9d419b7cd45e034f87.600x338.jpg?t=1764776430",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/ss_e5f9b3aedadef82286c34d9d419b7cd45e034f87.1920x1080.jpg?t=1764776430"
+                                                     },
+                                                     {
+                                                         "id":  8,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/ss_6eb13282757801e1ea826bb60de82cd07ef33e1c.600x338.jpg?t=1764776430",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/ss_6eb13282757801e1ea826bb60de82cd07ef33e1c.1920x1080.jpg?t=1764776430"
+                                                     },
+                                                     {
+                                                         "id":  9,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/ss_8182ac626d22010c5e93e0bdfbd7b2d89860657a.600x338.jpg?t=1764776430",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/ss_8182ac626d22010c5e93e0bdfbd7b2d89860657a.1920x1080.jpg?t=1764776430"
+                                                     }
+                                                 ],
+                                 "movies":  [
+                                                {
+                                                    "id":  256997656,
+                                                    "name":  "Launch Trailer",
+                                                    "thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256997656/movie.293x165.jpg?t=1706853531",
+                                                    "dash_av1":  "https://video.akamai.steamstatic.com/store_trailers/2161700/656756/9fed076b451856cfc15554fc6717dc9c600298f8/1750777513/dash_av1.mpd?t=1706853531",
+                                                    "dash_h264":  "https://video.akamai.steamstatic.com/store_trailers/2161700/656756/9fed076b451856cfc15554fc6717dc9c600298f8/1750777513/dash_h264.mpd?t=1706853531",
+                                                    "hls_h264":  "https://video.akamai.steamstatic.com/store_trailers/2161700/656756/9fed076b451856cfc15554fc6717dc9c600298f8/1750777513/hls_264_master.m3u8?t=1706853531",
+                                                    "highlight":  true
+                                                },
+                                                {
+                                                    "id":  256959061,
+                                                    "name":  "Announcement Trailer 1 (ESRB)",
+                                                    "thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256959061/movie.293x165.jpg?t=1706853582",
+                                                    "dash_av1":  "https://video.akamai.steamstatic.com/store_trailers/2161700/589083/039004b9af51c939d3cb2850f4ca0079f3f431be/1750776105/dash_av1.mpd?t=1706853582",
+                                                    "dash_h264":  "https://video.akamai.steamstatic.com/store_trailers/2161700/589083/039004b9af51c939d3cb2850f4ca0079f3f431be/1750776105/dash_h264.mpd?t=1706853582",
+                                                    "hls_h264":  "https://video.akamai.steamstatic.com/store_trailers/2161700/589083/039004b9af51c939d3cb2850f4ca0079f3f431be/1750776105/hls_264_master.m3u8?t=1706853582",
+                                                    "highlight":  true
+                                                }
+                                            ],
+                                 "recommendations":  {
+                                                         "total":  39316
+                                                     },
+                                 "achievements":  {
+                                                      "total":  56,
+                                                      "highlighted":  [
+                                                                          {
+                                                                              "icon":  "72dcd4e4707d8feb2fe31ebabeec7cf177dc1c8e.jpg",
+                                                                              "localized_name":  "Awakened Power",
+                                                                              "name":  "Awakened Power",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2161700/72dcd4e4707d8feb2fe31ebabeec7cf177dc1c8e.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "307214c3efebe26460daca12c4cb02655289a726.jpg",
+                                                                              "localized_name":  "SEES the Day",
+                                                                              "name":  "SEES the Day",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2161700/307214c3efebe26460daca12c4cb02655289a726.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "0d3f8fb216d4a2db2a33f6cae43fbecbc1cc2e32.jpg",
+                                                                              "localized_name":  "Back on Track",
+                                                                              "name":  "Back on Track",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2161700/0d3f8fb216d4a2db2a33f6cae43fbecbc1cc2e32.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "d6d3355c5d8c54d1e63a7451c2251b3387725a0f.jpg",
+                                                                              "localized_name":  "Empowered Protector",
+                                                                              "name":  "Empowered Protector",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2161700/d6d3355c5d8c54d1e63a7451c2251b3387725a0f.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "d8613caadc740915321b59b5dc3568bdc4e4e975.jpg",
+                                                                              "localized_name":  "Never Toy with Matters of the Heart",
+                                                                              "name":  "Never Toy with Matters of the Heart",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2161700/d8613caadc740915321b59b5dc3568bdc4e4e975.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "7e5fd859d6d84222d6b44d333c7141a45822dc18.jpg",
+                                                                              "localized_name":  "Armor Disarmed",
+                                                                              "name":  "Armor Disarmed",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2161700/7e5fd859d6d84222d6b44d333c7141a45822dc18.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "cf213da3090699c7cc9d10f150813d73862e7984.jpg",
+                                                                              "localized_name":  "Dodging Lightning",
+                                                                              "name":  "Dodging Lightning",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2161700/cf213da3090699c7cc9d10f150813d73862e7984.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "f0c23039e31ecb669cb20a0503fe663463d5a50e.jpg",
+                                                                              "localized_name":  "Twist of Fate",
+                                                                              "name":  "Twist of Fate",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2161700/f0c23039e31ecb669cb20a0503fe663463d5a50e.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "14116fc193364e821577372f10cadb320f2dff40.jpg",
+                                                                              "localized_name":  "A Sense of Finality",
+                                                                              "name":  "A Sense of Finality",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2161700/14116fc193364e821577372f10cadb320f2dff40.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "39f90bc7ea42a2e2c01572e97356a9e9dde8616a.jpg",
+                                                                              "localized_name":  "The Great Seal",
+                                                                              "name":  "The Great Seal",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2161700/39f90bc7ea42a2e2c01572e97356a9e9dde8616a.jpg"
+                                                                          }
+                                                                      ]
+                                                  },
+                                 "release_date":  {
+                                                      "coming_soon":  false,
+                                                      "date":  "Feb 1, 2024"
+                                                  },
+                                 "support_info":  {
+                                                      "url":  "https://support.sega.com/hc/en-us",
+                                                      "email":  ""
+                                                  },
+                                 "background":  "https://store.akamai.steamstatic.com/images/storepagebackground/app/2161700?t=1764776430",
+                                 "background_raw":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2161700/page_bg_raw.jpg?t=1764776430",
+                                 "content_descriptors":  {
+                                                             "ids":  [
+                                                                         1,
+                                                                         5
+                                                                     ],
+                                                             "notes":  "This game includes content such as blood, partial nudity, sexual themes, and violence."
+                                                         },
+                                 "ratings":  {
+                                                 "esrb":  {
+                                                              "rating":  "m",
+                                                              "descriptors":  "Violence\r\nBlood\r\nSexual Themes\r\nPartial Nudity\r\nStrong Language",
+                                                              "use_age_gate":  "true",
+                                                              "required_age":  "17"
+                                                          },
+                                                 "cero":  {
+                                                              "rating":  "c",
+                                                              "descriptors":  "セクシャル\r\n飲酒・喫煙"
+                                                          },
+                                                 "kgrb":  {
+                                                              "rating":  "15",
+                                                              "descriptors":  "선정성\r\n폭력성\r\n약물"
+                                                          },
+                                                 "csrr":  {
+                                                              "rating":  "C15",
+                                                              "descriptors":  "性,暴力,菸酒"
+                                                          },
+                                                 "dejus":  {
+                                                               "rating":  "16",
+                                                               "descriptors":  "Violência;\r\nTemas sensíveis;\r\nConteúdo sexual"
+                                                           },
+                                                 "usk":  {
+                                                             "rating":  "16",
+                                                             "descriptors":  "Belastende Themen, Fantasy-Gewalt, Sexuelle Andeutungen"
+                                                         },
+                                                 "pegi":  {
+                                                              "rating":  "16",
+                                                              "descriptors":  "Violence, Bad Language"
+                                                          },
+                                                 "oflc":  {
+                                                              "rating":  "ma15",
+                                                              "descriptors":  "Strong themes, visual references to suicide and self-harm"
+                                                          },
+                                                 "nzoflc":  {
+                                                                "rating":  "r13",
+                                                                "descriptors":  "Violence and suicide imagery"
+                                                            },
+                                                 "mda":  {
+                                                             "rating":  "AA16"
+                                                         }
+                                             }
+                             }
+                }
+}
