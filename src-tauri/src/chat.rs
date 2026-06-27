@@ -245,3 +245,34 @@ pub fn upload_chat_media_from_path(filename: String, filepath: String) -> Result
     let data = fs::read(&filepath).map_err(|e| format!("Failed to read file: {}", e))?;
     upload_chat_media(filename, data)
 }
+
+#[tauri::command]
+pub fn delete_chat_media(url: String) -> Result<(), String> {
+    if !url.contains("/resolve/main/chats/media/") {
+        return Ok(());
+    }
+    let filename = url.split('/').last().unwrap_or_default();
+    if filename.is_empty() { return Ok(()); }
+    
+    let payload = serde_json::json!({
+        "operations": [
+            {
+                "operation": "delete",
+                "path": format!("chats/media/{}", filename)
+            }
+        ],
+        "commit_message": format!("Delete media {}", filename)
+    });
+
+    let hf_url = format!("https://huggingface.co/api/datasets/{}/commit/main", HF_REPO);
+    let client = reqwest::blocking::Client::builder().timeout(std::time::Duration::from_secs(30)).build().map_err(|e| e.to_string())?;
+    let hf_token = format!("{}{}{}", HF_TOKEN_PT1, HF_TOKEN_PT2, HF_TOKEN_PT3);
+    
+    let _res = client.post(&hf_url)
+        .header("Authorization", format!("Bearer {}", hf_token))
+        .json(&payload)
+        .send()
+        .map_err(|e| e.to_string())?;
+        
+    Ok(())
+}

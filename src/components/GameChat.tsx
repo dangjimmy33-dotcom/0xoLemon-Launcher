@@ -287,7 +287,11 @@ function ChatBody({ gameId, discordUser, compact }: GameChatProps & { compact?: 
   const handleDeleteMessage = async (msgId: string) => {
     if (!confirm('Delete this message?')) return
     try {
+      const msg = messages.find(m => m.id === msgId)
       await deleteDoc(doc(db, 'chats', gameId, 'messages', msgId))
+      if (msg?.mediaUrl) {
+        invoke('delete_chat_media', { url: msg.mediaUrl }).catch(console.error)
+      }
     } catch (e) {
       console.error('Failed to delete message', e)
     }
