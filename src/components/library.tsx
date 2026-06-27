@@ -10,6 +10,7 @@ import { formatBytes } from '../lib/format'
 import { getGameTags, gameHasTag } from '../lib/gameTags'
 import { GameDetailsPanel, InstallSummaryPanel } from './panels'
 import { CloudSavePanel } from './CloudSavePanel'
+import { GameChat } from './GameChat'
 import { useRealtimeConfig } from '../hooks/useRealtimeConfig'
 import { useFirestoreDetail } from '../hooks/useFirestoreDetail'
 
@@ -768,6 +769,7 @@ export function StoreLibraryView({
           />
         ) : null}
         <AchievementPreview achievements={detail.achievements} assets={assets} />
+        <GameChat gameId={detail.gameId} />
       </aside>
       {tutorialVisible && selectedGame ? (
         <TutorialModal
