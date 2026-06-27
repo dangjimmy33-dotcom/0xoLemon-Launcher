@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+﻿import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { invoke } from '@tauri-apps/api/core'
 import {
@@ -22,10 +22,10 @@ export interface ChatMessage {
   fileName?: string
   timestamp: number
   expiresAt?: number // for zip, rar, 7z (7 days)
-  reactions?: Record<string, string[]> // emoji → [senderId, ...]
+  reactions?: Record<string, string[]> // emoji â†’ [senderId, ...]
 }
 
-// ── Helpers ──────────────────────────────────────────────
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const getSenderId = () => {
   let sid = localStorage.getItem('chat_sender_id')
   if (!sid) { sid = Math.random().toString(36).substring(2, 10); localStorage.setItem('chat_sender_id', sid) }
@@ -47,7 +47,7 @@ function formatDate(ts: number) {
 
 // Track recent/frequent emojis in localStorage
 const REACTION_KEY = 'chat_reaction_history'
-const DEFAULT_REACTIONS = ['👍', '✅', '❤️', '😂', '😮', '😢']
+const DEFAULT_REACTIONS = ['đŸ‘', 'âœ…', 'â¤ï¸', 'đŸ˜‚', 'đŸ˜®', 'đŸ˜¢']
 
 function getTopReactions(): string[] {
   try {
@@ -69,7 +69,7 @@ function recordReactionUsed(emoji: string) {
   } catch { /* ignore */ }
 }
 
-// ── Avatar ────────────────────────────────────────────────
+// â”€â”€ Avatar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function Avatar({ name, url, size = 36 }: { name: string; url?: string; size?: number }) {
   const [err, setErr] = useState(false)
   const color = `hsl(${[...name].reduce((a, c) => a + c.charCodeAt(0), 0) % 360}, 65%, 55%)`
@@ -83,7 +83,7 @@ function Avatar({ name, url, size = 36 }: { name: string; url?: string; size?: n
   )
 }
 
-// ── Group messages ────────────────────────────────────────
+// â”€â”€ Group messages â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function groupMessages(messages: ChatMessage[], mySenderId: string, myAvatar?: string) {
   const groups: Array<{ senderId: string; senderName: string; senderAvatar?: string; date: string; msgs: ChatMessage[] }> = []
   for (const msg of messages) {
@@ -99,12 +99,12 @@ function groupMessages(messages: ChatMessage[], mySenderId: string, myAvatar?: s
   return groups
 }
 
-// ── Message content ───────────────────────────────────────
+// â”€â”€ Message content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function MessageContent({ text, imageBase64, mediaUrl, mediaType, fileName }: { text: string; imageBase64?: string; mediaUrl?: string; mediaType?: string; fileName?: string }) {
   const ytId = text ? extractYouTubeId(text) : null
   const isVideo = mediaType?.startsWith('video/')
-  const isImage = mediaType?.startsWith('image/')
-  const isFile = mediaType && !isVideo && !isImage
+  const isImage = !mediaType || mediaType.startsWith('image/')
+  const isFile = mediaType && !isVideo && !mediaType.startsWith('image/')
 
   const parseText = (t: string) => {
     const urlRegex = /(https?:\/\/[^\s]+)/g
@@ -129,9 +129,9 @@ function MessageContent({ text, imageBase64, mediaUrl, mediaType, fileName }: { 
       const savePath = await save({ defaultPath: getFilename(url) })
       if (!savePath) return
       await invoke('download_chat_media_to_disk', { url, filepath: savePath })
-      alert('Tải xuống hoàn tất / Download complete')
+      alert('Táº£i xuá»‘ng hoĂ n táº¥t / Download complete')
     } catch (e: any) {
-      alert(`Lỗi khi tải file: ${e?.message || e}`)
+      alert(`Lá»—i khi táº£i file: ${e?.message || e}`)
     }
   }
 
@@ -166,7 +166,7 @@ function MessageContent({ text, imageBase64, mediaUrl, mediaType, fileName }: { 
   )
 }
 
-// ── Context Menu ─────────────────────────────────────────
+// â”€â”€ Context Menu â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 interface ContextMenuProps {
   x: number; y: number
   msg: ChatMessage
@@ -260,7 +260,7 @@ const IdIcon = () => (
   </svg>
 )
 
-// ── Hover quick-action bar ────────────────────────────────
+// â”€â”€ Hover quick-action bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function HoverActions({ msg: _msg, isMine, topReactions, onContext, onEdit, onDelete, onReact }: {
   msg: ChatMessage; isMine: boolean; topReactions: string[]
   onContext: (e: React.MouseEvent) => void
@@ -292,17 +292,28 @@ function HoverActions({ msg: _msg, isMine, topReactions, onContext, onEdit, onDe
   )
 }
 
-// ── ChatBody ──────────────────────────────────────────────
+// â”€â”€ ChatBody â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 interface GameChatProps {
   gameId: string
   discordUser?: DiscordAuthUser | null
 }
 
-function ChatBody({ gameId, discordUser, compact }: GameChatProps & { compact?: boolean }) {
+interface StagedFile {
+  filepath: string
+  originalName: string
+  ext: string
+  isVideo: boolean
+  isImage: boolean
+  mediaType: string
+  expiresAt: number | null
+}
+
+function ChatBody({ gameId, discordUser, compact = false }: GameChatProps & { compact?: boolean }) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [inputText, setInputText] = useState('')
   const [sending, setSending] = useState(false)
   const [uploadProgress, setUploadProgress] = useState<string | null>(null)
+  const [stagedFile, setStagedFile] = useState<StagedFile | null>(null)
   const [editingMsgId, setEditingMsgId] = useState<string | null>(null)
   const [editInput, setEditInput] = useState('')
   const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number; msg: ChatMessage } | null>(null)
@@ -383,24 +394,41 @@ function ChatBody({ gameId, discordUser, compact }: GameChatProps & { compact?: 
   }, [messages])
 
   const handleSend = async () => {
-    if (!inputText.trim() || sending) return
+    if ((!inputText.trim() && !stagedFile) || sending) return
     setSending(true)
+
     try {
-      await addDoc(collection(db, 'chats', gameId, 'messages'), {
+      let payload: any = {
         senderId, senderName, senderAvatar: senderAvatar ?? null,
         text: inputText.trim(), timestamp: serverTimestamp(),
-      })
+      }
+
+      if (stagedFile) {
+        setUploadProgress(stagedFile.isVideo ? 'Uploading video...' : stagedFile.isImage ? 'Uploading image...' : 'Uploading file...')
+        const cleanInternalName = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${stagedFile.ext}`
+        const mediaUrl = await invoke<string>('upload_chat_media_from_path', { filename: cleanInternalName, filepath: stagedFile.filepath })
+        payload.mediaUrl = mediaUrl
+        payload.mediaType = stagedFile.mediaType
+        payload.fileName = stagedFile.originalName
+        if (stagedFile.expiresAt) payload.expiresAt = stagedFile.expiresAt
+      }
+
+      await addDoc(collection(db, 'chats', gameId, 'messages'), payload)
       setInputText('')
+      setStagedFile(null)
       inputRef.current?.focus()
-    } catch (e) { console.error(e) } finally { setSending(false) }
+    } catch (e: any) { 
+      console.error('Send failed:', e)
+      alert('Upload/Send failed: ' + (e.message || e))
+    } finally { 
+      setSending(false)
+      setUploadProgress(null)
+    }
   }
 
   const processFile = async (filepath: string) => {
     const originalName = filepath.split('\\').pop()?.split('/').pop() || 'file'
     const ext = originalName.split('.').pop()?.toLowerCase() || 'png'
-    
-    // Avoid special characters in HuggingFace URL by using a clean random string for the internal filename
-    const cleanInternalName = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${ext}`
     
     const isVideo = ['mp4', 'webm'].includes(ext)
     const isImage = ['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(ext)
@@ -413,26 +441,7 @@ function ChatBody({ gameId, discordUser, compact }: GameChatProps & { compact?: 
 
     const expiresAt = ['zip', 'rar', '7z'].includes(ext) ? Date.now() + 7 * 24 * 60 * 60 * 1000 : null
 
-    setUploadProgress(isVideo ? 'Uploading video...' : isImage ? 'Uploading image...' : 'Uploading file...')
-    setSending(true)
-
-    try {
-      const mediaUrl = await invoke<string>('upload_chat_media_from_path', { filename: cleanInternalName, filepath })
-      
-      const payload: any = {
-        senderId, senderName, senderAvatar: senderAvatar ?? null,
-        text: '', mediaUrl, mediaType, fileName: originalName, timestamp: serverTimestamp(),
-      }
-      if (expiresAt) payload.expiresAt = expiresAt
-
-      await addDoc(collection(db, 'chats', gameId, 'messages'), payload)
-    } catch (err: any) {
-      console.error('Upload failed:', err)
-      alert(`Upload failed: ${err?.message || err || 'Unknown error'}\n\nMake sure the file name doesn't contain special characters.`)
-    } finally {
-      setSending(false)
-      setUploadProgress(null)
-    }
+    setStagedFile({ filepath, originalName, ext, isVideo, isImage, mediaType, expiresAt })
   }
 
   const handleMediaUpload = async () => {
@@ -533,7 +542,7 @@ function ChatBody({ gameId, discordUser, compact }: GameChatProps & { compact?: 
                             if (e.key === 'Escape') setEditingMsgId(null)
                           }}
                         />
-                        <span className="msg-edit-hint">esc to cancel · enter to save</span>
+                        <span className="msg-edit-hint">esc to cancel Â· enter to save</span>
                       </div>
                     ) : (
                       <MessageContent 
@@ -594,37 +603,45 @@ function ChatBody({ gameId, discordUser, compact }: GameChatProps & { compact?: 
         />
       )}
 
-      {/* Upload progress */}
-      {uploadProgress && (
-        <div className="chat-upload-progress">
-          <div className="chat-upload-spinner" />
-          <span>{uploadProgress}</span>
-        </div>
-      )}
-
       {/* Input area */}
       <div className="chat-input-area">
-        <button className="icon-btn" onClick={handleMediaUpload} disabled={sending} title="Attach image or video">
-          <Paperclip size={18} />
-        </button>
-        <input
-          ref={inputRef}
-          type="text"
-          placeholder={`Message as ${senderName}...`}
-          value={inputText}
-          onChange={e => setInputText(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
-          disabled={sending}
-        />
-        <button className="send-btn" onClick={handleSend} disabled={sending || !inputText.trim()}>
-          <Send size={16} />
-        </button>
+        {stagedFile && (
+          <div className="chat-staged-file-preview">
+            <div className="staged-file-info">
+              {stagedFile.isImage ? <FileIcon size={16} /> : <FileIcon size={16} />}
+              <span className="staged-file-name">{stagedFile.originalName}</span>
+              {uploadProgress && <div className="chat-upload-spinner mini" />}
+            </div>
+            {!sending && (
+              <button className="icon-btn remove-staged" onClick={() => setStagedFile(null)} title="Remove attachment">
+                <X size={14} />
+              </button>
+            )}
+          </div>
+        )}
+        <div className="chat-input-row">
+          <button className="icon-btn" onClick={handleMediaUpload} disabled={sending} title="Attach file">
+            <Paperclip size={18} />
+          </button>
+          <input
+            ref={inputRef}
+            type="text"
+            placeholder={`Message as ${senderName}...`}
+            value={inputText}
+            onChange={e => setInputText(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
+            disabled={sending}
+          />
+          <button className="send-btn" onClick={handleSend} disabled={sending || (!inputText.trim() && !stagedFile)}>
+            <Send size={16} />
+          </button>
+        </div>
       </div>
     </>
   )
 }
 
-// ── GameChat (panel + modal) ──────────────────────────────
+// â”€â”€ GameChat (panel + modal) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export function GameChat({ gameId, discordUser }: GameChatProps) {
   const [expanded, setExpanded] = useState(false)
 
@@ -659,3 +676,4 @@ export function GameChat({ gameId, discordUser }: GameChatProps) {
     </>
   )
 }
+

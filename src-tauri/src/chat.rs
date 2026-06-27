@@ -1,4 +1,4 @@
-﻿use std::fs;
+use std::fs;
 use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Manager};
@@ -208,17 +208,10 @@ pub async fn upload_chat_media(filename: String, data: Vec<u8>) -> Result<String
     use base64::Engine;
     let b64 = base64::engine::general_purpose::STANDARD.encode(&data);
     
-    let payload = serde_json::json!({
-        "operations": [
-            {
-                "operation": "add",
-                "path": format!("chats/media/{}", filename),
-                "content": b64,
-                "encoding": "base64"
-            }
-        ],
-        "summary": format!("Upload media {}", filename)
-    });
+    let ndjson = format!(
+        "{{\"key\": \"header\", \"value\": {{\"summary\": \"Upload media {}\"}}}}\n{{\"key\": \"file\", \"value\": {{\"path\": \"chats/media/{}\", \"content\": \"{}\", \"encoding\": \"base64\"}}}}\n",
+        filename, filename, b64
+    );
 
     let url = format!("https://huggingface.co/api/datasets/{}/commit/main", HF_REPO);
     let client = reqwest::Client::builder().timeout(std::time::Duration::from_secs(120)).build().map_err(|e| e.to_string())?;
@@ -227,7 +220,8 @@ pub async fn upload_chat_media(filename: String, data: Vec<u8>) -> Result<String
     
     let res = client.post(&url)
         .header("Authorization", format!("Bearer {}", hf_token))
-        .json(&payload)
+        .header("Content-Type", "application/x-ndjson")
+        .body(ndjson)
         .send()
         .await
         .map_err(|e| e.to_string())?;
@@ -269,15 +263,10 @@ pub async fn delete_chat_media(url: String) -> Result<(), String> {
     let filename = url.split('/').last().unwrap_or_default();
     if filename.is_empty() { return Ok(()); }
     
-    let payload = serde_json::json!({
-        "operations": [
-            {
-                "operation": "delete",
-                "path": format!("chats/media/{}", filename)
-            }
-        ],
-        "summary": format!("Delete media {}", filename)
-    });
+    let ndjson = format!(
+        "{{\"key\": \"header\", \"value\": {{\"summary\": \"Delete media {}\"}}}}\n{{\"key\": \"deletedFile\", \"value\": {{\"path\": \"chats/media/{}\"}}}}\n",
+        filename, filename
+    );
 
     let hf_url = format!("https://huggingface.co/api/datasets/{}/commit/main", HF_REPO);
     let client = reqwest::Client::builder().timeout(std::time::Duration::from_secs(30)).build().map_err(|e| e.to_string())?;
@@ -285,7 +274,8 @@ pub async fn delete_chat_media(url: String) -> Result<(), String> {
     
     let _res = client.post(&hf_url)
         .header("Authorization", format!("Bearer {}", hf_token))
-        .json(&payload)
+        .header("Content-Type", "application/x-ndjson")
+        .body(ndjson)
         .send()
         .await
         .map_err(|e| e.to_string())?;
