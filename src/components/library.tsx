@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, cloneElement } from 'react'
 import { createPortal } from 'react-dom'
 import { invoke } from '@tauri-apps/api/core'
 import { BookOpen, CheckCircle2, ChevronLeft, ChevronRight, CircleAlert, Download, FolderOpen, HardDrive, Image as ImageIcon, Library, Play, RefreshCcw, Search, ShieldCheck, ShoppingBag, Trophy, X } from 'lucide-react'
@@ -151,16 +151,27 @@ function HoverCardPopup({
   game,
   assets,
   pos,
+  onRequestAsset,
 }: {
   game: GameSummary
   assets: Record<string, string>
   pos: { top: number; left: number; right: number; alignRight: boolean }
+  onRequestAsset: (game: GameSummary, assetId: string | undefined, urgent?: boolean) => void
 }) {
   const detail = useFirestoreDetail(game.id)
   const videoMedia = detail?.media?.find(
     (m) => m.mimeType?.startsWith('video/') || m.role?.startsWith('video'),
   )
-  const videoUrl = videoMedia ? assetUrlForId(videoMedia.assetId, assets) : null
+  const videoAssetId = videoMedia?.assetId
+
+  useEffect(() => {
+    if (videoAssetId) {
+      onRequestAsset(game, videoAssetId, true)
+    }
+    onRequestAsset(game, game.heroAssetId, true)
+  }, [game, videoAssetId, onRequestAsset])
+
+  const videoUrl = videoAssetId ? assetUrlForId(videoAssetId, assets) : null
   const hero = assetUrlForId(game.heroAssetId, assets)
   const tags = getGameTags(game)
 
@@ -207,16 +218,18 @@ function HoverCardPopup({
 function GameHoverCard({
   game,
   assets,
+  onRequestAsset,
   children,
 }: {
   game: GameSummary
   assets: Record<string, string>
-  children: React.ReactNode
+  onRequestAsset: (game: GameSummary, assetId: string | undefined, urgent?: boolean) => void
+  children: React.ReactElement
 }) {
   const [hovered, setHovered] = useState(false)
   const [show, setShow] = useState(false)
   const [pos, setPos] = useState({ top: 0, left: 0, right: 0, alignRight: false })
-  const anchorRef = useRef<HTMLDivElement>(null)
+  const anchorRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
     if (!hovered) {
@@ -241,16 +254,17 @@ function GameHoverCard({
     return () => clearTimeout(timer)
   }, [hovered])
 
+  const clonedChild = cloneElement(children, {
+    ref: anchorRef,
+    onMouseEnter: () => setHovered(true),
+    onMouseLeave: () => setHovered(false),
+  } as any)
+
   return (
-    <div
-      ref={anchorRef}
-      className="hover-card-anchor"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      {children}
-      {show && createPortal(<HoverCardPopup game={game} assets={assets} pos={pos} />, document.body)}
-    </div>
+    <>
+      {clonedChild}
+      {show && createPortal(<HoverCardPopup game={game} assets={assets} pos={pos} onRequestAsset={onRequestAsset} />, document.body)}
+    </>
   )
 }
 
@@ -453,8 +467,8 @@ export function StoreLibraryView({
 
         <div className="library-browse-grid">
           {visibleGames.map((game) => (
-            <GameHoverCard key={game.id} game={game} assets={assets}>
-              {renderGameCard(game, 'browse')}
+            <GameHoverCard key={game.id} game={game} assets={assets} onRequestAsset={onRequestAsset}>
+              {renderGameCard(game, 'browse') as React.ReactElement}
             </GameHoverCard>
           ))}
           {visibleGames.length === 0 && viewMode === 'library' ? (
