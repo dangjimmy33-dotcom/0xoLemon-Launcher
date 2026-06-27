@@ -5,7 +5,7 @@
  */
 
 import { initializeApp } from 'firebase/app';
-import { getFirestore, doc, setDoc } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
 import fs from 'fs';
 import path from 'path';
 
@@ -202,10 +202,38 @@ async function main() {
     games.push(summary);
   }
 
-  const catalog = { defaultLocale: 'en-US', games };
-  console.log('\n\nUploading to Firestore config/gameCatalog ...');
-  await setDoc(doc(db, 'config', 'gameCatalog'), catalog);
-  console.log(`✅ Done! Uploaded ${games.length} games.`);
+  const docRef = doc(db, 'config', 'gameCatalog');
+  const existingSnap = await getDoc(docRef);
+  const existingCatalog = existingSnap.exists() ? existingSnap.data() : { games: [] };
+  const existingGamesMap = new Map((existingCatalog.games || []).map(g => [g.id, g]));
+
+  // Merge new generated summaries into existing map
+  for (const summary of games) {
+    const existing = existingGamesMap.get(summary.id);
+    if (existing) {
+      // Preserve custom manual configurations from Firestore
+      summary.gridAssetId = existing.gridAssetId || summary.gridAssetId;
+      summary.heroAssetId = existing.heroAssetId || summary.heroAssetId;
+      summary.logoAssetId = existing.logoAssetId || summary.logoAssetId;
+      summary.iconAssetId = existing.iconAssetId || summary.iconAssetId;
+      summary.assets_override = existing.assets_override || summary.assets_override;
+      
+      // Merge all new data into the existing object to preserve any other custom fields
+      existingGamesMap.set(summary.id, { ...existing, ...summary });
+    } else {
+      existingGamesMap.set(summary.id, summary);
+    }
+  }
+
+  const catalog = { 
+    ...existingCatalog, 
+    defaultLocale: 'en-US', 
+    games: Array.from(existingGamesMap.values()) 
+  };
+  
+  console.log('\n\nUploading to Firestore config/gameCatalog (Merged with existing data)...');
+  await setDoc(docRef, catalog);
+  console.log(`✅ Done! Uploaded/Updated ${catalog.games.length} games.`);
   process.exit(0);
 }
 

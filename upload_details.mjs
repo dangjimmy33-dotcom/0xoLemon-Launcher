@@ -141,8 +141,8 @@ async function main() {
 
     console.log(`  ✓ Built detail: ${media.length} media items, ${achievements.length} achievements`);
     
-    // Upload to Firestore collection 'gameDetails'
-    await setDoc(doc(db, 'gameDetails', gameId), detailObj);
+    // Upload to Firestore collection 'gameDetails' (Merge with existing so custom fields aren't lost)
+    await setDoc(doc(db, 'gameDetails', gameId), detailObj, { merge: true });
   }
 
   console.log(`\n✅ Done uploading full details for ${Object.keys(FOLDER_MAP).length} games.`);
