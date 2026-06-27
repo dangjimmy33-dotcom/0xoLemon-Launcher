@@ -1,4 +1,4 @@
-﻿@font-face {
+@font-face {
   font-family: 'Arya';
   src: url('./assets/fonts/Arya-Regular.ttf') format('truetype');
   font-weight: 400;
@@ -4482,9 +4482,9 @@ button:disabled {
 }
 
 /* Community Chat */
-/* Ă¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢Â
+/* ═══════════════════════════════════════════
    Community Hub Chat Ă¢â‚¬â€ Discord-style
-   Ă¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢Â */
+   ═══════════════════════════════════════════ */
 
 .game-chat-panel {
   display: flex;
@@ -4854,17 +4854,22 @@ button:disabled {
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* Ă¢â€â‚¬Ă¢â€â‚¬ Input area Ă¢â€â‚¬Ă¢â€â‚¬ */
+/* ── Input area ── */
 .chat-input-area {
   display: flex;
+  flex-direction: column;
   padding: 10px 12px;
   background: #2b2d31;
   border-top: 1px solid rgba(255,255,255,0.07);
   gap: 8px;
-  align-items: center;
   flex-shrink: 0;
 }
-.chat-input-area input {
+.chat-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.chat-input-row input {
   flex: 1;
   background: #383a40;
   border: 1px solid transparent;
@@ -4876,9 +4881,43 @@ button:disabled {
   min-width: 0;
   transition: border-color 0.15s;
 }
-.chat-input-area input::placeholder { color: rgba(255,255,255,0.28); }
-.chat-input-area input:focus { border-color: rgba(88,101,242,0.55); }
-.chat-input-area input:disabled { opacity: 0.5; }
+.chat-input-row input::placeholder { color: rgba(255,255,255,0.28); }
+.chat-input-row input:focus { border-color: rgba(88,101,242,0.55); }
+.chat-input-row input:disabled { opacity: 0.5; }
+
+/* ── Staged file preview ── */
+.chat-staged-file-preview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #383a40;
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-bottom: 2px;
+}
+.staged-file-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #dcddde;
+  font-size: 14px;
+}
+.staged-file-name {
+  max-width: 250px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chat-upload-spinner.mini {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(88,101,242,0.3);
+  border-top-color: #5865f2;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin-left: 4px;
+}
 
 /* Ă¢â€â‚¬Ă¢â€â‚¬ Send button Ă¢â€â‚¬Ă¢â€â‚¬ */
 .send-btn {
@@ -5019,5 +5058,3 @@ button:disabled {
   background: rgba(255,255,255,0.1);
   color: #fff;
 }
-
-

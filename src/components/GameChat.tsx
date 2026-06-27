@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { invoke } from '@tauri-apps/api/core'
 import {
@@ -22,10 +22,10 @@ export interface ChatMessage {
   fileName?: string
   timestamp: number
   expiresAt?: number // for zip, rar, 7z (7 days)
-  reactions?: Record<string, string[]> // emoji â†’ [senderId, ...]
+  reactions?: Record<string, string[]> // emoji → [senderId, ...]
 }
 
-// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Helpers ──────────────────────────────────────────────
 const getSenderId = () => {
   let sid = localStorage.getItem('chat_sender_id')
   if (!sid) { sid = Math.random().toString(36).substring(2, 10); localStorage.setItem('chat_sender_id', sid) }
@@ -47,7 +47,7 @@ function formatDate(ts: number) {
 
 // Track recent/frequent emojis in localStorage
 const REACTION_KEY = 'chat_reaction_history'
-const DEFAULT_REACTIONS = ['đŸ‘', 'âœ…', 'â¤ï¸', 'đŸ˜‚', 'đŸ˜®', 'đŸ˜¢']
+const DEFAULT_REACTIONS = ['👍', '✅', '❤️', '😂', '😮', '😢']
 
 function getTopReactions(): string[] {
   try {
@@ -69,7 +69,7 @@ function recordReactionUsed(emoji: string) {
   } catch { /* ignore */ }
 }
 
-// â”€â”€ Avatar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Avatar ────────────────────────────────────────────────
 function Avatar({ name, url, size = 36 }: { name: string; url?: string; size?: number }) {
   const [err, setErr] = useState(false)
   const color = `hsl(${[...name].reduce((a, c) => a + c.charCodeAt(0), 0) % 360}, 65%, 55%)`
@@ -83,7 +83,7 @@ function Avatar({ name, url, size = 36 }: { name: string; url?: string; size?: n
   )
 }
 
-// â”€â”€ Group messages â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Group messages ────────────────────────────────────────
 function groupMessages(messages: ChatMessage[], mySenderId: string, myAvatar?: string) {
   const groups: Array<{ senderId: string; senderName: string; senderAvatar?: string; date: string; msgs: ChatMessage[] }> = []
   for (const msg of messages) {
@@ -99,7 +99,7 @@ function groupMessages(messages: ChatMessage[], mySenderId: string, myAvatar?: s
   return groups
 }
 
-// â”€â”€ Message content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Message content ───────────────────────────────────────
 function MessageContent({ text, imageBase64, mediaUrl, mediaType, fileName }: { text: string; imageBase64?: string; mediaUrl?: string; mediaType?: string; fileName?: string }) {
   const ytId = text ? extractYouTubeId(text) : null
   const isVideo = mediaType?.startsWith('video/')
@@ -129,9 +129,9 @@ function MessageContent({ text, imageBase64, mediaUrl, mediaType, fileName }: { 
       const savePath = await save({ defaultPath: getFilename(url) })
       if (!savePath) return
       await invoke('download_chat_media_to_disk', { url, filepath: savePath })
-      alert('Táº£i xuá»‘ng hoĂ n táº¥t / Download complete')
+      alert('Tải xuống hoàn tất / Download complete')
     } catch (e: any) {
-      alert(`Lá»—i khi táº£i file: ${e?.message || e}`)
+      alert(`Lỗi khi tải file: ${e?.message || e}`)
     }
   }
 
@@ -166,7 +166,7 @@ function MessageContent({ text, imageBase64, mediaUrl, mediaType, fileName }: { 
   )
 }
 
-// â”€â”€ Context Menu â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Context Menu ─────────────────────────────────────────
 interface ContextMenuProps {
   x: number; y: number
   msg: ChatMessage
@@ -260,7 +260,7 @@ const IdIcon = () => (
   </svg>
 )
 
-// â”€â”€ Hover quick-action bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Hover quick-action bar ────────────────────────────────
 function HoverActions({ msg: _msg, isMine, topReactions, onContext, onEdit, onDelete, onReact }: {
   msg: ChatMessage; isMine: boolean; topReactions: string[]
   onContext: (e: React.MouseEvent) => void
@@ -292,7 +292,7 @@ function HoverActions({ msg: _msg, isMine, topReactions, onContext, onEdit, onDe
   )
 }
 
-// â”€â”€ ChatBody â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── ChatBody ──────────────────────────────────────────────
 interface GameChatProps {
   gameId: string
   discordUser?: DiscordAuthUser | null
@@ -398,6 +398,7 @@ function ChatBody({ gameId, discordUser, compact = false }: GameChatProps & { co
     setSending(true)
 
     try {
+      let mediaUrl = undefined
       let payload: any = {
         senderId, senderName, senderAvatar: senderAvatar ?? null,
         text: inputText.trim(), timestamp: serverTimestamp(),
@@ -406,7 +407,7 @@ function ChatBody({ gameId, discordUser, compact = false }: GameChatProps & { co
       if (stagedFile) {
         setUploadProgress(stagedFile.isVideo ? 'Uploading video...' : stagedFile.isImage ? 'Uploading image...' : 'Uploading file...')
         const cleanInternalName = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${stagedFile.ext}`
-        const mediaUrl = await invoke<string>('upload_chat_media_from_path', { filename: cleanInternalName, filepath: stagedFile.filepath })
+        mediaUrl = await invoke<string>('upload_chat_media_from_path', { filename: cleanInternalName, filepath: stagedFile.filepath })
         payload.mediaUrl = mediaUrl
         payload.mediaType = stagedFile.mediaType
         payload.fileName = stagedFile.originalName
@@ -542,7 +543,7 @@ function ChatBody({ gameId, discordUser, compact = false }: GameChatProps & { co
                             if (e.key === 'Escape') setEditingMsgId(null)
                           }}
                         />
-                        <span className="msg-edit-hint">esc to cancel Â· enter to save</span>
+                        <span className="msg-edit-hint">esc to cancel · enter to save</span>
                       </div>
                     ) : (
                       <MessageContent 
@@ -641,7 +642,7 @@ function ChatBody({ gameId, discordUser, compact = false }: GameChatProps & { co
   )
 }
 
-// â”€â”€ GameChat (panel + modal) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── GameChat (panel + modal) ──────────────────────────────
 export function GameChat({ gameId, discordUser }: GameChatProps) {
   const [expanded, setExpanded] = useState(false)
 
@@ -676,4 +677,3 @@ export function GameChat({ gameId, discordUser }: GameChatProps) {
     </>
   )
 }
-
