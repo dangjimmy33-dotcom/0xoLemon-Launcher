@@ -115,6 +115,7 @@ import { useFirestoreCatalog } from './hooks/useFirestoreCatalog'
 import { useRealtimeAssets } from './hooks/useRealtimeAssets'
 import { useFirestoreDetail } from './hooks/useFirestoreDetail'
 import { useScrollReveal } from './hooks/useScrollReveal'
+import { GlobalChatSync } from './components/GlobalChatSync'
 
 export default function App() {
   useEffect(() => {
@@ -2688,6 +2689,7 @@ export default function App() {
         preferences.scrollEffects ? '' : 'no-scroll-effects',
       ].filter(Boolean).join(' ')}
     >
+      <GlobalChatSync catalog={catalog} />
       <CustomTitleBar
         closeBehavior={preferences.closeBehavior}
         serviceOnline={!contentServiceLabel(snapshot.proxyStatus).toLowerCase().includes('unavailable')}

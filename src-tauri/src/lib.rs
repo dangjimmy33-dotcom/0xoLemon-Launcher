@@ -1,4 +1,5 @@
 pub mod asset_cache;
+pub mod chat;
 pub mod asset_pack;
 pub mod builder;
 pub mod cloud_save;
@@ -642,6 +643,9 @@ pub fn run() {
         })
         .manage(asset_pack::AssetPackCache::default())
         .invoke_handler(tauri::generate_handler![
+            chat::load_chat_history,
+            chat::save_chat_message,
+            chat::clear_chat_history,
             get_disk_free_space,
             list_system_drives,
             check_launcher_update,
