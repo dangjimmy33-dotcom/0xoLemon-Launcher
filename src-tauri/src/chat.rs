@@ -1,4 +1,4 @@
-use std::fs;
+﻿use std::fs;
 use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Manager};
@@ -180,7 +180,7 @@ pub fn sync_to_huggingface(app: AppHandle, game_id: String) -> Result<(), String
                 "encoding": "base64"
             }
         ],
-        "commit_message": format!("Sync {}", game_id)
+        "summary": format!("Sync {}", game_id)
     });
 
     let url = format!("https://huggingface.co/api/datasets/{}/commit/main", HF_REPO);
@@ -217,7 +217,7 @@ pub async fn upload_chat_media(filename: String, data: Vec<u8>) -> Result<String
                 "encoding": "base64"
             }
         ],
-        "commit_message": format!("Upload media {}", filename)
+        "summary": format!("Upload media {}", filename)
     });
 
     let url = format!("https://huggingface.co/api/datasets/{}/commit/main", HF_REPO);
@@ -276,7 +276,7 @@ pub async fn delete_chat_media(url: String) -> Result<(), String> {
                 "path": format!("chats/media/{}", filename)
             }
         ],
-        "commit_message": format!("Delete media {}", filename)
+        "summary": format!("Delete media {}", filename)
     });
 
     let hf_url = format!("https://huggingface.co/api/datasets/{}/commit/main", HF_REPO);
