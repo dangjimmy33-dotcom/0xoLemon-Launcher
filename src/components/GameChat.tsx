@@ -7,7 +7,7 @@ import {
 } from 'firebase/firestore'
 import { db } from '../firebase'
 import { open } from '@tauri-apps/plugin-dialog'
-import { Send, Paperclip, Maximize2, X, Edit2, Trash2, Hash } from 'lucide-react'
+import { Send, Paperclip, Maximize2, X, Edit2, Trash2, Hash, FileIcon, DownloadIcon } from 'lucide-react'
 import type { DiscordAuthUser } from '../types'
 
 export interface ChatMessage {
@@ -20,6 +20,7 @@ export interface ChatMessage {
   mediaUrl?: string
   mediaType?: string
   timestamp: number
+  expiresAt?: number // for zip, rar, 7z (7 days)
   reactions?: Record<string, string[]> // emoji → [senderId, ...]
 }
 
@@ -101,9 +102,27 @@ function groupMessages(messages: ChatMessage[], mySenderId: string, myAvatar?: s
 function MessageContent({ text, imageBase64, mediaUrl, mediaType }: { text: string; imageBase64?: string; mediaUrl?: string; mediaType?: string }) {
   const ytId = text ? extractYouTubeId(text) : null
   const isVideo = mediaType?.startsWith('video/')
+  const isImage = mediaType?.startsWith('image/')
+  const isFile = mediaType && !isVideo && !isImage
+
+  const parseText = (t: string) => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g
+    return t.split(urlRegex).map((part, i) => {
+      if (part.match(urlRegex)) {
+        return <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="chat-link">{part}</a>
+      }
+      return part
+    })
+  }
+
+  const getFilename = (url: string) => {
+    try { return decodeURIComponent(url.split('/').pop() || 'file') }
+    catch { return 'file' }
+  }
+
   return (
     <div className="msg-content">
-      {text && <p className="msg-text">{text}</p>}
+      {text && <p className="msg-text">{parseText(text)}</p>}
       {ytId && (
         <div className="yt-embed">
           <iframe src={`https://www.youtube.com/embed/${ytId}`} title="YouTube video"
@@ -112,10 +131,21 @@ function MessageContent({ text, imageBase64, mediaUrl, mediaType }: { text: stri
         </div>
       )}
       {imageBase64 && <img src={imageBase64} alt="attached" className="chat-image" />}
-      {mediaUrl && (
-        isVideo
-          ? <video src={mediaUrl} controls className="chat-video" />
-          : <img src={mediaUrl} alt="attached" className="chat-image" />
+      {mediaUrl && isVideo && <video src={mediaUrl} controls className="chat-video" />}
+      {mediaUrl && isImage && <img src={mediaUrl} alt="attached" className="chat-image" />}
+      {mediaUrl && isFile && (
+        <div className="chat-file-attachment">
+          <div className="chat-file-icon">
+            <FileIcon size={24} />
+          </div>
+          <div className="chat-file-info">
+            <span className="chat-file-name" title={getFilename(mediaUrl)}>{getFilename(mediaUrl)}</span>
+            <span className="chat-file-size">{(mediaType || 'unknown').split('/')[1]?.toUpperCase() || 'FILE'}</span>
+          </div>
+          <a href={mediaUrl} target="_blank" rel="noopener noreferrer" className="chat-file-download" title="Download">
+            <DownloadIcon size={18} />
+          </a>
+        </div>
       )}
     </div>
   )
@@ -295,7 +325,17 @@ function ChatBody({ gameId, discordUser, compact }: GameChatProps & { compact?: 
           text: d.text || '', imageBase64: d.imageBase64,
           mediaUrl: d.mediaUrl, mediaType: d.mediaType,
           timestamp: ts, reactions: d.reactions ?? {},
+          expiresAt: d.expiresAt,
         }
+
+        if (msg.expiresAt && msg.expiresAt < Date.now()) {
+          if (change.type === 'added') {
+            deleteDoc(doc(db, 'chats', gameId, 'messages', msg.id)).catch(console.error)
+            if (msg.mediaUrl) invoke('delete_chat_media', { url: msg.mediaUrl }).catch(console.error)
+          }
+          return
+        }
+
         if (change.type === 'added') {
           setMessages(prev => {
             if (prev.some(m => m.id === msg.id)) return prev
@@ -339,27 +379,33 @@ function ChatBody({ gameId, discordUser, compact }: GameChatProps & { compact?: 
     } catch (e) { console.error(e) } finally { setSending(false) }
   }
 
-  const handleMediaUpload = async () => {
+  const processFile = async (filepath: string) => {
+    const ext = filepath.split('.').pop()?.toLowerCase() || 'png'
+    const isVideo = ['mp4', 'webm'].includes(ext)
+    const isImage = ['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(ext)
+    const filename = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${ext}`
+    
+    let mediaType = 'application/octet-stream'
+    if (isVideo) mediaType = `video/${ext}`
+    else if (isImage) mediaType = `image/${ext}`
+    else if (ext === 'txt') mediaType = 'text/plain'
+    else if (ext === 'json') mediaType = 'application/json'
+
+    const expiresAt = ['zip', 'rar', '7z'].includes(ext) ? Date.now() + 7 * 24 * 60 * 60 * 1000 : null
+
+    setUploadProgress(isVideo ? 'Uploading video...' : isImage ? 'Uploading image...' : 'Uploading file...')
+    setSending(true)
+
     try {
-      const selected = await open({ multiple: false, filters: [{ name: 'Media', extensions: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'mp4', 'webm'] }] })
-      if (!selected) return
-      const filepath = Array.isArray(selected) ? selected[0] : selected
-      if (!filepath) return
-
-      const ext = filepath.split('.').pop()?.toLowerCase() || 'png'
-      const isVideo = ['mp4', 'webm'].includes(ext)
-      const filename = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${ext}`
-      const mediaType = isVideo ? `video/${ext}` : `image/${ext}`
-
-      setUploadProgress(isVideo ? 'Uploading video...' : 'Uploading image...')
-      setSending(true)
-
       const mediaUrl = await invoke<string>('upload_chat_media_from_path', { filename, filepath })
-
-      await addDoc(collection(db, 'chats', gameId, 'messages'), {
+      
+      const payload: any = {
         senderId, senderName, senderAvatar: senderAvatar ?? null,
         text: '', mediaUrl, mediaType, timestamp: serverTimestamp(),
-      })
+      }
+      if (expiresAt) payload.expiresAt = expiresAt
+
+      await addDoc(collection(db, 'chats', gameId, 'messages'), payload)
     } catch (err: any) {
       console.error('Upload failed:', err)
       alert(`Upload failed: ${err?.message || err || 'Unknown error'}\n\nMake sure the file name doesn't contain special characters.`)
@@ -368,6 +414,33 @@ function ChatBody({ gameId, discordUser, compact }: GameChatProps & { compact?: 
       setUploadProgress(null)
     }
   }
+
+  const handleMediaUpload = async () => {
+    try {
+      const selected = await open({ 
+        multiple: false, 
+        filters: [{ name: 'All Supported', extensions: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'mp4', 'webm', 'zip', 'rar', '7z', 'txt', 'json', 'ini', 'cfg'] }] 
+      })
+      if (!selected) return
+      const filepath = Array.isArray(selected) ? selected[0] : selected
+      if (!filepath) return
+      await processFile(filepath)
+    } catch (err: any) {
+      console.error(err)
+    }
+  }
+
+  useEffect(() => {
+    const unlisten = import('@tauri-apps/api/event').then(({ listen }) => {
+      return listen<{ paths: string[] }>('tauri://file-drop', (event) => {
+        const paths = event.payload.paths
+        if (paths && paths.length > 0) {
+          processFile(paths[0])
+        }
+      })
+    })
+    return () => { unlisten.then(f => f()) }
+  }, [gameId, senderId, senderName, senderAvatar])
 
   const handleReact = useCallback(async (msg: ChatMessage, emoji: string) => {
     recordReactionUsed(emoji)
