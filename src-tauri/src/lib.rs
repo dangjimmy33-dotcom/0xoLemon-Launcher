@@ -647,6 +647,8 @@ pub fn run() {
             chat::save_chat_message,
             chat::clear_chat_history,
             chat::download_from_huggingface,
+            chat::upload_chat_media,
+            chat::upload_chat_media_from_path,
             chat::sync_to_huggingface,
             get_disk_free_space,
             list_system_drives,

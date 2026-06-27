@@ -14,8 +14,15 @@ pub struct ChatMessage {
     pub id: String,
     pub sender_id: String,
     pub sender_name: String,
+    #[serde(default)]
+    pub sender_avatar: Option<String>,
     pub text: String,
+    #[serde(default)]
     pub image_base64: Option<String>,
+    #[serde(default)]
+    pub media_url: Option<String>,
+    #[serde(default)]
+    pub media_type: Option<String>,
     pub timestamp: u64,
 }
 
@@ -159,4 +166,47 @@ pub fn sync_to_huggingface(app: AppHandle, game_id: String) -> Result<(), String
     }
     
     Ok(())
+}
+
+#[tauri::command]
+pub fn upload_chat_media(filename: String, data: Vec<u8>) -> Result<String, String> {
+    use base64::Engine;
+    let b64 = base64::engine::general_purpose::STANDARD.encode(&data);
+    
+    let payload = serde_json::json!({
+        "operations": [
+            {
+                "operation": "add",
+                "path": format!("chats/media/{}", filename),
+                "content": b64,
+                "encoding": "base64"
+            }
+        ],
+        "commit_message": format!("Upload media {}", filename)
+    });
+
+    let url = format!("https://huggingface.co/api/datasets/{}/commit/main", HF_REPO);
+    let client = reqwest::blocking::Client::builder().timeout(std::time::Duration::from_secs(120)).build().map_err(|e| e.to_string())?;
+    
+    let hf_token = format!("{}{}{}", HF_TOKEN_PT1, HF_TOKEN_PT2, HF_TOKEN_PT3);
+    
+    let res = client.post(&url)
+        .header("Authorization", format!("Bearer {}", hf_token))
+        .json(&payload)
+        .send()
+        .map_err(|e| e.to_string())?;
+        
+    if !res.status().is_success() {
+        let status = res.status();
+        let body = res.text().unwrap_or_default();
+        return Err(format!("HF Media Upload failed: {} - {}", status, body));
+    }
+    
+    Ok(format!("https://huggingface.co/datasets/{}/resolve/main/chats/media/{}", HF_REPO, filename))
+}
+
+#[tauri::command]
+pub fn upload_chat_media_from_path(filename: String, filepath: String) -> Result<String, String> {
+    let data = fs::read(&filepath).map_err(|e| format!("Failed to read file: {}", e))?;
+    upload_chat_media(filename, data)
 }

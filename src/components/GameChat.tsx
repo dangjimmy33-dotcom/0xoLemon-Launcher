@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { invoke } from '@tauri-apps/api/core'
 import { collection, onSnapshot, query, limit, orderBy, addDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '../firebase'
+import { open } from '@tauri-apps/plugin-dialog'
 import { Send, Image as ImageIcon, Trash2, Maximize2, X } from 'lucide-react'
 import type { DiscordAuthUser } from '../types'
 
@@ -13,6 +14,8 @@ export interface ChatMessage {
   senderAvatar?: string
   text: string
   imageBase64?: string
+  mediaUrl?: string
+  mediaType?: string
   timestamp: number
 }
 
@@ -88,8 +91,9 @@ function groupMessages(messages: ChatMessage[], mySenderId: string, myAvatar?: s
 }
 
 // Render text with YouTube embed
-function MessageContent({ text, imageBase64 }: { text: string; imageBase64?: string }) {
+function MessageContent({ text, imageBase64, mediaUrl, mediaType }: { text: string; imageBase64?: string; mediaUrl?: string; mediaType?: string }) {
   const ytId = text ? extractYouTubeId(text) : null
+  const isVideo = mediaType?.startsWith('video/')
   return (
     <div className="msg-content">
       {text && <p className="msg-text">{text}</p>}
@@ -105,6 +109,13 @@ function MessageContent({ text, imageBase64 }: { text: string; imageBase64?: str
         </div>
       )}
       {imageBase64 && <img src={imageBase64} alt="attached" className="chat-image" />}
+      {mediaUrl && (
+        isVideo ? (
+          <video src={mediaUrl} controls className="chat-video" style={{ maxWidth: 'min(360px, 100%)', maxHeight: 240, borderRadius: 6, marginTop: 6 }} />
+        ) : (
+          <img src={mediaUrl} alt="attached" className="chat-image" />
+        )
+      )}
     </div>
   )
 }
@@ -195,36 +206,44 @@ function ChatBody({ gameId, discordUser, compact }: GameChatProps & { compact?: 
     }
   }
 
-  const handleImageUpload = () => {
-    const input = document.createElement('input')
-    input.type = 'file'
-    input.accept = 'image/*'
-    input.onchange = (e: Event) => {
-      const file = (e.target as HTMLInputElement).files?.[0]
-      if (!file) return
-      const reader = new FileReader()
-      reader.onload = async (re) => {
-        const base64 = re.target?.result as string
-        if (base64.length > 500000) {
-          alert('Image too large. Please use an image under ~300 KB.')
-          return
-        }
-        try {
-          await addDoc(collection(db, 'chats', gameId, 'messages'), {
-            senderId,
-            senderName,
-            senderAvatar: senderAvatar ?? null,
-            text: '',
-            imageBase64: base64,
-            timestamp: serverTimestamp(),
-          })
-        } catch (err) {
-          console.error(err)
-        }
-      }
-      reader.readAsDataURL(file)
+  const handleMediaUpload = async () => {
+    try {
+      const selected = await open({
+        multiple: false,
+        filters: [{
+          name: 'Media',
+          extensions: ['png', 'jpg', 'jpeg', 'gif', 'mp4', 'webm']
+        }]
+      })
+      if (!selected) return
+
+      const filepath = Array.isArray(selected) ? selected[0] : selected
+      if (!filepath) return
+
+      const isVideo = filepath.endsWith('.mp4') || filepath.endsWith('.webm')
+      const ext = filepath.split('.').pop() || (isVideo ? 'mp4' : 'png')
+      const filename = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${ext}`
+      const mediaType = isVideo ? `video/${ext}` : `image/${ext}`
+
+      setSending(true)
+      
+      const mediaUrl = await invoke<string>('upload_chat_media_from_path', { filename, filepath })
+
+      await addDoc(collection(db, 'chats', gameId, 'messages'), {
+        senderId,
+        senderName,
+        senderAvatar: senderAvatar ?? null,
+        text: '',
+        mediaUrl,
+        mediaType,
+        timestamp: serverTimestamp(),
+      })
+    } catch (err) {
+      console.error('Media upload failed:', err)
+      alert('Failed to upload media. Ensure image is <5MB or video is <20MB.')
+    } finally {
+      setSending(false)
     }
-    input.click()
   }
 
   const handleClearHistory = async () => {
@@ -256,7 +275,7 @@ function ChatBody({ gameId, discordUser, compact }: GameChatProps & { compact?: 
               {group.msgs.map((msg) => (
                 <div key={msg.id} className="chat-row">
                   <span className="msg-time">{formatTime(msg.timestamp)}</span>
-                  <MessageContent text={msg.text} imageBase64={msg.imageBase64} />
+                  <MessageContent text={msg.text} imageBase64={msg.imageBase64} mediaUrl={msg.mediaUrl} mediaType={msg.mediaType} />
                 </div>
               ))}
             </div>
@@ -266,8 +285,8 @@ function ChatBody({ gameId, discordUser, compact }: GameChatProps & { compact?: 
       </div>
 
       <div className="chat-input-area">
-        <button className="icon-btn" onClick={handleImageUpload} title="Attach Image">
-          <ImageIcon size={18} />
+        <button className="icon-btn" onClick={handleMediaUpload} title="Attach Image/Video" disabled={sending}>
+          <ImageIcon size={20} />
         </button>
         <input
           ref={inputRef}
