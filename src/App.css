@@ -1,4 +1,4 @@
-@font-face {
+﻿@font-face {
   font-family: 'Arya';
   src: url('./assets/fonts/Arya-Regular.ttf') format('truetype');
   font-weight: 400;
@@ -14,7 +14,7 @@
   font-display: swap;
 }
 
-/* â”€â”€ Global Custom Scrollbar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ă¢â€â‚¬Ă¢â€â‚¬ Global Custom Scrollbar Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬ */
 * {
   scrollbar-width: thin;
   scrollbar-color: rgba(207, 159, 70, 0.25) transparent;
@@ -2389,10 +2389,10 @@ button:disabled {
 
 .achievement-modal--enter {
   animation: modal-scale-in 280ms var(--ease-out-expo, cubic-bezier(.19, 1, .22, 1)) both;
-  /* no will-change â€” avoids stacking context that breaks layout */
+  /* no will-change Ă¢â‚¬â€ avoids stacking context that breaks layout */
 }
 
-/* GTA6 diagonal shimmer sweep â€” applied to achievement articles on hover */
+/* GTA6 diagonal shimmer sweep Ă¢â‚¬â€ applied to achievement articles on hover */
 .achievement-all-grid article {
   position: relative;
   overflow: hidden;
@@ -3229,7 +3229,7 @@ button:disabled {
   }
 }
 
-/* â”€â”€ Extra small: icon-only sidebar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ă¢â€â‚¬Ă¢â€â‚¬ Extra small: icon-only sidebar Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬ */
 @media (max-width: 600px) {
   .content-grid,
   .store-layout,
@@ -3258,7 +3258,7 @@ button:disabled {
   }
 }
 
-/* â”€â”€ Fluid content scaling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ă¢â€â‚¬Ă¢â€â‚¬ Fluid content scaling Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬ */
 @media (min-width: 1600px) {
   .launcher-shell {
     grid-template-columns: 230px minmax(0, 1fr);
@@ -3820,7 +3820,7 @@ button:disabled {
   color: #fff;
 }
 
-/* â”€â”€ Global launcher settings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Ă¢â€â‚¬Ă¢â€â‚¬ Global launcher settings Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬ */
 .settings-view-global {
   min-height: 100%;
   padding: 30px 34px 48px;
@@ -4482,9 +4482,9 @@ button:disabled {
 }
 
 /* Community Chat */
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   Community Hub Chat â€” Discord-style
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* Ă¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢Â
+   Community Hub Chat Ă¢â‚¬â€ Discord-style
+   Ă¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢ÂĂ¢â€¢Â */
 
 .game-chat-panel {
   display: flex;
@@ -4497,7 +4497,7 @@ button:disabled {
   margin-top: 24px;
 }
 
-/* â”€â”€ Header â”€â”€ */
+/* Ă¢â€â‚¬Ă¢â€â‚¬ Header Ă¢â€â‚¬Ă¢â€â‚¬ */
 .chat-header {
   padding: 10px 14px;
   background: #2b2d31;
@@ -4516,7 +4516,7 @@ button:disabled {
   letter-spacing: 0.02em;
 }
 
-/* â”€â”€ Messages scroll â”€â”€ */
+/* Ă¢â€â‚¬Ă¢â€â‚¬ Messages scroll Ă¢â€â‚¬Ă¢â€â‚¬ */
 .chat-messages {
   flex: 1;
   overflow-y: auto;
@@ -4531,7 +4531,7 @@ button:disabled {
 .chat-messages::-webkit-scrollbar { width: 4px; }
 .chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
 
-/* â”€â”€ Empty state â”€â”€ */
+/* Ă¢â€â‚¬Ă¢â€â‚¬ Empty state Ă¢â€â‚¬Ă¢â€â‚¬ */
 .chat-empty {
   flex: 1;
   display: flex;
@@ -4543,7 +4543,7 @@ button:disabled {
   text-align: center;
 }
 
-/* â”€â”€ Groups â”€â”€ */
+/* Ă¢â€â‚¬Ă¢â€â‚¬ Groups Ă¢â€â‚¬Ă¢â€â‚¬ */
 .chat-group {
   padding: 4px 16px 2px;
   position: relative;
@@ -4575,7 +4575,7 @@ button:disabled {
   color: rgba(255,255,255,0.25);
 }
 
-/* â”€â”€ Message rows â”€â”€ */
+/* Ă¢â€â‚¬Ă¢â€â‚¬ Message rows Ă¢â€â‚¬Ă¢â€â‚¬ */
 .chat-group-messages {
   padding-left: 48px;
   display: flex;
@@ -4608,13 +4608,13 @@ button:disabled {
 }
 .chat-row:hover .msg-time { opacity: 1; }
 
-/* message body wrapper â€” takes remaining width */
+/* message body wrapper Ă¢â‚¬â€ takes remaining width */
 .msg-body {
   flex: 1;
   min-width: 0;
 }
 
-/* â”€â”€ Text â”€â”€ */
+/* Ă¢â€â‚¬Ă¢â€â‚¬ Text Ă¢â€â‚¬Ă¢â€â‚¬ */
 .msg-content { }
 .msg-text {
   margin: 0;
@@ -4625,7 +4625,7 @@ button:disabled {
   line-height: 1.5;
 }
 
-/* â”€â”€ Edit area â”€â”€ */
+/* Ă¢â€â‚¬Ă¢â€â‚¬ Edit area Ă¢â€â‚¬Ă¢â€â‚¬ */
 .msg-edit-area {
   display: flex;
   flex-direction: column;
@@ -4647,7 +4647,7 @@ button:disabled {
   color: rgba(255,255,255,0.3);
 }
 
-/* â”€â”€ YouTube embed â”€â”€ */
+/* Ă¢â€â‚¬Ă¢â€â‚¬ YouTube embed Ă¢â€â‚¬Ă¢â€â‚¬ */
 .yt-embed {
   margin-top: 8px;
   border-radius: 8px;
@@ -4663,7 +4663,7 @@ button:disabled {
   display: block;
 }
 
-/* â”€â”€ Image/video attachments â”€â”€ */
+/* Ă¢â€â‚¬Ă¢â€â‚¬ Image/video attachments Ă¢â€â‚¬Ă¢â€â‚¬ */
 .chat-image {
   max-width: min(360px, 100%);
   max-height: 240px;
@@ -4680,7 +4680,7 @@ button:disabled {
   display: block;
 }
 
-/* â”€â”€ Reactions â”€â”€ */
+/* Ă¢â€â‚¬Ă¢â€â‚¬ Reactions Ă¢â€â‚¬Ă¢â€â‚¬ */
 .msg-reactions {
   display: flex;
   flex-wrap: wrap;
@@ -4708,7 +4708,7 @@ button:disabled {
   color: #c9cefb;
 }
 
-/* â”€â”€ Hover actions bar (appears top-right on row hover) â”€â”€ */
+/* Ă¢â€â‚¬Ă¢â€â‚¬ Hover actions bar (appears top-right on row hover) Ă¢â€â‚¬Ă¢â€â‚¬ */
 .msg-hover-actions {
   position: absolute;
   right: 8px;
@@ -4764,7 +4764,7 @@ button:disabled {
   padding-left: 6px;
 }
 
-/* â”€â”€ Context menu â”€â”€ */
+/* Ă¢â€â‚¬Ă¢â€â‚¬ Context menu Ă¢â€â‚¬Ă¢â€â‚¬ */
 .ctx-menu {
   position: fixed;
   z-index: 99999;
@@ -4831,7 +4831,7 @@ button:disabled {
   flex-shrink: 0;
 }
 
-/* â”€â”€ Upload progress bar â”€â”€ */
+/* Ă¢â€â‚¬Ă¢â€â‚¬ Upload progress bar Ă¢â€â‚¬Ă¢â€â‚¬ */
 .chat-upload-progress {
   display: flex;
   align-items: center;
@@ -4854,7 +4854,7 @@ button:disabled {
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* â”€â”€ Input area â”€â”€ */
+/* Ă¢â€â‚¬Ă¢â€â‚¬ Input area Ă¢â€â‚¬Ă¢â€â‚¬ */
 .chat-input-area {
   display: flex;
   padding: 10px 12px;
@@ -4880,7 +4880,7 @@ button:disabled {
 .chat-input-area input:focus { border-color: rgba(88,101,242,0.55); }
 .chat-input-area input:disabled { opacity: 0.5; }
 
-/* â”€â”€ Send button â”€â”€ */
+/* Ă¢â€â‚¬Ă¢â€â‚¬ Send button Ă¢â€â‚¬Ă¢â€â‚¬ */
 .send-btn {
   display: flex;
   align-items: center;
@@ -4898,7 +4898,7 @@ button:disabled {
 .send-btn:hover:not(:disabled) { background: #4752c4; transform: scale(1.05); }
 .send-btn:disabled { opacity: 0.35; cursor: default; }
 
-/* â”€â”€ Icon button (generic, used in toolbar) â”€â”€ */
+/* Ă¢â€â‚¬Ă¢â€â‚¬ Icon button (generic, used in toolbar) Ă¢â€â‚¬Ă¢â€â‚¬ */
 .icon-btn {
   display: flex;
   align-items: center;
@@ -4916,7 +4916,7 @@ button:disabled {
 .icon-btn:disabled { opacity: 0.35; cursor: default; }
 .icon-btn.danger:hover { color: #ed4245; background: rgba(237,66,69,0.12); }
 
-/* â”€â”€ Full-screen modal â”€â”€ */
+/* Ă¢â€â‚¬Ă¢â€â‚¬ Full-screen modal Ă¢â€â‚¬Ă¢â€â‚¬ */
 .chat-modal-backdrop {
   position: fixed;
   inset: 0;
@@ -5019,3 +5019,5 @@ button:disabled {
   background: rgba(255,255,255,0.1);
   color: #fff;
 }
+
+
