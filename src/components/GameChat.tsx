@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { invoke } from '@tauri-apps/api/core'
-import { collection, onSnapshot, query, limit, orderBy, addDoc, serverTimestamp } from 'firebase/firestore'
+import { collection, onSnapshot, query, limit, orderBy, addDoc, serverTimestamp, doc, deleteDoc, updateDoc } from 'firebase/firestore'
 import { db } from '../firebase'
 import { open } from '@tauri-apps/plugin-dialog'
-import { Send, Image as ImageIcon, Trash2, Maximize2, X } from 'lucide-react'
+import { Send, Image as ImageIcon, Trash2, Maximize2, X, Edit2 } from 'lucide-react'
 import type { DiscordAuthUser } from '../types'
 
 export interface ChatMessage {
@@ -136,6 +136,9 @@ function ChatBody({ gameId, discordUser, compact }: GameChatProps & { compact?: 
   const senderName = discordUser?.displayName ?? discordUser?.username ?? `User_${senderId.substring(0, 4)}`
   const senderAvatar = discordUser?.avatarUrl
 
+  const [editingMsgId, setEditingMsgId] = useState<string | null>(null)
+  const [editInput, setEditInput] = useState('')
+
   useEffect(() => {
     let mounted = true
     const loadLocal = () => {
@@ -158,22 +161,37 @@ function ChatBody({ gameId, discordUser, compact }: GameChatProps & { compact?: 
     )
     const unsubscribe = onSnapshot(q, (snapshot) => {
       snapshot.docChanges().forEach((change) => {
+        const data = change.doc.data()
+        const ts = data.timestamp?.toMillis ? data.timestamp.toMillis() : Date.now()
+        const msg: ChatMessage = {
+          id: change.doc.id,
+          senderId: data.senderId || 'unknown',
+          senderName: data.senderName || 'Unknown',
+          senderAvatar: data.senderAvatar,
+          text: data.text || '',
+          imageBase64: data.imageBase64,
+          mediaUrl: data.mediaUrl,
+          mediaType: data.mediaType,
+          timestamp: ts,
+        }
+        
         if (change.type === 'added') {
-          const data = change.doc.data()
-          const ts = data.timestamp?.toMillis ? data.timestamp.toMillis() : Date.now()
-          const msg: ChatMessage = {
-            id: change.doc.id,
-            senderId: data.senderId || 'unknown',
-            senderName: data.senderName || 'Unknown',
-            senderAvatar: data.senderAvatar,
-            text: data.text || '',
-            imageBase64: data.imageBase64,
-            timestamp: ts,
-          }
           setMessages((prev) => {
             if (prev.some(m => m.id === msg.id)) return prev
             const next = [...prev, msg].sort((a, b) => a.timestamp - b.timestamp)
             invoke('save_chat_message', { gameId, message: msg }).catch(console.error)
+            return next
+          })
+        } else if (change.type === 'modified') {
+          setMessages((prev) => {
+            const next = prev.map(m => m.id === msg.id ? msg : m)
+            invoke('edit_chat_message', { gameId, messageId: msg.id, newText: msg.text }).catch(console.error)
+            return next
+          })
+        } else if (change.type === 'removed') {
+          setMessages((prev) => {
+            const next = prev.filter(m => m.id !== change.doc.id)
+            invoke('delete_chat_message', { gameId, messageId: change.doc.id }).catch(console.error)
             return next
           })
         }
@@ -254,6 +272,27 @@ function ChatBody({ gameId, discordUser, compact }: GameChatProps & { compact?: 
 
   const groups = groupMessages(messages, senderId, senderAvatar)
 
+  const handleEditMessage = async (msgId: string, newText: string) => {
+    try {
+      await updateDoc(doc(db, 'chats', gameId, 'messages', msgId), {
+        text: newText
+      })
+      setEditingMsgId(null)
+      setEditInput('')
+    } catch (e) {
+      console.error('Failed to edit message', e)
+    }
+  }
+
+  const handleDeleteMessage = async (msgId: string) => {
+    if (!confirm('Delete this message?')) return
+    try {
+      await deleteDoc(doc(db, 'chats', gameId, 'messages', msgId))
+    } catch (e) {
+      console.error('Failed to delete message', e)
+    }
+  }
+
   return (
     <>
       <div className="chat-messages" style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
@@ -273,9 +312,33 @@ function ChatBody({ gameId, discordUser, compact }: GameChatProps & { compact?: 
             </div>
             <div className="chat-group-messages">
               {group.msgs.map((msg) => (
-                <div key={msg.id} className="chat-row">
+                <div key={msg.id} className="chat-row msg-hover-row">
                   <span className="msg-time">{formatTime(msg.timestamp)}</span>
-                  <MessageContent text={msg.text} imageBase64={msg.imageBase64} mediaUrl={msg.mediaUrl} mediaType={msg.mediaType} />
+                  {editingMsgId === msg.id ? (
+                    <div className="msg-edit-area">
+                      <input 
+                        autoFocus
+                        value={editInput}
+                        onChange={e => setEditInput(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') handleEditMessage(msg.id, editInput)
+                          if (e.key === 'Escape') setEditingMsgId(null)
+                        }}
+                      />
+                      <span className="msg-edit-hint">esc to cancel, enter to save</span>
+                    </div>
+                  ) : (
+                    <MessageContent text={msg.text} imageBase64={msg.imageBase64} mediaUrl={msg.mediaUrl} mediaType={msg.mediaType} />
+                  )}
+                  {msg.senderId === senderId && editingMsgId !== msg.id && (
+                    <div className="msg-actions">
+                      <button onClick={() => {
+                        setEditingMsgId(msg.id)
+                        setEditInput(msg.text)
+                      }}><Edit2 size={12} /></button>
+                      <button className="danger" onClick={() => handleDeleteMessage(msg.id)}><Trash2 size={12} /></button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

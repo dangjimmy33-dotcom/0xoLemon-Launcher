@@ -75,6 +75,41 @@ pub fn save_chat_message(app: AppHandle, game_id: String, message: ChatMessage) 
 }
 
 #[tauri::command]
+pub fn delete_chat_message(app: AppHandle, game_id: String, message_id: String) -> Result<(), String> {
+    let file_path = get_chat_file_path(&app, &game_id);
+    if !file_path.exists() {
+        return Ok(());
+    }
+    let data = fs::read_to_string(&file_path).unwrap_or_default();
+    if data.trim().is_empty() { return Ok(()); }
+    
+    let mut history = serde_json::from_str::<Vec<ChatMessage>>(&data).unwrap_or_default();
+    history.retain(|m| m.id != message_id);
+    
+    let json = serde_json::to_string_pretty(&history).map_err(|e| e.to_string())?;
+    fs::write(&file_path, json).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+pub fn edit_chat_message(app: AppHandle, game_id: String, message_id: String, new_text: String) -> Result<(), String> {
+    let file_path = get_chat_file_path(&app, &game_id);
+    if !file_path.exists() {
+        return Ok(());
+    }
+    let data = fs::read_to_string(&file_path).unwrap_or_default();
+    if data.trim().is_empty() { return Ok(()); }
+    
+    let mut history = serde_json::from_str::<Vec<ChatMessage>>(&data).unwrap_or_default();
+    if let Some(msg) = history.iter_mut().find(|m| m.id == message_id) {
+        msg.text = new_text;
+        let json = serde_json::to_string_pretty(&history).map_err(|e| e.to_string())?;
+        fs::write(&file_path, json).map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
+#[tauri::command]
 pub fn clear_chat_history(app: AppHandle, game_id: String) -> Result<(), String> {
     let file_path = get_chat_file_path(&app, &game_id);
     if file_path.exists() {
