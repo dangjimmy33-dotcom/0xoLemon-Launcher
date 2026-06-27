@@ -19,6 +19,7 @@ export interface ChatMessage {
   imageBase64?: string
   mediaUrl?: string
   mediaType?: string
+  fileName?: string
   timestamp: number
   expiresAt?: number // for zip, rar, 7z (7 days)
   reactions?: Record<string, string[]> // emoji → [senderId, ...]
@@ -99,7 +100,7 @@ function groupMessages(messages: ChatMessage[], mySenderId: string, myAvatar?: s
 }
 
 // ── Message content ───────────────────────────────────────
-function MessageContent({ text, imageBase64, mediaUrl, mediaType }: { text: string; imageBase64?: string; mediaUrl?: string; mediaType?: string }) {
+function MessageContent({ text, imageBase64, mediaUrl, mediaType, fileName }: { text: string; imageBase64?: string; mediaUrl?: string; mediaType?: string; fileName?: string }) {
   const ytId = text ? extractYouTubeId(text) : null
   const isVideo = mediaType?.startsWith('video/')
   const isImage = mediaType?.startsWith('image/')
@@ -116,6 +117,7 @@ function MessageContent({ text, imageBase64, mediaUrl, mediaType }: { text: stri
   }
 
   const getFilename = (url: string) => {
+    if (fileName) return fileName
     try { return decodeURIComponent(url.split('/').pop() || 'file') }
     catch { return 'file' }
   }
@@ -337,6 +339,7 @@ function ChatBody({ gameId, discordUser, compact }: GameChatProps & { compact?: 
           senderName: d.senderName || 'Unknown', senderAvatar: d.senderAvatar,
           text: d.text || '', imageBase64: d.imageBase64,
           mediaUrl: d.mediaUrl, mediaType: d.mediaType,
+          fileName: d.fileName,
           timestamp: ts, reactions: d.reactions ?? {},
           expiresAt: d.expiresAt,
         }
@@ -393,10 +396,14 @@ function ChatBody({ gameId, discordUser, compact }: GameChatProps & { compact?: 
   }
 
   const processFile = async (filepath: string) => {
-    const ext = filepath.split('.').pop()?.toLowerCase() || 'png'
+    const originalName = filepath.split('\\').pop()?.split('/').pop() || 'file'
+    const ext = originalName.split('.').pop()?.toLowerCase() || 'png'
+    
+    // Avoid special characters in HuggingFace URL by using a clean random string for the internal filename
+    const cleanInternalName = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${ext}`
+    
     const isVideo = ['mp4', 'webm'].includes(ext)
     const isImage = ['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(ext)
-    const filename = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${ext}`
     
     let mediaType = 'application/octet-stream'
     if (isVideo) mediaType = `video/${ext}`
@@ -410,11 +417,11 @@ function ChatBody({ gameId, discordUser, compact }: GameChatProps & { compact?: 
     setSending(true)
 
     try {
-      const mediaUrl = await invoke<string>('upload_chat_media_from_path', { filename, filepath })
+      const mediaUrl = await invoke<string>('upload_chat_media_from_path', { filename: cleanInternalName, filepath })
       
       const payload: any = {
         senderId, senderName, senderAvatar: senderAvatar ?? null,
-        text: '', mediaUrl, mediaType, timestamp: serverTimestamp(),
+        text: '', mediaUrl, mediaType, fileName: originalName, timestamp: serverTimestamp(),
       }
       if (expiresAt) payload.expiresAt = expiresAt
 
@@ -444,15 +451,18 @@ function ChatBody({ gameId, discordUser, compact }: GameChatProps & { compact?: 
   }
 
   useEffect(() => {
-    const unlisten = import('@tauri-apps/api/event').then(({ listen }) => {
-      return listen<{ paths: string[] }>('tauri://file-drop', (event) => {
-        const paths = event.payload.paths
-        if (paths && paths.length > 0) {
-          processFile(paths[0])
+    let unlisten: () => void = () => {}
+    import('@tauri-apps/api/window').then(({ getCurrentWindow }) => {
+      getCurrentWindow().onDragDropEvent((event: any) => {
+        if (event.payload.type === 'drop') {
+          const paths = event.payload.paths
+          if (paths && paths.length > 0) {
+            processFile(paths[0])
+          }
         }
-      })
+      }).then((f: any) => unlisten = f)
     })
-    return () => { unlisten.then(f => f()) }
+    return () => unlisten()
   }, [gameId, senderId, senderName, senderAvatar])
 
   const handleReact = useCallback(async (msg: ChatMessage, emoji: string) => {
@@ -526,7 +536,13 @@ function ChatBody({ gameId, discordUser, compact }: GameChatProps & { compact?: 
                         <span className="msg-edit-hint">esc to cancel · enter to save</span>
                       </div>
                     ) : (
-                      <MessageContent text={msg.text} imageBase64={msg.imageBase64} mediaUrl={msg.mediaUrl} mediaType={msg.mediaType} />
+                      <MessageContent 
+                        text={msg.text} 
+                        imageBase64={msg.imageBase64} 
+                        mediaUrl={msg.mediaUrl} 
+                        mediaType={msg.mediaType} 
+                        fileName={msg.fileName}
+                      />
                     )}
                     {/* Reactions */}
                     {msg.reactions && Object.keys(msg.reactions).length > 0 && (
