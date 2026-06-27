@@ -212,11 +212,11 @@ async function main() {
     const existing = existingGamesMap.get(summary.id);
     if (existing) {
       // Preserve custom manual configurations from Firestore
-      summary.gridAssetId = existing.gridAssetId || summary.gridAssetId;
-      summary.heroAssetId = existing.heroAssetId || summary.heroAssetId;
-      summary.logoAssetId = existing.logoAssetId || summary.logoAssetId;
-      summary.iconAssetId = existing.iconAssetId || summary.iconAssetId;
-      summary.assets_override = existing.assets_override || summary.assets_override;
+      if (existing.gridAssetId) summary.gridAssetId = existing.gridAssetId;
+      if (existing.heroAssetId) summary.heroAssetId = existing.heroAssetId;
+      if (existing.logoAssetId) summary.logoAssetId = existing.logoAssetId;
+      if (existing.iconAssetId) summary.iconAssetId = existing.iconAssetId;
+      if (existing.assets_override) summary.assets_override = existing.assets_override;
       
       // Merge all new data into the existing object to preserve any other custom fields
       existingGamesMap.set(summary.id, { ...existing, ...summary });
@@ -225,11 +225,11 @@ async function main() {
     }
   }
 
-  const catalog = { 
+  const catalog = JSON.parse(JSON.stringify({ 
     ...existingCatalog, 
     defaultLocale: 'en-US', 
     games: Array.from(existingGamesMap.values()) 
-  };
+  }));
   
   console.log('\n\nUploading to Firestore config/gameCatalog (Merged with existing data)...');
   await setDoc(docRef, catalog);
