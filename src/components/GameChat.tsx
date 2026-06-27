@@ -360,9 +360,9 @@ function ChatBody({ gameId, discordUser, compact }: GameChatProps & { compact?: 
         senderId, senderName, senderAvatar: senderAvatar ?? null,
         text: '', mediaUrl, mediaType, timestamp: serverTimestamp(),
       })
-    } catch (err) {
+    } catch (err: any) {
       console.error('Upload failed:', err)
-      alert('Upload failed. Image max 5MB, video max 20MB.')
+      alert(`Upload failed: ${err?.message || err || 'Unknown error'}\n\nMake sure the file name doesn't contain special characters.`)
     } finally {
       setSending(false)
       setUploadProgress(null)
