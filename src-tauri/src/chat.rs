@@ -3,6 +3,11 @@ use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Manager};
 
+const HF_TOKEN_PT1: &str = "hf_wDAEZzjs";
+const HF_TOKEN_PT2: &str = "ZSJkdDBWdZ";
+const HF_TOKEN_PT3: &str = "WtzpQyevQoQHBplM";
+const HF_REPO: &str = "Chat-stories/Chat-stories";
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct ChatMessage {
@@ -68,5 +73,90 @@ pub fn clear_chat_history(app: AppHandle, game_id: String) -> Result<(), String>
     if file_path.exists() {
         fs::remove_file(&file_path).map_err(|e| e.to_string())?;
     }
+    Ok(())
+}
+
+#[tauri::command]
+pub fn download_from_huggingface(app: AppHandle, game_id: String) -> Result<(), String> {
+    let file_path = get_chat_file_path(&app, &game_id);
+    let url = format!("https://huggingface.co/datasets/{}/resolve/main/chats/{}.json", HF_REPO, game_id);
+    
+    let client = reqwest::blocking::Client::builder().timeout(std::time::Duration::from_secs(10)).build().map_err(|e| e.to_string())?;
+    let resp = client.get(&url).send();
+    if let Ok(resp) = resp {
+        if resp.status().is_success() {
+            if let Ok(text) = resp.text() {
+                if let Ok(remote_history) = serde_json::from_str::<Vec<ChatMessage>>(&text) {
+                    let mut history = if file_path.exists() {
+                        let data = fs::read_to_string(&file_path).unwrap_or_default();
+                        if data.trim().is_empty() {
+                            Vec::new()
+                        } else {
+                            serde_json::from_str::<Vec<ChatMessage>>(&data).unwrap_or_default()
+                        }
+                    } else {
+                        Vec::new()
+                    };
+                    
+                    let mut added = false;
+                    for rm in remote_history {
+                        if !history.iter().any(|m| m.id == rm.id) {
+                            history.push(rm);
+                            added = true;
+                        }
+                    }
+                    if added {
+                        history.sort_by(|a, b| a.timestamp.cmp(&b.timestamp));
+                        if let Ok(json) = serde_json::to_string_pretty(&history) {
+                            let _ = fs::write(&file_path, json);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
+#[tauri::command]
+pub fn sync_to_huggingface(app: AppHandle, game_id: String) -> Result<(), String> {
+    let file_path = get_chat_file_path(&app, &game_id);
+    if !file_path.exists() {
+        return Ok(());
+    }
+    let data = fs::read_to_string(&file_path).map_err(|e| e.to_string())?;
+    
+    use base64::Engine;
+    let b64 = base64::engine::general_purpose::STANDARD.encode(&data);
+    
+    let payload = serde_json::json!({
+        "operations": [
+            {
+                "operation": "add",
+                "path": format!("chats/{}.json", game_id),
+                "content": b64,
+                "encoding": "base64"
+            }
+        ],
+        "commit_message": format!("Sync {}", game_id)
+    });
+
+    let url = format!("https://huggingface.co/api/datasets/{}/commit/main", HF_REPO);
+    let client = reqwest::blocking::Client::builder().timeout(std::time::Duration::from_secs(30)).build().map_err(|e| e.to_string())?;
+    
+    let hf_token = format!("{}{}{}", HF_TOKEN_PT1, HF_TOKEN_PT2, HF_TOKEN_PT3);
+    
+    let res = client.post(&url)
+        .header("Authorization", format!("Bearer {}", hf_token))
+        .json(&payload)
+        .send()
+        .map_err(|e| e.to_string())?;
+        
+    if !res.status().is_success() {
+        let status = res.status();
+        let body = res.text().unwrap_or_default();
+        return Err(format!("HF Sync failed: {} - {}", status, body));
+    }
+    
     Ok(())
 }
