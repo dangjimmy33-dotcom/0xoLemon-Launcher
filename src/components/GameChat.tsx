@@ -261,7 +261,7 @@ function ChatBody({ gameId, discordUser, compact }: GameChatProps & { compact?: 
   const [editingMsgId, setEditingMsgId] = useState<string | null>(null)
   const [editInput, setEditInput] = useState('')
   const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number; msg: ChatMessage } | null>(null)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const topReactions = getTopReactions()
 
@@ -320,7 +320,10 @@ function ChatBody({ gameId, discordUser, compact }: GameChatProps & { compact?: 
   }, [gameId])
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const el = containerRef.current
+    if (el) {
+      el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' })
+    }
   }, [messages])
 
   const handleSend = async () => {
@@ -406,7 +409,7 @@ function ChatBody({ gameId, discordUser, compact }: GameChatProps & { compact?: 
   return (
     <>
       {/* Messages */}
-      <div className="chat-messages">
+      <div className="chat-messages" ref={containerRef}>
         {groups.length === 0 && (
           <div className="chat-empty">No messages yet. Be the first!</div>
         )}
@@ -473,7 +476,6 @@ function ChatBody({ gameId, discordUser, compact }: GameChatProps & { compact?: 
             </div>
           </div>
         ))}
-        <div ref={messagesEndRef} />
       </div>
 
       {/* Context menu */}

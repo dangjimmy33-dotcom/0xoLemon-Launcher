@@ -52,6 +52,12 @@ async function bootstrap() {
 
   // Show the Tauri window only after React has painted — prevents FOUC
   if (typeof window !== 'undefined' && window.__TAURI_INTERNALS__) {
+    document.addEventListener('contextmenu', e => {
+      const target = e.target as HTMLElement
+      if (target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA') return
+      e.preventDefault()
+    })
+    
     import('@tauri-apps/api/webviewWindow').then(({ getCurrentWebviewWindow }) => {
       getCurrentWebviewWindow().show().catch(() => undefined)
     }).catch(() => undefined)
