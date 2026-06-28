@@ -188,6 +188,13 @@ export type StfixerResult = {
   error?: string
 }
 
+export type CloudProviderConfig = {
+  provider: string       // "gdrive" | "onedrive" | "folder" | ""
+  tokenPath: string      // path to token/sync folder, empty if not set
+  authenticated: boolean // token file exists and is valid
+  configFound: boolean   // config.json was found at all
+}
+
 export type GameCatalog = {
   defaultLocale: string
   games: GameSummary[]

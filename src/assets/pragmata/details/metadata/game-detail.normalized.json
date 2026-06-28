@@ -1,4 +1,4 @@
-﻿{
+{
     "appId":  3357650,
     "title":  "pragmata",
     "steamMetadataCountry":  "us",
@@ -26,13 +26,13 @@
                 3859930
             ],
     "website":  "https://www.capcom-games.com/pragmata/",
-    "developers":  "CAPCOM Co., Ltd.",
-    "publishers":  "CAPCOM Co., Ltd.",
+    "developers":  ["CAPCOM Co., Ltd."],
+    "publishers":  ["CAPCOM Co., Ltd."],
     "releaseDate":  {
                         "coming_soon":  false,
                         "date":  "Apr 16, 2026"
                     },
-    "genres":  "Action, Adventure",
+    "genres":  ["Action", "Adventure"],
     "categories":  [
                        "Single-player",
                        "Steam Achievements",

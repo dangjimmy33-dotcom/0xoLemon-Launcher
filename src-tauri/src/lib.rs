@@ -727,7 +727,9 @@ pub fn run() {
             exit_app,
             clear_launcher_config,
             cloud_redirect::cloud_redirect_get_status,
-            cloud_redirect::cloud_redirect_run_stfixer
+            cloud_redirect::cloud_redirect_run_stfixer,
+            cloud_redirect::cloud_redirect_get_provider_config,
+            cloud_redirect::cloud_redirect_save_provider_config
         ])
         .setup(|app| {
             asset_cache::perform_ttl_cleanup(app.handle());

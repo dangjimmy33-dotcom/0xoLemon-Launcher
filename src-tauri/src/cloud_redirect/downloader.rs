@@ -88,6 +88,6 @@ fn find_dll_url(json: &str) -> Option<String> {
             return Some(url_content[..url_end].to_string());
         }
     }
-    drop(asset_block); // suppress unused warning
+    let _ = asset_block; // suppress unused warning
     None
 }

@@ -1,4 +1,4 @@
-:root {
+﻿:root {
   --premium-bg: #070a0f;
   --premium-surface: rgba(17, 22, 29, 0.86);
   --premium-surface-strong: rgba(22, 28, 36, 0.96);
@@ -8,7 +8,7 @@
   --premium-blue: #70a8ff;
   --premium-shadow: 0 24px 70px rgba(0, 0, 0, 0.48);
 
-  /* ── Google Antigravity easing curves ── */
+  /* â”€â”€ Google Antigravity easing curves â”€â”€ */
   --ease-out-quad:   cubic-bezier(.25,  .46, .45, .94);
   --ease-out-cubic:  cubic-bezier(.215, .61, .355, 1);
   --ease-out-quart:  cubic-bezier(.165, .84, .44, 1);
@@ -2420,7 +2420,7 @@
   cursor: not-allowed;
 }
 
-/* ── Logout Modal ─────────────────────────────────────────────────────── */
+/* â”€â”€ Logout Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .logout-modal {
   position: relative;
   width: min(360px, 94vw);
@@ -2509,7 +2509,7 @@
 }
 
 
-/* ── Custom Tray Menu Window ──────────────────────────────────────────── */
+/* â”€â”€ Custom Tray Menu Window â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 html, body, #root {
   margin: 0;
   padding: 0;
@@ -2589,9 +2589,9 @@ html, body, #root {
   color: #ff6b6e;
 }
 
-/* ═══════════════════════════════════════════════════════
-   GOOGLE ANTIGRAVITY – SCROLL REVEAL SYSTEM
-   ═══════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   GOOGLE ANTIGRAVITY â€“ SCROLL REVEAL SYSTEM
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 /* Base hidden state for scroll-reveal elements */
 .reveal {
@@ -2713,13 +2713,13 @@ html, body, #root {
   }
 }
 
-/* ═══════════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    ROCKSTAR / GTA6 ANIMATION SYSTEM
    Source: rockstargames.com/VI
-   ═══════════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 :root {
-  /* Rockstar signature easing — the "spring feel" */
+  /* Rockstar signature easing â€” the "spring feel" */
   --ease-rockstar:      cubic-bezier(.32, .72, 0, 1);
   --ease-rockstar-out:  cubic-bezier(.19, 1, .22, 1);
   --ease-rockstar-in:   cubic-bezier(.42, 0, .58, 1);
@@ -2730,7 +2730,7 @@ html, body, #root {
   --dur-slower:  1.1s;
 }
 
-/* ── 1. CLIP-PATH SLIDE-UP REVEAL (Rockstar hero text style) ─ */
+/* â”€â”€ 1. CLIP-PATH SLIDE-UP REVEAL (Rockstar hero text style) â”€ */
 @keyframes rstar-clip-up {
   from {
     clip-path: inset(100% 0 0 0);
@@ -2760,7 +2760,7 @@ html, body, #root {
   transform: translateY(0);
 }
 
-/* ── 2. SCALE + FADE (GTA6 modal & card pattern) ─ */
+/* â”€â”€ 2. SCALE + FADE (GTA6 modal & card pattern) â”€ */
 @keyframes rstar-scale-in {
   from { opacity: 0; scale: 0.96; }
   to   { opacity: 1; scale: 1; }
@@ -2771,7 +2771,7 @@ html, body, #root {
   to   { opacity: 0; scale: 0.96; }
 }
 
-/* ── 3. DIAGONAL SHIMMER SWEEP (GTA6 card shine) ─ */
+/* â”€â”€ 3. DIAGONAL SHIMMER SWEEP (GTA6 card shine) â”€ */
 @keyframes rstar-shimmer {
   0%   { left: -60%; top: -60%; }
   92%  { left: 110%; top: 110%; }
@@ -2808,7 +2808,7 @@ html, body, #root {
   animation: rstar-shimmer 700ms var(--ease-rockstar-out, cubic-bezier(.19, 1, .22, 1)) both;
 }
 
-/* ── 4. GRADIENT TEXT (GTA6 hero heading) ─ */
+/* â”€â”€ 4. GRADIENT TEXT (GTA6 hero heading) â”€ */
 .gradient-text {
   -webkit-background-clip: text;
   background-clip: text;
@@ -2823,7 +2823,7 @@ html, body, #root {
   will-change: background-position;
 }
 
-/* ── 5. PARALLAX GLOW ORB (Rockstar background radial) ─ */
+/* â”€â”€ 5. PARALLAX GLOW ORB (Rockstar background radial) â”€ */
 .glow-orb {
   pointer-events: none;
   position: fixed;
@@ -2842,7 +2842,7 @@ html, body, #root {
   transition: transform 1.8s var(--ease-rockstar-out, cubic-bezier(.19, 1, .22, 1));
 }
 
-/* ── 6. SECTION HEADING WIPE-IN ─ */
+/* â”€â”€ 6. SECTION HEADING WIPE-IN â”€ */
 @keyframes rstar-wipe {
   from { width: 0; }
   to   { width: 100%; }
@@ -2868,7 +2868,7 @@ html, body, #root {
   animation: rstar-wipe 600ms var(--ease-rockstar, cubic-bezier(.32, .72, 0, 1)) 200ms both;
 }
 
-/* ── 7. HOME SECTION HEADINGS — apply gradient + underline ─ */
+/* â”€â”€ 7. HOME SECTION HEADINGS â€” apply gradient + underline â”€ */
 .home-section-heading h2 {
   background-image: linear-gradient(
     90deg,
@@ -2880,14 +2880,14 @@ html, body, #root {
   -webkit-text-fill-color: transparent;
 }
 
-/* ── 8. OPERATION HERO BANNER — parallax depth ─ */
+/* â”€â”€ 8. OPERATION HERO BANNER â€” parallax depth â”€ */
 .operation-hero-banner img,
 .hero-bg-image {
   will-change: transform;
   transition: transform 0.1s linear;
 }
 
-/* ── 9. HOME GAME CARD — enhanced with shimmer ─ */
+/* â”€â”€ 9. HOME GAME CARD â€” enhanced with shimmer â”€ */
 .home-game-card {
   position: relative;
   overflow: hidden;
@@ -2918,7 +2918,7 @@ html, body, #root {
   animation: rstar-shimmer 600ms var(--ease-rockstar-out, cubic-bezier(.19, 1, .22, 1)) both;
 }
 
-/* ── 11. SETTINGS SECTION REVEAL — delayed stagger ─ */
+/* â”€â”€ 11. SETTINGS SECTION REVEAL â€” delayed stagger â”€ */
 .settings-section {
   opacity: 0;
   transform: translateY(14px);
@@ -2932,12 +2932,12 @@ html, body, #root {
   transform: none;
 }
 
-/* ── 12. APPLY reveal-clip to home-section-heading ─ */
+/* â”€â”€ 12. APPLY reveal-clip to home-section-heading â”€ */
 .home-section .home-section-heading {
   overflow: hidden;
 }
 
-/* ── 13. Reduced motion — kill all Rockstar animations ─ */
+/* â”€â”€ 13. Reduced motion â€” kill all Rockstar animations â”€ */
 @media (prefers-reduced-motion: reduce) {
   .reveal-clip,
   .shimmer-card::before,
@@ -2952,4 +2952,320 @@ html, body, #root {
     clip-path: none !important;
     width: 100% !important;
   }
+}
+
+/* --- Cloud Provider UI --- */
+.cr-provider-config {
+  background: var(--surface-glass, rgba(20, 25, 30, 0.4));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.cr-header {
+  background: rgba(255, 255, 255, 0.03);
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cr-header-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+}
+
+.cr-header-title h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.cr-status-badges {
+  display: flex;
+  gap: 8px;
+}
+
+.cr-badge {
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.cr-badge.ok {
+  background: rgba(100, 206, 122, 0.2);
+  color: #64ce7a;
+}
+
+.cr-badge.warning {
+  background: rgba(229, 183, 91, 0.2);
+  color: #e5b75b;
+}
+
+.cr-badge.error {
+  background: rgba(255, 90, 90, 0.2);
+  color: #ff5a5a;
+}
+
+.cr-body {
+  padding: 24px;
+}
+
+.cr-body > p {
+  margin: 0 0 24px;
+  color: var(--muted);
+  font-size: 14.5px;
+  line-height: 1.5;
+}
+
+.cr-form-group {
+  margin-bottom: 20px;
+}
+
+.cr-form-group label {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #f1f3f5;
+  margin-bottom: 8px;
+}
+
+.cr-select-wrapper {
+  position: relative;
+  width: 320px;
+}
+
+.cr-select {
+  width: 100%;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: #fff;
+  padding: 10px 36px 10px 14px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.cr-select:focus {
+  border-color: rgba(112, 168, 255, 0.5);
+}
+
+.cr-select-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.cr-input-group {
+  display: flex;
+  gap: 10px;
+}
+
+.cr-input {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: #fff;
+  padding: 10px 14px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.cr-input:focus {
+  border-color: rgba(112, 168, 255, 0.5);
+}
+
+.cr-auth-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cr-auth-status {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cr-auth-status strong {
+  font-size: 14px;
+  color: #fff;
+}
+
+.cr-auth-status span {
+  font-size: 13.5px;
+  color: var(--muted);
+}
+
+.cr-auth-icon {
+  color: var(--muted);
+}
+
+.cr-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.cr-btn.primary {
+  background: var(--premium-blue, #70a8ff);
+  color: #151e24;
+}
+
+.cr-btn.primary:hover {
+  background: #8ab6ff;
+}
+
+.cr-btn.secondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.cr-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.cr-btn-with-icon {
+  min-width: 140px;
+}
+
+.cr-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.cr-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.cr-btn-icon {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cr-btn-icon:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.cr-auth-ok { color: #64ce7a; }
+.cr-auth-none { color: var(--muted); }
+
+.cr-result {
+  margin-top: 16px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.cr-result.success {
+  border: 1px solid rgba(100, 206, 122, 0.25);
+  background: rgba(100, 206, 122, 0.06);
+}
+
+.cr-result.error {
+  border: 1px solid rgba(255, 90, 90, 0.25);
+  background: rgba(255, 90, 90, 0.06);
+}
+
+.cr-result-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+}
+
+.cr-result.success .cr-result-header { color: #64ce7a; }
+.cr-result.error .cr-result-header { color: #ff5a5a; }
+
+.cr-terminal {
+  display: flex;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.25);
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 12px;
+}
+
+.cr-term-icon { color: var(--muted); flex-shrink: 0; margin-top: 2px; }
+
+.cr-term-content {
+  flex: 1;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.cr-term-line {
+  color: var(--subtle);
+  line-height: 1.6;
+}
+
+.cr-save-msg {
+  margin-top: 12px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.cr-save-msg.success {
+  background: rgba(100, 206, 122, 0.12);
+  color: #64ce7a;
+  border: 1px solid rgba(100, 206, 122, 0.2);
+}
+
+.cr-save-msg.error {
+  background: rgba(255, 90, 90, 0.12);
+  color: #ff5a5a;
+  border: 1px solid rgba(255, 90, 90, 0.2);
+}
+
+.cloud-redirect-panel {
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+.cloud-redirect-panel > .cr-provider-config {
+  margin-top: 28px;
+}
+
+.cr-btn.secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }

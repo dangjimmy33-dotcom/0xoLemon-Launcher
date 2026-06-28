@@ -633,14 +633,14 @@ export function StoreLibraryView({
           <div className="detail-copy">
             <span className="storage-pill">
               <HardDrive size={14} />
-              {detail.install.storageLabel}
+              {detail.install?.storageLabel || 'HDD'}
             </span>
             {logo ? <img className="detail-logo" src={logo} alt={detail.title} /> : <h1>{detail.title}</h1>}
             <p>{detail.shortDescription}</p>
             <div className="library-meta-row">
               <span>Version {displayedVersion} (Build 23244517)</span>
               <span>{formatBytes(downloadSize)}</span>
-              {detail.install.supportsResume ? <span>{t.library.resumeSupported}</span> : null}
+              {detail.install?.supportsResume ? <span>{t.library.resumeSupported}</span> : null}
               {livePlayers !== undefined ? <span className="live-players-badge"><span className="pulse-dot"></span>{livePlayers.toLocaleString()} Online</span> : null}
             </div>
           </div>
@@ -894,11 +894,13 @@ export function VersionStat({ label, value, highlight = false }: { label: string
 }
 
 export function MediaRail({ detail, assets }: { detail: GameDetail; assets: Record<string, string> }) {
+  const safeMedia = Array.isArray(detail.media) ? detail.media : []
+
   // Build a thumb map: video item id -> thumbnail URL
   // e.g. "movie-00" -> URL from item with id "movie-thumb-00"
   const videoThumbMap = useMemo(() => {
     const map: Record<string, string> = {}
-    for (const item of detail.media) {
+    for (const item of safeMedia) {
       // Handle all possible thumbnail role names (Firestore may use any of these)
       const isThumbRole =
         item.role === 'video-thumb' ||
@@ -917,10 +919,10 @@ export function MediaRail({ detail, assets }: { detail: GameDetail; assets: Reco
       if (!map[videoId]) map[videoId] = url  // first wins
     }
     return map
-  }, [detail.media, assets])
+  }, [safeMedia, assets])
 
 
-  const media = detail.media
+  const media = safeMedia
     .filter((item) => isCarouselMedia(item) && assetUrlForId(item.assetId, assets))
     .sort((left, right) => mediaPriority(left) - mediaPriority(right))
     .map((item) => ({ ...item, url: assetUrlForId(item.assetId, assets)! }))
@@ -1022,7 +1024,8 @@ export function AchievementPreview({
   assets: Record<string, string>
 }) {
   const [showAll, setShowAll] = useState(false)
-  const available = achievements.filter((achievement) => assetUrlForId(achievement.iconAssetId, assets))
+  const safeAchievements = Array.isArray(achievements) ? achievements : []
+  const available = safeAchievements.filter((achievement) => assetUrlForId(achievement.iconAssetId, assets))
   const preview = available.slice(0, 10)
 
   // KHẮC PHỤC CẢNH BÁO LỖI 'any': Định nghĩa kiểu dữ liệu chuẩn cho Lenis
@@ -1054,7 +1057,7 @@ export function AchievementPreview({
       <header>
         <strong>{t.library.achievements}</strong>
         <div className="achievement-header-actions">
-          <small>{achievements.length} total</small>
+          <small>{safeAchievements.length} total</small>
           {/* Thêm aria-label để sửa cảnh báo vàng của ESLint */}
           <button type="button" aria-label="See all achievements" onClick={() => setShowAll(true)}>
             <Trophy size={15} />

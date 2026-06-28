@@ -81,6 +81,15 @@ export function RollbackPanel({ snapshot, rollbackVersion }: { snapshot: Snapsho
 }
 
 export function GameDetailsPanel({ detail }: { detail: GameDetail }) {
+  const devData = detail.developers as unknown
+  const devList: string[] = Array.isArray(devData) ? devData : (typeof devData === 'string' ? [devData] : [])
+  const pubData = detail.publishers as unknown
+  const pubList: string[] = Array.isArray(pubData) ? pubData : (typeof pubData === 'string' ? [pubData] : [])
+  const genreData = detail.genres as unknown
+  const genreList: string[] = Array.isArray(genreData) ? genreData : (typeof genreData === 'string' ? genreData.split(',').map((s: string)=>s.trim()) : [])
+  const ratingsData = detail.ratings as unknown
+  const ratingsList: any[] = Array.isArray(ratingsData) ? ratingsData : []
+
   return (
     <section className="panel game-info-panel">
       <header className="side-header">
@@ -90,26 +99,30 @@ export function GameDetailsPanel({ detail }: { detail: GameDetail }) {
       <dl className="game-info-list">
         <div>
           <dt>Developer</dt>
-          <dd>{detail.developers.join(', ')}</dd>
+          <dd>{devList.join(', ')}</dd>
         </div>
         <div>
           <dt>Publisher</dt>
-          <dd>{detail.publishers.join(', ')}</dd>
+          <dd>{pubList.join(', ')}</dd>
         </div>
-        <div>
-          <dt>Release date</dt>
-          <dd>{detail.releaseDate}</dd>
+        <div className="meta-pair">
+          <dt>Release Date</dt>
+          <dd>
+            {typeof detail.releaseDate === 'object' && detail.releaseDate !== null 
+              ? (detail.releaseDate as any).date 
+              : detail.releaseDate || 'Unknown'}
+          </dd>
         </div>
         <div>
           <dt>Genres</dt>
           <dd>
-            {detail.genres.map((genre) => (
+            {genreList.map((genre) => (
               <span key={genre}>{genre}</span>
             ))}
           </dd>
         </div>
       </dl>
-      {detail.ratings.map((rating) => (
+      {ratingsList.map((rating) => (
         <div className="rating-strip" key={rating.source}>
           <strong>{rating.score}</strong>
           <span>{rating.source}</span>
