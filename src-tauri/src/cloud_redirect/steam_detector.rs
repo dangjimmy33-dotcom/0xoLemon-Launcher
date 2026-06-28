@@ -61,7 +61,10 @@ fn try_known_paths() -> Option<PathBuf> {
 /// True if any process named "steam.exe" is running.
 pub fn is_steam_running() -> bool {
     use std::process::Command;
-    let out = Command::new("tasklist")
+    use std::os::windows::process::CommandExt;
+    let mut cmd = Command::new("tasklist");
+    cmd.creation_flags(0x08000000);
+    let out = cmd
         .args(["/FI", "IMAGENAME eq steam.exe", "/NH"])
         .output();
     match out {
@@ -87,15 +90,20 @@ pub fn get_steam_version(steam_path: &Path) -> Option<i64> {
 
 /// Shut down Steam gracefully (up to 15 s) then forcefully.
 pub fn shutdown_steam(steam_path: &Path) {
+    use std::os::windows::process::CommandExt;
     let steam_exe = steam_path.join("steam.exe");
     if steam_exe.is_file() {
-        let _ = std::process::Command::new(&steam_exe).arg("-shutdown").spawn();
+        let mut cmd = std::process::Command::new(&steam_exe);
+        cmd.creation_flags(0x08000000);
+        let _ = cmd.arg("-shutdown").spawn();
     }
     for _ in 0..30 {
         std::thread::sleep(std::time::Duration::from_millis(500));
         if !is_steam_running() { return; }
     }
-    let _ = std::process::Command::new("taskkill")
+    let mut kill_cmd = std::process::Command::new("taskkill");
+    kill_cmd.creation_flags(0x08000000);
+    let _ = kill_cmd
         .args(["/F", "/IM", "steam.exe"])
         .output();
     std::thread::sleep(std::time::Duration::from_millis(1000));

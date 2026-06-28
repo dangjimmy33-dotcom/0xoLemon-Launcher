@@ -630,6 +630,17 @@ struct LauncherState {
     job_control: Arc<JobControl>,
 }
 
+#[tauri::command]
+fn clear_launcher_config(app: tauri::AppHandle) -> Result<(), String> {
+    if let Ok(app_dir) = app.path().app_data_dir() {
+        if app_dir.exists() {
+            let _ = std::fs::remove_dir_all(&app_dir);
+            let _ = std::fs::create_dir_all(&app_dir);
+        }
+    }
+    Ok(())
+}
+
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
@@ -714,6 +725,7 @@ pub fn run() {
             open_steam_big_picture,
             get_steam_environment,
             exit_app,
+            clear_launcher_config,
             cloud_redirect::cloud_redirect_get_status,
             cloud_redirect::cloud_redirect_run_stfixer
         ])

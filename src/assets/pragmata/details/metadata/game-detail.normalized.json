@@ -1,0 +1,483 @@
+﻿{
+    "appId":  3357650,
+    "title":  "pragmata",
+    "steamMetadataCountry":  "us",
+    "steamMetadataLanguage":  "english",
+    "type":  "game",
+    "requiredAge":  0,
+    "isFree":  false,
+    "shortDescription":  "Pragmata is a unique, sci-fi action-adventure game from Capcom. Follow Hugh, a member of an ill-fated investigation team, and Diana, a young android, as they navigate a lunar facility taken over by rogue AI in search of a way to Earth.",
+    "detailedDescriptionHtml":  "\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003e\u0026quot;Wherever you go, I\u0027ll be there.\u0026quot;\u003c/strong\u003e\u003c/h2\u003e\u003cbr\u003ePragmata is a unique, sci-fi action-adventure game from Capcom.\u003cbr\u003e\u003cbr\u003eFollow Hugh, a member of an ill-fated investigation team, and Diana, a young android, as they navigate a lunar facility taken over by rogue AI in search of a way to Earth.\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eONE TRAGIC ACCIDENT. AN UNLIKELY DUO.\u003c/strong\u003e\u003c/h2\u003e\u003cbr\u003eAt a remote lunar research facility, humanity discovers a new ore—one that, when properly refined, can be used to create almost anything using 3D printers. \u003cbr\u003e\u003cbr\u003eWhen the facility suddenly falls silent, Hugh and his team are dispatched to investigate...but then disaster strikes.\u003cbr\u003e\u003cbr\u003eHugh is saved by Diana, a lone android wandering the complex. The two of them must join forces to find a way off the moon while working their way through an AI-controlled facility bent on stopping them.\u003cbr\u003e\u003cbr\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3357650/extras/ce1eada577169b54f37ad9fdd589a69e.poster.avif?t=1777351016\" width=1170 height=658 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3357650/extras/ce1eada577169b54f37ad9fdd589a69e.webm?t=1777351016\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3357650/extras/ce1eada577169b54f37ad9fdd589a69e.mp4?t=1777351016\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003cbr\u003e\u003cbr\u003eHalf-realized replicas of human civilization sprawl across the lunar surface, while inside, only scattered traces of the facility\u0027s vanished inhabitants remain. What buried truth awaits at the end of Hugh and Diana\u0027s journey?\u003cbr\u003e\u003cbr\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3357650/extras/d834acc0dcdf5753029206c2e5515612.poster.avif?t=1777351016\" width=1170 height=658 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3357650/extras/d834acc0dcdf5753029206c2e5515612.webm?t=1777351016\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3357650/extras/d834acc0dcdf5753029206c2e5515612.mp4?t=1777351016\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eTAKE CONTROL OF TWO CHARACTERS—AT THE SAME TIME.\u003c/strong\u003e\u003c/h2\u003e\u003cbr\u003eGuide both Hugh as he moves, shoots, and jumps, and Diana, who hacks at the same time.\u003cbr\u003e\u003cbr\u003eEnjoy a fresh, new blend of gameplay in this truly unique system that will push your brain to its limits.\u003cbr\u003e\u003cbr\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3357650/extras/776dcd2b7abf8452d9b3251781bfdc7b.poster.avif?t=1777351016\" width=1170 height=658 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3357650/extras/776dcd2b7abf8452d9b3251781bfdc7b.webm?t=1777351016\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3357650/extras/776dcd2b7abf8452d9b3251781bfdc7b.mp4?t=1777351016\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e",
+    "aboutTheGameHtml":  "\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003e\u0026quot;Wherever you go, I\u0027ll be there.\u0026quot;\u003c/strong\u003e\u003c/h2\u003e\u003cbr\u003ePragmata is a unique, sci-fi action-adventure game from Capcom.\u003cbr\u003e\u003cbr\u003eFollow Hugh, a member of an ill-fated investigation team, and Diana, a young android, as they navigate a lunar facility taken over by rogue AI in search of a way to Earth.\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eONE TRAGIC ACCIDENT. AN UNLIKELY DUO.\u003c/strong\u003e\u003c/h2\u003e\u003cbr\u003eAt a remote lunar research facility, humanity discovers a new ore—one that, when properly refined, can be used to create almost anything using 3D printers. \u003cbr\u003e\u003cbr\u003eWhen the facility suddenly falls silent, Hugh and his team are dispatched to investigate...but then disaster strikes.\u003cbr\u003e\u003cbr\u003eHugh is saved by Diana, a lone android wandering the complex. The two of them must join forces to find a way off the moon while working their way through an AI-controlled facility bent on stopping them.\u003cbr\u003e\u003cbr\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3357650/extras/ce1eada577169b54f37ad9fdd589a69e.poster.avif?t=1777351016\" width=1170 height=658 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3357650/extras/ce1eada577169b54f37ad9fdd589a69e.webm?t=1777351016\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3357650/extras/ce1eada577169b54f37ad9fdd589a69e.mp4?t=1777351016\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003cbr\u003e\u003cbr\u003eHalf-realized replicas of human civilization sprawl across the lunar surface, while inside, only scattered traces of the facility\u0027s vanished inhabitants remain. What buried truth awaits at the end of Hugh and Diana\u0027s journey?\u003cbr\u003e\u003cbr\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3357650/extras/d834acc0dcdf5753029206c2e5515612.poster.avif?t=1777351016\" width=1170 height=658 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3357650/extras/d834acc0dcdf5753029206c2e5515612.webm?t=1777351016\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3357650/extras/d834acc0dcdf5753029206c2e5515612.mp4?t=1777351016\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eTAKE CONTROL OF TWO CHARACTERS—AT THE SAME TIME.\u003c/strong\u003e\u003c/h2\u003e\u003cbr\u003eGuide both Hugh as he moves, shoots, and jumps, and Diana, who hacks at the same time.\u003cbr\u003e\u003cbr\u003eEnjoy a fresh, new blend of gameplay in this truly unique system that will push your brain to its limits.\u003cbr\u003e\u003cbr\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3357650/extras/776dcd2b7abf8452d9b3251781bfdc7b.poster.avif?t=1777351016\" width=1170 height=658 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3357650/extras/776dcd2b7abf8452d9b3251781bfdc7b.webm?t=1777351016\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3357650/extras/776dcd2b7abf8452d9b3251781bfdc7b.mp4?t=1777351016\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e",
+    "supportedLanguagesHtml":  "English\u003cstrong\u003e*\u003c/strong\u003e, French\u003cstrong\u003e*\u003c/strong\u003e, Italian\u003cstrong\u003e*\u003c/strong\u003e, German\u003cstrong\u003e*\u003c/strong\u003e, Spanish - Spain\u003cstrong\u003e*\u003c/strong\u003e, Arabic, Spanish - Latin America\u003cstrong\u003e*\u003c/strong\u003e, Portuguese - Brazil\u003cstrong\u003e*\u003c/strong\u003e, Polish, Russian\u003cstrong\u003e*\u003c/strong\u003e, Simplified Chinese\u003cstrong\u003e*\u003c/strong\u003e, Traditional Chinese, Japanese\u003cstrong\u003e*\u003c/strong\u003e, Korean\u003cstrong\u003e*\u003c/strong\u003e\u003cbr\u003e\u003cstrong\u003e*\u003c/strong\u003elanguages with full audio support",
+    "pcRequirements":  {
+                           "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003eRequires a 64-bit processor and operating system\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows 11 (64 bit)\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e Intel Core i5-8500 / AMD Ryzen 5 3500\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 16 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e NVIDIA GeForce GTX 1660 6 GB / Radeon RX 5500 XT 8 GB\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eDirectX:\u003c/strong\u003e Version 12\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eNetwork:\u003c/strong\u003e Broadband Internet connection\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 40 GB available space\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eAdditional Notes:\u003c/strong\u003e Estimated performance when set to \u0026quot;Performance\u0026quot; preset: 1080p/45 fps.  Framerate might drop in graphics-intensive scenes.  SSD recommended.\u003c/li\u003e\u003c/ul\u003e",
+                           "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003eRequires a 64-bit processor and operating system\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows 11 (64 bit)\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e Intel Core i7-8700 / AMD Ryzen 5 5500\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 16 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e NVIDIA GeForce RTX 2060 Super 8GB / Radeon RX 6600 8GB\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eDirectX:\u003c/strong\u003e Version 12\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eNetwork:\u003c/strong\u003e Broadband Internet connection\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 40 GB available space\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eAdditional Notes:\u003c/strong\u003e Estimated performance when set to \u0026quot;Balanced\u0026quot; preset: 1080p/60 fps.  Frame rate might drop in graphics-intensive scenes. AMD Radeon RX 6700 XT 12GB or NVIDIA GeForce RTX 3060 12GB required to support ray tracing.  SSD recommended.\u003c/li\u003e\u003c/ul\u003e"
+                       },
+    "macRequirements":  {
+                            "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e",
+                            "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e"
+                        },
+    "linuxRequirements":  {
+                              "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e",
+                              "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e"
+                          },
+    "dlc":  [
+                3859930
+            ],
+    "website":  "https://www.capcom-games.com/pragmata/",
+    "developers":  "CAPCOM Co., Ltd.",
+    "publishers":  "CAPCOM Co., Ltd.",
+    "releaseDate":  {
+                        "coming_soon":  false,
+                        "date":  "Apr 16, 2026"
+                    },
+    "genres":  "Action, Adventure",
+    "categories":  [
+                       "Single-player",
+                       "Steam Achievements",
+                       "Full controller support",
+                       "Steam Trading Cards",
+                       "Captions available",
+                       "Gamepad Recommended",
+                       "DualShock Controller Support",
+                       "DualShock Controller Support",
+                       "DualShock Controller Support",
+                       "DualShock Controller Support",
+                       "Steam Cloud",
+                       "HDR available",
+                       "Family Sharing"
+                   ],
+    "platforms":  {
+                      "windows":  true,
+                      "mac":  false,
+                      "linux":  false
+                  },
+    "metacritic":  null,
+    "recommendations":  {
+                            "total":  30703
+                        },
+    "reviewsSummary":  null,
+    "newsItems":  [
+                      {
+                          "gid":  "1835871199315694",
+                          "title":  "Полиция Дианы: Capcom рассказала, как создавался образ девочки-андроида в Pragmata",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/Gamemag.ru/1835871199315694",
+                          "is_external_url":  true,
+                          "author":  "Семен Страндов",
+                          "contents":  "\u003cimg src=\"https://gamemag.ru/images/cache/News/News199916/e511bddc9e-2_1390x600.jpg\" alt=\"\"\u003e\u003cp\u003eВ процессе создания \u003cstrong\u003ePragmata\u003c/strong\u003e разработчики из \u003cstrong\u003eCapcom\u003c/strong\u003e уделяли повышенное внимание формированию характера и образа андроида Дианы, вокруг которой строится сюжетная линия приключенческой игры. \u003cu\u003eПоскольку внешне и по поведению персонаж представляет собой ребенка, разработчикам пришлось много думать о том, как найти нужный баланс — изобразить Диану максимально живой, но при этом не вызывающей у игрока сильных отрицательных эмоций\u003c/u\u003e.\u003c/p\u003e",
+                          "feedlabel":  "Gamemag.ru",
+                          "date":  1782221400,
+                          "feedname":  "Gamemag.ru",
+                          "feed_type":  0,
+                          "appid":  3357650
+                      },
+                      {
+                          "gid":  "1835871199309719",
+                          "title":  "To make Pragmata\u0027s Diana feel naturally childlike, a small group of women dubbed the \"Diana Police\" was set up to keep things in check",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/Rock, Paper, Shotgun/1835871199309719",
+                          "is_external_url":  true,
+                          "author":  "",
+                          "contents":  "\u003cimg src=\"https://assetsio.gnwcdn.com/pragmata-diana_DG69U8X.jpg?width=690\u0026quality=85\u0026format=jpg\u0026auto=webp\" /\u003e \u003cp\u003e\nDespite being a dad game, a pseudo-genre that has its fair share of problems in the way it depicts father-child relationships, \u003ca href=\"https://www.rockpapershotgun.com/games/pragmata\"\u003ePragmata\u003c/a\u003e generally seemed to approach all of this fairly well. The consensus seems to be that space man Hugh was genuinely kind of a nice guy, and that his relationship with Diana was actually quite sweet. But as it turns out, the game\u0027s lead devs had to get a bit of a helping hand in writing Diana specifically, resulting in a group of women coming in to help as part of the \"Diana Police.\"\n\u003c/p\u003e \u003cp\u003e\u003ca href=\"https://www.rockpapershotgun.com/to-make-pragmatas-diana-feel-naturally-childlike-a-small-group-of-women-dubbed-the-diana-police-was-set-up-to-keep-things-in-check\"\u003eRead more\u003c/a\u003e\u003c/p\u003e",
+                          "feedlabel":  "Rock, Paper, Shotgun",
+                          "date":  1781971855,
+                          "feedname":  "Rock, Paper, Shotgun",
+                          "feed_type":  0,
+                          "appid":  3357650
+                      },
+                      {
+                          "gid":  "1835871199306078",
+                          "title":  "New Title Update adds Hugh\u0027s Scribble Suit!",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1835871199306078",
+                          "is_external_url":  true,
+                          "author":  "capcomjapan_marketing",
+                          "contents":  "Pragmata\u0027s latest title update adds Hugh\u0027s Scribble Suit from the Sketchbook demo, as well as adjustments to the difficulty for Training Simulation 30 Stand or Die. Text errors in the game have also been fixed.\n\nCheck out the music video for Pragmata\u0027s theme song, \"\"Memories Are You\"\".\n[previewyoutube=EWXhdXPwBoU;full][/previewyoutube]\nThank you for your continued support of Pragmata!\n\nhttps://store.steampowered.com/app/3357650/PRAGMATA/",
+                          "feedlabel":  "Community Announcements",
+                          "date":  1781841764,
+                          "feedname":  "steam_community_announcements",
+                          "feed_type":  1,
+                          "appid":  3357650
+                      },
+                      {
+                          "gid":  "1835871199300355",
+                          "title":  "Только командная работа: Президент Capcom рассказал, как компания создает сегодня новые игры, которые становятся хитами",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/Gamemag.ru/1835871199300355",
+                          "is_external_url":  true,
+                          "author":  "Семен Страндов",
+                          "contents":  "\u003cimg src=\"https://gamemag.ru/images/cache/News/News199819/d3421a421e-2_1390x600.jpg\" alt=\"\"\u003e\u003cp\u003eСовременный подход \u003cstrong\u003eCapcom \u003c/strong\u003eк созданию новых игр отрицает диктатуру авторитета одного-единственного автора. \u003cu\u003eВместо этого внутри компании культивируются идеи командной работы — разные специалисты из разных отделов объединяют усилия для того, чтобы вместе принимать ключевые технические, дизайнерские и художественные решения\u003c/u\u003e. Об этом рассказал президент издательства \u003cstrong\u003eХарухиро Цудзимото\u003c/strong\u003e.\u003c/p\u003e",
+                          "feedlabel":  "Gamemag.ru",
+                          "date":  1781661600,
+                          "feedname":  "Gamemag.ru",
+                          "feed_type":  0,
+                          "appid":  3357650
+                      },
+                      {
+                          "gid":  "1833968530897229",
+                          "title":  "Пока другие студии увольняют сотрудников, Capcom активно расширяется и нанимает новых разработчиков",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/Gamemag.ru/1833968530897229",
+                          "is_external_url":  true,
+                          "author":  "Семен Страндов",
+                          "contents":  "\u003cimg src=\"https://gamemag.ru/images/cache/News/News199347/9897cfe741-2_1390x600.jpg\" alt=\"\"\u003e\u003cp\u003e\u003cstrong\u003eCapcom\u003c/strong\u003e продолжает расширять свой штат, о чём сообщила инвесторам в новом финансовом отчёте. Компания сохраняет курс на последовательное привлечение большого количества сотрудников, включая молодых специалистов.\u003c/p\u003e",
+                          "feedlabel":  "Gamemag.ru",
+                          "date":  1780281540,
+                          "feedname":  "Gamemag.ru",
+                          "feed_type":  0,
+                          "appid":  3357650
+                      }
+                  ],
+    "achievements":  {
+                         "total":  35,
+                         "items":  [
+                                       {
+                                           "apiName":  "1",
+                                           "displayName":  "Rendezvous",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/8e572a25aa173e41e70cd5259e3d7ca67af02b66.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/b1f42309cdd8941e6376e4f6080501e268e37e3d.jpg"
+                                       },
+                                       {
+                                           "apiName":  "2",
+                                           "displayName":  "Power Trip",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/a2b0ca80472dffd646096010734e3845759c7e2c.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/3360cc6d9cca7f9b98dd0ad795aa8734d09add04.jpg"
+                                       },
+                                       {
+                                           "apiName":  "3",
+                                           "displayName":  "The Purr-fect Guide",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/e83ee1b6324d871c9bd8a5f37286f744917c5776.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/c30f7939ad688cdfd2412dc96356eaf39e186788.jpg"
+                                       },
+                                       {
+                                           "apiName":  "4",
+                                           "displayName":  "Another Pragmata",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/387f8ae28fda2625fd336767b6d7f0a472bdca8e.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/481c1e281a3823c7c2e7b553394ae0a3f6b6b698.jpg"
+                                       },
+                                       {
+                                           "apiName":  "5",
+                                           "displayName":  "Entrusted Memory",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/e683c029ca9d8ab29cda28da1ff157e9262e25d9.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/b357b88e280791c18f3d13551fbfcd56ccb78216.jpg"
+                                       },
+                                       {
+                                           "apiName":  "6",
+                                           "displayName":  "Mission Unveiled",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/eefdbe8df1654c7360c8c31c903183a15ef3fe09.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/cdd0cdaeeafc7e1419f22cf4905232a3003580b0.jpg"
+                                       },
+                                       {
+                                           "apiName":  "7",
+                                           "displayName":  "Awakening",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/d7eb0e953af3dc2f766bd95869c017129fd1a43d.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/b9148bbe2545a36a7de493f73ead9451a7dd181e.jpg"
+                                       },
+                                       {
+                                           "apiName":  "8",
+                                           "displayName":  "Sentinel Breach",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/5db8a5a4321fcc1185755d396918ceddb37c4652.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/41aea8b0ce78b83224ad22b8b3fd2749b770c700.jpg"
+                                       },
+                                       {
+                                           "apiName":  "9",
+                                           "displayName":  "Our Promise",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/892f83ee64090be9fb5fb64534a3fd9128c3c4d5.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/070660e75c58978f83bb2dbb490e4eb539069afb.jpg"
+                                       },
+                                       {
+                                           "apiName":  "10",
+                                           "displayName":  "The Right Man for the Job",
+                                           "description":  "Complete Unknown Signal.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/64cacb821818f1b660d853e7ee03516b1002b5a3.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/3ae49581d7a6e97cd2591c37367ed62e8d1960f7.jpg"
+                                       },
+                                       {
+                                           "apiName":  "11",
+                                           "displayName":  "Lunar Supremacy",
+                                           "description":  "Complete the game on Lunatic difficulty.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/96ac902c69224364cfb8613a898e526e333b3ff2.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/eb8ca1a48ec91198f3ee9c37a2be8690b595ad64.jpg"
+                                       },
+                                       {
+                                           "apiName":  "12",
+                                           "displayName":  "Small Talk",
+                                           "description":  "Talk to Diana in the Shelter.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/3f241288d1da620994f6abb79df6d92ecbc61b1b.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/2db7f340aa4cc3cb20b9ab7cb78f5d8376e175f5.jpg"
+                                       },
+                                       {
+                                           "apiName":  "13",
+                                           "displayName":  "Thanks for Everything!",
+                                           "description":  "Receive a picture as a present.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/dd1e81999490159e797826a0fe9d34218a2a80ca.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/9cb435cad95a6fd4bfd28869444829fedaeff303.jpg"
+                                       },
+                                       {
+                                           "apiName":  "14",
+                                           "displayName":  "Peekaboo",
+                                           "description":  "Win at hide-and-seek.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/e9006d8f3b202da2acbda9b85b95e5ed6ef698f2.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/bf8e0cdcf0d2046c1e5f379ea29f56c749653cf9.jpg"
+                                       },
+                                       {
+                                           "apiName":  "15",
+                                           "displayName":  "For Me?",
+                                           "description":  "Give an REM as a present.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/04c2e32cbca7a058619c23aa5bbc72d79e84248c.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/e8360ad346eaa2c1c779795d8b60ae2b2a4e8357.jpg"
+                                       },
+                                       {
+                                           "apiName":  "16",
+                                           "displayName":  "Replicating Extraordinaire!",
+                                           "description":  "Complete an REM series.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/6559aaf1b0c1bbc05cdac3e93189a77ce14d5025.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/3d4be638d80556519d8e425c4bf0f57a8673893f.jpg"
+                                       },
+                                       {
+                                           "apiName":  "17",
+                                           "displayName":  "Blackout!",
+                                           "description":  "Complete a Cabin Stamp Board.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/5c5e7508a8410f295e11521da039bd30fee61052.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/f19928d0730d1891ec248d64808c0d96b246d582.jpg"
+                                       },
+                                       {
+                                           "apiName":  "18",
+                                           "displayName":  "Mister Simulator",
+                                           "description":  "Complete the main objective in a Training Sim.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/5c3eca74a2bf627902de0349b324f47582e35674.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/797855bd4312147fb5fb2d9e4be40cd91df1960f.jpg"
+                                       },
+                                       {
+                                           "apiName":  "19",
+                                           "displayName":  "Master of the Simulator",
+                                           "description":  "Complete the main objective in every Training Sim.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/f354a674560d48b5fd744a12ed4b1a11f19a1e25.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/72c6017ee747383b9728629a2b7e956ab2b34ee9.jpg"
+                                       },
+                                       {
+                                           "apiName":  "20",
+                                           "displayName":  "Red-Zoned and Loving It",
+                                           "description":  "Secure a Red Zone.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/4c8d91b9ae1be6b3f4d50e68d3a95ac270c6fe88.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/9a00024b99e75504228205e3731cab9c5be69b5a.jpg"
+                                       },
+                                       {
+                                           "apiName":  "21",
+                                           "displayName":  "You\u0027re Not Getting Away That Easy",
+                                           "description":  "Defeat a Sweeper bot.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/d6d1ae0d17a981d004d9d481d0b5bb17a6bafc6a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/170a5d2b55e0bcd641959effc2cca478dde48b56.jpg"
+                                       },
+                                       {
+                                           "apiName":  "22",
+                                           "displayName":  "Wall? What Wall?",
+                                           "description":  "Find a Holo-Wall.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/97f3eae4d47842c5ea69875e546dfe8832530739.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/dd734d6a1b3a4f30b60ddb494ca25e0d0901c6df.jpg"
+                                       },
+                                       {
+                                           "apiName":  "23",
+                                           "displayName":  "Well Spotted!",
+                                           "description":  "Shoot a Mini Cabin.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/a534bc58b7d70c1ef700e542af2e6ba3039f0ed6.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/754841a6762f4b6144847e9e3f2e0e89ef63d26a.jpg"
+                                       },
+                                       {
+                                           "apiName":  "24",
+                                           "displayName":  "Mini-Hunter Supreme",
+                                           "description":  "Shoot every Mini Cabin.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/debff352da4523ec2bafc2c34af17eaddefe0549.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/9011799b5dc136450b7ce9782762390f1275f31f.jpg"
+                                       },
+                                       {
+                                           "apiName":  "25",
+                                           "displayName":  "Top-Shelf Item",
+                                           "description":  "Upgrade a weapon using Pure Lunum.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/70455d6a233d1e50f275a758eb2e1e374b9e6b00.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/7b8194b5774801607fd046ac2da07bffc005576c.jpg"
+                                       },
+                                       {
+                                           "apiName":  "26",
+                                           "displayName":  "Can\u0027t Stop, Won\u0027t Stop",
+                                           "description":  "Print all obtainable weapons, hacking nodes, and abilities during the main story.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/624885734ed373526dec9dcc92d020784275eaf4.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/896de323e7676e48a475d5d42ba725a04879e017.jpg"
+                                       },
+                                       {
+                                           "apiName":  "27",
+                                           "displayName":  "Cradle Surveyor",
+                                           "description":  "Reach 100% sector progress in a sector.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/f802922113ed1a8e3230dd43ac78b1ae00baeeda.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/7ba0e06ce32860d89387c01d4a65393f5f826b34.jpg"
+                                       },
+                                       {
+                                           "apiName":  "28",
+                                           "displayName":  "Escape Artist",
+                                           "description":  "Unlock every escape hatch.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/c06473721bb60744a0849b947774925f24a58892.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/bf6703a7293e07e39f4e03378b6fee3c2f0b19a7.jpg"
+                                       },
+                                       {
+                                           "apiName":  "29",
+                                           "displayName":  "A Lunar Challenge",
+                                           "description":  "Complete a mission in a special sector.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/4fe51fd0e2e6730217c142d606830f1f84127a4b.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/d4d010aae921d092878604a74ecb4258dad13c47.jpg"
+                                       },
+                                       {
+                                           "apiName":  "30",
+                                           "displayName":  "Round \u0027Em Up",
+                                           "description":  "Defeat three enemies at the same time with the Lim Recycler.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/e92866a3a7b1c0ff195816e94ed93d7570b29529.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/7896c6f11f7b408671e28e3cc832266e24ffd47a.jpg"
+                                       },
+                                       {
+                                           "apiName":  "31",
+                                           "displayName":  "Courage in Desperation",
+                                           "description":  "Repel the LunaDigger while progressing through the Lunum Mines.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/7573336f2b5e61b3bf1fc2e3c2f52e6c19d191aa.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/864c5d2994498943753c3ec99e8d1a84534989a1.jpg"
+                                       },
+                                       {
+                                           "apiName":  "32",
+                                           "displayName":  "Can I Borrow That?",
+                                           "description":  "Confuse a certain enemy and borrow its shield.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/d9266cd959f59c2bdf2edfc0a55a662b989d6226.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/8a5e60734f2847bccd51c3e8c3bb6214d7d1c03e.jpg"
+                                       },
+                                       {
+                                           "apiName":  "33",
+                                           "displayName":  "Clean Up on Aisle Three",
+                                           "description":  "Cleanse three or more enemies at the same time.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/0b69e553b23c8b70c7cc87871f1d96e245294fb8.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/5f100f72cfe9b471013523b28470bbff22533c33.jpg"
+                                       },
+                                       {
+                                           "apiName":  "34",
+                                           "displayName":  "IT\u0027S OVER 6000!",
+                                           "description":  "Deal 6000 gunshot damage in one second.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/645161efa56154cb49ab47dccdd9c9985ad82336.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/9600c34602fef0a0b1172d7fc2488fb61fbf5be0.jpg"
+                                       },
+                                       {
+                                           "apiName":  "35",
+                                           "displayName":  "Who Needs Guns!?",
+                                           "description":  "Deal 3000 hacking damage in a single hack.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/ea2903453fd0f1788cf53afd0c6aadc50d413ab0.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/4ef5c2c595b0b6ee9a0c0d28d499f9aa77aeca92.jpg"
+                                       }
+                                   ]
+                     }
+}

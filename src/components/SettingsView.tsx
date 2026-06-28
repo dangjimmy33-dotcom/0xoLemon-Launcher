@@ -17,6 +17,7 @@ import {
   Sparkles,
   CircleAlert,
 } from 'lucide-react'
+import { invoke } from '@tauri-apps/api/core'
 import type { LauncherPreferences, NotificationCategory } from '../lib/preferences'
 import type { LauncherSettings, SteamEnvironmentInfo } from '../types'
 
@@ -614,6 +615,40 @@ export function SettingsView({
               <button type="button" className="settings-secondary-button" onClick={onCheckForUpdates}>
                 <RefreshCcw size={15} />
                 Check for updates
+              </button>
+            </SettingRow>
+          </div>
+        </section>
+
+        <section className="settings-group">
+          <header>
+            <CircleAlert size={18} style={{ color: '#ef4444' }} />
+            <div>
+              <strong style={{ color: '#ef4444' }}>Danger Zone</strong>
+              <span>Reset or wipe launcher configurations</span>
+            </div>
+          </header>
+          <div className="settings-group-body">
+            <SettingRow title="Reset Launcher Data" description="Wipe all local tokens, configurations, and backend data. The launcher will restart.">
+              <button 
+                type="button" 
+                className="settings-secondary-button" 
+                style={{ borderColor: '#ef4444', color: '#ef4444' }}
+                onClick={async () => {
+                  if (confirm("Bạn có chắc chắn muốn xóa toàn bộ dữ liệu cấu hình và đăng nhập (Google Drive, Discord...) của Launcher không? Việc này không thể hoàn tác.")) {
+                    try {
+                      await invoke('clear_launcher_config')
+                      localStorage.clear()
+                      alert("Đã xóa toàn bộ cấu hình! Launcher sẽ tắt bây giờ, vui lòng mở lại.")
+                      await invoke('exit_app')
+                    } catch (e) {
+                      console.error(e)
+                      alert("Lỗi khi xóa cấu hình: " + e)
+                    }
+                  }
+                }}
+              >
+                Reset Data
               </button>
             </SettingRow>
           </div>
