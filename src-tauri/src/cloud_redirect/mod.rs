@@ -73,7 +73,7 @@ pub fn cloud_redirect_get_status() -> CloudRedirectStatus {
 
 /// Run the full STFixer flow (may take 30-60s due to downloads). Blocking.
 #[command]
-pub fn cloud_redirect_run_stfixer() -> StfixerResult {
+pub fn cloud_redirect_run_stfixer(install_core_if_missing: bool) -> StfixerResult {
     let steam_path = match find_steam_path() {
         Some(p) => p,
         None => {
@@ -117,12 +117,18 @@ pub fn cloud_redirect_run_stfixer() -> StfixerResult {
 
     // Download core DLLs if missing.
     if !patcher.has_core_dll() {
-        push("Downloading SteamTools core DLLs...");
-        let repair = patcher.repair_core_dlls();
-        if !repair.succeeded {
-            return collect_result(&log_ref, false, repair.error);
+        if install_core_if_missing {
+            push("Downloading SteamTools core DLLs...");
+            let repair = patcher.repair_core_dlls();
+            if !repair.succeeded {
+                return collect_result(&log_ref, false, repair.error);
+            }
+            push("Core DLLs OK.");
+        } else {
+            push("ERROR: SteamTools Core DLL not found.");
+            push("Vui lòng check chọn 'Install SteamTools Core' nếu bạn muốn tự động cài đặt.");
+            return collect_result(&log_ref, false, Some("SteamTools Core DLL missing".to_string()));
         }
-        push("Core DLLs OK.");
     }
 
     // Apply STFixer patches.

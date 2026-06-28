@@ -5121,3 +5121,17 @@ button:disabled {
 .cr-term-line:last-child {
   margin-bottom: 0;
 }
+.cr-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #a3a3a3;
+  cursor: pointer;
+  user-select: none;
+}
+.cr-checkbox-label input[type="checkbox"] {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+}
