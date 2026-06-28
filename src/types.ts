@@ -171,6 +171,23 @@ export type CloudSaveStatus = {
   googleDriveMessage: string
 }
 
+export type CloudRedirectStatus = {
+  steamPath: string | null
+  steamVersion: number | null
+  steamVersionSupported: boolean
+  steamRunning: boolean
+  coreDllPresent: boolean
+  cloudRedirectDllPresent: boolean
+  stfixerApplied: boolean
+  supportedVersions: number[]
+}
+
+export type StfixerResult = {
+  succeeded: boolean
+  log: string[]
+  error?: string
+}
+
 export type GameCatalog = {
   defaultLocale: string
   games: GameSummary[]

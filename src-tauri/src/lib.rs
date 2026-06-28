@@ -2,6 +2,7 @@ pub mod asset_cache;
 pub mod chat;
 pub mod asset_pack;
 pub mod builder;
+pub mod cloud_redirect;
 pub mod cloud_save;
 pub mod depot_crypto;
 pub mod discord_auth;
@@ -712,7 +713,9 @@ pub fn run() {
             restart_steam,
             open_steam_big_picture,
             get_steam_environment,
-            exit_app
+            exit_app,
+            cloud_redirect::cloud_redirect_get_status,
+            cloud_redirect::cloud_redirect_run_stfixer
         ])
         .setup(|app| {
             asset_cache::perform_ttl_cleanup(app.handle());

@@ -1,4 +1,3 @@
-use std::collections::HashSet;
 use std::env;
 
 use serde::Deserialize;
@@ -77,6 +76,24 @@ pub const GAME_PATH_MAPPINGS: &[GamePathMapping] = &[
         install_dir_name: "EA SPORTS FC™ 26",
         hf_dir_name: "ea-sports-fc-26",
         launch_executable: "FC26.exe",
+    },
+     GamePathMapping {
+        game_id: "persona-3-reload",
+        install_dir_name: "Persona 3 Reload",
+        hf_dir_name: "persona-3-reload",
+        launch_executable: "P3R.exe",
+    },
+     GamePathMapping {
+        game_id: "persona-5-royal",
+        install_dir_name: "Persona 5 Royal",
+        hf_dir_name: "persona-5-royal",
+        launch_executable: "P5R.exe",
+    },
+     GamePathMapping {
+        game_id: "pragmata",
+        install_dir_name: "Pragmata",
+        hf_dir_name: "pragmata",
+        launch_executable: "PRAGMATA.exe",
     },
 ];
 
