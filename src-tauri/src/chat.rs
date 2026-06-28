@@ -237,7 +237,7 @@ pub async fn upload_chat_media(filename: String, data: Vec<u8>) -> Result<String
 #[tauri::command]
 pub async fn upload_chat_media_from_path(filename: String, filepath: String) -> Result<String, String> {
     let metadata = std::fs::metadata(&filepath).map_err(|e| format!("Failed to read file metadata: {}", e))?;
-    let ext = filename.split('.').last().unwrap_or_default().to_lowercase();
+    let _ext = filename.split('.').last().unwrap_or_default().to_lowercase();
     
     // Limits
     let max_size = 200 * 1024 * 1024; // 200MB max for Catbox

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { invoke } from '@tauri-apps/api/core'
-import { Cloud, CloudOff, FolderSync, TriangleAlert } from 'lucide-react'
-import type { CloudSaveStatus, GameCatalog, GameInstallState } from '../types'
+import { Cloud, CloudOff, FolderSync, TriangleAlert, Wrench, CheckCircle2, XCircle, Terminal } from 'lucide-react'
+import type { CloudSaveStatus, GameCatalog, GameInstallState, CloudRedirectStatus, StfixerResult } from '../types'
 import { isTauriRuntime } from '../lib/gameMeta'
 
 export function CloudSavesOverview({
@@ -43,6 +43,34 @@ export function CloudSavesOverview({
     }
   }, [installed, installedIds, onRequestAsset])
 
+  const [crStatus, setCrStatus] = useState<CloudRedirectStatus | null>(null)
+  const [stfixerBusy, setStfixerBusy] = useState(false)
+  const [stfixerResult, setStfixerResult] = useState<StfixerResult | null>(null)
+
+  useEffect(() => {
+    if (!isTauriRuntime()) return
+    invoke<CloudRedirectStatus>('cloud_redirect_get_status')
+      .then(setCrStatus)
+      .catch(console.error)
+  }, [])
+
+  async function handleApplyStfixer() {
+    if (!isTauriRuntime()) return
+    setStfixerBusy(true)
+    setStfixerResult(null)
+    try {
+      const result = await invoke<StfixerResult>('cloud_redirect_run_stfixer')
+      setStfixerResult(result)
+      // Refresh status after patch
+      const newStatus = await invoke<CloudRedirectStatus>('cloud_redirect_get_status')
+      setCrStatus(newStatus)
+    } catch (e: any) {
+      setStfixerResult({ succeeded: false, log: [String(e)], error: String(e) })
+    } finally {
+      setStfixerBusy(false)
+    }
+  }
+
   return (
     <section className="cloud-overview">
       <header>
@@ -52,6 +80,65 @@ export function CloudSavesOverview({
           <p>Backup status and conflicts for installed games.</p>
         </div>
       </header>
+      
+      {/* STFixer / CloudRedirect Section */}
+      <div className="cloud-redirect-panel">
+        <header className="cr-header">
+          <div className="cr-header-title">
+            <Wrench size={20} />
+            <h2>SteamTools CloudRedirect (STFixer)</h2>
+          </div>
+          <div className="cr-status-badges">
+            {crStatus ? (
+              <>
+                <span className={`cr-badge ${crStatus.steamRunning ? 'warning' : 'ok'}`}>
+                  Steam: {crStatus.steamRunning ? 'Running' : 'Closed'}
+                </span>
+                <span className={`cr-badge ${crStatus.steamVersionSupported ? 'ok' : 'error'}`}>
+                  Version: {crStatus.steamVersion || 'Unknown'} {crStatus.steamVersionSupported ? '' : '(Unsupported)'}
+                </span>
+                <span className={`cr-badge ${crStatus.stfixerApplied ? 'ok' : 'warning'}`}>
+                  STFixer: {crStatus.stfixerApplied ? 'Applied' : 'Not Applied'}
+                </span>
+              </>
+            ) : (
+              <span className="cr-badge">Loading status...</span>
+            )}
+          </div>
+        </header>
+
+        <div className="cr-body">
+          <p>
+            CloudRedirect patches SteamTools to allow proper cloud saves for non-owned (lua) games, bypassing the AppID 760 (Screenshots) limitation.
+          </p>
+          <div className="cr-actions">
+            <button 
+              className={`cr-btn primary ${stfixerBusy ? 'busy' : ''}`}
+              onClick={handleApplyStfixer}
+              disabled={stfixerBusy || !crStatus?.steamPath}
+            >
+              {stfixerBusy ? 'Applying Patch...' : 'Apply STFixer Patches'}
+            </button>
+          </div>
+
+          {stfixerResult && (
+            <div className={`cr-result ${stfixerResult.succeeded ? 'success' : 'error'}`}>
+              <div className="cr-result-header">
+                {stfixerResult.succeeded ? <CheckCircle2 size={18} /> : <XCircle size={18} />}
+                <strong>{stfixerResult.succeeded ? 'Patch Applied Successfully' : 'Patch Failed'}</strong>
+              </div>
+              <div className="cr-terminal">
+                <Terminal size={14} className="cr-term-icon" />
+                <div className="cr-term-content">
+                  {stfixerResult.log.map((line, i) => (
+                    <div key={i} className="cr-term-line">{line}</div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
       {installed.length === 0 ? (
         <div className="cloud-overview-empty">
           <CloudOff size={28} />
