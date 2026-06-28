@@ -36,7 +36,7 @@ fs2 = "0.4.3"
 hex = "0.4.3"
 rand_core = { version = "0.6.4", features = ["getrandom"] }
 regex = "1.12.4"
-reqwest = { version = "0.12.24", default-features = false, features = ["blocking", "json", "rustls-tls"] }
+reqwest = { version = "0.12.24", features = ["blocking", "json", "multipart"] }
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.145"
 sha2 = "0.10.9"

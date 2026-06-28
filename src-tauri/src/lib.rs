@@ -654,6 +654,7 @@ pub fn run() {
             chat::delete_chat_media,
             chat::download_chat_media_to_disk,
             chat::sync_to_huggingface,
+            chat::read_file_base64,
             get_disk_free_space,
             list_system_drives,
             check_launcher_update,
