@@ -45,6 +45,7 @@ export function CloudSavesOverview({
 
   const [crStatus, setCrStatus] = useState<CloudRedirectStatus | null>(null)
   const [stfixerBusy, setStfixerBusy] = useState(false)
+  const [installCoreIfMissing, setInstallCoreIfMissing] = useState(false)
   const [stfixerResult, setStfixerResult] = useState<StfixerResult | null>(null)
 
   useEffect(() => {
@@ -59,7 +60,9 @@ export function CloudSavesOverview({
     setStfixerBusy(true)
     setStfixerResult(null)
     try {
-      const result = await invoke<StfixerResult>('cloud_redirect_run_stfixer')
+      const result = await invoke<StfixerResult>('cloud_redirect_run_stfixer', {
+        installCoreIfMissing
+      })
       setStfixerResult(result)
       // Refresh status after patch
       const newStatus = await invoke<CloudRedirectStatus>('cloud_redirect_get_status')
@@ -119,6 +122,15 @@ export function CloudSavesOverview({
             >
               {stfixerBusy ? 'Applying Patch...' : 'Apply STFixer Patches'}
             </button>
+            <label className="cr-checkbox-label">
+              <input 
+                type="checkbox" 
+                checked={installCoreIfMissing}
+                onChange={(e) => setInstallCoreIfMissing(e.target.checked)}
+                disabled={stfixerBusy}
+              />
+              Tự động tải &amp; cài đặt SteamTools Core (nếu chưa có)
+            </label>
           </div>
 
           {stfixerResult && (
