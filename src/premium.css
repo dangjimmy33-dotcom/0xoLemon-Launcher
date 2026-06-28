@@ -1438,8 +1438,130 @@
 
 .cloud-overview header p {
   margin: 4px 0 0;
+  color: var(--subtle);
+  font-size: 13.5px;
+}
+
+.cloud-mode-selection {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: 24px;
+  max-width: 1080px;
+  margin: 40px auto 20px;
+}
+
+.cloud-mode-card {
+  background: var(--surface-strong, #151e24);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 32px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 15px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  color: var(--text);
+  position: relative;
+  overflow: hidden;
+}
+
+.cloud-mode-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: radial-gradient(circle at center, rgba(255,255,255,0.03) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.cloud-mode-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.cloud-mode-card:hover::before {
+  opacity: 1;
+}
+
+.cloud-mode-icon {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  margin-bottom: 8px;
+}
+
+.cloud-mode-icon.native-icon {
+  background: rgba(112, 168, 255, 0.1);
+  color: var(--premium-blue, #70a8ff);
+  border: 1px solid rgba(112, 168, 255, 0.2);
+}
+
+.cloud-mode-icon.stfixer-icon {
+  background: rgba(229, 183, 91, 0.1);
+  color: var(--gold, #e5b75b);
+  border: 1px solid rgba(229, 183, 91, 0.2);
+}
+
+.cloud-mode-card h3 {
+  margin: 0;
+  font-size: 20px;
+  color: var(--text-strong, #f3f4f2);
+  font-weight: 600;
+}
+
+.cloud-mode-card p {
+  margin: 0;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+
+.cloud-overview-header-with-back {
+  max-width: 1080px;
+  margin: 0 auto 18px;
+  padding-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.075);
+}
+
+.cloud-overview-header-with-back h1 {
+  margin: 0;
+  color: #f1f3f5;
+  font-size: 24px;
+}
+
+.cloud-overview-header-with-back p {
+  margin: 4px 0 0;
+  color: var(--subtle);
+  font-size: 13.5px;
+}
+
+.cloud-back-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px 8px 10px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.cloud-back-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text-strong);
 }
 
 .cloud-overview-list {
