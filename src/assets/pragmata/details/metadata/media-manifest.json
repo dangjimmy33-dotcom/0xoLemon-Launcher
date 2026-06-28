@@ -1,0 +1,232 @@
+﻿[
+    {
+        "role":  "header",
+        "title":  "Steam header",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3357650/header.jpg?t=1777351016",
+        "file":  "store_art/header.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-28T16:58:21.331Z"
+    },
+    {
+        "role":  "capsule",
+        "title":  "Steam capsule",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3357650/capsule_231x87.jpg?t=1777351016",
+        "file":  "store_art/capsule.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-28T16:58:21.335Z"
+    },
+    {
+        "role":  "capsule-v5",
+        "title":  "Steam capsule v5",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3357650/capsule_184x69.jpg?t=1777351016",
+        "file":  "store_art/capsule-v5.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-28T16:58:21.336Z"
+    },
+    {
+        "role":  "background",
+        "title":  "Steam background",
+        "sourceUrl":  "https://store.akamai.steamstatic.com/images/storepagebackground/app/3357650?t=1777351016",
+        "file":  "store_art/background.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-28T16:58:21.336Z"
+    },
+    {
+        "role":  "background-raw",
+        "title":  "Steam background raw",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3357650/page_bg_raw.jpg?t=1777351016",
+        "file":  "store_art/background-raw.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-28T16:58:21.336Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 1",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3357650/9699288b90d0aad320e998f107b59edd27e9ea61/ss_9699288b90d0aad320e998f107b59edd27e9ea61.1920x1080.jpg?t=1777351016",
+        "file":  "screenshots/001_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-28T16:58:21.349Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 2",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3357650/62486c0475c7bf1a14889d61a51ad24f09e5f044/ss_62486c0475c7bf1a14889d61a51ad24f09e5f044.1920x1080.jpg?t=1777351016",
+        "file":  "screenshots/002_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-28T16:58:21.350Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 3",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3357650/26773713a2435c8edc2eac5e7eb234324b3b002f/ss_26773713a2435c8edc2eac5e7eb234324b3b002f.1920x1080.jpg?t=1777351016",
+        "file":  "screenshots/003_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-28T16:58:21.350Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 4",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3357650/8913ab7128c72ddd1b407c274e9615b2f6e658a2/ss_8913ab7128c72ddd1b407c274e9615b2f6e658a2.1920x1080.jpg?t=1777351016",
+        "file":  "screenshots/004_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-28T16:58:21.351Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 5",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3357650/24bebf802a598b3d5d6838828cf074e4445ec939/ss_24bebf802a598b3d5d6838828cf074e4445ec939.1920x1080.jpg?t=1777351016",
+        "file":  "screenshots/005_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-28T16:58:21.351Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 6",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3357650/47776629e71f7769f2482259258a1aeb9babe31c/ss_47776629e71f7769f2482259258a1aeb9babe31c.1920x1080.jpg?t=1777351016",
+        "file":  "screenshots/006_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-28T16:58:21.351Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 7",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3357650/5b6a007e52e0b2d4a36b74736ea2fa416830bf6f/ss_5b6a007e52e0b2d4a36b74736ea2fa416830bf6f.1920x1080.jpg?t=1777351016",
+        "file":  "screenshots/007_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-28T16:58:21.352Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 8",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3357650/c83fa1a03cf350ae0f049579daaa117414c9c745/ss_c83fa1a03cf350ae0f049579daaa117414c9c745.1920x1080.jpg?t=1777351016",
+        "file":  "screenshots/008_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-28T16:58:21.352Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 9",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3357650/e8f77d8e2ee8098847306490803433950e7c90fc/ss_e8f77d8e2ee8098847306490803433950e7c90fc.1920x1080.jpg?t=1777351016",
+        "file":  "screenshots/009_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-28T16:58:21.353Z"
+    },
+    {
+        "role":  "video",
+        "title":  "06_PRAGMATA_PV5_Multi+Geforce_2K_EN_ESRB_(Demo Available Now)",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/3357650/310988647/0ea0b4ef2a912e9fe974d0c378372309885a4ab9/1777265662/hls_264_master.m3u8?t=1777271464",
+        "file":  "videos/001_06_pragmata_pv5_multigeforce_2k_en_esrb_demo-available-now.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-28T16:58:21.365Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "06_PRAGMATA_PV5_Multi+Geforce_2K_EN_ESRB_(Demo Available Now)",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257327129/4c93ef8625da617e767c7da27461f8dbca8a6af0/movie_600x337.jpg?t=1777271464",
+        "file":  "video_thumbnails/001_06_pragmata_pv5_multigeforce_2k_en_esrb_demo-available-now_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-28T16:58:21.365Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "06_PRAGMATA_PV5_Multi+Geforce_2K_EN_ESRB_(Demo Available Now)",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257327129/4c93ef8625da617e767c7da27461f8dbca8a6af0/movie_600x337.jpg?t=1777271464",
+        "file":  "video_thumbnails/001_06_pragmata_pv5_multigeforce_2k_en_esrb_demo-available-now_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-28T16:58:21.376Z"
+    },
+    {
+        "role":  "video",
+        "title":  "06_PRAGMATA_PV6_Multi_2K_EN__ESRB",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/3357650/810070237/111aa20becd6cceca98666bb78c233de874e043a/1776229203/hls_264_master.m3u8?t=1776235813",
+        "file":  "videos/002_06_pragmata_pv6_multi_2k_en__esrb.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-28T16:58:21.377Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "06_PRAGMATA_PV6_Multi_2K_EN__ESRB",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257319923/754173d1e2462cf62bd76e5dba3f53ecfb1862bb/movie_600x337.jpg?t=1776235813",
+        "file":  "video_thumbnails/002_06_pragmata_pv6_multi_2k_en__esrb_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-28T16:58:21.377Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "06_PRAGMATA_PV6_Multi_2K_EN__ESRB",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257319923/754173d1e2462cf62bd76e5dba3f53ecfb1862bb/movie_600x337.jpg?t=1776235813",
+        "file":  "video_thumbnails/002_06_pragmata_pv6_multi_2k_en__esrb_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-28T16:58:21.377Z"
+    },
+    {
+        "role":  "video",
+        "title":  "06_PRAGMATA_PV1_Multi_2K_EN_esrb",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/3357650/729890733/94093c16bcc2a8c46bb4a51bddee196931fbf010/1750843320/hls_264_master.m3u8?t=1749097636",
+        "file":  "videos/003_06_pragmata_pv1_multi_2k_en_esrb.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-28T16:58:21.377Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "06_PRAGMATA_PV1_Multi_2K_EN_esrb",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257151402/2bba63290a11227bf21340537ca0c96af4a5bd70/movie_600x337.jpg?t=1749097636",
+        "file":  "video_thumbnails/003_06_pragmata_pv1_multi_2k_en_esrb_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-28T16:58:21.377Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "06_PRAGMATA_PV1_Multi_2K_EN_esrb",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257151402/2bba63290a11227bf21340537ca0c96af4a5bd70/movie_600x337.jpg?t=1749097636",
+        "file":  "video_thumbnails/003_06_pragmata_pv1_multi_2k_en_esrb_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-06-28T16:58:21.378Z"
+    }
+]

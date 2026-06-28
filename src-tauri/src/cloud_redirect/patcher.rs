@@ -358,11 +358,16 @@ fn find_steamtools_exe() -> Option<PathBuf> {
 }
 
 fn kill_steamtools(mut log: impl FnMut(&str)) {
-    let out = std::process::Command::new("tasklist").args(["/FI", "IMAGENAME eq SteamTools.exe", "/NH"]).output();
+    use std::os::windows::process::CommandExt;
+    let mut tasklist = std::process::Command::new("tasklist");
+    tasklist.creation_flags(0x08000000);
+    let out = tasklist.args(["/FI", "IMAGENAME eq SteamTools.exe", "/NH"]).output();
     let running = out.map(|o| String::from_utf8_lossy(&o.stdout).to_lowercase().contains("steamtools.exe")).unwrap_or(false);
     if running {
         log("  Killing SteamTools.exe...");
-        let _ = std::process::Command::new("taskkill").args(["/F", "/IM", "SteamTools.exe"]).output();
+        let mut kill = std::process::Command::new("taskkill");
+        kill.creation_flags(0x08000000);
+        let _ = kill.args(["/F", "/IM", "SteamTools.exe"]).output();
         std::thread::sleep(std::time::Duration::from_millis(500));
     }
 }

@@ -1,0 +1,316 @@
+﻿{
+    "game":  {
+                 "gameName":  "PRAGMATA",
+                 "gameVersion":  "8",
+                 "availableGameStats":  {
+                                            "achievements":  [
+                                                                 {
+                                                                     "name":  "1",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Rendezvous",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/8e572a25aa173e41e70cd5259e3d7ca67af02b66.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/b1f42309cdd8941e6376e4f6080501e268e37e3d.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "2",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Power Trip",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/a2b0ca80472dffd646096010734e3845759c7e2c.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/3360cc6d9cca7f9b98dd0ad795aa8734d09add04.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "3",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "The Purr-fect Guide",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/e83ee1b6324d871c9bd8a5f37286f744917c5776.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/c30f7939ad688cdfd2412dc96356eaf39e186788.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "4",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Another Pragmata",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/387f8ae28fda2625fd336767b6d7f0a472bdca8e.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/481c1e281a3823c7c2e7b553394ae0a3f6b6b698.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "5",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Entrusted Memory",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/e683c029ca9d8ab29cda28da1ff157e9262e25d9.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/b357b88e280791c18f3d13551fbfcd56ccb78216.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "6",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Mission Unveiled",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/eefdbe8df1654c7360c8c31c903183a15ef3fe09.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/cdd0cdaeeafc7e1419f22cf4905232a3003580b0.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "7",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Awakening",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/d7eb0e953af3dc2f766bd95869c017129fd1a43d.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/b9148bbe2545a36a7de493f73ead9451a7dd181e.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "8",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Sentinel Breach",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/5db8a5a4321fcc1185755d396918ceddb37c4652.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/41aea8b0ce78b83224ad22b8b3fd2749b770c700.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "9",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Our Promise",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/892f83ee64090be9fb5fb64534a3fd9128c3c4d5.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/070660e75c58978f83bb2dbb490e4eb539069afb.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "10",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "The Right Man for the Job",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete Unknown Signal.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/64cacb821818f1b660d853e7ee03516b1002b5a3.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/3ae49581d7a6e97cd2591c37367ed62e8d1960f7.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "11",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Lunar Supremacy",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete the game on Lunatic difficulty.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/96ac902c69224364cfb8613a898e526e333b3ff2.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/eb8ca1a48ec91198f3ee9c37a2be8690b595ad64.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "12",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Small Talk",
+                                                                     "hidden":  0,
+                                                                     "description":  "Talk to Diana in the Shelter.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/3f241288d1da620994f6abb79df6d92ecbc61b1b.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/2db7f340aa4cc3cb20b9ab7cb78f5d8376e175f5.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "13",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Thanks for Everything!",
+                                                                     "hidden":  0,
+                                                                     "description":  "Receive a picture as a present.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/dd1e81999490159e797826a0fe9d34218a2a80ca.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/9cb435cad95a6fd4bfd28869444829fedaeff303.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "14",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Peekaboo",
+                                                                     "hidden":  0,
+                                                                     "description":  "Win at hide-and-seek.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/e9006d8f3b202da2acbda9b85b95e5ed6ef698f2.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/bf8e0cdcf0d2046c1e5f379ea29f56c749653cf9.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "15",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "For Me?",
+                                                                     "hidden":  0,
+                                                                     "description":  "Give an REM as a present.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/04c2e32cbca7a058619c23aa5bbc72d79e84248c.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/e8360ad346eaa2c1c779795d8b60ae2b2a4e8357.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "16",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Replicating Extraordinaire!",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete an REM series.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/6559aaf1b0c1bbc05cdac3e93189a77ce14d5025.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/3d4be638d80556519d8e425c4bf0f57a8673893f.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "17",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Blackout!",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete a Cabin Stamp Board.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/5c5e7508a8410f295e11521da039bd30fee61052.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/f19928d0730d1891ec248d64808c0d96b246d582.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "18",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Mister Simulator",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete the main objective in a Training Sim.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/5c3eca74a2bf627902de0349b324f47582e35674.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/797855bd4312147fb5fb2d9e4be40cd91df1960f.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "19",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Master of the Simulator",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete the main objective in every Training Sim.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/f354a674560d48b5fd744a12ed4b1a11f19a1e25.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/72c6017ee747383b9728629a2b7e956ab2b34ee9.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "20",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Red-Zoned and Loving It",
+                                                                     "hidden":  0,
+                                                                     "description":  "Secure a Red Zone.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/4c8d91b9ae1be6b3f4d50e68d3a95ac270c6fe88.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/9a00024b99e75504228205e3731cab9c5be69b5a.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "21",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "You\u0027re Not Getting Away That Easy",
+                                                                     "hidden":  0,
+                                                                     "description":  "Defeat a Sweeper bot.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/d6d1ae0d17a981d004d9d481d0b5bb17a6bafc6a.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/170a5d2b55e0bcd641959effc2cca478dde48b56.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "22",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Wall? What Wall?",
+                                                                     "hidden":  0,
+                                                                     "description":  "Find a Holo-Wall.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/97f3eae4d47842c5ea69875e546dfe8832530739.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/dd734d6a1b3a4f30b60ddb494ca25e0d0901c6df.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "23",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Well Spotted!",
+                                                                     "hidden":  0,
+                                                                     "description":  "Shoot a Mini Cabin.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/a534bc58b7d70c1ef700e542af2e6ba3039f0ed6.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/754841a6762f4b6144847e9e3f2e0e89ef63d26a.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "24",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Mini-Hunter Supreme",
+                                                                     "hidden":  0,
+                                                                     "description":  "Shoot every Mini Cabin.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/debff352da4523ec2bafc2c34af17eaddefe0549.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/9011799b5dc136450b7ce9782762390f1275f31f.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "25",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Top-Shelf Item",
+                                                                     "hidden":  0,
+                                                                     "description":  "Upgrade a weapon using Pure Lunum.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/70455d6a233d1e50f275a758eb2e1e374b9e6b00.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/7b8194b5774801607fd046ac2da07bffc005576c.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "26",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Can\u0027t Stop, Won\u0027t Stop",
+                                                                     "hidden":  0,
+                                                                     "description":  "Print all obtainable weapons, hacking nodes, and abilities during the main story.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/624885734ed373526dec9dcc92d020784275eaf4.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/896de323e7676e48a475d5d42ba725a04879e017.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "27",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Cradle Surveyor",
+                                                                     "hidden":  0,
+                                                                     "description":  "Reach 100% sector progress in a sector.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/f802922113ed1a8e3230dd43ac78b1ae00baeeda.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/7ba0e06ce32860d89387c01d4a65393f5f826b34.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "28",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Escape Artist",
+                                                                     "hidden":  0,
+                                                                     "description":  "Unlock every escape hatch.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/c06473721bb60744a0849b947774925f24a58892.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/bf6703a7293e07e39f4e03378b6fee3c2f0b19a7.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "29",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "A Lunar Challenge",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete a mission in a special sector.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/4fe51fd0e2e6730217c142d606830f1f84127a4b.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/d4d010aae921d092878604a74ecb4258dad13c47.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "30",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Round \u0027Em Up",
+                                                                     "hidden":  0,
+                                                                     "description":  "Defeat three enemies at the same time with the Lim Recycler.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/e92866a3a7b1c0ff195816e94ed93d7570b29529.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/7896c6f11f7b408671e28e3cc832266e24ffd47a.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "31",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Courage in Desperation",
+                                                                     "hidden":  0,
+                                                                     "description":  "Repel the LunaDigger while progressing through the Lunum Mines.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/7573336f2b5e61b3bf1fc2e3c2f52e6c19d191aa.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/864c5d2994498943753c3ec99e8d1a84534989a1.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "32",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Can I Borrow That?",
+                                                                     "hidden":  0,
+                                                                     "description":  "Confuse a certain enemy and borrow its shield.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/d9266cd959f59c2bdf2edfc0a55a662b989d6226.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/8a5e60734f2847bccd51c3e8c3bb6214d7d1c03e.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "33",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Clean Up on Aisle Three",
+                                                                     "hidden":  0,
+                                                                     "description":  "Cleanse three or more enemies at the same time.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/0b69e553b23c8b70c7cc87871f1d96e245294fb8.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/5f100f72cfe9b471013523b28470bbff22533c33.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "34",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "IT\u0027S OVER 6000!",
+                                                                     "hidden":  0,
+                                                                     "description":  "Deal 6000 gunshot damage in one second.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/645161efa56154cb49ab47dccdd9c9985ad82336.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/9600c34602fef0a0b1172d7fc2488fb61fbf5be0.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "35",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Who Needs Guns!?",
+                                                                     "hidden":  0,
+                                                                     "description":  "Deal 3000 hacking damage in a single hack.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/ea2903453fd0f1788cf53afd0c6aadc50d413ab0.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/3357650/4ef5c2c595b0b6ee9a0c0d28d499f9aa77aeca92.jpg"
+                                                                 }
+                                                             ]
+                                        }
+             }
+}

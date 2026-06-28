@@ -41,7 +41,7 @@ pub struct StfixerResult {
 
 /// Get current CloudRedirect / STFixer status.
 #[command]
-pub fn cloud_redirect_get_status() -> CloudRedirectStatus {
+pub async fn cloud_redirect_get_status() -> CloudRedirectStatus {
     let steam_path = find_steam_path();
     let steam_version = steam_path.as_ref().and_then(|p| get_steam_version(p));
     let steam_version_supported = steam_version.map(is_supported_steam_version).unwrap_or(false);
