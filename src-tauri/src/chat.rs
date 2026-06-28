@@ -205,34 +205,33 @@ pub fn sync_to_huggingface(app: AppHandle, game_id: String) -> Result<(), String
 
 #[tauri::command]
 pub async fn upload_chat_media(filename: String, data: Vec<u8>) -> Result<String, String> {
-    use base64::Engine;
-    let b64 = base64::engine::general_purpose::STANDARD.encode(&data);
+    let client = reqwest::Client::builder()
+        .user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+        .timeout(std::time::Duration::from_secs(300))
+        .build()
+        .map_err(|e| e.to_string())?;
     
-    let ndjson = format!(
-        "{{\"key\": \"header\", \"value\": {{\"summary\": \"Upload media {}\"}}}}\n{{\"key\": \"file\", \"value\": {{\"path\": \"chats/media/{}\", \"content\": \"{}\", \"encoding\": \"base64\"}}}}\n",
-        filename, filename, b64
-    );
+    let part = reqwest::multipart::Part::bytes(data)
+        .file_name(filename.clone());
+        
+    let form = reqwest::multipart::Form::new()
+        .text("reqtype", "fileupload")
+        .part("fileToUpload", part);
 
-    let url = format!("https://huggingface.co/api/datasets/{}/commit/main", HF_REPO);
-    let client = reqwest::Client::builder().timeout(std::time::Duration::from_secs(120)).build().map_err(|e| e.to_string())?;
-    
-    let hf_token = format!("{}{}{}", HF_TOKEN_PT1, HF_TOKEN_PT2, HF_TOKEN_PT3);
-    
-    let res = client.post(&url)
-        .header("Authorization", format!("Bearer {}", hf_token))
-        .header("Content-Type", "application/x-ndjson")
-        .body(ndjson)
+    let res = client.post("https://catbox.moe/user/api.php")
+        .multipart(form)
         .send()
         .await
-        .map_err(|e| e.to_string())?;
-        
+        .map_err(|e| format!("Upload request failed: {}", e))?;
+
     if !res.status().is_success() {
         let status = res.status();
         let body = res.text().await.unwrap_or_default();
-        return Err(format!("HF Media Upload failed: {} - {}", status, body));
+        return Err(format!("Media Upload failed: {} - {}", status, body));
     }
     
-    Ok(format!("https://huggingface.co/datasets/{}/resolve/main/chats/media/{}", HF_REPO, filename))
+    let url = res.text().await.map_err(|e| format!("Failed to read response: {}", e))?;
+    Ok(url)
 }
 
 #[tauri::command]
@@ -241,11 +240,7 @@ pub async fn upload_chat_media_from_path(filename: String, filepath: String) -> 
     let ext = filename.split('.').last().unwrap_or_default().to_lowercase();
     
     // Limits
-    let max_size = match ext.as_str() {
-        "zip" | "rar" | "7z" => 100 * 1024 * 1024, // 100MB
-        "mp4" | "webm" => 20 * 1024 * 1024, // 20MB
-        _ => 5 * 1024 * 1024, // 5MB for images/txt/etc
-    };
+    let max_size = 200 * 1024 * 1024; // 200MB max for Catbox
 
     if metadata.len() > max_size {
         return Err(format!("File too large. Max size is {}MB for this file type.", max_size / 1024 / 1024));
@@ -285,7 +280,12 @@ pub async fn delete_chat_media(url: String) -> Result<(), String> {
 
 #[tauri::command]
 pub async fn download_chat_media_to_disk(url: String, filepath: String) -> Result<(), String> {
-    let mut response = reqwest::get(&url).await.map_err(|e| format!("Failed to download: {}", e))?;
+    let client = reqwest::Client::builder()
+        .user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+        .build()
+        .map_err(|e| format!("Failed to build client: {}", e))?;
+
+    let mut response = client.get(&url).send().await.map_err(|e| format!("Failed to download: {}", e))?;
     
     if !response.status().is_success() {
         return Err(format!("Download failed with status: {}", response.status()));
@@ -299,4 +299,11 @@ pub async fn download_chat_media_to_disk(url: String, filepath: String) -> Resul
     }
     
     Ok(())
+}
+
+#[tauri::command]
+pub fn read_file_base64(filepath: String) -> Result<String, String> {
+    use base64::Engine;
+    let data = std::fs::read(&filepath).map_err(|e| e.to_string())?;
+    Ok(base64::engine::general_purpose::STANDARD.encode(&data))
 }

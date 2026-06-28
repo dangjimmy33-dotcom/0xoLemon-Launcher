@@ -21,8 +21,8 @@ export interface ChatMessage {
   mediaType?: string
   fileName?: string
   timestamp: number
-  expiresAt?: number // for zip, rar, 7z (7 days)
-  reactions?: Record<string, string[]> // emoji → [senderId, ...]
+  expiresAt?: number
+  reactions?: Record<string, string[]>
 }
 
 // ── Helpers ──────────────────────────────────────────────
@@ -45,7 +45,6 @@ function formatDate(ts: number) {
   return new Date(ts).toLocaleDateString([], { day: 'numeric', month: 'short' })
 }
 
-// Track recent/frequent emojis in localStorage
 const REACTION_KEY = 'chat_reaction_history'
 const DEFAULT_REACTIONS = ['👍', '✅', '❤️', '😂', '😮', '😢']
 
@@ -69,7 +68,6 @@ function recordReactionUsed(emoji: string) {
   } catch { /* ignore */ }
 }
 
-// ── Avatar ────────────────────────────────────────────────
 function Avatar({ name, url, size = 36 }: { name: string; url?: string; size?: number }) {
   const [err, setErr] = useState(false)
   const color = `hsl(${[...name].reduce((a, c) => a + c.charCodeAt(0), 0) % 360}, 65%, 55%)`
@@ -83,7 +81,6 @@ function Avatar({ name, url, size = 36 }: { name: string; url?: string; size?: n
   )
 }
 
-// ── Group messages ────────────────────────────────────────
 function groupMessages(messages: ChatMessage[], mySenderId: string, myAvatar?: string) {
   const groups: Array<{ senderId: string; senderName: string; senderAvatar?: string; date: string; msgs: ChatMessage[] }> = []
   for (const msg of messages) {
@@ -97,6 +94,21 @@ function groupMessages(messages: ChatMessage[], mySenderId: string, myAvatar?: s
     }
   }
   return groups
+}
+
+// ── Shared Custom Toast ──────────────────────────────────
+function showChatToast(msg: string) {
+  const el = document.createElement('div');
+  el.className = 'chat-custom-toast';
+  el.textContent = msg;
+  Object.assign(el.style, {
+    position: 'fixed', bottom: '30px', left: '50%', transform: 'translateX(-50%)',
+    background: '#00d4ff', color: '#000', padding: '10px 20px', borderRadius: '8px',
+    fontWeight: '600', zIndex: '1000000', boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+    transition: 'opacity 0.3s'
+  });
+  document.body.appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 3000);
 }
 
 // ── Message content ───────────────────────────────────────
@@ -129,9 +141,9 @@ function MessageContent({ text, imageBase64, mediaUrl, mediaType, fileName }: { 
       const savePath = await save({ defaultPath: getFilename(url) })
       if (!savePath) return
       await invoke('download_chat_media_to_disk', { url, filepath: savePath })
-      alert('Tải xuống hoàn tất / Download complete')
+      showChatToast('Tải xuống hoàn tất!')
     } catch (e: any) {
-      alert(`Lỗi khi tải file: ${e?.message || e}`)
+      showChatToast(`Lỗi: ${e?.message || e}`)
     }
   }
 
@@ -192,7 +204,6 @@ function ContextMenu({ x, y, msg, isMine, topReactions, onClose, onEdit, onDelet
     return () => { document.removeEventListener('mousedown', handleDown); document.removeEventListener('keydown', handleKey) }
   }, [onClose])
 
-  // Adjust position so menu doesn't go off screen
   const [pos, setPos] = useState({ x, y })
   useEffect(() => {
     if (!menuRef.current) return
@@ -213,7 +224,6 @@ function ContextMenu({ x, y, msg, isMine, topReactions, onClose, onEdit, onDelet
 
   return createPortal(
     <div ref={menuRef} className="ctx-menu" style={{ left: pos.x, top: pos.y }}>
-      {/* Quick reactions */}
       <div className="ctx-reactions">
         {topReactions.map(e => (
           <button key={e} className="ctx-reaction-btn" onClick={() => { onReact(e); onClose() }} title={e}>
@@ -233,7 +243,6 @@ function ContextMenu({ x, y, msg, isMine, topReactions, onClose, onEdit, onDelet
   )
 }
 
-// SVG icons (no emoji)
 const ReplyIcon = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="9 17 4 12 9 7" /><path d="M20 18v-2a4 4 0 0 0-4-4H4" />
@@ -260,7 +269,6 @@ const IdIcon = () => (
   </svg>
 )
 
-// ── Hover quick-action bar ────────────────────────────────
 function HoverActions({ msg: _msg, isMine, topReactions, onContext, onEdit, onDelete, onReact }: {
   msg: ChatMessage; isMine: boolean; topReactions: string[]
   onContext: (e: React.MouseEvent) => void
@@ -292,7 +300,7 @@ function HoverActions({ msg: _msg, isMine, topReactions, onContext, onEdit, onDe
   )
 }
 
-// ── ChatBody ──────────────────────────────────────────────
+// ── State Management Hook ───────────────────────────────────
 interface GameChatProps {
   gameId: string
   discordUser?: DiscordAuthUser | null
@@ -308,24 +316,18 @@ interface StagedFile {
   expiresAt: number | null
 }
 
-function ChatBody({ gameId, discordUser, compact = false }: GameChatProps & { compact?: boolean }) {
+function useChatState(gameId: string, discordUser?: DiscordAuthUser | null) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [inputText, setInputText] = useState('')
   const [sending, setSending] = useState(false)
   const [uploadProgress, setUploadProgress] = useState<string | null>(null)
   const [stagedFile, setStagedFile] = useState<StagedFile | null>(null)
-  const [editingMsgId, setEditingMsgId] = useState<string | null>(null)
-  const [editInput, setEditInput] = useState('')
-  const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number; msg: ChatMessage } | null>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
-  const topReactions = getTopReactions()
-
+  const [stagedPreviewUrl, setStagedPreviewUrl] = useState<string | null>(null)
+  
   const senderId = getSenderId()
   const senderName = discordUser?.displayName ?? discordUser?.username ?? `User_${senderId.substring(0, 4)}`
   const senderAvatar = discordUser?.avatarUrl
 
-  // Load local history + HF sync
   useEffect(() => {
     let mounted = true
     invoke<ChatMessage[]>('load_chat_history', { gameId })
@@ -338,7 +340,6 @@ function ChatBody({ gameId, discordUser, compact = false }: GameChatProps & { co
     return () => { mounted = false }
   }, [gameId])
 
-  // Firestore realtime
   useEffect(() => {
     const q = query(collection(db, 'chats', gameId, 'messages'), orderBy('timestamp', 'desc'), limit(50))
     return onSnapshot(q, snapshot => {
@@ -350,8 +351,7 @@ function ChatBody({ gameId, discordUser, compact = false }: GameChatProps & { co
           senderName: d.senderName || 'Unknown', senderAvatar: d.senderAvatar,
           text: d.text || '', imageBase64: d.imageBase64,
           mediaUrl: d.mediaUrl, mediaType: d.mediaType,
-          fileName: d.fileName,
-          timestamp: ts, reactions: d.reactions ?? {},
+          fileName: d.fileName, timestamp: ts, reactions: d.reactions ?? {},
           expiresAt: d.expiresAt,
         }
 
@@ -386,17 +386,9 @@ function ChatBody({ gameId, discordUser, compact = false }: GameChatProps & { co
     })
   }, [gameId])
 
-  useEffect(() => {
-    const el = containerRef.current
-    if (el) {
-      el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' })
-    }
-  }, [messages])
-
   const handleSend = async () => {
     if ((!inputText.trim() && !stagedFile) || sending) return
     setSending(true)
-
     try {
       let mediaUrl = undefined
       let payload: any = {
@@ -417,10 +409,10 @@ function ChatBody({ gameId, discordUser, compact = false }: GameChatProps & { co
       await addDoc(collection(db, 'chats', gameId, 'messages'), payload)
       setInputText('')
       setStagedFile(null)
-      inputRef.current?.focus()
+      setStagedPreviewUrl(null)
     } catch (e: any) { 
       console.error('Send failed:', e)
-      alert('Upload/Send failed: ' + (e.message || e))
+      showChatToast('Upload/Send failed: ' + (e.message || e))
     } finally { 
       setSending(false)
       setUploadProgress(null)
@@ -430,7 +422,6 @@ function ChatBody({ gameId, discordUser, compact = false }: GameChatProps & { co
   const processFile = async (filepath: string) => {
     const originalName = filepath.split('\\').pop()?.split('/').pop() || 'file'
     const ext = originalName.split('.').pop()?.toLowerCase() || 'png'
-    
     const isVideo = ['mp4', 'webm'].includes(ext)
     const isImage = ['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(ext)
     
@@ -441,8 +432,19 @@ function ChatBody({ gameId, discordUser, compact = false }: GameChatProps & { co
     else if (ext === 'json') mediaType = 'application/json'
 
     const expiresAt = ['zip', 'rar', '7z'].includes(ext) ? Date.now() + 7 * 24 * 60 * 60 * 1000 : null
-
     setStagedFile({ filepath, originalName, ext, isVideo, isImage, mediaType, expiresAt })
+    
+    if (isImage) {
+      try {
+        const { invoke } = await import('@tauri-apps/api/core')
+        const b64 = await invoke<string>('read_file_base64', { filepath })
+        setStagedPreviewUrl(`data:image/${ext};base64,${b64}`)
+      } catch (e) {
+        console.error("Failed to load image preview", e)
+      }
+    } else {
+      setStagedPreviewUrl(null)
+    }
   }
 
   const handleMediaUpload = async () => {
@@ -460,21 +462,6 @@ function ChatBody({ gameId, discordUser, compact = false }: GameChatProps & { co
     }
   }
 
-  useEffect(() => {
-    let unlisten: () => void = () => {}
-    import('@tauri-apps/api/window').then(({ getCurrentWindow }) => {
-      getCurrentWindow().onDragDropEvent((event: any) => {
-        if (event.payload.type === 'drop') {
-          const paths = event.payload.paths
-          if (paths && paths.length > 0) {
-            processFile(paths[0])
-          }
-        }
-      }).then((f: any) => unlisten = f)
-    })
-    return () => unlisten()
-  }, [gameId, senderId, senderName, senderAvatar])
-
   const handleReact = useCallback(async (msg: ChatMessage, emoji: string) => {
     recordReactionUsed(emoji)
     const reactions = { ...(msg.reactions ?? {}) }
@@ -485,16 +472,11 @@ function ChatBody({ gameId, discordUser, compact = false }: GameChatProps & { co
     } else {
       reactions[emoji] = [...existing, senderId]
     }
-    try {
-      await updateDoc(doc(db, 'chats', gameId, 'messages', msg.id), { reactions })
-    } catch (e) { console.error(e) }
+    try { await updateDoc(doc(db, 'chats', gameId, 'messages', msg.id), { reactions }) } catch (e) {}
   }, [gameId, senderId])
 
   const handleEdit = async (msgId: string, newText: string) => {
-    try {
-      await updateDoc(doc(db, 'chats', gameId, 'messages', msgId), { text: newText })
-      setEditingMsgId(null); setEditInput('')
-    } catch (e) { console.error(e) }
+    try { await updateDoc(doc(db, 'chats', gameId, 'messages', msgId), { text: newText }) } catch (e) {}
   }
 
   const handleDelete = async (msg: ChatMessage) => {
@@ -502,19 +484,75 @@ function ChatBody({ gameId, discordUser, compact = false }: GameChatProps & { co
     try {
       await deleteDoc(doc(db, 'chats', gameId, 'messages', msg.id))
       if (msg.mediaUrl) invoke('delete_chat_media', { url: msg.mediaUrl }).catch(console.error)
-    } catch (e) { console.error(e) }
+    } catch (e) {}
   }
+
+  return {
+    messages, inputText, setInputText, sending, uploadProgress,
+    stagedFile, setStagedFile, stagedPreviewUrl, setStagedPreviewUrl,
+    senderId, senderName, senderAvatar, processFile,
+    handleSend, handleMediaUpload, handleReact, handleEdit, handleDelete
+  }
+}
+
+// ── ChatBody UI ───────────────────────────────────────────
+function ChatBody({ 
+  gameId, compact, state 
+}: { 
+  gameId: string; compact: boolean; state: ReturnType<typeof useChatState> 
+}) {
+  const [editingMsgId, setEditingMsgId] = useState<string | null>(null)
+  const [editInput, setEditInput] = useState('')
+  const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number; msg: ChatMessage } | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const topReactions = getTopReactions()
+
+  const { 
+    messages, inputText, setInputText, sending, uploadProgress,
+    stagedFile, setStagedFile, stagedPreviewUrl, setStagedPreviewUrl,
+    senderId, senderName, senderAvatar, processFile,
+    handleSend, handleMediaUpload, handleReact, handleEdit, handleDelete 
+  } = state
+
+  useEffect(() => {
+    let unlisten: () => void = () => {}
+    import('@tauri-apps/api/window').then(({ getCurrentWindow }) => {
+      getCurrentWindow().onDragDropEvent((event: any) => {
+        if (event.payload.type === 'drop') {
+          const paths = event.payload.paths
+          if (paths && paths.length > 0) processFile(paths[0])
+        }
+      }).then((f: any) => unlisten = f)
+    })
+    return () => unlisten()
+  }, [gameId])
+
+  useEffect(() => {
+    const el = containerRef.current
+    if (el) {
+      const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 150
+      if (isNearBottom || (messages.length > 0 && messages[messages.length - 1].senderId === senderId)) {
+        el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' })
+      }
+    }
+  }, [messages, senderId])
 
   const openCtx = (e: React.MouseEvent, msg: ChatMessage) => {
     e.preventDefault(); e.stopPropagation()
     setCtxMenu({ x: e.clientX, y: e.clientY, msg })
   }
 
+  const execSend = () => {
+    handleSend().then(() => {
+      if (inputRef.current) inputRef.current.focus({ preventScroll: true })
+    })
+  }
+
   const groups = groupMessages(messages, senderId, senderAvatar)
 
   return (
     <>
-      {/* Messages */}
       <div className="chat-messages" ref={containerRef}>
         {groups.length === 0 && (
           <div className="chat-empty">No messages yet. Be the first!</div>
@@ -539,7 +577,7 @@ function ChatBody({ gameId, discordUser, compact = false }: GameChatProps & { co
                           autoFocus value={editInput}
                           onChange={e => setEditInput(e.target.value)}
                           onKeyDown={e => {
-                            if (e.key === 'Enter') handleEdit(msg.id, editInput)
+                            if (e.key === 'Enter') { handleEdit(msg.id, editInput); setEditingMsgId(null) }
                             if (e.key === 'Escape') setEditingMsgId(null)
                           }}
                         />
@@ -554,7 +592,6 @@ function ChatBody({ gameId, discordUser, compact = false }: GameChatProps & { co
                         fileName={msg.fileName}
                       />
                     )}
-                    {/* Reactions */}
                     {msg.reactions && Object.keys(msg.reactions).length > 0 && (
                       <div className="msg-reactions">
                         {Object.entries(msg.reactions).map(([emoji, users]) => (
@@ -571,12 +608,9 @@ function ChatBody({ gameId, discordUser, compact = false }: GameChatProps & { co
                       </div>
                     )}
                   </div>
-                  {/* Hover actions */}
-                  {editingMsgId !== msg.id && (
+                    {editingMsgId !== msg.id && (
                     <HoverActions
-                      msg={msg}
-                      isMine={msg.senderId === senderId}
-                      topReactions={topReactions}
+                      msg={msg} isMine={msg.senderId === senderId} topReactions={topReactions}
                       onContext={e => openCtx(e, msg)}
                       onEdit={() => { setEditingMsgId(msg.id); setEditInput(msg.text) }}
                       onDelete={() => handleDelete(msg)}
@@ -590,12 +624,10 @@ function ChatBody({ gameId, discordUser, compact = false }: GameChatProps & { co
         ))}
       </div>
 
-      {/* Context menu */}
       {ctxMenu && (
         <ContextMenu
           x={ctxMenu.x} y={ctxMenu.y} msg={ctxMenu.msg}
-          isMine={ctxMenu.msg.senderId === senderId}
-          topReactions={topReactions}
+          isMine={ctxMenu.msg.senderId === senderId} topReactions={topReactions}
           onClose={() => setCtxMenu(null)}
           onEdit={() => { setEditingMsgId(ctxMenu.msg.id); setEditInput(ctxMenu.msg.text) }}
           onDelete={() => handleDelete(ctxMenu.msg)}
@@ -604,18 +636,21 @@ function ChatBody({ gameId, discordUser, compact = false }: GameChatProps & { co
         />
       )}
 
-      {/* Input area */}
       <div className="chat-input-area">
         {stagedFile && (
           <div className="chat-staged-file-preview">
             <div className="staged-file-info">
-              {stagedFile.isImage ? <FileIcon size={16} /> : <FileIcon size={16} />}
+              {stagedFile.isImage && stagedPreviewUrl ? (
+                <div className="staged-preview"><img src={stagedPreviewUrl} alt="staged" /></div>
+              ) : (
+                <FileIcon size={24} />
+              )}
               <span className="staged-file-name">{stagedFile.originalName}</span>
-              {uploadProgress && <div className="chat-upload-spinner mini" />}
+              {uploadProgress && <span style={{fontSize: 11, color: '#00d4ff'}}>{uploadProgress}</span>}
             </div>
             {!sending && (
-              <button className="icon-btn remove-staged" onClick={() => setStagedFile(null)} title="Remove attachment">
-                <X size={14} />
+              <button className="remove-staged" onClick={() => { setStagedFile(null); setStagedPreviewUrl(null); }} title="Remove attachment">
+                <X size={16} />
               </button>
             )}
           </div>
@@ -625,15 +660,12 @@ function ChatBody({ gameId, discordUser, compact = false }: GameChatProps & { co
             <Paperclip size={18} />
           </button>
           <input
-            ref={inputRef}
-            type="text"
-            placeholder={`Message as ${senderName}...`}
-            value={inputText}
-            onChange={e => setInputText(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
+            ref={inputRef} type="text" placeholder={`Message as ${senderName}...`}
+            value={inputText} onChange={e => setInputText(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && !e.shiftKey && execSend()}
             disabled={sending}
           />
-          <button className="send-btn" onClick={handleSend} disabled={sending || (!inputText.trim() && !stagedFile)}>
+          <button className="send-btn" onClick={execSend} disabled={sending || (!inputText.trim() && !stagedFile)}>
             <Send size={16} />
           </button>
         </div>
@@ -642,9 +674,12 @@ function ChatBody({ gameId, discordUser, compact = false }: GameChatProps & { co
   )
 }
 
-// ── GameChat (panel + modal) ──────────────────────────────
+// ── GameChat Main ────────────────────────────────────────
 export function GameChat({ gameId, discordUser }: GameChatProps) {
   const [expanded, setExpanded] = useState(false)
+  const chatState = useChatState(gameId, discordUser)
+
+  const body = <ChatBody gameId={gameId} state={chatState} compact={!expanded} />
 
   return (
     <>
@@ -656,12 +691,12 @@ export function GameChat({ gameId, discordUser }: GameChatProps) {
             <Maximize2 size={14} />
           </button>
         </div>
-        <ChatBody gameId={gameId} discordUser={discordUser} compact />
+        {!expanded && body}
       </div>
 
       {expanded && typeof document !== 'undefined' && createPortal(
         <div className="chat-modal-backdrop" role="presentation" onClick={() => setExpanded(false)}>
-          <div className="chat-modal" role="dialog" aria-modal="true" aria-label="Community Hub" onClick={e => e.stopPropagation()}>
+          <div className="expanded-chat-override" role="dialog" aria-modal="true" aria-label="Community Hub" onClick={e => e.stopPropagation()}>
             <div className="chat-header">
               <Hash size={15} style={{ opacity: 0.6 }} />
               <h4>Community Hub</h4>
@@ -669,7 +704,7 @@ export function GameChat({ gameId, discordUser }: GameChatProps) {
                 <X size={16} />
               </button>
             </div>
-            <ChatBody gameId={gameId} discordUser={discordUser} />
+            {body}
           </div>
         </div>,
         document.body
