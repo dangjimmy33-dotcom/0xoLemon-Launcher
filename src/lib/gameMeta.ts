@@ -145,7 +145,8 @@ export function fallbackDetailFromSummary(game: GameSummary): GameDetail {
 }
 
 export function firstMediaUrl(detail: GameDetail, assets: Record<string, string>) {
-  const first = detail.media.find((item) => isCarouselMedia(item) && item.mimeType.startsWith('image/') && assetUrlForId(item.assetId, assets))
+  const safeMedia = Array.isArray(detail.media) ? detail.media : []
+  const first = safeMedia.find((item) => isCarouselMedia(item) && item.mimeType?.startsWith('image/') && assetUrlForId(item.assetId, assets))
   return first ? assetUrlForId(first.assetId, assets) : undefined
 }
 

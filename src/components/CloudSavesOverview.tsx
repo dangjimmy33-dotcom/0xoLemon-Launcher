@@ -1,8 +1,14 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { invoke } from '@tauri-apps/api/core'
-import { Cloud, CloudOff, FolderSync, TriangleAlert, Wrench, CheckCircle2, XCircle, Terminal, ChevronLeft } from 'lucide-react'
-import type { CloudSaveStatus, GameCatalog, GameInstallState, CloudRedirectStatus, StfixerResult } from '../types'
+import { Cloud, CloudOff, FolderSync, TriangleAlert, Wrench, CheckCircle2, XCircle, Terminal, ChevronLeft, ShieldCheck, ShieldX, RefreshCw, Save, ChevronDown, FolderOpen } from 'lucide-react'
+import type { CloudSaveStatus, GameCatalog, GameInstallState, CloudRedirectStatus, StfixerResult, CloudProviderConfig } from '../types'
 import { isTauriRuntime } from '../lib/gameMeta'
+
+const PROVIDER_OPTIONS = [
+  { value: 'gdrive', label: 'Google Drive' },
+  { value: 'onedrive', label: 'OneDrive' },
+  { value: 'folder', label: 'Local Folder' },
+] as const
 
 export function CloudSavesOverview({
   catalog,
@@ -25,6 +31,7 @@ export function CloudSavesOverview({
   const [statuses, setStatuses] = useState<Record<string, CloudSaveStatus>>({})
   const [activeMode, setActiveMode] = useState<'native' | 'stfixer' | null>(null)
 
+  // --- Cloud Save status polling ---
   useEffect(() => {
     for (const game of installed) onRequestAsset(game.id, game.gridAssetId)
     if (!isTauriRuntime()) return
@@ -44,17 +51,39 @@ export function CloudSavesOverview({
     }
   }, [installed, installedIds, onRequestAsset])
 
+  // --- STFixer state ---
   const [crStatus, setCrStatus] = useState<CloudRedirectStatus | null>(null)
   const [stfixerBusy, setStfixerBusy] = useState(false)
   const [installCoreIfMissing, setInstallCoreIfMissing] = useState(false)
   const [stfixerResult, setStfixerResult] = useState<StfixerResult | null>(null)
 
-  useEffect(() => {
+  // --- Cloud Provider state (reads from real config.json) ---
+  const [providerConfig, setProviderConfig] = useState<CloudProviderConfig | null>(null)
+  const [editProvider, setEditProvider] = useState('')
+  const [editTokenPath, setEditTokenPath] = useState('')
+  const [providerSaving, setProviderSaving] = useState(false)
+  const [providerSaveMsg, setProviderSaveMsg] = useState('')
+
+  // Load STFixer status + provider config when entering stfixer mode
+  const loadStfixerData = useCallback(async () => {
     if (!isTauriRuntime()) return
-    invoke<CloudRedirectStatus>('cloud_redirect_get_status')
-      .then(setCrStatus)
-      .catch(console.error)
+    try {
+      const [status, config] = await Promise.all([
+        invoke<CloudRedirectStatus>('cloud_redirect_get_status'),
+        invoke<CloudProviderConfig>('cloud_redirect_get_provider_config'),
+      ])
+      setCrStatus(status)
+      setProviderConfig(config)
+      setEditProvider(config.provider || '')
+      setEditTokenPath(config.tokenPath || '')
+    } catch (e) {
+      console.error('Failed to load STFixer data:', e)
+    }
   }, [])
+
+  useEffect(() => {
+    if (activeMode === 'stfixer') loadStfixerData()
+  }, [activeMode, loadStfixerData])
 
   async function handleApplyStfixer() {
     if (!isTauriRuntime()) return
@@ -65,7 +94,6 @@ export function CloudSavesOverview({
         installCoreIfMissing
       })
       setStfixerResult(result)
-      // Refresh status after patch
       const newStatus = await invoke<CloudRedirectStatus>('cloud_redirect_get_status')
       setCrStatus(newStatus)
     } catch (e: any) {
@@ -74,6 +102,62 @@ export function CloudSavesOverview({
       setStfixerBusy(false)
     }
   }
+
+  async function handleSaveProviderConfig() {
+    if (!isTauriRuntime()) return
+    setProviderSaving(true)
+    setProviderSaveMsg('')
+    try {
+      await invoke('cloud_redirect_save_provider_config', {
+        provider: editProvider,
+        tokenPath: editTokenPath,
+      })
+      // Re-read to get real auth status
+      const config = await invoke<CloudProviderConfig>('cloud_redirect_get_provider_config')
+      setProviderConfig(config)
+      setEditProvider(config.provider || '')
+      setEditTokenPath(config.tokenPath || '')
+      setProviderSaveMsg('Configuration saved.')
+    } catch (e: any) {
+      setProviderSaveMsg(`Error: ${e}`)
+    } finally {
+      setProviderSaving(false)
+      setTimeout(() => setProviderSaveMsg(''), 4000)
+    }
+  }
+
+  async function handleBrowseTokenPath() {
+    if (!isTauriRuntime()) return
+    try {
+      const { open } = await import('@tauri-apps/plugin-dialog')
+      const isFolder = editProvider === 'folder'
+      if (isFolder) {
+        const selected = await open({ directory: true, title: 'Select sync folder' })
+        if (selected) setEditTokenPath(selected as string)
+      } else {
+        const selected = await open({
+          filters: [{ name: 'JSON', extensions: ['json'] }],
+          title: 'Select token file',
+        })
+        if (selected) setEditTokenPath(selected as string)
+      }
+    } catch (e) {
+      console.error('Browse failed:', e)
+    }
+  }
+
+  // Compute auth display
+  const authLabel = providerConfig == null
+    ? 'Loading...'
+    : !providerConfig.configFound
+      ? 'Not configured — select a provider and save.'
+      : !providerConfig.provider
+        ? 'No provider selected.'
+        : providerConfig.authenticated
+          ? 'Authenticated.'
+          : 'Not authenticated — sign in via CloudRedirect.'
+
+  const isAuthed = providerConfig?.authenticated ?? false
 
   return (
     <section className="cloud-overview">
@@ -89,13 +173,13 @@ export function CloudSavesOverview({
           <div className="cloud-mode-selection">
             <button className="cloud-mode-card" onClick={() => setActiveMode('native')}>
               <div className="cloud-mode-icon native-icon"><FolderSync size={36} /></div>
-              <h3>Native Cloud Save</h3>
+              <h3>Cloud Save</h3>
               <p>Sync game saves natively to Google Drive. Manage backup status and conflicts for your installed games.</p>
             </button>
             <button className="cloud-mode-card" onClick={() => setActiveMode('stfixer')}>
               <div className="cloud-mode-icon stfixer-icon"><Wrench size={36} /></div>
-              <h3>SteamTools CloudRedirect</h3>
-              <p>Patch SteamTools to bypass the AppID 760 sync bug and allow proper cloud saves for non-owned (lua) games.</p>
+              <h3>STFixer</h3>
+              <p>Patch SteamTools to bypass the AppID 760 sync bug and configure CloudRedirect provider.</p>
             </button>
           </div>
         </>
@@ -107,8 +191,8 @@ export function CloudSavesOverview({
               <span>Back</span>
             </button>
             <div>
-              <h1>{activeMode === 'native' ? 'Native Cloud Saves' : 'SteamTools CloudRedirect'}</h1>
-              <p>{activeMode === 'native' ? 'Backup status and conflicts for installed games.' : 'Manage STFixer patches.'}</p>
+              <h1>{activeMode === 'native' ? 'Cloud Save' : 'STFixer'}</h1>
+              <p>{activeMode === 'native' ? 'Backup status and conflicts for installed games.' : 'Manage STFixer patches & Cloud Provider.'}</p>
             </div>
           </header>
 
@@ -177,6 +261,88 @@ export function CloudSavesOverview({
                     </div>
                   </div>
                 )}
+              </div>
+
+              {/* Cloud Provider — reads from CloudRedirect's actual config.json */}
+              <div className="cr-provider-config">
+                <header className="cr-header">
+                  <div className="cr-header-title">
+                    <Cloud size={20} />
+                    <h2>Cloud Provider</h2>
+                  </div>
+                  <button className="cr-btn-icon" onClick={loadStfixerData} title="Refresh">
+                    <RefreshCw size={16} />
+                  </button>
+                </header>
+                <div className="cr-body">
+                  <p>Configure your Steam Cloud provider. Google Drive/OneDrive/Local Folder only for now.</p>
+                  
+                  <div className="cr-form-group">
+                    <label>Provider</label>
+                    <div className="cr-select-wrapper">
+                      <select 
+                        value={editProvider} 
+                        onChange={(e) => setEditProvider(e.target.value)}
+                        className="cr-select"
+                      >
+                        <option value="">— Select Provider —</option>
+                        {PROVIDER_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
+                      <ChevronDown size={16} className="cr-select-icon" />
+                    </div>
+                  </div>
+
+                  {editProvider && (
+                    <div className="cr-form-group">
+                      <label>{editProvider === 'folder' ? 'Sync Folder Path' : 'Token File Path'}</label>
+                      <div className="cr-input-group">
+                        <input 
+                          type="text" 
+                          value={editTokenPath}
+                          onChange={(e) => setEditTokenPath(e.target.value)}
+                          className="cr-input"
+                          placeholder={editProvider === 'folder' ? 'Select a local folder...' : 'Path to token file...'}
+                        />
+                        <button className="cr-btn secondary" onClick={handleBrowseTokenPath}>
+                          <FolderOpen size={14} />
+                          Browse
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="cr-form-group">
+                    <label>Authentication</label>
+                    <div className="cr-auth-card">
+                      <div className="cr-auth-status">
+                        <strong>Authentication Status</strong>
+                        <span>{authLabel}</span>
+                      </div>
+                      {isAuthed
+                        ? <ShieldCheck size={24} className="cr-auth-icon cr-auth-ok" />
+                        : <ShieldX size={24} className="cr-auth-icon cr-auth-none" />}
+                    </div>
+                  </div>
+
+                  <div className="cr-actions" style={{ marginTop: '20px' }}>
+                    <button
+                      className="cr-btn primary cr-btn-with-icon"
+                      onClick={handleSaveProviderConfig}
+                      disabled={providerSaving || !editProvider}
+                    >
+                      <Save size={16} />
+                      {providerSaving ? 'Saving...' : 'Save Configuration'}
+                    </button>
+                  </div>
+
+                  {providerSaveMsg && (
+                    <div className={`cr-save-msg ${providerSaveMsg.startsWith('Error') ? 'error' : 'success'}`}>
+                      {providerSaveMsg}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
