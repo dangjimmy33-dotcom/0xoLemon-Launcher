@@ -290,3 +290,51 @@ button:focus-visible {
   .nav-item-label { display: none; }
 }
 
+/* Detail Tabs */
+.detail-tabs {
+  display: flex;
+  gap: 16px;
+  margin-top: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0 16px;
+}
+
+.detail-tabs button {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 12px 16px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s;
+}
+
+.detail-tabs button:hover {
+  color: #fff;
+}
+
+.detail-tabs button.active {
+  color: #fff;
+}
+
+.detail-tabs button.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--primary-accent, #f0a500);
+}
+
+.chat-tab-container {
+  height: 600px;
+  max-height: 80vh;
+  margin-top: 24px;
+}
+
