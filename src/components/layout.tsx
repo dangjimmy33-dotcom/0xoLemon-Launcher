@@ -63,7 +63,8 @@ export function Sidebar({
   )
 }
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { Search } from 'lucide-react'
 import { assetUrlForId } from '../lib/gameMeta'
 
 export function TabEmptyState({
@@ -79,6 +80,8 @@ export function TabEmptyState({
   assets: Record<string, string>
   onRequestAsset?: (game: import('../types').GameSummary, assetId: string | undefined, urgent?: boolean) => void
 }) {
+  const [searchQuery, setSearchQuery] = useState('')
+
   useEffect(() => {
     if (!onRequestAsset) return
     for (const game of catalog.games) {
@@ -88,16 +91,32 @@ export function TabEmptyState({
     }
   }, [catalog.games, onRequestAsset, assets])
 
+  const visibleGames = catalog.games.filter(game => {
+    const q = searchQuery.toLowerCase().trim()
+    if (!q) return true
+    return game.title.toLowerCase().includes(q) || (game.developer && game.developer.toLowerCase().includes(q))
+  })
+
   return (
     <section className="tab-empty-view">
-      <header className="tab-empty-header">
+      <header className="tab-empty-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <strong>{activeTab}</strong>
           <span>Choose a game to continue.</span>
         </div>
+        <div className="search-bar" style={{ display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.05)', padding: '6px 12px', borderRadius: '6px', width: '250px' }}>
+          <Search size={16} style={{ opacity: 0.5, marginRight: '8px' }} />
+          <input 
+            type="text" 
+            placeholder="Search games..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none' }}
+          />
+        </div>
       </header>
       <div className="tab-game-list stagger-children">
-        {catalog.games.length === 0 ? (
+        {visibleGames.length === 0 ? (
           <div className="downloads-empty">
             <div className="queue-art">
               <RefreshCcw size={19} />
@@ -112,7 +131,7 @@ export function TabEmptyState({
             </div>
           </div>
         ) : (
-          catalog.games.map((game) => (
+          visibleGames.map((game) => (
             <button className="tab-game-row reveal" key={game.id} type="button" onClick={() => onSelectGame(game.id)}>
               {assetUrlForId(game.gridAssetId, assets) ? (
                 <img src={assetUrlForId(game.gridAssetId, assets)} alt="" />

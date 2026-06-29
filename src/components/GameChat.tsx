@@ -7,7 +7,7 @@ import {
 } from 'firebase/firestore'
 import { db } from '../firebase'
 import { open } from '@tauri-apps/plugin-dialog'
-import { Send, Paperclip, Maximize2, X, Edit2, Trash2, Hash, FileIcon, DownloadIcon } from 'lucide-react'
+import { Send, Paperclip, X, Edit2, Trash2, Hash, FileIcon, DownloadIcon } from 'lucide-react'
 import type { DiscordAuthUser } from '../types'
 
 export interface ChatMessage {
@@ -676,39 +676,15 @@ function ChatBody({
 
 // ── GameChat Main ────────────────────────────────────────
 export function GameChat({ gameId, discordUser }: GameChatProps) {
-  const [expanded, setExpanded] = useState(false)
   const chatState = useChatState(gameId, discordUser)
 
-  const body = <ChatBody gameId={gameId} state={chatState} compact={!expanded} />
-
   return (
-    <>
-      <div className="game-chat-panel">
-        <div className="chat-header">
-          <Hash size={15} style={{ opacity: 0.6 }} />
-          <h4>Community Hub</h4>
-          <button className="icon-btn" onClick={() => setExpanded(true)} title="Expand" style={{ marginLeft: 'auto' }}>
-            <Maximize2 size={14} />
-          </button>
-        </div>
-        {!expanded && body}
+    <div className="game-chat-panel" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <div className="chat-header">
+        <Hash size={15} style={{ opacity: 0.6 }} />
+        <h4>Community Hub</h4>
       </div>
-
-      {expanded && typeof document !== 'undefined' && createPortal(
-        <div className="chat-modal-backdrop" role="presentation" onClick={() => setExpanded(false)}>
-          <div className="expanded-chat-override" role="dialog" aria-modal="true" aria-label="Community Hub" onClick={e => e.stopPropagation()}>
-            <div className="chat-header">
-              <Hash size={15} style={{ opacity: 0.6 }} />
-              <h4>Community Hub</h4>
-              <button className="icon-btn" onClick={() => setExpanded(false)} title="Close" style={{ marginLeft: 'auto' }}>
-                <X size={16} />
-              </button>
-            </div>
-            {body}
-          </div>
-        </div>,
-        document.body
-      )}
-    </>
+      <ChatBody gameId={gameId} state={chatState} compact={false} />
+    </div>
   )
 }

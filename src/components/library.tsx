@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, cloneElement } from 'react'
 import { createPortal } from 'react-dom'
 import { invoke } from '@tauri-apps/api/core'
-import { BookOpen, CheckCircle2, ChevronLeft, ChevronRight, CircleAlert, Download, FolderOpen, HardDrive, Image as ImageIcon, Library, Play, RefreshCcw, Search, ShieldCheck, ShoppingBag, Trophy, X } from 'lucide-react'
+import { BookOpen, CheckCircle2, ChevronLeft, ChevronRight, CircleAlert, Download, FolderOpen, HardDrive, Image as ImageIcon, Library, Play, RefreshCcw, Search, ShieldCheck, ShoppingBag, Trophy, X, MessageSquare, Info } from 'lucide-react'
 import { TutorialModal } from './TutorialModal'
 import { enUS as t } from '../i18n/en-US'
 import type { CloudSaveStatus, GameAchievement, GameCatalog, GameDetail, GameSummary, GameInstallState, GameVersionInfo, VerifyUiStatus } from '../types'
@@ -396,6 +396,7 @@ export function StoreLibraryView({
   }, [catalog.games, query])
   const actionDockRef = useRef<HTMLDivElement>(null)
   const [stickyVisible, setStickyVisible] = useState(false)
+  const [activeDetailTab, setActiveDetailTab] = useState<'overview' | 'chat'>('overview')
 
   useEffect(() => {
     if (!selectedGameId || !detail?.gameId || typeof IntersectionObserver === 'undefined') {
@@ -677,7 +678,27 @@ export function StoreLibraryView({
             ) : null}
           </div>
         </div>
-        <MediaRail detail={detail} assets={assets} />
+
+        <nav className="detail-tabs">
+          <button
+            className={activeDetailTab === 'overview' ? 'active' : ''}
+            onClick={() => setActiveDetailTab('overview')}
+            type="button"
+          >
+            <Info size={16} /> Overview
+          </button>
+          <button
+            className={activeDetailTab === 'chat' ? 'active' : ''}
+            onClick={() => setActiveDetailTab('chat')}
+            type="button"
+          >
+            <MessageSquare size={16} /> Live Chat
+          </button>
+        </nav>
+
+        {activeDetailTab === 'overview' ? (
+          <>
+            <MediaRail detail={detail} assets={assets} />
 
         <section className="detail-body">
           <div className="detail-description">
@@ -688,8 +709,15 @@ export function StoreLibraryView({
             />
           </div>
         </section>
+        </>
+        ) : (
+          <section className="detail-body chat-tab-container">
+            <GameChat gameId={detail.gameId} discordUser={discordUser} />
+          </section>
+        )}
       </section>
 
+      {activeDetailTab === 'overview' && (
       <aside className="store-info-column">
         <section className="panel status-card">
           <header className="side-header">
@@ -771,8 +799,8 @@ export function StoreLibraryView({
           />
         ) : null}
         <AchievementPreview achievements={detail.achievements} assets={assets} />
-        <GameChat gameId={detail.gameId} discordUser={discordUser} />
       </aside>
+      )}
       {tutorialVisible && selectedGame ? (
         <TutorialModal
           gameId={selectedGame.id}
