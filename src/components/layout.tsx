@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Cloud, Database, Download, Home, Image as ImageIcon, Library, RefreshCcw, Settings, ShoppingBag, Wifi } from 'lucide-react'
+import { Cloud, Database, Download, Home, Image as ImageIcon, Library, RefreshCcw, Settings, ShoppingBag, Wifi, Languages } from 'lucide-react'
 import { enUS as t } from '../i18n/en-US'
 import type { GameCatalog, TabId } from '../types'
 
@@ -29,6 +29,7 @@ export function Sidebar({
     [t.nav.updates, RefreshCcw],
     [t.nav.downloads, Download],
     [t.nav.cloudSaves, Cloud],
+    [t.nav.translations, Languages],
     [t.nav.cache, Database],
     [t.nav.settings, Settings],
   ] as const
@@ -62,17 +63,31 @@ export function Sidebar({
   )
 }
 
+import { useEffect } from 'react'
+import { assetUrlForId } from '../lib/gameMeta'
+
 export function TabEmptyState({
   activeTab,
   catalog,
   onSelectGame,
   assets,
+  onRequestAsset,
 }: {
   activeTab: TabId
   catalog: GameCatalog
   onSelectGame: (gameId: string | null) => void
   assets: Record<string, string>
+  onRequestAsset?: (game: import('../types').GameSummary, assetId: string | undefined, urgent?: boolean) => void
 }) {
+  useEffect(() => {
+    if (!onRequestAsset) return
+    for (const game of catalog.games) {
+      if (game.gridAssetId && !assets[game.gridAssetId]) {
+        onRequestAsset(game, game.gridAssetId)
+      }
+    }
+  }, [catalog.games, onRequestAsset, assets])
+
   return (
     <section className="tab-empty-view">
       <header className="tab-empty-header">
@@ -99,8 +114,8 @@ export function TabEmptyState({
         ) : (
           catalog.games.map((game) => (
             <button className="tab-game-row reveal" key={game.id} type="button" onClick={() => onSelectGame(game.id)}>
-              {assets[game.gridAssetId] ? (
-                <img src={assets[game.gridAssetId]} alt="" />
+              {assetUrlForId(game.gridAssetId, assets) ? (
+                <img src={assetUrlForId(game.gridAssetId, assets)} alt="" />
               ) : (
                 <div className="tab-game-art">
                   <ImageIcon size={22} />

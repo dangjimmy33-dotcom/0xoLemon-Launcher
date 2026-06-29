@@ -57,6 +57,7 @@ cbc = { version = "0.1", features = ["alloc"] }
 md-5 = "0.10"
 flate2 = "1"
 winreg = "0.52"
+sevenz-rust = { version = "0.6.1", features = ["aes256"] }
 
 [features]
 default = ["custom-protocol"]

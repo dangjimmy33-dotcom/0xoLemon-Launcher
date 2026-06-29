@@ -92,7 +92,7 @@ pub const GAME_PATH_MAPPINGS: &[GamePathMapping] = &[
      GamePathMapping {
         game_id: "pragmata",
         install_dir_name: "Pragmata",
-        hf_dir_name: "pragmata",
+        hf_dir_name: "PRAGMATA",
         launch_executable: "PRAGMATA.exe",
     },
 ];
@@ -218,6 +218,18 @@ pub fn depot_repo_base_urls() -> Vec<(String, Option<String>)> {
             .filter_map(|(value, token)| normalize_repo_base(&value).map(|norm| (norm, token)))
             .collect(),
     )
+}
+
+/// Returns the HuggingFace Bearer token configured for a specific repo, if any.
+/// Matches by repo_id (case-insensitive).
+pub fn token_for_repo(repo_id: &str) -> Option<String> {
+    let config: HuggingFaceRepoConfig =
+        serde_json::from_str(include_str!("../huggingface-repos.json")).ok()?;
+    config
+        .repositories
+        .into_iter()
+        .find(|entry| entry.repo_id.eq_ignore_ascii_case(repo_id))
+        .and_then(|entry| entry.token)
 }
 
 /// Returns game-specific depot roots for every configured repository.

@@ -328,3 +328,136 @@ pub fn cloud_redirect_save_provider_config(
 
     Ok(())
 }
+
+use rand_core::{OsRng, RngCore};
+use sha2::{Digest, Sha256};
+use base64::engine::general_purpose::{URL_SAFE_NO_PAD};
+use base64::Engine;
+use std::net::TcpListener;
+use std::io::{Read, Write};
+use std::time::{Duration, Instant};
+use std::thread;
+use url::Url;
+
+const DRIVE_SCOPE: &str = "https://www.googleapis.com/auth/drive.appdata";
+const TOKEN_ENDPOINT: &str = "https://oauth2.googleapis.com/token";
+const AUTH_ENDPOINT: &str = "https://accounts.google.com/o/oauth2/v2/auth";
+const OAUTH_TIMEOUT: Duration = Duration::from_secs(180);
+
+fn random_urlsafe(length: usize) -> String {
+    let mut bytes = vec![0_u8; length];
+    OsRng.fill_bytes(&mut bytes);
+    URL_SAFE_NO_PAD.encode(bytes)
+}
+
+#[command]
+pub fn cloud_redirect_connect_google() -> Result<(), String> {
+    let client_id = "745435850820-k7v8oqp0g640l8eed7p7nu6f7fd8njoh.apps.googleusercontent.com";
+    
+    let listener = TcpListener::bind(("127.0.0.1", 0)).map_err(|error| error.to_string())?;
+    listener.set_nonblocking(true).map_err(|error| error.to_string())?;
+    let port = listener.local_addr().map_err(|error| error.to_string())?.port();
+    let redirect_uri = format!("http://127.0.0.1:{port}");
+    
+    let verifier = random_urlsafe(64);
+    let challenge = URL_SAFE_NO_PAD.encode(Sha256::digest(verifier.as_bytes()));
+    let state = random_urlsafe(32);
+    
+    let mut auth_url = Url::parse(AUTH_ENDPOINT).map_err(|error| error.to_string())?;
+    auth_url.query_pairs_mut()
+        .append_pair("client_id", client_id)
+        .append_pair("redirect_uri", &redirect_uri)
+        .append_pair("response_type", "code")
+        .append_pair("scope", DRIVE_SCOPE)
+        .append_pair("access_type", "offline")
+        .append_pair("prompt", "consent")
+        .append_pair("code_challenge", &challenge)
+        .append_pair("code_challenge_method", "S256")
+        .append_pair("state", &state);
+        
+    #[cfg(target_os = "windows")]
+    {
+        std::process::Command::new("rundll32")
+            .args(["url.dll,FileProtocolHandler", auth_url.as_str()])
+            .spawn()
+            .map_err(|error| error.to_string())?;
+    }
+    
+    let deadline = Instant::now() + OAUTH_TIMEOUT;
+    let mut authorization_code = None;
+    while Instant::now() < deadline {
+        match listener.accept() {
+            Ok((mut stream, _)) => {
+                let mut request = [0_u8; 8192];
+                let read = stream.read(&mut request).map_err(|error| error.to_string())?;
+                let request = String::from_utf8_lossy(&request[..read]);
+                
+                let target = request.lines().next()
+                    .and_then(|line| line.split_whitespace().nth(1))
+                    .ok_or_else(|| "Google OAuth callback request was invalid".to_string())?;
+                let callback = Url::parse(&format!("http://127.0.0.1:{port}{target}")).map_err(|error| error.to_string())?;
+                
+                let params = callback.query_pairs().into_owned().collect::<Vec<_>>();
+                let returned_state = params.iter().find(|(key, _)| key == "state").map(|(_, value)| value.as_str());
+                let error = params.iter().find(|(key, _)| key == "error").map(|(_, value)| value.clone());
+                let code = params.iter().find(|(key, _)| key == "code").map(|(_, value)| value.clone());
+                
+                let success = returned_state == Some(state.as_str()) && error.is_none() && code.is_some();
+                let body = if success {
+                    "<html><body><h2>0xoLemon connected to Google Drive for STFixer.</h2><p>You can close this tab and return to the launcher.</p></body></html>"
+                } else {
+                    "<html><body><h2>Google Drive authorization failed.</h2><p>Return to the launcher for details.</p></body></html>"
+                };
+                
+                let response = format!(
+                    "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+                    body.len(), body
+                );
+                stream.write_all(response.as_bytes()).map_err(|error| error.to_string())?;
+                
+                if returned_state != Some(state.as_str()) { return Err("Google OAuth state validation failed".to_string()); }
+                if let Some(error) = error { return Err(format!("Google authorization was denied: {error}")); }
+                authorization_code = code;
+                break;
+            }
+            Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
+                thread::sleep(Duration::from_millis(120));
+            }
+            Err(error) => return Err(error.to_string()),
+        }
+    }
+    
+    let code = authorization_code.ok_or_else(|| "Google Drive sign-in timed out".to_string())?;
+    
+    let client = reqwest::blocking::Client::new();
+    let token_resp = client.post(TOKEN_ENDPOINT)
+        .form(&[
+            ("client_id", client_id),
+            ("code", code.as_str()),
+            ("code_verifier", verifier.as_str()),
+            ("grant_type", "authorization_code"),
+            ("redirect_uri", redirect_uri.as_str()),
+        ])
+        .send()
+        .map_err(|error| error.to_string())?;
+        
+    let raw_json = token_resp.text().map_err(|error| error.to_string())?;
+    
+    let doc: serde_json::Value = serde_json::from_str(&raw_json).map_err(|error| error.to_string())?;
+    if !doc.get("access_token").is_some() {
+        return Err(format!("Google did not return a valid access token: {}", raw_json));
+    }
+    
+    let encrypted = crate::secret_store::protect(raw_json.as_bytes())?;
+    
+    let appdata = std::env::var("APPDATA").map_err(|_| "Could not find APPDATA".to_string())?;
+    let cr_dir = std::path::PathBuf::from(&appdata).join("CloudRedirect");
+    std::fs::create_dir_all(&cr_dir).map_err(|error| error.to_string())?;
+    
+    let token_path = cr_dir.join("google_tokens.json");
+    std::fs::write(&token_path, encrypted).map_err(|error| error.to_string())?;
+    
+    cloud_redirect_save_provider_config("gdrive".to_string(), token_path.to_string_lossy().to_string())?;
+    
+    Ok(())
+}
