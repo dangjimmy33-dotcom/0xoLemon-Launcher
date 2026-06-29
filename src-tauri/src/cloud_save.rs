@@ -262,6 +262,18 @@ pub fn disconnect_google_drive(app: &AppHandle, game_id: &str) -> Result<CloudSa
     update_google_message(app, game_id, "Google Drive disconnected.", None)
 }
 
+pub fn global_connect_google_drive(app: &AppHandle) -> Result<(), String> {
+    google_drive::authorize(app)
+}
+
+pub fn global_disconnect_google_drive(app: &AppHandle) -> Result<(), String> {
+    google_drive::disconnect(app)
+}
+
+pub fn global_is_google_drive_connected(app: &AppHandle) -> bool {
+    google_drive::connected(app)
+}
+
 pub fn backup_to_google_drive(app: &AppHandle, game_id: &str) -> Result<CloudSaveStatus, String> {
     ensure_not_running(game_id)?;
     let record = {

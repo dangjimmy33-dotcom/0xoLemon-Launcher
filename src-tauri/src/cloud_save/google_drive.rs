@@ -560,8 +560,8 @@ fn response_error(context: &str, response: Response) -> String {
 fn open_system_browser(url: &str) -> Result<(), String> {
     #[cfg(target_os = "windows")]
     {
-        std::process::Command::new("explorer")
-            .arg(url)
+        std::process::Command::new("rundll32")
+            .args(["url.dll,FileProtocolHandler", url])
             .spawn()
             .map_err(|error| error.to_string())?;
         return Ok(());

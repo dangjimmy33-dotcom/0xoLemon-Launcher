@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, useCallback } from 'react'
 import { invoke } from '@tauri-apps/api/core'
-import { Cloud, CloudOff, FolderSync, TriangleAlert, Wrench, CheckCircle2, XCircle, Terminal, ChevronLeft, ShieldCheck, ShieldX, RefreshCw, Save, ChevronDown, FolderOpen } from 'lucide-react'
+import { Cloud, CloudOff, FolderSync, TriangleAlert, Wrench, CheckCircle2, XCircle, Terminal, ChevronLeft, ShieldCheck, ShieldX, RefreshCw, Save, ChevronDown, FolderOpen, Info } from 'lucide-react'
 import type { CloudSaveStatus, GameCatalog, GameInstallState, CloudRedirectStatus, StfixerResult, CloudProviderConfig } from '../types'
 import { isTauriRuntime } from '../lib/gameMeta'
 
@@ -31,23 +31,38 @@ export function CloudSavesOverview({
   const [statuses, setStatuses] = useState<Record<string, CloudSaveStatus>>({})
   const [activeMode, setActiveMode] = useState<'native' | 'stfixer' | null>(null)
 
+  const [nativeGoogleConnected, setNativeGoogleConnected] = useState(false)
+
   // --- Cloud Save status polling ---
   useEffect(() => {
     for (const game of installed) onRequestAsset(game.id, game.gridAssetId)
     if (!isTauriRuntime()) return
     let disposed = false
-    Promise.all(
-      installed.map(async (game) => {
-        const status = await invoke<CloudSaveStatus>('get_cloud_save_status', { gameId: game.id })
-        return [game.id, status] as const
-      }),
-    )
-      .then((entries) => {
+    
+    // Poll global auth state alongside game statuses
+    const pollNativeData = async () => {
+      try {
+        const isConnected = await invoke<boolean>('global_is_google_drive_connected')
+        if (!disposed) setNativeGoogleConnected(isConnected)
+
+        const entries = await Promise.all(
+          installed.map(async (game) => {
+            const status = await invoke<CloudSaveStatus>('get_cloud_save_status', { gameId: game.id })
+            return [game.id, status] as const
+          }),
+        )
         if (!disposed) setStatuses(Object.fromEntries(entries))
-      })
-      .catch(() => undefined)
+      } catch (e) {
+        // ignore
+      }
+    }
+    
+    pollNativeData()
+    const interval = setInterval(pollNativeData, 5000)
+    
     return () => {
       disposed = true
+      clearInterval(interval)
     }
   }, [installed, installedIds, onRequestAsset])
 
@@ -146,6 +161,49 @@ export function CloudSavesOverview({
     }
   }
 
+  async function handleConnectGoogle() {
+    if (!isTauriRuntime()) return
+    setProviderSaving(true)
+    setProviderSaveMsg('Opening browser for Google Drive authentication...')
+    try {
+      await invoke('cloud_redirect_connect_google')
+      await loadStfixerData()
+      setProviderSaveMsg('Successfully authenticated with Google Drive.')
+    } catch (e: any) {
+      setProviderSaveMsg(`Error: ${e}`)
+    } finally {
+      setProviderSaving(false)
+      setTimeout(() => setProviderSaveMsg(''), 4000)
+    }
+  }
+
+  const [nativeAuthBusy, setNativeAuthBusy] = useState(false)
+  async function handleNativeConnectGoogle() {
+    if (!isTauriRuntime()) return
+    setNativeAuthBusy(true)
+    try {
+      await invoke('global_connect_google_drive')
+      setNativeGoogleConnected(true)
+    } catch (e) {
+      console.error('Native Google Connect Error:', e)
+    } finally {
+      setNativeAuthBusy(false)
+    }
+  }
+
+  async function handleNativeDisconnectGoogle() {
+    if (!isTauriRuntime()) return
+    setNativeAuthBusy(true)
+    try {
+      await invoke('global_disconnect_google_drive')
+      setNativeGoogleConnected(false)
+    } catch (e) {
+      console.error('Native Google Disconnect Error:', e)
+    } finally {
+      setNativeAuthBusy(false)
+    }
+  }
+
   // Compute auth display
   const authLabel = providerConfig == null
     ? 'Loading...'
@@ -173,12 +231,22 @@ export function CloudSavesOverview({
           <div className="cloud-mode-selection">
             <button className="cloud-mode-card" onClick={() => setActiveMode('native')}>
               <div className="cloud-mode-icon native-icon"><FolderSync size={36} /></div>
-              <h3>Cloud Save</h3>
+              <h3>
+                Cloud Save
+                <span className="cloud-mode-info" title="không cần steamtool" onClick={(e) => e.stopPropagation()}>
+                  <Info size={16} />
+                </span>
+              </h3>
               <p>Sync game saves natively to Google Drive. Manage backup status and conflicts for your installed games.</p>
             </button>
             <button className="cloud-mode-card" onClick={() => setActiveMode('stfixer')}>
               <div className="cloud-mode-icon stfixer-icon"><Wrench size={36} /></div>
-              <h3>STFixer</h3>
+              <h3>
+                STFixer
+                <span className="cloud-mode-info" title="thì có" onClick={(e) => e.stopPropagation()}>
+                  <Info size={16} />
+                </span>
+              </h3>
               <p>Patch SteamTools to bypass the AppID 760 sync bug and configure CloudRedirect provider.</p>
             </button>
           </div>
@@ -335,6 +403,16 @@ export function CloudSavesOverview({
                       <Save size={16} />
                       {providerSaving ? 'Saving...' : 'Save Configuration'}
                     </button>
+                    {editProvider === 'gdrive' && (
+                      <button
+                        className="cr-btn secondary cr-btn-with-icon"
+                        onClick={handleConnectGoogle}
+                        disabled={providerSaving}
+                      >
+                        <Cloud size={16} />
+                        Sign in with Google Drive
+                      </button>
+                    )}
                   </div>
 
                   {providerSaveMsg && (
@@ -348,33 +426,81 @@ export function CloudSavesOverview({
           )}
 
           {activeMode === 'native' && (
-            installed.length === 0 ? (
-              <div className="cloud-overview-empty">
-                <CloudOff size={28} />
-                <strong>No installed games</strong>
-                <span>Cloud save controls become available from each installed game in Library.</span>
-              </div>
-            ) : (
-              <div className="cloud-overview-list">
-                {installed.map((game) => {
-                  const status = statuses[game.id]
-                  const hasConflict = Boolean(status?.conflicts.length)
-                  return (
-                    <button type="button" key={game.id} onClick={() => onOpenGame(game.id)}>
-                      {assets[game.gridAssetId] ? <img src={assets[game.gridAssetId]} alt="" /> : <div />}
-                      <span>
-                        <strong>{game.title}</strong>
-                        <small>{status?.lastMessage || (status?.enabled ? 'Cloud save ready' : 'Cloud save is disabled')}</small>
-                      </span>
-                      <em className={hasConflict ? 'is-conflict' : status?.enabled ? 'is-ready' : ''}>
-                        {hasConflict ? <TriangleAlert size={15} /> : <FolderSync size={15} />}
-                        {hasConflict ? `${status.conflicts.length} conflict${status.conflicts.length === 1 ? '' : 's'}` : status?.enabled ? 'Enabled' : 'Disabled'}
-                      </em>
+            <div className="cloud-redirect-panel">
+              <header className="cr-header">
+                <div className="cr-header-title">
+                  <FolderSync size={20} />
+                  <h2>Native Cloud Save</h2>
+                </div>
+              </header>
+              <div className="cr-body">
+                <div className="cr-form-group">
+                  <label>Google Drive Authentication</label>
+                  <div className="cr-auth-card">
+                    <div className="cr-auth-status">
+                      <strong>Authentication Status</strong>
+                      <span>{nativeGoogleConnected ? 'Connected to Google Drive.' : 'Not connected.'}</span>
+                    </div>
+                    {nativeGoogleConnected
+                      ? <ShieldCheck size={24} className="cr-auth-icon cr-auth-ok" />
+                      : <ShieldX size={24} className="cr-auth-icon cr-auth-none" />}
+                  </div>
+                </div>
+
+                <div className="cr-actions" style={{ marginTop: '20px', marginBottom: '30px' }}>
+                  {nativeGoogleConnected ? (
+                    <button
+                      className="cr-btn secondary cr-btn-with-icon"
+                      onClick={handleNativeDisconnectGoogle}
+                      disabled={nativeAuthBusy}
+                    >
+                      <CloudOff size={16} />
+                      Sign Out
                     </button>
-                  )
-                })}
+                  ) : (
+                    <button
+                      className="cr-btn primary cr-btn-with-icon"
+                      onClick={handleNativeConnectGoogle}
+                      disabled={nativeAuthBusy}
+                    >
+                      <Cloud size={16} />
+                      Sign in with Google Drive
+                    </button>
+                  )}
+                </div>
+
+                <div className="cr-form-group">
+                  <label>Installed Games</label>
+                  {installed.length === 0 ? (
+                    <div className="cloud-overview-empty" style={{ marginTop: '10px' }}>
+                      <CloudOff size={28} />
+                      <strong>No installed games</strong>
+                      <span>Install games from the Library to manage their individual cloud saves.</span>
+                    </div>
+                  ) : (
+                    <div className="cloud-overview-list" style={{ marginTop: '10px' }}>
+                      {installed.map((game) => {
+                        const status = statuses[game.id]
+                        const hasConflict = Boolean(status?.conflicts.length)
+                        return (
+                          <button type="button" key={game.id} onClick={() => onOpenGame(game.id)}>
+                            {assets[game.gridAssetId] ? <img src={assets[game.gridAssetId]} alt="" /> : <div />}
+                            <span>
+                              <strong>{game.title}</strong>
+                              <small>{status?.lastMessage || (status?.enabled ? 'Cloud save ready' : 'Cloud save is disabled')}</small>
+                            </span>
+                            <em className={hasConflict ? 'is-conflict' : status?.enabled ? 'is-ready' : ''}>
+                              {hasConflict ? <TriangleAlert size={15} /> : <FolderSync size={15} />}
+                              {hasConflict ? `${status.conflicts.length} conflict${status.conflicts.length === 1 ? '' : 's'}` : status?.enabled ? 'Enabled' : 'Disabled'}
+                            </em>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
-            )
+            </div>
           )}
         </>
       )}

@@ -6,6 +6,7 @@ export const enUS = {
     updates: 'Updates',
     downloads: 'Downloads',
     cloudSaves: 'Cloud Saves',
+    translations: 'Translations',
     cache: 'Cache',
     settings: 'Settings',
   },

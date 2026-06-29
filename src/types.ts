@@ -503,6 +503,7 @@ export type TabId =
   | 'Updates'
   | 'Downloads'
   | 'Cloud Saves'
+  | 'Translations'
   | 'Cache'
   | 'Settings'
 

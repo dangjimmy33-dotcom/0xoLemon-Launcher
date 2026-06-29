@@ -18,6 +18,7 @@ pub mod secret_store;
 pub mod security;
 pub mod steam_integration;
 pub mod storage;
+pub mod translations;
 pub mod updater;
 
 use std::path::PathBuf;
@@ -326,6 +327,33 @@ fn restore_cloud_save_snapshot(
 ) -> Result<cloud_save::CloudSaveStatus, String> {
     discord_auth::require_authorized_session()?;
     cloud_save::restore_snapshot(&app, &game_id, &snapshot_id)
+}
+
+#[tauri::command]
+async fn global_connect_google_drive(
+    app: AppHandle,
+) -> Result<(), String> {
+    discord_auth::require_authorized_session()?;
+    tauri::async_runtime::spawn_blocking(move || cloud_save::global_connect_google_drive(&app))
+        .await
+        .map_err(|error| error.to_string())?
+}
+
+#[tauri::command]
+async fn global_disconnect_google_drive(
+    app: AppHandle,
+) -> Result<(), String> {
+    discord_auth::require_authorized_session()?;
+    tauri::async_runtime::spawn_blocking(move || cloud_save::global_disconnect_google_drive(&app))
+        .await
+        .map_err(|error| error.to_string())?
+}
+
+#[tauri::command]
+async fn global_is_google_drive_connected(
+    app: AppHandle,
+) -> Result<bool, String> {
+    Ok(cloud_save::global_is_google_drive_connected(&app))
 }
 
 #[tauri::command]
@@ -689,6 +717,9 @@ pub fn run() {
             restore_cloud_save_snapshot,
             connect_google_drive,
             disconnect_google_drive,
+            global_connect_google_drive,
+            global_disconnect_google_drive,
+            global_is_google_drive_connected,
             backup_save_game_to_google_drive,
             restore_missing_save_files,
             plan_install_update,
@@ -707,6 +738,9 @@ pub fn run() {
             verify_install_integrity,
             uninstall_game,
             start_update_job,
+            translations::get_available_translations,
+            translations::install_translation,
+            translations::uninstall_translation,
             start_install_job,
             start_repair_job,
             pause_job,
@@ -729,7 +763,8 @@ pub fn run() {
             cloud_redirect::cloud_redirect_get_status,
             cloud_redirect::cloud_redirect_run_stfixer,
             cloud_redirect::cloud_redirect_get_provider_config,
-            cloud_redirect::cloud_redirect_save_provider_config
+            cloud_redirect::cloud_redirect_save_provider_config,
+            cloud_redirect::cloud_redirect_connect_google,
         ])
         .setup(|app| {
             asset_cache::perform_ttl_cleanup(app.handle());

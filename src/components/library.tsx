@@ -104,12 +104,10 @@ function GameDetailLoadingView({
   game,
   assets,
   onBack,
-  viewMode,
 }: {
   game: GameSummary
   assets: Record<string, string>
   onBack: () => void
-  viewMode: 'store' | 'library'
 }) {
   const hero = assetUrlForId(game.heroAssetId, assets)
   const icon = assetUrlForId(game.iconAssetId, assets) || assetUrlForId(game.gridAssetId, assets)
@@ -117,8 +115,8 @@ function GameDetailLoadingView({
   return (
     <section className="game-detail-loading-view" aria-busy="true" aria-label={`Opening ${game.title}`}>
       <button className="back-to-library" type="button" onClick={onBack}>
-        {viewMode === 'store' ? <ShoppingBag size={16} /> : <Library size={16} />}
-        {viewMode === 'store' ? 'Store' : 'Library'}
+        <ChevronLeft size={16} />
+        Back
       </button>
       <div className="detail-loading-layout" aria-hidden="true">
         <div className="detail-loading-main">
@@ -511,7 +509,7 @@ export function StoreLibraryView({
   }
 
   if (!detail) {
-    return <GameDetailLoadingView game={selectedGame} assets={assets} viewMode={viewMode} onBack={() => onSelectGame(null)} />
+    return <GameDetailLoadingView game={selectedGame} assets={assets} onBack={() => onSelectGame(null)} />
   }
 
   const hero = assetUrlForId(selectedGame.heroAssetId, assets) || firstMediaUrl(detail, assets)
@@ -624,8 +622,8 @@ export function StoreLibraryView({
 
       <section className="game-detail-main">
         <button className="back-to-library" type="button" onClick={() => onSelectGame(null)}>
-          {viewMode === 'store' ? <ShoppingBag size={16} /> : <Library size={16} />}
-          {viewMode === 'store' ? 'Store' : 'Library'}
+          <ChevronLeft size={16} />
+          Back
         </button>
         <div className="detail-hero">
           {hero ? <img src={hero} alt="" loading="eager" /> : <div className="detail-placeholder"><ImageIcon size={40} /></div>}

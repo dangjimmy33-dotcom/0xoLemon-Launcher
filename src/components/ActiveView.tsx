@@ -1,11 +1,12 @@
 import { Database } from 'lucide-react'
 import type { CloudSaveStatus, DiscordAuthUser, GameCatalog, GameDetail, GameInstallState, GameSummary, GameVersionInfo, JobJournal, JobLog, PhaseProgress, Snapshot, TabId, VerifyUiStatus } from '../types'
-import { rollbackVersionFor } from '../lib/gameMeta'
+import { rollbackVersionFor, assetUrlForId } from '../lib/gameMeta'
 import { TabEmptyState, ScopedTabEmptyState } from './layout'
 import { StoreLibraryView } from './library'
 import { InstallBar } from './install'
 import { DownloadQueuePanel, JobCenter, JobLogPanel } from './downloads'
 import { CachePanel, RollbackPanel, InstallSummaryPanel, ChangedFiles } from './panels'
+import { TranslationsView } from './TranslationsView'
 
 export function ActiveView({
   activeTab,
@@ -182,6 +183,33 @@ export function ActiveView({
     )
   }
 
+  if (activeTab === 'Translations') {
+    if (!hasSelectedDetail) {
+      return (
+        <TabEmptyState
+          activeTab={activeTab}
+          catalog={catalog}
+          onSelectGame={onSelectGame}
+          assets={assets}
+          onRequestAsset={onRequestAsset}
+        />
+      )
+    }
+
+    const activeGame = selectedGame || catalog.games.find(g => g.id === selectedGameId)
+    if (activeGame && activeGame.heroAssetId && !assets[activeGame.heroAssetId]) {
+      onRequestAsset(activeGame, activeGame.heroAssetId)
+    }
+
+    return <TranslationsView 
+      gameId={selectedGameId ?? undefined} 
+      gameTitle={activeGame?.title} 
+      gameBanner={assetUrlForId(activeGame?.heroAssetId, assets)}
+      onVerify={onVerify}
+      onBack={() => onSelectGame(null)}
+    />
+  }
+
   if (activeTab === 'Cache') {
     return (
       <section className="single-view cache-tab-view">
@@ -219,6 +247,7 @@ export function ActiveView({
           catalog={catalog}
           onSelectGame={onSelectGame}
           assets={assets}
+          onRequestAsset={onRequestAsset}
         />
       )
     }

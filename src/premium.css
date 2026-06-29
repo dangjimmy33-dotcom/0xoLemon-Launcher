@@ -1,4 +1,4 @@
-﻿:root {
+:root {
   --premium-bg: #070a0f;
   --premium-surface: rgba(17, 22, 29, 0.86);
   --premium-surface-strong: rgba(22, 28, 36, 0.96);
@@ -1513,6 +1513,21 @@
   font-size: 20px;
   color: var(--text-strong, #f3f4f2);
   font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cloud-mode-info {
+  color: var(--muted);
+  cursor: help;
+  opacity: 0.6;
+  transition: opacity 0.2s, color 0.2s;
+}
+
+.cloud-mode-info:hover {
+  opacity: 1;
+  color: var(--text-strong);
 }
 
 .cloud-mode-card p {
