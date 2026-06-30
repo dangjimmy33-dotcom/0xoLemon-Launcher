@@ -8,7 +8,37 @@ if (Test-Path Env:\GITHUB_TOKEN) {
     Write-Host "Removed GITHUB_TOKEN from current session." -ForegroundColor Yellow
 }
 
-Write-Host "`n=== STEP 2: BUILD TAURI APP ===" -ForegroundColor Cyan
+Write-Host "`n=== STEP 2: COMMIT CURRENT CHANGES ===" -ForegroundColor Cyan
+git add .
+$hasChanges = git status --porcelain
+if ($hasChanges) {
+    git commit -m $CommitMessage
+    Write-Host "Committed changes." -ForegroundColor Green
+} else {
+    Write-Host "No changes to commit." -ForegroundColor Yellow
+}
+
+Write-Host "`n=== STEP 3: BUMP VERSION ===" -ForegroundColor Cyan
+# npm version patch: bumps package.json, commits, creates local tag
+$newVersion = npm version patch --no-git-tag-version
+Write-Host "Bumped version to $newVersion" -ForegroundColor Yellow
+
+# Sync version to tauri.conf.json
+$tauriConf = Get-Content "src-tauri\tauri.conf.json" | ConvertFrom-Json
+$tauriConf.version = $newVersion.Replace("v", "")
+$tauriJson = $tauriConf | ConvertTo-Json -Depth 20
+[System.IO.File]::WriteAllText("$PWD\src-tauri\tauri.conf.json", $tauriJson, [System.Text.UTF8Encoding]::new($false))
+
+# Commit version bump (package.json + tauri.conf.json together)
+git add package.json package-lock.json src-tauri\tauri.conf.json
+git commit -m "chore: bump version to $newVersion"
+Write-Host "Version bump committed." -ForegroundColor Green
+
+# Create local tag pointing to this commit
+git tag -f $newVersion
+Write-Host "Tagged $newVersion locally." -ForegroundColor Green
+
+Write-Host "`n=== STEP 4: BUILD TAURI APP (with new version) ===" -ForegroundColor Cyan
 $env:TAURI_SIGNING_PRIVATE_KEY = Get-Content -Raw "C:\Users\conte\.tauri\0xolemon.key"
 $env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD = "Thanh@12345"
 
@@ -20,9 +50,8 @@ if ($LASTEXITCODE -ne 0) {
 }
 Write-Host "Build successful!" -ForegroundColor Green
 
-Write-Host "`n=== STEP 3: PUSH TO GITHUB ===" -ForegroundColor Cyan
-git add .
-git commit -m $CommitMessage
+Write-Host "`n=== STEP 5: PUSH BRANCH + TAG TO GITHUB ===" -ForegroundColor Cyan
+# Push the branch (includes all commits up to and including the version bump)
 git push
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Error: GitHub push failed!" -ForegroundColor Red
@@ -30,23 +59,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 Write-Host "Push branch successful!" -ForegroundColor Green
 
-Write-Host "`n=== STEP 4: CREATE RELEASE TAG ===" -ForegroundColor Cyan
-# Bump version in package.json and create a git tag
-$newVersion = npm version patch
-Write-Host "Bumped version to $newVersion" -ForegroundColor Yellow
-
-# Need to update tauri.conf.json manually since npm version doesn't touch it automatically
-$tauriConf = Get-Content "src-tauri\tauri.conf.json" | ConvertFrom-Json
-$tauriConf.version = $newVersion.Replace("v", "")
-$tauriJson = $tauriConf | ConvertTo-Json -Depth 20
-[System.IO.File]::WriteAllText("$PWD\src-tauri\tauri.conf.json", $tauriJson, [System.Text.UTF8Encoding]::new($false))
-
-
-git add src-tauri\tauri.conf.json
-git commit --amend --no-edit
-
-# Force update the tag to the new commit
-git tag -f $newVersion
+# Push the version tag — this triggers GitHub Actions to build & publish the release
 git push origin $newVersion
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Error: Push tag failed!" -ForegroundColor Red
@@ -55,5 +68,11 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host "Push tag successful!" -ForegroundColor Green
 
 Write-Host "`n=== COMPLETE ===" -ForegroundColor Green
-Write-Host "The new build ($newVersion) will be automatically processed by GitHub Actions for OTA updates!" -ForegroundColor Yellow
+Write-Host "GitHub Actions will now build and publish the signed release for $newVersion" -ForegroundColor Yellow
+Write-Host ""
+Write-Host "NOTE: Make sure the following GitHub secrets are set in:" -ForegroundColor Cyan
+Write-Host "  https://github.com/dangjimmy33-dotcom/0xoLemon-Launcher/settings/secrets/actions" -ForegroundColor Cyan
+Write-Host "  - TAURI_SIGNING_PRIVATE_KEY  (content of C:\Users\conte\.tauri\0xolemon.key)" -ForegroundColor White
+Write-Host "  - TAURI_SIGNING_PRIVATE_KEY_PASSWORD  (your key password)" -ForegroundColor White
+Write-Host "  - HF_REPOS_JSON  (your HuggingFace repos config)" -ForegroundColor White
 pause
