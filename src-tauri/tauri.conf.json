@@ -47,7 +47,7 @@
     "bundle":  {
                    "active":  true,
                    "targets":  "all",
-                   "createUpdaterArtifacts":  false,
+                   "createUpdaterArtifacts":  true,
                    "resources":  [
 
                                  ],
