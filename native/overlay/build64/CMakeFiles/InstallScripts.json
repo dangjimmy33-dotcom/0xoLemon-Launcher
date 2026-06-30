@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"E:/007Launcher/native/overlay/build64/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

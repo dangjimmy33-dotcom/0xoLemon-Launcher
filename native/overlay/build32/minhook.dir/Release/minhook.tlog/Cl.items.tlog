@@ -1,0 +1,5 @@
+E:\007Launcher\native\overlay\vendor\minhook\src\buffer.c;E:\007Launcher\native\overlay\build32\minhook.dir\Release\buffer.obj
+E:\007Launcher\native\overlay\vendor\minhook\src\hook.c;E:\007Launcher\native\overlay\build32\minhook.dir\Release\hook.obj
+E:\007Launcher\native\overlay\vendor\minhook\src\trampoline.c;E:\007Launcher\native\overlay\build32\minhook.dir\Release\trampoline.obj
+E:\007Launcher\native\overlay\vendor\minhook\src\hde\hde32.c;E:\007Launcher\native\overlay\build32\minhook.dir\Release\hde32.obj
+E:\007Launcher\native\overlay\vendor\minhook\src\hde\hde64.c;E:\007Launcher\native\overlay\build32\minhook.dir\Release\hde64.obj

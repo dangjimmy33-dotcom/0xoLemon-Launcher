@@ -83,7 +83,7 @@ pub(super) fn client_configured() -> bool {
 }
 
 pub(super) fn connected(app: &AppHandle) -> bool {
-    read_stored_auth(app).is_ok_and(|stored| stored.client_id == client_id())
+    read_stored_auth(app).is_ok()
 }
 
 pub(super) fn disconnect(app: &AppHandle) -> Result<(), String> {
@@ -603,12 +603,9 @@ fn write_refresh_token(app: &AppHandle, token: &str) -> Result<(), String> {
 
 fn read_refresh_token(app: &AppHandle) -> Result<String, String> {
     let stored = read_stored_auth(app)?;
-    if stored.client_id != client_id() {
-        return Err(
-            "Google Drive authorization changed. Sign in again to reconnect this launcher."
-                .to_string(),
-        );
-    }
+    // We intentionally don't strictly enforce client_id matching here
+    // to prevent disconnecting users if the ENV var is temporarily unavailable.
+    // If the token is invalid, Google API will reject it anyway.
     let encrypted = STANDARD
         .decode(stored.encrypted_refresh_token)
         .map_err(|error| error.to_string())?;

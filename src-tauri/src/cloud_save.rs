@@ -198,9 +198,13 @@ pub fn set_config(
         .lock()
         .map_err(|_| "cloud save state lock poisoned".to_string())?;
     let mut state = load_state_unlocked(app)?;
+    seed_metadata_defaults(app, game_id, &mut state);
     let record = state.games.entry(game_id.to_string()).or_default();
+    let normalized_roots = normalize_roots(save_roots);
     record.enabled = enabled;
-    record.save_roots = normalize_roots(save_roots);
+    if !normalized_roots.is_empty() || record.save_roots.is_empty() {
+        record.save_roots = normalized_roots;
+    }
     record.include = normalize_patterns(include);
     record.exclude = normalize_patterns(exclude);
     record.last_message = if enabled {

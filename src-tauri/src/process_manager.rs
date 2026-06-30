@@ -130,4 +130,34 @@ impl ProcessManager {
 
         Ok(pid)
     }
+    pub fn kill_game(&self, game_id: &str) -> Result<(), String> {
+        let pid = {
+            let running = self
+                .running
+                .lock()
+                .map_err(|_| "process manager lock poisoned".to_string())?;
+            running.get(game_id).map(|info| info.pid)
+        };
+
+        if let Some(pid) = pid {
+            let mut command = Command::new("taskkill");
+            command.args(["/F", "/T", "/PID", &pid.to_string()]);
+            #[cfg(target_os = "windows")]
+            {
+                use std::os::windows::process::CommandExt;
+                const CREATE_NO_WINDOW: u32 = 0x08000000;
+                command.creation_flags(CREATE_NO_WINDOW);
+            }
+            let status = command
+                .status()
+                .map_err(|e| format!("Failed to execute taskkill: {}", e))?;
+
+            if !status.success() {
+                return Err(format!("taskkill failed with status: {}", status));
+            }
+            Ok(())
+        } else {
+            Err(format!("Game {} is not running", game_id))
+        }
+    }
 }

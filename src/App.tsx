@@ -69,6 +69,7 @@ import {
   LaunchSplash,
   IntroScreen,
   NotificationToasts,
+  NvidiaToast,
   Onboarding,
   OperationHero,
   SettingsView,
@@ -190,6 +191,8 @@ export default function App() {
   const [showDrivePicker, setShowDrivePicker] = useState(false)
   const [showUninstallConfirm, setShowUninstallConfirm] = useState(false)
   const [playingGames, setPlayingGames] = useState<Record<string, boolean>>({})
+  const [showNvidiaToast, setShowNvidiaToast] = useState(false)
+  const nvidiaToastTimersRef = useRef<number[]>([])
   const [showSpacewarPrompt, setShowSpacewarPrompt] = useState(false)
   const [spacewarDownloading, setSpacewarDownloading] = useState(false)
   const [showSteamRecommendation, setShowSteamRecommendation] = useState(false)
@@ -254,6 +257,8 @@ export default function App() {
   useEffect(() => {
     playingGamesRef.current = playingGames
   }, [playingGames])
+
+  // game-started / game-exited merged into launcher://game-started/launcher://game-exited below
 
   useEffect(() => {
     if (!import.meta.env.DEV || isTauriRuntime()) return
@@ -582,14 +587,38 @@ export default function App() {
     let achievementDispose: (() => void) | undefined
     let errorDispose: (() => void) | undefined
 
+    const clearNvidiaToastTimers = () => {
+      for (const timer of nvidiaToastTimersRef.current) {
+        window.clearTimeout(timer)
+      }
+      nvidiaToastTimersRef.current = []
+    }
+
+    const scheduleNvidiaToast = () => {
+      clearNvidiaToastTimers()
+      const showTimer = window.setTimeout(() => {
+        setShowNvidiaToast(true)
+        nvidiaToastTimersRef.current = nvidiaToastTimersRef.current.filter((timer) => timer !== showTimer)
+        const hideTimer = window.setTimeout(() => {
+          setShowNvidiaToast(false)
+          nvidiaToastTimersRef.current = nvidiaToastTimersRef.current.filter((timer) => timer !== hideTimer)
+        }, 8000)
+        nvidiaToastTimersRef.current.push(hideTimer)
+      }, 5000)
+      nvidiaToastTimersRef.current.push(showTimer)
+    }
+
     listen<{ gameId: string }>('launcher://game-started', (event) => {
       setPlayingGames((current) => ({ ...current, [event.payload.gameId]: true }))
       void refreshRuntimeStates()
+      scheduleNvidiaToast()
     }).then((dispose) => {
       startedDispose = dispose
     })
     listen<{ gameId: string; exitCode: number | null; sessionSeconds: number }>('launcher://game-exited', (event) => {
       setPlayingGames((current) => ({ ...current, [event.payload.gameId]: false }))
+      clearNvidiaToastTimers()
+      setShowNvidiaToast(false)
       void refreshRuntimeStates()
     }).then((dispose) => {
       exitedDispose = dispose
@@ -622,6 +651,7 @@ export default function App() {
     })
 
     return () => {
+      clearNvidiaToastTimers()
       startedDispose?.()
       exitedDispose?.()
       achievementDispose?.()
@@ -676,6 +706,15 @@ export default function App() {
     }
     const delay = urgent ? 0 : Math.min(1200, assetDelaySlotRef.current++ * 90)
     window.setTimeout(async () => {
+      // If assetId is already a remote URL (e.g. from assets_override), use it directly
+      if (assetId.startsWith('http://') || assetId.startsWith('https://')) {
+        setAssetUrls((current) => {
+          if (current[assetId]) return current
+          return { ...current, [assetId]: assetId }
+        })
+        return
+      }
+
       try {
         const blob = await invoke<AssetBlob>('get_game_asset', { gameId: game.id, assetId })
         const url = `data:${blob.mimeType};base64,${blob.dataBase64}`
@@ -684,7 +723,17 @@ export default function App() {
           return { ...current, [assetId]: url }
         })
       } catch {
-        // Ignore individual image failures; placeholders stay visible.
+        // Fallback: if local asset fails (or doesn't exist), try SteamGridDB via remoteAssets.ts
+        import('./lib/remoteAssets').then(({ fetchRemoteAssetUrl }) => {
+          fetchRemoteAssetUrl(assetId, game).then((remoteUrl) => {
+            if (remoteUrl) {
+              setAssetUrls((current) => {
+                if (current[assetId]) return current
+                return { ...current, [assetId]: remoteUrl }
+              })
+            }
+          })
+        })
       }
     }, delay)
   }, [])
@@ -1471,7 +1520,7 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    if (activeTab !== 'Library' || !selectedGame || !selectedInstalled) {
+    if ((activeTab !== 'Library' && activeTab !== 'Store') || !selectedGame || !selectedInstalled) {
       queueMicrotask(() => {
         setCloudSaveStatus(null)
         setCloudLaunchBlocked(false)
@@ -2242,7 +2291,8 @@ export default function App() {
 
   function openHomeGame(gameId: string) {
     setSelectedGameId(gameId)
-    setActiveTab('Library')
+    const isInstalled = installStates[gameId] && installStates[gameId].currentVersion !== 'not installed' && installStates[gameId].currentVersion !== 'unknown'
+    setActiveTab(isInstalled ? 'Library' : 'Store')
   }
 
   function playHomeGame(gameId: string) {
@@ -2360,9 +2410,6 @@ export default function App() {
       setScanStatus(`${dependencyText} ${selectedGame.title}${optionText}`)
 
       setPlayingGames((prev) => ({ ...prev, [selectedGame.id]: true }))
-      setTimeout(() => {
-        setPlayingGames((prev) => ({ ...prev, [selectedGame.id]: false }))
-      }, 15000)
 
       const remainingMs = Math.max(0, 4200 - (performance.now() - splashStartedAt))
       window.setTimeout(() => setLaunchSplash(null), remainingMs)
@@ -2388,6 +2435,16 @@ export default function App() {
     }
     setCloudLaunchBlocked(false)
     void doLaunchGame(pending.optionId, pending.optionTitle, true)
+  }
+
+  async function stopSelectedGame() {
+    if (!selectedGame) return
+    try {
+      await invoke('kill_game', { gameId: selectedGame.id })
+      setPlayingGames((prev) => ({ ...prev, [selectedGame.id]: false }))
+    } catch (error) {
+      setScanStatus(String(error))
+    }
   }
 
   async function verifySelectedGame() {
@@ -2753,6 +2810,7 @@ export default function App() {
             updateSize={effectiveDownloadSize}
             onUpdate={openVersionOptions}
             onPlay={playSelectedGame}
+            onStop={stopSelectedGame}
             isJobRunning={isRunning}
             isGameRunning={playingGames[selectedGame.id] || false}
             canUpdate={canUpdate}
@@ -2861,6 +2919,7 @@ export default function App() {
           onScan={() => scanFolder()}
           onPrimaryAction={openVersionOptions}
           onPlay={playSelectedGame}
+          onStop={stopSelectedGame}
           onVerify={verifySelectedGame}
           onUninstall={uninstallSelectedGame}
           job={activeJob}
@@ -2947,6 +3006,7 @@ export default function App() {
           />
         ) : null}
         {launchSplash ? <LaunchSplash splash={launchSplash} /> : null}
+        {showNvidiaToast && <NvidiaToast onDismiss={() => setShowNvidiaToast(false)} />}
 
         {showUninstallConfirm && selectedGame ? (
           <div className="dialog-backdrop" role="presentation">

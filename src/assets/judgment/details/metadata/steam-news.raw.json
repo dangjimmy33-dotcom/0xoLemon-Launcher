@@ -1,0 +1,85 @@
+﻿{
+    "appnews":  {
+                    "appid":  2058180,
+                    "newsitems":  [
+                                      {
+                                          "gid":  "1803527891550852",
+                                          "title":  "Save Up to 75% on Ryu Ga Gotoku Titles During the SEGA Summer Sale",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1803527891550852",
+                                          "is_external_url":  true,
+                                          "author":  "SOASonali",
+                                          "contents":  "[p][img src=\"{STEAM_CLAN_IMAGE}/45209632/4315982eaa651db5faf28a3bb856ed87b63293c0.png\"][/img][/p][p][/p][h1][b]GET UP TO 75% OFF[/b][/h1][p]Check out the limited-time deals before they’re gone! Save on Ryu Ga Gotoku games including Like a Dragon: Pirate Yakuza in Hawaii, Like a Dragon: Infinite Wealth, and more from now until July 10.[/p][p][/p][p][url=\"https://store.steampowered.com/publisher/Sega/sale/SEGASummerSale2025\" style=\"button\" buttoncolor=\"#462eff\"]Explore all the discounts here![/url][/p][p][/p][h1][b]SIGN UP FOR EMAILS[/b][/h1][p]Join the community and get the latest updates from Ryu Ga Gotoku straight to your inbox![/p][p]\n[url=\"https://www.sega.com/signup\" style=\"button\" buttoncolor=\"#462eff\"]Sign up here[/url][b]\n[/b][/p][p]Keep an eye on our social channels for more[i] [/i]content![/p][p]-The Ryu Ga Gotoku Studio Team[/p][p][/p][p][url=\"https://x.com/RGGStudio\" style=\"button\"]Twitter/X[/url][/p][p][url=\"https://www.tiktok.com/@rggstudiowest\" style=\"button\"]TikTok[/url][/p][p][url=\"https://www.instagram.com/rggstudiowest/\" style=\"button\"]Instagram[/url][/p][p][url=\"https://www.facebook.com/RGGStudioWest/\" style=\"button\"]Facebook[/url][/p]",
+                                          "feedlabel":  "Community Announcements",
+                                          "date":  1751049878,
+                                          "feedname":  "steam_community_announcements",
+                                          "feed_type":  1,
+                                          "appid":  2058180
+                                      },
+                                      {
+                                          "gid":  "6839319551979795972",
+                                          "title":  "Judgment Version 1.12",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/6839319551979795972",
+                                          "is_external_url":  true,
+                                          "author":  "ATLUS West",
+                                          "contents":  "Hello Judgment fans!\n\nWe\u0027ve got some several fixes with this patch, please take a look at our patch notes. Please continue to post any issues you encounter here and thank you for playing!\n\nChanges: [list]\n[*] Updated to Intel XeSS 1.1 \n[*] Addresses an issue with first boot presets not being applied on AMD Radeon RX 7000 series cards \n[*] Addressed an issue with graphics drawing incorrectly on Intel Arc machines[/list]\n\n",
+                                          "feedlabel":  "Community Announcements",
+                                          "date":  1680131555,
+                                          "feedname":  "steam_community_announcements",
+                                          "feed_type":  1,
+                                          "appid":  2058180,
+                                          "tags":  [
+                                                       "patchnotes"
+                                                   ]
+                                      },
+                                      {
+                                          "gid":  "5035622109506415161",
+                                          "title":  "Minimum Requirements Update (Windows 10 Users)",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/5035622109506415161",
+                                          "is_external_url":  true,
+                                          "author":  "[SEGA] David",
+                                          "contents":  "Hello Judgment fans,\n\nWe’ve recently updated the minimum requirements for this title with additional information for Windows 10 users.\n\nThe following versions of Windows 10 are now required in order to play: \n\n• Judgment - Windows 10 1703 (OS Build 15063) or Later \n\n",
+                                          "feedlabel":  "Community Announcements",
+                                          "date":  1674670195,
+                                          "feedname":  "steam_community_announcements",
+                                          "feed_type":  1,
+                                          "appid":  2058180,
+                                          "tags":  [
+                                                       "patchnotes"
+                                                   ]
+                                      },
+                                      {
+                                          "gid":  "5623338145767611395",
+                                          "title":  "New Graphics Options and Bug Fixes!",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/5623338145767611395",
+                                          "is_external_url":  true,
+                                          "author":  "SEGA_Bryant",
+                                          "contents":  "Hello RGG fans! \n\nWe\u0027ve got updates and several fixes with this patch, please see our patch notes below.  Please continue to post any issues you encounter here. Thank you for playing!  \n\n[b]DLSS support is now fully supported for Judgment! \n[/b]\n\t• NVIDIA DLSS , NVIDIA DLSS Sharpness are now available under Graphic Settings \u003e Detailed Settings \n\t• NVIDIA DLAA been added under Graphic Settings \u003e Detailed Settings\n\nThe following settings have been changed for first boot on SteamDeck\n\t• FSR is now off and FSR2.1 is now active \n\t• FPS is now 60 \n\n[b]Other fixes:\n[/b]When playing darts outside of a 16:9 aspect ratio, the mini-screen in the bottom left no longer changes unexpectedly. \n",
+                                          "feedlabel":  "Community Announcements",
+                                          "date":  1671509740,
+                                          "feedname":  "steam_community_announcements",
+                                          "feed_type":  1,
+                                          "appid":  2058180,
+                                          "tags":  [
+                                                       "patchnotes"
+                                                   ]
+                                      },
+                                      {
+                                          "gid":  "5623338145767485159",
+                                          "title":  "New Graphics Options and Bug Fixes!",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/5623338145767485159",
+                                          "is_external_url":  true,
+                                          "author":  "SEGA_Bryant",
+                                          "contents":  "Hello RGG fans! \n\nWe\u0027ve got updates and several fixes with this patch, please see our patch notes below.  Please continue to post any issues you encounter here. Thank you for playing!  \n\n[b]DLSS support is now fully supported for Judgment! \n[/b]\n\t• NVIDIA DLSS , NVIDIA DLSS Sharpness are now available under Graphic Settings \u003e Detailed Settings \n\t• NVIDIA DLAA been added under Graphic Settings \u003e Detailed Settings\n\nThe following settings have been changed for first boot on SteamDeck\n\t• FSR is now off and FSR2.1 is now active \n\t• FPS is now 60 \n\n[b]Other fixes:\n[/b]When playing darts outside of a 16:9 aspect ratio, the miniscreen in the bottom left changes. \n",
+                                          "feedlabel":  "Community Announcements",
+                                          "date":  1671506741,
+                                          "feedname":  "steam_community_announcements",
+                                          "feed_type":  1,
+                                          "appid":  2058180,
+                                          "tags":  [
+                                                       "patchnotes"
+                                                   ]
+                                      }
+                                  ],
+                    "count":  11
+                }
+}

@@ -38,6 +38,7 @@ export function ActiveView({
   onScan,
   onPrimaryAction,
   onPlay,
+  onStop,
   onVerify,
   onUninstall,
   job,
@@ -99,6 +100,7 @@ export function ActiveView({
   onScan: () => void
   onPrimaryAction: () => void
   onPlay: () => void
+  onStop: () => void
   onVerify: () => void
   onUninstall: () => void
   job: JobJournal
@@ -144,6 +146,10 @@ export function ActiveView({
         selectedGameId={selectedGameId}
         onSelectGame={onSelectGame}
         onRequestAsset={onRequestAsset}
+        onPrimaryAction={onPrimaryAction}
+        onPlay={() => onPlay()}
+        onStop={() => onStop()}
+        onVerify={() => onVerify()}
         detail={detail}
         assets={assets}
         selectedVersion={selectedVersion}
@@ -159,9 +165,6 @@ export function ActiveView({
         temporarySpace={snapshot.temporarySpace}
         isJobRunning={isJobRunning}
         isGameRunning={isGameRunning}
-        onPrimaryAction={onPrimaryAction}
-        onPlay={onPlay}
-        onVerify={onVerify}
         onUninstall={onUninstall}
         onOpenInstallOptions={onOpenInstallOptions}
         onOpenStore={onOpenStore}

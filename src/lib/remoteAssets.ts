@@ -43,7 +43,7 @@ export async function fetchRemoteAssetUrl(assetId: string, game: GameSummary): P
 
   // Check Firestore override FIRST
   if (globalAssetsOverride[game.id]) {
-    const overrideUrl = globalAssetsOverride[game.id][`${type}Url`]
+    const overrideUrl = globalAssetsOverride[game.id][type]
     if (overrideUrl) return overrideUrl
   }
 
