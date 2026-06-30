@@ -1,0 +1,7 @@
+E:\007Launcher\native\overlay\src\dllmain.cpp;E:\007Launcher\native\overlay\build64\overlay.dir\Release\dllmain.obj
+E:\007Launcher\native\overlay\src\overlay_core.cpp;E:\007Launcher\native\overlay\build64\overlay.dir\Release\overlay_core.obj
+E:\007Launcher\native\overlay\src\hooks\dxgi_hook.cpp;E:\007Launcher\native\overlay\build64\overlay.dir\Release\dxgi_hook.obj
+E:\007Launcher\native\overlay\src\ipc\shared_memory.cpp;E:\007Launcher\native\overlay\build64\overlay.dir\Release\shared_memory.obj
+E:\007Launcher\native\overlay\src\ipc\pipe_client.cpp;E:\007Launcher\native\overlay\build64\overlay.dir\Release\pipe_client.obj
+E:\007Launcher\native\overlay\src\input\input_hook.cpp;E:\007Launcher\native\overlay\build64\overlay.dir\Release\input_hook.obj
+E:\007Launcher\native\overlay\src\renderer\dx11_renderer.cpp;E:\007Launcher\native\overlay\build64\overlay.dir\Release\dx11_renderer.obj

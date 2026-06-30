@@ -853,7 +853,7 @@ pub fn find_code_cave(data: &[u8], sections: &[PeSection], required_size: i64) -
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::pe::PeSection;
+    use crate::cloud_redirect::pe::PeSection;
 
     // Resolve the Core DLL patches against the live SteamTools core DLL.
     #[test]

@@ -84,6 +84,11 @@ struct AdaptiveRangeState {
 }
 
 static ADAPTIVE_RANGE_STATE: OnceLock<Mutex<AdaptiveRangeState>> = OnceLock::new();
+static RUNNING_GAMES: OnceLock<Mutex<std::collections::HashMap<String, u32>>> = OnceLock::new();
+
+fn running_games() -> &'static Mutex<std::collections::HashMap<String, u32>> {
+    RUNNING_GAMES.get_or_init(|| Mutex::new(std::collections::HashMap::new()))
+}
 
 #[derive(Default)]
 pub struct JobControl {
@@ -1360,10 +1365,21 @@ pub fn launch_game(
     let mut launched = launch_option_processes(&source.game_id, install_path, option)?;
     if let Some(mut child) = launched.main_child.take() {
         crate::cloud_save::mark_game_running(&source.game_id, true);
+        let pid = child.id();
+        running_games().lock().unwrap().insert(source.game_id.clone(), pid);
+        let _ = app.emit("launcher://game-started", serde_json::json!({ "gameId": &source.game_id }));
+
         let app_for_exit = app.clone();
         let game_id_for_exit = source.game_id.clone();
         thread::spawn(move || {
-            let _ = child.wait();
+            let exit_status = child.wait();
+            running_games().lock().unwrap().remove(&game_id_for_exit);
+            let exit_code = exit_status.ok().and_then(|s| s.code());
+            let _ = app_for_exit.emit("launcher://game-exited", serde_json::json!({
+                "gameId": &game_id_for_exit,
+                "exitCode": exit_code,
+                "sessionSeconds": 0
+            }));
             crate::cloud_save::sync_after_exit_async(app_for_exit, game_id_for_exit);
         });
     }
@@ -1380,6 +1396,22 @@ pub fn launch_game(
             .map(|path| path.display().to_string())
             .collect(),
     })
+}
+
+pub fn kill_game(game_id: &str) -> Result<(), JobError> {
+    let pid = running_games().lock().unwrap().get(game_id).copied();
+    if let Some(pid) = pid {
+        let mut cmd = hidden_command("taskkill");
+        cmd.args(["/F", "/T", "/PID", &pid.to_string()]);
+        let status = cmd
+            .status()
+            .map_err(|e| JobError::Depot(format!("Failed to taskkill: {}", e)))?;
+        if !status.success() {
+            return Err(JobError::Depot(format!("taskkill failed: {}", status)));
+        }
+        running_games().lock().unwrap().remove(game_id);
+    }
+    Ok(())
 }
 
 // Launch dependency/install/shortcut helpers live in job/dependencies.rs

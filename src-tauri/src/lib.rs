@@ -20,6 +20,7 @@ pub mod steam_integration;
 pub mod storage;
 pub mod translations;
 pub mod updater;
+pub mod overlay_injector;
 
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -504,6 +505,12 @@ fn launch_game(
 }
 
 #[tauri::command]
+fn kill_game(_app: AppHandle, game_id: String) -> Result<(), String> {
+    job::kill_game(&game_id)
+        .map_err(|err| err.to_string())
+}
+
+#[tauri::command]
 fn verify_install_integrity(
     app: AppHandle,
     game_id: String,
@@ -735,6 +742,7 @@ pub fn run() {
             get_game_install_states,
             get_game_launch_config,
             launch_game,
+            kill_game,
             verify_install_integrity,
             uninstall_game,
             start_update_job,
@@ -854,6 +862,11 @@ pub fn run() {
             let job_control = app.state::<LauncherState>().job_control.clone();
             job::start_auto_update_scheduler(app.handle().clone(), job_control);
             cloud_save::start_google_drive_restore_monitor(app.handle().clone());
+            // Initialize overlay window: pass-through mouse events by default so the
+            // transparent overlay window never accidentally blocks game input.
+            if let Some(overlay) = app.get_webview_window("overlay") {
+                let _ = overlay.set_ignore_cursor_events(true);
+            }
             let shortcut_request = parse_shortcut_launch_request();
             // When the main launcher starts, migrate existing desktop shortcuts away
             // from the legacy AppData bootstrap and point them at the game directory.
@@ -906,6 +919,32 @@ pub fn run() {
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(
+            tauri_plugin_global_shortcut::Builder::new()
+                .with_shortcut("Shift+F1")
+                .unwrap()
+                .with_handler(|app, shortcut, event| {
+                    if event.state() == tauri_plugin_global_shortcut::ShortcutState::Pressed {
+                        if shortcut.matches(tauri_plugin_global_shortcut::Modifiers::SHIFT, tauri_plugin_global_shortcut::Code::F1) {
+                            if let Some(window) = app.get_webview_window("overlay") {
+                                if window.is_visible().unwrap_or(false) {
+                                    // Hide overlay: let game receive all mouse input
+                                    let _ = window.set_ignore_cursor_events(true);
+                                    let _ = window.hide();
+                                } else {
+                                    // Show overlay: re-assert topmost so game can't cover it,
+                                    // then enable mouse interaction on the overlay
+                                    let _ = window.set_always_on_top(true);
+                                    let _ = window.set_ignore_cursor_events(false);
+                                    let _ = window.show();
+                                    let _ = window.set_focus();
+                                }
+                            }
+                        }
+                    }
+                })
+                .build(),
+        )
         .run(tauri::generate_context!())
         .expect("failed to run 007 First Light launcher");
 }

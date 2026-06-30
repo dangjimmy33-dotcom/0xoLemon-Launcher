@@ -1,0 +1,346 @@
+/* PS5-Style Immersive Home Layout */
+.ps5-home {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #000;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Background Layer */
+.ps5-hero-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+.ps5-hero-bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  transition: opacity 0.5s ease;
+}
+
+.ps5-gradient-bg {
+  width: 100%;
+  height: 100%;
+  transition: opacity 0.5s ease;
+}
+
+.ps5-vignette {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    linear-gradient(to right, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.3) 40%, rgba(0,0,0,0.05) 70%, transparent 100%),
+    linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.6) 100%);
+  pointer-events: none;
+}
+
+/* Foreground Content */
+.ps5-content-layer {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  padding: 60px;
+  box-sizing: border-box;
+}
+
+/* Top: Game Info */
+.ps5-game-info {
+  margin-top: 40px;
+  max-width: 600px;
+  color: #fff;
+  text-shadow: 0 4px 20px rgba(0,0,0,0.8);
+}
+
+.ps5-overline {
+  font-size: 13px;
+  letter-spacing: 2px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 12px;
+}
+
+.ps5-game-logo {
+  max-width: 400px;
+  max-height: 150px;
+  object-fit: contain;
+  object-position: left center;
+  margin-left: -12px;
+  margin-bottom: 16px;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+}
+
+.ps5-game-title {
+  font-size: 56px;
+  font-weight: 800;
+  margin: 0 0 10px 0;
+  line-height: 1.1;
+  letter-spacing: -1px;
+}
+
+.ps5-game-subtitle {
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0 0 24px 0;
+  font-weight: 400;
+}
+
+.ps5-meta-row {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.ps5-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+}
+
+.ps5-action-row {
+  display: flex;
+  gap: 16px;
+}
+
+.ps5-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 32px;
+  border-radius: 30px;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.ps5-btn.primary {
+  background: #fff;
+  color: #000;
+}
+
+.ps5-btn.primary:hover {
+  transform: scale(1.05);
+  background: #e0e0e0;
+}
+
+.ps5-btn.secondary {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  backdrop-filter: blur(10px);
+}
+
+.ps5-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Bottom: Ribbon & Widgets */
+.ps5-bottom-zone {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.ps5-section-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 16px 0;
+}
+
+/* Ribbon (Dock) */
+.ps5-ribbon-container {
+  width: 100%;
+}
+
+.ps5-ribbon {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 20px;
+  padding-top: 28px;
+  /* KEY FIX: clip-path allows icons to overflow UPWARD (negative top)
+     while still clipping left/right so horizontal scroll works */
+  clip-path: inset(-30px 0px 0px 0px);
+  scrollbar-width: none;
+}
+.ps5-ribbon::-webkit-scrollbar {
+  display: none;
+}
+
+.ps5-ribbon-item {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  min-width: 140px;
+  min-height: 140px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: none;
+  padding: 0;
+  margin: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  background: #0a0a1e;
+  cursor: pointer;
+  opacity: 0.5;
+  transform: scale(1);
+  transform-origin: bottom center;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.ps5-ribbon-item:first-child {
+  transform-origin: bottom left;
+}
+
+.ps5-ribbon-item:hover {
+  opacity: 0.8;
+  transform: scale(1.05) translateY(-4px);
+}
+
+.ps5-ribbon-item.active {
+  opacity: 1;
+  transform: scale(1.15); /* scale from center, no Y-translate to avoid clipping */
+  transform-origin: center center;
+  z-index: 10;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.ps5-ribbon-item img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  border-radius: 0;
+}
+
+.ps5-ribbon-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  font-weight: 800;
+  color: rgba(255,255,255,0.5);
+  text-transform: uppercase;
+}
+
+.ps5-ribbon-glow {
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 10px;
+  background: #fff;
+  border-radius: 50%;
+  filter: blur(8px);
+  pointer-events: none;
+}
+
+/* Widgets */
+.ps5-widgets-row {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+}
+
+.ps5-widget {
+  background: rgba(30, 30, 35, 0.6);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 20px;
+  min-width: 250px;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.ps5-widget:hover {
+  background: rgba(40, 40, 45, 0.8);
+  transform: translateY(-2px);
+}
+
+.ps5-widget-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.ps5-task strong {
+  display: block;
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.ps5-task span {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.ps5-progress-bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  margin-top: 10px;
+  overflow: hidden;
+}
+
+.ps5-progress-fill {
+  height: 100%;
+  background: #fff;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.ps5-empty-library {
+  text-align: center;
+  padding: 40px;
+  background: rgba(0,0,0,0.4);
+  border-radius: 24px;
+  backdrop-filter: blur(10px);
+}
+
+.empty-icon {
+  margin: 0 auto 16px auto;
+  opacity: 0.5;
+}
+
+.ps5-ribbon-progress-ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 3;
+}
+

@@ -1,0 +1,610 @@
+﻿{
+    "appId":  2058180,
+    "title":  "judgment",
+    "steamMetadataCountry":  "us",
+    "steamMetadataLanguage":  "english",
+    "type":  "game",
+    "requiredAge":  "17",
+    "isFree":  false,
+    "shortDescription":  "Fight for the truth and uncover the twisted crime running deep beneath the surface of Tokyo. In this legal thriller , the balance between justice and mercy teeters on the edge.",
+    "detailedDescriptionHtml":  "RGG Studio proudly presents Judgment, an action-adventure detective game that follows twisted crime running deep beneath the surface of Tokyo. Play as Takayuki Yagami, a disgraced defense attorney turned detective, as you claw your way through Kamurocho’s underground crime network and uncover the truth behind a string of grisly murders. In this legal thriller, the balance between justice and mercy teeters on the edge.\u003cbr /\u003e\r\n\u003cbr /\u003e\r\nTake advantage of two unique battle styles to take down adversaries in electrifying encounters. Packed with Hollywood-worthy combat sequences and cinematic twists and turns, this twisted tale will keep your mind racing for answers until the very end.",
+    "aboutTheGameHtml":  "RGG Studio proudly presents Judgment, an action-adventure detective game that follows twisted crime running deep beneath the surface of Tokyo. Play as Takayuki Yagami, a disgraced defense attorney turned detective, as you claw your way through Kamurocho’s underground crime network and uncover the truth behind a string of grisly murders. In this legal thriller, the balance between justice and mercy teeters on the edge.\u003cbr /\u003e\r\n\u003cbr /\u003e\r\nTake advantage of two unique battle styles to take down adversaries in electrifying encounters. Packed with Hollywood-worthy combat sequences and cinematic twists and turns, this twisted tale will keep your mind racing for answers until the very end.",
+    "supportedLanguagesHtml":  "English\u003cstrong\u003e*\u003c/strong\u003e, French, Italian, German, Spanish - Spain, Japanese\u003cstrong\u003e*\u003c/strong\u003e, Korean, Simplified Chinese, Traditional Chinese\u003cbr\u003e\u003cstrong\u003e*\u003c/strong\u003elanguages with full audio support",
+    "pcRequirements":  {
+                           "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003eRequires a 64-bit processor and operating system\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows10 1703 (OS Build 15063) or Later\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e Intel Core i5-3470, 3.2 GHz or AMD Ryzen 3 1200, 3.1 GHz\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 8 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e NVIDIA GeForce GTX 960, 2 GB or AMD Radeon RX 460, 2 GB\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eDirectX:\u003c/strong\u003e Version 12\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 40 GB available space\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eAdditional Notes:\u003c/strong\u003e 1080p Low @ 30 FPS w/ Balanced FSR 1.0, requires a CPU which supports the AVX and SSE4.2 instruction set. Microsoft no longer supports Windows 10 or older versions.\u003c/li\u003e\u003c/ul\u003e",
+                           "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003eRequires a 64-bit processor and operating system\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows10 1703 (OS Build 15063) or Later\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e Intel Core i7-4790, 3.6 GHz or AMD Ryzen 5 1600, 3.2 GHz\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 8 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e NVIDIA GeForce RTX 2060, 6 GB or AMD Radeon RX Vega 56, 8 GB\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eDirectX:\u003c/strong\u003e Version 12\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 60 GB available space\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eAdditional Notes:\u003c/strong\u003e 1080p High @ 60 FPS w/o FSR, requires a CPU which supports the AVX and SSE4.2 instruction set. Microsoft no longer supports Windows 10 or older versions.\u003c/li\u003e\u003c/ul\u003e"
+                       },
+    "macRequirements":  {
+                            "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e",
+                            "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e"
+                        },
+    "linuxRequirements":  {
+                              "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e",
+                              "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e"
+                          },
+    "dlc":  null,
+    "website":  "https://yakuza.sega.com/judgment",
+    "developers":  "RGG Studio",
+    "publishers":  "SEGA",
+    "releaseDate":  {
+                        "coming_soon":  false,
+                        "date":  "Sep 14, 2022"
+                    },
+    "genres":  "Action, Adventure",
+    "categories":  [
+                       "Single-player",
+                       "Steam Achievements",
+                       "Full controller support",
+                       "Steam Trading Cards",
+                       "DualShock Controller Support",
+                       "DualShock Controller Support",
+                       "DualShock Controller Support",
+                       "DualShock Controller Support",
+                       "Steam Cloud",
+                       "Family Sharing"
+                   ],
+    "platforms":  {
+                      "windows":  true,
+                      "mac":  false,
+                      "linux":  false
+                  },
+    "metacritic":  null,
+    "recommendations":  {
+                            "total":  9107
+                        },
+    "reviewsSummary":  null,
+    "newsItems":  [
+                      {
+                          "gid":  "1803527891550852",
+                          "title":  "Save Up to 75% on Ryu Ga Gotoku Titles During the SEGA Summer Sale",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1803527891550852",
+                          "is_external_url":  true,
+                          "author":  "SOASonali",
+                          "contents":  "[p][img src=\"{STEAM_CLAN_IMAGE}/45209632/4315982eaa651db5faf28a3bb856ed87b63293c0.png\"][/img][/p][p][/p][h1][b]GET UP TO 75% OFF[/b][/h1][p]Check out the limited-time deals before they’re gone! Save on Ryu Ga Gotoku games including Like a Dragon: Pirate Yakuza in Hawaii, Like a Dragon: Infinite Wealth, and more from now until July 10.[/p][p][/p][p][url=\"https://store.steampowered.com/publisher/Sega/sale/SEGASummerSale2025\" style=\"button\" buttoncolor=\"#462eff\"]Explore all the discounts here![/url][/p][p][/p][h1][b]SIGN UP FOR EMAILS[/b][/h1][p]Join the community and get the latest updates from Ryu Ga Gotoku straight to your inbox![/p][p]\n[url=\"https://www.sega.com/signup\" style=\"button\" buttoncolor=\"#462eff\"]Sign up here[/url][b]\n[/b][/p][p]Keep an eye on our social channels for more[i] [/i]content![/p][p]-The Ryu Ga Gotoku Studio Team[/p][p][/p][p][url=\"https://x.com/RGGStudio\" style=\"button\"]Twitter/X[/url][/p][p][url=\"https://www.tiktok.com/@rggstudiowest\" style=\"button\"]TikTok[/url][/p][p][url=\"https://www.instagram.com/rggstudiowest/\" style=\"button\"]Instagram[/url][/p][p][url=\"https://www.facebook.com/RGGStudioWest/\" style=\"button\"]Facebook[/url][/p]",
+                          "feedlabel":  "Community Announcements",
+                          "date":  1751049878,
+                          "feedname":  "steam_community_announcements",
+                          "feed_type":  1,
+                          "appid":  2058180
+                      },
+                      {
+                          "gid":  "6839319551979795972",
+                          "title":  "Judgment Version 1.12",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/6839319551979795972",
+                          "is_external_url":  true,
+                          "author":  "ATLUS West",
+                          "contents":  "Hello Judgment fans!\n\nWe\u0027ve got some several fixes with this patch, please take a look at our patch notes. Please continue to post any issues you encounter here and thank you for playing!\n\nChanges: [list]\n[*] Updated to Intel XeSS 1.1 \n[*] Addresses an issue with first boot presets not being applied on AMD Radeon RX 7000 series cards \n[*] Addressed an issue with graphics drawing incorrectly on Intel Arc machines[/list]\n\n",
+                          "feedlabel":  "Community Announcements",
+                          "date":  1680131555,
+                          "feedname":  "steam_community_announcements",
+                          "feed_type":  1,
+                          "appid":  2058180,
+                          "tags":  [
+                                       "patchnotes"
+                                   ]
+                      },
+                      {
+                          "gid":  "5035622109506415161",
+                          "title":  "Minimum Requirements Update (Windows 10 Users)",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/5035622109506415161",
+                          "is_external_url":  true,
+                          "author":  "[SEGA] David",
+                          "contents":  "Hello Judgment fans,\n\nWe’ve recently updated the minimum requirements for this title with additional information for Windows 10 users.\n\nThe following versions of Windows 10 are now required in order to play: \n\n• Judgment - Windows 10 1703 (OS Build 15063) or Later \n\n",
+                          "feedlabel":  "Community Announcements",
+                          "date":  1674670195,
+                          "feedname":  "steam_community_announcements",
+                          "feed_type":  1,
+                          "appid":  2058180,
+                          "tags":  [
+                                       "patchnotes"
+                                   ]
+                      },
+                      {
+                          "gid":  "5623338145767611395",
+                          "title":  "New Graphics Options and Bug Fixes!",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/5623338145767611395",
+                          "is_external_url":  true,
+                          "author":  "SEGA_Bryant",
+                          "contents":  "Hello RGG fans! \n\nWe\u0027ve got updates and several fixes with this patch, please see our patch notes below.  Please continue to post any issues you encounter here. Thank you for playing!  \n\n[b]DLSS support is now fully supported for Judgment! \n[/b]\n\t• NVIDIA DLSS , NVIDIA DLSS Sharpness are now available under Graphic Settings \u003e Detailed Settings \n\t• NVIDIA DLAA been added under Graphic Settings \u003e Detailed Settings\n\nThe following settings have been changed for first boot on SteamDeck\n\t• FSR is now off and FSR2.1 is now active \n\t• FPS is now 60 \n\n[b]Other fixes:\n[/b]When playing darts outside of a 16:9 aspect ratio, the mini-screen in the bottom left no longer changes unexpectedly. \n",
+                          "feedlabel":  "Community Announcements",
+                          "date":  1671509740,
+                          "feedname":  "steam_community_announcements",
+                          "feed_type":  1,
+                          "appid":  2058180,
+                          "tags":  [
+                                       "patchnotes"
+                                   ]
+                      },
+                      {
+                          "gid":  "5623338145767485159",
+                          "title":  "New Graphics Options and Bug Fixes!",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/5623338145767485159",
+                          "is_external_url":  true,
+                          "author":  "SEGA_Bryant",
+                          "contents":  "Hello RGG fans! \n\nWe\u0027ve got updates and several fixes with this patch, please see our patch notes below.  Please continue to post any issues you encounter here. Thank you for playing!  \n\n[b]DLSS support is now fully supported for Judgment! \n[/b]\n\t• NVIDIA DLSS , NVIDIA DLSS Sharpness are now available under Graphic Settings \u003e Detailed Settings \n\t• NVIDIA DLAA been added under Graphic Settings \u003e Detailed Settings\n\nThe following settings have been changed for first boot on SteamDeck\n\t• FSR is now off and FSR2.1 is now active \n\t• FPS is now 60 \n\n[b]Other fixes:\n[/b]When playing darts outside of a 16:9 aspect ratio, the miniscreen in the bottom left changes. \n",
+                          "feedlabel":  "Community Announcements",
+                          "date":  1671506741,
+                          "feedname":  "steam_community_announcements",
+                          "feed_type":  1,
+                          "appid":  2058180,
+                          "tags":  [
+                                       "patchnotes"
+                                   ]
+                      }
+                  ],
+    "achievements":  {
+                         "total":  47,
+                         "items":  [
+                                       {
+                                           "apiName":  "JUDGE_PLATINUM",
+                                           "displayName":  "The Greatest Detective",
+                                           "description":  "Obtain all other achievements.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/e486c1b4c35319f01715e0819e3c64d8c30f2813.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/7e45e8cb9d241bed73e4689a632df981a38d5c93.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_MAIN_STORY_FIRST",
+                                           "displayName":  "The Game is Afoot",
+                                           "description":  "Retrieved the money from the Horseplayer Detective.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/18289ed7340729c218a3ecd43ee49d01b9ef4290.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/a132f256a44a367610fb1553bc0f54ba148fe1db.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_MAIN_STORY_01",
+                                           "displayName":  "Trust Issues",
+                                           "description":  "Completed Chapter 2.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/3bdac4c2c517e01250107538a2747a06c59a74bf.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/978ae6ffb1d7ebea953cc43a547b6f01f2e66edf.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_MAIN_STORY_01_HIDDEN",
+                                           "displayName":  "I\u0027ll Make it Double",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/f231c867d8479bd5fc5fce2243e64278d8120a0f.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/58da0bdcca252d4462ec2d29b63b11d64aafcd89.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_MAIN_STORY_02",
+                                           "displayName":  "Skeletons in the Closet",
+                                           "description":  "Completed Chapter 4.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/88c875b4f3d21a096d050c98c7a38601fa8d335b.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/897c75bb4f1a155fe6fd155df257f52220ef6fb0.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_MAIN_STORY_02_HIDDEN",
+                                           "displayName":  "Way Too Thorough!",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/610e5deba19e19a5811bc3bcfdf81e2ebb98ea13.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/6a0f22fe5afb40907e577c77c5051605e34bff1c.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_MAIN_STORY_03",
+                                           "displayName":  "The Kansai Factor",
+                                           "description":  "Completed Chapter 6.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/a9af8d5c928571f6374b626830acab979a55a318.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/df61363a0b57684e199f399fa1f444c38c1178a0.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_MAIN_STORY_03_HIDDEN",
+                                           "displayName":  "The Art of Conversation",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/33190e100024ee39dfd3c20f7439f610736e3cf9.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/9a7c9a79811298e68b4d2c75d49b4c22e47e3651.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_MAIN_STORY_04",
+                                           "displayName":  "Blowing the Lid Off",
+                                           "description":  "Completed Chapter 8.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/6e21a9ccf50fee97bb984ea6f282896544723a4c.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/885d46163c08e4fd6cad652198a4dff4dc371e6c.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_MAIN_STORY_04_HIDDEN",
+                                           "displayName":  "Professional Password Presenter",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/0e553141a3ea355bd589c8223d1dfe2c6d997714.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/fa017230fa262bcff931f01a38ab93e32ed466f6.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_MAIN_STORY_05",
+                                           "displayName":  "Enemies of My Enemies",
+                                           "description":  "Completed Chapter 10.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/ca1fc5214d7be50f4e74defbe61b6cc20fd925cb.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/c15bbbca1dd46ef13f91bda0726d15ea14d47f71.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_MAIN_STORY_05_HIDDEN",
+                                           "displayName":  "Hung Jury",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/5bd6e2bd8eca1795dfbdc9c598cabf52b26114e3.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/906a486083e99b9657f942b596c32ad5a2f09a27.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_MAIN_STORY_06",
+                                           "displayName":  "Politics of Justice",
+                                           "description":  "Completed Chapter 12.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/6478caf80efdc5d4122830740b1557dc6f1bdf6f.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/b8c39ab1d7bb555f52383d6218400b3c060b92ba.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_MAIN_STORY_06_HIDDEN",
+                                           "displayName":  "The Final Nail",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/b12e6328754654985096cd343fbb4b94717e2f13.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/c21c34b88878adf9602eea87336d8443a73a2e0d.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_CLEAR",
+                                           "displayName":  "Thank You!",
+                                           "description":  "Completed all of the main story.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/0b9fc0af91677d558e6193d343b1a146fde95374.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/b601ee49404b7f904437730ad94c570a216e3f59.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_EXHARD_CLEAR",
+                                           "displayName":  "Detective of Legend",
+                                           "description":  "Completed the game on LEGEND difficulty.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/b87688206ee5ff70203bfac25d60f5b669af9685.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/64757287ebd42b35c8bbaf29aad94e979ccbdd87.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_SIDE_CASE_A",
+                                           "displayName":  "On the Case",
+                                           "description":  "Cleared 10 side cases.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/4d96cef356cf770f5906c4ee8ad43b882dcb3220.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/aa1c3df64448dd212df324046d4724afb0e290bf.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_SIDE_CASE_B",
+                                           "displayName":  "Local Detective",
+                                           "description":  "Cleared 30 side cases.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/0e3301ef238d76efedfc00f729cb9f6df3b275a0.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/5ef21b50c7c39c4c5a757aa7e5feaee7a85b0cea.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_SIDE_CASE_ALL",
+                                           "displayName":  "Got to the Bottom of It",
+                                           "description":  "Cleared all of the side cases.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/fb10983d5ac34b6763101e099e3f09a3d480896e.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/cab908cd08033132b42cf87e84663d5950323fd4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_FREND_A",
+                                           "displayName":  "A Friendly Guy",
+                                           "description":  "Made 10 friends.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/c8366a3c19b5fc4d164d6c157f4104d66bb54340.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/01b90e36400341f0a1b4881d039325cf3cf209d9.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_FREND_B",
+                                           "displayName":  "A Popular Guy",
+                                           "description":  "Made 30 friends.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/2a3c91d9ae25dbc9fbac17e99de8eecb09566a89.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/8462a96b34d2af442b43e6da6da8994aee3a4a76.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_FREND_ALL",
+                                           "displayName":  "A Guy Everybody Knows",
+                                           "description":  "Made 50 friends.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/62b0659fd1545712b5ca59fd982fcb795ddc89cd.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/aac309092dfc154b86813dd506036cf592edbeeb.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_GIRL_FREND_A",
+                                           "displayName":  "Going Steady",
+                                           "description":  "A girl revealed her true feelings.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/4823e2790d77ba46ce290ab13169cfdb61b3dc96.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/523806faefeee453731b4af823b6f36855964780.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_GIRL_FREND_B",
+                                           "displayName":  "Ladies, Please",
+                                           "description":  "Two girls revealed their true feelings.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/0fd8a13ffe3b601ab2b5128e3944b87c962457ef.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/d15412174b7016e2024d7a982e0f5b7716ba74c8.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_GIRL_FREND_C",
+                                           "displayName":  "Now You\u0027re Just Bragging",
+                                           "description":  "Four girls revealed their true feelings.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/102ecbb982d6e7181b589557764551def1105306.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/1963dd779eaffb5bbd0ec891bbaec5f932ebc146.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_SKILL_A",
+                                           "displayName":  "Skill Dabbler",
+                                           "description":  "Obtained 30 skills.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/fa185566008d27bb7ffd1f161770aca31d07885e.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/cf3a26d3009ccf04a8588032578ee5fd2bbc77d5.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_SKILL_B",
+                                           "displayName":  "Skill Pro",
+                                           "description":  "Obtained 60 skills.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/fa185566008d27bb7ffd1f161770aca31d07885e.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/cf3a26d3009ccf04a8588032578ee5fd2bbc77d5.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_SKILL_ALL",
+                                           "displayName":  "Skill Master",
+                                           "description":  "Obtained all skills.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/fa185566008d27bb7ffd1f161770aca31d07885e.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/cf3a26d3009ccf04a8588032578ee5fd2bbc77d5.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_KAMGO_SHOP_A",
+                                           "displayName":  "KamuroGo Shopper",
+                                           "description":  "Completed five stores in KamuroGo\u0027s Shop Missions.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/8001ba6f3bcaf37ea3f2bd27536fb479d64702d8.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/2716625e13a4e56b927822d8e04df164845c6d15.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_KAMGO_SHOP_B",
+                                           "displayName":  "KamuroGo Trendsetter",
+                                           "description":  "Completed 10 stores in KamuroGo\u0027s Shop Missions.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/8001ba6f3bcaf37ea3f2bd27536fb479d64702d8.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/2716625e13a4e56b927822d8e04df164845c6d15.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_KAMGO_SHOP_ALL",
+                                           "displayName":  "KamuroGo Socialite",
+                                           "description":  "Completed all of KamuroGo\u0027s Shop Missions.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/bd8064abc16124950ebf4c4f602d241728050a42.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/b89e2b832c90510d3ae49c1538d89b47b8b57690.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_KAMGO_COMPLETE_A",
+                                           "displayName":  "KamuroGo Tourist",
+                                           "description":  "Completed 10 KamuroGo City Missions.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/8001ba6f3bcaf37ea3f2bd27536fb479d64702d8.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/2716625e13a4e56b927822d8e04df164845c6d15.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_KAMGO_COMPLETE_B",
+                                           "displayName":  "KamuroGo Local",
+                                           "description":  "Completed 30 KamuroGo City Missions.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/8001ba6f3bcaf37ea3f2bd27536fb479d64702d8.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/2716625e13a4e56b927822d8e04df164845c6d15.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_KAMGO_COMPLETE_ALL",
+                                           "displayName":  "KamuroGo Guide",
+                                           "description":  "Completed all KamuroGo City Missions.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/bd8064abc16124950ebf4c4f602d241728050a42.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/b89e2b832c90510d3ae49c1538d89b47b8b57690.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_SELL_ITEMS",
+                                           "displayName":  "Pawn Star",
+                                           "description":  "Sold 100 items to Ebisu Pawn.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/3504d139c48bc229bf0f73bd1b2fad65d8a3ac35.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/0e98eaddc374a02a546e9d5e994054231845a0e0.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_BUY_ITEMS",
+                                           "displayName":  "Retail Therapy",
+                                           "description":  "Shopped 100 times.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/3e28a1ecb114420ea3d4130e8cf94d1c003b5512.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/7d42bb1f9852de53cecb52670a788657ae542518.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_DRONE_OPERATOR",
+                                           "displayName":  "The Bird\u0027s the Word",
+                                           "description":  "Controlled the drone for over an hour.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/f508cf51be7921547f0be2634e7f33daa379910e.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/a1be4a3d90c73b3ae84cb4d186efa13082dbb96e.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_PLAYED_FPS_MODE_BY_DRONE",
+                                           "displayName":  "Electronic Perspective",
+                                           "description":  "Flew the drone in first person mode for 60 seconds.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/f4d829d82ecced2cc3efeffa3afc34e5c9f49373.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/c30e10679fbfe86c7de4bb5b120c7f1f00be3e08.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_ALL_CATS_FOUND_IN_SEARCH_MODE",
+                                           "displayName":  "Oh Look, a Cat!",
+                                           "description":  "Found all the stray cats while in search mode during the main story.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/fb647e9ee5739ae0da835c32f2f140f6ee6ff8b9.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/711983fbb1d1b10e569cb1f26737912cc032815a.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_ZOMBIE_HANTER",
+                                           "displayName":  "Zombie Apocalypse Survivor",
+                                           "description":  "Obtained 50 pickups in Kamuro of the Dead.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/7b8b69fa01712bf80deadc66d66e802a1ca58b74.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/da33eae96c0e8bdae1e7869c3264dc49029bb1dc.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_DRONE_RACE_ALL_WIN",
+                                           "displayName":  "Drone Champion",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/83bdccd6054599448dbe8127de376642b597d4fd.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/bd6a41ba9a781810b7aca8820e026356fbf07384.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_GET_ALL_DRONE_PARTS",
+                                           "displayName":  "Drone Enthusiast",
+                                           "description":  "Obtained all drone parts.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/167f842c6c6f90816253a690e7fa0e05e1f2f328.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/82fd2693c8418497d4fd5456fe26f0e8cc623395.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_ALL_SUGOROKU_COURCE_CLEAR",
+                                           "displayName":  "Yagami Party",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/b7f1371c3348774fb5bfa3c4e8dfd3cffd5dc691.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/2dc618d433a6a9abadd35a16fd83b9bf36557ed6.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_ALL_ARCADE_GAME_PLAYED",
+                                           "displayName":  "The Gamer Life",
+                                           "description":  "Played every arcade game.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/fdf4ae1d4a06786951d4f04ee4dfef078e202388.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/9b1a03acf3fa8a9d4029d3e81d0e5f24f6a09bff.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_TOP_IN_KAMURO",
+                                           "displayName":  "He Just Doesn\u0027t Quit",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/2f11cbb4c1fec1ef3ac43a62ddd3676f2c0219ef.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/a5647820401f4ad024d4b6fec857178b26629b69.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_EAT_ALL_OF_COOKING",
+                                           "displayName":  "Pay Your Rent, Yagami",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/37021cb81b8a275e9477e23ac82db12678e0704b.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/621691de9c2e64d3dcd7c24c1ef7e1d08e1bd27f.jpg"
+                                       },
+                                       {
+                                           "apiName":  "JUDGE_ALL_COMPLETE",
+                                           "displayName":  "KamuroGo Master",
+                                           "description":  "Achieved 100% completion of KamuroGo. Wow!",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/8183b0008aa3524c6cddb67744c6842867b80581.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2058180/3635cbacf72f0bb20c270776688dd3441ca7700f.jpg"
+                                       }
+                                   ]
+                     }
+}

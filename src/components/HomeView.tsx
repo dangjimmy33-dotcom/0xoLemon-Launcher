@@ -1,20 +1,12 @@
-import { useEffect, useMemo, useState } from 'react'
-import { AnimatePresence, motion } from 'motion/react'
-import {
-  Cloud,
-  Download,
-  Gamepad2,
-  Heart,
-  Play,
-  RefreshCcw,
-  ShieldCheck,
-} from 'lucide-react'
-import donateImage from '../assets/donate/donate.png'
-import { formatBytes } from '../lib/format'
-import { MOTION } from '../lib/motion'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { invoke } from '@tauri-apps/api/core'
+import { gameHasTag } from '../lib/gameTags'
+import { firstMediaUrl } from '../lib/gameMeta'
 import { DiscordWidget } from './DiscordWidget'
+import '../home-view.css'
 import type {
   GameCatalog,
+  GameDetail,
   GameInstallState,
   GameRuntimeState,
   GameSummary,
@@ -24,6 +16,7 @@ import type {
   TabId,
 } from '../types'
 import { useRealtimeConfig } from '../hooks/useRealtimeConfig'
+
 type HomePreferences = {
   showContinuePlaying: boolean
   showRecentGames: boolean
@@ -66,283 +59,465 @@ export function HomeView({
   onOpenDiscord: () => void
   onOpenDonate: () => void
 }) {
+  // ── data ──────────────────────────────────────────────────────
   const installedGames = useMemo(
-    () => catalog.games.filter((game) => installStates[game.id]?.installed),
+    () => catalog.games.filter((g) => installStates[g.id]?.installed),
     [catalog.games, installStates],
   )
   const runtimeByGame = useMemo(
-    () => new Map(runtimeStates.map((runtime) => [runtime.gameId, runtime])),
+    () => new Map(runtimeStates.map((r) => [r.gameId, r])),
     [runtimeStates],
   )
   const recentGames = useMemo(
     () =>
-      [...installedGames].sort((left, right) => {
-        const leftAt = runtimeByGame.get(left.id)?.lastPlayedAt ?? ''
-        const rightAt = runtimeByGame.get(right.id)?.lastPlayedAt ?? ''
-        return rightAt.localeCompare(leftAt)
+      [...installedGames].sort((a, b) => {
+        const aAt = runtimeByGame.get(a.id)?.lastPlayedAt ?? ''
+        const bAt = runtimeByGame.get(b.id)?.lastPlayedAt ?? ''
+        return bAt.localeCompare(aAt)
       }),
     [installedGames, runtimeByGame],
   )
-  const realtimeConfig = useRealtimeConfig()
 
+  const realtimeConfig = useRealtimeConfig()
   const featuredGames = useMemo(() => {
-    if (!realtimeConfig.featuredGames || realtimeConfig.featuredGames.length === 0) return null
+    if (!realtimeConfig.featuredGames?.length) return null
     return realtimeConfig.featuredGames
       .map((id) => catalog.games.find((g) => g.id === id))
       .filter((g): g is GameSummary => g != null)
   }, [realtimeConfig.featuredGames, catalog.games])
 
-  const heroGames = featuredGames ?? (recentGames.length > 0 ? recentGames : installedGames)
-  const [heroIndex, setHeroIndex] = useState(0)
-  const [carouselPaused, setCarouselPaused] = useState(false)
-  const resolvedHeroIndex = heroGames.length > 0 ? heroIndex % heroGames.length : 0
-  const heroGame = heroGames[resolvedHeroIndex] ?? null
+  const heroGames = useMemo(() => {
+    if (featuredGames && featuredGames.length > 0)
+      return featuredGames.filter((g) => !gameHasTag(g, 'coming soon'))
 
+    const seen = new Set<string>()
+    const mix: GameSummary[] = []
+    for (const g of recentGames) {
+      if (gameHasTag(g, 'coming soon')) continue
+      if (seen.size >= 3) break
+      mix.push(g); seen.add(g.id)
+    }
+    const random = [...catalog.games].sort(() => 0.5 - Math.random())
+    for (const g of random) {
+      if (gameHasTag(g, 'coming soon')) continue
+      if (mix.length >= 6) break
+      if (!seen.has(g.id)) { mix.push(g); seen.add(g.id) }
+    }
+    return mix
+  }, [featuredGames, recentGames, catalog.games])
+
+  // ── hero carousel state ───────────────────────────────────────
+  const [heroIndex, setHeroIndex] = useState(0)
+  const resolvedIdx = heroGames.length > 0 ? heroIndex % heroGames.length : 0
+  const heroGame = heroGames[resolvedIdx] ?? null
+  const [heroDetail, setHeroDetail] = useState<GameDetail | null>(null)
+
+  const isComingSoon = heroGame ? gameHasTag(heroGame, 'coming soon') : false
+  const fallbackHeroUrl = heroDetail ? firstMediaUrl(heroDetail, assets) : null
+
+  // pause on hover
+  const [paused, setPaused] = useState(false)
+
+  // ── asset loading ─────────────────────────────────────────────
   useEffect(() => {
-    if (!heroGame) return
+    if (!heroGame) { setHeroDetail(null); return }
     onRequestAsset(heroGame.id, heroGame.heroAssetId, true)
     onRequestAsset(heroGame.id, heroGame.logoAssetId, true)
     onRequestAsset(heroGame.id, heroGame.gridAssetId, true)
-  }, [heroGame, onRequestAsset])
+    if (!heroGame.heroAssetId || !assets[heroGame.heroAssetId]) {
+      invoke<GameDetail>('get_game_detail', { gameId: heroGame.id, locale: 'en-US' })
+        .then((d) => { setHeroDetail(d); d.media?.forEach((m) => onRequestAsset(heroGame.id, m.assetId)) })
+        .catch(() => setHeroDetail(null))
+    } else {
+      setHeroDetail(null)
+    }
+  }, [heroGame?.id]) // eslint-disable-line
 
   useEffect(() => {
-    for (const game of recentGames.slice(0, 8)) {
-      onRequestAsset(game.id, game.gridAssetId)
-      onRequestAsset(game.id, game.heroAssetId)
+    for (const g of heroGames) {
+      onRequestAsset(g.id, g.iconAssetId, true)
+      onRequestAsset(g.id, g.gridAssetId, true)
+      onRequestAsset(g.id, g.heroAssetId)
+      onRequestAsset(g.id, g.logoAssetId)
     }
-  }, [onRequestAsset, recentGames])
+  }, [heroGames]) // eslint-disable-line
 
+  // ── autoplay ──────────────────────────────────────────────────
   useEffect(() => {
-    if (
-      reducedMotion ||
-      !preferences.carouselAutoplay ||
-      carouselPaused ||
-      heroGames.length < 2 ||
-      document.visibilityState !== 'visible'
-    ) {
-      return
-    }
-    const timer = window.setInterval(() => {
-      if (document.hasFocus()) {
-        setHeroIndex((current) => (current + 1) % heroGames.length)
-      }
-    }, 8000)
-    return () => window.clearInterval(timer)
-  }, [carouselPaused, heroGames.length, preferences.carouselAutoplay, reducedMotion])
+    if (reducedMotion || !preferences.carouselAutoplay || heroGames.length < 2 || paused) return
+    const t = window.setInterval(() => {
+      if (document.hasFocus()) setHeroIndex((i) => (i + 1) % heroGames.length)
+    }, 6000)
+    return () => window.clearInterval(t)
+  }, [heroGames.length, preferences.carouselAutoplay, reducedMotion, paused])
+
+  // ── scroll reveal for rec/news cards ─────────────────────────
+  const mainRef = useRef<HTMLElement>(null)
+  useEffect(() => {
+    const root = mainRef.current
+    if (!root) return
+    const cards = root.querySelectorAll<HTMLElement>('.hv-rec-card, .hv-news-card')
+    cards.forEach((el, i) => {
+      if (!el.style.transitionDelay) el.style.transitionDelay = `${i * 55}ms`
+    })
+    const io = new IntersectionObserver(
+      (entries) => entries.forEach((e) => { if (e.isIntersecting) { (e.target as HTMLElement).classList.add('in-view'); io.unobserve(e.target) } }),
+      { threshold: 0.12 },
+    )
+    cards.forEach((el) => io.observe(el))
+    return () => io.disconnect()
+  })
+
+  // ── stats ─────────────────────────────────────────────────────
+  const totalHours = useMemo(() => {
+    const secs = runtimeStates.reduce((sum, r) => sum + (r.totalPlaytimeSeconds ?? 0), 0)
+    return Math.floor(secs / 3600)
+  }, [runtimeStates])
 
   const activeTask = job && !['committed', 'canceled', 'failed'].includes(job.status) ? job : null
   const updatePhase = launcherUpdateProgress?.phase
 
+  // ── poster gradient fallback ──────────────────────────────────
+  const POSTERS = ['hv-poster-1','hv-poster-2','hv-poster-3','hv-poster-4','hv-poster-5','hv-poster-6','hv-poster-7','hv-poster-8']
+
+  // ── render ────────────────────────────────────────────────────
   return (
-    <section className="premium-home">
-      {preferences.showContinuePlaying ? (
-        <motion.section
-          className="home-hero"
-          layout
-          transition={MOTION.hero}
-          onMouseEnter={() => setCarouselPaused(true)}
-          onMouseLeave={() => setCarouselPaused(false)}
-          onFocusCapture={() => setCarouselPaused(true)}
-          onBlurCapture={() => setCarouselPaused(false)}
-        >
-          <AnimatePresence mode="wait">
-            {heroGame ? (
-              <motion.div
-                key={heroGame.id}
-                className="home-hero-slide"
-                initial={reducedMotion ? false : { opacity: 0, x: 18 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={reducedMotion ? undefined : { opacity: 0, x: -18 }}
-                transition={MOTION.hero}
+    <main className="home-view" ref={mainRef}>
+
+      {/* ═══════════════ HERO CAROUSEL ═══════════════ */}
+      <section
+        className="hv-hero"
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+      >
+        {heroGames.length > 0 ? heroGames.map((game, i) => {
+          const isActive = i === resolvedIdx
+          const bgUrl = assets[game.heroAssetId] || (isActive ? fallbackHeroUrl : null)
+          const logoUrl = assets[game.logoAssetId]
+          const runtime = runtimeByGame.get(game.id)
+          const installed = installStates[game.id]?.installed
+          const tag = runtime?.lastPlayedAt
+            ? '▶ CONTINUE PLAYING'
+            : installed
+              ? '✓ INSTALLED'
+              : '★ FEATURED'
+          
+          // Capture game.id to avoid stale closure
+          const currentGameId = game.id;
+
+          return (
+            <div key={game.id} className={`hv-hero-slide${isActive ? ' active' : ''}`} style={{ pointerEvents: isActive ? undefined : 'none' }}>
+              <div
+                className="hv-hero-bg"
+                style={!bgUrl ? { background: getGradientFromTitle(game.title) } : undefined}
               >
-                {assets[heroGame.heroAssetId] ? (
-                  <img className="home-hero-art" src={assets[heroGame.heroAssetId]} alt="" />
+                {bgUrl && <img src={bgUrl} alt="" />}
+              </div>
+              <div className="hv-hero-shade" />
+              <div className="hv-hero-content">
+                <span className="hv-hero-tag">{tag}</span>
+                {logoUrl ? (
+                  <img className="hv-hero-logo" src={logoUrl} alt={game.title} />
                 ) : (
-                  <div className="home-hero-art home-hero-art-placeholder" />
+                  <h1 className="hv-hero-title">{game.title}</h1>
                 )}
-                <div className="home-hero-shade" />
-                <div className="home-hero-copy">
-                  <span className="home-overline">
-                    {runtimeByGame.get(heroGame.id)?.lastPlayedAt ? 'Continue playing' : 'Ready to play'}
-                  </span>
-                  {assets[heroGame.logoAssetId] ? (
-                    <img className="home-hero-logo" src={assets[heroGame.logoAssetId]} alt={heroGame.title} />
-                  ) : (
-                    <h2>{heroGame.title}</h2>
+                <div className="hv-hero-meta">
+                  {game.developer && <span>{game.developer}</span>}
+                  {game.developer && runtime?.lastPlayedAt && <span className="dot">•</span>}
+                  {runtime?.lastPlayedAt && (
+                    <span>{formatPlaytime(runtime.totalPlaytimeSeconds ?? 0)}</span>
                   )}
-                  <p>{heroGame.subtitle || heroGame.developer}</p>
-                  <div className="home-hero-actions">
-                    <button type="button" className="home-play-button" onClick={() => onPlayGame(heroGame.id)}>
-                      <Play size={17} fill="currentColor" /> Play
-                    </button>
-                    <button type="button" className="home-secondary-button" onClick={() => onOpenGame(heroGame.id)}>
-                      Game details
-                    </button>
-                  </div>
-                  <div className="home-play-meta">
-                    <Gamepad2 size={14} />
-                    <span>{formatPlaytime(runtimeByGame.get(heroGame.id)?.totalPlaytimeSeconds ?? 0)}</span>
-                    <ShieldCheck size={14} />
-                    <span>Installed {installStates[heroGame.id]?.currentVersion}</span>
-                  </div>
+                  {installed && installStates[game.id]?.currentVersion && (
+                    <><span className="dot">•</span><span>v{installStates[game.id].currentVersion}</span></>
+                  )}
                 </div>
-                {heroGames.length > 1 ? (
-                  <div className="home-carousel-controls" aria-label="Featured games">
-                    {heroGames.map((game, index) => (
-                      <button
-                        key={game.id}
-                        type="button"
-                        className={index === resolvedHeroIndex ? 'is-active' : ''}
-                        aria-label={`Show ${game.title}`}
-                        aria-current={index === resolvedHeroIndex}
-                        onClick={() => setHeroIndex(index)}
-                      />
-                    ))}
-                  </div>
-                ) : null}
-              </motion.div>
-            ) : (
-              <motion.div className="home-hero-empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                <Gamepad2 size={30} />
-                <h2>Build your library</h2>
-                <p>Installed games will appear here with playtime and recent activity.</p>
-                <button type="button" className="home-play-button" onClick={() => onOpenTab('Store')}>
+                <div className="hv-hero-actions">
+                  {!isComingSoon ? (
+                    <>
+                      <button className="hv-btn hv-btn-primary" onClick={() => onPlayGame(currentGameId)}>
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                        {installed ? 'Play Now' : 'View Game'}
+                      </button>
+                      <button className="hv-btn hv-btn-ghost" onClick={() => onOpenGame(currentGameId)}>
+                        Details
+                      </button>
+                    </>
+                  ) : (
+                    <button className="hv-btn hv-btn-ghost" style={{ opacity: .5, cursor: 'not-allowed' }} disabled>
+                      Coming Soon
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )
+        }) : (
+          /* Empty state */
+          <div className="hv-hero-slide active">
+            <div className="hv-hero-bg" style={{ background: 'linear-gradient(135deg,#1a1a2e,#0a0a0f)' }} />
+            <div className="hv-hero-shade" />
+            <div className="hv-hero-content">
+              <span className="hv-hero-tag">Welcome</span>
+              <h1 className="hv-hero-title">Your launcher is ready</h1>
+              <div className="hv-hero-meta"><span>Start by browsing the store</span></div>
+              <div className="hv-hero-actions">
+                <button className="hv-btn hv-btn-primary" onClick={() => onOpenTab('Store')}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 8l1.5-4h13L20 8"/><path d="M4 8h16v11a1 1 0 01-1 1H5a1 1 0 01-1-1V8z"/><path d="M9 12a3 3 0 006 0"/></svg>
                   Browse Store
                 </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.section>
-      ) : null}
-
-      {preferences.showRecentGames ? (
-            <motion.section
-              className="home-section reveal"
-              initial={reducedMotion ? false : { opacity: 0, y: 12 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.2 }}
-            >
-              <div className="home-section-heading reveal-clip">
-                <h2>Recent games</h2>
-                <span>{installedGames.length} installed</span>
               </div>
-              {recentGames.length > 0 ? (
-                <div className="home-game-rail stagger-children">
-                  {recentGames.slice(0, 8).map((game) => (
-                    <motion.button
-                      type="button"
-                      className="home-game-card reveal-scale"
-                      key={game.id}
-                      transition={MOTION.micro}
-                      onClick={() => onOpenGame(game.id)}
-                    >
-                      {assets[game.gridAssetId] ? (
-                        <img src={assets[game.gridAssetId]} alt="" />
-                      ) : (
-                        <div className="home-game-placeholder" />
-                      )}
-                      <span>
-                        <strong>{game.title}</strong>
-                        <small>{relativeLastPlayed(runtimeByGame.get(game.id)?.lastPlayedAt)}</small>
-                      </span>
-                    </motion.button>
-                  ))}
-                </div>
-              ) : (
-                <div className="home-inline-empty">Install a game from Store to see it here.</div>
-              )}
-            </motion.section>
-          ) : null}
-      <div className="home-bottom-cards">
-          {preferences.showActiveTasks ? (
-            <motion.section
-              className="home-side-card active-task-card reveal-left"
-              initial={reducedMotion ? false : { opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <div className="home-side-card-title">
-                <Download size={17} />
-                <h2>Active tasks</h2>
-              </div>
-              {activeTask ? (
-                <>
-                  <strong>{titleCase(activeTask.kind)} · {activeTask.toVersion}</strong>
-                  <span>{activeTask.phase}</span>
-                  <div className="home-task-progress">
-                    <i style={{ width: `${Math.max(2, Math.min(100, activeTask.overallProgress * 100))}%` }} />
-                  </div>
-                  <small>
-                    {formatBytes(activeTask.bytesDone)} / {formatBytes(activeTask.bytesTotal)}
-                  </small>
-                  <button type="button" onClick={() => onOpenTab('Downloads')}>View Downloads</button>
-                </>
-              ) : launcherUpdate ? (
-                <>
-                  <strong>Launcher {launcherUpdate.version}</strong>
-                  <span>{updatePhase ? titleCase(updatePhase) : 'Ready to download'}</span>
-                  <button type="button" onClick={() => onOpenTab('Updates')}>View update</button>
-                </>
-              ) : (
-                <div className="home-task-idle">
-                  <RefreshCcw size={18} />
-                  <span>No active downloads or updates.</span>
-                </div>
-              )}
-            </motion.section>
-          ) : null}
-
-          {preferences.showDiscordCard ? (
-            <DiscordWidget 
-              serverId="1492076309323714570" 
-              onOpenDiscord={onOpenDiscord} 
-              reducedMotion={reducedMotion} 
-            />
-          ) : null}
-
-          {preferences.showDonateCard ? (
-            <motion.section className="home-side-card donate-card reveal-left shimmer-card" whileHover={reducedMotion ? undefined : { y: -3 }}>
-              <img src={donateImage} alt="" />
-              <div>
-                <h2>Support development</h2>
-                <p>Keep the launcher independent and improving.</p>
-              </div>
-              <button type="button" onClick={onOpenDonate}>
-                <Heart size={14} /> Donate
-              </button>
-            </motion.section>
-          ) : null}
-
-          <section className="home-side-card cloud-glance-card reveal-left shimmer-card">
-            <Cloud size={18} />
-            <div>
-              <h2>Cloud Saves</h2>
-              <p>Backups and conflicts are managed per installed game.</p>
             </div>
-            <button type="button" onClick={() => onOpenTab('Cloud Saves')}>Open</button>
-          </section>
-      </div>
-    </section>
+          </div>
+        )}
+
+        {/* Tick indicators */}
+        {heroGames.length > 1 && (
+          <div className="hv-hero-ticks">
+            {heroGames.map((g, i) => (
+              <button
+                key={g.id}
+                className={`hv-hero-tick${i === resolvedIdx ? ' active' : ''}`}
+                onClick={() => { setHeroIndex(i); setPaused(true) }}
+                aria-label={`Slide ${i + 1}`}
+              />
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* ═══════════════ CONTINUE PLAYING ═══════════════ */}
+      {recentGames.length > 0 && preferences.showContinuePlaying && (
+        <section className="hv-section">
+          <div className="hv-section-head">
+            <h2>Continue Playing</h2>
+            <button className="hv-see-all" onClick={() => onOpenTab('Library')}>See all →</button>
+          </div>
+          <div className="hv-row-scroll">
+            {recentGames.slice(0, 8).map((game, idx) => {
+              const art = assets[game.gridAssetId] || assets[game.heroAssetId]
+              const runtime = runtimeByGame.get(game.id)
+              const state = installStates[game.id]
+              // determine chip from active job
+              const gameHasActiveJob = activeTask?.gameId === game.id
+              const chipClass = gameHasActiveJob
+                ? (activeTask?.phase === 'update' ? 'hv-chip-update' : 'hv-chip-installing')
+                : 'hv-chip-ready'
+              const chipLabel = gameHasActiveJob
+                ? (activeTask?.phase === 'update' ? 'UPDATE' : 'INSTALLING')
+                : 'READY'
+
+              return (
+                <div
+                  key={game.id}
+                  className="hv-cp-card"
+                  onClick={() => onOpenGame(game.id)}
+                  onDoubleClick={() => onPlayGame(game.id)}
+                >
+                  <div className={`hv-cp-art ${art ? '' : POSTERS[idx % POSTERS.length]}`}>
+                    {art && <img src={art} alt={game.title} />}
+                    <span className={`hv-cp-chip ${chipClass}`}>{chipLabel}</span>
+                  </div>
+                  <div className="hv-cp-body">
+                    <div className="hv-cp-title">{game.title}</div>
+                    <div className="hv-cp-sub">
+                      {runtime?.lastPlayedAt
+                        ? formatPlaytime(runtime.totalPlaytimeSeconds ?? 0)
+                        : 'Not played yet'}
+                    </div>
+                    <div className="hv-progress-track">
+                      <div className="hv-progress-fill" style={{ width: '100%' }} />
+                    </div>
+                    <div className="hv-cp-foot">
+                      <span>v{state?.currentVersion ?? '—'}</span>
+                      <span>{game.developer ?? ''}</span>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* ═══════════════ STATS ═══════════════ */}
+      <section className="hv-section">
+        <div className="hv-stats">
+          <div className="hv-stat-card">
+            <div className="hv-stat-icon" style={{ background: 'var(--hv-amber-soft)', color: 'var(--hv-amber)' }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>
+              </svg>
+            </div>
+            <div className="hv-stat-value">{totalHours.toLocaleString()}</div>
+            <div className="hv-stat-label">Hours Played</div>
+          </div>
+          <div className="hv-stat-card">
+            <div className="hv-stat-icon" style={{ background: 'var(--hv-teal-soft)', color: 'var(--hv-teal)' }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="4" width="7" height="16" rx="1.5"/><rect x="14" y="4" width="7" height="16" rx="1.5"/>
+              </svg>
+            </div>
+            <div className="hv-stat-value">{installedGames.length}</div>
+            <div className="hv-stat-label">Games Installed</div>
+          </div>
+          <div className="hv-stat-card">
+            <div className="hv-stat-icon" style={{ background: 'var(--hv-violet-soft)', color: 'var(--hv-violet)' }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 2l3 6 6 .9-4.5 4.3 1 6L12 16l-5.5 3.2 1-6L3 9.9 9 9z"/>
+              </svg>
+            </div>
+            <div className="hv-stat-value">{catalog.games.length}</div>
+            <div className="hv-stat-label">Games in Catalog</div>
+          </div>
+          <div className="hv-stat-card" style={{ cursor: 'pointer' }} onClick={() => onOpenTab('Downloads')}>
+            <div className="hv-stat-icon" style={{ background: 'rgba(255,255,255,.07)', color: 'var(--hv-text-2)' }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M4 19h16"/>
+              </svg>
+            </div>
+            <div className="hv-stat-value" style={{ fontSize: activeTask ? '14px' : undefined, paddingTop: activeTask ? '4px' : undefined }}>
+              {activeTask ? titleCase(activeTask.phase ?? activeTask.kind) : 'Idle'}
+            </div>
+            <div className="hv-stat-label">
+              {activeTask
+                ? `${Math.round((activeTask.overallProgress ?? 0) * 100)}% — ${titleCase(activeTask.kind)}`
+                : launcherUpdate
+                  ? `Update ${launcherUpdate.version} ready`
+                  : 'No active downloads'}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════ RECOMMENDED / ALL GAMES ═══════════════ */}
+      {heroGames.length > 0 && (
+        <section className="hv-section">
+          <div className="hv-section-head">
+            <h2>{recentGames.length > 0 ? 'Recommended' : 'Discover'}</h2>
+            <button className="hv-see-all" onClick={() => onOpenTab('Store')}>Browse store →</button>
+          </div>
+          <div className="hv-grid-rec">
+            {heroGames.slice(0, 8).map((game, idx) => {
+              const art = assets[game.heroAssetId] || assets[game.gridAssetId]
+              const tags = [game.developer].filter(Boolean).join(' · ')
+              const currentGameId = game.id; // Capture game ID to avoid closure stale issue
+              return (
+                <div key={game.id} className="hv-rec-card" onClick={() => onOpenGame(currentGameId)}>
+                  <div className={`hv-rec-art ${art ? '' : POSTERS[idx % POSTERS.length]}`}>
+                    {art && <img src={art} alt={game.title} />}
+                    <span className="hv-rec-rating">
+                      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 6 6 .9-4.5 4.3 1 6L12 16l-5.5 3.2 1-6L3 9.9 9 9z"/></svg>
+                      {installStates[game.id]?.installed ? 'Installed' : 'Available'}
+                    </span>
+                    <div className="hv-rec-overlay">
+                      <button
+                        className="hv-icon-round"
+                        title="Play"
+                        onClick={(e) => { e.stopPropagation(); onPlayGame(currentGameId) }}
+                      >
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                      </button>
+                      <button
+                        className="hv-icon-round ghost"
+                        title="Details"
+                        onClick={(e) => { e.stopPropagation(); onOpenGame(currentGameId) }}
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4m0 4h.01"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                  <div className="hv-rec-body">
+                    <div className="hv-rec-title">{game.title}</div>
+                    <div className="hv-rec-tags">{tags || game.subtitle || 'Game'}</div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* ═══════════════ NEWS / EVENTS ═══════════════ */}
+      {(activeTask || launcherUpdate || preferences.showDiscordCard) && (
+        <section className="hv-section">
+          <div className="hv-section-head"><h2>News & Updates</h2></div>
+          <div className="hv-news-grid">
+            {activeTask && (
+              <div className="hv-news-card" onClick={() => onOpenTab('Downloads')}>
+                <span className="hv-news-tag hv-tag-patch">ACTIVE DOWNLOAD</span>
+                <div className="hv-news-title">{titleCase(activeTask.kind)}</div>
+                <div className="hv-news-excerpt">
+                  {titleCase(activeTask.phase ?? 'Preparing')} — {Math.round((activeTask.overallProgress ?? 0) * 100)}% complete
+                </div>
+                <div className="hv-progress-track" style={{ marginTop: 4 }}>
+                  <div className="hv-progress-fill" style={{ width: `${Math.round((activeTask.overallProgress ?? 0) * 100)}%` }} />
+                </div>
+              </div>
+            )}
+            {launcherUpdate && (
+              <div className="hv-news-card" onClick={() => onOpenTab('Updates')}>
+                <span className="hv-news-tag hv-tag-event">LAUNCHER UPDATE</span>
+                <div className="hv-news-title">Version {launcherUpdate.version} Available</div>
+                <div className="hv-news-excerpt">
+                  {updatePhase ? titleCase(updatePhase) : 'A new version of the launcher is ready to install.'}
+                </div>
+                <div className="hv-news-time">Check updates tab →</div>
+              </div>
+            )}
+            {preferences.showDiscordCard && (
+              <div className="hv-news-card" onClick={onOpenDiscord}>
+                <span className="hv-news-tag hv-tag-info">COMMUNITY</span>
+                <div className="hv-news-title">Join the Discord</div>
+                <div className="hv-news-excerpt">
+                  Connect with other players, get support, and stay up to date on the latest launcher news.
+                </div>
+                <div className="hv-news-time">Open Discord →</div>
+              </div>
+            )}
+            {preferences.showDonateCard && (
+              <div className="hv-news-card" onClick={onOpenDonate}>
+                <span className="hv-news-tag" style={{ background: 'rgba(255,93,108,.15)', color: '#ff5d6c' }}>SUPPORT</span>
+                <div className="hv-news-title">Support the project</div>
+                <div className="hv-news-excerpt">
+                  Help keep the launcher improving. Every contribution makes a difference.
+                </div>
+                <div className="hv-news-time">Donate →</div>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* ═══════════════ DISCORD WIDGET ═══════════════ */}
+      {preferences.showDiscordCard && (
+        <div className="hv-discord-slot">
+          <DiscordWidget
+            serverId="1492076309323714570"
+            onOpenDiscord={onOpenDiscord}
+            reducedMotion={reducedMotion}
+          />
+        </div>
+      )}
+
+    </main>
   )
+}
+
+// ── helpers ─────────────────────────────────────────────────────
+function getGradientFromTitle(title: string) {
+  let hash = 0
+  for (let i = 0; i < title.length; i++) hash = title.charCodeAt(i) + ((hash << 5) - hash)
+  const hue = Math.abs(hash) % 360
+  return `radial-gradient(120% 120% at 70% 20%, hsl(${hue},60%,18%), #0a0d14 65%)`
 }
 
 function formatPlaytime(seconds: number) {
   if (seconds <= 0) return 'Not played yet'
-  const hours = Math.floor(seconds / 3600)
-  const minutes = Math.floor((seconds % 3600) / 60)
-  return hours > 0 ? `${hours}h ${minutes}m played` : `${Math.max(1, minutes)}m played`
+  const h = Math.floor(seconds / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  return h > 0 ? `${h}h ${m}m played` : `${Math.max(1, m)}m played`
 }
 
-function relativeLastPlayed(value: string | null | undefined) {
-  if (!value) return 'Ready to play'
-  const elapsed = Date.now() - new Date(value).getTime()
-  const days = Math.floor(elapsed / 86_400_000)
-  if (days <= 0) return 'Played today'
-  if (days === 1) return 'Played yesterday'
-  return `Played ${days} days ago`
-}
-
-function titleCase(value: string) {
-  return value
-    .replace(/[-_]/g, ' ')
-    .replace(/\b\w/g, (letter) => letter.toUpperCase())
+function titleCase(v: string) {
+  return v.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
 }

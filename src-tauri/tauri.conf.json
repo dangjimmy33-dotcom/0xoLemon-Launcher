@@ -1,54 +1,67 @@
 {
-    "$schema":  "https://schema.tauri.app/config/2",
-    "productName":  "0xoLemon",
-    "version":  "1.0.7",
-    "identifier":  "com.oxolemon.launcher",
-    "build":  {
-                  "beforeDevCommand":  "npm run dev",
-                  "beforeBuildCommand":  "npm run build",
-                  "devUrl":  "http://localhost:1420",
-                  "frontendDist":  "../dist"
-              },
-    "app":  {
-                "windows":  [
-                                {
-                                    "title":  "0xoLemon",
-                                    "width":  600,
-                                    "height":  520,
-                                    "minWidth":  1120,
-                                    "minHeight":  720,
-                                    "center":  true,
-                                    "resizable":  true,
-                                    "fullscreen":  false,
-                                    "visible":  false,
-                                    "decorations":  false,
-                                    "transparent":  true
-                                }
-                            ],
-                "security":  {
-                                 "csp":  null
-                             }
-            },
-    "bundle":  {
-                   "active":  true,
-                   "targets":  "all",
-                   "createUpdaterArtifacts":  true,
-                   "resources":  [
-
-                                 ],
-                   "icon":  [
-                                "icons/icon.ico"
-                            ]
-               },
-    "plugins":  {
-                    "updater":  {
-                                    "pubkey":  "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDhCNDVDODI1MThGRUY5QUEKUldTcStmNFlKY2hGaTJSV0tna3IzMGhWTHlxWC9hM0dlclJ6c0dhUEtDKzBNN1NYS3NMeDlrZysK",
-                                    "endpoints":  [
-                                                      "https://github.com/dangjimmy33-dotcom/0xoLemon-Launcher/releases/latest/download/latest.json"
-                                                  ],
-                                    "windows":  {
-                                                    "installMode":  "passive"
-                                                }
-                                }
-                }
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "0xoLemon",
+  "version": "1.0.7",
+  "identifier": "com.oxolemon.launcher",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
+    "devUrl": "http://localhost:1420",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "0xoLemon",
+        "width": 600,
+        "height": 520,
+        "minWidth": 1120,
+        "minHeight": 720,
+        "center": true,
+        "resizable": true,
+        "fullscreen": false,
+        "visible": false,
+        "decorations": false,
+        "transparent": true
+      },
+      {
+        "label": "overlay",
+        "title": "Overlay",
+        "url": "/overlay",
+        "width": 1920,
+        "height": 1080,
+        "fullscreen": false,
+        "resizable": false,
+        "alwaysOnTop": true,
+        "transparent": true,
+        "decorations": false,
+        "shadow": false,
+        "visible": false,
+        "skipTaskbar": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "createUpdaterArtifacts": false,
+    "resources": [],
+    "icon": [
+      "icons/icon.ico"
+    ]
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDhCNDVDODI1MThGRUY5QUEKUldTcStmNFlKY2hGaTJSV0tna3IzMGhWTHlxWC9hM0dlclJ6c0dhUEtDKzBNN1NYS3NMeDlrZysK",
+      "endpoints": [
+        "https://github.com/dangjimmy33-dotcom/0xoLemon-Launcher/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
+    }
+  }
 }

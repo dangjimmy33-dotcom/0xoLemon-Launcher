@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
+import Overlay from './Overlay.tsx'
 import { Analytics } from '@vercel/analytics/react'
 
 const LEGACY_PWA_RELOAD_KEY = '0xolemon-legacy-pwa-cleared-v1'
@@ -40,12 +41,25 @@ async function clearLegacyPwaStateInTauri() {
   return false
 }
 
+import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
+
 async function bootstrap() {
   if (await clearLegacyPwaStateInTauri()) return
 
+  let isOverlay = false;
+  try {
+    isOverlay = getCurrentWebviewWindow().label === 'overlay';
+  } catch (e) {
+    // Ignore error if not running in Tauri
+  }
+
+  if (isOverlay) {
+    document.body.classList.add('is-overlay-window');
+  }
+
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
-      <App />
+      {isOverlay ? <Overlay /> : <App />}
       <Analytics />
     </StrictMode>,
   )

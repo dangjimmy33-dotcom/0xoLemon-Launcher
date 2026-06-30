@@ -308,6 +308,7 @@ export function StoreLibraryView({
   isGameRunning,
   onPrimaryAction,
   onPlay,
+  onStop,
   onVerify,
   onUninstall,
   onOpenInstallOptions,
@@ -352,6 +353,7 @@ export function StoreLibraryView({
   isGameRunning: boolean
   onPrimaryAction: () => void
   onPlay: () => void
+  onStop: () => void
   onVerify: () => void
   onUninstall: () => void
   onOpenInstallOptions: () => void
@@ -528,8 +530,8 @@ export function StoreLibraryView({
 
   if (isPlaying) {
     actionLabel = 'Running'
-    actionClass = 'primary-control running-btn'
-    primaryDisabled = true
+    actionClass = 'primary-control running-btn can-stop'
+    primaryDisabled = false
   } else if (isDownloading) {
     actionLabel = 'Downloading'
     actionClass = 'primary-control downloading-btn'
@@ -539,7 +541,7 @@ export function StoreLibraryView({
     primaryDisabled = !canUpdate
   }
 
-  const primaryActionBtn = !installed ? onOpenInstallOptions : onPlay
+  const primaryActionBtn = isPlaying ? onStop : (!installed ? onOpenInstallOptions : onPlay)
   const primaryIcon = isPlaying
     ? <Play size={17} />
     : isDownloading
@@ -597,6 +599,7 @@ export function StoreLibraryView({
             type="button"
             onClick={primaryActionBtn}
             disabled={primaryDisabled}
+            data-stop-label={isPlaying ? 'STOP' : undefined}
           >
             {primaryIcon}
             {actionLabel}
@@ -660,7 +663,13 @@ export function StoreLibraryView({
               <VerifyIcon size={17} />
               {verifyLabel}
             </button>
-            <button className={actionClass} type="button" onClick={primaryActionBtn} disabled={primaryDisabled}>
+            <button
+              className={actionClass}
+              type="button"
+              onClick={primaryActionBtn}
+              disabled={primaryDisabled}
+              data-stop-label={isPlaying ? 'STOP' : undefined}
+            >
               {primaryIcon}
               {actionLabel}
             </button>
@@ -781,7 +790,7 @@ export function StoreLibraryView({
           </section>
         ) : null}
         <GameDetailsPanel detail={detail} />
-        {installed && viewMode === 'library' ? (
+        {installed ? (
           <CloudSavePanel
             status={cloudSaveStatus}
             busy={cloudSaveBusy}
@@ -821,6 +830,7 @@ export function OperationHero({
   updateSize,
   onUpdate,
   onPlay,
+  onStop,
   isJobRunning,
   isGameRunning,
   canUpdate,
@@ -837,6 +847,7 @@ export function OperationHero({
   updateSize: number
   onUpdate: () => void
   onPlay: () => void
+  onStop: () => void
   isJobRunning: boolean
   isGameRunning: boolean
   canUpdate: boolean
@@ -850,13 +861,13 @@ export function OperationHero({
   let playClass = 'update-button hero-play-button'
   if (isGameRunning) {
     playLabel = 'RUNNING'
-    playClass = 'update-button running-btn'
+    playClass = 'update-button running-btn can-stop'
   } else if (isJobRunning) {
     playLabel = 'DOWNLOADING'
     playClass = 'update-button downloading-btn'
   }
 
-  const playDisabled = isGameRunning || isJobRunning
+  const playDisabled = isJobRunning
   const updateDisabled = isGameRunning || isJobRunning || !canUpdate
 
   return (
@@ -892,7 +903,9 @@ export function OperationHero({
             </button>
           ) : (
             <>
-              <button className={playClass} type="button" onClick={onPlay} disabled={playDisabled}>
+              <button className={playClass} type="button" onClick={isGameRunning ? onStop : onPlay} disabled={playDisabled}
+                data-stop-label={isGameRunning ? 'STOP' : undefined}
+              >
                 <span>{playLabel}</span>
                 {isJobRunning ? <Download size={18} /> : <Play size={18} />}
               </button>

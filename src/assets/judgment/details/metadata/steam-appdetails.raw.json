@@ -1,0 +1,327 @@
+﻿{
+    "2058180":  {
+                    "success":  true,
+                    "data":  {
+                                 "type":  "game",
+                                 "name":  "Judgment",
+                                 "steam_appid":  2058180,
+                                 "required_age":  "17",
+                                 "is_free":  false,
+                                 "controller_support":  "full",
+                                 "detailed_description":  "RGG Studio proudly presents Judgment, an action-adventure detective game that follows twisted crime running deep beneath the surface of Tokyo. Play as Takayuki Yagami, a disgraced defense attorney turned detective, as you claw your way through Kamurocho’s underground crime network and uncover the truth behind a string of grisly murders. In this legal thriller, the balance between justice and mercy teeters on the edge.\u003cbr /\u003e\r\n\u003cbr /\u003e\r\nTake advantage of two unique battle styles to take down adversaries in electrifying encounters. Packed with Hollywood-worthy combat sequences and cinematic twists and turns, this twisted tale will keep your mind racing for answers until the very end.",
+                                 "about_the_game":  "RGG Studio proudly presents Judgment, an action-adventure detective game that follows twisted crime running deep beneath the surface of Tokyo. Play as Takayuki Yagami, a disgraced defense attorney turned detective, as you claw your way through Kamurocho’s underground crime network and uncover the truth behind a string of grisly murders. In this legal thriller, the balance between justice and mercy teeters on the edge.\u003cbr /\u003e\r\n\u003cbr /\u003e\r\nTake advantage of two unique battle styles to take down adversaries in electrifying encounters. Packed with Hollywood-worthy combat sequences and cinematic twists and turns, this twisted tale will keep your mind racing for answers until the very end.",
+                                 "short_description":  "Fight for the truth and uncover the twisted crime running deep beneath the surface of Tokyo. In this legal thriller , the balance between justice and mercy teeters on the edge.",
+                                 "supported_languages":  "English\u003cstrong\u003e*\u003c/strong\u003e, French, Italian, German, Spanish - Spain, Japanese\u003cstrong\u003e*\u003c/strong\u003e, Korean, Simplified Chinese, Traditional Chinese\u003cbr\u003e\u003cstrong\u003e*\u003c/strong\u003elanguages with full audio support",
+                                 "header_image":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2058180/header.jpg?t=1781263750",
+                                 "capsule_image":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2058180/capsule_231x87.jpg?t=1781263750",
+                                 "capsule_imagev5":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2058180/capsule_184x69.jpg?t=1781263750",
+                                 "website":  "https://yakuza.sega.com/judgment",
+                                 "pc_requirements":  {
+                                                         "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003eRequires a 64-bit processor and operating system\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows10 1703 (OS Build 15063) or Later\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e Intel Core i5-3470, 3.2 GHz or AMD Ryzen 3 1200, 3.1 GHz\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 8 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e NVIDIA GeForce GTX 960, 2 GB or AMD Radeon RX 460, 2 GB\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eDirectX:\u003c/strong\u003e Version 12\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 40 GB available space\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eAdditional Notes:\u003c/strong\u003e 1080p Low @ 30 FPS w/ Balanced FSR 1.0, requires a CPU which supports the AVX and SSE4.2 instruction set. Microsoft no longer supports Windows 10 or older versions.\u003c/li\u003e\u003c/ul\u003e",
+                                                         "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003eRequires a 64-bit processor and operating system\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows10 1703 (OS Build 15063) or Later\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e Intel Core i7-4790, 3.6 GHz or AMD Ryzen 5 1600, 3.2 GHz\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 8 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e NVIDIA GeForce RTX 2060, 6 GB or AMD Radeon RX Vega 56, 8 GB\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eDirectX:\u003c/strong\u003e Version 12\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 60 GB available space\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eAdditional Notes:\u003c/strong\u003e 1080p High @ 60 FPS w/o FSR, requires a CPU which supports the AVX and SSE4.2 instruction set. Microsoft no longer supports Windows 10 or older versions.\u003c/li\u003e\u003c/ul\u003e"
+                                                     },
+                                 "mac_requirements":  {
+                                                          "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e",
+                                                          "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e"
+                                                      },
+                                 "linux_requirements":  {
+                                                            "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e",
+                                                            "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e"
+                                                        },
+                                 "legal_notice":  "© SEGA. SEGA, the SEGA logo and Judgment are either registered trademarks or trademarks of SEGA Holdings Co., Ltd. or its affiliates. All rights reserved. SEGA is registered in the U.S. Patent and Trademark Office. All other trademarks, logos and copyrights are property of their respective owners.",
+                                 "drm_notice":  "Denuvo",
+                                 "developers":  [
+                                                    "RGG Studio"
+                                                ],
+                                 "publishers":  [
+                                                    "SEGA"
+                                                ],
+                                 "price_overview":  {
+                                                        "currency":  "USD",
+                                                        "initial":  3999,
+                                                        "final":  1199,
+                                                        "discount_percent":  70,
+                                                        "initial_formatted":  "$39.99",
+                                                        "final_formatted":  "$11.99"
+                                                    },
+                                 "packages":  [
+                                                  735323
+                                              ],
+                                 "package_groups":  [
+                                                        {
+                                                            "name":  "default",
+                                                            "title":  "Buy Judgment",
+                                                            "description":  "",
+                                                            "selection_text":  "Select a purchase option",
+                                                            "save_text":  "",
+                                                            "display_type":  0,
+                                                            "is_recurring_subscription":  "false",
+                                                            "subs":  [
+                                                                         {
+                                                                             "packageid":  735323,
+                                                                             "percent_savings_text":  "-70% ",
+                                                                             "percent_savings":  0,
+                                                                             "option_text":  "Judgment - \u003cspan class=\"discount_original_price\"\u003e$39.99\u003c/span\u003e $11.99",
+                                                                             "option_description":  "",
+                                                                             "can_get_free_license":  "0",
+                                                                             "is_free_license":  false,
+                                                                             "price_in_cents_with_discount":  1199
+                                                                         }
+                                                                     ]
+                                                        }
+                                                    ],
+                                 "platforms":  {
+                                                   "windows":  true,
+                                                   "mac":  false,
+                                                   "linux":  false
+                                               },
+                                 "categories":  [
+                                                    {
+                                                        "id":  2,
+                                                        "description":  "Single-player"
+                                                    },
+                                                    {
+                                                        "id":  22,
+                                                        "description":  "Steam Achievements"
+                                                    },
+                                                    {
+                                                        "id":  28,
+                                                        "description":  "Full controller support"
+                                                    },
+                                                    {
+                                                        "id":  29,
+                                                        "description":  "Steam Trading Cards"
+                                                    },
+                                                    {
+                                                        "id":  55,
+                                                        "description":  "DualShock Controller Support"
+                                                    },
+                                                    {
+                                                        "id":  56,
+                                                        "description":  "DualShock Controller Support"
+                                                    },
+                                                    {
+                                                        "id":  57,
+                                                        "description":  "DualShock Controller Support"
+                                                    },
+                                                    {
+                                                        "id":  58,
+                                                        "description":  "DualShock Controller Support"
+                                                    },
+                                                    {
+                                                        "id":  23,
+                                                        "description":  "Steam Cloud"
+                                                    },
+                                                    {
+                                                        "id":  62,
+                                                        "description":  "Family Sharing"
+                                                    }
+                                                ],
+                                 "genres":  [
+                                                {
+                                                    "id":  "1",
+                                                    "description":  "Action"
+                                                },
+                                                {
+                                                    "id":  "25",
+                                                    "description":  "Adventure"
+                                                }
+                                            ],
+                                 "screenshots":  [
+                                                     {
+                                                         "id":  0,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2058180/ss_3ace0d9ef99534bcbb5a2b73f32826ab7b3bdc4e.600x338.jpg?t=1781263750",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2058180/ss_3ace0d9ef99534bcbb5a2b73f32826ab7b3bdc4e.1920x1080.jpg?t=1781263750"
+                                                     },
+                                                     {
+                                                         "id":  1,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2058180/ss_fb45b4875cf5968d301c9a4cf73f4c7ecca7bead.600x338.jpg?t=1781263750",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2058180/ss_fb45b4875cf5968d301c9a4cf73f4c7ecca7bead.1920x1080.jpg?t=1781263750"
+                                                     },
+                                                     {
+                                                         "id":  2,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2058180/ss_d5454039965149a929abe0670d86597505e62a28.600x338.jpg?t=1781263750",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2058180/ss_d5454039965149a929abe0670d86597505e62a28.1920x1080.jpg?t=1781263750"
+                                                     },
+                                                     {
+                                                         "id":  3,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2058180/ss_7e462b28818aea2faecc36cdfb2793040cf7592f.600x338.jpg?t=1781263750",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2058180/ss_7e462b28818aea2faecc36cdfb2793040cf7592f.1920x1080.jpg?t=1781263750"
+                                                     },
+                                                     {
+                                                         "id":  4,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2058180/ss_deb3a9df8c4fe7164e8f2d272960b5be7599007b.600x338.jpg?t=1781263750",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2058180/ss_deb3a9df8c4fe7164e8f2d272960b5be7599007b.1920x1080.jpg?t=1781263750"
+                                                     }
+                                                 ],
+                                 "movies":  [
+                                                {
+                                                    "id":  256901462,
+                                                    "name":  "Launch Trailer (ESRB)",
+                                                    "thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256901462/movie.293x165.jpg?t=1663160275",
+                                                    "dash_av1":  "https://video.akamai.steamstatic.com/store_trailers/2058180/488829/e218fbd8cbded8c1058644199d88f1b4e8ec24ae/1750745536/dash_av1.mpd?t=1663160275",
+                                                    "dash_h264":  "https://video.akamai.steamstatic.com/store_trailers/2058180/488829/e218fbd8cbded8c1058644199d88f1b4e8ec24ae/1750745536/dash_h264.mpd?t=1663160275",
+                                                    "hls_h264":  "https://video.akamai.steamstatic.com/store_trailers/2058180/488829/e218fbd8cbded8c1058644199d88f1b4e8ec24ae/1750745536/hls_264_master.m3u8?t=1663160275",
+                                                    "highlight":  true
+                                                }
+                                            ],
+                                 "recommendations":  {
+                                                         "total":  9107
+                                                     },
+                                 "achievements":  {
+                                                      "total":  47,
+                                                      "highlighted":  [
+                                                                          {
+                                                                              "icon":  "e486c1b4c35319f01715e0819e3c64d8c30f2813.jpg",
+                                                                              "localized_name":  "The Greatest Detective",
+                                                                              "name":  "The Greatest Detective",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2058180/e486c1b4c35319f01715e0819e3c64d8c30f2813.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "18289ed7340729c218a3ecd43ee49d01b9ef4290.jpg",
+                                                                              "localized_name":  "The Game is Afoot",
+                                                                              "name":  "The Game is Afoot",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2058180/18289ed7340729c218a3ecd43ee49d01b9ef4290.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "3bdac4c2c517e01250107538a2747a06c59a74bf.jpg",
+                                                                              "localized_name":  "Trust Issues",
+                                                                              "name":  "Trust Issues",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2058180/3bdac4c2c517e01250107538a2747a06c59a74bf.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "f231c867d8479bd5fc5fce2243e64278d8120a0f.jpg",
+                                                                              "localized_name":  "I\u0027ll Make it Double",
+                                                                              "name":  "I\u0027ll Make it Double",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2058180/f231c867d8479bd5fc5fce2243e64278d8120a0f.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "88c875b4f3d21a096d050c98c7a38601fa8d335b.jpg",
+                                                                              "localized_name":  "Skeletons in the Closet",
+                                                                              "name":  "Skeletons in the Closet",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2058180/88c875b4f3d21a096d050c98c7a38601fa8d335b.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "610e5deba19e19a5811bc3bcfdf81e2ebb98ea13.jpg",
+                                                                              "localized_name":  "Way Too Thorough!",
+                                                                              "name":  "Way Too Thorough!",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2058180/610e5deba19e19a5811bc3bcfdf81e2ebb98ea13.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "a9af8d5c928571f6374b626830acab979a55a318.jpg",
+                                                                              "localized_name":  "The Kansai Factor",
+                                                                              "name":  "The Kansai Factor",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2058180/a9af8d5c928571f6374b626830acab979a55a318.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "33190e100024ee39dfd3c20f7439f610736e3cf9.jpg",
+                                                                              "localized_name":  "The Art of Conversation",
+                                                                              "name":  "The Art of Conversation",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2058180/33190e100024ee39dfd3c20f7439f610736e3cf9.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "6e21a9ccf50fee97bb984ea6f282896544723a4c.jpg",
+                                                                              "localized_name":  "Blowing the Lid Off",
+                                                                              "name":  "Blowing the Lid Off",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2058180/6e21a9ccf50fee97bb984ea6f282896544723a4c.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "0e553141a3ea355bd589c8223d1dfe2c6d997714.jpg",
+                                                                              "localized_name":  "Professional Password Presenter",
+                                                                              "name":  "Professional Password Presenter",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2058180/0e553141a3ea355bd589c8223d1dfe2c6d997714.jpg"
+                                                                          }
+                                                                      ]
+                                                  },
+                                 "release_date":  {
+                                                      "coming_soon":  false,
+                                                      "date":  "Sep 14, 2022"
+                                                  },
+                                 "support_info":  {
+                                                      "url":  "https://support.sega.com/hc/en-us",
+                                                      "email":  ""
+                                                  },
+                                 "background":  "https://store.akamai.steamstatic.com/images/storepagebackground/app/2058180?t=1781263750",
+                                 "background_raw":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2058180/page_bg_raw.jpg?t=1781263750",
+                                 "content_descriptors":  {
+                                                             "ids":  [
+                                                                         1,
+                                                                         2,
+                                                                         5
+                                                                     ],
+                                                             "notes":  "This Game may contain content not appropriate for all ages or may not be appropriate for viewing at work: Blood, Intense Violence, Partial Nudity, Sexual Themes, Strong Language, and Use of Alcohol."
+                                                         },
+                                 "ratings":  {
+                                                 "dejus":  {
+                                                               "rating":  "18",
+                                                               "required_age":  "18",
+                                                               "use_age_gate":  "true",
+                                                               "descriptors":  "Conteúdo sexual\r\nDrogas lícitas\r\nViolência extrema"
+                                                           },
+                                                 "esrb":  {
+                                                              "rating":  "m",
+                                                              "descriptors":  "Intense Violence\r\nBlood\r\nSexual Themes\r\nPartial Nudity\r\nStrong Language\r\nUse of Alcohol",
+                                                              "required_age":  "17",
+                                                              "use_age_gate":  "true"
+                                                          },
+                                                 "pegi":  {
+                                                              "rating":  "18",
+                                                              "descriptors":  "Violence\r\nBad Language\r\nGambling",
+                                                              "use_age_gate":  "true",
+                                                              "required_age":  "17"
+                                                          },
+                                                 "usk":  {
+                                                             "rating":  "18",
+                                                             "use_age_gate":  "true",
+                                                             "required_age":  "17"
+                                                         },
+                                                 "oflc":  {
+                                                              "rating":  "ma15",
+                                                              "descriptors":  "Strong violence",
+                                                              "use_age_gate":  "true",
+                                                              "required_age":  "15"
+                                                          },
+                                                 "nzoflc":  {
+                                                                "rating":  "r16",
+                                                                "descriptors":  "Violence\r\nOffensive language\r\nSexual material",
+                                                                "required_age":  "15",
+                                                                "use_age_gate":  "true"
+                                                            },
+                                                 "cero":  {
+                                                              "rating":  "d",
+                                                              "descriptors":  "セクシャル\r\n暴力\r\nギャンブル\r\n犯罪",
+                                                              "use_age_gate":  "true",
+                                                              "required_age":  "17"
+                                                          },
+                                                 "kgrb":  {
+                                                              "rating":  "18",
+                                                              "descriptors":  "선정성\r\n폭력성\r\n약물\r\n범죄\r\n사행성",
+                                                              "use_age_gate":  "true",
+                                                              "required_age":  "18"
+                                                          },
+                                                 "csrr":  {
+                                                              "rating":  "R",
+                                                              "descriptors":  "性,暴力,反社會性",
+                                                              "use_age_gate":  "true",
+                                                              "required_age":  "18"
+                                                          },
+                                                 "steam_germany":  {
+                                                                       "rating_generated":  "1",
+                                                                       "rating":  "18",
+                                                                       "required_age":  "18",
+                                                                       "banned":  "0",
+                                                                       "use_age_gate":  "0",
+                                                                       "descriptors":  "Sexualisierte Gewalt / Sexual violence\nDrastische Gewalt\nAlkohol / Tabak"
+                                                                   },
+                                                 "igrs":  {
+                                                              "rating_generated":  "1",
+                                                              "rating":  "BANNED",
+                                                              "required_age":  "2147483647",
+                                                              "banned":  "1",
+                                                              "use_age_gate":  "0",
+                                                              "descriptors":  "Simulasi dan/atau kegiatan judi\nRokok dan/atau rokok elektronik, minuman beralkohol, narkotika, psikotropika, dan/atau zat adiktif lainnya\nPenampilan Tokoh"
+                                                          }
+                                             }
+                             }
+                }
+}

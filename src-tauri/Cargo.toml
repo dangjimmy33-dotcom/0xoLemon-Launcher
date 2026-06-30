@@ -22,6 +22,10 @@ path = "src/bin/depot_builder.rs"
 name = "asset_pack_builder"
 path = "src/bin/asset_pack_builder.rs"
 
+[[bin]]
+name = "injector_cli"
+path = "src/bin/injector_cli.rs"
+
 [build-dependencies]
 tauri-build = { version = "2.5.3", features = [] }
 
@@ -58,6 +62,8 @@ md-5 = "0.10"
 flate2 = "1"
 winreg = "0.52"
 sevenz-rust = { version = "0.6.1", features = ["aes256"] }
+winapi = { version = "0.3.9", features = ["minwindef", "errhandlingapi", "handleapi", "libloaderapi", "memoryapi", "processthreadsapi", "synchapi", "sysinfoapi", "winbase", "winnt"] }
+tauri-plugin-global-shortcut = "~2.0.0"
 
 [features]
 default = ["custom-protocol"]

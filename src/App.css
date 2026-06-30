@@ -57,9 +57,9 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  border-right: 1px solid var(--line);
+  border-right: none;
   background: rgba(6, 11, 14, 0.95);
-  box-shadow: inset -1px 0 0 rgba(219, 176, 91, 0.07);
+  box-shadow: inset -1px 0 0 rgba(219, 176, 91, 0.07), 1px 0 0 var(--line);
   overflow: hidden;
 }
 
@@ -1758,6 +1758,29 @@ h1 {
   border-color: rgba(61, 181, 75, 0.7);
 }
 
+/* Hover on a running-game button morphs to STOP */
+/* Button must have data-stop-label="STOP" when isGameRunning */
+.update-button.running-btn.can-stop:hover {
+  background: linear-gradient(180deg, #e05353, #b33030);
+  border-color: rgba(224, 83, 83, 0.7);
+  box-shadow: 0 6px 20px rgba(180, 40, 40, 0.3);
+}
+.update-button.running-btn.can-stop[data-stop-label]:hover span {
+  visibility: hidden;
+}
+.update-button.running-btn.can-stop[data-stop-label]:hover::before {
+  content: attr(data-stop-label);
+  position: absolute;
+  left: 0;
+  right: 42px; /* leave room for SVG icon column */
+  text-align: center;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+.update-button.running-btn.can-stop {
+  position: relative;
+}
+
 .update-button.downloading-btn {
   color: #fff;
   background: linear-gradient(180deg, #4da4ff, #2978d1);
@@ -2083,6 +2106,33 @@ button:disabled {
   color: #fff;
   background: linear-gradient(180deg, #3db54b, #2c8536);
   border-color: rgba(61, 181, 75, 0.4);
+}
+
+.primary-control.running-btn.can-stop:hover {
+  background: linear-gradient(180deg, #e05353, #b33030);
+  border-color: rgba(224, 83, 83, 0.5);
+}
+
+.primary-control.running-btn.can-stop[data-stop-label]:hover {
+  position: relative;
+  /* hide the original flex content so we can substitute STOP */
+  color: transparent;
+}
+
+.primary-control.running-btn.can-stop[data-stop-label]:hover * {
+  visibility: hidden;
+}
+
+.primary-control.running-btn.can-stop[data-stop-label]:hover::before {
+  content: attr(data-stop-label);
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 0.04em;
 }
 
 .primary-control.downloading-btn {

@@ -28,6 +28,10 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+body.is-overlay-window {
+  background: transparent !important;
+}
+
 * {
   box-sizing: border-box;
 }

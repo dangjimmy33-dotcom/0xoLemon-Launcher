@@ -1,0 +1,10 @@
+^E:\007LAUNCHER\NATIVE\OVERLAY\BUILD32\CMAKEFILES\D9738CA30BABDE77D15304F4479F9FB0\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SE:/007Launcher/native/overlay -BE:/007Launcher/native/overlay/build32 --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file E:/007Launcher/native/overlay/build32/007Overlay.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
