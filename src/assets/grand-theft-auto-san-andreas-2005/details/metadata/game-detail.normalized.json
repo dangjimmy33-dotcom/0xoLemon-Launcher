@@ -1,0 +1,122 @@
+﻿{
+    "appId":  12120,
+    "title":  "Grand Theft Auto San Andreas 2005",
+    "steamMetadataCountry":  "us",
+    "steamMetadataLanguage":  "english",
+    "type":  "game",
+    "requiredAge":  "17",
+    "isFree":  false,
+    "shortDescription":  "Five years ago Carl Johnson escaped from the pressures of life in Los Santos, San Andreas... a city tearing itself apart with gang trouble, drugs and corruption. Where filmstars and millionaires do their best to avoid the dealers and gangbangers. Now, it\u0027s the early 90s. Carl\u0027s got to go home.",
+    "detailedDescriptionHtml":  "Five years ago Carl Johnson escaped from the pressures of life in Los Santos, San Andreas... a city tearing itself apart with gang trouble, drugs and corruption. Where filmstars and millionaires do their best to avoid the dealers and gangbangers. \u003cbr /\u003e\r\n\u003cbr /\u003e\r\nNow, it\u0027s the early 90s. Carl\u0027s got to go home. His mother has been murdered, his family has fallen apart and his childhood friends are all heading towards disaster. \u003cbr /\u003e\r\n\u003cbr /\u003e\r\nOn his return to the neighborhood, a couple of corrupt cops frame him for homicide. CJ is forced on a journey that takes him across the entire state of San Andreas, to save his family and to take control of the streets.",
+    "aboutTheGameHtml":  "Five years ago Carl Johnson escaped from the pressures of life in Los Santos, San Andreas... a city tearing itself apart with gang trouble, drugs and corruption. Where filmstars and millionaires do their best to avoid the dealers and gangbangers. \u003cbr /\u003e\r\n\u003cbr /\u003e\r\nNow, it\u0027s the early 90s. Carl\u0027s got to go home. His mother has been murdered, his family has fallen apart and his childhood friends are all heading towards disaster. \u003cbr /\u003e\r\n\u003cbr /\u003e\r\nOn his return to the neighborhood, a couple of corrupt cops frame him for homicide. CJ is forced on a journey that takes him across the entire state of San Andreas, to save his family and to take control of the streets.",
+    "supportedLanguagesHtml":  "English",
+    "pcRequirements":  {
+                           "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cstrong\u003eOS *:\u003c/strong\u003e Microsoft® Windows® 2000/XP\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e 1Ghz Pentium III or AMD Athlon Processor\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 256MB of RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e 64MB Video Card (Geforce 3 or better)\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eHard Drive:\u003c/strong\u003e 3.6GB of free hard disk space (minimal install)\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOther Requirements:\u003c/strong\u003e Software installations required including DirectX and Sony DADC SecuROM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003ePartner Requirements:\u003c/strong\u003e Please check the terms of service of this site before purchasing this software.\u003c/li\u003e\u003c/ul\u003e",
+                           "recommended":  "Recommended:\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e Intel Pentium 4 or AMD Athlon XP Processor\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 384MB of RAM (the more the better!)\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e 128MB (or greater) Video Card (Geforce 6 Series Recommended)\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eHard Drive:\u003c/strong\u003e 4.7GB of free hard disk space (full install)\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eSound Card:\u003c/strong\u003e DirectX 9 compatible Sound Card (Sound Blaster Auidgy 2 Recommended)\u003c/li\u003e\u003c/ul\u003e"
+                       },
+    "macRequirements":  [
+
+                        ],
+    "linuxRequirements":  [
+
+                          ],
+    "dlc":  null,
+    "website":  "http://www.rockstargames.com/sanandreas/pc",
+    "developers":  "Rockstar Games",
+    "publishers":  "Rockstar Games",
+    "releaseDate":  {
+                        "coming_soon":  false,
+                        "date":  "Jan 4, 2008"
+                    },
+    "genres":  "Action",
+    "categories":  [
+                       "Single-player",
+                       "Family Sharing"
+                   ],
+    "platforms":  {
+                      "windows":  true,
+                      "mac":  false,
+                      "linux":  false
+                  },
+    "metacritic":  {
+                       "score":  93,
+                       "url":  "https://www.metacritic.com/game/pc/grand-theft-auto-san-andreas?ftag=MCD-06-10aaa1f"
+                   },
+    "recommendations":  {
+                            "total":  70112
+                        },
+    "reviewsSummary":  null,
+    "newsItems":  [
+                      {
+                          "gid":  "1783238125246093",
+                          "title":  "GTA Definitive Edition developer says Rockstar pulled a \"d*ck move\"",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/PCGamesN/1783238125246093",
+                          "is_external_url":  true,
+                          "author":  "editor@pcgamesn.com",
+                          "contents":  "\u003cimg width=\"900\" height=\"507\" src=\"https://www.pcgamesn.com/wp-content/sites/pcgamesn/2024/11/grand-theft-auto-trilogy-definitive-edition-update-grove-street-games-response-gta-rockstar-san-andreas-vice-city-1-900x506.jpg\"/\u003e\u003cp\u003eThe CEO of \u003cstrong\u003eGTA The Trilogy Definitive Edition\u003c/strong\u003e developer Grove Street Games has responded to the game\u0027s latest update. Though GTA 6 is now its main focus, Rockstar recently launched a fix for the remastered versions of GTA 3, Vice City, and San Andreas which reintroduced the weather and sky effects from the original editions of each game. The opening \u0027splash\u0027 screen was also changed - the new version excludes any mention of Grove Street Games. The developer is still listed in the closing credits, however, but immediately following the update, there was speculation that mentions of Grove Street Games may have been removed from GTA The Trilogy entirely. In light of this, the developer\u0027s CEO describes the update as \"dick move\" on behalf of Rockstar, and says that it contains fixes that \"stayed out of players\u0027 hands for years.\"\u003c/p\u003e\n\u003cp\u003e\u003ca href=\"https://www.pcgamesn.com/grand-theft-auto-san-andreas/grove-street-games-response\"\u003eRead the rest of the story...\u003c/a\u003e\u003c/p\u003e\n\u003cp\u003eRELATED LINKS:\u003cbr /\u003e\n\u003ca href=\"https://www.pcgamesn.com/grand-theft-auto-san-andreas/definitive-edition-update\"\u003eSurprise Grand Theft Auto update finally fixes the worst problem in San Andreas\u003c/a\u003e\u003cbr /\u003e\n\u003ca href=\"https://www.pcgamesn.com/gta-5-system-requirements\"\u003eGTA system requirements\u003c/a\u003e\u003cbr /\u003e\n\u003ca href=\"https://www.pcgamesn.com/grand-theft-auto-san-andreas/plane-bug-explained\"\u003eEx GTA dev finally explains one of San Andreas\u0027 biggest mysteries\u003c/a\u003e\u003c/p\u003e",
+                          "feedlabel":  "PCGamesN",
+                          "date":  1731674517,
+                          "feedname":  "PCGamesN",
+                          "feed_type":  0,
+                          "appid":  12120
+                      },
+                      {
+                          "gid":  "6148070194801759351",
+                          "title":  "Surprise Grand Theft Auto update finally fixes the worst problem in San Andreas",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/PCGamesN/6148070194801759351",
+                          "is_external_url":  true,
+                          "author":  "editor@pcgamesn.com",
+                          "contents":  "\u003cimg width=\"900\" height=\"507\" src=\"https://www.pcgamesn.com/wp-content/sites/pcgamesn/2024/11/gta-the-trilogy-definitive-edition-grand-theft-auto-san-andreas-rockstar-open-world-game-vice-city-update-900x506.jpg\"/\u003e\u003cp\u003eMy hopes are high for GTA 6. We\u0027re going back to Vice City (albeit a reimagined, modernized version) and, based on Red Dead Redemption 2, Rockstar\u0027s ability to spin a convincing, epic crime drama has only gotten better in the past ten years. But the shadow of the \u003cstrong\u003eGTA Trilogy Definitive Edition\u003c/strong\u003e still looms large over my memory. The \u0027improved\u0027 visuals effectively robbed GTA 3, Vice City, and San Andreas of all their identity and atmosphere. Forget the bugs and other technical problems - even when they were running correctly, the new versions of the classic Grand Theft Auto games just looked worse. But now, thanks to a surprise update from Rockstar, things have suddenly improved.\u003c/p\u003e\n\u003cp\u003e\u003ca href=\"https://www.pcgamesn.com/grand-theft-auto-san-andreas/definitive-edition-update\"\u003eRead the rest of the story...\u003c/a\u003e\u003c/p\u003e\n\u003cp\u003eRELATED LINKS:\u003cbr /\u003e\n\u003ca href=\"https://www.pcgamesn.com/gta-5-system-requirements\"\u003eGTA system requirements\u003c/a\u003e\u003cbr /\u003e\n\u003ca href=\"https://www.pcgamesn.com/grand-theft-auto-san-andreas/plane-bug-explained\"\u003eEx GTA dev finally explains one of San Andreas\u0027 biggest mysteries\u003c/a\u003e\u003cbr /\u003e\n\u003ca href=\"https://www.pcgamesn.com/grand-theft-auto-san-andreas/rtx-remix-mod\"\u003eGTA San Andreas gets RTX Remix makeover, but it\u0027s not perfect yet\u003c/a\u003e\u003c/p\u003e",
+                          "feedlabel":  "PCGamesN",
+                          "date":  1731423054,
+                          "feedname":  "PCGamesN",
+                          "feed_type":  0,
+                          "appid":  12110
+                      },
+                      {
+                          "gid":  "5756237364304495510",
+                          "title":  "Ex GTA dev finally explains one of San Andreas\u0027 biggest mysteries",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/PCGamesN/5756237364304495510",
+                          "is_external_url":  true,
+                          "author":  "editor@pcgamesn.com",
+                          "contents":  "\u003cimg width=\"900\" height=\"507\" src=\"https://www.pcgamesn.com/wp-content/sites/pcgamesn/2024/04/gta-san-andreas-plane-bug-grand-theft-auto-6-rockstar-open-world-game-vice-city-1-900x506.jpg\"/\u003e\u003cp\u003eThere are a lot of reasons to be excited about \u003cstrong\u003eGrand Theft Auto 6\u003c/strong\u003e. The return to Vice City. Continuing the story from GTA 5. Finally finding out first-hand what Rockstar has been working on since the launch of Red Dead Redemption 2. But I\u0027m also looking forward to the oddities, eccentricities, and the strange sandbox game surrealism that\u0027s bound to be buried inside GTA 6. You\u0027ll likely remember the Moon size trick from GTA 3 and Vice City. Likewise, the beating heart inside Grand Theft Auto 4\u0027s Statue of Happiness, and the ghosts haunting various spots around Los Santos. Now, one former Rockstar developer lifts the lid on one of the weirdest random moments in GTA San Andreas.\u003c/p\u003e\n\u003cp\u003e\u003ca href=\"https://www.pcgamesn.com/grand-theft-auto-san-andreas/plane-bug-explained\"\u003eRead the rest of the story...\u003c/a\u003e\u003c/p\u003e\n\u003cp\u003eRELATED LINKS:\u003cbr /\u003e\n\u003ca href=\"https://www.pcgamesn.com/grand-theft-auto-san-andreas/rtx-remix-mod\"\u003eGTA San Andreas gets RTX Remix makeover, but it\u0027s not perfect yet\u003c/a\u003e\u003cbr /\u003e\n\u003ca href=\"https://www.pcgamesn.com/grand-theft-auto/definitive-edition-steam-sale\"\u003eAhead of GTA 6, get Rockstar\u0027s defining trilogy cheap in a Steam sale\u003c/a\u003e\u003cbr /\u003e\n\u003ca href=\"https://www.pcgamesn.com/grand-theft-auto/subscription-games\"\u003eRockstar announces access to \"rotating assortment\" of iconic GTA games\u003c/a\u003e\u003c/p\u003e",
+                          "feedlabel":  "PCGamesN",
+                          "date":  1712150199,
+                          "feedname":  "PCGamesN",
+                          "feed_type":  0,
+                          "appid":  12120
+                      },
+                      {
+                          "gid":  "5582843074959230313",
+                          "title":  "GTA San Andreas gets RTX Remix makeover, but it\u0027s not perfect yet",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/PCGamesN/5582843074959230313",
+                          "is_external_url":  true,
+                          "author":  "editor@pcgamesn.com",
+                          "contents":  "\u003cimg width=\"900\" height=\"507\" src=\"https://www.pcgamesn.com/wp-content/sites/pcgamesn/2024/02/grand-theft-auto-san-andreas-rtx-remix-mod-900x506.jpg\"/\u003e\u003cp\u003eFollowing the release \u003cstrong\u003eRTX Remix\u003c/strong\u003e Open Beta, modders aplenty have started working on remixing classic PC games, including \u003cstrong\u003eGrand Theft Auto: San Andreas\u003c/strong\u003e. However, while Grove Street can clearly benefit from path tracing, there\u0027s still plenty of work to be done before this mod is ready for prime time.\u003c/p\u003e\n\u003cp\u003e\u003ca href=\"https://www.pcgamesn.com/grand-theft-auto-san-andreas/rtx-remix-mod\"\u003eRead the rest of the story...\u003c/a\u003e\u003c/p\u003e\n\u003cp\u003eRELATED LINKS:\u003cbr /\u003e\n\u003ca href=\"https://www.pcgamesn.com/grand-theft-auto/definitive-edition-steam-sale\"\u003eAhead of GTA 6, get Rockstar\u0027s defining trilogy cheap in a Steam sale\u003c/a\u003e\u003cbr /\u003e\n\u003ca href=\"https://www.pcgamesn.com/grand-theft-auto/subscription-games\"\u003eRockstar announces access to \"rotating assortment\" of iconic GTA games\u003c/a\u003e\u003cbr /\u003e\n\u003ca href=\"https://www.pcgamesn.com/cities-skylines/gta-san-andreas\"\u003eGTA San Andreas comes to Cities Skylines in astounding creation\u003c/a\u003e\u003c/p\u003e",
+                          "feedlabel":  "PCGamesN",
+                          "date":  1707230183,
+                          "feedname":  "PCGamesN",
+                          "feed_type":  0,
+                          "appid":  12120
+                      },
+                      {
+                          "gid":  "5302486388002100039",
+                          "title":  "Ahead of GTA 6, get Rockstar\u0027s defining trilogy cheap in a Steam sale",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/PCGamesN/5302486388002100039",
+                          "is_external_url":  true,
+                          "author":  "editor@pcgamesn.com",
+                          "contents":  "\u003cimg width=\"900\" height=\"507\" src=\"https://www.pcgamesn.com/wp-content/sites/pcgamesn/2023/11/gta-trilogy-definitive-edition-steam-sale-cheap-grand-theft-auto-3-vice-city-san-andreas-rockstar-games-900x506.jpg\"/\u003e\u003cp\u003e\u003cstrong\u003eGTA 6\u003c/strong\u003e is kind of a big deal. Few names are as industry-defining as the Grand Theft Auto series, so it\u0027s no surprise that we\u0027re all eagerly waiting to see exactly what Rockstar Games has in store for us next. But before the success of GTA 5, Red Dead Redemption 2, and Bully, it was the trilogy of GTA 3, Vice City, and San Andreas that truly elevated the company to, well, rockstar levels within the game industry, and if you\u0027ve never experienced them yourself or simply fancy revisiting the classics, a new Steam sale is here to make it cheaper.\u003c/p\u003e\n\u003cp\u003e\u003ca href=\"https://www.pcgamesn.com/grand-theft-auto/definitive-edition-steam-sale\"\u003eRead the rest of the story...\u003c/a\u003e\u003c/p\u003e\n\u003cp\u003eRELATED LINKS:\u003cbr /\u003e\n\u003ca href=\"https://www.pcgamesn.com/grand-theft-auto/subscription-games\"\u003eRockstar announces access to \"rotating assortment\" of iconic GTA games\u003c/a\u003e\u003cbr /\u003e\n\u003ca href=\"https://www.pcgamesn.com/grand-theft-auto-definitive-edition-epic-games-store-rockstar\"\u003eGTA Definitive Edition hits Epic Games Store, cheap, but still buggy\u003c/a\u003e\u003cbr /\u003e\n\u003ca href=\"https://www.pcgamesn.com/grand-theft-auto-iii/trilogy-steam-updates-epic-release\"\u003eGTA Trilogy gets mysterious Steam updates ahead of Epic release\u003c/a\u003e\u003c/p\u003e",
+                          "feedlabel":  "PCGamesN",
+                          "date":  1699630205,
+                          "feedname":  "PCGamesN",
+                          "feed_type":  0,
+                          "appid":  12100
+                      }
+                  ],
+    "achievements":  {
+                         "total":  0,
+                         "items":  [
+
+                                   ]
+                     }
+}

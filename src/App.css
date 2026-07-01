@@ -2115,11 +2115,9 @@ button:disabled {
 
 .primary-control.running-btn.can-stop[data-stop-label]:hover {
   position: relative;
-  /* hide the original flex content so we can substitute STOP */
-  color: transparent;
 }
 
-.primary-control.running-btn.can-stop[data-stop-label]:hover * {
+.primary-control.running-btn.can-stop[data-stop-label]:hover span {
   visibility: hidden;
 }
 

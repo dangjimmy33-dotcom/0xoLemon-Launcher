@@ -602,7 +602,7 @@ export function StoreLibraryView({
             data-stop-label={isPlaying ? 'STOP' : undefined}
           >
             {primaryIcon}
-            {actionLabel}
+            <span>{actionLabel}</span>
           </button>
           {installed && showVersionAction ? (
             <button
@@ -671,7 +671,7 @@ export function StoreLibraryView({
               data-stop-label={isPlaying ? 'STOP' : undefined}
             >
               {primaryIcon}
-              {actionLabel}
+              <span>{actionLabel}</span>
             </button>
             {installed && showVersionAction ? (
               <button className="update-control" type="button" onClick={onPrimaryAction} disabled={updateDisabled}>
