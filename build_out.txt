@@ -1,0 +1,5 @@
+
+> first-light-smart-launcher@1.0.10 tauri:build
+> tauri build
+
+       Error `"tauri.conf.json"` error on `bundle > windows > wix`: {"bannerImage":null,"dialogImage":null} is not valid under any of the schemas listed in the 'anyOf' keyword
