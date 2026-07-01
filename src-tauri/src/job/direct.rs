@@ -388,11 +388,11 @@ impl DepotSource {
         if chunks.is_empty() {
             return Ok(());
         }
-        let tasks = build_pack_download_tasks(chunks);
+        let tasks = build_pack_download_tasks(chunks, self.effective_pack_range_task_bytes());
         let settings = crate::platform::current_settings();
         let queue_budget = settings.download_queue_mb.saturating_mul(1024 * 1024);
-        let workers_by_budget = (queue_budget / pack_range_task_bytes()).max(1) as usize;
-        let worker_count = download_worker_count()
+        let workers_by_budget = (queue_budget / self.effective_pack_range_task_bytes()).max(1) as usize;
+        let worker_count = self.effective_worker_count()
             .min(workers_by_budget)
             .min(tasks.len())
             .max(1);

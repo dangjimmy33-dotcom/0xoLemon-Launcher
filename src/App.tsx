@@ -173,6 +173,8 @@ export default function App() {
   const pendingCloudLaunchRef = useRef<{ optionId?: string; optionTitle?: string } | null>(null)
   const downloadRateWindowRef = useRef<{ jobId: string; points: Array<{ bytesDone: number; at: number }> } | null>(null)
   const canceledJobIdRef = useRef<string | null>(null)
+  const autoResumeInFlightRef = useRef(false)
+  const autoResumeJobIdRef = useRef<string | null>(null)
   const selectedGameIdRef = useRef<string | null>(selectedGameId)
   const versionPlanSequenceRef = useRef(0)
   const [downloadRate, setDownloadRate] = useState(0)
@@ -745,18 +747,6 @@ export default function App() {
     }
 
     queueMicrotask(() => setCatalogLoadState('loading'))
-    try {
-      const next = await invoke<GameCatalog>('get_game_catalog')
-      // If the local .0xo pack returns no games, use Firestore catalog as source
-      // (Firestore catalog is loaded separately via useFirestoreCatalog hook)
-      if (next.games.length > 0) {
-        setCatalog(next)
-      }
-      setCatalogLoadState('ready')
-    } catch (error) {
-      console.error('Unable to load the game catalog:', error)
-      setCatalogLoadState('error')
-    }
   }, [])
 
   const refreshSteamEnvironment = useCallback(async (announce = false) => {
@@ -785,15 +775,8 @@ export default function App() {
   // Sync Firestore catalog into local state when it arrives
   useEffect(() => {
     if (firestoreCatalog && firestoreCatalog.games.length > 0) {
-      setCatalog((prev) => {
-        // Local .0xo games take priority; Firestore fills in what's missing
-        const localIds = new Set(prev.games.map((g) => g.id))
-        const merged = [
-          ...prev.games,
-          ...firestoreCatalog.games.filter((g) => !localIds.has(g.id)),
-        ]
-        return { ...firestoreCatalog, games: merged }
-      })
+      setCatalog(firestoreCatalog)
+      setCatalogLoadState('ready')
     }
   }, [firestoreCatalog])
 
@@ -1349,6 +1332,62 @@ export default function App() {
       unsubscribeJobCleared?.()
     }
   }, [playInstallCompleteSound, publishNotification])
+
+  useEffect(() => {
+    if (!isTauriRuntime()) return
+
+    const canAutoResume = (current: JobJournal | null) => {
+      if (!current) return false
+      if (current.kind !== 'install' && current.kind !== 'update' && current.kind !== 'repair') {
+        return false
+      }
+      if (current.status === 'paused') return true
+      if (current.status !== 'failed') return false
+      const stepPhase = current.steps.map((step) => `${step.name} ${step.detail}`).join(' ')
+      const phase = `${current.phase ?? ''} ${stepPhase}`.toLowerCase()
+      return phase.includes('download') || phase.includes('assembling') || phase.includes('verify')
+    }
+
+    const resumeInterruptedJob = async () => {
+      const current = latestJobRef.current
+      if (!canAutoResume(current)) return
+      if (autoResumeInFlightRef.current && autoResumeJobIdRef.current === current?.id) return
+
+      autoResumeInFlightRef.current = true
+      autoResumeJobIdRef.current = current?.id ?? null
+      try {
+        await invoke('resume_job')
+        setJob((state) => (state ? { ...state, status: 'running', phase: state.phase || 'Download packs' } : state))
+        setScanStatus('Network restored, resuming download...')
+      } catch (error) {
+        setScanStatus(`Network restored, but auto-resume failed: ${String(error)}`)
+      } finally {
+        autoResumeInFlightRef.current = false
+      }
+    }
+
+    const handleOnline = () => {
+      void resumeInterruptedJob()
+    }
+
+    const handleOffline = () => {
+      if (canAutoResume(latestJobRef.current)) {
+        setScanStatus('Network lost; launcher will retry when the connection is back.')
+      }
+    }
+
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+
+    if (navigator.onLine) {
+      void resumeInterruptedJob()
+    }
+
+    return () => {
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+    }
+  }, [])
 
   useEffect(() => {
     if (!isTauriRuntime()) {

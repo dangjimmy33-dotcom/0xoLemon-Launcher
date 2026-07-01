@@ -56,6 +56,8 @@ const PACK_RANGE_MERGE_GAP: u64 = 4 * 1024 * 1024;
 const MIN_PACK_RANGE_TASK_BYTES: u64 = 8 * 1024 * 1024;
 const MAX_PACK_RANGE_TASK_BYTES: u64 = 64 * 1024 * 1024;
 const MIN_ADAPTIVE_RANGE_BYTES: u64 = 8 * 1024 * 1024;
+const ANONYMOUS_MAX_WORKERS: usize = 4;
+const ANONYMOUS_MAX_PACK_RANGE_TASK_BYTES: u64 = 12 * 1024 * 1024;
 const VERIFY_PROGRESS_EVENT: &str = "launcher://verify-progress";
 const VERIFY_READ_BUFFER_BYTES: usize = 4 * 1024 * 1024;
 const DOWNLOAD_CHECKPOINT_BYTES: u64 = 64 * 1024 * 1024;
@@ -2485,6 +2487,28 @@ impl DepotSource {
         }
     }
 
+    fn is_remote_anonymous(&self) -> bool {
+        self.local_root.is_none() && !self.base_urls.iter().any(|base| base.token.is_some())
+    }
+
+    fn effective_worker_count(&self) -> usize {
+        let workers = download_worker_count();
+        if self.is_remote_anonymous() {
+            workers.min(ANONYMOUS_MAX_WORKERS)
+        } else {
+            workers
+        }
+    }
+
+    fn effective_pack_range_task_bytes(&self) -> u64 {
+        let bytes = pack_range_task_bytes();
+        if self.is_remote_anonymous() {
+            bytes.min(ANONYMOUS_MAX_PACK_RANGE_TASK_BYTES)
+        } else {
+            bytes
+        }
+    }
+
     fn get_client(&self) -> &Client {
         self.client.get_or_init(|| {
             Client::builder()
@@ -2842,11 +2866,11 @@ impl DepotSource {
             return Ok(());
         }
 
-        let tasks = build_pack_download_tasks(chunks);
+        let tasks = build_pack_download_tasks(chunks, self.effective_pack_range_task_bytes());
         let settings = crate::platform::current_settings();
         let queue_budget = settings.download_queue_mb.saturating_mul(1024 * 1024);
-        let workers_by_budget = (queue_budget / pack_range_task_bytes()).max(1) as usize;
-        let worker_count = download_worker_count()
+        let workers_by_budget = (queue_budget / self.effective_pack_range_task_bytes()).max(1) as usize;
+        let worker_count = self.effective_worker_count()
             .min(workers_by_budget)
             .min(tasks.len())
             .max(1);
@@ -3256,11 +3280,16 @@ fn append_stream_to_partial<R: Read>(
             Ok(read) => read,
             Err(error) => {
                 let _ = checkpoint_partial(&mut output, partial_path, written);
-                return Err(error.into());
+                return Err(JobError::Transient(format!(
+                    "download stream interrupted for {task_id}: {error}"
+                )));
             }
         };
         if read == 0 {
-            break;
+            let _ = checkpoint_partial(&mut output, partial_path, written);
+            return Err(JobError::Transient(format!(
+                "download stream ended early for {task_id}; expected {expected_len} bytes, got {written}"
+            )));
         }
         output.write_all(&scratch[..read])?;
         written = written.saturating_add(read as u64);
@@ -3311,7 +3340,7 @@ fn existing_partial_task_progress(
     staged_chunks_root: &Path,
     chunks: &[ChunkRef],
 ) -> HashMap<String, u64> {
-    build_pack_download_tasks(chunks)
+    build_pack_download_tasks(chunks, pack_range_task_bytes())
         .into_iter()
         .filter_map(|task| {
             let expected = task.range_end.saturating_sub(task.range_start);
@@ -3751,7 +3780,7 @@ fn prepare_direct_stage(
     Ok(Some(stage))
 }
 
-fn build_pack_download_tasks(chunks: &[ChunkRef]) -> Vec<PackDownloadTask> {
+fn build_pack_download_tasks(chunks: &[ChunkRef], max_task_bytes: u64) -> Vec<PackDownloadTask> {
     let mut by_pack: HashMap<String, Vec<ChunkRef>> = HashMap::new();
     for chunk in chunks {
         by_pack
@@ -3761,7 +3790,6 @@ fn build_pack_download_tasks(chunks: &[ChunkRef]) -> Vec<PackDownloadTask> {
     }
 
     let mut tasks = Vec::new();
-    let max_task_bytes = pack_range_task_bytes();
     for (pack_id, mut pack_chunks) in by_pack {
         pack_chunks.sort_by_key(|chunk| chunk.pack_offset);
         let mut current_start = 0_u64;
@@ -3935,7 +3963,7 @@ fn observe_adaptive_range(rate_bytes_per_second: u64, failed: bool) {
 }
 
 fn download_transfer_bytes(chunks: &[ChunkRef]) -> u64 {
-    build_pack_download_tasks(chunks)
+    build_pack_download_tasks(chunks, pack_range_task_bytes())
         .iter()
         .map(|task| task.range_end - task.range_start)
         .sum()
@@ -4926,6 +4954,7 @@ fn journal_path(app: &AppHandle) -> Result<PathBuf, JobError> {
 #[cfg(test)]
 mod downloader_v2_tests {
     use super::*;
+    use std::io::{Cursor, Error, ErrorKind, Read};
 
     #[test]
     fn v1_chunk_without_codec_defaults_to_zstd() {
@@ -4987,6 +5016,81 @@ mod downloader_v2_tests {
         fs::remove_file(partial_checkpoint_path(&partial)).unwrap();
         fs::remove_file(&partial).unwrap();
         fs::remove_dir(&root).unwrap();
+    }
+
+    #[test]
+    fn stream_interrupts_are_retryable() {
+        let root = env::temp_dir().join(format!(
+            "0xolemon-stream-retry-{}",
+            Utc::now().timestamp_nanos_opt().unwrap_or_default()
+        ));
+        fs::create_dir(&root).unwrap();
+        let partial = root.join("range.part");
+
+        struct FailingReader {
+            cursor: Cursor<Vec<u8>>,
+            fail_after_reads: usize,
+            reads: usize,
+        }
+
+        impl Read for FailingReader {
+            fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
+                if self.reads >= self.fail_after_reads {
+                    return Err(Error::new(ErrorKind::ConnectionReset, "connection reset"));
+                }
+                self.reads += 1;
+                self.cursor.read(buf)
+            }
+        }
+
+        let (tx, _rx) = mpsc::channel();
+        let control = JobControl::default();
+        let mut reader = FailingReader {
+            cursor: Cursor::new(vec![1, 2, 3, 4]),
+            fail_after_reads: 1,
+            reads: 0,
+        };
+
+        let err = append_stream_to_partial(
+            &mut reader,
+            &partial,
+            0,
+            8,
+            "task-1",
+            &control,
+            &tx,
+        )
+        .unwrap_err();
+
+        assert!(matches!(err, JobError::Transient(_)));
+        assert!(err.retry_delay(1).is_some());
+
+        fs::remove_file(partial_checkpoint_path(&partial)).ok();
+        fs::remove_file(&partial).ok();
+        fs::remove_dir(&root).ok();
+    }
+
+    #[test]
+    fn early_eof_is_retryable() {
+        let root = env::temp_dir().join(format!(
+            "0xolemon-eof-retry-{}",
+            Utc::now().timestamp_nanos_opt().unwrap_or_default()
+        ));
+        fs::create_dir(&root).unwrap();
+        let partial = root.join("range.part");
+        let (tx, _rx) = mpsc::channel();
+        let control = JobControl::default();
+        let mut reader = Cursor::new(vec![9, 9, 9]);
+
+        let err = append_stream_to_partial(&mut reader, &partial, 0, 16, "task-2", &control, &tx)
+            .unwrap_err();
+
+        assert!(matches!(err, JobError::Transient(_)));
+        assert!(err.retry_delay(1).is_some());
+
+        fs::remove_file(partial_checkpoint_path(&partial)).ok();
+        fs::remove_file(&partial).ok();
+        fs::remove_dir(&root).ok();
     }
 
     #[test]

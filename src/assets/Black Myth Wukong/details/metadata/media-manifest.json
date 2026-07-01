@@ -1,0 +1,272 @@
+﻿[
+    {
+        "role":  "header",
+        "title":  "Steam header",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2358720/header.jpg?t=1760601605",
+        "file":  "store_art/header.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-01T01:07:22.582Z"
+    },
+    {
+        "role":  "capsule",
+        "title":  "Steam capsule",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2358720/capsule_231x87.jpg?t=1760601605",
+        "file":  "store_art/capsule.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-01T01:07:22.586Z"
+    },
+    {
+        "role":  "capsule-v5",
+        "title":  "Steam capsule v5",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2358720/capsule_184x69.jpg?t=1760601605",
+        "file":  "store_art/capsule-v5.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-01T01:07:22.586Z"
+    },
+    {
+        "role":  "background",
+        "title":  "Steam background",
+        "sourceUrl":  "https://store.akamai.steamstatic.com/images/storepagebackground/app/2358720?t=1760601605",
+        "file":  "store_art/background.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-01T01:07:22.587Z"
+    },
+    {
+        "role":  "background-raw",
+        "title":  "Steam background raw",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2358720/page_bg_raw.jpg?t=1760601605",
+        "file":  "store_art/background-raw.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-01T01:07:22.587Z"
+    },
+    {
+        "role":  "description-image",
+        "title":  "Description image 1",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2358720/extras/53c062bc38fc59440d6e9ae53e6e51f2.webp?t=1760601605",
+        "file":  "description_images/001_53c062bc38fc59440d6e9ae53e6e51f2.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-01T01:07:22.601Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 1",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2358720/ss_86c4b7462bba219a0d0b89931a35812b9f188976.1920x1080.jpg?t=1760601605",
+        "file":  "screenshots/001_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-01T01:07:22.608Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 2",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2358720/ss_d9391ab31a4d15dddf7ba4949bfa44f5d9170580.1920x1080.jpg?t=1760601605",
+        "file":  "screenshots/002_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-01T01:07:22.608Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 3",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2358720/ss_524a39da392ee83dde091033562bc719d46b5838.1920x1080.jpg?t=1760601605",
+        "file":  "screenshots/003_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-01T01:07:22.610Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 4",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2358720/ss_968bbc9caceb7d798bd0c393e1e9b4c44ed6d835.1920x1080.jpg?t=1760601605",
+        "file":  "screenshots/004_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-01T01:07:22.610Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 5",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2358720/ss_415397426d4c939ebb8a93ac66831f28ee7199be.1920x1080.jpg?t=1760601605",
+        "file":  "screenshots/005_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-01T01:07:22.611Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 6",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2358720/ss_63477e8ce2c0582b81c6ed576377d78e692b5642.1920x1080.jpg?t=1760601605",
+        "file":  "screenshots/006_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-01T01:07:22.611Z"
+    },
+    {
+        "role":  "video",
+        "title":  "Black Myth: Wukong - Launch Trailer",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/2358720/743632/6acf4311bb6a59d300b902ab6a3f445215089d9c/1750812851/hls_264_master.m3u8?t=1729236218",
+        "file":  "videos/001_black-myth-wukong-launch-trailer.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-01T01:07:22.624Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "Black Myth: Wukong - Launch Trailer",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257048125/5bd85986ed6b1545d91ceb84714dd06a952fa17f/movie_600x337.jpg?t=1729236218",
+        "file":  "video_thumbnails/001_black-myth-wukong-launch-trailer_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-01T01:07:22.624Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "Black Myth: Wukong - Launch Trailer",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257048125/5bd85986ed6b1545d91ceb84714dd06a952fa17f/movie_600x337.jpg?t=1729236218",
+        "file":  "video_thumbnails/001_black-myth-wukong-launch-trailer_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-01T01:07:22.624Z"
+    },
+    {
+        "role":  "video",
+        "title":  "Black Myth: Wukong - Pre-Orders Now Available",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/2358720/710907/cfac50d865dd4c081a67949bef11a498e5a2c67b/1750812850/hls_264_master.m3u8?t=1729236226",
+        "file":  "videos/002_black-myth-wukong-pre-orders-now-available.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-01T01:07:22.625Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "Black Myth: Wukong - Pre-Orders Now Available",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257029344/f33a1247a6929856238f8176f5cc30c75b84a865/movie_600x337.jpg?t=1729236226",
+        "file":  "video_thumbnails/002_black-myth-wukong-pre-orders-now-available_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-01T01:07:22.625Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "Black Myth: Wukong - Pre-Orders Now Available",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257029344/f33a1247a6929856238f8176f5cc30c75b84a865/movie_600x337.jpg?t=1729236226",
+        "file":  "video_thumbnails/002_black-myth-wukong-pre-orders-now-available_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-01T01:07:22.625Z"
+    },
+    {
+        "role":  "video",
+        "title":  "Black Myth: Wukong - Final Trailer",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/2358720/737384/f7e06da11f0edccfcc36f2ee28dad70d320b15a6/1750812851/hls_264_master.m3u8?t=1729236234",
+        "file":  "videos/003_black-myth-wukong-final-trailer.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-01T01:07:22.626Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "Black Myth: Wukong - Final Trailer",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257044448/14ee8023a01fd253fec9018e4d98e09aab09cbf4/movie_600x337.jpg?t=1729236234",
+        "file":  "video_thumbnails/003_black-myth-wukong-final-trailer_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-01T01:07:22.626Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "Black Myth: Wukong - Final Trailer",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257044448/14ee8023a01fd253fec9018e4d98e09aab09cbf4/movie_600x337.jpg?t=1729236234",
+        "file":  "video_thumbnails/003_black-myth-wukong-final-trailer_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-01T01:07:22.626Z"
+    },
+    {
+        "role":  "video",
+        "title":  "Black Myth: Wukong Release Date Trailer | The Game Awards 2023",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/2358720/637370/a11d3df06dd4d8a5c62221262fc33fafca80cd52/1750812850/hls_264_master.m3u8?t=1729236246",
+        "file":  "videos/004_black-myth-wukong-release-date-trailer-the-game-awards-2023.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-01T01:07:22.626Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "Black Myth: Wukong Release Date Trailer | The Game Awards 2023",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256987088/7dec31481e6e0ca24e37a6f45c7abdf4edde26d9/movie_600x337.jpg?t=1729236246",
+        "file":  "video_thumbnails/004_black-myth-wukong-release-date-trailer-the-game-awards-2023_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-01T01:07:22.626Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "Black Myth: Wukong Release Date Trailer | The Game Awards 2023",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256987088/7dec31481e6e0ca24e37a6f45c7abdf4edde26d9/movie_600x337.jpg?t=1729236246",
+        "file":  "video_thumbnails/004_black-myth-wukong-release-date-trailer-the-game-awards-2023_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-01T01:07:22.627Z"
+    },
+    {
+        "role":  "video",
+        "title":  "Black Myth: Wukong Gameplay | Gamescom ONL 2023",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/2358720/599863/2efe2fbdd78b7c51d6892169a0b75e8c47bd6633/1750812850/hls_264_master.m3u8?t=1729236249",
+        "file":  "videos/005_black-myth-wukong-gameplay-gamescom-onl-2023.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-01T01:07:22.627Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "Black Myth: Wukong Gameplay | Gamescom ONL 2023",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256965216/813ef09701102d456493067cf39d407ea0bbe02a/movie_600x337.jpg?t=1729236249",
+        "file":  "video_thumbnails/005_black-myth-wukong-gameplay-gamescom-onl-2023_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-01T01:07:22.627Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "Black Myth: Wukong Gameplay | Gamescom ONL 2023",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256965216/813ef09701102d456493067cf39d407ea0bbe02a/movie_600x337.jpg?t=1729236249",
+        "file":  "video_thumbnails/005_black-myth-wukong-gameplay-gamescom-onl-2023_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-01T01:07:22.627Z"
+    }
+]
