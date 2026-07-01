@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
-import {
-  Bell,
+import { useState, useEffect, useRef } from 'react'
+import { useLocale, type Locale } from '../context/LocaleContext'
+import { ChevronDown, Bell,
   Clock3,
   Cloud,
   Download,
@@ -20,6 +21,52 @@ import {
 import { invoke } from '@tauri-apps/api/core'
 import type { LauncherPreferences, NotificationCategory } from '../lib/preferences'
 import type { LauncherSettings, SteamEnvironmentInfo } from '../types'
+
+function CustomSelect<T extends string>({
+  value,
+  onChange,
+  options,
+}: {
+  value: T
+  onChange: (value: T) => void
+  options: { value: T; label: string }[]
+}) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  const selectedLabel = options.find((o) => o.value === value)?.label ?? value
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [open])
+
+  return (
+    <div className={`cs-wrap${open ? ' is-open' : ''}`} ref={ref}>
+      <button type="button" className="cs-trigger" onClick={() => setOpen((v) => !v)}>
+        <span>{selectedLabel}</span>
+        <ChevronDown size={14} className="cs-chevron" />
+      </button>
+      <div className="cs-dropdown">
+        <div className="cs-list">
+          {options.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              className={`cs-option${opt.value === value ? ' is-selected' : ''}`}
+              onClick={() => { onChange(opt.value); setOpen(false) }}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
 
 function Toggle({
   checked,
@@ -109,6 +156,7 @@ export function SettingsView({
   appVersion: string
   updateStatus: string | null
 }) {
+  const { locale, setLocale, t } = useLocale()
   return (
     <section className="settings-view settings-view-global">
       <header className="settings-page-header">
@@ -117,13 +165,13 @@ export function SettingsView({
             <Settings size={21} />
           </span>
           <div>
-            <h1>Settings</h1>
-            <p>Launcher-wide preferences. Game-specific actions stay in Library.</p>
+            <h1>{t.settings.title}</h1>
+            <p>{t.settings.subtitle}</p>
           </div>
         </div>
         <button type="button" className="settings-reset" onClick={onReset}>
           <RotateCcw size={15} />
-          Restore defaults
+          {t.settings.restoreDefaults}
         </button>
       </header>
 
@@ -132,61 +180,61 @@ export function SettingsView({
           <header>
             <MonitorCog size={18} />
             <div>
-              <strong>General</strong>
-              <span>Startup and window behavior</span>
+              <strong>{t.settings.general}</strong>
+              <span>{t.settings.generalDesc}</span>
             </div>
           </header>
           <div className="settings-group-body">
-            <SettingRow title="Open launcher on" description="Choose the page shown when the launcher starts.">
-              <select
-                className="settings-select"
+            <SettingRow title={t.settings.openLauncherOn} description={t.settings.openLauncherOnDesc}>
+              <CustomSelect
                 value={preferences.startupPage}
-                onChange={(event) => onChange('startupPage', event.target.value as LauncherPreferences['startupPage'])}
-              >
-                <option value="Home">Home</option>
-                <option value="Store">Store</option>
-                <option value="Library">Library</option>
-                <option value="Updates">Updates</option>
-                <option value="Downloads">Downloads</option>
-                <option value="Cloud Saves">Cloud Saves</option>
-              </select>
+                onChange={(v) => onChange('startupPage', v)}
+                options={[
+                  { value: 'Home', label: t.nav.home },
+                  { value: 'Store', label: t.nav.store },
+                  { value: 'Library', label: t.nav.library },
+                  { value: 'Updates', label: t.nav.updates },
+                  { value: 'Downloads', label: t.nav.downloads },
+                  { value: 'Cloud Saves', label: t.nav.cloudSaves },
+                ]}
+              />
             </SettingRow>
-            <SettingRow title="Close button" description="Choose what the title-bar close button does.">
-              <select
-                className="settings-select"
+            <SettingRow title={t.settings.closeButton} description={t.settings.closeButtonDesc}>
+              <CustomSelect
                 value={preferences.closeBehavior}
-                onChange={(event) => onChange('closeBehavior', event.target.value as LauncherPreferences['closeBehavior'])}
-              >
-                <option value="exit">Exit launcher</option>
-                <option value="minimize">Minimize to taskbar</option>
-              </select>
+                onChange={(v) => onChange('closeBehavior', v)}
+                options={[
+                  { value: 'exit', label: t.settings.closeExit },
+                  { value: 'minimize', label: t.settings.closeMinimize },
+                ]}
+              />
             </SettingRow>
-            <SettingRow title="Confirm before uninstall" description="Show a confirmation dialog before deleting a game.">
+            <SettingRow title={t.settings.confirmUninstall} description={t.settings.confirmUninstallDesc}>
               <Toggle
                 checked={preferences.confirmBeforeUninstall}
                 onChange={(checked) => onChange('confirmBeforeUninstall', checked)}
-                label="Confirm before uninstall"
+                label={t.settings.confirmUninstall}
               />
             </SettingRow>
-            <SettingRow title="Confirm before cancel cleanup" description="Ask before canceling a job and deleting its temporary downloaded data.">
+            <SettingRow title={t.settings.confirmCancelCleanup} description={t.settings.confirmCancelCleanupDesc}>
               <Toggle
                 checked={preferences.confirmBeforeCancelCleanup}
                 onChange={(checked) => onChange('confirmBeforeCancelCleanup', checked)}
-                label="Confirm before cancel cleanup"
+                label={t.settings.confirmCancelCleanup}
               />
             </SettingRow>
-            <SettingRow title="Confirm before clearing cache" description="Ask before removing reusable downloaded chunks.">
+            <SettingRow title={t.settings.confirmClearCache} description={t.settings.confirmClearCacheDesc}>
               <Toggle
                 checked={preferences.confirmBeforeClearCache}
                 onChange={(checked) => onChange('confirmBeforeClearCache', checked)}
-                label="Confirm before clearing cache"
+                label={t.settings.confirmClearCache}
               />
             </SettingRow>
-            <SettingRow title="Confirm cloud restore" description="Ask before restoring a snapshot over local save files.">
+            <SettingRow title={t.settings.confirmCloudRestore} description={t.settings.confirmCloudRestoreDesc}>
               <Toggle
                 checked={preferences.confirmBeforeCloudRestore}
                 onChange={(checked) => onChange('confirmBeforeCloudRestore', checked)}
-                label="Confirm before cloud restore"
+                label={t.settings.confirmCloudRestore}
               />
             </SettingRow>
           </div>
@@ -196,18 +244,18 @@ export function SettingsView({
           <header>
             <PanelTop size={18} />
             <div>
-              <strong>Home & layout</strong>
-              <span>Choose which dashboard surfaces are visible</span>
+              <strong>{t.settings.homeLayout}</strong>
+              <span>{t.settings.homeLayoutDesc}</span>
             </div>
           </header>
           <div className="settings-group-body">
             {([
-              ['showContinuePlaying', 'Continue Playing', 'Show the large recent-game hero and quick Play action.'],
-              ['showRecentGames', 'Recent games', 'Show the installed-game carousel on Home.'],
-              ['showActiveTasks', 'Active tasks', 'Show download, update and launcher update progress on Home.'],
-              ['showDiscordCard', 'Discord community', 'Show the official community invitation card.'],
-              ['showDonateCard', 'Support development', 'Show the compact donate card and QR modal.'],
-              ['carouselAutoplay', 'Carousel autoplay', 'Rotate featured installed games every eight seconds.'],
+              ['showContinuePlaying', t.settings.showContinuePlaying, t.settings.showContinuePlayingDesc],
+              ['showRecentGames', t.settings.showRecentGames, t.settings.showRecentGamesDesc],
+              ['showActiveTasks', t.settings.showActiveTasks, t.settings.showActiveTasksDesc],
+              ['showDiscordCard', t.settings.showDiscordCard, t.settings.showDiscordCardDesc],
+              ['showDonateCard', t.settings.showDonateCard, t.settings.showDonateCardDesc],
+              ['carouselAutoplay', t.settings.carouselAutoplay, t.settings.carouselAutoplayDesc],
             ] as const).map(([key, title, description]) => (
               <SettingRow key={key} title={title} description={description}>
                 <Toggle checked={preferences[key]} onChange={(checked) => onChange(key, checked)} label={title} />
@@ -220,22 +268,22 @@ export function SettingsView({
           <header>
             <Cloud size={18} />
             <div>
-              <strong>Cloud saves</strong>
-              <span>Folder-based sync for OneDrive, Google Drive Desktop, NAS or mapped drives</span>
+              <strong>{t.settings.cloudSaves}</strong>
+              <span>{t.settings.cloudSavesDesc}</span>
             </div>
           </header>
           <div className="settings-group-body">
             <SettingRow
-              title="Cloud Save root"
+              title={t.settings.cloudSaveRoot}
               description={
                 launcherSettings.cloudSaveRoot
-                  ? 'Each game is isolated under 0xoLemon Cloud Saves inside this folder.'
-                  : 'Choose a locally synchronized folder before enabling cloud saves for a game.'
+                  ? t.settings.cloudSaveRootConfigured
+                  : t.settings.cloudSaveRootEmpty
               }
             >
               <div className="settings-path-control">
                 <span title={launcherSettings.cloudSaveRoot}>
-                  {launcherSettings.cloudSaveRoot || 'Not configured'}
+                  {launcherSettings.cloudSaveRoot || t.settings.cloudSaveNotConfigured}
                 </span>
                 <button
                   type="button"
@@ -245,16 +293,16 @@ export function SettingsView({
                 >
                   <FolderOpen size={15} />
                 </button>
-                <button type="button" onClick={onChooseCloudRoot}>Change</button>
+                <button type="button" onClick={onChooseCloudRoot}>{t.settings.change}</button>
               </div>
             </SettingRow>
             <SettingRow
-              title="Provider"
-              description="Folder sync remains available, while Google Drive backup uses the private app-data area of the signed-in account."
+              title={t.settings.cloudSaveProvider}
+              description={t.settings.cloudSaveProviderDesc}
             >
               <div className="settings-static-value">
                 <Cloud size={14} />
-                Folder + Google Drive (ready)
+                {t.settings.cloudSaveProviderValue}
               </div>
             </SettingRow>
           </div>
@@ -264,70 +312,70 @@ export function SettingsView({
           <header>
             <Gamepad2 size={18} />
             <div>
-              <strong>Steam integration</strong>
-              <span>Client discovery, libraries, shortcuts and controller-friendly launch</span>
+              <strong>{t.settings.steamIntegration}</strong>
+              <span>{t.settings.steamIntegrationDesc}</span>
             </div>
           </header>
           <div className="settings-group-body">
             <SettingRow
-              title="Steam client"
-              description={steamStatus ?? steamEnvironment?.rootPath ?? 'Detecting the local Steam installation.'}
+              title={t.settings.steamClient}
+              description={steamStatus ?? steamEnvironment?.rootPath ?? t.settings.steamClientDefault}
             >
               <div className={`settings-status-pill ${steamEnvironment?.running ? 'is-online' : ''}`}>
                 {steamEnvironment
                   ? steamEnvironment.installed
                     ? steamEnvironment.running
-                      ? 'Installed · Running'
-                      : 'Installed · Stopped'
-                    : 'Not detected'
-                  : 'Checking...'}
+                      ? `${t.settings.steamInstalled} · ${t.settings.steamRunning}`
+                      : `${t.settings.steamInstalled} · ${t.settings.steamStopped}`
+                    : t.settings.steamNotDetected
+                  : t.settings.steamChecking}
               </div>
             </SettingRow>
             <SettingRow
-              title="Steam libraries"
+              title={t.settings.steamLibraries}
               description={
                 steamEnvironment?.libraryPaths.length
                   ? steamEnvironment.libraryPaths.join(' · ')
-                  : 'Launcher reads Steam libraryfolders.vdf without moving or changing game data.'
+                  : t.settings.steamLibrariesDesc
               }
             >
               <div className="settings-static-value">
                 <HardDrive size={14} />
-                {steamEnvironment?.libraryPaths.length ?? 0} detected
+                {steamEnvironment?.libraryPaths.length ?? 0} {t.settings.steamLibrariesDetected}
               </div>
             </SettingRow>
             <SettingRow
-              title="Active Steam profile"
+              title={t.settings.steamProfile}
               description={
                 steamEnvironment?.activeAccountId
                   ? `Account ${steamEnvironment.activeAccountId} · UI language ${steamEnvironment.uiLanguage ?? 'unknown'}`
-                  : 'Sign in to Steam once to enable automatic non-Steam shortcut management.'
+                  : t.settings.steamProfileDesc
               }
             >
               <div className="settings-static-value">
-                {steamEnvironment?.pendingShortcutActions ?? 0} shortcut actions queued
+                {steamEnvironment?.pendingShortcutActions ?? 0} {t.settings.steamShortcutsQueued}
               </div>
             </SettingRow>
             <SettingRow
-              title="Steam interface"
-              description="Open the desktop client or Big Picture for controller-first navigation."
+              title={t.settings.steamInterface}
+              description={t.settings.steamInterfaceDesc}
             >
               <div className="settings-action-row">
                 <button type="button" className="settings-secondary-button" onClick={onRefreshSteam}>
                   <RefreshCcw size={15} />
-                  Refresh
+                  {t.settings.refresh}
                 </button>
                 <button type="button" className="settings-secondary-button" onClick={onOpenSteam}>
                   <MonitorCog size={15} />
-                  Open Steam
+                  {t.settings.openSteam}
                 </button>
                 <button type="button" className="settings-secondary-button" onClick={onRestartSteam}>
                   <RotateCcw size={15} />
-                  Restart Steam
+                  {t.settings.restartSteam}
                 </button>
                 <button type="button" className="settings-secondary-button" onClick={onOpenBigPicture}>
                   <Gamepad2 size={15} />
-                  Big Picture
+                  {t.settings.bigPicture}
                 </button>
               </div>
             </SettingRow>
@@ -338,51 +386,40 @@ export function SettingsView({
           <header>
             <HardDrive size={18} />
             <div>
-              <strong>Downloads & storage</strong>
-              <span>Default library and job behavior</span>
+              <strong>{t.settings.downloadsStorage}</strong>
+              <span>{t.settings.downloadsStorageDesc}</span>
             </div>
           </header>
           <div className="settings-group-body">
-            <SettingRow title="Default game library" description="New games are installed in the common folder under this location.">
+            <SettingRow title={t.settings.defaultLibrary} description={t.settings.defaultLibraryDesc}>
               <div className="settings-path-control">
                 <span title={preferences.defaultLibraryRoot}>{preferences.defaultLibraryRoot}</span>
                 <button type="button" onClick={onOpenLibrary} title="Open folder">
                   <FolderOpen size={15} />
                 </button>
-                <button type="button" onClick={onChooseLibrary}>Change</button>
+                <button type="button" onClick={onChooseLibrary}>{t.settings.change}</button>
               </div>
             </SettingRow>
-            <SettingRow title="Open Downloads when a job starts" description="Switch to the queue after starting an install or update.">
+            <SettingRow title={t.settings.openDownloadsOnStart} description={t.settings.openDownloadsOnStartDesc}>
               <Toggle
                 checked={preferences.openDownloadsOnJobStart}
                 onChange={(checked) => onChange('openDownloadsOnJobStart', checked)}
-                label="Open Downloads when a job starts"
+                label={t.settings.openDownloadsOnStart}
               />
             </SettingRow>
-            <SettingRow
-              title="Game update mode"
-              description="Automatic updates run when the launcher is idle; manual mode only updates when you request it."
-            >
-              <select
-                className="settings-select"
+            <SettingRow title={t.settings.gameUpdateMode} description={t.settings.gameUpdateModeDesc}>
+              <CustomSelect
                 value={launcherSettings.gameUpdateMode}
-                onChange={(event) =>
-                  onLauncherSettingChange(
-                    'gameUpdateMode',
-                    event.target.value as LauncherSettings['gameUpdateMode'],
-                  )
-                }
-              >
-                <option value="automatic">Automatic</option>
-                <option value="scheduled">Scheduled window</option>
-                <option value="manual">Manual only</option>
-              </select>
+                onChange={(v) => onLauncherSettingChange('gameUpdateMode', v)}
+                options={[
+                  { value: 'automatic', label: t.settings.updateAutomatic },
+                  { value: 'scheduled', label: t.settings.updateScheduled },
+                  { value: 'manual', label: t.settings.updateManual },
+                ]}
+              />
             </SettingRow>
             {launcherSettings.gameUpdateMode === 'scheduled' ? (
-              <SettingRow
-                title="Update window"
-                description="Updates may start daily inside this local-time window. Overnight windows are supported."
-              >
+              <SettingRow title={t.settings.updateWindow} description={t.settings.updateWindowDesc}>
                 <div className="settings-time-range">
                   <input
                     type="time"
@@ -391,7 +428,7 @@ export function SettingsView({
                       onLauncherSettingChange('gameUpdateScheduleStart', event.target.value)
                     }
                   />
-                  <span>to</span>
+                  <span>{t.settings.updateWindowTo}</span>
                   <input
                     type="time"
                     value={launcherSettings.gameUpdateScheduleEnd}
@@ -403,48 +440,40 @@ export function SettingsView({
               </SettingRow>
             ) : null}
             <SettingRow
-              title="Download profile"
+              title={t.settings.downloadProfile}
               description={`${launcherSettings.downloadWorkers} workers · ${launcherSettings.downloadQueueMb} MiB memory budget`}
             >
-              <select
-                className="settings-select"
+              <CustomSelect
                 value={launcherSettings.downloadProfile}
-                onChange={(event) =>
-                  onLauncherSettingChange(
-                    'downloadProfile',
-                    event.target.value as LauncherSettings['downloadProfile'],
-                  )
-                }
-              >
-                <option value="eco">Eco</option>
-                <option value="balanced">Balanced</option>
-                <option value="turbo">Turbo</option>
-              </select>
+                onChange={(v) => onLauncherSettingChange('downloadProfile', v)}
+                options={[
+                  { value: 'eco', label: 'Eco' },
+                  { value: 'balanced', label: 'Balanced' },
+                  { value: 'turbo', label: 'Turbo' },
+                ]}
+              />
             </SettingRow>
-            <SettingRow
-              title="Downloader V2 preview"
-              description="Write verified chunks directly into resumable staging files. Turn this off to use the V1 chunk-cache fallback."
-            >
+            <SettingRow title={t.settings.downloaderV2} description={t.settings.downloaderV2Desc}>
               <Toggle
                 checked={launcherSettings.directToStaging}
                 onChange={(checked) => onLauncherSettingChange('directToStaging', checked)}
-                label="Downloader V2 preview"
+                label={t.settings.downloaderV2}
               />
             </SettingRow>
-            <SettingRow title="Pause downloads before launching a game" description="Pause the active job before starting a game to reduce disk and network contention.">
+            <SettingRow title={t.settings.pauseBeforeLaunch} description={t.settings.pauseBeforeLaunchDesc}>
               <Toggle
                 checked={preferences.pauseDownloadsBeforeLaunch}
                 onChange={(checked) => onChange('pauseDownloadsBeforeLaunch', checked)}
-                label="Pause downloads before launching a game"
+                label={t.settings.pauseBeforeLaunch}
               />
             </SettingRow>
-            <SettingRow title="Chunk cache" description="Inspect cached chunks, health, free space and rollback readiness.">
+            <SettingRow title={t.settings.chunkCache} description={t.settings.chunkCacheDesc}>
               <button type="button" className="settings-secondary-button" onClick={onOpenCache}>
                 <Gauge size={15} />
-                Manage cache
+                {t.settings.manageCache}
               </button>
             </SettingRow>
-            <SettingRow title="Reset app data" description="Clear all web cache, local preferences, and cached images to fix loading issues. This will log you out.">
+            <SettingRow title={t.settings.resetAppData} description={t.settings.resetAppDataDesc}>
               <button
                 type="button"
                 style={{ background: '#e02424', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
@@ -457,7 +486,7 @@ export function SettingsView({
                 }}
               >
                 <CircleAlert size={16} />
-                Clear Cache & Restart
+                {t.settings.clearCacheRestart}
               </button>
             </SettingRow>
           </div>
@@ -467,41 +496,73 @@ export function SettingsView({
           <header>
             <Sparkles size={18} />
             <div>
-              <strong>Appearance</strong>
-              <span>Interface comfort and motion</span>
+              <strong>{t.settings.language}</strong>
+              <span>{t.settings.languageDesc}</span>
             </div>
           </header>
           <div className="settings-group-body">
-            <SettingRow title="Motion" description="Use full motion, follow Windows, or disable non-essential movement.">
+            <SettingRow title={t.settings.displayLanguage} description={t.settings.displayLanguageDesc}>
               <select
                 className="settings-select"
-                value={preferences.motionMode}
-                onChange={(event) => onChange('motionMode', event.target.value as LauncherPreferences['motionMode'])}
+                value={locale}
+                onChange={(e) => setLocale(e.target.value as Locale)}
               >
-                <option value="full">Full</option>
-                <option value="system">Follow Windows</option>
-                <option value="reduced">Reduced</option>
+                <option value="en-US">English</option>
+                <option value="vi-VN">Tiếng Việt</option>
               </select>
             </SettingRow>
-            <SettingRow title="Glass effects" description="Use acrylic blur for temporary panels and popovers.">
-              <Toggle checked={preferences.glassEffects} onChange={(value) => onChange('glassEffects', value)} label="Glass effects" />
+          </div>
+        </section>
+
+        <section className="settings-group">
+          <header>
+            <Sparkles size={18} />
+            <div>
+              <strong>{t.settings.appearance}</strong>
+              <span>{t.settings.appearanceDesc}</span>
+            </div>
+          </header>
+          <div className="settings-group-body">
+            <SettingRow title={t.settings.languageLabel} description={t.settings.languageLabelDesc}>
+              <CustomSelect
+                value={locale}
+                onChange={(v) => setLocale(v as Locale)}
+                options={[
+                  { value: 'en-US', label: 'English' },
+                  { value: 'vi-VN', label: 'Tiếng Việt' },
+                ]}
+              />
             </SettingRow>
-            <SettingRow title="Scroll effects" description="Reveal dashboard sections with a restrained depth transition.">
-              <Toggle checked={preferences.scrollEffects} onChange={(value) => onChange('scrollEffects', value)} label="Scroll effects" />
+            <SettingRow title={t.settings.motion} description={t.settings.motionDesc}>
+              <CustomSelect
+                value={preferences.motionMode}
+                onChange={(v) => onChange('motionMode', v)}
+                options={[
+                  { value: 'full', label: t.settings.motionFull },
+                  { value: 'system', label: t.settings.motionSystem },
+                  { value: 'reduced', label: t.settings.motionReduced },
+                ]}
+              />
             </SettingRow>
-            <SettingRow title="Hover hints" description="Show delayed explanations for compact titlebar and toolbar controls.">
-              <Toggle checked={preferences.hoverHints} onChange={(value) => onChange('hoverHints', value)} label="Hover hints" />
+            <SettingRow title={t.settings.glassEffects} description={t.settings.glassEffectsDesc}>
+              <Toggle checked={preferences.glassEffects} onChange={(value) => onChange('glassEffects', value)} label={t.settings.glassEffects} />
             </SettingRow>
-            <SettingRow title="Installation complete sound" description="Play a short notification after a new game installation commits successfully.">
+            <SettingRow title={t.settings.scrollEffects} description={t.settings.scrollEffectsDesc}>
+              <Toggle checked={preferences.scrollEffects} onChange={(value) => onChange('scrollEffects', value)} label={t.settings.scrollEffects} />
+            </SettingRow>
+            <SettingRow title={t.settings.hoverHints} description={t.settings.hoverHintsDesc}>
+              <Toggle checked={preferences.hoverHints} onChange={(value) => onChange('hoverHints', value)} label={t.settings.hoverHints} />
+            </SettingRow>
+            <SettingRow title={t.settings.installSound} description={t.settings.installSoundDesc}>
               <Toggle
                 checked={preferences.playInstallCompleteSound}
                 onChange={(checked) => onChange('playInstallCompleteSound', checked)}
-                label="Play installation complete sound"
+                label={t.settings.installSound}
               />
             </SettingRow>
-            <SettingRow title="Onboarding" description="Replay the launcher introduction.">
+            <SettingRow title={t.settings.onboarding} description={t.settings.onboardingDesc}>
               <button type="button" className="settings-secondary-button" onClick={onResetOnboarding}>
-                <RefreshCcw size={15} /> Replay introduction
+                <RefreshCcw size={15} /> {t.settings.replayIntro}
               </button>
             </SettingRow>
           </div>
@@ -511,32 +572,32 @@ export function SettingsView({
           <header>
             <Clock3 size={18} />
             <div>
-              <strong>Status bar</strong>
-              <span>Clock and live launcher status in the titlebar</span>
+              <strong>{t.settings.statusBar}</strong>
+              <span>{t.settings.statusBarDesc}</span>
             </div>
           </header>
           <div className="settings-group-body">
             {([
-              ['showClock', 'Clock', 'Show local time in the titlebar.'],
-              ['showDate', 'Date', 'Show the date beneath the clock.'],
-              ['showNetworkStatus', 'Network status', 'Show the real content-service connection state.'],
-              ['showDownloadIndicator', 'Download indicator', 'Show active job or launcher update progress.'],
-              ['showNotificationBell', 'Notification bell', 'Show unread status and notification history.'],
+              ['showClock', t.settings.clock, t.settings.clockDesc],
+              ['showDate', t.settings.date, t.settings.dateDesc],
+              ['showNetworkStatus', t.settings.networkStatus, t.settings.networkStatusDesc],
+              ['showDownloadIndicator', t.settings.downloadIndicator, t.settings.downloadIndicatorDesc],
+              ['showNotificationBell', t.settings.notificationBell, t.settings.notificationBellDesc],
             ] as const).map(([key, title, description]) => (
               <SettingRow key={key} title={title} description={description}>
                 <Toggle checked={preferences[key]} onChange={(value) => onChange(key, value)} label={title} />
               </SettingRow>
             ))}
-            <SettingRow title="Clock format" description="Use Windows preference or force a 12/24-hour clock.">
-              <select
-                className="settings-select"
+            <SettingRow title={t.settings.clockFormat} description={t.settings.clockFormatDesc}>
+              <CustomSelect
                 value={preferences.clockFormat}
-                onChange={(event) => onChange('clockFormat', event.target.value as LauncherPreferences['clockFormat'])}
-              >
-                <option value="system">System</option>
-                <option value="12h">12-hour</option>
-                <option value="24h">24-hour</option>
-              </select>
+                onChange={(v) => onChange('clockFormat', v)}
+                options={[
+                  { value: 'system', label: t.settings.clockSystem },
+                  { value: '12h', label: t.settings.clock12h },
+                  { value: '24h', label: t.settings.clock24h },
+                ]}
+              />
             </SettingRow>
           </div>
         </section>
@@ -545,33 +606,33 @@ export function SettingsView({
           <header>
             <Bell size={18} />
             <div>
-              <strong>Notifications</strong>
-              <span>Real event history, in-app toasts and Windows notifications</span>
+              <strong>{t.settings.notifications}</strong>
+              <span>{t.settings.notificationsDesc}</span>
             </div>
           </header>
           <div className="settings-group-body">
-            <SettingRow title="In-app notifications" description="Show a toast while the launcher is visible and keep history under the bell.">
-              <Toggle checked={preferences.inAppNotifications} onChange={(value) => onChange('inAppNotifications', value)} label="In-app notifications" />
+            <SettingRow title={t.settings.inAppNotifications} description={t.settings.inAppNotificationsDesc}>
+              <Toggle checked={preferences.inAppNotifications} onChange={(value) => onChange('inAppNotifications', value)} label={t.settings.inAppNotifications} />
             </SettingRow>
-            <SettingRow title="Windows notifications" description="Use Windows Notification Center when the launcher is minimized or unfocused.">
-              <Toggle checked={preferences.windowsNotifications} onChange={(value) => onChange('windowsNotifications', value)} label="Windows notifications" />
+            <SettingRow title={t.settings.windowsNotifications} description={t.settings.windowsNotificationsDesc}>
+              <Toggle checked={preferences.windowsNotifications} onChange={(value) => onChange('windowsNotifications', value)} label={t.settings.windowsNotifications} />
             </SettingRow>
-            <SettingRow title="Notification sound" description="Allow native and in-app notification sounds where supported.">
-              <Toggle checked={preferences.notificationSound} onChange={(value) => onChange('notificationSound', value)} label="Notification sound" />
+            <SettingRow title={t.settings.notificationSound} description={t.settings.notificationSoundDesc}>
+              <Toggle checked={preferences.notificationSound} onChange={(value) => onChange('notificationSound', value)} label={t.settings.notificationSound} />
             </SettingRow>
-            <SettingRow title="Do not disturb while playing" description="Keep history but suppress popups while a game is running.">
-              <Toggle checked={preferences.doNotDisturbWhilePlaying} onChange={(value) => onChange('doNotDisturbWhilePlaying', value)} label="Do not disturb while playing" />
+            <SettingRow title={t.settings.doNotDisturb} description={t.settings.doNotDisturbDesc}>
+              <Toggle checked={preferences.doNotDisturbWhilePlaying} onChange={(value) => onChange('doNotDisturbWhilePlaying', value)} label={t.settings.doNotDisturb} />
             </SettingRow>
             {([
-              ['launcher', 'Launcher updates'],
-              ['installs', 'Install, update and repair'],
-              ['downloads', 'Downloads and cleanup'],
-              ['cloudSaves', 'Cloud saves'],
-              ['storage', 'Storage and cache'],
-              ['achievements', 'Achievements'],
-              ['errors', 'Important errors'],
+              ['launcher', t.settings.notifCatLauncher],
+              ['installs', t.settings.notifCatInstalls],
+              ['downloads', t.settings.notifCatDownloads],
+              ['cloudSaves', t.settings.notifCatCloudSaves],
+              ['storage', t.settings.notifCatStorage],
+              ['achievements', t.settings.notifCatAchievements],
+              ['errors', t.settings.notifCatErrors],
             ] as Array<[NotificationCategory, string]>).map(([category, label]) => (
-              <SettingRow key={category} title={label} description={`Allow ${label.toLowerCase()} events in notification history.`}>
+              <SettingRow key={category} title={label} description={t.settings.notifCatAllow.replace('{label}', label.toLowerCase())}>
                 <Toggle
                   checked={preferences.notificationCategories[category]}
                   onChange={(value) =>
@@ -584,9 +645,9 @@ export function SettingsView({
                 />
               </SettingRow>
             ))}
-            <SettingRow title="Notification history" description="Open the titlebar notification center and review recorded events.">
+            <SettingRow title={t.settings.manageHistory} description={t.settings.manageHistoryDesc}>
               <button type="button" className="settings-secondary-button" onClick={onManageNotifications}>
-                <Bell size={15} /> Manage history
+                <Bell size={15} /> {t.settings.manageHistoryBtn}
               </button>
             </SettingRow>
           </div>
@@ -596,25 +657,25 @@ export function SettingsView({
           <header>
             <RefreshCcw size={18} />
             <div>
-              <strong>Launcher updates</strong>
-              <span>Keep the launcher client current</span>
+              <strong>{t.settings.launcherUpdates}</strong>
+              <span>{t.settings.launcherUpdatesDesc}</span>
             </div>
           </header>
           <div className="settings-group-body">
-            <SettingRow title="Automatically check for launcher updates" description="Check shortly after startup and show an update banner when available.">
+            <SettingRow title={t.settings.autoCheckUpdates} description={t.settings.autoCheckUpdatesDesc}>
               <Toggle
                 checked={preferences.autoCheckLauncherUpdates}
                 onChange={(checked) => onChange('autoCheckLauncherUpdates', checked)}
-                label="Automatically check for launcher updates"
+                label={t.settings.autoCheckUpdates}
               />
             </SettingRow>
-            <SettingRow title="Update channel" description="Receive stable launcher releases.">
-              <div className="settings-static-value">Stable</div>
+            <SettingRow title={t.settings.updateChannel} description={t.settings.updateChannelDesc}>
+              <div className="settings-static-value">{t.settings.updateChannelValue}</div>
             </SettingRow>
-            <SettingRow title="Check now" description={updateStatus ?? 'Manually check the configured launcher update source.'}>
+            <SettingRow title={t.settings.checkNow} description={updateStatus ?? t.settings.checkNowDefault}>
               <button type="button" className="settings-secondary-button" onClick={onCheckForUpdates}>
                 <RefreshCcw size={15} />
-                Check for updates
+                {t.settings.checkForUpdates}
               </button>
             </SettingRow>
           </div>
@@ -624,12 +685,12 @@ export function SettingsView({
           <header>
             <CircleAlert size={18} style={{ color: '#ef4444' }} />
             <div>
-              <strong style={{ color: '#ef4444' }}>Danger Zone</strong>
-              <span>Reset or wipe launcher configurations</span>
+              <strong style={{ color: '#ef4444' }}>{t.settings.dangerZone}</strong>
+              <span>{t.settings.dangerZoneDesc}</span>
             </div>
           </header>
           <div className="settings-group-body">
-            <SettingRow title="Reset Launcher Data" description="Wipe all local tokens, configurations, and backend data. The launcher will restart.">
+            <SettingRow title={t.settings.resetLauncherData} description={t.settings.resetLauncherDataDesc}>
               <button 
                 type="button" 
                 className="settings-secondary-button" 
@@ -648,7 +709,7 @@ export function SettingsView({
                   }
                 }}
               >
-                Reset Data
+                {t.settings.resetData}
               </button>
             </SettingRow>
           </div>
@@ -658,7 +719,7 @@ export function SettingsView({
           <Info size={18} />
           <div>
             <strong>0xoLemon Launcher</strong>
-            <span>Version {appVersion} · Multi-game content, install, update and repair client</span>
+            <span>{t.settings.aboutVersion.replace('{version}', appVersion)}</span>
           </div>
           <Download size={17} />
         </section>

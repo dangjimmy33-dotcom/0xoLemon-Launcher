@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import { invoke } from '@tauri-apps/api/core'
 import { BookOpen, CheckCircle2, ChevronLeft, ChevronRight, CircleAlert, Download, FolderOpen, HardDrive, Image as ImageIcon, Library, Play, RefreshCcw, Search, ShieldCheck, ShoppingBag, Trophy, X, MessageSquare, Info } from 'lucide-react'
 import { TutorialModal } from './TutorialModal'
-import { enUS as t } from '../i18n/en-US'
+import { useLocale } from '../context/LocaleContext'
 import type { CloudSaveStatus, GameAchievement, GameCatalog, GameDetail, GameSummary, GameInstallState, GameVersionInfo, VerifyUiStatus } from '../types'
 import { assetUrlForId, firstMediaUrl, isCarouselMedia, mediaPriority, processDescriptionHtml, isTauriRuntime } from '../lib/gameMeta'
 import { formatBytes } from '../lib/format'
@@ -58,6 +58,7 @@ function LazyGameCardImage({
 }
 
 function CatalogLoadingView({ viewMode }: { viewMode: 'store' | 'library' }) {
+  const { t } = useLocale()
   return (
     <section className="library-browse-view library-loading-view" aria-busy="true" aria-label={`Loading ${viewMode}`}>
       <header className="library-browse-toolbar">
@@ -80,6 +81,7 @@ function CatalogLoadingView({ viewMode }: { viewMode: 'store' | 'library' }) {
 }
 
 function CatalogUnavailableView({ viewMode, onRetry }: { viewMode: 'store' | 'library'; onRetry: () => void }) {
+  const { t } = useLocale()
   return (
     <section className="library-browse-view">
       <header className="library-browse-toolbar">
@@ -373,6 +375,7 @@ export function StoreLibraryView({
   onRestoreMissingSaveFiles: () => void
   discordUser?: DiscordAuthUser | null
 }) {
+  const { t } = useLocale()
   const [query, setQuery] = useState('')
   const [tutorialVisible, setTutorialVisible] = useState(false)
   const realtimeConfig = useRealtimeConfig()
@@ -842,7 +845,7 @@ export function OperationHero({
   canUpdate,
   installMode,
   selectedVersion,
-}: {
+}: {  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   game: GameSummary
   detail: GameDetail
   assets: Record<string, string>
@@ -860,6 +863,7 @@ export function OperationHero({
   installMode: boolean
   selectedVersion: string
 }) {
+  const { t } = useLocale()
   const hero = assetUrlForId(game.heroAssetId, assets) || firstMediaUrl(detail, assets)
   const stateLabel = installMode ? t.library.readyToInstall : updateReady ? t.library.readyToUpdate : t.library.readyToPlay
 
@@ -939,6 +943,7 @@ export function VersionStat({ label, value, highlight = false }: { label: string
 }
 
 export function MediaRail({ detail, assets }: { detail: GameDetail; assets: Record<string, string> }) {
+  const { t } = useLocale()
   const safeMedia = Array.isArray(detail.media) ? detail.media : []
 
   // Build a thumb map: video item id -> thumbnail URL
@@ -1068,6 +1073,7 @@ export function AchievementPreview({
   achievements: GameAchievement[]
   assets: Record<string, string>
 }) {
+  const { t } = useLocale()
   const [showAll, setShowAll] = useState(false)
   const safeAchievements = Array.isArray(achievements) ? achievements : []
   const available = safeAchievements.filter((achievement) => assetUrlForId(achievement.iconAssetId, assets))

@@ -4030,21 +4030,91 @@ button:disabled {
 }
 
 .settings-select {
-  width: 210px;
-  height: 36px;
-  padding: 0 34px 0 11px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 7px;
-  color: var(--text-strong);
-  background: #10161b;
-  font: inherit;
-  font-size: 12px;
-  outline: none;
+  display: none;
 }
 
-.settings-select:focus {
-  border-color: rgba(225, 177, 86, 0.58);
-  box-shadow: 0 0 0 2px rgba(207, 159, 70, 0.08);
+.cs-wrap {
+  position: relative;
+  width: 210px;
+}
+.cs-trigger {
+  width: 100%;
+  height: 36px;
+  padding: 0 11px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 7px;
+  background: #10161b;
+  color: var(--text-strong);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.cs-trigger:hover,
+.cs-wrap.is-open .cs-trigger {
+  border-color: rgba(225,177,86,0.58);
+}
+.cs-chevron {
+  flex-shrink: 0;
+  color: var(--muted);
+  transition: transform 0.22s cubic-bezier(0.4,0,0.2,1);
+}
+.cs-wrap.is-open .cs-chevron {
+  transform: rotate(180deg);
+}
+.cs-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 200;
+  overflow: hidden;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(10,14,18,0.96);
+  backdrop-filter: blur(18px) saturate(1.4);
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+  opacity: 0;
+  transform: translateY(-6px) scaleY(0.94);
+  transform-origin: top center;
+  pointer-events: none;
+  transition: opacity 0.18s cubic-bezier(0.4,0,0.2,1), transform 0.18s cubic-bezier(0.4,0,0.2,1);
+}
+.cs-wrap.is-open .cs-dropdown {
+  opacity: 1;
+  transform: translateY(0) scaleY(1);
+  pointer-events: auto;
+}
+.cs-list {
+  display: flex;
+  flex-direction: column;
+  padding: 4px;
+}
+.cs-option {
+  width: 100%;
+  padding: 8px 10px;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-radius: 5px;
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+.cs-option:hover {
+  background: rgba(255,255,255,0.07);
+  color: var(--text-strong);
+}
+.cs-option.is-selected {
+  background: rgba(229,183,91,0.12);
+  color: var(--gold);
 }
 
 .settings-toggle {
@@ -5206,4 +5276,25 @@ button:disabled {
   color: rgba(255, 255, 255, 0.22);
   font-size: 12px;
   line-height: 1.55;
+}
+
+/* Vietnamese font (Contl) */
+@font-face {
+  font-family: 'Contl';
+  src: url('./assets/fonts/contl.otf') format('opentype');
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root[data-locale='vi-VN'] {
+  --font-vi: 'Contl', 'Segoe UI', sans-serif;
+}
+
+:root[data-locale='vi-VN'] body,
+:root[data-locale='vi-VN'] button,
+:root[data-locale='vi-VN'] input,
+:root[data-locale='vi-VN'] select,
+:root[data-locale='vi-VN'] textarea {
+  font-family: var(--font-vi);
 }

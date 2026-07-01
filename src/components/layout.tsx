@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { Cloud, Database, Download, Home, Image as ImageIcon, Library, RefreshCcw, Settings, ShoppingBag, Wifi, Languages } from 'lucide-react'
-import { enUS as t } from '../i18n/en-US'
+import { useLocale } from '../context/LocaleContext'
 import type { GameCatalog, TabId } from '../types'
 
 export function Sidebar({
@@ -16,40 +16,41 @@ export function Sidebar({
   updateCount: number
   downloadCount: number
 }) {
+  const { t } = useLocale()
   const normalizedStatus = serviceStatus.toLowerCase()
   const connectionLabel = normalizedStatus.includes('unavailable')
     ? 'Offline'
     : normalizedStatus.includes('checking')
       ? 'Connecting'
       : 'Online'
-  const items = [
-    [t.nav.home, Home],
-    [t.nav.store, ShoppingBag],
-    [t.nav.library, Library],
-    [t.nav.updates, RefreshCcw],
-    [t.nav.downloads, Download],
-    [t.nav.cloudSaves, Cloud],
-    [t.nav.translations, Languages],
-    [t.nav.cache, Database],
-    [t.nav.settings, Settings],
-  ] as const
+  const items: [TabId, string, typeof Home][] = [
+    ['Home', t.nav.home, Home],
+    ['Store', t.nav.store, ShoppingBag],
+    ['Library', t.nav.library, Library],
+    ['Updates', t.nav.updates, RefreshCcw],
+    ['Downloads', t.nav.downloads, Download],
+    ['Cloud Saves', t.nav.cloudSaves, Cloud],
+    ['Translations', t.nav.translations, Languages],
+    ['Cache', t.nav.cache, Database],
+    ['Settings', t.nav.settings, Settings],
+  ]
 
   return (
     <aside className="sidebar">
       <nav>
-        {items.map(([label, Icon]) => (
+        {items.map(([tabId, label, Icon]) => (
           <button
-            className={activeTab === label ? 'nav-item active' : 'nav-item'}
-            key={label}
+            className={activeTab === tabId ? 'nav-item active' : 'nav-item'}
+            key={tabId}
             type="button"
             aria-label={label}
             title={label}
-            onClick={() => onSelect(label)}
+            onClick={() => onSelect(tabId)}
           >
             <Icon size={20} />
             <span>{label}</span>
-            {label === 'Updates' && updateCount > 0 ? <span className="nav-badge">{updateCount}</span> : null}
-            {label === 'Downloads' && downloadCount > 0 ? <span className="nav-badge">{downloadCount}</span> : null}
+            {tabId === 'Updates' && updateCount > 0 ? <span className="nav-badge">{updateCount}</span> : null}
+            {tabId === 'Downloads' && downloadCount > 0 ? <span className="nav-badge">{downloadCount}</span> : null}
           </button>
         ))}
       </nav>
