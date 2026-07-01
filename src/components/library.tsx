@@ -490,6 +490,12 @@ export function StoreLibraryView({
               {renderGameCard(game, 'browse') as React.ReactElement}
             </GameHoverCard>
           ))}
+          {visibleGames.length > 0 && viewMode === 'store' ? (
+            <div className="store-more-coming-banner">
+              <span className="store-more-coming-title">{t.library.storeMoreComingTitle}</span>
+              <span className="store-more-coming-body">{t.library.storeMoreComingBody}</span>
+            </div>
+          ) : null}
           {visibleGames.length === 0 && viewMode === 'library' ? (
             <div className="library-empty-inline library-empty-installed">
               <Library size={28} />

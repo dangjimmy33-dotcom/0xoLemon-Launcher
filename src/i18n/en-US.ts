@@ -30,6 +30,8 @@ export const enUS = {
     play: 'Play',
     uninstall: 'Uninstall',
     resumeSupported: 'Resume supported',
+    storeMoreComingTitle: "Aw, that\'s all for now :(((",
+    storeMoreComingBody: "Don\'t worry too much! We\'re adding new games to the library every day. Don\'t leave us — updates are coming soon!!",
   },
   install: {
     title: 'Choose a version',

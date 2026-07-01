@@ -5183,3 +5183,27 @@ button:disabled {
   width: 16px;
   height: 16px;
 }
+
+/* Store "more coming soon" banner */
+.store-more-coming-banner {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 6px;
+  padding: 22px 28px;
+  border: 1px dashed rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.018);
+  text-align: center;
+}
+
+.store-more-coming-title {
+  color: rgba(255, 255, 255, 0.38);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.store-more-coming-body {
+  color: rgba(255, 255, 255, 0.22);
+  font-size: 12px;
+  line-height: 1.55;
+}
