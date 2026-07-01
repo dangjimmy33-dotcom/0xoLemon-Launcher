@@ -1,3 +1,15 @@
+@font-face {
+  font-family: 'ContL';
+  src: url('./assets/fonts/contl.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+[data-locale='vi-VN'] {
+  --sans: 'ContL', 'Arya', Inter, ui-sans-serif, 'Segoe UI', Arial, sans-serif;
+}
+
 :root {
   --bg: #080c0f;
   --surface: #10171c;

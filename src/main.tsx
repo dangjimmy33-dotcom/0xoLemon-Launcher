@@ -4,6 +4,7 @@ import './index.css'
 import App from './App.tsx'
 import Overlay from './Overlay.tsx'
 import { Analytics } from '@vercel/analytics/react'
+import { LocaleProvider } from './context/LocaleContext'
 
 const LEGACY_PWA_RELOAD_KEY = '0xolemon-legacy-pwa-cleared-v1'
 
@@ -59,8 +60,10 @@ async function bootstrap() {
 
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
-      {isOverlay ? <Overlay /> : <App />}
-      <Analytics />
+      <LocaleProvider>
+        {isOverlay ? <Overlay /> : <App />}
+        <Analytics />
+      </LocaleProvider>
     </StrictMode>,
   )
 
