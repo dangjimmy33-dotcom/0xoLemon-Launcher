@@ -56,9 +56,29 @@ fn long_path(path: &Path) -> PathBuf {
         if s.starts_with("\\\\") {
             return path.to_path_buf();
         }
-        // Canonicalize gives an absolute path; if that fails, build the prefix manually.
-        let abs = path.to_path_buf();
-        let abs_s = abs.to_string_lossy();
+        
+        // Ensure the path is absolute
+        let abs = if path.is_absolute() {
+            path.to_path_buf()
+        } else {
+            std::env::current_dir().unwrap_or_default().join(path)
+        };
+
+        // We must remove all forward slashes, as the \\?\ prefix disables Windows' automatic conversion
+        let abs_s = abs.to_string_lossy().replace('/', "\\");
+
+        // The \\?\ prefix also disables parsing of . and ..
+        // We do a simple string replacement for \.\ and \..\
+        // For a robust solution, we can try to canonicalize the parent directory if it exists.
+        if let Some(parent) = abs.parent() {
+            if let Ok(mut canon) = std::fs::canonicalize(parent) {
+                if let Some(file_name) = abs.file_name() {
+                    canon.push(file_name);
+                }
+                return canon; // canonicalize already adds the \\?\ prefix on Windows
+            }
+        }
+
         return PathBuf::from(format!("\\\\?\\{}", abs_s));
     }
     #[cfg(not(target_os = "windows"))]
