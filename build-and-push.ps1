@@ -23,14 +23,13 @@ Write-Host "`n=== STEP 3: BUMP VERSION ===" -ForegroundColor Cyan
 $newVersion = npm version patch --no-git-tag-version
 Write-Host "Bumped version to $newVersion" -ForegroundColor Yellow
 
-# Sync version to tauri.conf.json
-$tauriConf = Get-Content "src-tauri\tauri.conf.json" | ConvertFrom-Json
-$tauriConf.version = $newVersion.Replace("v", "")
-$tauriJson = $tauriConf | ConvertTo-Json -Depth 20
-[System.IO.File]::WriteAllText("$PWD\src-tauri\tauri.conf.json", $tauriJson, [System.Text.UTF8Encoding]::new($false))
+# Sync version to tauri.conf.json using Node.js to preserve JSON formatting
+node -e "const fs=require('fs'); const p=require('./package.json'); const t=JSON.parse(fs.readFileSync('./src-tauri/tauri.conf.json','utf8')); t.version=p.version; fs.writeFileSync('./src-tauri/tauri.conf.json', JSON.stringify(t, null, 2) + '\n');"
 
 # Commit version bump (package.json + tauri.conf.json together)
-git add package.json package-lock.json src-tauri\tauri.conf.json
+# Use ErrorAction Ignore for package-lock.json in case it doesn't exist
+git add package.json src-tauri\tauri.conf.json
+if (Test-Path "package-lock.json") { git add package-lock.json }
 git commit -m "chore: bump version to $newVersion"
 Write-Host "Version bump committed." -ForegroundColor Green
 
