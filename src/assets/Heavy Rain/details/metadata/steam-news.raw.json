@@ -1,0 +1,76 @@
+﻿{
+    "appnews":  {
+                    "appid":  960910,
+                    "newsitems":  [
+                                      {
+                                          "gid":  "4103335143108662507",
+                                          "title":  "Trading cards are now available for Heavy Rain!",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/4103335143108662507",
+                                          "is_external_url":  true,
+                                          "author":  "seskandari",
+                                          "contents":  "Dear players,\n\nWe are delighted to announce that [b]Steam Trading Cards[/b] are now available on Steam, along with other exclusive rewards:\n•\tCollect Trading cards by playing the game\n•\tWin various badges\n•\tUnlock backgrounds for your profile\n•\tUse unique emoticons\n\n[i]Note: anyone who has played already will retroactively receive trading cards for their time spent in the game.[/i]\n\nEnjoy!\n\nThe Quantic Dream Team\n",
+                                          "feedlabel":  "Community Announcements",
+                                          "date":  1634893707,
+                                          "feedname":  "steam_community_announcements",
+                                          "feed_type":  1,
+                                          "appid":  960910
+                                      },
+                                      {
+                                          "gid":  "3936699406874067113",
+                                          "title":  "French outlet which successfully defended itself from Quantic Dream bosses\u0027 lawsuit releases statement",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/eurogamer/3936699406874067113",
+                                          "is_external_url":  true,
+                                          "author":  "",
+                                          "contents":  "\u003cimg src=\"https://d2skuhm0vrry40.cloudfront.net/2021/articles/2021-09-24-15-42/french-outlet-which-successfully-defended-quantic-dream-bosses-lawsuit-releases-statement-1632494554601.jpg/EG11/resize/300x-1/quality/90/format/jpg\" alt=\"\"/\u003e\u003cp\u003eFrench investigative news outlet Mediapart has published a \u003ca href=\"https://blogs.mediapart.fr/la-redaction-de-mediapart/blog/240921/mediapart-gagne-en-justice-contre-quantic-dream\" target=\"_blank\"\u003estatement\u003c/a\u003e after being cleared of all defamation charges filed by Quantic Dream execs David Cage and Guillaume de Fondaumière.\u003c/p\u003e\u003cp\u003eIt\u0027s the first formal statement to come from any of the parties involved since the court verdict was reached earlier this month. \u003c/p\u003e\u003cp\u003eThe statement reveals Cage and de Fondaumère had objected to seven passages in Mediapart\u0027s article concerning their actions as executives at Quantic Dream, developer of Heavy Rain and Beyond: Two Souls. It also revealed details of offensive photomontages of staff and practices which raised questions under French labour law.\u003c/p\u003e\u003cp\u003e\u003ca href=\"https://www.eurogamer.net/articles/2021-09-24-french-outlet-which-successfully-defended-quantic-dream-bosses-lawsuit-releases-statement\"\u003eRead more\u003c/a\u003e\u003c/p\u003e",
+                                          "feedlabel":  "Eurogamer",
+                                          "date":  1632502020,
+                                          "feedname":  "eurogamer",
+                                          "feed_type":  0,
+                                          "appid":  960910
+                                      },
+                                      {
+                                          "gid":  "5418383147753708541",
+                                          "title":  "Quantic Dream bosses successfully sue French newspaper Le Monde for libel",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/eurogamer/5418383147753708541",
+                                          "is_external_url":  true,
+                                          "author":  "",
+                                          "contents":  "\u003cimg src=\"https://d2skuhm0vrry40.cloudfront.net/2021/articles/2021-09-21-12-20/heavy-rain-developer-quantic-dream-successfully-managed-to-sue-french-newspaper-le-monde-1632223199740.jpg/EG11/resize/300x-1/quality/90/format/jpg\" alt=\"\"/\u003e\u003cp\u003eDavid Cage and Guillaume de Fondaumière, the bosses of Heavy Rain and Beyond: Two Souls developer Quantic Dream, have successfully sued French newspaper Le Monde for libel, after the outlet printed alleged claims by studio members of a toxic work environment.\u003c/p\u003e\u003cp\u003eA report by \u003ca href=\"https://solidairesinformatique.org/2021/09/09/quantic-dream-vs-le-monde-et-mediapart-le-verdict/\"\u003eSolidaires Informatique\u003c/a\u003e, translated by Eurogamer, states Le Monde\u0027s case had been weakened as it was unable to prove certain elements of its reporting without divulging the anonymity of its sources.\u003c/p\u003e\u003cp\u003eNeither party has commented publicly on the judgement, and there\u0027s no word yet on any terms. \u003c/p\u003e\u003cp\u003e\u003ca href=\"https://www.eurogamer.net/articles/2021-09-21-heavy-rain-developer-quantic-dream-successfully-managed-to-sue-french-newspaper-le-monde\"\u003eRead more\u003c/a\u003e\u003c/p\u003e",
+                                          "feedlabel":  "Eurogamer",
+                                          "date":  1632230400,
+                                          "feedname":  "eurogamer",
+                                          "feed_type":  0,
+                                          "appid":  960910
+                                      },
+                                      {
+                                          "gid":  "3978319116835573629",
+                                          "title":  "Heavy Rain update: improvement of Simplified Chinese",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/3978319116835573629",
+                                          "is_external_url":  true,
+                                          "author":  "mrichier",
+                                          "contents":  "Dear Chinese players,\n\nWe have fixed the missing characters/words issue that was reported by many of you for Heavy Rain.\nThe game has been updated on July 15, and the fix is already available for everyone.\nWe are happy to announce that you will now be able to enjoy the game better in your native language.\nThank you for your feedback!\n\nThe Quantic Dream team",
+                                          "feedlabel":  "Community Announcements",
+                                          "date":  1595493526,
+                                          "feedname":  "steam_community_announcements",
+                                          "feed_type":  1,
+                                          "appid":  960910,
+                                          "tags":  [
+                                                       "patchnotes"
+                                                   ]
+                                      },
+                                      {
+                                          "gid":  "3384966595871649110",
+                                          "title":  "Detroit: Become Human, Heavy Rain and Beyond: Two Souls are out now on Steam",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/rps/3384966595871649110",
+                                          "is_external_url":  true,
+                                          "author":  "contact@rockpapershotgun.com (Natalie Clayton)",
+                                          "contents":  "\u003cp\u003e\u003ca href=\"https://assets.rockpapershotgun.com/images/2019/01/detroit-become-human.jpg\"\u003e\u003cimg src=\"https://assets.rockpapershotgun.com/images/2019/01/detroit-become-human.jpg\" alt=\"\" width=\"1919\" height=\"1080\" class=\"alignnone size-full wp-image-640427\" title=\"\"\u003e\u003c/a\u003e\u003c/p\u003e\n\u003cp\u003eTrading years of PlayStation exclusivity for a PC debut locked on the Epic Games Store, three Quantic Dreams games finally found their way over to Steam. \u003ca href=\"https://www.rockpapershotgun.com/game/detroit-become-human/\"\u003eDetroit: Become Human\u003c/a\u003e, \u003ca href=\"https://www.rockpapershotgun.com/game/beyond-two-souls/\"\u003eBeyond: Two Souls\u003c/a\u003e and \u003ca href=\"https://www.rockpapershotgun.com/game/heavy-rain/\"\u003eHeavy Rain\u003c/a\u003e hit Valve\u0026rsquo;s platform today – a trio of strange cinematic story-games about serial killers, Ellen Page\u0026rsquo;s invisible friend, and a robot emancipation movement that certainly holds no real-world analogue. \u003c/p\u003e\n\u003cp\u003e \u003ca href=\"https://www.rockpapershotgun.com/2020/06/18/detroit-become-human-heavy-rain-and-beyond-two-souls-are-out-now-on-steam/#more-850195\" class=\"more-link\"\u003e\u003cspan aria-label=\"Continue reading Detroit: Become Human, Heavy Rain and Beyond: Two Souls are out now on Steam\"\u003e(more\u0026hellip;)\u003c/span\u003e\u003c/a\u003e\u003c/p\u003e\n",
+                                          "feedlabel":  "Rock, Paper, Shotgun",
+                                          "date":  1592516644,
+                                          "feedname":  "rps",
+                                          "feed_type":  0,
+                                          "appid":  960910
+                                      }
+                                  ],
+                    "count":  6
+                }
+}

@@ -39,6 +39,32 @@ use std::os::windows::process::CommandExt;
 #[cfg(target_os = "windows")]
 const CREATE_NO_WINDOW: u32 = 0x08000000;
 
+/// On Windows, paths longer than ~200 characters risk hitting the MAX_PATH (260)
+/// limit when combined with file extensions or sub-paths added later.
+/// Prepending the `\\?\` prefix opts the path into the extended-length path
+/// API, allowing up to 32 767 characters.  On other platforms this is a no-op.
+///
+/// We apply this proactively to *all* paths that touch the staging/downloading
+/// directories, because large games (50 GB+) frequently have deeply-nested
+/// asset hierarchies that exceed MAX_PATH once the store root is included.
+#[allow(unused_variables)]
+fn long_path(path: &Path) -> PathBuf {
+    #[cfg(target_os = "windows")]
+    {
+        let s = path.to_string_lossy();
+        // Already has a UNC or extended prefix — leave as-is.
+        if s.starts_with("\\\\") {
+            return path.to_path_buf();
+        }
+        // Canonicalize gives an absolute path; if that fails, build the prefix manually.
+        let abs = path.to_path_buf();
+        let abs_s = abs.to_string_lossy();
+        return PathBuf::from(format!("\\\\?\\{}", abs_s));
+    }
+    #[cfg(not(target_os = "windows"))]
+    path.to_path_buf()
+}
+
 const DEFAULT_LOCAL_DEPOT: &str = "E:\\007Launcher\\depot\\007-first-light";
 const DEFAULT_GAME_ID: &str = "007-first-light";
 const DEFAULT_GAME_DIR_NAME: &str = "007 First Light";
@@ -3118,8 +3144,10 @@ fn partial_checkpoint_path(path: &Path) -> PathBuf {
 }
 
 fn durable_partial_len(path: &Path) -> u64 {
-    let actual = partial_file_len(path);
-    let checkpoint = fs::read_to_string(partial_checkpoint_path(path))
+    let lp = long_path(path);
+    let actual = partial_file_len(&lp);
+    let lp_ckpt = long_path(&partial_checkpoint_path(path));
+    let checkpoint = fs::read_to_string(lp_ckpt)
         .ok()
         .and_then(|value| value.trim().parse::<u64>().ok());
     checkpoint.unwrap_or(actual).min(actual)
@@ -3127,29 +3155,31 @@ fn durable_partial_len(path: &Path) -> u64 {
 
 fn persist_partial_checkpoint(path: &Path, durable_len: u64) -> Result<(), JobError> {
     let checkpoint = partial_checkpoint_path(path);
-    let temporary = checkpoint.with_extension("checkpoint.tmp");
+    let lp_checkpoint = long_path(&checkpoint);
+    let lp_temporary = long_path(&checkpoint.with_extension("checkpoint.tmp"));
     {
-        let mut file = File::create(&temporary)?;
+        let mut file = File::create(&lp_temporary)?;
         write!(file, "{durable_len}")?;
         file.sync_all()?;
     }
-    if checkpoint.exists() {
-        fs::remove_file(&checkpoint)?;
+    if lp_checkpoint.exists() {
+        fs::remove_file(&lp_checkpoint)?;
     }
-    fs::rename(temporary, checkpoint)?;
+    fs::rename(&lp_temporary, &lp_checkpoint)?;
     Ok(())
 }
 
 fn normalize_partial_file(path: &Path, expected_len: u64) -> Result<(), JobError> {
-    if path.exists() && partial_file_len(path) > expected_len {
-        fs::remove_file(path)?;
-        let checkpoint = partial_checkpoint_path(path);
-        if checkpoint.exists() {
-            fs::remove_file(checkpoint)?;
+    let lp = long_path(path);
+    let lp_checkpoint = long_path(&partial_checkpoint_path(path));
+    if lp.exists() && partial_file_len(&lp) > expected_len {
+        fs::remove_file(&lp)?;
+        if lp_checkpoint.exists() {
+            fs::remove_file(&lp_checkpoint)?;
         }
-    } else if path.exists() {
+    } else if lp.exists() {
         let durable = durable_partial_len(path).min(expected_len);
-        let file = OpenOptions::new().write(true).open(path)?;
+        let file = OpenOptions::new().write(true).open(&lp)?;
         if file.metadata()?.len() != durable {
             file.set_len(durable)?;
             file.sync_all()?;
@@ -3169,7 +3199,7 @@ fn read_completed_partial(
             "partial range for {pack_id} is not durably checkpointed"
         )));
     }
-    let bytes = fs::read(path)?;
+    let bytes = fs::read(long_path(path))?;
     if bytes.len() as u64 != expected_len {
         return Err(JobError::Depot(format!(
             "partial range size mismatch for {pack_id}; expected {expected_len}, got {}",
@@ -3230,10 +3260,11 @@ fn append_stream_to_partial<R: Read>(
     control: &JobControl,
     progress_tx: &mpsc::Sender<Result<DownloadProgress, String>>,
 ) -> Result<u64, JobError> {
+    let lp = long_path(partial_path);
     let mut output = OpenOptions::new()
         .create(true)
         .append(true)
-        .open(partial_path)?;
+        .open(&lp)?;
     let mut written = existing_len.min(expected_len);
     let mut durable = written;
     let mut unsynced = 0_u64;
@@ -4451,12 +4482,16 @@ fn compressed_chunk_file_valid(path: &Path, chunk: &ChunkRef) -> Result<bool, Jo
 }
 
 fn write_chunk_file(path: &Path, data: &[u8]) -> Result<(), JobError> {
-    if let Some(parent) = path.parent() {
+    let lp = long_path(path);
+    if let Some(parent) = lp.parent() {
         fs::create_dir_all(parent)?;
     }
-    let temp = path.with_extension("tmp");
-    fs::write(&temp, data)?;
-    fs::rename(temp, path)?;
+    // Use .bin.tmp extension to avoid replacing .chunk extension
+    let temp = lp.with_extension("tmp");
+    fs::write(&temp, data)
+        .map_err(|e| JobError::Depot(format!("failed to write chunk temp '{}': {e}", path.display())))?;
+    fs::rename(&temp, &lp)
+        .map_err(|e| JobError::Depot(format!("failed to rename chunk '{}': {e}", path.display())))?;
     Ok(())
 }
 

@@ -1,0 +1,690 @@
+﻿{
+    "appId":  960910,
+    "title":  "Heavy Rain",
+    "steamMetadataCountry":  "us",
+    "steamMetadataLanguage":  "english",
+    "type":  "game",
+    "requiredAge":  "17",
+    "isFree":  false,
+    "shortDescription":  "Experience a gripping psychological thriller filled with innumerable twists and turns. The hunt is on for a murderer known only as the Origami Killer. Four characters, each following their own leads, must take part in a desperate attempt to prevent the killer from claiming a new victim.",
+    "detailedDescriptionHtml":  "\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"asset:description_images/001_69381af7d99600f9feeb88df9956c24f.webp\" width=616 height=101 /\u003e\u003c/span\u003e\u003cbr\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"asset:description_images/002_d75f145dcf80fd2a65dc7d8df696b368.webp\" width=617 height=256 /\u003e\u003c/span\u003e\u003cbr\u003eWinner of several awards, including 2011 BAFTA Game Awards for Best Story, Best Original Music and Technical Innovation, as well as multiple Interactive Achievement Awards and NAVGTR Awards, discover Heavy Rain, a game developed by Quantic Dream which brought new standards to narrative-driven games.\u003ch2 class=\"bb_tag\" \u003eHOW FAR WILL YOU GO TO SAVE SOMEONE YOU LOVE?\u003c/h2\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"asset:description_images/003_215b15c5c010cad5ee25ebc528bee4b6.webp\" width=604 height=1 /\u003e\u003c/span\u003e\u003cbr\u003eExperience a gripping psychological thriller filled with innumerable twists and turns. Spanning four days of mystery and suspense, the hunt is on for a murderer known only as the Origami Killer - named after his macabre calling card of leaving behind folded paper shapes at crime scenes. Four characters, each following their own leads and with their own motives, must take part in a desperate attempt to prevent the killer from claiming a new victim.\u003cbr\u003e\u003cbr\u003eYou need to think fast and act even faster, as every choice and move you make can result in dramatic, game-changing consequences – and even determine who lives… and who dies.\u003cbr\u003e\u003cbr\u003eHow this story ends is entirely up to you.\u003cbr\u003e\u003cbr\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"asset:description_images/004_7ac14599a83b7d6e0ba560061f43e081.webp\" width=616 height=278 /\u003e\u003c/span\u003e\u003ch2 class=\"bb_tag\" \u003eFOUR CHARACTERS, FOUR PERSPECTIVES\u003c/h2\u003eThe award-winning storyline puts you in control of four distinct characters who are each following their own leads in a desperate search for a missing person.\u003ch2 class=\"bb_tag\" \u003eACCESSIBLE AND INTUITIVE CONTROLS \u003c/h2\u003eNot limited by gaming conventions, the uncomplicated HUD keeps you deeply immersed in the storytelling and features controls for both gamepad and keyboard/mouse players.\u003ch2 class=\"bb_tag\" \u003eFULLY OPTIMIZED FOR PC\u003c/h2\u003eThe classic title is brought to PC with stunning visuals including 4K resolution and 60 fps framerate.\u003cbr\u003e\u003cbr\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline crossorigin=\"anonymous\" poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/960910/extras/36c118e076f78f09f93345d56ccd9da2.poster.avif?t=1675271942\" width=616 height=347 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/960910/extras/36c118e076f78f09f93345d56ccd9da2.webm?t=1675271942\" type=\"video/webm; codecs=vp9\"\u003e\u003c/video\u003e\u003c/span\u003e",
+    "aboutTheGameHtml":  "\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"asset:description_images/001_69381af7d99600f9feeb88df9956c24f.webp\" width=616 height=101 /\u003e\u003c/span\u003e\u003cbr\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"asset:description_images/002_d75f145dcf80fd2a65dc7d8df696b368.webp\" width=617 height=256 /\u003e\u003c/span\u003e\u003cbr\u003eWinner of several awards, including 2011 BAFTA Game Awards for Best Story, Best Original Music and Technical Innovation, as well as multiple Interactive Achievement Awards and NAVGTR Awards, discover Heavy Rain, a game developed by Quantic Dream which brought new standards to narrative-driven games.\u003ch2 class=\"bb_tag\" \u003eHOW FAR WILL YOU GO TO SAVE SOMEONE YOU LOVE?\u003c/h2\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"asset:description_images/003_215b15c5c010cad5ee25ebc528bee4b6.webp\" width=604 height=1 /\u003e\u003c/span\u003e\u003cbr\u003eExperience a gripping psychological thriller filled with innumerable twists and turns. Spanning four days of mystery and suspense, the hunt is on for a murderer known only as the Origami Killer - named after his macabre calling card of leaving behind folded paper shapes at crime scenes. Four characters, each following their own leads and with their own motives, must take part in a desperate attempt to prevent the killer from claiming a new victim.\u003cbr\u003e\u003cbr\u003eYou need to think fast and act even faster, as every choice and move you make can result in dramatic, game-changing consequences – and even determine who lives… and who dies.\u003cbr\u003e\u003cbr\u003eHow this story ends is entirely up to you.\u003cbr\u003e\u003cbr\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"asset:description_images/004_7ac14599a83b7d6e0ba560061f43e081.webp\" width=616 height=278 /\u003e\u003c/span\u003e\u003ch2 class=\"bb_tag\" \u003eFOUR CHARACTERS, FOUR PERSPECTIVES\u003c/h2\u003eThe award-winning storyline puts you in control of four distinct characters who are each following their own leads in a desperate search for a missing person.\u003ch2 class=\"bb_tag\" \u003eACCESSIBLE AND INTUITIVE CONTROLS \u003c/h2\u003eNot limited by gaming conventions, the uncomplicated HUD keeps you deeply immersed in the storytelling and features controls for both gamepad and keyboard/mouse players.\u003ch2 class=\"bb_tag\" \u003eFULLY OPTIMIZED FOR PC\u003c/h2\u003eThe classic title is brought to PC with stunning visuals including 4K resolution and 60 fps framerate.\u003cbr\u003e\u003cbr\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline crossorigin=\"anonymous\" poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/960910/extras/36c118e076f78f09f93345d56ccd9da2.poster.avif?t=1675271942\" width=616 height=347 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/960910/extras/36c118e076f78f09f93345d56ccd9da2.webm?t=1675271942\" type=\"video/webm; codecs=vp9\"\u003e\u003c/video\u003e\u003c/span\u003e",
+    "supportedLanguagesHtml":  "English\u003cstrong\u003e*\u003c/strong\u003e, French\u003cstrong\u003e*\u003c/strong\u003e, Italian\u003cstrong\u003e*\u003c/strong\u003e, German\u003cstrong\u003e*\u003c/strong\u003e, Spanish - Spain\u003cstrong\u003e*\u003c/strong\u003e, Danish, Dutch\u003cstrong\u003e*\u003c/strong\u003e, Finnish, Japanese\u003cstrong\u003e*\u003c/strong\u003e, Korean, Norwegian, Polish\u003cstrong\u003e*\u003c/strong\u003e, Portuguese - Portugal\u003cstrong\u003e*\u003c/strong\u003e, Russian\u003cstrong\u003e*\u003c/strong\u003e, Simplified Chinese, Swedish, Traditional Chinese\u003cbr\u003e\u003cstrong\u003e*\u003c/strong\u003elanguages with full audio support",
+    "pcRequirements":  {
+                           "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003eRequires a 64-bit processor and operating system\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOS *:\u003c/strong\u003e Windows 7 or later (64 bit)\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e Intel Core i5-4430 @ 3.0 GHz or AMD FX-6300 @ 3.5 GHz\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 4 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e Nvidia GeForce GTX 660 with 2GB VRAM or AMD Radeon HD 7870 with 2GB VRAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eDirectX:\u003c/strong\u003e Version 11\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 35 GB available space\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eAdditional Notes:\u003c/strong\u003e 720p, 30 FPS\u003c/li\u003e\u003c/ul\u003e",
+                           "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003eRequires a 64-bit processor and operating system\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOS *:\u003c/strong\u003e Windows 7 or later (64 bit)\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e Intel Core i5-6600K @ 3.5GHz or AMD Ryzen 3 1300X @ 3.4GHz\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 8 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e Nvidia GeForce GTX 970 with 4GB VRAM or AMD Radeon R9 390 with 4GB VRAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eDirectX:\u003c/strong\u003e Version 11\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 35 GB available space\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eAdditional Notes:\u003c/strong\u003e 1080p, 60 FPS\u003c/li\u003e\u003c/ul\u003e"
+                       },
+    "macRequirements":  {
+                            "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e",
+                            "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e"
+                        },
+    "linuxRequirements":  {
+                              "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e",
+                              "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e"
+                          },
+    "dlc":  null,
+    "website":  "https://www.quanticdream.com/heavy-rain",
+    "developers":  "Quantic Dream",
+    "publishers":  "Quantic Dream",
+    "releaseDate":  {
+                        "coming_soon":  false,
+                        "date":  "Jun 18, 2020"
+                    },
+    "genres":  "Action, Adventure",
+    "categories":  [
+                       "Single-player",
+                       "Steam Achievements",
+                       "Full controller support",
+                       "Steam Trading Cards",
+                       "Steam Cloud",
+                       "Family Sharing"
+                   ],
+    "platforms":  {
+                      "windows":  true,
+                      "mac":  false,
+                      "linux":  false
+                  },
+    "metacritic":  {
+                       "score":  75,
+                       "url":  "https://www.metacritic.com/game/pc/heavy-rain?ftag=MCD-06-10aaa1f"
+                   },
+    "recommendations":  {
+                            "total":  24688
+                        },
+    "reviewsSummary":  null,
+    "newsItems":  [
+                      {
+                          "gid":  "4103335143108662507",
+                          "title":  "Trading cards are now available for Heavy Rain!",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/4103335143108662507",
+                          "is_external_url":  true,
+                          "author":  "seskandari",
+                          "contents":  "Dear players,\n\nWe are delighted to announce that [b]Steam Trading Cards[/b] are now available on Steam, along with other exclusive rewards:\n•\tCollect Trading cards by playing the game\n•\tWin various badges\n•\tUnlock backgrounds for your profile\n•\tUse unique emoticons\n\n[i]Note: anyone who has played already will retroactively receive trading cards for their time spent in the game.[/i]\n\nEnjoy!\n\nThe Quantic Dream Team\n",
+                          "feedlabel":  "Community Announcements",
+                          "date":  1634893707,
+                          "feedname":  "steam_community_announcements",
+                          "feed_type":  1,
+                          "appid":  960910
+                      },
+                      {
+                          "gid":  "3936699406874067113",
+                          "title":  "French outlet which successfully defended itself from Quantic Dream bosses\u0027 lawsuit releases statement",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/eurogamer/3936699406874067113",
+                          "is_external_url":  true,
+                          "author":  "",
+                          "contents":  "\u003cimg src=\"https://d2skuhm0vrry40.cloudfront.net/2021/articles/2021-09-24-15-42/french-outlet-which-successfully-defended-quantic-dream-bosses-lawsuit-releases-statement-1632494554601.jpg/EG11/resize/300x-1/quality/90/format/jpg\" alt=\"\"/\u003e\u003cp\u003eFrench investigative news outlet Mediapart has published a \u003ca href=\"https://blogs.mediapart.fr/la-redaction-de-mediapart/blog/240921/mediapart-gagne-en-justice-contre-quantic-dream\" target=\"_blank\"\u003estatement\u003c/a\u003e after being cleared of all defamation charges filed by Quantic Dream execs David Cage and Guillaume de Fondaumière.\u003c/p\u003e\u003cp\u003eIt\u0027s the first formal statement to come from any of the parties involved since the court verdict was reached earlier this month. \u003c/p\u003e\u003cp\u003eThe statement reveals Cage and de Fondaumère had objected to seven passages in Mediapart\u0027s article concerning their actions as executives at Quantic Dream, developer of Heavy Rain and Beyond: Two Souls. It also revealed details of offensive photomontages of staff and practices which raised questions under French labour law.\u003c/p\u003e\u003cp\u003e\u003ca href=\"https://www.eurogamer.net/articles/2021-09-24-french-outlet-which-successfully-defended-quantic-dream-bosses-lawsuit-releases-statement\"\u003eRead more\u003c/a\u003e\u003c/p\u003e",
+                          "feedlabel":  "Eurogamer",
+                          "date":  1632502020,
+                          "feedname":  "eurogamer",
+                          "feed_type":  0,
+                          "appid":  960910
+                      },
+                      {
+                          "gid":  "5418383147753708541",
+                          "title":  "Quantic Dream bosses successfully sue French newspaper Le Monde for libel",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/eurogamer/5418383147753708541",
+                          "is_external_url":  true,
+                          "author":  "",
+                          "contents":  "\u003cimg src=\"https://d2skuhm0vrry40.cloudfront.net/2021/articles/2021-09-21-12-20/heavy-rain-developer-quantic-dream-successfully-managed-to-sue-french-newspaper-le-monde-1632223199740.jpg/EG11/resize/300x-1/quality/90/format/jpg\" alt=\"\"/\u003e\u003cp\u003eDavid Cage and Guillaume de Fondaumière, the bosses of Heavy Rain and Beyond: Two Souls developer Quantic Dream, have successfully sued French newspaper Le Monde for libel, after the outlet printed alleged claims by studio members of a toxic work environment.\u003c/p\u003e\u003cp\u003eA report by \u003ca href=\"https://solidairesinformatique.org/2021/09/09/quantic-dream-vs-le-monde-et-mediapart-le-verdict/\"\u003eSolidaires Informatique\u003c/a\u003e, translated by Eurogamer, states Le Monde\u0027s case had been weakened as it was unable to prove certain elements of its reporting without divulging the anonymity of its sources.\u003c/p\u003e\u003cp\u003eNeither party has commented publicly on the judgement, and there\u0027s no word yet on any terms. \u003c/p\u003e\u003cp\u003e\u003ca href=\"https://www.eurogamer.net/articles/2021-09-21-heavy-rain-developer-quantic-dream-successfully-managed-to-sue-french-newspaper-le-monde\"\u003eRead more\u003c/a\u003e\u003c/p\u003e",
+                          "feedlabel":  "Eurogamer",
+                          "date":  1632230400,
+                          "feedname":  "eurogamer",
+                          "feed_type":  0,
+                          "appid":  960910
+                      },
+                      {
+                          "gid":  "3978319116835573629",
+                          "title":  "Heavy Rain update: improvement of Simplified Chinese",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/3978319116835573629",
+                          "is_external_url":  true,
+                          "author":  "mrichier",
+                          "contents":  "Dear Chinese players,\n\nWe have fixed the missing characters/words issue that was reported by many of you for Heavy Rain.\nThe game has been updated on July 15, and the fix is already available for everyone.\nWe are happy to announce that you will now be able to enjoy the game better in your native language.\nThank you for your feedback!\n\nThe Quantic Dream team",
+                          "feedlabel":  "Community Announcements",
+                          "date":  1595493526,
+                          "feedname":  "steam_community_announcements",
+                          "feed_type":  1,
+                          "appid":  960910,
+                          "tags":  [
+                                       "patchnotes"
+                                   ]
+                      },
+                      {
+                          "gid":  "3384966595871649110",
+                          "title":  "Detroit: Become Human, Heavy Rain and Beyond: Two Souls are out now on Steam",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/rps/3384966595871649110",
+                          "is_external_url":  true,
+                          "author":  "contact@rockpapershotgun.com (Natalie Clayton)",
+                          "contents":  "\u003cp\u003e\u003ca href=\"https://assets.rockpapershotgun.com/images/2019/01/detroit-become-human.jpg\"\u003e\u003cimg src=\"https://assets.rockpapershotgun.com/images/2019/01/detroit-become-human.jpg\" alt=\"\" width=\"1919\" height=\"1080\" class=\"alignnone size-full wp-image-640427\" title=\"\"\u003e\u003c/a\u003e\u003c/p\u003e\n\u003cp\u003eTrading years of PlayStation exclusivity for a PC debut locked on the Epic Games Store, three Quantic Dreams games finally found their way over to Steam. \u003ca href=\"https://www.rockpapershotgun.com/game/detroit-become-human/\"\u003eDetroit: Become Human\u003c/a\u003e, \u003ca href=\"https://www.rockpapershotgun.com/game/beyond-two-souls/\"\u003eBeyond: Two Souls\u003c/a\u003e and \u003ca href=\"https://www.rockpapershotgun.com/game/heavy-rain/\"\u003eHeavy Rain\u003c/a\u003e hit Valve\u0026rsquo;s platform today – a trio of strange cinematic story-games about serial killers, Ellen Page\u0026rsquo;s invisible friend, and a robot emancipation movement that certainly holds no real-world analogue. \u003c/p\u003e\n\u003cp\u003e \u003ca href=\"https://www.rockpapershotgun.com/2020/06/18/detroit-become-human-heavy-rain-and-beyond-two-souls-are-out-now-on-steam/#more-850195\" class=\"more-link\"\u003e\u003cspan aria-label=\"Continue reading Detroit: Become Human, Heavy Rain and Beyond: Two Souls are out now on Steam\"\u003e(more\u0026hellip;)\u003c/span\u003e\u003c/a\u003e\u003c/p\u003e\n",
+                          "feedlabel":  "Rock, Paper, Shotgun",
+                          "date":  1592516644,
+                          "feedname":  "rps",
+                          "feed_type":  0,
+                          "appid":  960910
+                      }
+                  ],
+    "achievements":  {
+                         "total":  56,
+                         "items":  [
+                                       {
+                                           "apiName":  "Trophy_1",
+                                           "displayName":  "Happy Birthday",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/b263bb64103454975184555841a520a27823228a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/17800a6aacb12082f3b6f2670bccfcdaf5eb66f4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_2",
+                                           "displayName":  "Interactive Drama",
+                                           "description":  "Thank you for supporting Interactive Drama",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/b263bb64103454975184555841a520a27823228a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/17800a6aacb12082f3b6f2670bccfcdaf5eb66f4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_3",
+                                           "displayName":  "Good Father",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/178773e64cdfd79d84915fe1359cd9d994278417.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/17800a6aacb12082f3b6f2670bccfcdaf5eb66f4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_4",
+                                           "displayName":  "White Knight",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/b263bb64103454975184555841a520a27823228a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/17800a6aacb12082f3b6f2670bccfcdaf5eb66f4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_5",
+                                           "displayName":  "Private Eye",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/b263bb64103454975184555841a520a27823228a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/17800a6aacb12082f3b6f2670bccfcdaf5eb66f4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_6",
+                                           "displayName":  "FBI Investigator",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/b263bb64103454975184555841a520a27823228a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/17800a6aacb12082f3b6f2670bccfcdaf5eb66f4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_7",
+                                           "displayName":  "Good Friends",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/b263bb64103454975184555841a520a27823228a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/17800a6aacb12082f3b6f2670bccfcdaf5eb66f4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_8",
+                                           "displayName":  "Got To Remember!",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/b263bb64103454975184555841a520a27823228a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/17800a6aacb12082f3b6f2670bccfcdaf5eb66f4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_9",
+                                           "displayName":  "Negotiator",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/b263bb64103454975184555841a520a27823228a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/17800a6aacb12082f3b6f2670bccfcdaf5eb66f4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_10",
+                                           "displayName":  "VIP",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/b263bb64103454975184555841a520a27823228a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/17800a6aacb12082f3b6f2670bccfcdaf5eb66f4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_11",
+                                           "displayName":  "Agoraphobia",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/b263bb64103454975184555841a520a27823228a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/17800a6aacb12082f3b6f2670bccfcdaf5eb66f4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_12",
+                                           "displayName":  "Lucky Locker",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/b263bb64103454975184555841a520a27823228a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/17800a6aacb12082f3b6f2670bccfcdaf5eb66f4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_13",
+                                           "displayName":  "Blunder",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/b263bb64103454975184555841a520a27823228a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/17800a6aacb12082f3b6f2670bccfcdaf5eb66f4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_14",
+                                           "displayName":  "Self Control",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/b263bb64103454975184555841a520a27823228a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/17800a6aacb12082f3b6f2670bccfcdaf5eb66f4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_15",
+                                           "displayName":  "Baby Master",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/178773e64cdfd79d84915fe1359cd9d994278417.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/17800a6aacb12082f3b6f2670bccfcdaf5eb66f4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_16",
+                                           "displayName":  "Kamikaze",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/edd01bc0c986bc285b319835c25cde0b395a4e2c.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/0250edb7cf874f641b46de82f6adeed50da5adeb.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_17",
+                                           "displayName":  "Good Driver",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/edd01bc0c986bc285b319835c25cde0b395a4e2c.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/0250edb7cf874f641b46de82f6adeed50da5adeb.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_18",
+                                           "displayName":  "Cat \u0026 Mouse",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/b263bb64103454975184555841a520a27823228a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/17800a6aacb12082f3b6f2670bccfcdaf5eb66f4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_19",
+                                           "displayName":  "Tough Guy",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/b263bb64103454975184555841a520a27823228a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/17800a6aacb12082f3b6f2670bccfcdaf5eb66f4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_20",
+                                           "displayName":  "Coward!",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/bd6fc69ff9eeb38c8eebf9e9a84aa6b5631cd775.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/51a53598db4851ae8c5a661ea3a84ba4288c39b6.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_21",
+                                           "displayName":  "Electrified",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/bd6fc69ff9eeb38c8eebf9e9a84aa6b5631cd775.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/51a53598db4851ae8c5a661ea3a84ba4288c39b6.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_22",
+                                           "displayName":  "Good Cop",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/b263bb64103454975184555841a520a27823228a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/17800a6aacb12082f3b6f2670bccfcdaf5eb66f4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_23",
+                                           "displayName":  "Bad Cop",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/b263bb64103454975184555841a520a27823228a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/17800a6aacb12082f3b6f2670bccfcdaf5eb66f4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_24",
+                                           "displayName":  "Gold Finger",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/667d23bc70ddf4087ff768fdc388b15aa1702f6c.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/e216f3f9cefb111b25d4a9cbd207886138842741.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_25",
+                                           "displayName":  "Butcher",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/667d23bc70ddf4087ff768fdc388b15aa1702f6c.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/e216f3f9cefb111b25d4a9cbd207886138842741.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_26",
+                                           "displayName":  "Fugitive",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/305ae78ae198f4b59bcd64a7c6c9d8a9e865f578.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/e216f3f9cefb111b25d4a9cbd207886138842741.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_27",
+                                           "displayName":  "Hands Up!",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/667d23bc70ddf4087ff768fdc388b15aa1702f6c.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/e216f3f9cefb111b25d4a9cbd207886138842741.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_28",
+                                           "displayName":  "Ludwig Von",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/b263bb64103454975184555841a520a27823228a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/17800a6aacb12082f3b6f2670bccfcdaf5eb66f4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_29",
+                                           "displayName":  "Detox",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/178773e64cdfd79d84915fe1359cd9d994278417.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/17800a6aacb12082f3b6f2670bccfcdaf5eb66f4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_30",
+                                           "displayName":  "Wise Guy",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/b263bb64103454975184555841a520a27823228a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/17800a6aacb12082f3b6f2670bccfcdaf5eb66f4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_31",
+                                           "displayName":  "I\u0027m a Killer...",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/ea068c6ebd07de5087149746e3cc6e4ce9e3d275.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/b0a18d75ef896f71f1205511c694d890a90a7257.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_32",
+                                           "displayName":  "I\u0027m not a Killer!",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/ea068c6ebd07de5087149746e3cc6e4ce9e3d275.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/b0a18d75ef896f71f1205511c694d890a90a7257.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_33",
+                                           "displayName":  "Smart Girl",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/b263bb64103454975184555841a520a27823228a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/17800a6aacb12082f3b6f2670bccfcdaf5eb66f4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_34",
+                                           "displayName":  "Queen of Ropes",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/b263bb64103454975184555841a520a27823228a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/17800a6aacb12082f3b6f2670bccfcdaf5eb66f4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_35",
+                                           "displayName":  "Goodbye Mad Jack",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/b263bb64103454975184555841a520a27823228a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/17800a6aacb12082f3b6f2670bccfcdaf5eb66f4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_36",
+                                           "displayName":  "The Chef",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/b263bb64103454975184555841a520a27823228a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/17800a6aacb12082f3b6f2670bccfcdaf5eb66f4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_37",
+                                           "displayName":  "I\u0027m not Scared!",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/586ddce42afc5d8548ed95d81cb2d63da7de03d5.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/0fa9d5e463cc62592e8483c13a4d0b2b2eb75c47.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_38",
+                                           "displayName":  "Pride Saved",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/b263bb64103454975184555841a520a27823228a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/17800a6aacb12082f3b6f2670bccfcdaf5eb66f4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_39",
+                                           "displayName":  "Unforgivable",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/b263bb64103454975184555841a520a27823228a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/17800a6aacb12082f3b6f2670bccfcdaf5eb66f4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_40",
+                                           "displayName":  "Lover Boy",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/b263bb64103454975184555841a520a27823228a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/17800a6aacb12082f3b6f2670bccfcdaf5eb66f4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_41",
+                                           "displayName":  "Escape Master",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/b263bb64103454975184555841a520a27823228a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/17800a6aacb12082f3b6f2670bccfcdaf5eb66f4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_42",
+                                           "displayName":  "Swimming Instructor",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/178773e64cdfd79d84915fe1359cd9d994278417.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/17800a6aacb12082f3b6f2670bccfcdaf5eb66f4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_43",
+                                           "displayName":  "Invincible Scott",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/b263bb64103454975184555841a520a27823228a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/17800a6aacb12082f3b6f2670bccfcdaf5eb66f4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_44",
+                                           "displayName":  "Kind Hearted",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/b263bb64103454975184555841a520a27823228a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/17800a6aacb12082f3b6f2670bccfcdaf5eb66f4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_45",
+                                           "displayName":  "Sacrifice",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/8c7126a1c8c1a79bcb8065aaa0d36e7901b98714.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/8d42e0c28800162c8c8495d09f649eebbeaa3e81.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_46",
+                                           "displayName":  "Clever Dad",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/8c7126a1c8c1a79bcb8065aaa0d36e7901b98714.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/8d42e0c28800162c8c8495d09f649eebbeaa3e81.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_47",
+                                           "displayName":  "Cold as Ice",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/b263bb64103454975184555841a520a27823228a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/17800a6aacb12082f3b6f2670bccfcdaf5eb66f4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_48",
+                                           "displayName":  "Simple Mind",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/b263bb64103454975184555841a520a27823228a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/17800a6aacb12082f3b6f2670bccfcdaf5eb66f4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_49",
+                                           "displayName":  "So Close...",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/b263bb64103454975184555841a520a27823228a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/d7140962cb054f1c94001ae13067fab8bfb1ec72.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_50",
+                                           "displayName":  "HEAVY RAIN™ Hero",
+                                           "description":  "Finish HEAVY RAIN™",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/b263bb64103454975184555841a520a27823228a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/d7140962cb054f1c94001ae13067fab8bfb1ec72.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_51",
+                                           "displayName":  "Four Heroes",
+                                           "description":  "Complete the story with four characters alive",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/5ac3b9419277cdca44c3fc08ea93c418b2c12936.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/8b89fcd781e7bb1d995f6bed73c0193a8ed95353.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_52",
+                                           "displayName":  "Trial Master",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/13768f4bb722a3979815e427844ccf106df54365.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/4da704b18acbed441cc8956ff318baad2994226d.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_53",
+                                           "displayName":  "Nerd",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/5ac3b9419277cdca44c3fc08ea93c418b2c12936.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/8b89fcd781e7bb1d995f6bed73c0193a8ed95353.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_54",
+                                           "displayName":  "Saved the Kid",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/5ac3b9419277cdca44c3fc08ea93c418b2c12936.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/8b89fcd781e7bb1d995f6bed73c0193a8ed95353.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_55",
+                                           "displayName":  "Perfect Crime",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/b5e2d41179fd7b61bf109f0aa86df965eb402e41.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/ef0fc5506bb53b4e67478cfc5d9d0ca611334deb.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Trophy_56",
+                                           "displayName":  "All Endings",
+                                           "description":  "See all endings",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/d7e49936fd61966bc256bde196786a31850614a8.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/960910/b631871596d5f5d91597c5b471deb741d1aa090e.jpg"
+                                       }
+                                   ]
+                     }
+}

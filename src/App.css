@@ -1765,7 +1765,8 @@ h1 {
   border-color: rgba(224, 83, 83, 0.7);
   box-shadow: 0 6px 20px rgba(180, 40, 40, 0.3);
 }
-.update-button.running-btn.can-stop[data-stop-label]:hover span {
+.update-button.running-btn.can-stop[data-stop-label]:hover span,
+.update-button.running-btn.can-stop[data-stop-label]:hover svg {
   visibility: hidden;
 }
 .update-button.running-btn.can-stop[data-stop-label]:hover::before {
@@ -2117,7 +2118,8 @@ button:disabled {
   position: relative;
 }
 
-.primary-control.running-btn.can-stop[data-stop-label]:hover span {
+.primary-control.running-btn.can-stop[data-stop-label]:hover span,
+.primary-control.running-btn.can-stop[data-stop-label]:hover svg {
   visibility: hidden;
 }
 

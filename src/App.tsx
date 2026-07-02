@@ -606,7 +606,7 @@ export default function App() {
           nvidiaToastTimersRef.current = nvidiaToastTimersRef.current.filter((timer) => timer !== hideTimer)
         }, 8000)
         nvidiaToastTimersRef.current.push(hideTimer)
-      }, 5000)
+      }, 25000)
       nvidiaToastTimersRef.current.push(showTimer)
     }
 
