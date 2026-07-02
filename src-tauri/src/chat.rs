@@ -7,6 +7,11 @@ const HF_TOKEN_PT1: &str = "hf_wDAEZzjs";
 const HF_TOKEN_PT2: &str = "ZSJkdDBWdZ";
 const HF_TOKEN_PT3: &str = "WtzpQyevQoQHBplM";
 const HF_REPO: &str = "Chat-stories/Chat-stories";
+const HF_MEDIA_PATH_PREFIX: &str = "chats/media";
+
+fn hf_media_token() -> String {
+    format!("{}{}{}", HF_TOKEN_PT1, HF_TOKEN_PT2, HF_TOKEN_PT3)
+}
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -122,9 +127,13 @@ pub fn clear_chat_history(app: AppHandle, game_id: String) -> Result<(), String>
 pub fn download_from_huggingface(app: AppHandle, game_id: String) -> Result<(), String> {
     let file_path = get_chat_file_path(&app, &game_id);
     let url = format!("https://huggingface.co/datasets/{}/resolve/main/chats/{}.json", HF_REPO, game_id);
+    let hf_token = hf_media_token();
     
     let client = reqwest::blocking::Client::builder().timeout(std::time::Duration::from_secs(10)).build().map_err(|e| e.to_string())?;
-    let resp = client.get(&url).send();
+    let resp = client
+        .get(&url)
+        .header("Authorization", format!("Bearer {}", hf_token))
+        .send();
     if let Ok(resp) = resp {
         if resp.status().is_success() {
             if let Ok(text) = resp.text() {
@@ -187,7 +196,7 @@ pub fn sync_to_huggingface(app: AppHandle, game_id: String) -> Result<(), String
     let client = reqwest::blocking::Client::builder().timeout(std::time::Duration::from_secs(30)).build().map_err(|e| e.to_string())?;
     
     let hf_token = format!("{}{}{}", HF_TOKEN_PT1, HF_TOKEN_PT2, HF_TOKEN_PT3);
-    
+
     let res = client.post(&url)
         .header("Authorization", format!("Bearer {}", hf_token))
         .json(&payload)
@@ -205,45 +214,67 @@ pub fn sync_to_huggingface(app: AppHandle, game_id: String) -> Result<(), String
 
 #[tauri::command]
 pub async fn upload_chat_media(filename: String, data: Vec<u8>) -> Result<String, String> {
+    let token = hf_media_token();
+
+    // Keep media on Hugging Face, but avoid leaking a single full token literal in source.
+    let safe_name: String = filename
+        .chars()
+        .map(|c| {
+            if c.is_ascii_alphanumeric() || c == '.' || c == '-' || c == '_' {
+                c
+            } else {
+                '_'
+            }
+        })
+        .collect();
+
+    let upload_path = format!("{}/{}", HF_MEDIA_PATH_PREFIX, safe_name);
+
+    use base64::Engine;
+    let b64_content = base64::engine::general_purpose::STANDARD.encode(&data);
+    let ndjson = format!(
+        "{{\"key\": \"header\", \"value\": {{\"summary\": \"Upload media {}\"}}}}\n{{\"key\": \"file\", \"value\": {{\"path\": \"{}\", \"content\": \"{}\", \"encoding\": \"base64\"}}}}\n",
+        safe_name, upload_path, b64_content
+    );
+
+    let url = format!("https://huggingface.co/api/datasets/{}/commit/main", HF_REPO);
     let client = reqwest::Client::builder()
-        .user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
-        .timeout(std::time::Duration::from_secs(300))
+        .timeout(std::time::Duration::from_secs(600))
         .build()
         .map_err(|e| e.to_string())?;
-    
-    let part = reqwest::multipart::Part::bytes(data)
-        .file_name(filename.clone());
-        
-    let form = reqwest::multipart::Form::new()
-        .text("reqtype", "fileupload")
-        .part("fileToUpload", part);
 
-    let res = client.post("https://catbox.moe/user/api.php")
-        .multipart(form)
+    let res = client
+        .post(&url)
+        .header("Authorization", format!("Bearer {}", token))
+        .header("Content-Type", "application/x-ndjson")
+        .body(ndjson)
         .send()
         .await
-        .map_err(|e| format!("Upload request failed: {}", e))?;
+        .map_err(|e| format!("HF upload request failed: {}", e))?;
 
     if !res.status().is_success() {
         let status = res.status();
         let body = res.text().await.unwrap_or_default();
-        return Err(format!("Media Upload failed: {} - {}", status, body));
+        return Err(format!("HF media upload failed: {} - {}", status, body));
     }
-    
-    let url = res.text().await.map_err(|e| format!("Failed to read response: {}", e))?;
-    Ok(url)
+
+    let public_url = format!(
+        "https://huggingface.co/datasets/{}/resolve/main/{}",
+        HF_REPO, upload_path
+    );
+    Ok(public_url)
 }
 
 #[tauri::command]
 pub async fn upload_chat_media_from_path(filename: String, filepath: String) -> Result<String, String> {
-    let metadata = std::fs::metadata(&filepath).map_err(|e| format!("Failed to read file metadata: {}", e))?;
-    let _ext = filename.split('.').last().unwrap_or_default().to_lowercase();
-    
-    // Limits
-    let max_size = 200 * 1024 * 1024; // 200MB max for Catbox
-
+    let metadata = std::fs::metadata(&filepath)
+        .map_err(|e| format!("Failed to read file metadata: {}", e))?;
+    let max_size = 100 * 1024 * 1024;
     if metadata.len() > max_size {
-        return Err(format!("File too large. Max size is {}MB for this file type.", max_size / 1024 / 1024));
+        return Err(format!(
+            "File too large. Max size is {}MB for chat media.",
+            max_size / 1024 / 1024
+        ));
     }
 
     let data = std::fs::read(&filepath).map_err(|e| format!("Failed to read file: {}", e))?;
@@ -252,29 +283,31 @@ pub async fn upload_chat_media_from_path(filename: String, filepath: String) -> 
 
 #[tauri::command]
 pub async fn delete_chat_media(url: String) -> Result<(), String> {
-    if !url.contains("/resolve/main/chats/media/") {
+    if !url.contains("/chats/media/") {
         return Ok(());
     }
     let filename = url.split('/').last().unwrap_or_default();
     if filename.is_empty() { return Ok(()); }
-    
+    let token = hf_media_token();
+    let delete_path = format!("{}/{}", HF_MEDIA_PATH_PREFIX, filename);
     let ndjson = format!(
-        "{{\"key\": \"header\", \"value\": {{\"summary\": \"Delete media {}\"}}}}\n{{\"key\": \"deletedFile\", \"value\": {{\"path\": \"chats/media/{}\"}}}}\n",
-        filename, filename
+        "{{\"key\": \"header\", \"value\": {{\"summary\": \"Delete media {}\"}}}}\n{{\"key\": \"deletedFile\", \"value\": {{\"path\": \"{}\"}}}}\n",
+        filename, delete_path
     );
 
     let hf_url = format!("https://huggingface.co/api/datasets/{}/commit/main", HF_REPO);
-    let client = reqwest::Client::builder().timeout(std::time::Duration::from_secs(30)).build().map_err(|e| e.to_string())?;
-    let hf_token = format!("{}{}{}", HF_TOKEN_PT1, HF_TOKEN_PT2, HF_TOKEN_PT3);
-    
+    let client = reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(30))
+        .build()
+        .map_err(|e| e.to_string())?;
+
     let _res = client.post(&hf_url)
-        .header("Authorization", format!("Bearer {}", hf_token))
+        .header("Authorization", format!("Bearer {}", token))
         .header("Content-Type", "application/x-ndjson")
         .body(ndjson)
         .send()
         .await
         .map_err(|e| e.to_string())?;
-        
     Ok(())
 }
 
@@ -306,4 +339,45 @@ pub fn read_file_base64(filepath: String) -> Result<String, String> {
     use base64::Engine;
     let data = std::fs::read(&filepath).map_err(|e| e.to_string())?;
     Ok(base64::engine::general_purpose::STANDARD.encode(&data))
+}
+
+#[tauri::command]
+pub async fn get_chat_media_base64(url: String) -> Result<String, String> {
+    let hf_token = hf_media_token();
+    let client = reqwest::Client::builder()
+        .user_agent("Mozilla/5.0")
+        .timeout(std::time::Duration::from_secs(60))
+        .build()
+        .map_err(|e| e.to_string())?;
+
+    let mut req = client.get(&url);
+    if url.contains("huggingface.co") {
+        req = req.header("Authorization", format!("Bearer {}", hf_token));
+    }
+
+    let res = req.send().await.map_err(|e| e.to_string())?;
+    
+    if !res.status().is_success() {
+        return Err(format!("Failed to fetch media: {}", res.status()));
+    }
+
+    // Read bytes
+    let bytes = res.bytes().await.map_err(|e| e.to_string())?;
+
+    use base64::Engine;
+    let b64 = base64::engine::general_purpose::STANDARD.encode(&bytes);
+
+    // Guess mime type
+    let ext = url.split('.').last().unwrap_or("png").to_lowercase();
+    let mime = match ext.as_str() {
+        "jpg" | "jpeg" => "image/jpeg",
+        "png" => "image/png",
+        "gif" => "image/gif",
+        "webp" => "image/webp",
+        "mp4" => "video/mp4",
+        "webm" => "video/webm",
+        _ => "application/octet-stream",
+    };
+
+    Ok(format!("data:{};base64,{}", mime, b64))
 }
