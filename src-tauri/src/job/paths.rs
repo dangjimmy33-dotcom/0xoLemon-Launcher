@@ -120,11 +120,6 @@ pub(super) fn downloading_dir_for_install(install_root: &Path, source: &DepotSou
     //
     // Older code used install_root/.0xolemon/downloading for non-default games,
     // which created paths like common/Geometry Dash/.0xolemon/downloading.
-    let game_folder = install_root
-        .file_name()
-        .map(|name| name.to_os_string())
-        .unwrap_or_else(|| source.game_dir_name.clone().into());
-
     if let Some(common_dir) = install_root.parent() {
         let is_common_dir = common_dir
             .file_name()
@@ -134,15 +129,20 @@ pub(super) fn downloading_dir_for_install(install_root: &Path, source: &DepotSou
 
         if is_common_dir {
             if let Some(store_root) = common_dir.parent() {
-                return store_root.join("downloading").join(game_folder);
+                // Shorten downloading path to avoid Windows 260 char limit
+                return store_root.join("downloading").join(&source.game_id);
             }
         }
     }
 
     if install_root == source.default_common_game_dir() {
-        source.default_downloading_game_dir()
+        let mut store_root = PathBuf::from(DEFAULT_STORE_ROOT);
+        store_root.push("downloading");
+        store_root.push(&source.game_id);
+        store_root
     } else {
-        install_root.join(INSTALL_MARKER_DIR).join("downloading")
+        // Also shorten the fallback directory for custom installs
+        install_root.join(".0x_downloading")
     }
 }
 
