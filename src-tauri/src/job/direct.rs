@@ -58,14 +58,16 @@ impl DirectStagePlan {
         let mut destinations: HashMap<String, Vec<ChunkDestination>> = HashMap::new();
         for file in files {
             let stage_path = direct_stage_path(staging_root, file)?;
-            if let Some(parent) = stage_path.parent() {
+            let lp_stage = long_path(&stage_path);
+            if let Some(parent) = lp_stage.parent() {
                 fs::create_dir_all(parent)?;
             }
             let stage = OpenOptions::new()
                 .create(true)
                 .read(true)
                 .write(true)
-                .open(&stage_path)?;
+                .open(&lp_stage)
+                .map_err(|e| JobError::Depot(format!("failed to open staging file '{}': {e}", stage_path.display())))?;
             if stage.metadata()?.len() != file.size {
                 stage.set_len(file.size)?;
                 stage.sync_all()?;
@@ -205,13 +207,14 @@ impl DirectStagePlan {
         let mut transactions = Vec::with_capacity(files.len());
         for file in files {
             let stage = direct_stage_path(&self.staging_root, file)?;
-            if !stage.exists() || fs::metadata(&stage)?.len() != file.size {
+            let lp_stage = long_path(&stage);
+            if !lp_stage.exists() || fs::metadata(&lp_stage)?.len() != file.size {
                 return Err(JobError::Depot(format!(
                     "direct staging file is incomplete: {}",
                     file.path
                 )));
             }
-            let actual = sha256_file(&stage)?;
+            let actual = sha256_file(&lp_stage)?;
             if actual != file.sha256 {
                 return Err(JobError::Depot(format!(
                     "direct staging hash mismatch: {}",
@@ -221,39 +224,46 @@ impl DirectStagePlan {
             OpenOptions::new()
                 .read(true)
                 .write(true)
-                .open(&stage)?
+                .open(&lp_stage)?
                 .sync_all()?;
             let target = safe_join(install_root, &file.path)
                 .ok_or_else(|| JobError::Depot(format!("unsafe manifest path: {}", file.path)))?;
-            if let Some(parent) = target.parent() {
+            let lp_target = long_path(&target);
+            if let Some(parent) = lp_target.parent() {
                 fs::create_dir_all(parent)?;
             }
             let backup = sibling_path(&target, "007launcher.bak")?;
-            transactions.push((stage, target, backup));
+            let lp_backup = long_path(&backup);
+            // Store logical (non-prefixed) paths in transactions for rollback tracking,
+            // but use the long-path versions for actual I/O below.
+            transactions.push((stage, lp_stage, target, lp_target, backup, lp_backup));
         }
 
-        let mut committed: Vec<(PathBuf, PathBuf, bool)> = Vec::with_capacity(transactions.len());
-        for (stage, target, backup) in transactions {
-            if backup.exists() {
-                fs::remove_file(&backup)?;
+        let mut committed: Vec<(PathBuf, PathBuf, PathBuf, bool)> = Vec::with_capacity(transactions.len());
+        for (stage, lp_stage, target, lp_target, _backup, lp_backup) in transactions {
+            if lp_backup.exists() {
+                fs::remove_file(&lp_backup)?;
             }
-            let had_original = target.exists();
-            if target.exists() {
-                fs::rename(&target, &backup)?;
+            let had_original = lp_target.exists();
+            if lp_target.exists() {
+                fs::rename(&lp_target, &lp_backup)?;
             }
-            if let Err(error) = fs::rename(&stage, &target) {
-                if backup.exists() {
-                    let _ = fs::rename(&backup, &target);
+            if let Err(error) = fs::rename(&lp_stage, &lp_target) {
+                if lp_backup.exists() {
+                    let _ = fs::rename(&lp_backup, &lp_target);
                 }
                 rollback_direct_commits(&committed);
-                return Err(error.into());
+                return Err(JobError::Depot(format!(
+                    "failed to commit '{}' to install: {error}",
+                    stage.display()
+                )));
             }
-            committed.push((target, backup, had_original));
+            committed.push((lp_target, lp_backup, target, had_original));
         }
 
-        for (_, backup, _) in &committed {
-            if backup.exists() {
-                fs::remove_file(backup)?;
+        for (_, lp_backup, _, _) in &committed {
+            if lp_backup.exists() {
+                fs::remove_file(lp_backup)?;
             }
         }
         if self.state_path.exists() {
@@ -268,10 +278,12 @@ impl DirectStagePlan {
         })?;
         let mut touched = Vec::with_capacity(destinations.len());
         for destination in destinations {
+            let lp = long_path(&destination.path);
             let mut output = OpenOptions::new()
                 .read(true)
                 .write(true)
-                .open(&destination.path)?;
+                .open(&lp)
+                .map_err(|e| JobError::Depot(format!("failed to write chunk to staging '{}': {e}", destination.path.display())))?;
             output.seek(SeekFrom::Start(destination.offset))?;
             output.write_all(data)?;
             touched.push(destination.path.clone());
@@ -287,7 +299,7 @@ impl DirectStagePlan {
             OpenOptions::new()
                 .read(true)
                 .write(true)
-                .open(path)?
+                .open(long_path(path))?
                 .sync_all()?;
         }
         {
@@ -342,7 +354,11 @@ impl DirectStagePlan {
                 invalid.push(hash);
                 continue;
             };
-            let mut file = File::open(&destination.path)?;
+            let lp = long_path(&destination.path);
+            let mut file = match File::open(&lp) {
+                Ok(f) => f,
+                Err(_) => { invalid.push(hash); continue; }
+            };
             file.seek(SeekFrom::Start(destination.offset))?;
             let mut bytes = vec![0_u8; chunk.uncompressed_size as usize];
             if file.read_exact(&mut bytes).is_err() || verify_chunk_bytes(chunk, &bytes).is_err() {
@@ -362,13 +378,14 @@ impl DirectStagePlan {
     }
 }
 
-fn rollback_direct_commits(committed: &[(PathBuf, PathBuf, bool)]) {
-    for (target, backup, had_original) in committed.iter().rev() {
-        if target.exists() {
-            let _ = fs::remove_file(target);
+fn rollback_direct_commits(committed: &[(PathBuf, PathBuf, PathBuf, bool)]) {
+    // committed = (lp_target, lp_backup, _logical_target, had_original)
+    for (lp_target, lp_backup, _, had_original) in committed.iter().rev() {
+        if lp_target.exists() {
+            let _ = fs::remove_file(lp_target);
         }
-        if *had_original && backup.exists() {
-            let _ = fs::rename(backup, target);
+        if *had_original && lp_backup.exists() {
+            let _ = fs::rename(lp_backup, lp_target);
         }
     }
 }

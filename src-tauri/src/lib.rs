@@ -699,6 +699,7 @@ pub fn run() {
             chat::upload_chat_media,
             chat::upload_chat_media_from_path,
             chat::delete_chat_media,
+            chat::get_chat_media_base64,
             chat::download_chat_media_to_disk,
             chat::sync_to_huggingface,
             chat::read_file_base64,

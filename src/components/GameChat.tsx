@@ -111,6 +111,44 @@ function showChatToast(msg: string) {
   setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 3000);
 }
 
+// ── Media component ──────────────────────────────────────────
+function AuthenticatedMedia({ url, type, fallbackBase64 }: { url: string, type: 'image' | 'video', fallbackBase64?: string }) {
+  const [isZoomed, setIsZoomed] = useState(false)
+
+  // Since the Hugging Face repository is public, we can use the URL directly.
+  // This allows native HTML5 video streaming (HTTP Range requests) instead of base64 encoding.
+  const src = url || fallbackBase64
+
+  if (!src) return <div style={{opacity: 0.7, fontSize: 12}}>Loading media...</div>
+
+  if (type === 'video') {
+    return <video src={src} controls className="chat-video" />
+  }
+
+  return (
+    <>
+      <img 
+        src={src} 
+        alt="attached" 
+        className="chat-image" 
+        onClick={() => setIsZoomed(true)} 
+        style={{ cursor: 'pointer' }}
+      />
+      {isZoomed && (
+        <div 
+          onClick={() => setIsZoomed(false)}
+          style={{
+            position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 999999,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'zoom-out'
+          }}
+        >
+          <img src={src} style={{ maxWidth: '90vw', maxHeight: '90vh', objectFit: 'contain', borderRadius: 8, boxShadow: '0 4px 30px rgba(0,0,0,0.5)' }} />
+        </div>
+      )}
+    </>
+  )
+}
+
 // ── Message content ───────────────────────────────────────
 function MessageContent({ text, imageBase64, mediaUrl, mediaType, fileName }: { text: string; imageBase64?: string; mediaUrl?: string; mediaType?: string; fileName?: string }) {
   const ytId = text ? extractYouTubeId(text) : null
@@ -157,9 +195,9 @@ function MessageContent({ text, imageBase64, mediaUrl, mediaType, fileName }: { 
             allowFullScreen loading="lazy" />
         </div>
       )}
-      {imageBase64 && <img src={imageBase64} alt="attached" className="chat-image" />}
-      {mediaUrl && isVideo && <video src={mediaUrl} controls className="chat-video" />}
-      {mediaUrl && isImage && <img src={mediaUrl} alt="attached" className="chat-image" />}
+      {imageBase64 && !mediaUrl && <img src={imageBase64} alt="attached" className="chat-image" />}
+      {mediaUrl && isVideo && <AuthenticatedMedia url={mediaUrl} type="video" />}
+      {mediaUrl && isImage && <AuthenticatedMedia url={mediaUrl} type="image" fallbackBase64={imageBase64} />}
       {mediaUrl && isFile && (
         <div className="chat-file-attachment">
           <div className="chat-file-icon">
