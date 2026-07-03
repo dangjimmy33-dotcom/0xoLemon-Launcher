@@ -20,6 +20,7 @@ export function ChangelogModal({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        background: 'rgba(6, 7, 10, 0.75)',
         zIndex: 1000,
       }}
     >
@@ -35,6 +36,10 @@ export function ChangelogModal({
           padding: 0,
           overflow: 'hidden',
           margin: 0,
+          background: '#15161c',
+          borderRadius: '16px',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          boxShadow: '0 24px 60px rgba(0, 0, 0, 0.55)',
         }}
       >
         <header style={{ 
