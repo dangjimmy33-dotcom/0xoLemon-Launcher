@@ -1,7 +1,7 @@
 {
   "name": "first-light-smart-launcher",
   "private": true,
-  "version": "1.0.21",
+  "version": "1.0.22",
   "type": "module",
   "scripts": {
     "dev": "vite",
