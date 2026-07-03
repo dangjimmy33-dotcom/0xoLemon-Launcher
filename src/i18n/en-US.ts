@@ -9,6 +9,14 @@ export const enUS = {
     translations: 'Translations',
     cache: 'Cache',
     settings: 'Settings',
+    whatsNew: 'What\'s New!',
+  },
+  whatsNew: {
+    title: "What's New!",
+    subtitle: "Discover the latest features and bug fixes in recent updates of 007Launcher.",
+    version: "Version",
+    latest: "Latest",
+    close: "Close"
   },
   library: {
     availableGames: 'Store',

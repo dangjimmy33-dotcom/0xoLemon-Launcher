@@ -498,6 +498,7 @@ export type ShortcutLaunchPayload = {
 
 export type TabId =
   | 'Home'
+  | 'What\'s New!'
   | 'Store'
   | 'Library'
   | 'Updates'

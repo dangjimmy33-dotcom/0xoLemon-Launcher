@@ -9,6 +9,14 @@ export const viVN = {
     translations: 'Bản dịch',
     cache: 'Bộ nhớ đệm',
     settings: 'Cài đặt',
+    whatsNew: 'Có gì mới!',
+  },
+  whatsNew: {
+    title: "Có gì mới!",
+    subtitle: "Khám phá những tính năng mới và các bản sửa lỗi trong các bản cập nhật gần đây của 007Launcher.",
+    version: "Phiên bản",
+    latest: "Mới nhất",
+    close: "Đóng"
   },
   library: {
     availableGames: 'Cửa hàng',

@@ -1,0 +1,30 @@
+[
+  {
+    "version": "1.0.20",
+    "date": "2026-07-03",
+    "changes": [
+      "Thêm tab \"What's New!\" để xem lịch sử cập nhật của launcher.",
+      "Sửa lỗi thiếu file src-tauri/src/chat.rs trong quá trình build.",
+      "Cải thiện hiệu suất tải xuống các game lớn.",
+      "Nâng cấp giao diện người dùng chuyên nghiệp hơn."
+    ]
+  },
+  {
+    "version": "1.0.19",
+    "date": "2026-07-03",
+    "changes": [
+      "Cập nhật giao diện Home với các banner mới.",
+      "Sửa lỗi khi tạm dừng tải xuống bị đứng tiến trình.",
+      "Hỗ trợ tích hợp Discord Rich Presence tốt hơn."
+    ]
+  },
+  {
+    "version": "1.0.17",
+    "date": "2026-06-10",
+    "changes": [
+      "Thêm tính năng Cloud Save đồng bộ qua Google Drive.",
+      "Cải thiện kiểm tra tính toàn vẹn (Verify files) nhanh hơn 30%.",
+      "Sửa một số lỗi hiển thị văn bản ở ngôn ngữ tiếng Việt."
+    ]
+  }
+]

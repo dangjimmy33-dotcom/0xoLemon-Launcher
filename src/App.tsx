@@ -77,6 +77,7 @@ import {
   UpdateBanner,
   UpdateCenter,
   FirebaseRemoteControl,
+  ChangelogModal,
 } from './components'
 
 const initialLauncherPreferences = loadLauncherPreferences()
@@ -214,6 +215,7 @@ export default function App() {
   const [discordAuthBusy, setDiscordAuthBusy] = useState(false)
   const [cacheBusy, setCacheBusy] = useState(false)
   const [appVersion, setAppVersion] = useState(packageMetadata.version)
+  const [showWhatsNewModal, setShowWhatsNewModal] = useState(false)
   const launcherUpdateRateRef = useRef<Array<{ bytes: number; at: number }>>([])
   const pendingHomeLaunchRef = useRef<string | null>(null)
   const playingGamesRef = useRef<Record<string, boolean>>({})
@@ -469,6 +471,7 @@ export default function App() {
         const pendingVersion = window.localStorage.getItem('0xo_pending_launcher_update')
         if (pendingVersion === version) {
           window.localStorage.removeItem('0xo_pending_launcher_update')
+          setShowWhatsNewModal(true)
           void publishNotification({
             category: 'launcher',
             severity: 'success',
@@ -3261,6 +3264,10 @@ export default function App() {
           setRuntimeStates={setRuntimeStates}
         />
       ) : null}
+
+      {showWhatsNewModal && (
+        <ChangelogModal onClose={() => setShowWhatsNewModal(false)} />
+      )}
     </div>
     </MotionConfig>
   )

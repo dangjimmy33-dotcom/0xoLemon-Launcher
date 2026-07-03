@@ -10,6 +10,12 @@ const HF_REPO: &str = "Chat-stories/Chat-stories";
 const HF_MEDIA_PATH_PREFIX: &str = "chats/media";
 
 fn hf_media_token() -> String {
+    // Attempt to load token from huggingface-repos.json config, fallback to hardcoded token parts if not found
+    if let Some(token) = crate::remote_paths::token_for_repo(HF_REPO) {
+        if !token.is_empty() {
+            return token;
+        }
+    }
     format!("{}{}{}", HF_TOKEN_PT1, HF_TOKEN_PT2, HF_TOKEN_PT3)
 }
 
@@ -229,20 +235,104 @@ pub async fn upload_chat_media(filename: String, data: Vec<u8>) -> Result<String
         .collect();
 
     let upload_path = format!("{}/{}", HF_MEDIA_PATH_PREFIX, safe_name);
+    let size = data.len();
 
-    use base64::Engine;
-    let b64_content = base64::engine::general_purpose::STANDARD.encode(&data);
-    let ndjson = format!(
-        "{{\"key\": \"header\", \"value\": {{\"summary\": \"Upload media {}\"}}}}\n{{\"key\": \"file\", \"value\": {{\"path\": \"{}\", \"content\": \"{}\", \"encoding\": \"base64\"}}}}\n",
-        safe_name, upload_path, b64_content
+    let ext = safe_name.split('.').last().unwrap_or("").to_lowercase();
+    let is_lfs = matches!(
+        ext.as_str(),
+        "jpg" | "jpeg" | "png" | "gif" | "webp" | "bmp" | "tiff" |
+        "mp4" | "webm" | "mp3" | "wav" | "ogg" | "flac" | "aac" |
+        "zip" | "rar" | "7z" | "tar" | "gz" | "bz2" | "xz" | "pdf" | "bin" | "dat" | "exe"
     );
 
-    let url = format!("https://huggingface.co/api/datasets/{}/commit/main", HF_REPO);
     let client = reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(600))
         .build()
         .map_err(|e| e.to_string())?;
 
+    let mut ndjson = format!(
+        "{{\"key\": \"header\", \"value\": {{\"summary\": \"Upload media {}\"}}}}\n",
+        safe_name
+    );
+
+    if is_lfs {
+        use sha2::{Digest, Sha256};
+        let mut hasher = Sha256::new();
+        hasher.update(&data);
+        let sha256_hash = hex::encode(hasher.finalize());
+
+        let batch_url = format!("https://huggingface.co/datasets/{}.git/info/lfs/objects/batch", HF_REPO);
+        let batch_payload = serde_json::json!({
+            "operation": "upload",
+            "transfers": ["basic", "multipart"],
+            "objects": [
+                {
+                    "oid": sha256_hash,
+                    "size": size
+                }
+            ]
+        });
+
+        let batch_res = client.post(&batch_url)
+            .header("Authorization", format!("Bearer {}", token))
+            .header("Accept", "application/vnd.git-lfs+json")
+            .header("Content-Type", "application/vnd.git-lfs+json")
+            .json(&batch_payload)
+            .send()
+            .await
+            .map_err(|e| format!("LFS batch request failed: {}", e))?;
+
+        if !batch_res.status().is_success() {
+            let status = batch_res.status();
+            let body = batch_res.text().await.unwrap_or_default();
+            return Err(format!("LFS batch failed: {} - {}", status, body));
+        }
+
+        let batch_json: serde_json::Value = batch_res.json().await.map_err(|e| e.to_string())?;
+        
+        if let Some(objects) = batch_json.get("objects").and_then(|o| o.as_array()) {
+            if let Some(obj) = objects.first() {
+                if let Some(error) = obj.get("error") {
+                    return Err(format!("LFS error: {}", error));
+                }
+                if let Some(actions) = obj.get("actions") {
+                    if let Some(upload) = actions.get("upload") {
+                        if let Some(href) = upload.get("href").and_then(|h| h.as_str()) {
+                            let mut put_req = client.put(href).body(data.clone());
+                            if let Some(header) = upload.get("header").and_then(|h| h.as_object()) {
+                                for (k, v) in header {
+                                    if let Some(v_str) = v.as_str() {
+                                        put_req = put_req.header(k, v_str);
+                                    }
+                                }
+                            }
+                            let put_res = put_req.send().await.map_err(|e| format!("LFS upload failed: {}", e))?;
+                            if !put_res.status().is_success() {
+                                let status = put_res.status();
+                                let body = put_res.text().await.unwrap_or_default();
+                                return Err(format!("LFS PUT failed: {} - {}", status, body));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        ndjson.push_str(&format!(
+            "{{\"key\": \"lfsFile\", \"value\": {{\"path\": \"{}\", \"algo\": \"sha256\", \"oid\": \"{}\", \"size\": {}}}}}\n",
+            upload_path, sha256_hash, size
+        ));
+
+    } else {
+        use base64::Engine;
+        let b64_content = base64::engine::general_purpose::STANDARD.encode(&data);
+        ndjson.push_str(&format!(
+            "{{\"key\": \"file\", \"value\": {{\"path\": \"{}\", \"content\": \"{}\", \"encoding\": \"base64\"}}}}\n",
+            upload_path, b64_content
+        ));
+    }
+
+    let url = format!("https://huggingface.co/api/datasets/{}/commit/main", HF_REPO);
     let res = client
         .post(&url)
         .header("Authorization", format!("Bearer {}", token))

@@ -7,6 +7,7 @@ import { InstallBar } from './install'
 import { DownloadQueuePanel, JobCenter, JobLogPanel } from './downloads'
 import { CachePanel, RollbackPanel, InstallSummaryPanel, ChangedFiles } from './panels'
 import { TranslationsView } from './TranslationsView'
+import { WhatsNewView } from './WhatsNewView'
 
 export function ActiveView({
   activeTab,
@@ -240,6 +241,10 @@ export function ActiveView({
         )}
       </section>
     )
+  }
+
+  if (activeTab === 'What\'s New!') {
+    return <WhatsNewView />
   }
 
   if (activeTab === 'Downloads' || activeTab === 'Updates') {
