@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import { X, Sparkles } from 'lucide-react'
 import { WhatsNewView } from './WhatsNewView'
 import { useLocale } from '../context/LocaleContext'
@@ -9,8 +10,19 @@ export function ChangelogModal({
 }) {
   const { t } = useLocale()
 
-  return (
-    <div className="modal-backdrop" onClick={onClose}>
+  return createPortal(
+    <div
+      className="modal-backdrop"
+      onClick={onClose}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000,
+      }}
+    >
       <div 
         className="modal-content" 
         onClick={(e) => e.stopPropagation()}
@@ -21,7 +33,8 @@ export function ChangelogModal({
           display: 'flex', 
           flexDirection: 'column',
           padding: 0,
-          overflow: 'hidden'
+          overflow: 'hidden',
+          margin: 0,
         }}
       >
         <header style={{ 
@@ -76,6 +89,7 @@ export function ChangelogModal({
           </button>
         </footer>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
