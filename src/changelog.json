@@ -1,5 +1,12 @@
 ﻿[
     {
+        "version":  "1.0.25",
+        "date":  "2026-07-06",
+        "changes":  [
+                        "BẢN CẬP NHẬT LỚN                                                - Thêm chế độ tải thông qua lua                                   - Cải thiện sự ổn định                                            - Sửa 1 số bug"
+                    ]
+    },
+    {
         "version":  "1.0.24",
         "date":  "2026-07-06",
         "changes":  [
