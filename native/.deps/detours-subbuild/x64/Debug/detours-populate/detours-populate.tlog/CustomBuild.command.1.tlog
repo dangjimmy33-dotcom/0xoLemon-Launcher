@@ -1,0 +1,152 @@
+^E:\007LAUNCHER\NATIVE\.DEPS\DETOURS-SUBBUILD\CMAKEFILES\6748798BAA8B89F4C2066A8133581035\DETOURS-POPULATE-MKDIR.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -Dcfgdir=/Debug -P E:/007Launcher/native/.deps/detours-subbuild/detours-populate-prefix/tmp/detours-populate-mkdirs.cmake
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/native/.deps/detours-subbuild/detours-populate-prefix/src/detours-populate-stamp/Debug/detours-populate-mkdir
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\.DEPS\DETOURS-SUBBUILD\CMAKEFILES\6748798BAA8B89F4C2066A8133581035\DETOURS-POPULATE-DOWNLOAD.RULE
+setlocal
+cd E:\007Launcher\native\.deps
+if %errorlevel% neq 0 goto :cmEnd
+E:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE -P E:/007Launcher/native/.deps/detours-subbuild/detours-populate-prefix/tmp/detours-populate-gitclone.cmake
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/native/.deps/detours-subbuild/detours-populate-prefix/src/detours-populate-stamp/Debug/detours-populate-download
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\.DEPS\DETOURS-SUBBUILD\CMAKEFILES\6748798BAA8B89F4C2066A8133581035\DETOURS-POPULATE-UPDATE_DISCONNECTED.RULE
+setlocal
+cd E:\007Launcher\native\.deps\detours-src
+if %errorlevel% neq 0 goto :cmEnd
+E:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -Dcan_fetch=NO -DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE -P E:/007Launcher/native/.deps/detours-subbuild/detours-populate-prefix/tmp/detours-populate-gitupdate.cmake
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/native/.deps/detours-subbuild/detours-populate-prefix/src/detours-populate-stamp/Debug/detours-populate-update_disconnected
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\.DEPS\DETOURS-SUBBUILD\CMAKEFILES\6748798BAA8B89F4C2066A8133581035\DETOURS-POPULATE-PATCH_DISCONNECTED.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/native/.deps/detours-subbuild/detours-populate-prefix/src/detours-populate-stamp/Debug/detours-populate-patch_disconnected
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\.DEPS\DETOURS-SUBBUILD\CMAKEFILES\6748798BAA8B89F4C2066A8133581035\DETOURS-POPULATE-CONFIGURE.RULE
+setlocal
+cd E:\007Launcher\native\.deps\detours-build
+if %errorlevel% neq 0 goto :cmEnd
+E:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/native/.deps/detours-subbuild/detours-populate-prefix/src/detours-populate-stamp/Debug/detours-populate-configure
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\.DEPS\DETOURS-SUBBUILD\CMAKEFILES\6748798BAA8B89F4C2066A8133581035\DETOURS-POPULATE-BUILD.RULE
+setlocal
+cd E:\007Launcher\native\.deps\detours-build
+if %errorlevel% neq 0 goto :cmEnd
+E:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/native/.deps/detours-subbuild/detours-populate-prefix/src/detours-populate-stamp/Debug/detours-populate-build
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\.DEPS\DETOURS-SUBBUILD\CMAKEFILES\6748798BAA8B89F4C2066A8133581035\DETOURS-POPULATE-INSTALL.RULE
+setlocal
+cd E:\007Launcher\native\.deps\detours-build
+if %errorlevel% neq 0 goto :cmEnd
+E:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/native/.deps/detours-subbuild/detours-populate-prefix/src/detours-populate-stamp/Debug/detours-populate-install
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\.DEPS\DETOURS-SUBBUILD\CMAKEFILES\6748798BAA8B89F4C2066A8133581035\DETOURS-POPULATE-TEST.RULE
+setlocal
+cd E:\007Launcher\native\.deps\detours-build
+if %errorlevel% neq 0 goto :cmEnd
+E:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/native/.deps/detours-subbuild/detours-populate-prefix/src/detours-populate-stamp/Debug/detours-populate-test
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\.DEPS\DETOURS-SUBBUILD\CMAKEFILES\9C23A6974341C75A507B23D802668AF4\DETOURS-POPULATE-COMPLETE.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory E:/007Launcher/native/.deps/detours-subbuild/CMakeFiles/Debug
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/native/.deps/detours-subbuild/CMakeFiles/Debug/detours-populate-complete
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/native/.deps/detours-subbuild/detours-populate-prefix/src/detours-populate-stamp/Debug/detours-populate-done
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\.DEPS\DETOURS-SUBBUILD\CMAKEFILES\1E81ED85B19004503D858D657B02EF9C\DETOURS-POPULATE.RULE
+setlocal
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\.DEPS\DETOURS-SUBBUILD\CMAKELISTS.TXT
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SE:/007Launcher/native/.deps/detours-subbuild -BE:/007Launcher/native/.deps/detours-subbuild --check-stamp-file E:/007Launcher/native/.deps/detours-subbuild/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

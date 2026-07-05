@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"E:/007Launcher/native/.deps/detours-subbuild/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

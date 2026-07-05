@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState, cloneElement } from 'react'
 import { createPortal } from 'react-dom'
 import { invoke } from '@tauri-apps/api/core'
-import { BookOpen, CheckCircle2, ChevronLeft, ChevronRight, CircleAlert, Download, FolderOpen, HardDrive, Image as ImageIcon, Library, Play, RefreshCcw, Search, ShieldCheck, ShoppingBag, Trophy, X, MessageSquare, Info } from 'lucide-react'
+import { BookOpen, CheckCircle2, ChevronLeft, ChevronRight, CircleAlert, PlusCircle, Download, FolderOpen, HardDrive, Image as ImageIcon, Library, Play, RefreshCcw, Search, ShieldCheck, ShoppingBag, Trophy, X, MessageSquare, Info, Sparkles } from 'lucide-react'
 import { TutorialModal } from './TutorialModal'
 import { useLocale } from '../context/LocaleContext'
+import { useSteamAppIds } from '../hooks/useSteamAppIds'
 import type { CloudSaveStatus, GameAchievement, GameCatalog, GameDetail, GameSummary, GameInstallState, GameVersionInfo, VerifyUiStatus } from '../types'
 import { assetUrlForId, firstMediaUrl, isCarouselMedia, mediaPriority, processDescriptionHtml, isTauriRuntime } from '../lib/gameMeta'
 import { formatBytes } from '../lib/format'
@@ -11,6 +12,7 @@ import { getGameTags, gameHasTag } from '../lib/gameTags'
 import { GameDetailsPanel, InstallSummaryPanel } from './panels'
 import { CloudSavePanel } from './CloudSavePanel'
 import { GameChat } from './GameChat'
+import { ConfirmDialog } from './ConfirmDialog'
 import { useRealtimeConfig } from '../hooks/useRealtimeConfig'
 import { useFirestoreDetail } from '../hooks/useFirestoreDetail'
 
@@ -160,7 +162,7 @@ function HoverCardPopup({
   onRequestAsset: (game: GameSummary, assetId: string | undefined, urgent?: boolean) => void
 }) {
   const detail = useFirestoreDetail(game.id)
-  
+
   const videoMedia = detail?.media?.find(
     (m) => m.mimeType?.startsWith('video/') || m.role?.startsWith('video'),
   )
@@ -197,7 +199,7 @@ function HoverCardPopup({
   } else {
     style.left = pos.left
   }
-  
+
   const description = detail?.shortDescription || game.subtitle || ''
 
   return (
@@ -401,7 +403,117 @@ export function StoreLibraryView({
   }, [catalog.games, query])
   const actionDockRef = useRef<HTMLDivElement>(null)
   const [stickyVisible, setStickyVisible] = useState(false)
-  const [activeDetailTab, setActiveDetailTab] = useState<'overview' | 'chat'>('overview')
+  const [activeDetailTab, setActiveDetailTab] = useState<'overview' | 'chat' | 'lua-game'>('overview')
+  const [showLuaGameTab, setShowLuaGameTab] = useState(false)
+  const { mapping } = useSteamAppIds()
+
+  // Listen for lua-game-mode changes
+  useEffect(() => {
+    if (!selectedGame) return
+
+    const handleLuaGameModeChange = (e: CustomEvent) => {
+      const { gameId: eventGameId, added } = e.detail
+      if (eventGameId === selectedGame.id) {
+        setShowLuaGameTab(added)
+        if (added) {
+          // Auto-navigate to lua-game tab when game is added
+          setActiveDetailTab('lua-game')
+        } else if (activeDetailTab === 'lua-game') {
+          // Navigate back to overview when tab is removed
+          setActiveDetailTab('overview')
+        }
+      }
+    }
+
+    window.addEventListener('lua-game-mode-changed' as any, handleLuaGameModeChange)
+
+    // Check initial status
+    const checkLuaGameStatus = async () => {
+      try {
+        const appid = mapping[selectedGame.id]
+        if (appid) {
+          const isAdded = await invoke<boolean>('check_steam_status', { appid })
+          setShowLuaGameTab(isAdded)
+        }
+      } catch (e) {
+        console.error('Failed to check lua-game status', e)
+      }
+    }
+    checkLuaGameStatus()
+
+    return () => {
+      window.removeEventListener('lua-game-mode-changed' as any, handleLuaGameModeChange)
+    }
+  }, [selectedGame, activeDetailTab, mapping])
+
+  const [steamlessStatus, setSteamlessStatus] = useState<boolean>(false)
+  const [steamlessLoading, setSteamlessLoading] = useState<boolean>(false)
+  const [steamlessMessage, setSteamlessMessage] = useState<{ text: string; isError: boolean } | null>(null)
+
+  /** Resolve the exe path: prefer Steam's own install dir over launcher's installPath */
+  const resolveSteamlessExePath = async (): Promise<string | null> => {
+    const launchExe = selectedInstallState?.launchExecutable
+    if (!launchExe) return null
+    // Only the filename part — strip any subdirectory that might be in launchExecutable
+    const exeFilename = launchExe.split('\\').pop() ?? launchExe
+    const appid = selectedGame ? mapping[selectedGame.id] : undefined
+    if (appid) {
+      try {
+        const steamDir = await invoke<string | null>('get_steam_game_install_dir', { appid })
+        if (steamDir) {
+          return `${steamDir}\\${exeFilename}`
+        }
+      } catch {
+        // fallthrough to installPath
+      }
+    }
+    // Fallback: use launcher's tracked installPath
+    const installPath = selectedInstallState?.installPath
+    if (!installPath) return null
+    return `${installPath}\\${launchExe}`
+  }
+
+  useEffect(() => {
+    if (!selectedGame || !selectedInstallState?.launchExecutable || activeDetailTab !== 'lua-game') {
+      return
+    }
+    let cancelled = false
+    resolveSteamlessExePath().then(exePath => {
+      if (!cancelled && exePath) {
+        invoke<boolean>('steamless_status', { exePath })
+          .then(setSteamlessStatus)
+          .catch(console.error)
+      }
+    })
+    return () => { cancelled = true }
+  }, [selectedGame, selectedInstallState, activeDetailTab])
+
+  const handleToggleSteamless = async () => {
+    const exePath = await resolveSteamlessExePath()
+    if (!exePath) return
+    setSteamlessLoading(true)
+    setSteamlessMessage(null)
+    
+    try {
+      if (steamlessStatus) {
+        const msg = await invoke<string>('steamless_restore', { exePath })
+        setSteamlessStatus(false)
+        setSteamlessMessage({ text: msg, isError: false })
+      } else {
+        const res = await invoke<any>('steamless_apply', { exePath })
+        if (res.success) {
+          setSteamlessStatus(true)
+          setSteamlessMessage({ text: res.message, isError: false })
+        } else {
+          setSteamlessMessage({ text: res.message, isError: true })
+        }
+      }
+    } catch (e) {
+      setSteamlessMessage({ text: String(e), isError: true })
+    } finally {
+      setSteamlessLoading(false)
+    }
+  }
 
   useEffect(() => {
     if (!selectedGameId || !detail?.gameId || typeof IntersectionObserver === 'undefined') {
@@ -439,27 +551,27 @@ export function StoreLibraryView({
         disabled={isComingSoon}
         onClick={() => !isComingSoon && onSelectGame(game.id)}
       >
-      <div className="store-game-card-media">
-        <LazyGameCardImage
-          game={game}
-          assetId={game.gridAssetId}
-          url={assetUrlForId(game.gridAssetId, assets)}
-          variant={variant}
-          onRequestAsset={onRequestAsset}
-        />
-        {tags.length > 0 ? (
-          <div className="game-card-tags" aria-label="Game tags">
-            {tags.map((tag) => (
-              <i className={`game-card-tag tone-${tag.tone}`} key={tag.id}>{tag.label}</i>
-            ))}
-          </div>
-        ) : null}
-      </div>
-      <span>
-        <strong>{game.title}</strong>
-        <small>{game.developer}</small>
-      </span>
-    </button>
+        <div className="store-game-card-media">
+          <LazyGameCardImage
+            game={game}
+            assetId={game.gridAssetId}
+            url={assetUrlForId(game.gridAssetId, assets)}
+            variant={variant}
+            onRequestAsset={onRequestAsset}
+          />
+          {tags.length > 0 ? (
+            <div className="game-card-tags" aria-label="Game tags">
+              {tags.map((tag) => (
+                <i className={`game-card-tag tone-${tag.tone}`} key={tag.id}>{tag.label}</i>
+              ))}
+            </div>
+          ) : null}
+        </div>
+        <span>
+          <strong>{game.title}</strong>
+          <small>{game.developer}</small>
+        </span>
+      </button>
     )
   }
 
@@ -613,6 +725,7 @@ export function StoreLibraryView({
             {primaryIcon}
             <span>{actionLabel}</span>
           </button>
+          {(!isJobRunning && !isPlaying && selectedGameId) && <SteamIntegrationButton gameId={selectedGameId} gameTitle={detail.title} />}
           {installed && showVersionAction ? (
             <button
               className="update-control"
@@ -682,6 +795,7 @@ export function StoreLibraryView({
               {primaryIcon}
               <span>{actionLabel}</span>
             </button>
+            {(!isJobRunning && !isPlaying && selectedGameId) && <SteamIntegrationButton gameId={selectedGameId} gameTitle={detail.title} />}
             {installed && showVersionAction ? (
               <button className="update-control" type="button" onClick={onPrimaryAction} disabled={updateDisabled}>
                 <Download size={17} />
@@ -712,22 +826,98 @@ export function StoreLibraryView({
           >
             <MessageSquare size={16} /> Live Chat
           </button>
+          {showLuaGameTab && (
+            <button
+              className={activeDetailTab === 'lua-game' ? 'active' : ''}
+              onClick={() => setActiveDetailTab('lua-game')}
+              type="button"
+              style={{
+                background: 'linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,165,0,0.1))',
+                border: '1px solid rgba(255,215,0,0.3)'
+              }}
+            >
+              <Sparkles size={16} /> {t.library.luaGameMode}
+            </button>
+          )}
         </nav>
 
         {activeDetailTab === 'overview' ? (
           <>
             <MediaRail detail={detail} assets={assets} />
 
-        <section className="detail-body">
-          <div className="detail-description">
-            <h2>{detail.title}</h2>
-            <div
-              className="description-html"
-              dangerouslySetInnerHTML={{ __html: processDescriptionHtml(detail.detailedDescription, assets) }}
-            />
-          </div>
-        </section>
-        </>
+            <section className="detail-body">
+              <div className="detail-description">
+                <h2>{detail.title}</h2>
+                <div
+                  className="description-html"
+                  dangerouslySetInnerHTML={{ __html: processDescriptionHtml(detail.detailedDescription, assets) }}
+                />
+              </div>
+            </section>
+          </>
+        ) : activeDetailTab === 'lua-game' ? (
+          <section className="detail-body lua-game-tab-container">
+            <div style={{
+              padding: '40px',
+              textAlign: 'center',
+              background: 'rgba(255,215,0,0.05)',
+              borderRadius: '12px',
+              border: '1px solid rgba(255,215,0,0.2)'
+            }}>
+              <Sparkles size={48} style={{ color: '#ffd700', marginBottom: '20px' }} />
+              <h2 style={{ color: '#ffd700', marginBottom: '12px' }}>{t.library.luaGameMode}</h2>
+              <p style={{ color: '#aaa', maxWidth: '600px', margin: '0 auto', lineHeight: '1.6' }}>
+                {t.library.luaGameModeDesc}
+              </p>
+              <div style={{
+                marginTop: '40px',
+                padding: '20px',
+                background: 'rgba(0,0,0,0.2)',
+                borderRadius: '8px',
+                border: '1px solid rgba(255,255,255,0.1)',
+                textAlign: 'left'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <h3 style={{ margin: 0, fontSize: '16px', color: '#fff' }}>{t.library.luaGameModeError54Fix}</h3>
+                    <span style={{ fontSize: '12px', color: '#00fa9a', background: 'rgba(0,250,154,0.1)', padding: '2px 6px', borderRadius: '4px' }}>
+                      {t.library.luaGameModeError54Recommended}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    className={steamlessStatus ? 'settings-toggle is-on' : 'settings-toggle'}
+                    role="switch"
+                    aria-checked={steamlessStatus}
+                    disabled={steamlessLoading || !selectedInstallState?.installPath}
+                    style={{
+                      opacity: steamlessLoading ? 0.5 : 1,
+                      cursor: steamlessLoading || !selectedInstallState?.installPath ? 'not-allowed' : 'pointer'
+                    }}
+                    onClick={() => !steamlessLoading && handleToggleSteamless()}
+                  >
+                    <span />
+                  </button>
+                </div>
+                <p style={{ margin: 0, color: '#888', fontSize: '14px', lineHeight: '1.5' }}>
+                  {t.library.luaGameModeError54Desc}
+                </p>
+                {steamlessMessage && (
+                  <div style={{ 
+                    marginTop: '15px', 
+                    padding: '10px', 
+                    borderRadius: '6px', 
+                    background: steamlessMessage.isError ? 'rgba(255,50,50,0.1)' : 'rgba(50,255,50,0.1)',
+                    color: steamlessMessage.isError ? '#ff6b6b' : '#4cd137',
+                    fontSize: '13px',
+                    border: `1px solid ${steamlessMessage.isError ? 'rgba(255,50,50,0.2)' : 'rgba(50,255,50,0.2)'}`
+                  }}>
+                    {steamlessMessage.text}
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
         ) : (
           <section className="detail-body chat-tab-container">
             <GameChat gameId={detail.gameId} discordUser={discordUser} />
@@ -736,88 +926,88 @@ export function StoreLibraryView({
       </section>
 
       {activeDetailTab === 'overview' && (
-      <aside className="store-info-column">
-        <section className="panel status-card">
-          <header className="side-header">
-            <CheckCircle2 size={17} />
-            <strong>{stateLabel}</strong>
-          </header>
-          <dl className="metric-list">
-            <div>
-              <dt>{t.library.currentVersion}</dt>
-              <dd>{installed ? selectedCurrentVersion : t.library.notInstalled}</dd>
-            </div>
-            <div>
-              <dt>{t.library.latestVersion}</dt>
-              <dd>{selectedGame.latestVersion}</dd>
-            </div>
-            <div>
-              <dt>{t.library.targetVersion}</dt>
-              <dd>{selectedVersion}</dd>
-            </div>
-            <div>
-              <dt>Install size</dt>
-              <dd>{formatBytes(downloadSize)}</dd>
-            </div>
-          </dl>
-        </section>
-        <InstallSummaryPanel
-          selectedVersion={selectedVersion}
-          downloadSize={downloadSize}
-          installSize={installSize || selectedVersionInfo?.sizeBytes || downloadSize}
-          temporarySpace={temporarySpace || selectedVersionInfo?.sizeBytes || downloadSize}
-        />
-        {verifyStatus ? (
-          <section className={`panel verify-feedback ${verifyStatus.state}`}>
+        <aside className="store-info-column">
+          <section className="panel status-card">
             <header className="side-header">
-              <VerifyIcon size={17} />
-              <strong>{isVerifying ? 'Verifying install' : 'Verify result'}</strong>
+              <CheckCircle2 size={17} />
+              <strong>{stateLabel}</strong>
             </header>
-            <p>{verifyStatus.message}</p>
-            {verifyStatus.state === 'failed' ? (
-              <div className="verify-count-summary">
-                <span>
-                  <strong>{missingCount}</strong>
-                  missing
-                </span>
-                <span>
-                  <strong>{changedCount}</strong>
-                  changed
-                </span>
+            <dl className="metric-list">
+              <div>
+                <dt>{t.library.currentVersion}</dt>
+                <dd>{installed ? selectedCurrentVersion : t.library.notInstalled}</dd>
               </div>
-            ) : null}
-            <div className="verify-progress">
-              <div className="mini-track">
-                <span style={{ width: `${Math.round((verifyStatus.percent ?? 0) * 100)}%` }} />
+              <div>
+                <dt>{t.library.latestVersion}</dt>
+                <dd>{selectedGame.latestVersion}</dd>
               </div>
-              <small>
-                {Math.round((verifyStatus.percent ?? 0) * 100)}%
-                {verifyStatus.totalBytes ? ` - ${formatBytes(verifyStatus.checkedBytes ?? 0)} / ${formatBytes(verifyStatus.totalBytes)}` : ''}
-              </small>
-            </div>
-            {verifyStatus.currentFile ? <small className="verify-current-file">{verifyStatus.currentFile}</small> : null}
+              <div>
+                <dt>{t.library.targetVersion}</dt>
+                <dd>{selectedVersion}</dd>
+              </div>
+              <div>
+                <dt>Install size</dt>
+                <dd>{formatBytes(downloadSize)}</dd>
+              </div>
+            </dl>
           </section>
-        ) : null}
-        <GameDetailsPanel detail={detail} />
-        {installed ? (
-          <CloudSavePanel
-            status={cloudSaveStatus}
-            busy={cloudSaveBusy}
-            launchBlocked={cloudLaunchBlocked}
-            onToggle={onToggleCloudSave}
-            onAddFolder={onAddCloudSaveFolder}
-            onSync={onSyncCloudSave}
-            onResolve={onResolveCloudConflict}
-            onRestore={onRestoreCloudSnapshot}
-            onLaunchWithoutSync={onLaunchWithoutCloudSync}
-            onConnectGoogleDrive={onConnectGoogleDrive}
-            onDisconnectGoogleDrive={onDisconnectGoogleDrive}
-            onBackupGoogleDrive={onBackupGoogleDrive}
-            onRestoreMissingFiles={onRestoreMissingSaveFiles}
+          <InstallSummaryPanel
+            selectedVersion={selectedVersion}
+            downloadSize={downloadSize}
+            installSize={installSize || selectedVersionInfo?.sizeBytes || downloadSize}
+            temporarySpace={temporarySpace || selectedVersionInfo?.sizeBytes || downloadSize}
           />
-        ) : null}
-        <AchievementPreview achievements={detail.achievements} assets={assets} />
-      </aside>
+          {verifyStatus ? (
+            <section className={`panel verify-feedback ${verifyStatus.state}`}>
+              <header className="side-header">
+                <VerifyIcon size={17} />
+                <strong>{isVerifying ? 'Verifying install' : 'Verify result'}</strong>
+              </header>
+              <p>{verifyStatus.message}</p>
+              {verifyStatus.state === 'failed' ? (
+                <div className="verify-count-summary">
+                  <span>
+                    <strong>{missingCount}</strong>
+                    missing
+                  </span>
+                  <span>
+                    <strong>{changedCount}</strong>
+                    changed
+                  </span>
+                </div>
+              ) : null}
+              <div className="verify-progress">
+                <div className="mini-track">
+                  <span style={{ width: `${Math.round((verifyStatus.percent ?? 0) * 100)}%` }} />
+                </div>
+                <small>
+                  {Math.round((verifyStatus.percent ?? 0) * 100)}%
+                  {verifyStatus.totalBytes ? ` - ${formatBytes(verifyStatus.checkedBytes ?? 0)} / ${formatBytes(verifyStatus.totalBytes)}` : ''}
+                </small>
+              </div>
+              {verifyStatus.currentFile ? <small className="verify-current-file">{verifyStatus.currentFile}</small> : null}
+            </section>
+          ) : null}
+          <GameDetailsPanel detail={detail} />
+          {installed ? (
+            <CloudSavePanel
+              status={cloudSaveStatus}
+              busy={cloudSaveBusy}
+              launchBlocked={cloudLaunchBlocked}
+              onToggle={onToggleCloudSave}
+              onAddFolder={onAddCloudSaveFolder}
+              onSync={onSyncCloudSave}
+              onResolve={onResolveCloudConflict}
+              onRestore={onRestoreCloudSnapshot}
+              onLaunchWithoutSync={onLaunchWithoutCloudSync}
+              onConnectGoogleDrive={onConnectGoogleDrive}
+              onDisconnectGoogleDrive={onDisconnectGoogleDrive}
+              onBackupGoogleDrive={onBackupGoogleDrive}
+              onRestoreMissingFiles={onRestoreMissingSaveFiles}
+            />
+          ) : null}
+          <AchievementPreview achievements={detail.achievements} assets={assets} />
+        </aside>
       )}
       {tutorialVisible && selectedGame ? (
         <TutorialModal
@@ -927,9 +1117,332 @@ export function OperationHero({
               ) : null}
             </>
           )}
+          {(!isJobRunning && !isGameRunning) && <SteamIntegrationButton gameId={game.id} gameTitle={game.title} />}
         </div>
       </div>
     </section>
+  )
+}
+
+function SteamIntegrationButton({ gameId, gameTitle }: { gameId: string, gameTitle: string }) {
+  const [status, setStatus] = useState<boolean>(false)
+  const [loading, setLoading] = useState(false)
+  const [showRemoveConfirm, setShowRemoveConfirm] = useState(false)
+  const [showRestartConfirm, setShowRestartConfirm] = useState(false)
+  const [showEnableModePrompt, setShowEnableModePrompt] = useState(false)
+  const [autoInstall, setAutoInstall] = useState(() => localStorage.getItem('steamAutoInstall') !== 'false')
+  const [skipConfirm, setSkipConfirm] = useState(() => localStorage.getItem('steamSkipRestartConfirm') === 'true')
+  const { mapping } = useSteamAppIds()
+  const { t } = useLocale()
+
+  const appid = mapping[gameId]
+
+  useEffect(() => {
+    if (!appid) return
+    checkStatus()
+  }, [appid])
+
+  const checkStatus = async () => {
+    try {
+      const isAdded = await invoke<boolean>('check_steam_status', { appid })
+      setStatus(isAdded)
+    } catch (e) {
+      console.error('Failed to check steam status', e)
+    }
+  }
+
+  const showToast = (title: string, msg: string, severity: 'success' | 'error' | 'info' = 'info') => {
+    window.dispatchEvent(new CustomEvent('0xo-toast', {
+      detail: {
+        category: 'launcher',
+        severity,
+        title,
+        message: msg,
+        dedupeKey: `steam:${appid}`,
+      }
+    }))
+  }
+
+  const performRestart = async () => {
+    try {
+      const args = autoInstall ? { postRestartAction: `steam://install/${appid}` } : {}
+      await invoke('force_restart_steam', args)
+      showToast(t.library.restartSteamPrompt, t.settings.restartSteam + '...', 'info')
+    } catch (e) {
+      console.error(e)
+      showToast('Error', String(e), 'error')
+    }
+  }
+
+  const handleAdd = async () => {
+    if (!appid) return
+
+    // Check if Lua-Game Mode is enabled first
+    try {
+      const isEnabled = await invoke<boolean>('is_lua_game_mode_enabled')
+      if (!isEnabled) {
+        setShowEnableModePrompt(true)
+        return
+      }
+    } catch (e) {
+      console.error('Failed to check lua-game mode status', e)
+      showToast('Error', 'Failed to check Lua-Game Mode status', 'error')
+      return
+    }
+
+    setLoading(true)
+    try {
+      const checkResult = await invoke('check_steam_update', { appid }) as { needs_update: boolean, reason: string, is_missing: boolean }
+
+      let forceUpdate = false
+      if (checkResult.needs_update) {
+        if (checkResult.is_missing) {
+          showToast(t.library.addToSteam, `Creating config for ${gameTitle} (30-60s)...`, 'info')
+          forceUpdate = true
+        } else {
+          const { ask } = await import('@tauri-apps/plugin-dialog')
+          const shouldUpdate = await ask(`Update available.\nReason: ${checkResult.reason}\n\nFetch latest version?`, {
+            title: 'Data Update',
+            kind: 'info',
+          })
+
+          if (shouldUpdate) {
+            showToast(t.library.addToSteam, `Downloading update for ${gameTitle} (30-60s)...`, 'info')
+            forceUpdate = true
+          }
+        }
+      }
+
+      await invoke('add_to_steam', { appid, forceUpdate })
+      setStatus(true)
+      showToast(t.library.addToSteam, t.library.addToSteamSuccess, 'success')
+
+      // Dispatch event to show Lua-Game Mode tab
+      window.dispatchEvent(new CustomEvent('lua-game-mode-changed', {
+        detail: { gameId, added: true }
+      }))
+
+      // Show restart prompt
+      if (localStorage.getItem('steamSkipRestartConfirm') === 'true') {
+        performRestart();
+      } else {
+        setShowRestartConfirm(true);
+      }
+    } catch (e) {
+      console.error(e)
+      showToast(t.library.addToSteam, t.library.addToSteamError + ': ' + String(e), 'error')
+    }
+    setLoading(false)
+  }
+
+  const handleRemove = async () => {
+    if (!appid) return
+    setShowRemoveConfirm(true)
+  }
+
+  const confirmRemove = async () => {
+    setShowRemoveConfirm(false)
+    if (!appid) return
+
+    setLoading(true)
+    try {
+      await invoke('remove_from_steam', { appid })
+      setStatus(false)
+      showToast(t.library.removeFromSteam, t.library.removeFromSteamSuccess, 'success')
+
+      // Dispatch event to hide Lua-Game Mode tab
+      window.dispatchEvent(new CustomEvent('lua-game-mode-changed', {
+        detail: { gameId, added: false }
+      }))
+
+      // Show restart prompt
+      if (localStorage.getItem('steamSkipRestartConfirm') === 'true') {
+        performRestart();
+      } else {
+        setShowRestartConfirm(true);
+      }
+    } catch (e) {
+      console.error(e)
+      showToast(t.library.removeFromSteam, t.library.removeFromSteamError + ': ' + String(e), 'error')
+    }
+    setLoading(false)
+  }
+
+  const handleRestart = async () => {
+    if (!appid) return
+    if (localStorage.getItem('steamSkipRestartConfirm') === 'true') {
+      performRestart();
+    } else {
+      setShowRestartConfirm(true);
+    }
+  }
+
+  const handleNavigateToSettings = () => {
+    setShowEnableModePrompt(false)
+    // Dispatch event to navigate to Settings
+    window.dispatchEvent(new CustomEvent('navigate-to-settings', {
+      detail: { section: 'steam-integration' }
+    }))
+  }
+
+  if (!appid) return null
+
+  return (
+    <>
+      <div className="steam-integration-wrapper" style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '10px' }}>
+        <span style={{ fontSize: '14px', color: '#888', fontWeight: 500, marginRight: '4px' }}>{(t as any).common?.or || 'or'}</span>
+        {status ? (
+          <>
+            <button
+              style={{
+                display: 'flex', alignItems: 'center', gap: '6px', padding: '0 16px', height: '46px',
+                borderRadius: '5px', background: 'transparent', border: '1px solid #4ade80',
+                color: '#4ade80', fontWeight: 600, cursor: 'default'
+              }}
+              disabled
+            >
+              <CheckCircle2 size={16} />
+              <span>{t.library.addedToSteam}</span>
+            </button>
+            <button
+              style={{
+                display: 'flex', alignItems: 'center', gap: '6px', padding: '0 16px', height: '46px',
+                borderRadius: '5px', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(5px)',
+                border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontWeight: 600, cursor: 'pointer'
+              }}
+              onClick={handleRestart}
+              disabled={loading}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+            >
+              <span>{t.settings.restartSteam}</span>
+            </button>
+            <button
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', width: '46px', height: '46px',
+                borderRadius: '5px', background: 'rgba(255,0,0,0.1)', backdropFilter: 'blur(5px)',
+                border: '1px solid rgba(255,0,0,0.3)', color: '#ff4d4d', cursor: 'pointer'
+              }}
+              onClick={handleRemove}
+              disabled={loading}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,0,0,0.2)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,0,0,0.1)'}
+            >
+              <X size={16} />
+            </button>
+          </>
+        ) : (
+          <button
+            style={{
+              display: 'flex', alignItems: 'center', gap: '6px', padding: '0 16px', height: '46px',
+              borderRadius: '5px', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(5px)',
+              border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontWeight: 600, cursor: 'pointer'
+            }}
+            onClick={handleAdd}
+            disabled={loading}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+          >
+            <PlusCircle size={18} />
+            <span>{t.library.addToSteam}</span>
+          </button>
+        )}
+      </div>
+
+      {/* Remove Confirmation Dialog */}
+      {showRemoveConfirm && (
+        <ConfirmDialog
+          title={t.library.confirmRemoveTitle}
+          message={t.library.confirmRemoveMessage}
+          confirmText={t.library.confirmRemoveYes}
+          cancelText={t.library.confirmRemoveNo}
+          variant="warning"
+          onConfirm={confirmRemove}
+          onCancel={() => setShowRemoveConfirm(false)}
+        />
+      )}
+
+      {/* Restart Steam Confirmation Dialog */}
+      {showRestartConfirm && (
+        <ConfirmDialog
+          title={t.library.restartSteamPrompt}
+          message={t.library.restartSteamMessage}
+          confirmText={t.library.restartSteamYes}
+          cancelText={t.library.restartSteamNo}
+          variant="info"
+          onConfirm={() => {
+            setShowRestartConfirm(false)
+            performRestart()
+          }}
+          onCancel={() => setShowRestartConfirm(false)}
+        >
+          <div style={{ 
+            marginTop: '20px',
+            padding: '12px 16px',
+            background: 'rgba(0,0,0,0.2)',
+            borderRadius: '8px',
+            border: '1px solid rgba(255,255,255,0.05)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px'
+          }}>
+            {/* Auto Install toggle — uses the same settings-toggle CSS class */}
+            <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', margin: 0, paddingBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+              <button
+                type="button"
+                className={autoInstall ? 'settings-toggle is-on' : 'settings-toggle'}
+                role="switch"
+                aria-checked={autoInstall}
+                onClick={(e) => {
+                  e.preventDefault();
+                  const next = !autoInstall;
+                  setAutoInstall(next);
+                  localStorage.setItem('steamAutoInstall', String(next));
+                }}
+              >
+                <span />
+              </button>
+              <span style={{ flex: 1, fontSize: '14px', color: autoInstall ? '#fff' : 'rgba(255,255,255,0.6)' }}>
+                {t.library.autoInstallAfterRestart}
+              </span>
+            </label>
+            {/* Remember my choice — also a settings-toggle */}
+            <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', margin: 0 }}>
+              <button
+                type="button"
+                className={skipConfirm ? 'settings-toggle is-on' : 'settings-toggle'}
+                role="switch"
+                aria-checked={skipConfirm}
+                onClick={(e) => {
+                  e.preventDefault();
+                  const next = !skipConfirm;
+                  setSkipConfirm(next);
+                  localStorage.setItem('steamSkipRestartConfirm', String(next));
+                }}
+              >
+                <span />
+              </button>
+              <span style={{ flex: 1, fontSize: '13px', color: 'rgba(255,255,255,0.5)' }}>
+                {t.library.rememberThisChoice}
+              </span>
+            </label>
+          </div>
+        </ConfirmDialog>
+      )}
+
+      {/* Enable Lua-Game Mode Prompt */}
+      {showEnableModePrompt && (
+        <ConfirmDialog
+          title={t.settings.luaGameMode}
+          message={t.settings.luaGameModeRequired}
+          confirmText={t.settings.enableLuaGameMode}
+          cancelText="Cancel"
+          variant="warning"
+          onConfirm={handleNavigateToSettings}
+          onCancel={() => setShowEnableModePrompt(false)}
+        />
+      )}
+    </>
   )
 }
 
@@ -1088,7 +1601,7 @@ export function AchievementPreview({
       }
     }
     const lenis = (window as unknown as LenisWindow).__lenis
-    
+
     if (showAll) {
       lenis?.stop()
     } else {
@@ -1144,7 +1657,7 @@ export function AchievementPreview({
                 <X size={17} />
               </button>
             </header>
-            
+
             {/* SỬA LỖI ĐÈ/CHỒNG CHÉO: Thêm style={{ gridAutoRows: 'max-content' }} */}
             <div className="achievement-all-grid" data-lenis-prevent="true" style={{ gridAutoRows: 'max-content' }}>
               {available.map((achievement) => (

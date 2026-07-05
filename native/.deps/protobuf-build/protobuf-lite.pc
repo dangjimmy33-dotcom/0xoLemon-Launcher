@@ -1,0 +1,11 @@
+prefix=C:/Program Files/LumaCore
+exec_prefix=C:/Program Files/LumaCore
+libdir=C:/Program Files/LumaCore/lib
+includedir=C:/Program Files/LumaCore/include
+
+Name: Protocol Buffers
+Description: Google's Data Interchange Format
+Version: 3.15.3.0
+Libs: -L${libdir} -lprotobuf-lite 
+Cflags: -I${includedir}
+Conflicts: protobuf

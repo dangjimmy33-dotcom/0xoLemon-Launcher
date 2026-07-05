@@ -1,0 +1,7 @@
+E:/007Launcher/native/steam_hook/build/CMakeFiles/detours_lib.dir
+E:/007Launcher/native/steam_hook/build/CMakeFiles/lua_static.dir
+E:/007Launcher/native/steam_hook/build/CMakeFiles/ALL_BUILD.dir
+E:/007Launcher/native/steam_hook/build/CMakeFiles/ZERO_CHECK.dir
+E:/007Launcher/native/steam_hook/build/proxy/CMakeFiles/dwmapi_proxy.dir
+E:/007Launcher/native/steam_hook/build/proxy/CMakeFiles/xinput_proxy.dir
+E:/007Launcher/native/steam_hook/build/core/CMakeFiles/OxoSteamCore.dir

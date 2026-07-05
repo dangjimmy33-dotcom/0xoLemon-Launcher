@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="E:\007Launcher\native\.deps\lua-subbuild\CMakeFiles\d209187d3a0c10ced6e0023058347f01\lua-populate-mkdir.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\native\.deps\lua-subbuild\CMakeFiles\d209187d3a0c10ced6e0023058347f01\lua-populate-download.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\native\.deps\lua-subbuild\CMakeFiles\d209187d3a0c10ced6e0023058347f01\lua-populate-update_disconnected.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\native\.deps\lua-subbuild\CMakeFiles\d209187d3a0c10ced6e0023058347f01\lua-populate-patch_disconnected.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\native\.deps\lua-subbuild\CMakeFiles\d209187d3a0c10ced6e0023058347f01\lua-populate-configure.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\native\.deps\lua-subbuild\CMakeFiles\d209187d3a0c10ced6e0023058347f01\lua-populate-build.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\native\.deps\lua-subbuild\CMakeFiles\d209187d3a0c10ced6e0023058347f01\lua-populate-install.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\native\.deps\lua-subbuild\CMakeFiles\d209187d3a0c10ced6e0023058347f01\lua-populate-test.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\native\.deps\lua-subbuild\CMakeFiles\efa061939284d3242085b47765a4077b\lua-populate-complete.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\native\.deps\lua-subbuild\CMakeFiles\8c6d103f83a404a5bad2ae9ef60ba956\lua-populate.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\native\.deps\lua-subbuild\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="E:\007Launcher\native\.deps\lua-subbuild\CMakeFiles\lua-populate" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{A6E1479D-5C11-336F-8E00-4CC466A178B6}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

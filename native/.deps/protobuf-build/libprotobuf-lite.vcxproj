@@ -1,0 +1,239 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{3A64B0EF-227D-3FC1-81DC-BFECAB40CE78}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+    <Platform>x64</Platform>
+    <ProjectName>libprotobuf-lite</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:\007Launcher\native\.deps\protobuf-build\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">libprotobuf-lite.dir\Debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">libprotobuf-lited</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:\007Launcher\native\.deps\protobuf-build\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">libprotobuf-lite.dir\Release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">libprotobuf-lite</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.lib</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>E:\007Launcher\native\.deps\protobuf-build;E:\007Launcher\native\.deps\protobuf-src\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /w /bigobj</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <BufferSecurityCheck></BufferSecurityCheck>
+      <CallingConvention></CallingConvention>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4018;4065;4146;4244;4251;4267;4305;4307;4309;4334;4355;4506;4800;4996</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <FloatingPointModel></FloatingPointModel>
+      <ForceConformanceInForLoopScope></ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <MinimalRebuild></MinimalRebuild>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData></RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <SupportJustMyCode></SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType></TreatWChar_tAsBuiltInType>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;GOOGLE_PROTOBUF_CMAKE_BUILD;CMAKE_INTDIR="Debug"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;GOOGLE_PROTOBUF_CMAKE_BUILD;CMAKE_INTDIR=\"Debug\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>E:\007Launcher\native\.deps\protobuf-build;E:\007Launcher\native\.deps\protobuf-src\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>E:\007Launcher\native\.deps\protobuf-build;E:\007Launcher\native\.deps\protobuf-src\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /ignore:4221</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>E:\007Launcher\native\.deps\protobuf-build;E:\007Launcher\native\.deps\protobuf-src\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /w /bigobj</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck></BufferSecurityCheck>
+      <CallingConvention></CallingConvention>
+      <DisableSpecificWarnings>4018;4065;4146;4244;4251;4267;4305;4307;4309;4334;4355;4506;4800;4996</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <FloatingPointModel></FloatingPointModel>
+      <ForceConformanceInForLoopScope></ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <MinimalRebuild></MinimalRebuild>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData></RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <SupportJustMyCode></SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType></TreatWChar_tAsBuiltInType>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;GOOGLE_PROTOBUF_CMAKE_BUILD;CMAKE_INTDIR="Release"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;GOOGLE_PROTOBUF_CMAKE_BUILD;CMAKE_INTDIR=\"Release\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>E:\007Launcher\native\.deps\protobuf-build;E:\007Launcher\native\.deps\protobuf-src\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>E:\007Launcher\native\.deps\protobuf-build;E:\007Launcher\native\.deps\protobuf-src\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64 /ignore:4221</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="E:\007Launcher\native\.deps\protobuf-src\cmake\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule E:/007Launcher/native/.deps/protobuf-src/cmake/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SE:/007Launcher/native/steam_hook -BE:/007Launcher/native/steam_hook/build --check-stamp-file E:/007Launcher/native/.deps/protobuf-build/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeDependentOption.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CheckCSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CheckIncludeFile.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CheckLibraryExists.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\FindThreads.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\GNUInstallDirs.cmake;E:\007Launcher\native\.deps\protobuf-src\cmake\extract_includes.bat.in;E:\007Launcher\native\.deps\protobuf-src\cmake\install.cmake;E:\007Launcher\native\.deps\protobuf-src\cmake\libprotobuf-lite.cmake;E:\007Launcher\native\.deps\protobuf-src\cmake\libprotobuf.cmake;E:\007Launcher\native\.deps\protobuf-src\cmake\libprotoc.cmake;E:\007Launcher\native\.deps\protobuf-src\cmake\protobuf-config-version.cmake.in;E:\007Launcher\native\.deps\protobuf-src\cmake\protobuf-config.cmake.in;E:\007Launcher\native\.deps\protobuf-src\cmake\protobuf-lite.pc.cmake;E:\007Launcher\native\.deps\protobuf-src\cmake\protobuf-module.cmake.in;E:\007Launcher\native\.deps\protobuf-src\cmake\protobuf-options.cmake;E:\007Launcher\native\.deps\protobuf-src\cmake\protobuf.pc.cmake;E:\007Launcher\native\.deps\protobuf-src\cmake\protoc.cmake;E:\007Launcher\native\.deps\protobuf-src\cmake\version.rc.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:\007Launcher\native\.deps\protobuf-build\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule E:/007Launcher/native/.deps/protobuf-src/cmake/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SE:/007Launcher/native/steam_hook -BE:/007Launcher/native/steam_hook/build --check-stamp-file E:/007Launcher/native/.deps/protobuf-build/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeDependentOption.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CheckCSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CheckIncludeFile.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CheckLibraryExists.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\FindThreads.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\GNUInstallDirs.cmake;E:\007Launcher\native\.deps\protobuf-src\cmake\extract_includes.bat.in;E:\007Launcher\native\.deps\protobuf-src\cmake\install.cmake;E:\007Launcher\native\.deps\protobuf-src\cmake\libprotobuf-lite.cmake;E:\007Launcher\native\.deps\protobuf-src\cmake\libprotobuf.cmake;E:\007Launcher\native\.deps\protobuf-src\cmake\libprotoc.cmake;E:\007Launcher\native\.deps\protobuf-src\cmake\protobuf-config-version.cmake.in;E:\007Launcher\native\.deps\protobuf-src\cmake\protobuf-config.cmake.in;E:\007Launcher\native\.deps\protobuf-src\cmake\protobuf-lite.pc.cmake;E:\007Launcher\native\.deps\protobuf-src\cmake\protobuf-module.cmake.in;E:\007Launcher\native\.deps\protobuf-src\cmake\protobuf-options.cmake;E:\007Launcher\native\.deps\protobuf-src\cmake\protobuf.pc.cmake;E:\007Launcher\native\.deps\protobuf-src\cmake\protoc.cmake;E:\007Launcher\native\.deps\protobuf-src\cmake\version.rc.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:\007Launcher\native\.deps\protobuf-build\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\any_lite.cc" />
+    <ClCompile Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\arena.cc" />
+    <ClCompile Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\arenastring.cc" />
+    <ClCompile Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\extension_set.cc" />
+    <ClCompile Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\generated_enum_util.cc" />
+    <ClCompile Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\generated_message_table_driven_lite.cc" />
+    <ClCompile Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\generated_message_util.cc" />
+    <ClCompile Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\implicit_weak_message.cc" />
+    <ClCompile Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\io\coded_stream.cc" />
+    <ClCompile Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\io\io_win32.cc" />
+    <ClCompile Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\io\strtod.cc" />
+    <ClCompile Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\io\zero_copy_stream.cc" />
+    <ClCompile Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\io\zero_copy_stream_impl.cc" />
+    <ClCompile Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\io\zero_copy_stream_impl_lite.cc" />
+    <ClCompile Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\map.cc" />
+    <ClCompile Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\message_lite.cc" />
+    <ClCompile Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\parse_context.cc" />
+    <ClCompile Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\repeated_field.cc" />
+    <ClCompile Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\stubs\bytestream.cc" />
+    <ClCompile Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\stubs\common.cc" />
+    <ClCompile Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\stubs\int128.cc" />
+    <ClCompile Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\stubs\status.cc" />
+    <ClCompile Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\stubs\statusor.cc" />
+    <ClCompile Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\stubs\stringpiece.cc" />
+    <ClCompile Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\stubs\stringprintf.cc" />
+    <ClCompile Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\stubs\structurally_valid.cc" />
+    <ClCompile Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\stubs\strutil.cc" />
+    <ClCompile Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\stubs\time.cc" />
+    <ClCompile Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\wire_format_lite.cc" />
+    <ClInclude Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\arena.h" />
+    <ClInclude Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\arenastring.h" />
+    <ClInclude Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\extension_set.h" />
+    <ClInclude Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\generated_message_util.h" />
+    <ClInclude Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\implicit_weak_message.h" />
+    <ClInclude Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\parse_context.h" />
+    <ClInclude Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\io\coded_stream.h" />
+    <ClInclude Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\io\strtod.h" />
+    <ClInclude Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\io\zero_copy_stream.h" />
+    <ClInclude Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\io\zero_copy_stream_impl.h" />
+    <ClInclude Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\io\zero_copy_stream_impl_lite.h" />
+    <ClInclude Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\message_lite.h" />
+    <ClInclude Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\repeated_field.h" />
+    <ClInclude Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\stubs\bytestream.h" />
+    <ClInclude Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\stubs\common.h" />
+    <ClInclude Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\stubs\int128.h" />
+    <ClInclude Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\stubs\once.h" />
+    <ClInclude Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\stubs\status.h" />
+    <ClInclude Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\stubs\statusor.h" />
+    <ClInclude Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\stubs\stringpiece.h" />
+    <ClInclude Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\stubs\stringprintf.h" />
+    <ClInclude Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\stubs\strutil.h" />
+    <ClInclude Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\stubs\time.h" />
+    <ClInclude Include="E:\007Launcher\native\.deps\protobuf-src\src\google\protobuf\wire_format_lite.h" />
+    <ResourceCompile Include="E:\007Launcher\native\.deps\protobuf-build\version.rc" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="E:\007Launcher\native\steam_hook\build\ZERO_CHECK.vcxproj">
+      <Project>{502B551C-81A6-38E0-A7F6-86C407C8BC16}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

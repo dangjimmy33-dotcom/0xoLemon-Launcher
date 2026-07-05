@@ -280,6 +280,7 @@ impl DirectStagePlan {
         for destination in destinations {
             let lp = long_path(&destination.path);
             let mut output = OpenOptions::new()
+                .create(true)
                 .read(true)
                 .write(true)
                 .open(&lp)

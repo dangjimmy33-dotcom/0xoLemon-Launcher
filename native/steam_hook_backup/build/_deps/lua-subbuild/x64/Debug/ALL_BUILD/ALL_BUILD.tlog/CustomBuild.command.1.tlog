@@ -1,0 +1,10 @@
+^E:\007LAUNCHER\NATIVE\STEAM_HOOK\BUILD\_DEPS\LUA-SUBBUILD\CMAKELISTS.TXT
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SE:/007Launcher/native/steam_hook/build/_deps/lua-subbuild -BE:/007Launcher/native/steam_hook/build/_deps/lua-subbuild --check-stamp-file E:/007Launcher/native/steam_hook/build/_deps/lua-subbuild/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

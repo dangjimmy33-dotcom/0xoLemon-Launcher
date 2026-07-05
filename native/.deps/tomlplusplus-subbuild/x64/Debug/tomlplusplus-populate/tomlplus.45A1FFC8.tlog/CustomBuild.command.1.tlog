@@ -1,0 +1,152 @@
+^E:\007LAUNCHER\NATIVE\.DEPS\TOMLPLUSPLUS-SUBBUILD\CMAKEFILES\70937D487A778AAE3F13FF13C2C9E5A6\TOMLPLUSPLUS-POPULATE-MKDIR.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -Dcfgdir=/Debug -P E:/007Launcher/native/.deps/tomlplusplus-subbuild/tomlplusplus-populate-prefix/tmp/tomlplusplus-populate-mkdirs.cmake
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/native/.deps/tomlplusplus-subbuild/tomlplusplus-populate-prefix/src/tomlplusplus-populate-stamp/Debug/tomlplusplus-populate-mkdir
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\.DEPS\TOMLPLUSPLUS-SUBBUILD\CMAKEFILES\70937D487A778AAE3F13FF13C2C9E5A6\TOMLPLUSPLUS-POPULATE-DOWNLOAD.RULE
+setlocal
+cd E:\007Launcher\native\.deps
+if %errorlevel% neq 0 goto :cmEnd
+E:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE -P E:/007Launcher/native/.deps/tomlplusplus-subbuild/tomlplusplus-populate-prefix/tmp/tomlplusplus-populate-gitclone.cmake
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/native/.deps/tomlplusplus-subbuild/tomlplusplus-populate-prefix/src/tomlplusplus-populate-stamp/Debug/tomlplusplus-populate-download
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\.DEPS\TOMLPLUSPLUS-SUBBUILD\CMAKEFILES\70937D487A778AAE3F13FF13C2C9E5A6\TOMLPLUSPLUS-POPULATE-UPDATE_DISCONNECTED.RULE
+setlocal
+cd E:\007Launcher\native\.deps\tomlplusplus-src
+if %errorlevel% neq 0 goto :cmEnd
+E:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -Dcan_fetch=NO -DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE -P E:/007Launcher/native/.deps/tomlplusplus-subbuild/tomlplusplus-populate-prefix/tmp/tomlplusplus-populate-gitupdate.cmake
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/native/.deps/tomlplusplus-subbuild/tomlplusplus-populate-prefix/src/tomlplusplus-populate-stamp/Debug/tomlplusplus-populate-update_disconnected
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\.DEPS\TOMLPLUSPLUS-SUBBUILD\CMAKEFILES\70937D487A778AAE3F13FF13C2C9E5A6\TOMLPLUSPLUS-POPULATE-PATCH_DISCONNECTED.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/native/.deps/tomlplusplus-subbuild/tomlplusplus-populate-prefix/src/tomlplusplus-populate-stamp/Debug/tomlplusplus-populate-patch_disconnected
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\.DEPS\TOMLPLUSPLUS-SUBBUILD\CMAKEFILES\70937D487A778AAE3F13FF13C2C9E5A6\TOMLPLUSPLUS-POPULATE-CONFIGURE.RULE
+setlocal
+cd E:\007Launcher\native\.deps\tomlplusplus-build
+if %errorlevel% neq 0 goto :cmEnd
+E:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/native/.deps/tomlplusplus-subbuild/tomlplusplus-populate-prefix/src/tomlplusplus-populate-stamp/Debug/tomlplusplus-populate-configure
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\.DEPS\TOMLPLUSPLUS-SUBBUILD\CMAKEFILES\70937D487A778AAE3F13FF13C2C9E5A6\TOMLPLUSPLUS-POPULATE-BUILD.RULE
+setlocal
+cd E:\007Launcher\native\.deps\tomlplusplus-build
+if %errorlevel% neq 0 goto :cmEnd
+E:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/native/.deps/tomlplusplus-subbuild/tomlplusplus-populate-prefix/src/tomlplusplus-populate-stamp/Debug/tomlplusplus-populate-build
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\.DEPS\TOMLPLUSPLUS-SUBBUILD\CMAKEFILES\70937D487A778AAE3F13FF13C2C9E5A6\TOMLPLUSPLUS-POPULATE-INSTALL.RULE
+setlocal
+cd E:\007Launcher\native\.deps\tomlplusplus-build
+if %errorlevel% neq 0 goto :cmEnd
+E:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/native/.deps/tomlplusplus-subbuild/tomlplusplus-populate-prefix/src/tomlplusplus-populate-stamp/Debug/tomlplusplus-populate-install
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\.DEPS\TOMLPLUSPLUS-SUBBUILD\CMAKEFILES\70937D487A778AAE3F13FF13C2C9E5A6\TOMLPLUSPLUS-POPULATE-TEST.RULE
+setlocal
+cd E:\007Launcher\native\.deps\tomlplusplus-build
+if %errorlevel% neq 0 goto :cmEnd
+E:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/native/.deps/tomlplusplus-subbuild/tomlplusplus-populate-prefix/src/tomlplusplus-populate-stamp/Debug/tomlplusplus-populate-test
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\.DEPS\TOMLPLUSPLUS-SUBBUILD\CMAKEFILES\0FA9B59E3F1ACEE2586BD75F4168D853\TOMLPLUSPLUS-POPULATE-COMPLETE.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory E:/007Launcher/native/.deps/tomlplusplus-subbuild/CMakeFiles/Debug
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/native/.deps/tomlplusplus-subbuild/CMakeFiles/Debug/tomlplusplus-populate-complete
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/native/.deps/tomlplusplus-subbuild/tomlplusplus-populate-prefix/src/tomlplusplus-populate-stamp/Debug/tomlplusplus-populate-done
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\.DEPS\TOMLPLUSPLUS-SUBBUILD\CMAKEFILES\9C53B17D97FA320388117B5E1B8262F7\TOMLPLUSPLUS-POPULATE.RULE
+setlocal
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\.DEPS\TOMLPLUSPLUS-SUBBUILD\CMAKELISTS.TXT
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SE:/007Launcher/native/.deps/tomlplusplus-subbuild -BE:/007Launcher/native/.deps/tomlplusplus-subbuild --check-stamp-file E:/007Launcher/native/.deps/tomlplusplus-subbuild/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

@@ -1,0 +1,15 @@
+LIBRARY dwmapi
+EXPORTS
+    DwmDefWindowProc @117
+    DwmEnableBlurBehindWindow @119
+    DwmEnableComposition @102
+    DwmExtendFrameIntoClientArea @121
+    DwmFlush @122
+    DwmGetColorizationColor @123
+    DwmGetCompositionTimingInfo @125
+    DwmGetWindowAttribute @134
+    DwmIsCompositionEnabled @188
+    DwmRegisterThumbnail @191
+    DwmSetWindowAttribute @197
+    DwmUnregisterThumbnail @201
+    DwmUpdateThumbnailProperties @202

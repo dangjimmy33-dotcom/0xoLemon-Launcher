@@ -1,0 +1,223 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\core\entry.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\core\Orchestrator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\runtime\Ticket.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\runtime\Logger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\runtime\HookStatus.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\runtime\DirWatch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\runtime\Diagnostics.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\runtime\VehUtil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\runtime\RuntimeHttp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\runtime\ManifestFetch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\runtime\ProtectionProbe.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\runtime\RemoteTools.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\runtime\IpcSpecLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\runtime\BootDiag.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\runtime\CredentialStore.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\runtime\EticketFetcher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\runtime\TicketProvider.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\runtime\ProcessInspect.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\runtime\IntegrityScanner.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\runtime\LibraryInjector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\patterns\ByteScan.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\patterns\PatternSig.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\patterns\PatternFetcher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\config\LuaState.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\config\LuaBindings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\config\LuaQuery.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\config\Settings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\DepotKeys.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\IPCBus.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\CmdUser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\CmdUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\KeyValues.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\ManifestBind.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\PacketRouter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\NetPacket.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\NetPacket_AccessToken.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\NetPacket_UserStats.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\NetPacket_ETicket.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\NetPacket_Manifest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\NetPacket_FamilySharing.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\NetPacket_OnlineFix.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\NetPacket_SteamStub.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\PackagePatch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\RichPresence.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\LicenseHooks.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\StringFind.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\PipeWatch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\AuthWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\AsyncTicketMap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\DecryptionKeyHook.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\ManifestOverride.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\PendingCallMap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\OnlineFixInject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\ProcessExtension.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\SteamStubAuto.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\SteamStubTicket.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\IpcMethodLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\IpcDispatch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\IpcHooks.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\IpcHandlers_ISteamUser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\IpcHandlers_ISteamUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\DenuvoAuthenticator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\capture\RuntimeCapture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\ui\SteamUI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\ui\StatusWriter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\build\proto\steam_messages.pb.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\steam_hook\build\proto_lite\steam_messages.pb.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="E:\007Launcher\native\steam_hook\build\CMakeFiles\ca640fa4c026dde5c3bd939ba2f8562d\steam_messages.pb.cc.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\native\steam_hook\build\CMakeFiles\abe5437ad70bec9a19541d45aff1d2a0\steam_messages.pb.cc.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\native\steam_hook\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{EDD4B932-0EC6-30AD-A024-5EF53B83EF33}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{9F3C8876-6274-37FE-8B9B-4ED86597DC8D}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

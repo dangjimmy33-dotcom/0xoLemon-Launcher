@@ -1,0 +1,10 @@
+^E:\007LAUNCHER\NATIVE\CLOUD_REDIRECT\BUILD\CMAKEFILES\C8F90FD1BF1098A8E7113E4874EA51A2\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SE:/007Launcher/native/cloud_redirect -BE:/007Launcher/native/cloud_redirect/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file E:/007Launcher/native/cloud_redirect/build/CloudRedirect.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

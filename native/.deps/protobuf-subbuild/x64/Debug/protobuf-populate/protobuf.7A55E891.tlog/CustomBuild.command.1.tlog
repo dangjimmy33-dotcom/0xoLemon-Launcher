@@ -1,0 +1,152 @@
+^E:\007LAUNCHER\NATIVE\.DEPS\PROTOBUF-SUBBUILD\CMAKEFILES\249CCF7ED51AD1024B0224393DB45A3C\PROTOBUF-POPULATE-MKDIR.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -Dcfgdir=/Debug -P E:/007Launcher/native/.deps/protobuf-subbuild/protobuf-populate-prefix/tmp/protobuf-populate-mkdirs.cmake
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/native/.deps/protobuf-subbuild/protobuf-populate-prefix/src/protobuf-populate-stamp/Debug/protobuf-populate-mkdir
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\.DEPS\PROTOBUF-SUBBUILD\CMAKEFILES\249CCF7ED51AD1024B0224393DB45A3C\PROTOBUF-POPULATE-DOWNLOAD.RULE
+setlocal
+cd E:\007Launcher\native\.deps
+if %errorlevel% neq 0 goto :cmEnd
+E:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE -P E:/007Launcher/native/.deps/protobuf-subbuild/protobuf-populate-prefix/tmp/protobuf-populate-gitclone.cmake
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/native/.deps/protobuf-subbuild/protobuf-populate-prefix/src/protobuf-populate-stamp/Debug/protobuf-populate-download
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\.DEPS\PROTOBUF-SUBBUILD\CMAKEFILES\249CCF7ED51AD1024B0224393DB45A3C\PROTOBUF-POPULATE-UPDATE_DISCONNECTED.RULE
+setlocal
+cd E:\007Launcher\native\.deps\protobuf-src
+if %errorlevel% neq 0 goto :cmEnd
+E:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -Dcan_fetch=NO -DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE -P E:/007Launcher/native/.deps/protobuf-subbuild/protobuf-populate-prefix/tmp/protobuf-populate-gitupdate.cmake
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/native/.deps/protobuf-subbuild/protobuf-populate-prefix/src/protobuf-populate-stamp/Debug/protobuf-populate-update_disconnected
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\.DEPS\PROTOBUF-SUBBUILD\CMAKEFILES\249CCF7ED51AD1024B0224393DB45A3C\PROTOBUF-POPULATE-PATCH_DISCONNECTED.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/native/.deps/protobuf-subbuild/protobuf-populate-prefix/src/protobuf-populate-stamp/Debug/protobuf-populate-patch_disconnected
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\.DEPS\PROTOBUF-SUBBUILD\CMAKEFILES\249CCF7ED51AD1024B0224393DB45A3C\PROTOBUF-POPULATE-CONFIGURE.RULE
+setlocal
+cd E:\007Launcher\native\.deps\protobuf-build
+if %errorlevel% neq 0 goto :cmEnd
+E:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/native/.deps/protobuf-subbuild/protobuf-populate-prefix/src/protobuf-populate-stamp/Debug/protobuf-populate-configure
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\.DEPS\PROTOBUF-SUBBUILD\CMAKEFILES\249CCF7ED51AD1024B0224393DB45A3C\PROTOBUF-POPULATE-BUILD.RULE
+setlocal
+cd E:\007Launcher\native\.deps\protobuf-build
+if %errorlevel% neq 0 goto :cmEnd
+E:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/native/.deps/protobuf-subbuild/protobuf-populate-prefix/src/protobuf-populate-stamp/Debug/protobuf-populate-build
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\.DEPS\PROTOBUF-SUBBUILD\CMAKEFILES\249CCF7ED51AD1024B0224393DB45A3C\PROTOBUF-POPULATE-INSTALL.RULE
+setlocal
+cd E:\007Launcher\native\.deps\protobuf-build
+if %errorlevel% neq 0 goto :cmEnd
+E:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/native/.deps/protobuf-subbuild/protobuf-populate-prefix/src/protobuf-populate-stamp/Debug/protobuf-populate-install
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\.DEPS\PROTOBUF-SUBBUILD\CMAKEFILES\249CCF7ED51AD1024B0224393DB45A3C\PROTOBUF-POPULATE-TEST.RULE
+setlocal
+cd E:\007Launcher\native\.deps\protobuf-build
+if %errorlevel% neq 0 goto :cmEnd
+E:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/native/.deps/protobuf-subbuild/protobuf-populate-prefix/src/protobuf-populate-stamp/Debug/protobuf-populate-test
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\.DEPS\PROTOBUF-SUBBUILD\CMAKEFILES\9DDC9AB23C3846347D9BC425EEB7AD54\PROTOBUF-POPULATE-COMPLETE.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory E:/007Launcher/native/.deps/protobuf-subbuild/CMakeFiles/Debug
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/native/.deps/protobuf-subbuild/CMakeFiles/Debug/protobuf-populate-complete
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/native/.deps/protobuf-subbuild/protobuf-populate-prefix/src/protobuf-populate-stamp/Debug/protobuf-populate-done
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\.DEPS\PROTOBUF-SUBBUILD\CMAKEFILES\9542D045ECE7619C9F54DB6D5CC1550F\PROTOBUF-POPULATE.RULE
+setlocal
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\.DEPS\PROTOBUF-SUBBUILD\CMAKELISTS.TXT
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SE:/007Launcher/native/.deps/protobuf-subbuild -BE:/007Launcher/native/.deps/protobuf-subbuild --check-stamp-file E:/007Launcher/native/.deps/protobuf-subbuild/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

@@ -1,0 +1,10 @@
+^E:\007LAUNCHER\NATIVE\.DEPS\DETOURS-SUBBUILD\CMAKEFILES\1E81ED85B19004503D858D657B02EF9C\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SE:/007Launcher/native/.deps/detours-subbuild -BE:/007Launcher/native/.deps/detours-subbuild --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file E:/007Launcher/native/.deps/detours-subbuild/detours-populate.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

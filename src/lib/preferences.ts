@@ -1,6 +1,6 @@
 import { DEFAULT_STORE_ROOT } from './installPaths'
 
-export type StartupPage = 'Home' | 'Store' | 'Library' | 'Updates' | 'Downloads' | 'Cloud Saves'
+export type StartupPage = 'Home' | 'Store' | 'Library' | 'Updates' | 'Downloads' | 'CloudRedirect'
 export type CloseBehavior = 'exit' | 'minimize'
 export type MotionMode = 'full' | 'system' | 'reduced'
 export type ClockFormat = 'system' | '12h' | '24h'

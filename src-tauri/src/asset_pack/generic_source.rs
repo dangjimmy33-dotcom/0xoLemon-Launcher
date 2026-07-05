@@ -98,6 +98,7 @@ pub(super) fn build_generic_manifest_and_assets(
 
     let detail = GameDetail {
         game_id: game_id.clone(),
+        appid: None,
         locale: "en-US".to_string(),
         title: title.clone(),
         short_description: value_string(metadata.get("shortDescription"))
@@ -144,7 +145,8 @@ pub(super) fn build_generic_manifest_and_assets(
 
     let summary = GameSummary {
         id: game_id.clone(),
-        title,
+        appid: None,
+        title: title.clone(),
         subtitle: detail
             .developers
             .first()

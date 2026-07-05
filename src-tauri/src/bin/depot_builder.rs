@@ -88,6 +88,11 @@ fn build_pair(args: &[String]) -> Result<(), String> {
     let keep_local_packs = has_flag(&args, "--keep-local-packs");
     let extend_existing = has_flag(&args, "--extend-existing");
     let launch_executable = take_arg(&args, "--launch-executable").ok();
+    let delete_source_after_pack = has_flag(&args, "--delete-source-after-pack");
+
+    if delete_source_after_pack {
+        eprintln!("[DEPOT] WARNING: --delete-source-after-pack is enabled. Source files will be deleted as they are packed!");
+    }
 
     let report = build_depot(BuildDepotInput {
         game_id: game_id.clone(),
@@ -117,6 +122,7 @@ fn build_pair(args: &[String]) -> Result<(), String> {
         pack_id_prefix: pack_id_prefix(args),
         start_pack_index: pack_start_index(args),
         format_version: depot_format_version(args),
+        delete_source_after_pack,
     })
     .map_err(|err| err.to_string())?;
 
@@ -138,6 +144,11 @@ fn build_version(args: &[String]) -> Result<(), String> {
     let keep_local_packs = has_flag(&args, "--keep-local-packs");
     let extend_existing = has_flag(&args, "--extend-existing");
     let launch_executable = take_arg(&args, "--launch-executable").ok();
+    let delete_source_after_pack = has_flag(&args, "--delete-source-after-pack");
+
+    if delete_source_after_pack {
+        eprintln!("[DEPOT] WARNING: --delete-source-after-pack is enabled. Source files will be deleted as they are packed!");
+    }
 
     let report = build_depot(BuildDepotInput {
         game_id: game_id.clone(),
@@ -160,6 +171,7 @@ fn build_version(args: &[String]) -> Result<(), String> {
         pack_id_prefix: pack_id_prefix(args),
         start_pack_index: pack_start_index(args),
         format_version: depot_format_version(args),
+        delete_source_after_pack,
     })
     .map_err(|err| err.to_string())?;
 

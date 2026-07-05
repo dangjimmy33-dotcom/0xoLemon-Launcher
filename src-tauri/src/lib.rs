@@ -1,8 +1,10 @@
+pub mod steam;
 pub mod asset_cache;
 pub mod chat;
 pub mod asset_pack;
 pub mod builder;
 pub mod cloud_redirect;
+pub mod cloud_redirect_v2;
 pub mod cloud_save;
 pub mod depot_crypto;
 pub mod discord_auth;
@@ -21,6 +23,7 @@ pub mod storage;
 pub mod translations;
 pub mod updater;
 pub mod overlay_injector;
+pub mod steamless;
 
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -96,6 +99,21 @@ fn restart_steam() -> Result<steam_integration::RestartSteamReport, String> {
 }
 
 #[tauri::command]
+fn is_lua_game_mode_enabled() -> bool {
+    steam_integration::is_lua_game_mode_enabled()
+}
+
+#[tauri::command]
+fn enable_lua_game_mode() -> Result<(), String> {
+    steam_integration::enable_lua_game_mode()
+}
+
+#[tauri::command]
+fn disable_lua_game_mode() -> Result<(), String> {
+    steam_integration::disable_lua_game_mode()
+}
+
+#[tauri::command]
 fn get_steam_environment(app: AppHandle) -> steam_integration::SteamEnvironmentInfo {
     steam_integration::environment_info(&app)
 }
@@ -120,6 +138,43 @@ fn open_folder(path: String) -> Result<(), String> {
     {
         std::process::Command::new("xdg-open")
             .arg(&path)
+            .spawn()
+            .map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
+#[tauri::command]
+fn open_url(url: String) -> Result<(), String> {
+    #[cfg(target_os = "windows")]
+    {
+        use std::os::windows::process::CommandExt;
+        const CREATE_NO_WINDOW: u32 = 0x08000000;
+        
+        // For URLs, we use PowerShell to safely handle special characters like '&' without cmd's argument parsing issues.
+        let escaped_url = url.replace("'", "''");
+        std::process::Command::new("powershell")
+            .args(&[
+                "-NoProfile",
+                "-WindowStyle", "Hidden",
+                "-Command",
+                &format!("Start-Process '{}'", escaped_url)
+            ])
+            .creation_flags(CREATE_NO_WINDOW)
+            .spawn()
+            .map_err(|e| e.to_string())?;
+    }
+    #[cfg(target_os = "macos")]
+    {
+        std::process::Command::new("open")
+            .arg(&url)
+            .spawn()
+            .map_err(|e| e.to_string())?;
+    }
+    #[cfg(target_os = "linux")]
+    {
+        std::process::Command::new("xdg-open")
+            .arg(&url)
             .spawn()
             .map_err(|e| e.to_string())?;
     }
@@ -690,6 +745,12 @@ pub fn run() {
         })
         .manage(asset_pack::AssetPackCache::default())
         .invoke_handler(tauri::generate_handler![
+            steam::check_steam_status,
+            steam::check_steam_update,
+            steam::remove_from_steam,
+            steam::force_restart_steam,
+            steam::add_to_steam,
+            steam::get_installed_steam_apps,
             chat::load_chat_history,
             chat::save_chat_message,
             chat::delete_chat_message,
@@ -757,6 +818,7 @@ pub fn run() {
             cancel_job,
             abort_and_clean_job,
             open_folder,
+            open_url,
             check_spacewar_installed,
             install_spacewar,
             get_discord_auth_status,
@@ -767,6 +829,10 @@ pub fn run() {
             restart_steam,
             open_steam_big_picture,
             get_steam_environment,
+            is_lua_game_mode_enabled,
+            enable_lua_game_mode,
+            disable_lua_game_mode,
+            steam_integration::get_steam_game_install_dir,
             exit_app,
             clear_launcher_config,
             cloud_redirect::cloud_redirect_get_status,
@@ -774,8 +840,34 @@ pub fn run() {
             cloud_redirect::cloud_redirect_get_provider_config,
             cloud_redirect::cloud_redirect_save_provider_config,
             cloud_redirect::cloud_redirect_connect_google,
+            // CloudRedirect V2 (new features)
+            cloud_redirect_v2::cloud_redirect_v2_get_status,
+            cloud_redirect_v2::cloud_redirect_enable,
+            cloud_redirect_v2::cloud_redirect_disable,
+            cloud_redirect_v2::cloud_redirect_set_local_path,
+            cloud_redirect_v2::cloud_redirect_start_oauth,
+            cloud_redirect_v2::cloud_redirect_complete_oauth,
+            cloud_redirect_v2::cloud_redirect_trigger_sync,
+            cloud_redirect_v2::cloud_redirect_get_sync_status,
+            cloud_redirect_v2::cloud_redirect_poll_oauth_code,
+            cloud_redirect_v2::cloud_redirect_list_game_saves,
+            cloud_redirect_v2::cloud_redirect_backup_save,
+            cloud_redirect_v2::cloud_redirect_reset_game,
+            cloud_redirect_v2::cloud_redirect_list_backups,
+            cloud_redirect_v2::cloud_redirect_restore_backup,
+            // Steamless — native DRM remover (Error 54 Fix)
+            steamless::steamless_apply,
+            steamless::steamless_restore,
+            steamless::steamless_status,
         ])
         .setup(|app| {
+            // Check and update DLLs on startup if Lua-Game Mode is enabled
+            std::thread::spawn(|| {
+                if let Err(e) = steam_integration::check_and_update_dlls() {
+                    eprintln!("Failed to check/update DLLs: {}", e);
+                }
+            });
+
             asset_cache::perform_ttl_cleanup(app.handle());
             let quit_i =
                 tauri::menu::MenuItem::with_id(app, "quit", "Quit 0xoLemon", true, None::<&str>)?;

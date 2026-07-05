@@ -1,0 +1,30 @@
+^E:\007LAUNCHER\NATIVE\CLOUD_REDIRECT\BUILD\CMAKEFILES\C8F90FD1BF1098A8E7113E4874EA51A2\UI.RULE
+setlocal
+cd E:\007Launcher\native\cloud_redirect\ui
+if %errorlevel% neq 0 goto :cmEnd
+E:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory E:/007Launcher/native/cloud_redirect/build/Release
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E copy_if_different E:/007Launcher/native/cloud_redirect/build/Release/cloud_redirect.dll E:/007Launcher/native/cloud_redirect/build/Release/cloud_redirect.dll
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E copy_if_different E:/007Launcher/native/cloud_redirect/build/Release/cloud_redirect_cli.exe E:/007Launcher/native/cloud_redirect/build/Release/cloud_redirect_cli.exe
+if %errorlevel% neq 0 goto :cmEnd
+dotnet publish -c Release -r win-x64 --self-contained false -o bin/publish
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\CLOUD_REDIRECT\CMAKELISTS.TXT
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SE:/007Launcher/native/cloud_redirect -BE:/007Launcher/native/cloud_redirect/build --check-stamp-file E:/007Launcher/native/cloud_redirect/build/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

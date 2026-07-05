@@ -1,0 +1,142 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\common\protobuf.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\common\json.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\common\coop_yield.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\common\vdf.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\common\remotecache_repair.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\common\manifest_store.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\common\app_state.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\common\token_store.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\common\batch_tracker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\common\cloud_staging.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\common\pending_ops_journal.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\common\rpc_handlers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\common\cloud_work_queue.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\common\cloud_storage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\common\local_storage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\common\local_metadata_store.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\common\legacy_metadata_cleanup.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\common\cli.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\common\cloud_provider_base.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\common\autocloud_scan.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\common\steam_kv_injector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\common\parental_bypass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\common\metadata_sync.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\common\stats_store.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\common\stats_handlers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\common\miniz.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\common\miniz_tdef.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\common\miniz_tinfl.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\common\miniz_zip.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\platform\win\dllmain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\platform\win\cr_api.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\platform\win\cloud_intercept.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\platform\win\sig_scanner.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\platform\win\sc_resolver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\platform\win\log.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\platform\win\http_server.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\platform\win\http_util.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\platform\win\http_transport_win.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\platform\win\token_store_win.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\platform\win\platform_win.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\providers\google_drive.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\providers\onedrive.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\native\cloud_redirect\src\providers\local_disk_provider.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="E:\007Launcher\native\cloud_redirect\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{5B69237C-2DCA-3291-AEF3-93503AFA159B}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

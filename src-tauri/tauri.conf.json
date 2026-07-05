@@ -48,7 +48,10 @@
     "active": true,
     "targets": "all",
     "createUpdaterArtifacts": true,
-    "resources": [],
+    "resources": [
+      "resources/steam_hooks/*",
+      "resources/cloud_redirect/*"
+    ],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -58,7 +61,8 @@
     ],
     "windows": {
       "nsis": {
-        "installerIcon": "icons/icon.ico"
+        "installerIcon": "icons/icon.ico",
+        "installMode": "perMachine"
       }
     }
   },
@@ -69,7 +73,7 @@
         "https://github.com/dangjimmy33-dotcom/0xoLemon-Launcher/releases/latest/download/latest.json"
       ],
       "windows": {
-        "installMode": "passive"
+        "installMode": "basicUi"
       }
     }
   }

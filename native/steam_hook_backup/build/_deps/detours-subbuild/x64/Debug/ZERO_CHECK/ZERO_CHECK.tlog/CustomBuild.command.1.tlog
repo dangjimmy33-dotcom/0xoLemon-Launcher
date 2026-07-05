@@ -1,0 +1,10 @@
+^E:\007LAUNCHER\NATIVE\STEAM_HOOK\BUILD\_DEPS\DETOURS-SUBBUILD\CMAKEFILES\A30086907232CAFE2A7417CFB190E3FC\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SE:/007Launcher/native/steam_hook/build/_deps/detours-subbuild -BE:/007Launcher/native/steam_hook/build/_deps/detours-subbuild --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file E:/007Launcher/native/steam_hook/build/_deps/detours-subbuild/detours-populate.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

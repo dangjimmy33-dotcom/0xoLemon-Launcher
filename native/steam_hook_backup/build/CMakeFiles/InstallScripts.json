@@ -1,0 +1,9 @@
+{
+	"InstallScripts" : 
+	[
+		"E:/007Launcher/native/steam_hook/build/cmake_install.cmake",
+		"E:/007Launcher/native/steam_hook/build/proxy/cmake_install.cmake",
+		"E:/007Launcher/native/steam_hook/build/core/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

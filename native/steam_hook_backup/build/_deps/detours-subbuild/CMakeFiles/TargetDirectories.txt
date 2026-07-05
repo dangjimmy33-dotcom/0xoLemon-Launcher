@@ -1,0 +1,3 @@
+E:/007Launcher/native/steam_hook/build/_deps/detours-subbuild/CMakeFiles/detours-populate.dir
+E:/007Launcher/native/steam_hook/build/_deps/detours-subbuild/CMakeFiles/ALL_BUILD.dir
+E:/007Launcher/native/steam_hook/build/_deps/detours-subbuild/CMakeFiles/ZERO_CHECK.dir

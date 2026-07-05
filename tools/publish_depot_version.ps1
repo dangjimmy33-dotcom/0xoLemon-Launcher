@@ -23,6 +23,7 @@ param(
   [switch]$NoExtendExisting,
   [switch]$UseBuilderUpload,
   [switch]$UploadOnly,
+  [switch]$DeleteSourceAfterPack,
   [int]$PackTargetMb = 256,
   [int]$PackStartIndex = 0,
   [string]$PackIdPrefix = "pack-"
@@ -110,6 +111,7 @@ Write-Host "[SAFE] Encrypt packs : $(-not $NoEncryptPacks)"
 Write-Host "[SAFE] Force rebuild : $ForceRebuild"
 Write-Host "[SAFE] Sync metadata : $(-not $NoSyncMetadata)"
 Write-Host "[SAFE] Extend existing: $(-not $NoExtendExisting)"
+Write-Host "[SAFE] Delete source after pack: $DeleteSourceAfterPack"
 Write-Host "[SAFE] Pack target   : $PackTargetMb MiB"
 Write-Host "[SAFE] Pack prefix   : $PackIdPrefix"
 Write-Host "[SAFE] Pack start    : $PackStartIndex"
@@ -185,6 +187,11 @@ if (-not $UploadOnly) {
     } else {
       # Explicit flag for readable logs. New builders accept it; old builders ignore it but still default to encryption only if they are actually new.
       $builderArgs += "--encrypt-packs"
+    }
+
+    if ($DeleteSourceAfterPack) {
+      Write-Host "[SAFE] WARNING: --delete-source-after-pack is enabled. Source files will be deleted as they are packed!"
+      $builderArgs += "--delete-source-after-pack"
     }
 
     Write-Host "[SAFE] Running depot_builder build-version..."

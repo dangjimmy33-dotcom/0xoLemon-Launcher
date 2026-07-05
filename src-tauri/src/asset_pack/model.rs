@@ -35,6 +35,7 @@ pub struct GameCatalog {
 #[serde(rename_all = "camelCase")]
 pub struct GameSummary {
     pub id: String,
+    pub appid: Option<u32>,
     pub title: String,
     pub subtitle: String,
     pub developer: String,
@@ -79,6 +80,7 @@ pub struct GameInstallMetadata {
 #[serde(rename_all = "camelCase")]
 pub struct GameDetail {
     pub game_id: String,
+    pub appid: Option<u32>,
     pub locale: String,
     pub title: String,
     pub short_description: String,

@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "E:/007Launcher/native/.deps/protobuf-subbuild/CMakeFiles/protobuf-populate"
+		},
+		{
+			"file" : "E:/007Launcher/native/.deps/protobuf-subbuild/CMakeFiles/9542d045ece7619c9f54db6d5cc1550f/protobuf-populate.rule"
+		},
+		{
+			"file" : "E:/007Launcher/native/.deps/protobuf-subbuild/CMakeFiles/9ddc9ab23c3846347d9bc425eeb7ad54/protobuf-populate-complete.rule"
+		},
+		{
+			"file" : "E:/007Launcher/native/.deps/protobuf-subbuild/CMakeFiles/249ccf7ed51ad1024b0224393db45a3c/protobuf-populate-build.rule"
+		},
+		{
+			"file" : "E:/007Launcher/native/.deps/protobuf-subbuild/CMakeFiles/249ccf7ed51ad1024b0224393db45a3c/protobuf-populate-configure.rule"
+		},
+		{
+			"file" : "E:/007Launcher/native/.deps/protobuf-subbuild/CMakeFiles/249ccf7ed51ad1024b0224393db45a3c/protobuf-populate-download.rule"
+		},
+		{
+			"file" : "E:/007Launcher/native/.deps/protobuf-subbuild/CMakeFiles/249ccf7ed51ad1024b0224393db45a3c/protobuf-populate-install.rule"
+		},
+		{
+			"file" : "E:/007Launcher/native/.deps/protobuf-subbuild/CMakeFiles/249ccf7ed51ad1024b0224393db45a3c/protobuf-populate-mkdir.rule"
+		},
+		{
+			"file" : "E:/007Launcher/native/.deps/protobuf-subbuild/CMakeFiles/249ccf7ed51ad1024b0224393db45a3c/protobuf-populate-patch_disconnected.rule"
+		},
+		{
+			"file" : "E:/007Launcher/native/.deps/protobuf-subbuild/CMakeFiles/249ccf7ed51ad1024b0224393db45a3c/protobuf-populate-test.rule"
+		},
+		{
+			"file" : "E:/007Launcher/native/.deps/protobuf-subbuild/CMakeFiles/249ccf7ed51ad1024b0224393db45a3c/protobuf-populate-update_disconnected.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"protobuf-populate"
+		],
+		"name" : "protobuf-populate"
+	}
+}

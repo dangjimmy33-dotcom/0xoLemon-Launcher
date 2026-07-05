@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "E:/007Launcher/native/.deps/detours-subbuild/CMakeFiles/detours-populate"
+		},
+		{
+			"file" : "E:/007Launcher/native/.deps/detours-subbuild/CMakeFiles/1e81ed85b19004503d858d657b02ef9c/detours-populate.rule"
+		},
+		{
+			"file" : "E:/007Launcher/native/.deps/detours-subbuild/CMakeFiles/9c23a6974341c75a507b23d802668af4/detours-populate-complete.rule"
+		},
+		{
+			"file" : "E:/007Launcher/native/.deps/detours-subbuild/CMakeFiles/6748798baa8b89f4c2066a8133581035/detours-populate-build.rule"
+		},
+		{
+			"file" : "E:/007Launcher/native/.deps/detours-subbuild/CMakeFiles/6748798baa8b89f4c2066a8133581035/detours-populate-configure.rule"
+		},
+		{
+			"file" : "E:/007Launcher/native/.deps/detours-subbuild/CMakeFiles/6748798baa8b89f4c2066a8133581035/detours-populate-download.rule"
+		},
+		{
+			"file" : "E:/007Launcher/native/.deps/detours-subbuild/CMakeFiles/6748798baa8b89f4c2066a8133581035/detours-populate-install.rule"
+		},
+		{
+			"file" : "E:/007Launcher/native/.deps/detours-subbuild/CMakeFiles/6748798baa8b89f4c2066a8133581035/detours-populate-mkdir.rule"
+		},
+		{
+			"file" : "E:/007Launcher/native/.deps/detours-subbuild/CMakeFiles/6748798baa8b89f4c2066a8133581035/detours-populate-patch_disconnected.rule"
+		},
+		{
+			"file" : "E:/007Launcher/native/.deps/detours-subbuild/CMakeFiles/6748798baa8b89f4c2066a8133581035/detours-populate-test.rule"
+		},
+		{
+			"file" : "E:/007Launcher/native/.deps/detours-subbuild/CMakeFiles/6748798baa8b89f4c2066a8133581035/detours-populate-update_disconnected.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"detours-populate"
+		],
+		"name" : "detours-populate"
+	}
+}

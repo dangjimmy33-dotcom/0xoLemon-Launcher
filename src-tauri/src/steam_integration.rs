@@ -8,6 +8,8 @@ use std::time::{Duration, Instant, SystemTime};
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Manager};
 
+use crate::steam::get_steam_path;
+
 #[cfg(target_os = "windows")]
 use std::os::windows::process::CommandExt;
 
@@ -1106,4 +1108,302 @@ mod tests {
     fn vdf_path_unescape() {
         assert_eq!(unescape_vdf_text(r"D:\\SteamLibrary"), r"D:\SteamLibrary");
     }
+}
+
+// ============================================================================
+// Lua-Game Mode DLL Management
+// ============================================================================
+
+const LUA_GAME_MODE_MARKER: &str = ".0xo-lua-game-mode-enabled";
+
+/// Check if Lua-Game Mode is currently enabled
+pub fn is_lua_game_mode_enabled() -> bool {
+    if let Some(steam_root) = get_steam_path() {
+        let marker_path = Path::new(&steam_root).join(LUA_GAME_MODE_MARKER);
+        marker_path.exists()
+    } else {
+        false
+    }
+}
+
+/// Check and update DLLs if launcher version changed (run on startup)
+pub fn check_and_update_dlls() -> Result<(), String> {
+    // Check if Lua-Game Mode is enabled
+    if !is_lua_game_mode_enabled() {
+        return Ok(()); // Not enabled, skip update
+    }
+
+    let steam_root = get_steam_path()
+        .ok_or_else(|| "Steam installation not found".to_string())?;
+    let steam_path = Path::new(&steam_root);
+
+    // Get DLL source path (bundled with launcher)
+    let dll_source = std::env::current_exe()
+        .map_err(|e| format!("Failed to get executable path: {}", e))?
+        .parent()
+        .ok_or_else(|| "Failed to get parent directory".to_string())?
+        .join("resources")
+        .join("steam_hooks");
+
+    if !dll_source.exists() {
+        return Err(format!("Steam hooks directory not found at: {}", dll_source.display()));
+    }
+
+    // List of DLLs to check and update
+    let dlls = vec![
+        ("0xoCore.dll", "0xoCore.dll"),
+        ("0xoPayload.dll", "0xoPayload.dll"),
+        ("dwmapi.dll", "dwmapi.dll"),
+    ];
+
+    let mut updated = false;
+
+    for (source_name, dest_name) in dlls {
+        let source = dll_source.join(source_name);
+        let dest = steam_path.join(dest_name);
+
+        if !source.exists() {
+            eprintln!("Warning: Source DLL not found: {}", source.display());
+            continue;
+        }
+
+        // Check if destination exists
+        if !dest.exists() {
+            // DLL missing, copy it
+            fs::copy(&source, &dest)
+                .map_err(|e| format!("Failed to copy {}: {}", source_name, e))?;
+            updated = true;
+            println!("Installed missing DLL: {}", dest_name);
+            continue;
+        }
+
+        // Compare file sizes and timestamps to detect updates
+        let source_meta = fs::metadata(&source)
+            .map_err(|e| format!("Failed to read source metadata: {}", e))?;
+        let dest_meta = fs::metadata(&dest)
+            .map_err(|e| format!("Failed to read dest metadata: {}", e))?;
+
+        let needs_update = source_meta.len() != dest_meta.len()
+            || source_meta.modified().ok() > dest_meta.modified().ok();
+
+        if needs_update {
+            // Backup existing file
+            let backup = steam_path.join(format!("{}.backup", dest_name));
+            if dest.exists() {
+                fs::copy(&dest, &backup)
+                    .map_err(|e| format!("Failed to backup {}: {}", dest_name, e))?;
+            }
+
+            // Update DLL
+            fs::copy(&source, &dest)
+                .map_err(|e| format!("Failed to update {}: {}", source_name, e))?;
+
+            updated = true;
+            println!("Updated DLL: {} (size: {} -> {})", 
+                dest_name, 
+                dest_meta.len(), 
+                source_meta.len()
+            );
+        }
+    }
+
+    // Also check CloudRedirect DLL
+    let cloudredirect_source = std::env::current_exe()
+        .ok()
+        .and_then(|exe| exe.parent().map(|p| p.to_path_buf()))
+        .map(|p| p.join("resources").join("cloud_redirect").join("0xoCloudRedirect.dll"));
+
+    if let Some(source) = cloudredirect_source {
+        if source.exists() {
+            let dest = steam_path.join("0xoCloudRedirect.dll");
+            let marker = steam_path.join(".0xo-cloud-redirect-enabled");
+
+            // Always install/update CloudRedirect DLL alongside Lua-Game Mode
+            // Users can choose to use it or not from the launcher UI
+            if !dest.exists() {
+                // Missing, install it
+                fs::copy(&source, &dest)
+                    .map_err(|e| format!("Failed to copy CloudRedirect: {}", e))?;
+                
+                // Create marker
+                if !marker.exists() {
+                    fs::write(&marker, "CloudRedirect auto-installed with Lua-Game Mode").ok();
+                }
+                
+                updated = true;
+                println!("✅ Installed CloudRedirect DLL");
+            } else {
+                // Check if needs update
+                let source_meta = fs::metadata(&source).ok();
+                let dest_meta = fs::metadata(&dest).ok();
+
+                if let (Some(src), Some(dst)) = (source_meta, dest_meta) {
+                    if src.len() != dst.len() || src.modified().ok() > dst.modified().ok() {
+                        // Backup and update
+                        let backup = steam_path.join("0xoCloudRedirect.dll.backup");
+                        fs::copy(&dest, &backup).ok();
+                        fs::copy(&source, &dest)
+                            .map_err(|e| format!("Failed to update CloudRedirect: {}", e))?;
+                        
+                        // Ensure marker exists
+                        if !marker.exists() {
+                            fs::write(&marker, "CloudRedirect auto-installed with Lua-Game Mode").ok();
+                        }
+                        
+                        updated = true;
+                        println!("✅ Updated CloudRedirect DLL");
+                    }
+                }
+            }
+        }
+    }
+
+    if updated {
+        println!("✅ DLLs updated successfully");
+    }
+
+    Ok(())
+}
+
+/// Enable Lua-Game Mode by copying DLLs to Steam directory
+pub fn enable_lua_game_mode() -> Result<(), String> {
+    let steam_root = get_steam_path()
+        .ok_or_else(|| "Steam installation not found".to_string())?;
+    
+    let steam_path = Path::new(&steam_root);
+    
+    // Get DLL source path (bundled with launcher)
+    let dll_source = std::env::current_exe()
+        .map_err(|e| format!("Failed to get executable path: {}", e))?
+        .parent()
+        .ok_or_else(|| "Failed to get parent directory".to_string())?
+        .join("resources")
+        .join("steam_hooks");
+    
+    if !dll_source.exists() {
+        return Err(format!("Steam hooks directory not found at: {}", dll_source.display()));
+    }
+    
+    // List of DLLs to copy
+    let dlls = vec![
+        ("0xoCore.dll", "0xoCore.dll"),
+        ("0xoPayload.dll", "0xoPayload.dll"),
+        ("dwmapi.dll", "dwmapi.dll"),
+    ];
+    
+    // Copy each DLL
+    for (source_name, dest_name) in dlls {
+        let source = dll_source.join(source_name);
+        let dest = steam_path.join(dest_name);
+        
+        if !source.exists() {
+            return Err(format!("DLL not found: {}", source.display()));
+        }
+        
+        // Backup existing file if present
+        if dest.exists() {
+            let backup = steam_path.join(format!("{}.backup", dest_name));
+            fs::copy(&dest, &backup)
+                .map_err(|e| format!("Failed to backup {}: {}", dest_name, e))?;
+        }
+        
+        // Copy new DLL
+        fs::copy(&source, &dest)
+            .map_err(|e| format!("Failed to copy {}: {}", source_name, e))?;
+    }
+    
+    // Create marker file
+    let marker_path = steam_path.join(LUA_GAME_MODE_MARKER);
+    fs::write(&marker_path, "Lua-Game Mode enabled by 0xoLemon Launcher")
+        .map_err(|e| format!("Failed to create marker file: {}", e))?;
+
+    // Auto-install CloudRedirect DLL alongside Lua-Game Mode
+    match crate::cloud_redirect_v2::install_dll(
+        &std::env::current_exe()
+            .map_err(|e| format!("Failed to get exe path: {}", e))?
+            .parent()
+            .ok_or("Failed to get parent dir")?
+            .join("resources")
+            .join("cloud_redirect")
+            .join("0xoCloudRedirect.dll"),
+        steam_path,
+    ) {
+        Ok(_) => {
+            // CloudRedirect installed successfully
+            println!("CloudRedirect DLL installed with Lua-Game Mode");
+        }
+        Err(e) => {
+            // Don't fail the entire operation if CloudRedirect fails
+            eprintln!("Warning: Failed to install CloudRedirect: {}", e);
+        }
+    }
+    
+    Ok(())
+}
+
+/// Disable Lua-Game Mode by removing DLLs from Steam directory
+pub fn disable_lua_game_mode() -> Result<(), String> {
+    let steam_root = get_steam_path()
+        .ok_or_else(|| "Steam installation not found".to_string())?;
+    
+    let steam_path = Path::new(&steam_root);
+    
+    // If Steam is running, DLLs are locked and cannot be deleted
+    // We need to close Steam first
+    if is_steam_running() {
+        return Err("Steam is currently running. Please close Steam before disabling Lua-Game Mode, or restart Steam to apply changes.".to_string());
+    }
+    
+    // List of DLLs to remove
+    let dlls = vec!["0xoCore.dll", "0xoPayload.dll", "dwmapi.dll"];
+    
+    // Remove each DLL
+    for dll_name in dlls {
+        let dll_path = steam_path.join(dll_name);
+        
+        if dll_path.exists() {
+            fs::remove_file(&dll_path)
+                .map_err(|e| format!("Failed to remove {}: {}", dll_name, e))?;
+        }
+        
+        // Remove backup files (DO NOT RESTORE - these are 0xo DLLs, not original Steam files)
+        let backup_path = steam_path.join(format!("{}.backup", dll_name));
+        if backup_path.exists() {
+            fs::remove_file(&backup_path).ok();
+        }
+    }
+    
+    // Remove marker file
+    let marker_path = steam_path.join(LUA_GAME_MODE_MARKER);
+    if marker_path.exists() {
+        fs::remove_file(&marker_path)
+            .map_err(|e| format!("Failed to remove marker file: {}", e))?;
+    }
+
+    // Also uninstall CloudRedirect DLL
+    let _ = crate::cloud_redirect_v2::uninstall_dll(steam_path);
+    
+    Ok(())
+}
+
+/// Find the actual Steam install directory for a game by its Steam appid.
+/// Scans all Steam library roots, reads the appmanifest_<appid>.acf, and
+/// returns the full path to the game's common folder (e.g. E:\SteamLibrary\steamapps\common\Geometry Dash).
+/// Returns None if the game is not found in any Steam library.
+#[tauri::command]
+pub fn get_steam_game_install_dir(appid: u32) -> Option<String> {
+    for library in steam_library_roots() {
+        let steamapps = library.join("steamapps");
+        let manifest = steamapps.join(format!("appmanifest_{}.acf", appid));
+        if !manifest.is_file() {
+            continue;
+        }
+        let text = fs::read_to_string(&manifest).unwrap_or_default();
+        let install_dir = text_vdf_value(&text, "installdir")?;
+        let game_dir = steamapps.join("common").join(install_dir.trim());
+        if game_dir.is_dir() {
+            return Some(game_dir.to_string_lossy().into_owned());
+        }
+    }
+    None
 }

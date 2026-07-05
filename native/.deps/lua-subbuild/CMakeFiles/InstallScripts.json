@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"E:/007Launcher/native/.deps/lua-subbuild/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

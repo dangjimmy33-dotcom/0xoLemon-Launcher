@@ -1,0 +1,152 @@
+^E:\007LAUNCHER\NATIVE\STEAM_HOOK\BUILD\_DEPS\DETOURS-SUBBUILD\CMAKEFILES\DE7DC4F48F6619D3E030CCA5CA33410D\DETOURS-POPULATE-MKDIR.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -Dcfgdir=/Debug -P E:/007Launcher/native/steam_hook/build/_deps/detours-subbuild/detours-populate-prefix/tmp/detours-populate-mkdirs.cmake
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/native/steam_hook/build/_deps/detours-subbuild/detours-populate-prefix/src/detours-populate-stamp/Debug/detours-populate-mkdir
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\STEAM_HOOK\BUILD\_DEPS\DETOURS-SUBBUILD\CMAKEFILES\DE7DC4F48F6619D3E030CCA5CA33410D\DETOURS-POPULATE-DOWNLOAD.RULE
+setlocal
+cd E:\007Launcher\native\steam_hook\build\_deps
+if %errorlevel% neq 0 goto :cmEnd
+E:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE -P E:/007Launcher/native/steam_hook/build/_deps/detours-subbuild/detours-populate-prefix/src/detours-populate-stamp/download-detours-populate.cmake
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE -P E:/007Launcher/native/steam_hook/build/_deps/detours-subbuild/detours-populate-prefix/src/detours-populate-stamp/verify-detours-populate.cmake
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE -P E:/007Launcher/native/steam_hook/build/_deps/detours-subbuild/detours-populate-prefix/src/detours-populate-stamp/extract-detours-populate.cmake
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/native/steam_hook/build/_deps/detours-subbuild/detours-populate-prefix/src/detours-populate-stamp/Debug/detours-populate-download
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\STEAM_HOOK\BUILD\_DEPS\DETOURS-SUBBUILD\CMAKEFILES\DE7DC4F48F6619D3E030CCA5CA33410D\DETOURS-POPULATE-UPDATE.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/native/steam_hook/build/_deps/detours-subbuild/detours-populate-prefix/src/detours-populate-stamp/Debug/detours-populate-update
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\STEAM_HOOK\BUILD\_DEPS\DETOURS-SUBBUILD\CMAKEFILES\DE7DC4F48F6619D3E030CCA5CA33410D\DETOURS-POPULATE-PATCH.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/native/steam_hook/build/_deps/detours-subbuild/detours-populate-prefix/src/detours-populate-stamp/Debug/detours-populate-patch
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\STEAM_HOOK\BUILD\_DEPS\DETOURS-SUBBUILD\CMAKEFILES\DE7DC4F48F6619D3E030CCA5CA33410D\DETOURS-POPULATE-CONFIGURE.RULE
+setlocal
+cd E:\007Launcher\native\steam_hook\build\_deps\detours-build
+if %errorlevel% neq 0 goto :cmEnd
+E:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/native/steam_hook/build/_deps/detours-subbuild/detours-populate-prefix/src/detours-populate-stamp/Debug/detours-populate-configure
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\STEAM_HOOK\BUILD\_DEPS\DETOURS-SUBBUILD\CMAKEFILES\DE7DC4F48F6619D3E030CCA5CA33410D\DETOURS-POPULATE-BUILD.RULE
+setlocal
+cd E:\007Launcher\native\steam_hook\build\_deps\detours-build
+if %errorlevel% neq 0 goto :cmEnd
+E:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/native/steam_hook/build/_deps/detours-subbuild/detours-populate-prefix/src/detours-populate-stamp/Debug/detours-populate-build
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\STEAM_HOOK\BUILD\_DEPS\DETOURS-SUBBUILD\CMAKEFILES\DE7DC4F48F6619D3E030CCA5CA33410D\DETOURS-POPULATE-INSTALL.RULE
+setlocal
+cd E:\007Launcher\native\steam_hook\build\_deps\detours-build
+if %errorlevel% neq 0 goto :cmEnd
+E:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/native/steam_hook/build/_deps/detours-subbuild/detours-populate-prefix/src/detours-populate-stamp/Debug/detours-populate-install
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\STEAM_HOOK\BUILD\_DEPS\DETOURS-SUBBUILD\CMAKEFILES\DE7DC4F48F6619D3E030CCA5CA33410D\DETOURS-POPULATE-TEST.RULE
+setlocal
+cd E:\007Launcher\native\steam_hook\build\_deps\detours-build
+if %errorlevel% neq 0 goto :cmEnd
+E:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/native/steam_hook/build/_deps/detours-subbuild/detours-populate-prefix/src/detours-populate-stamp/Debug/detours-populate-test
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\STEAM_HOOK\BUILD\_DEPS\DETOURS-SUBBUILD\CMAKEFILES\C4F4BFCCFF04C41616D4913376F4532A\DETOURS-POPULATE-COMPLETE.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory E:/007Launcher/native/steam_hook/build/_deps/detours-subbuild/CMakeFiles/Debug
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/native/steam_hook/build/_deps/detours-subbuild/CMakeFiles/Debug/detours-populate-complete
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/native/steam_hook/build/_deps/detours-subbuild/detours-populate-prefix/src/detours-populate-stamp/Debug/detours-populate-done
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\STEAM_HOOK\BUILD\_DEPS\DETOURS-SUBBUILD\CMAKEFILES\A30086907232CAFE2A7417CFB190E3FC\DETOURS-POPULATE.RULE
+setlocal
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\NATIVE\STEAM_HOOK\BUILD\_DEPS\DETOURS-SUBBUILD\CMAKELISTS.TXT
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SE:/007Launcher/native/steam_hook/build/_deps/detours-subbuild -BE:/007Launcher/native/steam_hook/build/_deps/detours-subbuild --check-stamp-file E:/007Launcher/native/steam_hook/build/_deps/detours-subbuild/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

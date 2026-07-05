@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Cloud, Database, Download, Home, Image as ImageIcon, Library, RefreshCcw, Settings, ShoppingBag, Wifi, Languages, Sparkles } from 'lucide-react'
+import { Cloud, Database, Download, Home, Image as ImageIcon, Library, RefreshCcw, Settings, ShoppingBag, Wifi, WifiOff, Languages, Sparkles } from 'lucide-react'
 import { useLocale } from '../context/LocaleContext'
 import type { GameCatalog, TabId } from '../types'
 
@@ -28,9 +28,10 @@ export function Sidebar({
     ['Home', t.nav.home, Home],
     ['Store', t.nav.store, ShoppingBag],
     ['Library', t.nav.library, Library],
+    ['Offline Activation', t.nav.offlineActivation, WifiOff],
     ['Updates', t.nav.updates, RefreshCcw],
     ['Downloads', t.nav.downloads, Download],
-    ['Cloud Saves', t.nav.cloudSaves, Cloud],
+    ['CloudRedirect', t.nav.cloudRedirect, Cloud],
     ['Translations', t.nav.translations, Languages],
     ['Cache', t.nav.cache, Database],
     ['Settings', t.nav.settings, Settings],
@@ -108,9 +109,9 @@ export function TabEmptyState({
         </div>
         <div className="search-bar" style={{ display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.05)', padding: '6px 12px', borderRadius: '6px', width: '250px' }}>
           <Search size={16} style={{ opacity: 0.5, marginRight: '8px' }} />
-          <input 
-            type="text" 
-            placeholder="Search games..." 
+          <input
+            type="text"
+            placeholder="Search games..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none' }}

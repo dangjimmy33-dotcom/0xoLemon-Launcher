@@ -2779,7 +2779,8 @@ impl DepotSource {
             return Ok(Vec::new());
         }
         if let Some(parent) = partial_path.parent() {
-            fs::create_dir_all(parent)?;
+            fs::create_dir_all(parent)
+                .map_err(|e| JobError::Depot(format!("failed to create _ranges dir '{}': {e}", parent.display())))?;
         }
         normalize_partial_file(partial_path, expected_len)?;
 
@@ -3178,14 +3179,20 @@ fn persist_partial_checkpoint(path: &Path, durable_len: u64) -> Result<(), JobEr
     let lp_checkpoint = long_path(&checkpoint);
     let lp_temporary = long_path(&checkpoint.with_extension("checkpoint.tmp"));
     {
-        let mut file = File::create(&lp_temporary)?;
+        let mut file = File::create(&lp_temporary)
+            .map_err(|e| JobError::Depot(format!("failed to create checkpoint tmp '{}': {e}", lp_temporary.display())))?;
         write!(file, "{durable_len}")?;
         file.sync_all()?;
     }
     if lp_checkpoint.exists() {
         fs::remove_file(&lp_checkpoint)?;
     }
-    fs::rename(&lp_temporary, &lp_checkpoint)?;
+    let rename_res = fs::rename(&lp_temporary, &lp_checkpoint);
+    if let Err(e) = rename_res {
+        if e.kind() != std::io::ErrorKind::NotFound {
+            return Err(JobError::Depot(format!("failed to rename checkpoint '{}': {e}", lp_checkpoint.display())));
+        }
+    }
     Ok(())
 }
 
@@ -3193,13 +3200,20 @@ fn normalize_partial_file(path: &Path, expected_len: u64) -> Result<(), JobError
     let lp = long_path(path);
     let lp_checkpoint = long_path(&partial_checkpoint_path(path));
     if lp.exists() && partial_file_len(&lp) > expected_len {
-        fs::remove_file(&lp)?;
+        let _ = remove_file_with_retry(&lp, 2);
         if lp_checkpoint.exists() {
-            fs::remove_file(&lp_checkpoint)?;
+            let _ = remove_file_with_retry(&lp_checkpoint, 2);
         }
     } else if lp.exists() {
         let durable = durable_partial_len(path).min(expected_len);
-        let file = OpenOptions::new().write(true).open(&lp)?;
+        let file_res = OpenOptions::new()
+            .write(true)
+            .open(&lp);
+        let file = match file_res {
+            Ok(f) => f,
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(()),
+            Err(e) => return Err(JobError::Depot(format!("failed to open existing partial '{}' for truncation: {e}", path.display()))),
+        };
         if file.metadata()?.len() != durable {
             file.set_len(durable)?;
             file.sync_all()?;
@@ -3284,7 +3298,8 @@ fn append_stream_to_partial<R: Read>(
     let mut output = OpenOptions::new()
         .create(true)
         .append(true)
-        .open(&lp)?;
+        .open(&lp)
+        .map_err(|e| JobError::Depot(format!("failed to open partial file '{}' (long: '{}'): {e}", partial_path.display(), lp.display())))?;
     let mut written = existing_len.min(expected_len);
     let mut durable = written;
     let mut unsynced = 0_u64;
@@ -4504,7 +4519,8 @@ fn compressed_chunk_file_valid(path: &Path, chunk: &ChunkRef) -> Result<bool, Jo
 fn write_chunk_file(path: &Path, data: &[u8]) -> Result<(), JobError> {
     let lp = long_path(path);
     if let Some(parent) = lp.parent() {
-        fs::create_dir_all(parent)?;
+        fs::create_dir_all(parent)
+            .map_err(|e| JobError::Depot(format!("failed to create chunk dir '{}': {e}", parent.display())))?;
     }
     // Use .bin.tmp extension to avoid replacing .chunk extension
     let temp = lp.with_extension("tmp");

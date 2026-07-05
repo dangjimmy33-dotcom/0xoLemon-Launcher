@@ -76,6 +76,9 @@ pub struct BuildDepotInput {
     /// V1 remains the default in the CLI so repositories used by older launcher
     /// builds never receive raw-coded chunks accidentally. V2 must be explicit.
     pub format_version: u32,
+    /// Delete source files immediately after they're packed to save disk space.
+    /// Useful when building large depots with limited disk space.
+    pub delete_source_after_pack: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -259,6 +262,15 @@ pub fn build_depot(input: BuildDepotInput) -> Result<BuildReport, BuildError> {
             )?;
             total_size += file_entry.size;
             files.push(file_entry);
+
+            // Delete source file immediately after packing to save disk space
+            if input.delete_source_after_pack {
+                if let Err(err) = fs::remove_file(&file_path) {
+                    eprintln!("[DEPOT] Warning: failed to delete source file {}: {}", file_path.display(), err);
+                } else {
+                    eprintln!("[DEPOT] Deleted source file: {}", file_path.display());
+                }
+            }
         }
 
         let chunk_count = files.iter().map(|file| file.chunks.len()).sum();

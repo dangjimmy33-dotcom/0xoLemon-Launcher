@@ -45,6 +45,36 @@ Use `build-version --extend-existing` to:
 - Re-use existing chunks (no re-upload of unchanged files)
 - Start new packs from the next available pack index
 
+#### ⚠️ **Low Disk Space Mode** (NEW!)
+
+If you're running low on disk space (e.g., 132GB game + 66GB depot output = 198GB needed), add `--delete-source-after-pack` to delete game files **immediately after they're packed**:
+
+```powershell
+cd E:\007Launcher\src-tauri
+
+.\target\release\depot_builder.exe build-version `
+  --input        "E:\007 First Light"    `
+  --version      v1.3                    `
+  --out          "E:\007Launcher\depot\007-first-light" `
+  --game-id      007-first-light         `
+  --launch-executable "Retail\007FirstLight.exe" `
+  --extend-existing                      `
+  --upload-repo  "CatManga/Cat-Manga"    `
+  --repo-type    dataset                 `
+  --repo-prefix  "007-first-light"       `
+  --delete-source-after-pack             `
+  2>&1 | Tee-Object -FilePath "E:\007Launcher\logs\depot-build.log"
+```
+
+**⚠️ Important Notes:**
+- With `--delete-source-after-pack`, source files are **permanently deleted** as they're processed (alphabetically sorted).
+- Catalog and manifest JSON files are **still written correctly** at the end.
+- If the build fails mid-way, you'll lose processed files but keep unprocessed ones.
+- **Recommended:** Redirect both stdout and stderr to a log file so you can track progress.
+- **Backup:** Keep a backup of your game folder before using this flag!
+
+#### Normal Build (with enough disk space):
+
 ```powershell
 cd E:\007Launcher\src-tauri
 

@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react'
 import { useState, useEffect, useRef } from 'react'
 import { useLocale, type Locale } from '../context/LocaleContext'
-import { ChevronDown, Bell,
+import {
+  ChevronDown, Bell,
   Clock3,
   Cloud,
   Download,
@@ -17,10 +18,12 @@ import { ChevronDown, Bell,
   Settings,
   Sparkles,
   CircleAlert,
+  TriangleAlert,
 } from 'lucide-react'
 import { invoke } from '@tauri-apps/api/core'
 import type { LauncherPreferences, NotificationCategory } from '../lib/preferences'
 import type { LauncherSettings, SteamEnvironmentInfo } from '../types'
+import { ConfirmDialog } from './ConfirmDialog'
 
 function CustomSelect<T extends string>({
   value,
@@ -111,6 +114,188 @@ function SettingRow({
   )
 }
 
+export function LuaGameModeToggle({ steamEnvironment }: { steamEnvironment: SteamEnvironmentInfo | null }) {
+  const { t } = useLocale()
+  const [enabled, setEnabled] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [showEnableConfirm, setShowEnableConfirm] = useState(false)
+
+  useEffect(() => {
+    checkStatus()
+  }, [])
+
+  const checkStatus = async () => {
+    try {
+      const isEnabled = await invoke<boolean>('is_lua_game_mode_enabled')
+      setEnabled(isEnabled)
+    } catch (e) {
+      console.error('Failed to check lua-game mode status', e)
+    }
+  }
+
+  const showToast = (title: string, msg: string, severity: 'success' | 'error' | 'info' | 'warning' = 'info') => {
+    window.dispatchEvent(new CustomEvent('0xo-toast', {
+      detail: {
+        category: 'launcher',
+        severity,
+        title,
+        message: msg,
+        dedupeKey: 'lua-game-mode',
+      }
+    }))
+  }
+
+  const handleToggle = async (checked: boolean) => {
+    if (checked) {
+      // Show warning before enabling
+      setShowEnableConfirm(true)
+      return
+    }
+
+    // Disable without confirmation
+    performDisable()
+  }
+
+  const performEnable = async () => {
+    setShowEnableConfirm(false)
+    setLoading(true)
+    try {
+      showToast(t.settings.luaGameMode, t.settings.luaGameModeInstalling, 'info')
+      await invoke('enable_lua_game_mode')
+      setEnabled(true)
+      showToast(t.settings.luaGameMode, t.settings.luaGameModeInstallSuccess, 'success')
+    } catch (e) {
+      console.error(e)
+      showToast(t.settings.luaGameMode, t.settings.luaGameModeInstallError + ': ' + String(e), 'error')
+    }
+    setLoading(false)
+  }
+
+  const performDisable = async () => {
+    setLoading(true)
+    try {
+      showToast(t.settings.luaGameMode, t.settings.luaGameModeUninstalling, 'info')
+      await invoke('disable_lua_game_mode')
+      setEnabled(false)
+      showToast(t.settings.luaGameMode, t.settings.luaGameModeUninstallSuccess, 'success')
+    } catch (e) {
+      const errorMsg = String(e)
+      console.error(e)
+
+      // Check if error is about Steam running
+      if (errorMsg.includes('Steam is currently running')) {
+        showToast(
+          t.settings.luaGameMode,
+          'Please close Steam before disabling Lua-Game Mode. You can use "Restart Steam" button below to close and reopen Steam.',
+          'warning'
+        )
+      } else {
+        showToast(t.settings.luaGameMode, t.settings.luaGameModeUninstallError + ': ' + errorMsg, 'error')
+      }
+    }
+    setLoading(false)
+  }
+
+  if (!steamEnvironment?.installed) return null
+
+  return (
+    <div style={{
+      marginTop: '16px',
+      padding: '16px',
+      background: 'rgba(255,215,0,0.05)',
+      border: '1px solid rgba(255,215,0,0.2)',
+      borderRadius: '8px'
+    }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '12px' }}>
+        <Sparkles size={18} style={{ color: '#ffd700', marginTop: '2px' }} />
+        <div style={{ flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <strong style={{ color: '#ffd700' }}>{t.settings.luaGameMode}</strong>
+            <button
+                type="button"
+                className={enabled ? 'settings-toggle is-on' : 'settings-toggle'}
+                role="switch"
+                aria-checked={enabled}
+                disabled={loading}
+                style={{ opacity: loading ? 0.5 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}
+                onClick={() => !loading && handleToggle(!enabled)}
+              >
+                <span />
+              </button>
+          </div>
+          <p style={{ fontSize: '13px', color: '#aaa', lineHeight: '1.5', marginBottom: '8px' }}>
+            {t.settings.luaGameModeDesc}
+          </p>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 12px',
+            background: 'rgba(255,193,7,0.1)',
+            border: '1px solid rgba(255,193,7,0.3)',
+            borderRadius: '6px'
+          }}>
+            <TriangleAlert size={14} style={{ color: '#ffc107' }} />
+            <span style={{ fontSize: '12px', color: '#ffc107', lineHeight: '1.4' }}>
+              {t.settings.luaGameModeWarning}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Enable Lua-Game Mode Confirmation */}
+      {showEnableConfirm && (
+        <ConfirmDialog
+          title={t.settings.luaGameMode}
+          message={t.settings.luaGameModeWarning}
+          confirmText="Enable"
+          cancelText="Cancel"
+          variant="warning"
+          onConfirm={performEnable}
+          onCancel={() => setShowEnableConfirm(false)}
+        />
+      )}
+    </div>
+  )
+}
+
+function SteamAutoInstallSettings() {
+  const { t } = useLocale()
+  const [autoInstall, setAutoInstall] = useState(() => localStorage.getItem('steamAutoInstall') === 'true')
+  const [skipConfirm, setSkipConfirm] = useState(() => localStorage.getItem('steamSkipRestartConfirm') === 'true')
+
+  return (
+    <>
+      <SettingRow
+        title={t.library.autoInstallAfterRestart}
+        description={t.library.autoInstallSettingDesc}
+      >
+        <Toggle
+          checked={autoInstall}
+          onChange={(val) => {
+            setAutoInstall(val)
+            localStorage.setItem('steamAutoInstall', String(val))
+          }}
+          label="Auto Install"
+        />
+      </SettingRow>
+      <SettingRow
+        title={t.library.skipRestartConfirmSetting}
+        description={t.library.skipRestartConfirmSettingDesc}
+      >
+        <Toggle
+          checked={skipConfirm}
+          onChange={(val) => {
+            setSkipConfirm(val)
+            localStorage.setItem('steamSkipRestartConfirm', String(val))
+          }}
+          label="Skip Confirm"
+        />
+      </SettingRow>
+    </>
+  )
+}
+
 export function SettingsView({
   preferences,
   launcherSettings,
@@ -195,7 +380,7 @@ export function SettingsView({
                   { value: 'Library', label: t.nav.library },
                   { value: 'Updates', label: t.nav.updates },
                   { value: 'Downloads', label: t.nav.downloads },
-                  { value: 'Cloud Saves', label: t.nav.cloudSaves },
+                  { value: 'CloudRedirect', label: t.nav.cloudRedirect },
                 ]}
               />
             </SettingRow>
@@ -308,7 +493,7 @@ export function SettingsView({
           </div>
         </section>
 
-        <section className="settings-group">
+        <section className="settings-group" id="steam-integration">
           <header>
             <Gamepad2 size={18} />
             <div>
@@ -379,6 +564,8 @@ export function SettingsView({
                 </button>
               </div>
             </SettingRow>
+            <SteamAutoInstallSettings />
+            <LuaGameModeToggle steamEnvironment={steamEnvironment} />
           </div>
         </section>
 
@@ -691,9 +878,9 @@ export function SettingsView({
           </header>
           <div className="settings-group-body">
             <SettingRow title={t.settings.resetLauncherData} description={t.settings.resetLauncherDataDesc}>
-              <button 
-                type="button" 
-                className="settings-secondary-button" 
+              <button
+                type="button"
+                className="settings-secondary-button"
                 style={{ borderColor: '#ef4444', color: '#ef4444' }}
                 onClick={async () => {
                   if (confirm("Bạn có chắc chắn muốn xóa toàn bộ dữ liệu cấu hình và đăng nhập (Google Drive, Discord...) của Launcher không? Việc này không thể hoàn tác.")) {

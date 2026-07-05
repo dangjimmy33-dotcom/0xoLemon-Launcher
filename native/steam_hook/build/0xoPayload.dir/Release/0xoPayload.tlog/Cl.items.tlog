@@ -1,0 +1,4 @@
+E:\007Launcher\native\steam_hook\payload\LumaCorePayload\LumaCorePayloadEntry.cpp;E:\007Launcher\native\steam_hook\build\0xoPayload.dir\Release\LumaCorePayloadEntry.obj
+E:\007Launcher\native\steam_hook\payload\LumaCorePayload\LcPayloadLogging.cpp;E:\007Launcher\native\steam_hook\build\0xoPayload.dir\Release\LcPayloadLogging.obj
+E:\007Launcher\native\steam_hook\payload\LumaCorePayload\EpicOnlineBridge.cpp;E:\007Launcher\native\steam_hook\build\0xoPayload.dir\Release\EpicOnlineBridge.obj
+E:\007Launcher\native\steam_hook\payload\LumaCorePayload\PayloadPropagator.cpp;E:\007Launcher\native\steam_hook\build\0xoPayload.dir\Release\PayloadPropagator.obj

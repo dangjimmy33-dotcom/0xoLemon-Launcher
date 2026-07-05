@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="E:\007Launcher\native\cloud_redirect\build\CMakeFiles\c8f90fd1bf1098a8e7113e4874ea51a2\ui.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\native\cloud_redirect\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="E:\007Launcher\native\cloud_redirect\build\CMakeFiles\ui" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{3D00BBCB-A92E-3791-879D-80412104C43A}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

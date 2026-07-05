@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="E:\007Launcher\native\.deps\detours-subbuild\CMakeFiles\6748798baa8b89f4c2066a8133581035\detours-populate-mkdir.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\native\.deps\detours-subbuild\CMakeFiles\6748798baa8b89f4c2066a8133581035\detours-populate-download.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\native\.deps\detours-subbuild\CMakeFiles\6748798baa8b89f4c2066a8133581035\detours-populate-update_disconnected.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\native\.deps\detours-subbuild\CMakeFiles\6748798baa8b89f4c2066a8133581035\detours-populate-patch_disconnected.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\native\.deps\detours-subbuild\CMakeFiles\6748798baa8b89f4c2066a8133581035\detours-populate-configure.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\native\.deps\detours-subbuild\CMakeFiles\6748798baa8b89f4c2066a8133581035\detours-populate-build.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\native\.deps\detours-subbuild\CMakeFiles\6748798baa8b89f4c2066a8133581035\detours-populate-install.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\native\.deps\detours-subbuild\CMakeFiles\6748798baa8b89f4c2066a8133581035\detours-populate-test.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\native\.deps\detours-subbuild\CMakeFiles\9c23a6974341c75a507b23d802668af4\detours-populate-complete.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\native\.deps\detours-subbuild\CMakeFiles\1e81ed85b19004503d858d657b02ef9c\detours-populate.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\native\.deps\detours-subbuild\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="E:\007Launcher\native\.deps\detours-subbuild\CMakeFiles\detours-populate" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{81080158-C976-3306-8C5F-15253131B835}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="E:\007Launcher\native\.deps\protobuf-subbuild\CMakeFiles\249ccf7ed51ad1024b0224393db45a3c\protobuf-populate-mkdir.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\native\.deps\protobuf-subbuild\CMakeFiles\249ccf7ed51ad1024b0224393db45a3c\protobuf-populate-download.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\native\.deps\protobuf-subbuild\CMakeFiles\249ccf7ed51ad1024b0224393db45a3c\protobuf-populate-update_disconnected.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\native\.deps\protobuf-subbuild\CMakeFiles\249ccf7ed51ad1024b0224393db45a3c\protobuf-populate-patch_disconnected.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\native\.deps\protobuf-subbuild\CMakeFiles\249ccf7ed51ad1024b0224393db45a3c\protobuf-populate-configure.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\native\.deps\protobuf-subbuild\CMakeFiles\249ccf7ed51ad1024b0224393db45a3c\protobuf-populate-build.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\native\.deps\protobuf-subbuild\CMakeFiles\249ccf7ed51ad1024b0224393db45a3c\protobuf-populate-install.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\native\.deps\protobuf-subbuild\CMakeFiles\249ccf7ed51ad1024b0224393db45a3c\protobuf-populate-test.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\native\.deps\protobuf-subbuild\CMakeFiles\9ddc9ab23c3846347d9bc425eeb7ad54\protobuf-populate-complete.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\native\.deps\protobuf-subbuild\CMakeFiles\9542d045ece7619c9f54db6d5cc1550f\protobuf-populate.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\native\.deps\protobuf-subbuild\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="E:\007Launcher\native\.deps\protobuf-subbuild\CMakeFiles\protobuf-populate" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{585FC7AF-8B06-3D90-9E66-56688DE9C2CC}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

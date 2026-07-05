@@ -447,6 +447,8 @@ def build_direct_args(payload: Dict[str, Any]) -> List[str]:
         args += ["--keep-local-packs"]
     if not encrypt_packs:
         args += ["--no-encrypt-packs"]
+    if bool_value(payload.get("deleteSourceAfterPack", False)):
+        args += ["--delete-source-after-pack"]
     return args
 
 
@@ -516,6 +518,8 @@ def run_publish_script(payload: Dict[str, Any], env: Dict[str, str]) -> int:
         args += ["-NoSyncMetadata"]
     if not bool_value(payload.get("extendExisting", True)):
         args += ["-NoExtendExisting"]
+    if bool_value(payload.get("deleteSourceAfterPack", False)):
+        args += ["-DeleteSourceAfterPack"]
     add_log("[SAFE] Chạy publish_depot_version.ps1 với đúng Sync/Extend/ForceRebuild/Encrypt flags từ GUI.", "step")
     return run_process(args, cwd=BASE_DIR, env=env)
 

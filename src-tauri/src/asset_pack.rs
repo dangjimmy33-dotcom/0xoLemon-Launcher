@@ -570,7 +570,8 @@ fn build_manifest_and_assets(source: &Path) -> Result<SourceAssetBuild, AssetPac
     let cloud_save = detail.cloud_save.clone();
 
     let summary = GameSummary {
-        id: DEFAULT_GAME_ID.to_string(),
+        id: detail.game_id.clone(),
+        appid: detail.appid.clone(),
         title: detail.title.clone(),
         subtitle: "IO Interactive A/S".to_string(),
         developer: detail
@@ -1215,7 +1216,8 @@ fn default_game_detail(
     sounds: Vec<GameSound>,
 ) -> GameDetail {
     GameDetail {
-        game_id: DEFAULT_GAME_ID.to_string(),
+        game_id: "unknown".to_string(),
+        appid: None,
         locale: "en-US".to_string(),
         title: DEFAULT_GAME_TITLE.to_string(),
         short_description:

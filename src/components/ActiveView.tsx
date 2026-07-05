@@ -8,6 +8,7 @@ import { DownloadQueuePanel, JobCenter, JobLogPanel } from './downloads'
 import { CachePanel, RollbackPanel, InstallSummaryPanel, ChangedFiles } from './panels'
 import { TranslationsView } from './TranslationsView'
 import { WhatsNewView } from './WhatsNewView'
+import { OfflineActivation } from './OfflineActivation'
 
 export function ActiveView({
   activeTab,
@@ -245,6 +246,10 @@ export function ActiveView({
 
   if (activeTab === 'What\'s New!') {
     return <WhatsNewView />
+  }
+
+  if (activeTab === 'Offline Activation') {
+    return <OfflineActivation catalog={catalog} assets={assets} />
   }
 
   if (activeTab === 'Downloads' || activeTab === 'Updates') {

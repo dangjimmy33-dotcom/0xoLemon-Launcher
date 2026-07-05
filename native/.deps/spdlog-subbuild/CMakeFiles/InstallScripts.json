@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"E:/007Launcher/native/.deps/spdlog-subbuild/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

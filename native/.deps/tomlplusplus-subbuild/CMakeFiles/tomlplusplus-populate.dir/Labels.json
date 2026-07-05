@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "E:/007Launcher/native/.deps/tomlplusplus-subbuild/CMakeFiles/tomlplusplus-populate"
+		},
+		{
+			"file" : "E:/007Launcher/native/.deps/tomlplusplus-subbuild/CMakeFiles/9c53b17d97fa320388117b5e1b8262f7/tomlplusplus-populate.rule"
+		},
+		{
+			"file" : "E:/007Launcher/native/.deps/tomlplusplus-subbuild/CMakeFiles/0fa9b59e3f1acee2586bd75f4168d853/tomlplusplus-populate-complete.rule"
+		},
+		{
+			"file" : "E:/007Launcher/native/.deps/tomlplusplus-subbuild/CMakeFiles/70937d487a778aae3f13ff13c2c9e5a6/tomlplusplus-populate-build.rule"
+		},
+		{
+			"file" : "E:/007Launcher/native/.deps/tomlplusplus-subbuild/CMakeFiles/70937d487a778aae3f13ff13c2c9e5a6/tomlplusplus-populate-configure.rule"
+		},
+		{
+			"file" : "E:/007Launcher/native/.deps/tomlplusplus-subbuild/CMakeFiles/70937d487a778aae3f13ff13c2c9e5a6/tomlplusplus-populate-download.rule"
+		},
+		{
+			"file" : "E:/007Launcher/native/.deps/tomlplusplus-subbuild/CMakeFiles/70937d487a778aae3f13ff13c2c9e5a6/tomlplusplus-populate-install.rule"
+		},
+		{
+			"file" : "E:/007Launcher/native/.deps/tomlplusplus-subbuild/CMakeFiles/70937d487a778aae3f13ff13c2c9e5a6/tomlplusplus-populate-mkdir.rule"
+		},
+		{
+			"file" : "E:/007Launcher/native/.deps/tomlplusplus-subbuild/CMakeFiles/70937d487a778aae3f13ff13c2c9e5a6/tomlplusplus-populate-patch_disconnected.rule"
+		},
+		{
+			"file" : "E:/007Launcher/native/.deps/tomlplusplus-subbuild/CMakeFiles/70937d487a778aae3f13ff13c2c9e5a6/tomlplusplus-populate-test.rule"
+		},
+		{
+			"file" : "E:/007Launcher/native/.deps/tomlplusplus-subbuild/CMakeFiles/70937d487a778aae3f13ff13c2c9e5a6/tomlplusplus-populate-update_disconnected.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"tomlplusplus-populate"
+		],
+		"name" : "tomlplusplus-populate"
+	}
+}

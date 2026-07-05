@@ -202,6 +202,7 @@ export type GameCatalog = {
 
 export type GameSummary = {
   id: string
+  appid?: string | number
   title: string
   subtitle: string
   developer: string
@@ -236,6 +237,7 @@ export type GameInstallMetadata = {
 
 export type GameDetail = {
   gameId: string
+  appid?: string | number
   locale: string
   title: string
   shortDescription: string
@@ -501,11 +503,12 @@ export type TabId =
   | 'What\'s New!'
   | 'Store'
   | 'Library'
+  | 'Offline Activation'
   | 'Updates'
   | 'Downloads'
-  | 'Cloud Saves'
+  | 'CloudRedirect'
   | 'Translations'
   | 'Cache'
   | 'Settings'
 
-export {}
+export { }
