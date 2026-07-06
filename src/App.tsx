@@ -248,6 +248,37 @@ export default function App() {
     })
   }, [])
 
+  // F11 fullscreen toggle for main window
+  useEffect(() => {
+    if (!isTauriRuntime()) return
+
+    const handleKeyDown = async (e: KeyboardEvent) => {
+      if (e.key === 'F11') {
+        e.preventDefault()
+        try {
+          const { getCurrentWindow } = await import('@tauri-apps/api/window')
+          const win = getCurrentWindow()
+          const isFullscreen = await win.isFullscreen()
+
+          if (!isFullscreen) {
+            // Enter fullscreen: hide decorations first, then fullscreen
+            await win.setDecorations(false)
+            await win.setFullscreen(true)
+          } else {
+            // Exit fullscreen: restore decorations after exiting fullscreen
+            await win.setFullscreen(false)
+            await win.setDecorations(true)
+          }
+        } catch (error) {
+          console.error('Failed to toggle fullscreen:', error)
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
   useEffect(() => {
     catalogRef.current = catalog
   }, [catalog])
