@@ -125,7 +125,7 @@ export function UpdateCenter({
                   <strong>{phase === 'downloading' ? formatDuration(eta) : '--'}</strong>
                 </div>
               </div>
-              {progress?.error ? <p className="update-center-error">{progress.error}</p> : null}
+              {progress?.error ? <p className="update-center-error">{sanitizeError(progress.error)}</p> : null}
             </section>
 
             <ol className="update-center-steps">
@@ -195,5 +195,12 @@ function phaseDescription(phase: (typeof phases)[number]) {
     case 'installing': return 'Applying the verified package'
     case 'restarting': return 'Starting the new launcher version'
   }
+}
+
+function sanitizeError(error: string): string {
+  if (error.includes('error sending request for url') || error.includes('failed to lookup address')) {
+    return 'Could not connect to the update server. Please check your internet connection and try again.'
+  }
+  return error.replace(/https?:\/\/[^\s)]+/g, '[URL REDACTED]')
 }
 
