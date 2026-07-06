@@ -162,6 +162,7 @@
 .hv-hero-tick {
   width: 5px;
   height: 14px;
+  min-height: unset;
   border-radius: 3px;
   background: rgba(255, 255, 255, .25);
   border: none;

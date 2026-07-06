@@ -16,43 +16,360 @@ use crate::launch::{
 
 use super::{hidden_command, DepotSource, JobError, DEFAULT_GAME_ID};
 
-#[derive(Debug, Clone, Copy)]
-enum DependencyArch {
-    X64,
-    X86,
+// ══════════════════════════════════════════════════════════════
+//  Dependency types
+// ══════════════════════════════════════════════════════════════
+
+/// How to detect whether a dependency is already installed on the machine.
+#[derive(Debug, Clone)]
+enum DependencyDetect {
+    /// Query one or more HKLM registry paths; value name is checked for "Installed" == 1
+    /// or for the presence of a non-empty string (for display-version checks).
+    RegistryInstalled {
+        /// HKLM registry path(s) to query. Any one matching counts as "installed".
+        paths: &'static [&'static str],
+        /// Registry value name to look up (e.g. "Installed", "Version").
+        value: &'static str,
+        /// If true the value must equal "0x1" or "1"; if false any non-empty value counts.
+        require_flag: bool,
+    },
+    /// Check whether a specific file or directory exists on disk.
+    PathExists {
+        path: &'static str,
+    },
 }
 
+/// Arguments to pass to the installer executable when running silently.
 #[derive(Debug, Clone, Copy)]
-struct DependencySpec {
-    _id: &'static str,
-    display_name: &'static str,
-    arch: DependencyArch,
-    url: &'static str,
-    file_name: &'static str,
+enum InstallerArgs {
+    VcRedist,   // /install /quiet /norestart
+    Dxweb,      // /Q
+    DotNetFull, // /q /norestart
+    EaApp,      // /install /quiet
 }
 
-fn dependency_specs_for_game(game_id: &str) -> Vec<DependencySpec> {
-    const VC_REDIST_X64: DependencySpec = DependencySpec {
-        _id: "vc-redist-x64",
-        display_name: "Microsoft Visual C++ Redistributable x64",
-        arch: DependencyArch::X64,
-        url: "https://aka.ms/vs/17/release/vc_redist.x64.exe",
-        file_name: "vc_redist.x64.exe",
-    };
-    const VC_REDIST_X86: DependencySpec = DependencySpec {
-        _id: "vc-redist-x86",
-        display_name: "Microsoft Visual C++ Redistributable x86",
-        arch: DependencyArch::X86,
-        url: "https://aka.ms/vs/17/release/vc_redist.x86.exe",
-        file_name: "vc_redist.x86.exe",
-    };
-
-    match game_id {
-        "among-us" => vec![VC_REDIST_X64, VC_REDIST_X86],
-        DEFAULT_GAME_ID => vec![VC_REDIST_X64],
-        _ => vec![VC_REDIST_X64],
+impl InstallerArgs {
+    fn as_slice(self) -> &'static [&'static str] {
+        match self {
+            InstallerArgs::VcRedist => &["/install", "/quiet", "/norestart"],
+            InstallerArgs::Dxweb => &["/Q"],
+            InstallerArgs::DotNetFull => &["/q", "/norestart"],
+            InstallerArgs::EaApp => &["/install", "/quiet"],
+        }
     }
 }
+
+#[derive(Debug, Clone)]
+struct DependencySpec {
+    id: &'static str,
+    display_name: &'static str,
+    url: &'static str,
+    file_name: &'static str,
+    detect: DependencyDetect,
+    installer_args: InstallerArgs,
+}
+
+// ══════════════════════════════════════════════════════════════
+//  Well-known dependency definitions
+// ══════════════════════════════════════════════════════════════
+
+// ── Visual C++ 2022 ────────────────────────────────────────────
+const VC_REDIST_X64: DependencySpec = DependencySpec {
+    id: "vc-redist-x64-2022",
+    display_name: "Microsoft Visual C++ 2022 Redistributable (x64)",
+    url: "https://aka.ms/vs/17/release/vc_redist.x64.exe",
+    file_name: "vc_redist_2022.x64.exe",
+    detect: DependencyDetect::RegistryInstalled {
+        paths: &[
+            r"HKLM\SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64",
+            r"HKLM\SOFTWARE\WOW6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x64",
+        ],
+        value: "Installed",
+        require_flag: true,
+    },
+    installer_args: InstallerArgs::VcRedist,
+};
+
+const VC_REDIST_X86: DependencySpec = DependencySpec {
+    id: "vc-redist-x86-2022",
+    display_name: "Microsoft Visual C++ 2022 Redistributable (x86)",
+    url: "https://aka.ms/vs/17/release/vc_redist.x86.exe",
+    file_name: "vc_redist_2022.x86.exe",
+    detect: DependencyDetect::RegistryInstalled {
+        paths: &[
+            r"HKLM\SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x86",
+            r"HKLM\SOFTWARE\WOW6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x86",
+        ],
+        value: "Installed",
+        require_flag: true,
+    },
+    installer_args: InstallerArgs::VcRedist,
+};
+
+// ── Visual C++ 2019 ────────────────────────────────────────────
+// VC 2019 (14.2x) and VC 2022 (14.3x) share the same runtime key; having 2022
+// installed fully satisfies a 2019 requirement — detection is intentionally identical.
+const VC_REDIST_X64_2019: DependencySpec = DependencySpec {
+    id: "vc-redist-x64-2019",
+    display_name: "Microsoft Visual C++ 2019 Redistributable (x64)",
+    url: "https://aka.ms/vs/16/release/vc_redist.x64.exe",
+    file_name: "vc_redist_2019.x64.exe",
+    detect: DependencyDetect::RegistryInstalled {
+        paths: &[
+            r"HKLM\SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64",
+            r"HKLM\SOFTWARE\WOW6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x64",
+        ],
+        value: "Installed",
+        require_flag: true,
+    },
+    installer_args: InstallerArgs::VcRedist,
+};
+
+const VC_REDIST_X86_2019: DependencySpec = DependencySpec {
+    id: "vc-redist-x86-2019",
+    display_name: "Microsoft Visual C++ 2019 Redistributable (x86)",
+    url: "https://aka.ms/vs/16/release/vc_redist.x86.exe",
+    file_name: "vc_redist_2019.x86.exe",
+    detect: DependencyDetect::RegistryInstalled {
+        paths: &[
+            r"HKLM\SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x86",
+            r"HKLM\SOFTWARE\WOW6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x86",
+        ],
+        value: "Installed",
+        require_flag: true,
+    },
+    installer_args: InstallerArgs::VcRedist,
+};
+
+// ── Visual C++ 2010 ────────────────────────────────────────────
+// Detected via System32 DLL presence (msvcp100.dll) — the most reliable
+// signal across all Windows versions and patch levels.
+const VC_REDIST_X64_2010: DependencySpec = DependencySpec {
+    id: "vc-redist-x64-2010",
+    display_name: "Microsoft Visual C++ 2010 Redistributable (x64)",
+    url: "https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x64.exe",
+    file_name: "vc_redist_2010.x64.exe",
+    detect: DependencyDetect::PathExists {
+        path: r"C:\Windows\System32\msvcp100.dll",
+    },
+    installer_args: InstallerArgs::VcRedist,
+};
+
+const VC_REDIST_X86_2010: DependencySpec = DependencySpec {
+    id: "vc-redist-x86-2010",
+    display_name: "Microsoft Visual C++ 2010 Redistributable (x86)",
+    url: "https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x86.exe",
+    file_name: "vc_redist_2010.x86.exe",
+    detect: DependencyDetect::PathExists {
+        path: r"C:\Windows\SysWOW64\msvcp100.dll",
+    },
+    installer_args: InstallerArgs::VcRedist,
+};
+
+// ── DirectX Jun 2010 ───────────────────────────────────────────
+const DIRECTX_JUN2010: DependencySpec = DependencySpec {
+    id: "directx-jun2010",
+    display_name: "DirectX End-User Runtime (June 2010)",
+    url: "https://download.microsoft.com/download/1/7/1/1718CCC4-6315-4D8E-9543-8E28A4E18C4C/dxwebsetup.exe",
+    file_name: "dxwebsetup.exe",
+    detect: DependencyDetect::RegistryInstalled {
+        paths: &[
+            r"HKLM\SOFTWARE\Microsoft\DirectX",
+            r"HKLM\SOFTWARE\WOW6432Node\Microsoft\DirectX",
+        ],
+        value: "Version",
+        require_flag: false,
+    },
+    installer_args: InstallerArgs::Dxweb,
+};
+
+// ── .NET Framework 4.7 ─────────────────────────────────────────
+const DOTNET_47: DependencySpec = DependencySpec {
+    id: "dotnet-47",
+    display_name: "Microsoft .NET Framework 4.7",
+    url: "https://go.microsoft.com/fwlink/?linkid=843004",
+    file_name: "NDP47-KB3186500-x86-x64-AllOS-ENU.exe",
+    detect: DependencyDetect::RegistryInstalled {
+        paths: &[
+            r"HKLM\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full",
+            r"HKLM\SOFTWARE\WOW6432Node\Microsoft\NET Framework Setup\NDP\v4\Full",
+        ],
+        value: "Release",
+        require_flag: false,
+    },
+    installer_args: InstallerArgs::DotNetFull,
+};
+
+// ── EA App ─────────────────────────────────────────────────────
+const EA_APP: DependencySpec = DependencySpec {
+    id: "ea-app",
+    display_name: "EA App",
+    url: "https://origin-a.akamaihd.net/EA-Desktop-Client-Download/installer-releases/EAappInstaller.exe",
+    file_name: "EAappInstaller.exe",
+    detect: DependencyDetect::PathExists {
+        path: r"C:\Program Files\Electronic Arts\EA Desktop\EA Desktop.exe",
+    },
+    installer_args: InstallerArgs::EaApp,
+};
+
+// ══════════════════════════════════════════════════════════════
+//  Game → dependency mapping
+// ══════════════════════════════════════════════════════════════
+
+fn dependency_specs_for_game(game_id: &str) -> Vec<DependencySpec> {
+    // Helper to deduplicate by id so games listing both 2019+2022 don't double-install.
+    fn dedup(mut v: Vec<DependencySpec>) -> Vec<DependencySpec> {
+        let mut seen = std::collections::HashSet::new();
+        v.retain(|s| seen.insert(s.id));
+        v
+    }
+
+    let specs = match game_id {
+        // ── Black Myth: Wukong ─────────────────────────────────
+        "black-myth-wukong" | "blackmythwukong" => vec![
+            VC_REDIST_X64.clone(),
+            DIRECTX_JUN2010.clone(),
+            DOTNET_47.clone(),
+        ],
+
+        // ── Resident Evil: Requiem ────────────────────────────
+        "resident-evil-requiem" => vec![VC_REDIST_X64.clone()],
+
+        // ── Pragmata ─────────────────────────────────────────
+        "pragmata" => vec![VC_REDIST_X64.clone()],
+
+        // ── Among Us ─────────────────────────────────────────
+        // User corrected: needs 2019, not 2022
+        "among-us" => vec![VC_REDIST_X64_2019.clone(), VC_REDIST_X86_2019.clone()],
+
+        // ── Geometry Dash ────────────────────────────────────
+        "geometry-dash" => vec![VC_REDIST_X64.clone()],
+
+        // ── 007 First Light ──────────────────────────────────
+        "007-first-light" => vec![VC_REDIST_X64.clone()],
+
+        // ── EA Sports FC 26 ──────────────────────────────────
+        "ea-sports-fc-26" => vec![VC_REDIST_X64.clone(), EA_APP.clone()],
+
+        // ── Meccha Chameleon ─────────────────────────────────
+        "Meccha-Chameleon" => vec![
+            VC_REDIST_X64.clone(),
+            DIRECTX_JUN2010.clone(),
+        ],
+
+        // ── Microsoft Flight Simulator 2020 40th Anniversary ─
+        "microsoft-flight-simulator-2020-40th-anniversary-edition"
+        | "microsoft-flight-simulator-2020-40th-anniversary-edition" => {
+            vec![VC_REDIST_X64_2019.clone()]
+        }
+
+        // ── Octopath Traveler 0 ───────────────────────────────
+        "octopath-traveler-0" => vec![
+            VC_REDIST_X64.clone(),
+            DIRECTX_JUN2010.clone(),
+        ],
+
+        // ── Persona 5 Royal ───────────────────────────────────
+        "persona-5-royal" => vec![
+            DIRECTX_JUN2010.clone(),
+            VC_REDIST_X64_2019.clone(),
+        ],
+
+        // ── Persona 3 Reload ──────────────────────────────────
+        "persona-3-reload" => vec![
+            VC_REDIST_X64.clone(),
+            VC_REDIST_X64_2019.clone(), // dedup removes if 2022 already present
+            DIRECTX_JUN2010.clone(),
+        ],
+
+        // ── Stellar Blade ─────────────────────────────────────
+        "stellar-blade" => vec![
+            DIRECTX_JUN2010.clone(),
+            VC_REDIST_X64.clone(),
+        ],
+
+        // ── Tom Clancy's Splinter Cell Blacklist ──────────────
+        "tom-clancy-s-splinter-cell-blacklist" => vec![
+            VC_REDIST_X64_2010.clone(),
+            VC_REDIST_X86_2010.clone(),
+            DIRECTX_JUN2010.clone(),
+        ],
+
+        // ── Judgment ─────────────────────────────────────────
+        "judgment" => vec![VC_REDIST_X64_2019.clone()],
+
+        // ── Grand Theft Auto: San Andreas (2005) ─────────────
+        "grand-theft-auto-san-andreas-2005" => vec![DIRECTX_JUN2010.clone()],
+
+        // ── Heavy Rain ───────────────────────────────────────
+        "heavy-rain" => vec![
+            VC_REDIST_X64_2019.clone(),
+            DIRECTX_JUN2010.clone(),
+        ],
+
+        // ── Default: every game needs at minimum VC++ 2022 x64
+        DEFAULT_GAME_ID | _ => vec![VC_REDIST_X64.clone()],
+    };
+
+    dedup(specs)
+}
+
+// ══════════════════════════════════════════════════════════════
+//  Dependency detection
+// ══════════════════════════════════════════════════════════════
+
+fn dependency_installed(spec: &DependencySpec) -> bool {
+    #[cfg(target_os = "windows")]
+    {
+        match &spec.detect {
+            DependencyDetect::RegistryInstalled {
+                paths,
+                value,
+                require_flag,
+            } => paths.iter().any(|path| {
+                let output = hidden_command("reg.exe")
+                    .args(["query", path, "/v", value])
+                    .output()
+                    .ok()
+                    .filter(|output| output.status.success());
+
+                let Some(output) = output else {
+                    return false;
+                };
+
+                let text = String::from_utf8_lossy(&output.stdout).to_ascii_lowercase();
+
+                if *require_flag {
+                    text.contains("0x1") || text.split_whitespace().any(|part| part == "1")
+                } else {
+                    // Any non-empty value returned counts as installed.
+                    let lines: Vec<&str> = text.lines().collect();
+                    // Look for a line containing the value name; reg /v output format:
+                    //     "    ValueName    REG_DWORD    0x…"
+                    lines.iter().any(|line| {
+                        let lower = line.to_ascii_lowercase();
+                        let value_lower = value.to_ascii_lowercase();
+                        lower.contains(&value_lower)
+                            && (lower.contains("reg_dword")
+                                || lower.contains("reg_sz")
+                                || lower.contains("reg_expand_sz"))
+                    })
+                }
+            }),
+            DependencyDetect::PathExists { path } => Path::new(path).exists(),
+        }
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    {
+        let _ = spec;
+        true
+    }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  Installer download + run
+// ══════════════════════════════════════════════════════════════
 
 pub(super) fn ensure_game_dependencies(
     app: &AppHandle,
@@ -60,13 +377,13 @@ pub(super) fn ensure_game_dependencies(
 ) -> Result<Vec<String>, JobError> {
     let mut installed = Vec::new();
     for spec in dependency_specs_for_game(&source.game_id) {
-        if dependency_installed(spec) {
+        if dependency_installed(&spec) {
             continue;
         }
-        let installer = download_dependency_installer(app, spec)?;
+        let installer = download_dependency_installer(app, &spec)?;
         run_elevated(
             &installer,
-            &["/install", "/quiet", "/norestart"],
+            spec.installer_args.as_slice(),
             installer.parent(),
             true,
         )?;
@@ -77,7 +394,7 @@ pub(super) fn ensure_game_dependencies(
 
 fn download_dependency_installer(
     app: &AppHandle,
-    spec: DependencySpec,
+    spec: &DependencySpec,
 ) -> Result<PathBuf, JobError> {
     let redist_dir = app.path().app_data_dir()?.join("redist");
     fs::create_dir_all(&redist_dir)?;
@@ -107,39 +424,9 @@ fn download_dependency_installer(
     Ok(destination)
 }
 
-fn dependency_installed(spec: DependencySpec) -> bool {
-    #[cfg(target_os = "windows")]
-    {
-        let paths: &[&str] = match spec.arch {
-            DependencyArch::X64 => &[
-                r"HKLM\SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64",
-                r"HKLM\SOFTWARE\WOW6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x64",
-            ],
-            DependencyArch::X86 => &[
-                r"HKLM\SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x86",
-                r"HKLM\SOFTWARE\WOW6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x86",
-            ],
-        };
-        return paths.iter().any(|path| {
-            hidden_command("reg.exe")
-                .args(["query", path, "/v", "Installed"])
-                .output()
-                .ok()
-                .filter(|output| output.status.success())
-                .map(|output| {
-                    let text = String::from_utf8_lossy(&output.stdout).to_ascii_lowercase();
-                    text.contains("0x1") || text.split_whitespace().any(|part| part == "1")
-                })
-                .unwrap_or(false)
-        });
-    }
-
-    #[cfg(not(target_os = "windows"))]
-    {
-        let _ = spec;
-        true
-    }
-}
+// ══════════════════════════════════════════════════════════════
+//  Desktop shortcuts
+// ══════════════════════════════════════════════════════════════
 
 #[cfg(target_os = "windows")]
 fn desktop_directory(app: &AppHandle, fallback: &Path) -> PathBuf {
@@ -441,6 +728,10 @@ fn win_arg_quote(value: &str) -> String {
         format!("\"{}\"", value.replace('"', "\\\""))
     }
 }
+
+// ══════════════════════════════════════════════════════════════
+//  Process launching
+// ══════════════════════════════════════════════════════════════
 
 pub(super) fn launch_option_processes(
     game_id: &str,

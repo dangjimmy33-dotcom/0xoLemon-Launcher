@@ -274,8 +274,9 @@ export function HomeView({
         {heroGames.length > 1 && (
           <div className="hv-hero-ticks">
             {heroGames.map((g, i) => (
-              <button
+              <div
                 key={g.id}
+                role="button"
                 className={`hv-hero-tick${i === resolvedIdx ? ' active' : ''}`}
                 onClick={() => { setHeroIndex(i); setPaused(true) }}
                 aria-label={`Slide ${i + 1}`}
