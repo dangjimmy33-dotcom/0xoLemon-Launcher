@@ -1,5 +1,12 @@
 ﻿[
     {
+        "version":  "1.0.26",
+        "date":  "2026-07-06",
+        "changes":  [
+                        "Thêm chế độ offline"
+                    ]
+    },
+    {
         "version":  "1.0.25",
         "date":  "2026-07-06",
         "changes":  [
