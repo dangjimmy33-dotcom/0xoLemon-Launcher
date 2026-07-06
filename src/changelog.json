@@ -1,5 +1,12 @@
 ﻿[
     {
+        "version":  "1.0.27",
+        "date":  "2026-07-06",
+        "changes":  [
+                        "sửa 1 số bug nhỏ"
+                    ]
+    },
+    {
         "version":  "1.0.26",
         "date":  "2026-07-06",
         "changes":  [
