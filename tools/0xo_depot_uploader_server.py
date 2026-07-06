@@ -419,6 +419,7 @@ def build_direct_args(payload: Dict[str, Any]) -> List[str]:
     keep = bool_value(payload.get("keepLocalPacks", False))
     extend = bool_value(payload.get("extendExisting", True))
     encrypt_packs = bool_value(payload.get("encryptPacks", True))
+    upload_incrementally = bool_value(payload.get("uploadPacksIncrementally", False))
     pack_mb, pack_start, pack_prefix = pack_options(payload)
 
     args: List[str] = []
@@ -442,13 +443,19 @@ def build_direct_args(payload: Dict[str, Any]) -> List[str]:
     args += ["--out", out_path, "--game-id", game_id, "--pack-target-mb", str(pack_mb), "--pack-start-index", str(pack_start), "--pack-id-prefix", pack_prefix]
     if exe_name:
         args += ["--launch-executable", exe_name]
-    # Do not let depot_builder upload directly. Build local first, then upload incrementally per file.
-    if keep:
+    
+    # If incremental mode, pass --upload-repo to builder so it can upload each pack immediately
+    if upload_incrementally and repo_id:
+        args += ["--upload-repo", repo_id, "--repo-type", repo_type, "--repo-prefix", repo_prefix]
+    
+    if keep and not upload_incrementally:
         args += ["--keep-local-packs"]
     if not encrypt_packs:
         args += ["--no-encrypt-packs"]
     if bool_value(payload.get("deleteSourceAfterPack", False)):
         args += ["--delete-source-after-pack"]
+    if upload_incrementally:
+        args += ["--upload-packs-incrementally"]
     return args
 
 
@@ -556,6 +563,12 @@ def run_direct_builder(payload: Dict[str, Any], env: Dict[str, str]) -> int:
     code = run_process(args, cwd=src_tauri, env=env)
     if code != 0:
         return code
+
+    # If incremental mode was used, depot_builder already uploaded everything
+    upload_incrementally = bool_value(payload.get("uploadPacksIncrementally", False))
+    if upload_incrementally:
+        add_log("[HF] Incremental mode: packs đã được upload và xóa trong quá trình build. Không cần separate upload.", "success")
+        return 0
 
     if bool_value(payload.get("uploadToHf", True)):
         if not INCREMENTAL_UPLOAD_TOOL.exists():
