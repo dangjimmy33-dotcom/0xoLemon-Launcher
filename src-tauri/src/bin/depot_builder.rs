@@ -123,6 +123,7 @@ fn build_pair(args: &[String]) -> Result<(), String> {
         start_pack_index: pack_start_index(args),
         format_version: depot_format_version(args),
         delete_source_after_pack,
+        upload_packs_incrementally: false,
     })
     .map_err(|err| err.to_string())?;
 
@@ -172,6 +173,7 @@ fn build_version(args: &[String]) -> Result<(), String> {
         start_pack_index: pack_start_index(args),
         format_version: depot_format_version(args),
         delete_source_after_pack,
+        upload_packs_incrementally: false,
     })
     .map_err(|err| err.to_string())?;
 

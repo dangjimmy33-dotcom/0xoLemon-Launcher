@@ -79,6 +79,10 @@ pub struct BuildDepotInput {
     /// Delete source files immediately after they're packed to save disk space.
     /// Useful when building large depots with limited disk space.
     pub delete_source_after_pack: bool,
+    /// Upload and delete each pack immediately after creation (incremental mode).
+    /// Requires publish target. Saves disk space by keeping only 1 pack at a time.
+    /// Useful when building very large depots (50GB+) with limited disk space.
+    pub upload_packs_incrementally: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -259,6 +263,7 @@ pub fn build_depot(input: BuildDepotInput) -> Result<BuildReport, BuildError> {
                 input.format_version,
                 pack_target_size,
                 &pack_id_prefix,
+                input.upload_packs_incrementally,
             )?;
             total_size += file_entry.size;
             files.push(file_entry);
@@ -343,6 +348,7 @@ pub fn build_depot(input: BuildDepotInput) -> Result<BuildReport, BuildError> {
                 input.publish.as_ref(),
                 &mut pack_records,
                 input.encryption.enabled,
+                input.upload_packs_incrementally,
             )?;
         }
     }
@@ -388,6 +394,7 @@ fn build_file_entry(
     format_version: u32,
     pack_target_size: u64,
     pack_id_prefix: &str,
+    upload_incrementally: bool,
 ) -> Result<FileEntry, BuildError> {
     let metadata = fs::metadata(file_path)?;
     let source = File::open(file_path)?;
@@ -452,7 +459,7 @@ fn build_file_entry(
             {
                 if let Some(pack) = current_pack.take() {
                     if pack.size > 0 {
-                        finalize_pack(pack, output_dir, publish, pack_records, encryption.enabled)?;
+                        finalize_pack(pack, output_dir, publish, pack_records, encryption.enabled, upload_incrementally)?;
                     }
                 }
                 let pack = PackWriter::create(pack_dir, pack_id_prefix, *next_pack_index)?;
@@ -505,6 +512,7 @@ fn finalize_pack(
     publish: Option<&PublishTarget>,
     pack_records: &mut Vec<PackRecord>,
     expect_encrypted: bool,
+    upload_incrementally: bool,
 ) -> Result<(), BuildError> {
     let record = pack.finalize(output_dir)?;
     let local_path = output_dir.join(relative_to_path(&record.path));
@@ -518,7 +526,9 @@ fn finalize_pack(
 
     if let Some(publish) = publish {
         upload_owned_file(publish, &local_path, &record.path)?;
-        if publish.delete_local_packs {
+        // In incremental mode, ALWAYS delete pack after upload to save disk space
+        if upload_incrementally || publish.delete_local_packs {
+            eprintln!("[DISK] Deleting pack after upload: {}", record.path);
             fs::remove_file(&local_path)?;
         }
     }
