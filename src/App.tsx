@@ -2987,10 +2987,11 @@ export default function App() {
               onToggleBigPicture={async () => {
                 const entering = !isBigPictureMode
                 if (entering) {
-                  // Enter Big Picture: setFullscreen FIRST, then update state
+                  // Enter Big Picture: hide decorations + fullscreen
                   try {
                     const m = await import('@tauri-apps/api/window')
                     const win = m.getCurrentWindow()
+                    await win.setDecorations(false)
                     await win.setFullscreen(true)
                     setIsBigPictureMode(true)
                   } catch (error) {
@@ -2998,12 +2999,13 @@ export default function App() {
                     setIsBigPictureMode(true) // Fallback: show Big Picture even if fullscreen fails
                   }
                 } else {
-                  // Exit Big Picture: state first, fullscreen after
+                  // Exit Big Picture: restore decorations
                   setIsBigPictureMode(false)
                   try {
                     const m = await import('@tauri-apps/api/window')
                     const win = m.getCurrentWindow()
                     await win.setFullscreen(false)
+                    await win.setDecorations(true)
                   } catch (error) {
                     console.error('Failed to exit fullscreen:', error)
                   }
