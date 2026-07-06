@@ -89,9 +89,17 @@ fn build_pair(args: &[String]) -> Result<(), String> {
     let extend_existing = has_flag(&args, "--extend-existing");
     let launch_executable = take_arg(&args, "--launch-executable").ok();
     let delete_source_after_pack = has_flag(&args, "--delete-source-after-pack");
+    let upload_packs_incrementally = has_flag(&args, "--upload-packs-incrementally");
 
     if delete_source_after_pack {
         eprintln!("[DEPOT] WARNING: --delete-source-after-pack is enabled. Source files will be deleted as they are packed!");
+    }
+
+    if upload_packs_incrementally {
+        eprintln!("[DEPOT] INCREMENTAL MODE: Each pack will be uploaded and deleted immediately after creation to save disk space.");
+        if upload_repo.is_none() {
+            return Err("--upload-packs-incrementally requires --upload-repo to be set".to_string());
+        }
     }
 
     let report = build_depot(BuildDepotInput {
@@ -123,7 +131,7 @@ fn build_pair(args: &[String]) -> Result<(), String> {
         start_pack_index: pack_start_index(args),
         format_version: depot_format_version(args),
         delete_source_after_pack,
-        upload_packs_incrementally: false,
+        upload_packs_incrementally,
     })
     .map_err(|err| err.to_string())?;
 
@@ -146,9 +154,17 @@ fn build_version(args: &[String]) -> Result<(), String> {
     let extend_existing = has_flag(&args, "--extend-existing");
     let launch_executable = take_arg(&args, "--launch-executable").ok();
     let delete_source_after_pack = has_flag(&args, "--delete-source-after-pack");
+    let upload_packs_incrementally = has_flag(&args, "--upload-packs-incrementally");
 
     if delete_source_after_pack {
         eprintln!("[DEPOT] WARNING: --delete-source-after-pack is enabled. Source files will be deleted as they are packed!");
+    }
+
+    if upload_packs_incrementally {
+        eprintln!("[DEPOT] INCREMENTAL MODE: Each pack will be uploaded and deleted immediately after creation to save disk space.");
+        if upload_repo.is_none() {
+            return Err("--upload-packs-incrementally requires --upload-repo to be set".to_string());
+        }
     }
 
     let report = build_depot(BuildDepotInput {
@@ -173,7 +189,7 @@ fn build_version(args: &[String]) -> Result<(), String> {
         start_pack_index: pack_start_index(args),
         format_version: depot_format_version(args),
         delete_source_after_pack,
-        upload_packs_incrementally: false,
+        upload_packs_incrementally,
     })
     .map_err(|err| err.to_string())?;
 
