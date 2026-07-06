@@ -795,7 +795,6 @@ export function StoreLibraryView({
               {primaryIcon}
               <span>{actionLabel}</span>
             </button>
-            {(!isJobRunning && !isPlaying && selectedGameId) && <SteamIntegrationButton gameId={selectedGameId} gameTitle={detail.title} />}
             {installed && showVersionAction ? (
               <button className="update-control" type="button" onClick={onPrimaryAction} disabled={updateDisabled}>
                 <Download size={17} />
@@ -808,6 +807,7 @@ export function StoreLibraryView({
                 {t.library.uninstall}
               </button>
             ) : null}
+            {(!isJobRunning && !isPlaying && selectedGameId) && <SteamIntegrationButton gameId={selectedGameId} gameTitle={detail.title} />}
           </div>
         </div>
 
@@ -1297,7 +1297,7 @@ function SteamIntegrationButton({ gameId, gameTitle }: { gameId: string, gameTit
               style={{
                 display: 'flex', alignItems: 'center', gap: '6px', padding: '0 16px', height: '46px',
                 borderRadius: '5px', background: 'transparent', border: '1px solid #4ade80',
-                color: '#4ade80', fontWeight: 600, cursor: 'default'
+                color: '#4ade80', fontWeight: 600, cursor: 'default', whiteSpace: 'nowrap', flexShrink: 0
               }}
               disabled
             >
@@ -1308,7 +1308,7 @@ function SteamIntegrationButton({ gameId, gameTitle }: { gameId: string, gameTit
               style={{
                 display: 'flex', alignItems: 'center', gap: '6px', padding: '0 16px', height: '46px',
                 borderRadius: '5px', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(5px)',
-                border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontWeight: 600, cursor: 'pointer'
+                border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0
               }}
               onClick={handleRestart}
               disabled={loading}
@@ -1321,7 +1321,7 @@ function SteamIntegrationButton({ gameId, gameTitle }: { gameId: string, gameTit
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center', width: '46px', height: '46px',
                 borderRadius: '5px', background: 'rgba(255,0,0,0.1)', backdropFilter: 'blur(5px)',
-                border: '1px solid rgba(255,0,0,0.3)', color: '#ff4d4d', cursor: 'pointer'
+                border: '1px solid rgba(255,0,0,0.3)', color: '#ff4d4d', cursor: 'pointer', flexShrink: 0
               }}
               onClick={handleRemove}
               disabled={loading}
@@ -1336,7 +1336,7 @@ function SteamIntegrationButton({ gameId, gameTitle }: { gameId: string, gameTit
             style={{
               display: 'flex', alignItems: 'center', gap: '6px', padding: '0 16px', height: '46px',
               borderRadius: '5px', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(5px)',
-              border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontWeight: 600, cursor: 'pointer'
+              border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0
             }}
             onClick={handleAdd}
             disabled={loading}

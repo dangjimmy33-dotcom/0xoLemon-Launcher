@@ -2,7 +2,15 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "Main window permissions for the 007 First Light launcher.",
-  "windows": ["main"],
+  "windows": [
+    "main"
+  ],
+  "remote": {
+    "urls": [
+      "http://localhost:14201",
+      "http://localhost:14201/*"
+    ]
+  },
   "permissions": [
     "core:default",
     "core:window:allow-show",
@@ -22,6 +30,7 @@
     "core:window:allow-inner-size",
     "dialog:default",
     "notification:default",
-    "opener:default"
+    "opener:default",
+    "allow-all"
   ]
 }

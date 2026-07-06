@@ -12,19 +12,6 @@
   "app": {
     "windows": [
       {
-        "title": "0xoLemon",
-        "width": 600,
-        "height": 520,
-        "minWidth": 1120,
-        "minHeight": 720,
-        "center": true,
-        "resizable": true,
-        "fullscreen": false,
-        "visible": false,
-        "decorations": false,
-        "transparent": true
-      },
-      {
         "label": "overlay",
         "title": "Overlay",
         "url": "/overlay",

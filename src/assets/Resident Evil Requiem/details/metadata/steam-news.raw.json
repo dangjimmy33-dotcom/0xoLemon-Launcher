@@ -1,0 +1,76 @@
+﻿{
+    "appnews":  {
+                    "appid":  3764200,
+                    "newsitems":  [
+                                      {
+                                          "gid":  "1836506165558810",
+                                          "title":  "Ремейки Resident Evil: Code Veronica и Resident Evil Zero будут иметь связь с Resident Evil Requiem",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/Gamemag.ru/1836506165558810",
+                                          "is_external_url":  true,
+                                          "author":  "Павел Вескер",
+                                          "contents":  "\u003cimg src=\"https://gamemag.ru/images/cache/News/News199945/0ca1d14912-2_1390x600.jpg\" alt=\"\"\u003e\u003cp\u003eАнонсированный в рамках \u003cstrong\u003eSummer Game Fest 2026\u003c/strong\u003e \u003cstrong\u003e\u003ca href=\"https://gamemag.ru/news/199603/veronica-2027\"\u003eремейк Resident Evil: Code Veronica\u003c/a\u003e \u003c/strong\u003eи новая версия \u003cstrong\u003eResident Evil Zero\u003c/strong\u003e будут иметь некую сюжетную связь с \u003cstrong\u003eResident Evil Requiem\u003c/strong\u003e (\u003cstrong\u003e\u003ca href=\"https://gamemag.ru/reviews/resident-evil-requiem-ps5-review\"\u003eнаш обзор\u003c/a\u003e\u003c/strong\u003e). \u003cstrong\u003eCapcom\u003c/strong\u003e решила сблизить их между собой, так как они все разрабатавались в одно время. Соответствующими подробностями поделился инсайдер \u003cstrong\u003eDusk Golem\u003c/strong\u003e.\u003c/p\u003e",
+                                          "feedlabel":  "Gamemag.ru",
+                                          "date":  1782678780,
+                                          "feedname":  "Gamemag.ru",
+                                          "feed_type":  0,
+                                          "appid":  3764200
+                                      },
+                                      {
+                                          "gid":  "1836506165547879",
+                                          "title":  "Notice of Update Distribution",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1836506165547879",
+                                          "is_external_url":  true,
+                                          "author":  "capcomjapan_marketing",
+                                          "contents":  "We have released an update including the following modifications and fixes.\n\n・Fixed some minor issues.\n・Reduced the difficulty of Forever - Rank 1 and Forever - Rank 2 in the additional minigame, Leon Must Die Forever.\n・Enhanced some of the skills in the additional minigame, Leon Must Die Forever, to allow for a wider variety of enhancer combinations.\n - Greatly increased the probability that hand grenades won’t be consumed when using the “Explosives Specialist” skill.\n - Increased the percentage of attack power boosts for hand grenades and other throwable weapons when using the “Throwing+” skill.\n - Extended the duration of the “Strategist” skill and increased the percentage of attack power boosts.",
+                                          "feedlabel":  "Community Announcements",
+                                          "date":  1782363840,
+                                          "feedname":  "steam_community_announcements",
+                                          "feed_type":  1,
+                                          "appid":  3764200,
+                                          "tags":  [
+                                                       "patchnotes"
+                                                   ]
+                                      },
+                                      {
+                                          "gid":  "1835871199300355",
+                                          "title":  "Только командная работа: Президент Capcom рассказал, как компания создает сегодня новые игры, которые становятся хитами",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/Gamemag.ru/1835871199300355",
+                                          "is_external_url":  true,
+                                          "author":  "Семен Страндов",
+                                          "contents":  "\u003cimg src=\"https://gamemag.ru/images/cache/News/News199819/d3421a421e-2_1390x600.jpg\" alt=\"\"\u003e\u003cp\u003eСовременный подход \u003cstrong\u003eCapcom \u003c/strong\u003eк созданию новых игр отрицает диктатуру авторитета одного-единственного автора. \u003cu\u003eВместо этого внутри компании культивируются идеи командной работы — разные специалисты из разных отделов объединяют усилия для того, чтобы вместе принимать ключевые технические, дизайнерские и художественные решения\u003c/u\u003e. Об этом рассказал президент издательства \u003cstrong\u003eХарухиро Цудзимото\u003c/strong\u003e.\u003c/p\u003e",
+                                          "feedlabel":  "Gamemag.ru",
+                                          "date":  1781661600,
+                                          "feedname":  "Gamemag.ru",
+                                          "feed_type":  0,
+                                          "appid":  3357650
+                                      },
+                                      {
+                                          "gid":  "1834602721201770",
+                                          "title":  "Steam Global Top Sellers for week of 2 Jun — 9 June 2026",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/SteamDB/1834602721201770",
+                                          "is_external_url":  true,
+                                          "author":  "SteamDB",
+                                          "contents":  "\u003ca href=\"https://steamdb.info/topsellers/2026W24/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003e\u003cimg src=\"https://steamdb.info/topsellers/2026W24.png\"\u003e\u003c/a\u003e\u003col\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/2483190/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eForza Horizon 6\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/1297900/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eGothic 1 Remake\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/2694490/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003ePath of Exile 2\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/3768760/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003e007 First Light\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/1675200/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eSteam Deck\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/1118520/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eParalives\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/1962700/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eSubnautica 2\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/2050650/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eResident Evil 4\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/3764200/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eResident Evil Requiem\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/3405690/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eEA SPORTS FC™ 26\u003c/a\u003e\u003c/li\u003e\u003c/ol\u003e\u003cbr\u003e\u003ci\u003e* excluding free to play games\u003c/i\u003e\u003cbr\u003e\u003ca href=\"https://steamdb.info/topsellers/2026W24/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eView top 100 on SteamDB\u003c/a\u003e",
+                                          "feedlabel":  "SteamDB",
+                                          "date":  1780995600,
+                                          "feedname":  "SteamDB",
+                                          "feed_type":  0,
+                                          "appid":  1118520
+                                      },
+                                      {
+                                          "gid":  "1834602721197784",
+                                          "title":  "Resident Evil Veronica Store Page now open!",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1834602721197784",
+                                          "is_external_url":  true,
+                                          "author":  "capcomjapan_marketing",
+                                          "contents":  "[previewyoutube=uxUMXniTfjM;full][/previewyoutube]\nSurvive the deranged terror of Resident Evil Veronica, recently announced for release in 2027. Visit the store page to wishlist and follow for the latest news and updates!\n\nhttps://store.steampowered.com/app/4824610/BIOHAZARD_REVeronica/",
+                                          "feedlabel":  "Community Announcements",
+                                          "date":  1780896963,
+                                          "feedname":  "steam_community_announcements",
+                                          "feed_type":  1,
+                                          "appid":  3764200
+                                      }
+                                  ],
+                    "count":  112
+                }
+}

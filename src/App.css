@@ -809,8 +809,11 @@
   bottom: 18px;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
-  width: min(580px, calc(100% - 40px));
+  width: fit-content;
+  min-width: min(580px, calc(100% - 40px));
+  max-width: calc(100% - 40px);
   padding: 10px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;

@@ -1407,3 +1407,34 @@ pub fn get_steam_game_install_dir(appid: u32) -> Option<String> {
     }
     None
 }
+
+/// Check Windows Defender real-time protection status via registry.
+/// Returns: true = realtime protection is ON (bad for lua-game mode)
+///          false = realtime protection is OFF (good)
+///          None = could not determine (Defender may not be installed)
+/// Uses registry_dword which runs reg.exe with CREATE_NO_WINDOW — no console window shown.
+#[tauri::command]
+pub fn check_defender_realtime_status() -> Option<bool> {
+    // DisableRealtimeMonitoring: 0 = protection ON, 1 = protection OFF
+    // Key under HKLM (policy/actual state)
+    let disable = registry_dword(
+        r"HKLM\SOFTWARE\Microsoft\Windows Defender\Real-Time Protection",
+        "DisableRealtimeMonitoring",
+    );
+    match disable {
+        Some(0) => Some(true),  // monitoring is NOT disabled → protection is ON
+        Some(_) => Some(false), // monitoring is disabled → protection is OFF
+        None => {
+            // Try the WinDefend service policy key as fallback
+            let disable2 = registry_dword(
+                r"HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection",
+                "DisableRealtimeMonitoring",
+            );
+            match disable2 {
+                Some(0) => Some(true),
+                Some(_) => Some(false),
+                None => None, // Can't determine — possibly Defender not present or no access
+            }
+        }
+    }
+}

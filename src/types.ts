@@ -362,6 +362,7 @@ export type DiscordAuthState =
   | 'accountTooNew'
   | 'expired'
   | 'error'
+  | 'networkError'
 
 export type DiscordAuthUser = {
   id: string

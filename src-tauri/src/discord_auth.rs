@@ -107,6 +107,7 @@ struct GuildMemberResponse {
 #[derive(Debug)]
 enum ApiError {
     Unauthorized,
+    NetworkError(String),
     Other(String),
 }
 
@@ -204,6 +205,14 @@ pub fn get_status(app: &AppHandle) -> DiscordAuthStatus {
                 "expired",
                 true,
                 "Your Discord session expired. Sign in again.",
+            )
+        }
+        Err(ApiError::NetworkError(_)) => {
+            SESSION_AUTHORIZED.store(false, Ordering::Release);
+            status(
+                "networkError",
+                true,
+                "No internet connection. Discord access cannot be verified.",
             )
         }
         Err(ApiError::Other(error)) => {
@@ -334,6 +343,7 @@ pub fn login(app: &AppHandle) -> Result<DiscordAuthStatus, String> {
         token_result.ok_or_else(|| "Discord sign-in timed out.".to_string())?;
     let validation = validate_token(&token).map_err(|error| match error {
         ApiError::Unauthorized => "Discord rejected the new access token.".to_string(),
+        ApiError::NetworkError(message) => format!("Network error: {message}"),
         ApiError::Other(message) => format!("Discord verification failed: {message}"),
     })?;
     write_stored_auth(app, &client_id, &token, expires_in)?;
@@ -359,7 +369,11 @@ pub fn logout(app: &AppHandle) -> Result<DiscordAuthStatus, String> {
 fn validate_token(token: &str) -> Result<DiscordAuthStatus, ApiError> {
     let client = http_client().map_err(ApiError::Other)?;
     let user =
-        discord_get::<DiscordUserResponse>(&client, token, &format!("{DISCORD_API}/users/@me"))?;
+        match discord_get::<DiscordUserResponse>(&client, token, &format!("{DISCORD_API}/users/@me")) {
+            Ok(u) => u,
+            Err(ApiError::NetworkError(_)) => return Err(ApiError::NetworkError("offline".to_string())),
+            Err(e) => return Err(e),
+        };
     let guild = find_required_guild(&client, token)?;
     let now_ms = unix_seconds().saturating_mul(1000);
     let created_ms = snowflake_timestamp_ms(&user.id).ok_or_else(|| {
@@ -458,11 +472,10 @@ fn discord_get<T: for<'de> Deserialize<'de>>(
     token: &str,
     url: &str,
 ) -> Result<T, ApiError> {
-    let response = client
-        .get(url)
-        .bearer_auth(token)
-        .send()
-        .map_err(|error| ApiError::Other(error.to_string()))?;
+    let response = match client.get(url).bearer_auth(token).send() {
+        Ok(res) => res,
+        Err(e) => return Err(ApiError::NetworkError(e.to_string())),
+    };
     checked_discord_json(response)
 }
 

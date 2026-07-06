@@ -24,6 +24,7 @@ pub mod translations;
 pub mod updater;
 pub mod overlay_injector;
 pub mod steamless;
+pub mod offline_cache;
 
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -732,14 +733,19 @@ fn clear_launcher_config(app: tauri::AppHandle) -> Result<(), String> {
 }
 
 pub fn run() {
-    tauri::Builder::default()
-        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+    #[allow(unused_variables)]
+    let port: u16 = 14201;
+
+    let mut builder = tauri::Builder::default();
+
+    builder = builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             if let Some(window) = app.get_webview_window("main") {
                 let _ = window.show();
                 let _ = window.unminimize();
                 let _ = window.set_focus();
             }
         }))
+        .plugin(tauri_plugin_localhost::Builder::new(14201).build())
         .manage(LauncherState {
             job_control: Arc::new(JobControl::default()),
         })
@@ -764,6 +770,8 @@ pub fn run() {
             chat::download_chat_media_to_disk,
             chat::sync_to_huggingface,
             chat::read_file_base64,
+            offline_cache::cache_remote_asset,
+            offline_cache::get_cached_asset,
             get_disk_free_space,
             list_system_drives,
             check_launcher_update,
@@ -833,6 +841,7 @@ pub fn run() {
             enable_lua_game_mode,
             disable_lua_game_mode,
             steam_integration::get_steam_game_install_dir,
+            steam_integration::check_defender_realtime_status,
             exit_app,
             clear_launcher_config,
             cloud_redirect::cloud_redirect_get_status,
@@ -859,8 +868,26 @@ pub fn run() {
             steamless::steamless_apply,
             steamless::steamless_restore,
             steamless::steamless_status,
-        ])
-        .setup(|app| {
+        ]);
+
+    builder.setup(move |app| {
+            let main_url = {
+                let url: tauri::Url = "http://localhost:14201".parse().unwrap();
+                tauri::WebviewUrl::External(url)
+            };
+
+            tauri::WebviewWindowBuilder::new(app, "main", main_url)
+                .title("0xoLemon")
+                .inner_size(1200.0, 800.0)
+                .min_inner_size(1120.0, 720.0)
+                .center()
+                .resizable(true)
+                .fullscreen(false)
+                .visible(false)
+                .decorations(false)
+                .transparent(true)
+                .build()?;
+
             // Check and update DLLs on startup if Lua-Game Mode is enabled
             std::thread::spawn(|| {
                 if let Err(e) = steam_integration::check_and_update_dlls() {

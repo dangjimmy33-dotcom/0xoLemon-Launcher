@@ -118,6 +118,7 @@ import { useRealtimeAssets } from './hooks/useRealtimeAssets'
 import { useFirestoreDetail } from './hooks/useFirestoreDetail'
 import { useScrollReveal } from './hooks/useScrollReveal'
 import { GlobalChatSync } from './components/GlobalChatSync'
+import { NoInternetView } from './components/NoInternetView'
 
 export default function App() {
   useEffect(() => {
@@ -150,6 +151,8 @@ export default function App() {
   const [preferences, setPreferences] = useState<LauncherPreferences>(initialLauncherPreferences)
   const [launcherSettings, setLauncherSettings] = useState<LauncherSettings>(defaultLauncherSettings)
   const [activeTab, setActiveTab] = useState<TabId>(initialLauncherPreferences.startupPage)
+  const [isOnline, setIsOnline] = useState(navigator.onLine)
+  const [offlineModeEnabled, setOfflineModeEnabled] = useState(false)
   const [selectedVersion, setSelectedVersion] = useState('')
   const [showInstallOptions, setShowInstallOptions] = useState(false)
   const [isStartingDownload, setIsStartingDownload] = useState(false)
@@ -760,6 +763,21 @@ export default function App() {
     window.setTimeout(async () => {
       // If assetId is already a remote URL (e.g. from assets_override), use it directly
       if (assetId.startsWith('http://') || assetId.startsWith('https://')) {
+        // When offline: try reading from offline_cache first
+        if (!navigator.onLine) {
+          try {
+            const blob = await invoke<AssetBlob>('get_cached_asset', { gameId: game.id, assetId })
+            const url = `data:${blob.mimeType};base64,${blob.dataBase64}`
+            setAssetUrls((current) => {
+              if (current[assetId]) return current
+              return { ...current, [assetId]: url }
+            })
+            return
+          } catch {
+            // Not cached - no image available offline
+            return
+          }
+        }
         setAssetUrls((current) => {
           if (current[assetId]) return current
           return { ...current, [assetId]: assetId }
@@ -839,6 +857,32 @@ export default function App() {
       queueMicrotask(() => void refreshSteamEnvironment())
     }
   }, [activeTab, refreshSteamEnvironment])
+
+  // Cache images for existing installed games for offline use
+  useEffect(() => {
+    if (!isTauriRuntime() || !isOnline) return
+    const installedGameIds = Object.keys(installStates).filter((id) => installStates[id]?.installed)
+    if (installedGameIds.length === 0) return
+
+    const cacheTimeout = setTimeout(() => {
+      for (const gameId of installedGameIds) {
+        const game = catalogRef.current.games.find(g => g.id === gameId)
+        if (game) {
+          const assetIdsToCache = [
+            game.gridAssetId,
+            game.heroAssetId,
+            game.logoAssetId,
+            game.iconAssetId,
+          ].filter((id): id is string => Boolean(id) && (id.startsWith('http://') || id.startsWith('https://')))
+          for (const assetId of assetIdsToCache) {
+            invoke('cache_remote_asset', { url: assetId, gameId, assetId }).catch(() => undefined)
+          }
+        }
+      }
+    }, 5000)
+
+    return () => clearTimeout(cacheTimeout)
+  }, [installStates, isOnline])
 
   useEffect(() => {
     if (!isTauriRuntime()) return
@@ -1315,6 +1359,21 @@ export default function App() {
         window.setTimeout(() => {
           void refreshInstallState(nextJob.gameId, nextJob.installPath).catch(() => undefined)
         }, 350)
+        // Auto-cache the 4 key image assets for offline use (only remote URLs)
+        window.setTimeout(() => {
+          const installedGame = catalogRef.current.games.find((g) => g.id === nextJob.gameId)
+          if (installedGame && isTauriRuntime()) {
+            const assetIdsToCache = [
+              installedGame.gridAssetId,
+              installedGame.heroAssetId,
+              installedGame.logoAssetId,
+              installedGame.iconAssetId,
+            ].filter((id): id is string => Boolean(id) && (id.startsWith('http://') || id.startsWith('https://')))
+            for (const assetId of assetIdsToCache) {
+              invoke('cache_remote_asset', { url: assetId, gameId: nextJob.gameId, assetId }).catch(() => undefined)
+            }
+          }
+        }, 2000)
         setSnapshot((current) => ({
           ...current,
           currentVersion: nextJob.toVersion,
@@ -1417,10 +1476,15 @@ export default function App() {
     }
 
     const handleOnline = () => {
+      setIsOnline(true)
+      setOfflineModeEnabled(false)
       void resumeInterruptedJob()
+      // Re-check Discord auth when network comes back
+      void refreshDiscordAccess(true)
     }
 
     const handleOffline = () => {
+      setIsOnline(false)
       if (canAutoResume(latestJobRef.current)) {
         setScanStatus('Network lost; launcher will retry when the connection is back.')
       }
@@ -2909,7 +2973,10 @@ export default function App() {
             ) : null}
 
             <div key={activeTab} className={reducedMotion ? undefined : 'tab-enter'}>
-              {activeTab === 'Home' ? (
+              {/* Offline gate: tabs requiring internet show NoInternetView when offline */}
+              {!isOnline && !['Library', 'Settings'].includes(activeTab) ? (
+                <NoInternetView tabName={activeTab === 'Home' ? 'Home' : activeTab === 'Store' ? 'Store' : activeTab === "What's New!" ? "What's New" : activeTab === 'Downloads' ? 'Downloads' : activeTab === 'Updates' ? 'Updates' : activeTab === 'CloudRedirect' ? 'CloudRedirect' : activeTab === 'Translations' ? 'Translations' : undefined} />
+              ) : activeTab === 'Home' ? (
                 <HomeView
                   catalog={catalog}
                   installStates={installStates}
@@ -3299,12 +3366,13 @@ export default function App() {
         {/* Gate hidden until intro exit animation starts (introExiting=true at 2400ms) */}
         <div style={!introExiting ? { visibility: 'hidden', pointerEvents: 'none' } : undefined}>
           <DiscordAccessGate
-            status={discordAuth}
+            status={offlineModeEnabled ? { ...discordAuth, state: 'authorized' } : discordAuth}
             busy={discordAuthBusy}
             onLogin={() => void loginDiscord()}
             onRefresh={() => void refreshDiscordAccess(true)}
             onJoinServer={() => void openUrl(discordAuth.guildInvite)}
             onLogout={() => void executeLogoutDiscord()}
+            onEnterOfflineMode={() => setOfflineModeEnabled(true)}
           />
         </div>
         {discordAuth.state === 'authorized' && discordAuth.user ? (

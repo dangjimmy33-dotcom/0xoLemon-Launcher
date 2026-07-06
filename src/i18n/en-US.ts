@@ -167,6 +167,9 @@ export const enUS = {
     luaGameModeInstallError: 'Failed to install Steam hooks',
     luaGameModeUninstallSuccess: 'Steam hooks removed successfully',
     luaGameModeUninstallError: 'Failed to remove Steam hooks',
+    defenderRealtimeOn: '⚠️ Windows Defender real-time protection is ON. This may interfere with Lua-Game Mode. It is recommended to turn it off.',
+    defenderRealtimeOff: '✅ Windows Defender real-time protection is OFF. Good to go!',
+    defenderCheckFailed: 'Unable to check Windows Defender status.',
     cloudRedirect: 'CloudRedirect',
     cloudRedirectDesc: 'Cloud saves for lua games',
     cloudRedirectProvider: 'Cloud Provider',
@@ -287,4 +290,10 @@ export const enUS = {
     aboutVersion: 'Version {version} · Multi-game content, install, update and repair client',
     change: 'Change',
   },
+  offline: {
+    title: 'Offline mode',
+    description: 'You are currently offline. Network dependent features are disabled.',
+    action: 'Settings',
+    connectToNetwork: 'Connect to a network to access all features'
+  }
 } as const

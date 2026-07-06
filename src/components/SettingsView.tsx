@@ -119,6 +119,9 @@ export function LuaGameModeToggle({ steamEnvironment }: { steamEnvironment: Stea
   const [enabled, setEnabled] = useState(false)
   const [loading, setLoading] = useState(false)
   const [showEnableConfirm, setShowEnableConfirm] = useState(false)
+  // null = unknown/checking, true = defender ON (bad), false = defender OFF (good)
+  const [defenderOn, setDefenderOn] = useState<boolean | null>(null)
+  const [defenderChecked, setDefenderChecked] = useState(false)
 
   useEffect(() => {
     checkStatus()
@@ -128,9 +131,23 @@ export function LuaGameModeToggle({ steamEnvironment }: { steamEnvironment: Stea
     try {
       const isEnabled = await invoke<boolean>('is_lua_game_mode_enabled')
       setEnabled(isEnabled)
+      if (isEnabled) {
+        checkDefender()
+      }
     } catch (e) {
       console.error('Failed to check lua-game mode status', e)
     }
+  }
+
+  const checkDefender = async () => {
+    setDefenderChecked(false)
+    try {
+      const status = await invoke<boolean | null>('check_defender_realtime_status')
+      setDefenderOn(status ?? null)
+    } catch {
+      setDefenderOn(null)
+    }
+    setDefenderChecked(true)
   }
 
   const showToast = (title: string, msg: string, severity: 'success' | 'error' | 'info' | 'warning' = 'info') => {
@@ -164,6 +181,7 @@ export function LuaGameModeToggle({ steamEnvironment }: { steamEnvironment: Stea
       await invoke('enable_lua_game_mode')
       setEnabled(true)
       showToast(t.settings.luaGameMode, t.settings.luaGameModeInstallSuccess, 'success')
+      checkDefender()
     } catch (e) {
       console.error(e)
       showToast(t.settings.luaGameMode, t.settings.luaGameModeInstallError + ': ' + String(e), 'error')
@@ -177,6 +195,8 @@ export function LuaGameModeToggle({ steamEnvironment }: { steamEnvironment: Stea
       showToast(t.settings.luaGameMode, t.settings.luaGameModeUninstalling, 'info')
       await invoke('disable_lua_game_mode')
       setEnabled(false)
+      setDefenderOn(null)
+      setDefenderChecked(false)
       showToast(t.settings.luaGameMode, t.settings.luaGameModeUninstallSuccess, 'success')
     } catch (e) {
       const errorMsg = String(e)
@@ -240,6 +260,32 @@ export function LuaGameModeToggle({ steamEnvironment }: { steamEnvironment: Stea
               {t.settings.luaGameModeWarning}
             </span>
           </div>
+
+          {/* Windows Defender status — only show when enabled */}
+          {enabled && defenderChecked && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '8px',
+              marginTop: '8px',
+              padding: '8px 12px',
+              background: defenderOn === true
+                ? 'rgba(220,53,69,0.12)'
+                : defenderOn === false
+                  ? 'rgba(40,167,69,0.12)'
+                  : 'rgba(108,117,125,0.12)',
+              border: `1px solid ${defenderOn === true ? 'rgba(220,53,69,0.4)' : defenderOn === false ? 'rgba(40,167,69,0.4)' : 'rgba(108,117,125,0.3)'}`,
+              borderRadius: '6px',
+            }}>
+              <span style={{ fontSize: '13px', lineHeight: '1.5', color: defenderOn === true ? '#ff6b6b' : defenderOn === false ? '#51cf66' : '#aaa' }}>
+                {defenderOn === true
+                  ? t.settings.defenderRealtimeOn
+                  : defenderOn === false
+                    ? t.settings.defenderRealtimeOff
+                    : t.settings.defenderCheckFailed}
+              </span>
+            </div>
+          )}
         </div>
       </div>
 

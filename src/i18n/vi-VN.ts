@@ -168,6 +168,9 @@ export const viVN = {
     luaGameModeInstallError: 'Không thể cài đặt Steam hooks',
     luaGameModeUninstallSuccess: 'Đã gỡ Steam hooks thành công',
     luaGameModeUninstallError: 'Không thể gỡ Steam hooks',
+    defenderRealtimeOn: '⚠️ Windows Defender đang bật bảo vệ thời gian thực. Điều này có thể gây xung đột với Lua-Game Mode. Nên tắt đi để đảm bảo hoạt động ổn định.',
+    defenderRealtimeOff: '✅ Windows Defender đã tắt bảo vệ thời gian thực. Hoàn toàn ổn!',
+    defenderCheckFailed: 'Không thể kiểm tra trạng thái Windows Defender.',
     cloudRedirect: 'CloudRedirect',
     cloudRedirectDesc: 'Lưu trữ đám mây cho game lua',
     cloudRedirectProvider: 'Nhà cung cấp đám mây',
@@ -288,4 +291,10 @@ export const viVN = {
     aboutVersion: 'Phiên bản {version} · Client cài đặt, cập nhật và sửa chữa đa game',
     change: 'Thay đổi',
   },
+  offline: {
+    title: 'Chế độ ngoại tuyến',
+    description: 'Bạn hiện đang ngoại tuyến. Các tính năng phụ thuộc mạng đã bị vô hiệu hoá.',
+    action: 'Cài đặt',
+    connectToNetwork: 'Kết nối mạng để truy cập tất cả tính năng'
+  }
 } as const
