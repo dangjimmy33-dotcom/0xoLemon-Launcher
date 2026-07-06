@@ -431,6 +431,8 @@ def build_direct_args(payload: Dict[str, Any]) -> List[str]:
             "--new-input", game_dir,
             "--new-version", final_version(payload),
         ]
+        if extend:
+            args += ["--extend-existing"]
     else:
         args += [
             "build-version",
