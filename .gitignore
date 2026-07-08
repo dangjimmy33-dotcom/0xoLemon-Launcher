@@ -25,6 +25,10 @@ src/src.zip
 src-tauri/src-tauri.zip
 tools/tools.zip
 steam_api_utf8.json
+*.rar
+*.zip
+*_backup_*/
+native/steam_hook_backup_*/
 
 # Secrets — never commit tokens (keep local only)
 src-tauri/huggingface-repos.json
