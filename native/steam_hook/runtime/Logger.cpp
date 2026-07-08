@@ -51,7 +51,7 @@ namespace Logger {
 
         try {
             auto dir = ResolveDllDir(selfModule);
-            auto logDir = (dir / "0xocore").string();
+            auto logDir = (dir / "lumacore").string();
             std::filesystem::create_directories(logDir);
             Main = MakeLogger(logDir, "main");
             Main->set_level(spdlog::level::trace);  // early boot: log everything

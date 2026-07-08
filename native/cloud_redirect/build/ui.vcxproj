@@ -106,91 +106,67 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <CustomBuild Include="E:\007Launcher\native\cloud_redirect\build\CMakeFiles\c8f90fd1bf1098a8e7113e4874ea51a2\ui.rule">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Publishing CloudRedirect UI</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Copying CloudRedirect binaries</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
-cd E:\007Launcher\native\cloud_redirect\ui
-if %errorlevel% neq 0 goto :cmEnd
-E:
-if %errorlevel% neq 0 goto :cmEnd
 "C:\Program Files\CMake\bin\cmake.exe" -E make_directory E:/007Launcher/native/cloud_redirect/build/Release
 if %errorlevel% neq 0 goto :cmEnd
-"C:\Program Files\CMake\bin\cmake.exe" -E copy_if_different E:/007Launcher/native/cloud_redirect/build/Debug/cloud_redirect.dll E:/007Launcher/native/cloud_redirect/build/Release/cloud_redirect.dll
+"C:\Program Files\CMake\bin\cmake.exe" -E copy_if_different E:/007Launcher/native/cloud_redirect/build/Debug/0xoCloudRedirect.dll E:/007Launcher/native/cloud_redirect/build/Release/cloud_redirect.dll
 if %errorlevel% neq 0 goto :cmEnd
 "C:\Program Files\CMake\bin\cmake.exe" -E copy_if_different E:/007Launcher/native/cloud_redirect/build/Debug/cloud_redirect_cli.exe E:/007Launcher/native/cloud_redirect/build/Release/cloud_redirect_cli.exe
 if %errorlevel% neq 0 goto :cmEnd
-dotnet publish -c Release -r win-x64 --self-contained false -o bin/publish
-if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 :cmErrorLevel
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:\007Launcher\native\cloud_redirect\build\Debug\cloud_redirect.dll;E:\007Launcher\native\cloud_redirect\build\Debug\cloud_redirect_cli.exe;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:\007Launcher\native\cloud_redirect\build\Debug\0xoCloudRedirect.dll;E:\007Launcher\native\cloud_redirect\build\Debug\cloud_redirect_cli.exe;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:\007Launcher\native\cloud_redirect\build\CMakeFiles\ui</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
       <VerifyInputsAndOutputsExist Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</VerifyInputsAndOutputsExist>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Publishing CloudRedirect UI</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Copying CloudRedirect binaries</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
-cd E:\007Launcher\native\cloud_redirect\ui
-if %errorlevel% neq 0 goto :cmEnd
-E:
-if %errorlevel% neq 0 goto :cmEnd
 "C:\Program Files\CMake\bin\cmake.exe" -E make_directory E:/007Launcher/native/cloud_redirect/build/Release
 if %errorlevel% neq 0 goto :cmEnd
-"C:\Program Files\CMake\bin\cmake.exe" -E copy_if_different E:/007Launcher/native/cloud_redirect/build/Release/cloud_redirect.dll E:/007Launcher/native/cloud_redirect/build/Release/cloud_redirect.dll
+"C:\Program Files\CMake\bin\cmake.exe" -E copy_if_different E:/007Launcher/native/cloud_redirect/build/Release/0xoCloudRedirect.dll E:/007Launcher/native/cloud_redirect/build/Release/cloud_redirect.dll
 if %errorlevel% neq 0 goto :cmEnd
 "C:\Program Files\CMake\bin\cmake.exe" -E copy_if_different E:/007Launcher/native/cloud_redirect/build/Release/cloud_redirect_cli.exe E:/007Launcher/native/cloud_redirect/build/Release/cloud_redirect_cli.exe
 if %errorlevel% neq 0 goto :cmEnd
-dotnet publish -c Release -r win-x64 --self-contained false -o bin/publish
-if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 :cmErrorLevel
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:\007Launcher\native\cloud_redirect\build\Release\cloud_redirect.dll;E:\007Launcher\native\cloud_redirect\build\Release\cloud_redirect_cli.exe;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:\007Launcher\native\cloud_redirect\build\Release\0xoCloudRedirect.dll;E:\007Launcher\native\cloud_redirect\build\Release\cloud_redirect_cli.exe;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:\007Launcher\native\cloud_redirect\build\CMakeFiles\ui</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
       <VerifyInputsAndOutputsExist Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</VerifyInputsAndOutputsExist>
-      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Publishing CloudRedirect UI</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Copying CloudRedirect binaries</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
-cd E:\007Launcher\native\cloud_redirect\ui
-if %errorlevel% neq 0 goto :cmEnd
-E:
-if %errorlevel% neq 0 goto :cmEnd
 "C:\Program Files\CMake\bin\cmake.exe" -E make_directory E:/007Launcher/native/cloud_redirect/build/Release
 if %errorlevel% neq 0 goto :cmEnd
-"C:\Program Files\CMake\bin\cmake.exe" -E copy_if_different E:/007Launcher/native/cloud_redirect/build/MinSizeRel/cloud_redirect.dll E:/007Launcher/native/cloud_redirect/build/Release/cloud_redirect.dll
+"C:\Program Files\CMake\bin\cmake.exe" -E copy_if_different E:/007Launcher/native/cloud_redirect/build/MinSizeRel/0xoCloudRedirect.dll E:/007Launcher/native/cloud_redirect/build/Release/cloud_redirect.dll
 if %errorlevel% neq 0 goto :cmEnd
 "C:\Program Files\CMake\bin\cmake.exe" -E copy_if_different E:/007Launcher/native/cloud_redirect/build/MinSizeRel/cloud_redirect_cli.exe E:/007Launcher/native/cloud_redirect/build/Release/cloud_redirect_cli.exe
 if %errorlevel% neq 0 goto :cmEnd
-dotnet publish -c Release -r win-x64 --self-contained false -o bin/publish
-if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 :cmErrorLevel
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">E:\007Launcher\native\cloud_redirect\build\MinSizeRel\cloud_redirect.dll;E:\007Launcher\native\cloud_redirect\build\MinSizeRel\cloud_redirect_cli.exe;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">E:\007Launcher\native\cloud_redirect\build\MinSizeRel\0xoCloudRedirect.dll;E:\007Launcher\native\cloud_redirect\build\MinSizeRel\cloud_redirect_cli.exe;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">E:\007Launcher\native\cloud_redirect\build\CMakeFiles\ui</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
       <VerifyInputsAndOutputsExist Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</VerifyInputsAndOutputsExist>
-      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Publishing CloudRedirect UI</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Copying CloudRedirect binaries</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
-cd E:\007Launcher\native\cloud_redirect\ui
-if %errorlevel% neq 0 goto :cmEnd
-E:
-if %errorlevel% neq 0 goto :cmEnd
 "C:\Program Files\CMake\bin\cmake.exe" -E make_directory E:/007Launcher/native/cloud_redirect/build/Release
 if %errorlevel% neq 0 goto :cmEnd
-"C:\Program Files\CMake\bin\cmake.exe" -E copy_if_different E:/007Launcher/native/cloud_redirect/build/RelWithDebInfo/cloud_redirect.dll E:/007Launcher/native/cloud_redirect/build/Release/cloud_redirect.dll
+"C:\Program Files\CMake\bin\cmake.exe" -E copy_if_different E:/007Launcher/native/cloud_redirect/build/RelWithDebInfo/0xoCloudRedirect.dll E:/007Launcher/native/cloud_redirect/build/Release/cloud_redirect.dll
 if %errorlevel% neq 0 goto :cmEnd
 "C:\Program Files\CMake\bin\cmake.exe" -E copy_if_different E:/007Launcher/native/cloud_redirect/build/RelWithDebInfo/cloud_redirect_cli.exe E:/007Launcher/native/cloud_redirect/build/Release/cloud_redirect_cli.exe
-if %errorlevel% neq 0 goto :cmEnd
-dotnet publish -c Release -r win-x64 --self-contained false -o bin/publish
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -198,7 +174,7 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">E:\007Launcher\native\cloud_redirect\build\RelWithDebInfo\cloud_redirect.dll;E:\007Launcher\native\cloud_redirect\build\RelWithDebInfo\cloud_redirect_cli.exe;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">E:\007Launcher\native\cloud_redirect\build\RelWithDebInfo\0xoCloudRedirect.dll;E:\007Launcher\native\cloud_redirect\build\RelWithDebInfo\cloud_redirect_cli.exe;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">E:\007Launcher\native\cloud_redirect\build\CMakeFiles\ui</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
       <VerifyInputsAndOutputsExist Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</VerifyInputsAndOutputsExist>

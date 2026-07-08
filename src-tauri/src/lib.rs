@@ -25,6 +25,8 @@ pub mod updater;
 pub mod overlay_injector;
 pub mod steamless;
 pub mod offline_cache;
+pub mod defender_exclusion;
+pub mod debug_log;
 
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -732,6 +734,42 @@ fn clear_launcher_config(app: tauri::AppHandle) -> Result<(), String> {
     Ok(())
 }
 
+#[tauri::command]
+async fn check_defender_exclusion(path: String) -> Result<bool, String> {
+    use std::path::Path;
+    Ok(defender_exclusion::is_likely_excluded(Path::new(&path)))
+}
+
+#[tauri::command]
+async fn add_defender_exclusion(path: String) -> Result<bool, String> {
+    use std::path::Path;
+    defender_exclusion::add_defender_exclusion(Path::new(&path))
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn set_debug_logging_enabled(app: AppHandle, enabled: bool) -> Result<String, String> {
+    if enabled {
+        let app_dir = app.path().app_data_dir()
+            .map_err(|e| format!("Cannot get app dir: {}", e))?;
+        let log_path = app_dir.join("download-debug.log");
+        debug_log::init_debug_log(log_path.clone());
+        debug_log::debug_log("=== Debug logging enabled ===");
+        Ok(format!("Debug logging enabled. Log file: {:?}", log_path))
+    } else {
+        debug_log::init_debug_log(PathBuf::new()); // Empty path = disable
+        Ok("Debug logging disabled".to_string())
+    }
+}
+
+#[tauri::command]
+fn get_debug_log_path(app: AppHandle) -> Result<String, String> {
+    let app_dir = app.path().app_data_dir()
+        .map_err(|e| format!("Cannot get app dir: {}", e))?;
+    let log_path = app_dir.join("download-debug.log");
+    Ok(log_path.to_string_lossy().to_string())
+}
+
 pub fn run() {
     #[allow(unused_variables)]
     let port: u16 = 14201;
@@ -842,6 +880,10 @@ pub fn run() {
             disable_lua_game_mode,
             steam_integration::get_steam_game_install_dir,
             steam_integration::check_defender_realtime_status,
+            check_defender_exclusion,
+            add_defender_exclusion,
+            set_debug_logging_enabled,
+            get_debug_log_path,
             exit_app,
             clear_launcher_config,
             cloud_redirect::cloud_redirect_get_status,
@@ -868,9 +910,21 @@ pub fn run() {
             steamless::steamless_apply,
             steamless::steamless_restore,
             steamless::steamless_status,
+            // Steam Lua Manifest Management
+            steam::check_steam_status,
+            steam::check_steam_update,
+            steam::add_to_steam,
+            steam::remove_from_steam,
         ]);
 
     builder.setup(move |app| {
+            // Initialize debug logging early
+            let app_dir = app.path().app_data_dir()?;
+            let log_path = app_dir.join("download-debug.log");
+            debug_log::init_debug_log(log_path.clone());
+            debug_log::debug_log(&format!("=== 0xoLemon Launcher Started ==="));
+            debug_log::debug_log(&format!("Debug log path: {:?}", log_path));
+            
             let main_url = {
                 let url: tauri::Url = "http://localhost:14201".parse().unwrap();
                 tauri::WebviewUrl::External(url)

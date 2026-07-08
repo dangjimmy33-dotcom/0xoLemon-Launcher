@@ -49,7 +49,7 @@ add_custom_command(
     COMMENT "Generating protobuf lite-MessageLite sources (Release)"
 )
 
-add_library(0xoCore SHARED
+add_library(LumaCore SHARED
     core/entry.cpp
     core/Orchestrator.cpp
 
@@ -126,14 +126,16 @@ add_library(0xoCore SHARED
     $<$<CONFIG:Release>:${PROTO_GEN_LITE_DIR}/steam_messages.pb.cc>
 )
 
-target_include_directories(0xoCore PRIVATE
+target_include_directories(LumaCore PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}/generated
     $<$<CONFIG:Debug>:${PROTO_GEN_DIR}>
     $<$<CONFIG:Release>:${PROTO_GEN_LITE_DIR}>
 )
 
-target_link_libraries(0xoCore PRIVATE
+set_target_properties(LumaCore PROPERTIES PREFIX "" OUTPUT_NAME "0xoCore")
+
+target_link_libraries(LumaCore PRIVATE
     lua_static
     detours
     $<$<CONFIG:Debug>:libprotobuf>
@@ -144,28 +146,28 @@ target_link_libraries(0xoCore PRIVATE
     bcrypt
 )
 
-target_compile_definitions(0xoCore PRIVATE
-    $<$<CONFIG:Debug>:OXOCORE_LOGGING_ENABLED>
-    OXOCORE_DIAGNOSTICS_ENABLED
+target_compile_definitions(LumaCore PRIVATE
+    $<$<CONFIG:Debug>:LUMACORE_LOGGING_ENABLED>
+    LUMACORE_DIAGNOSTICS_ENABLED
 )
 
 # ---------------------------------------------------------------------------
-# 0xoPayload — DLL injected into a game launched with -onlinefix
+# LumaCorePayload — DLL injected into a game launched with -onlinefix
 # ---------------------------------------------------------------------------
-add_library(0xoPayload SHARED
+add_library(LumaCorePayload SHARED
     payload/LumaCorePayload/LumaCorePayloadEntry.cpp
     payload/LumaCorePayload/LcPayloadLogging.cpp
     payload/LumaCorePayload/EpicOnlineBridge.cpp
     payload/LumaCorePayload/PayloadPropagator.cpp
 )
-set_target_properties(0xoPayload PROPERTIES PREFIX "" OUTPUT_NAME "0xoPayload")
-target_include_directories(0xoPayload PRIVATE
+set_target_properties(LumaCorePayload PROPERTIES PREFIX "" OUTPUT_NAME "0xoPayload")
+target_include_directories(LumaCorePayload PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/payload/LumaCorePayload
 )
-target_link_libraries(0xoPayload PRIVATE detours psapi)
-target_compile_definitions(0xoPayload PRIVATE
-    $<$<CONFIG:Debug>:OXOPAYLOAD_LOGGING_ENABLED>
+target_link_libraries(LumaCorePayload PRIVATE detours psapi)
+target_compile_definitions(LumaCorePayload PRIVATE
+    $<$<CONFIG:Debug>:LUMACORE_PAYLOAD_LOGGING_ENABLED>
 )
 
 add_library(dwmapi SHARED

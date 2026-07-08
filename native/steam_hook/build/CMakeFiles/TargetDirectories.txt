@@ -1,7 +1,7 @@
 E:/007Launcher/native/steam_hook/build/CMakeFiles/lua_static.dir
 E:/007Launcher/native/steam_hook/build/CMakeFiles/detours.dir
-E:/007Launcher/native/steam_hook/build/CMakeFiles/0xoCore.dir
-E:/007Launcher/native/steam_hook/build/CMakeFiles/0xoPayload.dir
+E:/007Launcher/native/steam_hook/build/CMakeFiles/LumaCore.dir
+E:/007Launcher/native/steam_hook/build/CMakeFiles/LumaCorePayload.dir
 E:/007Launcher/native/steam_hook/build/CMakeFiles/dwmapi.dir
 E:/007Launcher/native/steam_hook/build/CMakeFiles/xinput1_4.dir
 E:/007Launcher/native/steam_hook/build/CMakeFiles/INSTALL.dir

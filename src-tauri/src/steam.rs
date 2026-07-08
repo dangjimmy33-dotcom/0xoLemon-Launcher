@@ -20,6 +20,31 @@ use regex::Regex;
 use chrono::{DateTime, Utc, NaiveDateTime};
 use base64::{Engine as _, engine::general_purpose};
 
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct LuaVersionInfo {
+    pub hf_date: Option<String>,
+    pub hubcap_date: Option<String>,
+    pub needs_update: bool,
+    pub reason: String,
+}
+
+#[derive(Deserialize)]
+struct HubcapStatus {
+    manifest_file_exists: Option<bool>,
+    file_size: Option<u64>,
+    file_modified: Option<String>,
+    file_age_days: Option<f64>,
+    needs_update: Option<bool>,
+    game_name: Option<String>,
+}
+
+#[derive(Serialize)]
+pub struct UpdateCheckResult {
+    pub needs_update: bool,
+    pub reason: String,
+    pub is_missing: bool,
+}
+
 #[allow(non_snake_case)]
 #[derive(Deserialize)]
 struct RepoConfig {
@@ -218,18 +243,6 @@ fn hubcap_api_call(client: &Client, endpoint: &str) -> Result<reqwest::blocking:
         }
     }
     Err("All Hubcap API keys failed (401/403/429)".into())
-}
-
-#[derive(Serialize)]
-pub struct UpdateCheckResult {
-    needs_update: bool,
-    reason: String,
-    is_missing: bool,
-}
-
-#[derive(Deserialize)]
-struct HubcapStatus {
-    file_modified: Option<String>,
 }
 
 fn parse_hf_date(text: &str) -> Option<DateTime<Utc>> {

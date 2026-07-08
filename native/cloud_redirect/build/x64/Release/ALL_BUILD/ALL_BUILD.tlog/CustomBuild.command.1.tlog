@@ -1,0 +1,10 @@
+^E:\007LAUNCHER\NATIVE\CLOUD_REDIRECT\CMAKELISTS.TXT
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SE:/007Launcher/native/cloud_redirect -BE:/007Launcher/native/cloud_redirect/build --check-stamp-file E:/007Launcher/native/cloud_redirect/build/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

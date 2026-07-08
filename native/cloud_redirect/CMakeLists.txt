@@ -137,7 +137,10 @@ add_library(cloud_redirect SHARED
     ${PROVIDER_SOURCES}
 )
 
-set_target_properties(cloud_redirect PROPERTIES PREFIX "")
+set_target_properties(cloud_redirect PROPERTIES 
+    PREFIX ""
+    OUTPUT_NAME "0xoCloudRedirect"
+)
 
 target_include_directories(cloud_redirect PRIVATE
     src/common
@@ -399,9 +402,11 @@ if(WIN32)
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "$<TARGET_FILE:cloud_redirect_cli>"
             "${CMAKE_SOURCE_DIR}/build/Release/cloud_redirect_cli.exe"
-        COMMAND dotnet publish -c Release -r win-x64 --self-contained false -o bin/publish
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/ui
-        COMMENT "Publishing CloudRedirect UI"
+        # UI building disabled - not needed for launcher integration
+        # COMMAND dotnet publish -c Release -r win-x64 --self-contained false -o bin/publish
+        # WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/ui
+        COMMENT "Copying CloudRedirect binaries"
         DEPENDS cloud_redirect cloud_redirect_cli
     )
 endif()
+

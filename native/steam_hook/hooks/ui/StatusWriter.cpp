@@ -132,7 +132,7 @@ namespace StatusWriter {
             return;
         }
 
-        std::filesystem::path dir = std::filesystem::path(SteamInstallPath) / "0xocore";
+        std::filesystem::path dir = std::filesystem::path(SteamInstallPath) / "lumacore";
         std::error_code ec;
         std::filesystem::create_directories(dir, ec);
         if (ec) {

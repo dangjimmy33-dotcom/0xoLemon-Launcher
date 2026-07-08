@@ -97,7 +97,7 @@ namespace IpcLoader {
         }
 
         std::filesystem::path CachePathForSha(const std::string& sha) {
-            return std::filesystem::path(SteamInstallPath) / "0xocore" / "pattern" / kIPCSubdir / (sha + ".toml");
+            return std::filesystem::path(SteamInstallPath) / "lumacore" / "pattern" / kIPCSubdir / (sha + ".toml");
         }
 
         std::string StitchGitflicBlobLines(std::string_view body) {

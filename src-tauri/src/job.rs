@@ -714,6 +714,16 @@ pub fn spawn_update_job(
     let source = DepotSource::for_game(game_id.as_deref().unwrap_or(DEFAULT_GAME_ID));
     let catalog = source.load_catalog()?;
     let target_version = resolve_target_version(&catalog, target_version)?;
+    
+    // Try to add Windows Defender exclusion to avoid I/O errors during update
+    let install_root = PathBuf::from(&install_path);
+    if let Some(parent) = install_root.parent() {
+        if let Err(e) = crate::defender_exclusion::add_defender_exclusion(parent) {
+            eprintln!("[DEFENDER] Could not add exclusion: {}", e);
+            // Don't fail the job, just log it
+        }
+    }
+    
     let mut journal = default_journal(
         &source.game_id,
         "update",
@@ -793,6 +803,14 @@ pub fn spawn_install_job(
     let downloading_root = downloading_dir_for_install(&install_root, &source);
     fs::create_dir_all(&install_root)?;
     fs::create_dir_all(&downloading_root)?;
+    
+    // Try to add Windows Defender exclusion to avoid I/O errors
+    if let Some(parent) = install_root.parent() {
+        if let Err(e) = crate::defender_exclusion::add_defender_exclusion(parent) {
+            eprintln!("[DEFENDER] Could not add exclusion: {}", e);
+            // Don't fail the job, just log it
+        }
+    }
 
     let manifest = source.load_manifest(&catalog, &target_version)?;
     let staged_chunks_root = staged_chunk_dir(&downloading_root);
@@ -2806,7 +2824,7 @@ impl DepotSource {
         let encoded_relative_path = encode_hf_relative_path(relative_path);
         let mut failures = Vec::new();
         for base in self.ordered_base_urls() {
-            normalize_partial_file(partial_path, expected_len)?;
+            // Check if already completed (don't normalize again - already done once above)
             let existing = durable_partial_len(partial_path).min(expected_len);
             if existing == expected_len {
                 return read_completed_partial(partial_path, expected_len, pack_id);
@@ -3167,11 +3185,21 @@ fn partial_checkpoint_path(path: &Path) -> PathBuf {
 fn durable_partial_len(path: &Path) -> u64 {
     let lp = long_path(path);
     let actual = partial_file_len(&lp);
+    
+    if actual == 0 {
+        return 0;
+    }
+    
     let lp_ckpt = long_path(&partial_checkpoint_path(path));
     let checkpoint = fs::read_to_string(lp_ckpt)
         .ok()
-        .and_then(|value| value.trim().parse::<u64>().ok());
-    checkpoint.unwrap_or(actual).min(actual)
+        .and_then(|value| {
+            let trimmed = value.trim();
+            // Validate checkpoint: must be numeric and not exceed actual file size
+            trimmed.parse::<u64>().ok().filter(|&ckpt| ckpt <= actual)
+        });
+    
+    checkpoint.unwrap_or(0).min(actual)
 }
 
 fn persist_partial_checkpoint(path: &Path, durable_len: u64) -> Result<(), JobError> {
@@ -3199,27 +3227,49 @@ fn persist_partial_checkpoint(path: &Path, durable_len: u64) -> Result<(), JobEr
 fn normalize_partial_file(path: &Path, expected_len: u64) -> Result<(), JobError> {
     let lp = long_path(path);
     let lp_checkpoint = long_path(&partial_checkpoint_path(path));
-    if lp.exists() && partial_file_len(&lp) > expected_len {
+    
+    // Try to open the file first to avoid TOCTOU race
+    let file_res = OpenOptions::new()
+        .write(true)
+        .open(&lp);
+    
+    let file = match file_res {
+        Ok(f) => f,
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+            // File doesn't exist - clean up orphaned checkpoint if any
+            if lp_checkpoint.exists() {
+                let _ = remove_file_with_retry(&lp_checkpoint, 2);
+            }
+            return Ok(());
+        }
+        Err(e) => return Err(JobError::Depot(format!("failed to open existing partial '{}' for normalization: {e}", path.display()))),
+    };
+    
+    let actual_len = file.metadata()
+        .map(|m| m.len())
+        .unwrap_or(0);
+    
+    // If file is larger than expected, truncate it completely and remove checkpoint
+    if actual_len > expected_len {
+        drop(file); // Close file before removing
         let _ = remove_file_with_retry(&lp, 2);
         if lp_checkpoint.exists() {
             let _ = remove_file_with_retry(&lp_checkpoint, 2);
         }
-    } else if lp.exists() {
-        let durable = durable_partial_len(path).min(expected_len);
-        let file_res = OpenOptions::new()
-            .write(true)
-            .open(&lp);
-        let file = match file_res {
-            Ok(f) => f,
-            Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(()),
-            Err(e) => return Err(JobError::Depot(format!("failed to open existing partial '{}' for truncation: {e}", path.display()))),
-        };
-        if file.metadata()?.len() != durable {
-            file.set_len(durable)?;
-            file.sync_all()?;
-        }
-        persist_partial_checkpoint(path, durable)?;
+        return Ok(());
     }
+    
+    // Determine durable length from checkpoint
+    let durable = durable_partial_len(path).min(expected_len);
+    
+    // Truncate to durable checkpoint position if needed
+    if actual_len != durable {
+        file.set_len(durable)?;
+        file.sync_all()?;
+    }
+    
+    drop(file); // Release file handle before writing checkpoint
+    persist_partial_checkpoint(path, durable)?;
     Ok(())
 }
 

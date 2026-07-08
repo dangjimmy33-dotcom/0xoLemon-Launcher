@@ -1,5 +1,5 @@
-// 0xoCore — Steam client hook layer for 0xoLemon Launcher.
-// Copyright (c) 2025-2026 dangjimmy (https://github.com/dangjimmy).
+// LumaCore — Steam client hook layer for SteaMidra.
+// Copyright (c) 2025-2026 Midrag (https://github.com/Midrags).
 // Distributed under the GNU General Public License v3 or later.
 // See <https://www.gnu.org/licenses/> for the full license text.
 
@@ -114,10 +114,10 @@
 #pragma comment(linker, "/EXPORT:#187=DWMAPI.#187,@187,NONAME")
 
 // Only inject when the host is a known steam process.
-// LoadLibraryA guarantees that 0xoCore.dll's DllMain runs at most once
+// LoadLibraryA guarantees that LumaCore.dll's DllMain runs at most once
 // per process, so multiple hijack DLLs can safely call this without
 // additional synchronisation.
-BOOL OxoCoreLoad()
+BOOL LumaCoreLoad()
 {
     char exePath[MAX_PATH];
     if (!GetModuleFileNameA(NULL, exePath, MAX_PATH))
@@ -139,7 +139,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD dwReason, PVOID pvReserved)
     case DLL_PROCESS_ATTACH:
         {
             DisableThreadLibraryCalls(hModule);
-            if ( !OxoCoreLoad() )
+            if ( !LumaCoreLoad() )
                 return FALSE;
             break;
         }

@@ -5,6 +5,7 @@ import { BookOpen, CheckCircle2, ChevronLeft, ChevronRight, CircleAlert, PlusCir
 import { TutorialModal } from './TutorialModal'
 import { useLocale } from '../context/LocaleContext'
 import { useSteamAppIds } from '../hooks/useSteamAppIds'
+import { useLuaUpdateCheck } from '../hooks/useLuaUpdateCheck'
 import type { CloudSaveStatus, GameAchievement, GameCatalog, GameDetail, GameSummary, GameInstallState, GameVersionInfo, VerifyUiStatus } from '../types'
 import { assetUrlForId, firstMediaUrl, isCarouselMedia, mediaPriority, processDescriptionHtml, isTauriRuntime } from '../lib/gameMeta'
 import { formatBytes } from '../lib/format'
@@ -407,6 +408,12 @@ export function StoreLibraryView({
   const [showLuaGameTab, setShowLuaGameTab] = useState(false)
   const { mapping } = useSteamAppIds()
 
+  // Get current game's Steam App ID
+  const currentSteamAppId = selectedGame ? mapping[selectedGame.id] : undefined
+
+  // Check for Lua manifest updates
+  const { updateInfo } = useLuaUpdateCheck(currentSteamAppId, showLuaGameTab)
+
   // Listen for lua-game-mode changes
   useEffect(() => {
     if (!selectedGame) return
@@ -493,7 +500,7 @@ export function StoreLibraryView({
     if (!exePath) return
     setSteamlessLoading(true)
     setSteamlessMessage(null)
-    
+
     try {
       if (steamlessStatus) {
         const msg = await invoke<string>('steamless_restore', { exePath })
@@ -833,10 +840,23 @@ export function StoreLibraryView({
               type="button"
               style={{
                 background: 'linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,165,0,0.1))',
-                border: '1px solid rgba(255,215,0,0.3)'
+                border: '1px solid rgba(255,215,0,0.3)',
+                position: 'relative'
               }}
             >
               <Sparkles size={16} /> {t.library.luaGameMode}
+              {updateInfo?.needs_update && !updateInfo.is_missing && (
+                <span style={{
+                  position: 'absolute',
+                  top: '6px',
+                  right: '6px',
+                  width: '8px',
+                  height: '8px',
+                  background: '#ff4444',
+                  borderRadius: '50%',
+                  boxShadow: '0 0 8px rgba(255,68,68,0.8)'
+                }} title={updateInfo.reason} />
+              )}
             </button>
           )}
         </nav>
@@ -857,6 +877,62 @@ export function StoreLibraryView({
           </>
         ) : activeDetailTab === 'lua-game' ? (
           <section className="detail-body lua-game-tab-container">
+            {/* Update Banner */}
+            {updateInfo?.needs_update && !updateInfo.is_missing && (
+              <div style={{
+                marginBottom: '20px',
+                padding: '16px 20px',
+                background: 'linear-gradient(135deg, rgba(255,165,0,0.15), rgba(255,69,0,0.15))',
+                borderRadius: '12px',
+                border: '1px solid rgba(255,165,0,0.4)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                boxShadow: '0 4px 12px rgba(255,165,0,0.2)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <Download size={20} style={{ color: '#ffa500' }} />
+                  <div>
+                    <div style={{ color: '#ffa500', fontWeight: '600', marginBottom: '4px' }}>
+                      🎮 Bản Lua Manifest Mới Đã Có!
+                    </div>
+                    <div style={{ color: '#bbb', fontSize: '13px' }}>
+                      {updateInfo.reason}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (!currentSteamAppId) return
+                    try {
+                      await invoke('add_to_steam', { appid: currentSteamAppId, forceUpdate: true })
+                      // Trigger re-check
+                      window.location.reload()
+                    } catch (e: any) {
+                      alert(`Failed to update: ${e}`)
+                    }
+                  }}
+                  style={{
+                    padding: '8px 16px',
+                    background: 'linear-gradient(135deg, #ffa500, #ff8c00)',
+                    border: 'none',
+                    borderRadius: '6px',
+                    color: '#fff',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    whiteSpace: 'nowrap',
+                    transition: 'transform 0.2s',
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                  onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                >
+                  🔄 Cập Nhật Ngay
+                </button>
+              </div>
+            )}
+
             <div style={{
               padding: '40px',
               textAlign: 'center',
@@ -903,10 +979,10 @@ export function StoreLibraryView({
                   {t.library.luaGameModeError54Desc}
                 </p>
                 {steamlessMessage && (
-                  <div style={{ 
-                    marginTop: '15px', 
-                    padding: '10px', 
-                    borderRadius: '6px', 
+                  <div style={{
+                    marginTop: '15px',
+                    padding: '10px',
+                    borderRadius: '6px',
                     background: steamlessMessage.isError ? 'rgba(255,50,50,0.1)' : 'rgba(50,255,50,0.1)',
                     color: steamlessMessage.isError ? '#ff6b6b' : '#4cd137',
                     fontSize: '13px',
@@ -1376,7 +1452,7 @@ function SteamIntegrationButton({ gameId, gameTitle }: { gameId: string, gameTit
           }}
           onCancel={() => setShowRestartConfirm(false)}
         >
-          <div style={{ 
+          <div style={{
             marginTop: '20px',
             padding: '12px 16px',
             background: 'rgba(0,0,0,0.2)',

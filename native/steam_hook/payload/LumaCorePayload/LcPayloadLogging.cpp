@@ -23,7 +23,7 @@ namespace PayloadLog {
     void Init(HMODULE self) {
         wchar_t dll[MAX_PATH] = {};
         if (!GetModuleFileNameW(self, dll, MAX_PATH)) return;
-        auto dir = std::filesystem::path(dll).parent_path() / "0xocore" / "payload";
+        auto dir = std::filesystem::path(dll).parent_path() / "lumacore" / "payload";
 
         std::error_code ec;
         std::filesystem::create_directories(dir, ec);

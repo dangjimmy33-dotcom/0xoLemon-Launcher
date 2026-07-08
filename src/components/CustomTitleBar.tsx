@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type React from 'react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
-import { Bell, Download, LogOut, Wifi, WifiOff } from 'lucide-react'
+import { Bell, Download, LogOut, Wifi, WifiOff, Monitor } from 'lucide-react'
 import { isTauriRuntime } from '../lib/gameMeta'
 import type { ClockFormat, CloseBehavior } from '../lib/preferences'
 import type { DiscordAuthUser, JobJournal, LauncherUpdateProgress, NotificationRecord } from '../types'
@@ -27,6 +27,7 @@ export function CustomTitleBar({
   notificationOpen,
   discordUser,
   statusPreferences,
+  isBlockedState = false,
   onToggleNotifications,
   onCloseNotifications,
   onOpenNotification,
@@ -34,6 +35,7 @@ export function CustomTitleBar({
   onClearNotifications,
   onOpenNotificationSettings,
   onDiscordLogout,
+  onToggleBigPicture,
 }: {
   closeBehavior?: CloseBehavior
   serviceOnline: boolean
@@ -43,6 +45,7 @@ export function CustomTitleBar({
   notificationOpen: boolean
   discordUser: DiscordAuthUser | null
   statusPreferences: StatusPreferences
+  isBlockedState?: boolean
   onToggleNotifications: () => void
   onCloseNotifications: () => void
   onOpenNotification: (notification: NotificationRecord) => void
@@ -50,6 +53,7 @@ export function CustomTitleBar({
   onClearNotifications: () => void
   onOpenNotificationSettings: () => void
   onDiscordLogout: () => void
+  onToggleBigPicture: () => void
 }) {
   const win = isTauriRuntime() ? getCurrentWindow() : null
   const [now, setNow] = useState(() => new Date())
@@ -151,7 +155,7 @@ export function CustomTitleBar({
             <LogOut size={12} />
           </button>
         ) : null}
-        {statusPreferences.showNotificationBell ? (
+        {statusPreferences.showNotificationBell && !isBlockedState ? (
           <div className="titlebar-notification-anchor">
             <button
               type="button"
@@ -176,6 +180,18 @@ export function CustomTitleBar({
             />
           </div>
         ) : null}
+        {!isBlockedState && (
+          <button
+            type="button"
+            className="titlebar-bell"
+            onMouseDown={(event) => event.stopPropagation()}
+            onClick={onToggleBigPicture}
+            title="Enter Big Picture Mode"
+            data-hint={statusPreferences.hoverHints ? 'Big Picture Mode' : undefined}
+          >
+            <Monitor size={16} />
+          </button>
+        )}
       </div>
 
       <div className="titlebar-actions">
@@ -185,7 +201,7 @@ export function CustomTitleBar({
           onMouseDown={(e) => e.stopPropagation()}
           onClick={handleMinimize}
         >
-          <svg width="10" height="1" viewBox="0 0 10 1"><rect width="10" height="1" fill="currentColor"/></svg>
+          <svg width="10" height="1" viewBox="0 0 10 1"><rect width="10" height="1" fill="currentColor" /></svg>
         </button>
         <button
           className="titlebar-btn maximize-btn"
@@ -193,7 +209,7 @@ export function CustomTitleBar({
           onMouseDown={(e) => e.stopPropagation()}
           onClick={handleMaximize}
         >
-          <svg width="10" height="10" viewBox="0 0 10 10"><rect x="0.5" y="0.5" width="9" height="9" fill="none" stroke="currentColor"/></svg>
+          <svg width="10" height="10" viewBox="0 0 10 10"><rect x="0.5" y="0.5" width="9" height="9" fill="none" stroke="currentColor" /></svg>
         </button>
         <button
           className="titlebar-btn close-btn"
@@ -201,7 +217,7 @@ export function CustomTitleBar({
           onMouseDown={(e) => e.stopPropagation()}
           onClick={handleClose}
         >
-          <svg width="10" height="10" viewBox="0 0 10 10"><line x1="0" y1="0" x2="10" y2="10" stroke="currentColor" strokeWidth="1.2"/><line x1="10" y1="0" x2="0" y2="10" stroke="currentColor" strokeWidth="1.2"/></svg>
+          <svg width="10" height="10" viewBox="0 0 10 10"><line x1="0" y1="0" x2="10" y2="10" stroke="currentColor" strokeWidth="1.2" /><line x1="10" y1="0" x2="0" y2="10" stroke="currentColor" strokeWidth="1.2" /></svg>
         </button>
       </div>
     </div>

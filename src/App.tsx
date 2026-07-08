@@ -13,7 +13,7 @@ import {
   requestPermission,
   sendNotification,
 } from '@tauri-apps/plugin-notification'
-import { MotionConfig } from 'motion/react'
+import { MotionConfig, AnimatePresence } from 'motion/react'
 import { CircleAlert, Download, Heart, X, Cloud } from 'lucide-react'
 import packageMetadata from '../package.json'
 import './App.css'
@@ -78,6 +78,8 @@ import {
   UpdateCenter,
   FirebaseRemoteControl,
   ChangelogModal,
+  BigPictureView,
+  DefenderExclusionDialog,
 } from './components'
 
 const initialLauncherPreferences = loadLauncherPreferences()
@@ -117,6 +119,7 @@ import { useFirestoreCatalog } from './hooks/useFirestoreCatalog'
 import { useRealtimeAssets } from './hooks/useRealtimeAssets'
 import { useFirestoreDetail } from './hooks/useFirestoreDetail'
 import { useScrollReveal } from './hooks/useScrollReveal'
+import { useDefenderExclusion } from './hooks/useDefenderExclusion'
 import { GlobalChatSync } from './components/GlobalChatSync'
 import { NoInternetView } from './components/NoInternetView'
 
@@ -143,6 +146,7 @@ export default function App() {
   useRealtimeGameTags()
   const assetOverrideVersion = useRealtimeAssets()
   const firestoreCatalog = useFirestoreCatalog(assetOverrideVersion)
+  const defenderExclusion = useDefenderExclusion()
   const [snapshot, setSnapshot] = useState<Snapshot>(fallbackSnapshot)
   const [job, setJob] = useState<JobJournal | null>(fallbackSnapshot.lastJob)
   const [installPath, setInstallPath] = useState('')
@@ -163,6 +167,7 @@ export default function App() {
   )
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null)
   const [detail, setDetail] = useState<GameDetail | null>(null)
+  const [isBigPictureMode, setIsBigPictureMode] = useState(false)
   const [assetUrls, setAssetUrls] = useState<Record<string, string>>({})
   const assetUrlsRef = useRef<Record<string, string>>({})
   const catalogRef = useRef<GameCatalog>(catalog)
@@ -216,6 +221,9 @@ export default function App() {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
   const [discordAuth, setDiscordAuth] = useState<DiscordAuthStatus>(initialDiscordAuthStatus)
   const [discordAuthBusy, setDiscordAuthBusy] = useState(false)
+
+  // Block notifications & big picture during intro or Discord verification
+  const isBlockedState = showIntro || discordAuth.state === 'checking'
   const [cacheBusy, setCacheBusy] = useState(false)
   const [appVersion, setAppVersion] = useState(packageMetadata.version)
   const [showWhatsNewModal, setShowWhatsNewModal] = useState(false)
@@ -246,37 +254,6 @@ export default function App() {
     import('@tauri-apps/api/window').then((m) => {
       m.getCurrentWindow().show().catch(() => { })
     })
-  }, [])
-
-  // F11 fullscreen toggle for main window
-  useEffect(() => {
-    if (!isTauriRuntime()) return
-
-    const handleKeyDown = async (e: KeyboardEvent) => {
-      if (e.key === 'F11') {
-        e.preventDefault()
-        try {
-          const { getCurrentWindow } = await import('@tauri-apps/api/window')
-          const win = getCurrentWindow()
-          const isFullscreen = await win.isFullscreen()
-
-          if (!isFullscreen) {
-            // Enter fullscreen: hide decorations first, then fullscreen
-            await win.setDecorations(false)
-            await win.setFullscreen(true)
-          } else {
-            // Exit fullscreen: restore decorations after exiting fullscreen
-            await win.setFullscreen(false)
-            await win.setDecorations(true)
-          }
-        } catch (error) {
-          console.error('Failed to toggle fullscreen:', error)
-        }
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
 
   useEffect(() => {
@@ -433,6 +410,12 @@ export default function App() {
   }, [])
 
   const publishNotification = useCallback(async (notification: NewNotification) => {
+    // Block notifications during intro or Discord verification
+    if (isBlockedState) {
+      console.log('[0xoToast] Blocked: intro or Discord check in progress')
+      return
+    }
+
     const currentPreferences = preferencesRef.current
 
     // Debug logging
@@ -487,7 +470,7 @@ export default function App() {
         })
       }
     }
-  }, [upsertNotification])
+  }, [upsertNotification, isBlockedState])
 
   useEffect(() => {
     const handleCustomToast = (e: Event) => {
@@ -2914,514 +2897,571 @@ export default function App() {
     }
   }
 
+  const enterBigPicture = () => {
+    // Block big picture during intro or Discord verification
+    if (isBlockedState) {
+      console.log('[BigPicture] Blocked: intro or Discord check in progress')
+      return
+    }
+    setIsBigPictureMode(true)
+  }
+
+  const exitBigPicture = () => {
+    setIsBigPictureMode(false)
+  }
+
   return (
     <MotionConfig reducedMotion={reducedMotion ? 'always' : 'never'}>
-      {showIntro && (
-        <IntroScreen
-          onExiting={() => setIntroExiting(true)}
-          onDone={() => setShowIntro(false)}
-        />
-      )}
-      <div
-        className={[
-          'app-root',
-          reducedMotion ? 'reduce-motion' : '',
-          preferences.glassEffects ? 'glass-effects' : 'no-glass-effects',
-          preferences.scrollEffects ? '' : 'no-scroll-effects',
-        ].filter(Boolean).join(' ')}
-      >
-        <GlobalChatSync catalog={catalog} />
-        <CustomTitleBar
-          closeBehavior={preferences.closeBehavior}
-          serviceOnline={!contentServiceLabel(snapshot.proxyStatus).toLowerCase().includes('unavailable')}
-          job={job}
-          updateProgress={launcherUpdateProgress}
-          notifications={notifications}
-          notificationOpen={notificationOpen}
-          discordUser={discordAuth.state === 'authorized' ? discordAuth.user : null}
-          statusPreferences={preferences}
-          onToggleNotifications={() => setNotificationOpen((current) => !current)}
-          onCloseNotifications={() => setNotificationOpen(false)}
-          onOpenNotification={openNotificationRecord}
-          onMarkAllNotificationsRead={() => {
-            setNotifications((current) => current.map((item) => ({ ...item, read: true })))
-            if (isTauriRuntime()) {
-              void invoke<NotificationRecord[]>('mark_all_notifications_read').then(setNotifications).catch(() => undefined)
-            }
-          }}
-          onClearNotifications={() => {
-            setNotifications([])
-            if (isTauriRuntime()) {
-              void invoke<NotificationRecord[]>('clear_notifications').then(setNotifications).catch(() => undefined)
-            }
-          }}
-          onOpenNotificationSettings={() => {
-            setNotificationOpen(false)
-            setActiveTab('Settings')
-            window.setTimeout(() => {
+      {isBigPictureMode ? (
+        <AnimatePresence>
+          <BigPictureView
+            games={catalog.games}
+            assetUrls={assetUrls}
+            onExit={exitBigPicture}
+            notifications={notifications}
+            notificationOpen={notificationOpen}
+            onToggleNotifications={() => setNotificationOpen((current) => !current)}
+            onCloseNotifications={() => setNotificationOpen(false)}
+            onOpenNotification={openNotificationRecord}
+            onMarkAllNotificationsRead={() => {
+              setNotifications((current) => current.map((item) => ({ ...item, read: true })))
+              if (isTauriRuntime()) {
+                void invoke<NotificationRecord[]>('mark_all_notifications_read').then(setNotifications).catch(() => undefined)
+              }
+            }}
+            onClearNotifications={() => {
+              setNotifications([])
+              if (isTauriRuntime()) {
+                void invoke<NotificationRecord[]>('clear_notifications').then(setNotifications).catch(() => undefined)
+              }
+            }}
+            onOpenNotificationSettings={() => {
               setNotificationOpen(false)
-              document.getElementById('notification-settings')?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth' })
-            }, 80)
-          }}
-          onDiscordLogout={() => void logoutDiscord()}
-        />
-        {launcherUpdate ? (
-          <UpdateBanner
-            update={launcherUpdate}
-            progress={launcherUpdateProgress}
-            onOpen={() => setShowUpdateCenter(true)}
-            onStart={() => void applyLauncherUpdate()}
+              setIsBigPictureMode(false)
+              setActiveTab('Settings')
+              window.setTimeout(() => {
+                document.getElementById('notification-settings')?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth' })
+              }, 80)
+            }}
           />
-        ) : null}
-        <main className="launcher-shell premium-shell">
-          <Sidebar
-            serviceStatus={contentServiceLabel(snapshot.proxyStatus)}
-            activeTab={activeTab}
-            onSelect={setActiveTab}
-            updateCount={updateReadyGameIds.length}
-            downloadCount={hasVisibleJob ? 1 : 0}
+        </AnimatePresence>
+      ) : (
+        <div
+          className={[
+            'app-root',
+            reducedMotion ? 'reduce-motion' : '',
+            preferences.glassEffects ? 'glass-effects' : 'no-glass-effects',
+            preferences.scrollEffects ? '' : 'no-scroll-effects',
+          ].filter(Boolean).join(' ')}
+        >
+          {showIntro && (
+            <IntroScreen
+              onExiting={() => setIntroExiting(true)}
+              onDone={() => setShowIntro(false)}
+            />
+          )}
+          <GlobalChatSync catalog={catalog} />
+          <CustomTitleBar
+            closeBehavior={preferences.closeBehavior}
+            serviceOnline={!contentServiceLabel(snapshot.proxyStatus).toLowerCase().includes('unavailable')}
+            job={job}
+            updateProgress={launcherUpdateProgress}
+            notifications={notifications}
+            notificationOpen={notificationOpen}
+            discordUser={discordAuth.state === 'authorized' ? discordAuth.user : null}
+            statusPreferences={preferences}
+            isBlockedState={isBlockedState}
+            onToggleNotifications={() => setNotificationOpen((current) => !current)}
+            onCloseNotifications={() => setNotificationOpen(false)}
+            onOpenNotification={openNotificationRecord}
+            onMarkAllNotificationsRead={() => {
+              setNotifications((current) => current.map((item) => ({ ...item, read: true })))
+              if (isTauriRuntime()) {
+                void invoke<NotificationRecord[]>('mark_all_notifications_read').then(setNotifications).catch(() => undefined)
+              }
+            }}
+            onClearNotifications={() => {
+              setNotifications([])
+              if (isTauriRuntime()) {
+                void invoke<NotificationRecord[]>('clear_notifications').then(setNotifications).catch(() => undefined)
+              }
+            }}
+            onOpenNotificationSettings={() => {
+              setNotificationOpen(false)
+              setActiveTab('Settings')
+              window.setTimeout(() => {
+                setNotificationOpen(false)
+                document.getElementById('notification-settings')?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth' })
+              }, 80)
+            }}
+            onDiscordLogout={() => void logoutDiscord()}
+            onToggleBigPicture={enterBigPicture}
           />
-          <section className="workspace premium-workspace">
-            {['Updates', 'Downloads', 'Cache'].includes(activeTab) && selectedGame && activeDetail ? (
-              <OperationHero
-                game={selectedGame}
-                detail={activeDetail}
-                assets={assetUrls}
-                currentVersion={selectedCurrentVersion}
-                latestVersion={latestCatalogVersion}
-                updateReady={updateReady}
-                showVersionAction={selectedInstalled && hasVersionChoices}
-                updateSize={effectiveDownloadSize}
-                onUpdate={openVersionOptions}
-                onPlay={playSelectedGame}
-                onStop={stopSelectedGame}
-                isJobRunning={isRunning}
-                isGameRunning={playingGames[selectedGame.id] || false}
-                canUpdate={canUpdate}
-                installMode={installMode}
-                selectedVersion={targetVersion}
-              />
-            ) : null}
-
-            <div key={activeTab} className={reducedMotion ? undefined : 'tab-enter'}>
-              {/* Offline gate: tabs requiring internet show NoInternetView when offline */}
-              {!isOnline && !['Library', 'Settings'].includes(activeTab) ? (
-                <NoInternetView tabName={activeTab === 'Home' ? 'Home' : activeTab === 'Store' ? 'Store' : activeTab === "What's New!" ? "What's New" : activeTab === 'Downloads' ? 'Downloads' : activeTab === 'Updates' ? 'Updates' : activeTab === 'CloudRedirect' ? 'CloudRedirect' : activeTab === 'Translations' ? 'Translations' : undefined} />
-              ) : activeTab === 'Home' ? (
-                <HomeView
-                  catalog={catalog}
-                  installStates={installStates}
-                  runtimeStates={runtimeStates}
-                  assets={assetUrls}
-                  job={job}
-                  launcherUpdate={launcherUpdate}
-                  launcherUpdateProgress={launcherUpdateProgress}
-                  preferences={preferences}
-                  reducedMotion={reducedMotion}
-                  onRequestAsset={requestHomeAsset}
-                  onOpenGame={openHomeGame}
-                  onPlayGame={playHomeGame}
-                  onOpenTab={setActiveTab}
-                  onOpenDiscord={() => void openUrl('https://discord.gg/7ZXdTUVsJE')}
-                  onOpenDonate={() => setShowDonate(true)}
-                />
-              ) : activeTab === 'CloudRedirect' ? (
-                <div className="settings-view settings-view-global" style={{ padding: '40px' }}>
-                  <header className="settings-page-header">
-                    <div>
-                      <span className="settings-page-icon">
-                        <Cloud size={21} />
-                      </span>
-                      <div>
-                        <h1>CloudRedirect</h1>
-                        <p>Cloud saves for lua games using Google Drive, OneDrive, or local folder.</p>
-                      </div>
-                    </div>
-                  </header>
-                  <CloudRedirectSettings />
-                </div>
-              ) : activeTab === 'Settings' ? (
-                <SettingsView
-                  preferences={preferences}
-                  launcherSettings={launcherSettings}
-                  onChange={updatePreference}
-                  onLauncherSettingChange={<K extends keyof LauncherSettings>(key: K, value: LauncherSettings[K]) => void updateLauncherSetting(key, value)}
-                  onChooseLibrary={() => void chooseDefaultLibraryRoot()}
-                  onOpenLibrary={() => void openDefaultLibraryRoot()}
-                  onOpenCache={() => setActiveTab('Cache')}
-                  onChooseCloudRoot={() => void chooseCloudSaveRoot()}
-                  onOpenCloudRoot={() => void openCloudSaveRoot()}
-                  onCheckForUpdates={() => void checkLauncherUpdateNow()}
-                  steamEnvironment={steamEnvironment}
-                  steamStatus={steamSettingsStatus}
-                  onRefreshSteam={() => void refreshSteamEnvironment(true)}
-                  onOpenSteam={() => void openSteamFromSettings('open_steam')}
-                  onRestartSteam={() => void openSteamFromSettings('restart_steam')}
-                  onOpenBigPicture={() => void openSteamFromSettings('open_steam_big_picture')}
-                  onReset={resetLauncherPreferences}
-                  onResetOnboarding={() => {
-                    updatePreference('onboardingCompleted', false)
-                    setActiveTab('Home')
-                  }}
-                  onManageNotifications={() => setNotificationOpen(true)}
-                  appVersion={appVersion}
-                  updateStatus={settingsUpdateStatus}
-                />
-              ) : (
-                <ActiveView
-                  activeTab={activeTab}
-                  catalog={activeTab === 'Updates' ? updatesCatalog : activeTab === 'Library' ? libraryCatalog : catalog}
-                  catalogLoadState={catalogLoadState}
-                  onRetryCatalog={() => void loadCatalog()}
-                  selectedGame={selectedGame}
-                  selectedGameId={selectedGameId}
-                  onSelectGame={(gameId) => {
-                    versionPlanSequenceRef.current += 1
-                    setSelectedGameId(gameId)
-                    setShowInstallOptions(false)
-                    setLaunchOptions(null)
-                    const game = catalog.games.find((candidate) => candidate.id === gameId)
-                    if (game) {
-                      const latest = game.availableVersions.find((version) => version.latest)?.version ?? game.latestVersion
-                      setSelectedVersion(latest)
-                      setInstallRoot(installMetadataForStoreRoot(game, game.install, preferences.defaultLibraryRoot).defaultInstallFolder)
-                      if (game.id !== DEFAULT_GAME_ID) {
-                        setInstallPath('')
-                        setScanStatus('No install found')
-                      }
-                    }
-                  }}
-                  onRequestAsset={requestGameAsset}
+          {launcherUpdate ? (
+            <UpdateBanner
+              update={launcherUpdate}
+              progress={launcherUpdateProgress}
+              onOpen={() => setShowUpdateCenter(true)}
+              onStart={() => void applyLauncherUpdate()}
+            />
+          ) : null}
+          <main className="launcher-shell premium-shell">
+            <Sidebar
+              serviceStatus={contentServiceLabel(snapshot.proxyStatus)}
+              activeTab={activeTab}
+              onSelect={setActiveTab}
+              updateCount={updateReadyGameIds.length}
+              downloadCount={hasVisibleJob ? 1 : 0}
+            />
+            <section className="workspace premium-workspace">
+              {['Updates', 'Downloads', 'Cache'].includes(activeTab) && selectedGame && activeDetail ? (
+                <OperationHero
+                  game={selectedGame}
                   detail={activeDetail}
                   assets={assetUrls}
-                  snapshot={snapshot}
-                  installPath={installPath}
-                  installTarget={displayedInstallTarget}
-                  scanStatus={scanStatus}
-                  selectedVersion={targetVersion}
-                  selectedCurrentVersion={selectedCurrentVersion}
-                  selectedVersionInfo={selectedVersionInfo}
-                  selectedInstallState={selectedInstallState}
-                  verifyStatus={selectedVerifyStatus}
-                  installMode={installMode}
+                  currentVersion={selectedCurrentVersion}
+                  latestVersion={latestCatalogVersion}
                   updateReady={updateReady}
                   showVersionAction={selectedInstalled && hasVersionChoices}
-                  canUpdate={canUpdate}
-                  isJobRunning={isRunning}
-                  isGameRunning={selectedGame ? playingGames[selectedGame.id] || false : false}
-                  onBrowse={chooseInstallFolder}
-                  onScan={() => scanFolder()}
-                  onPrimaryAction={openVersionOptions}
+                  updateSize={effectiveDownloadSize}
+                  onUpdate={openVersionOptions}
                   onPlay={playSelectedGame}
                   onStop={stopSelectedGame}
-                  onVerify={verifySelectedGame}
-                  onUninstall={uninstallSelectedGame}
-                  job={activeJob}
-                  hasJob={hasVisibleJob}
-                  progress={progress}
-                  phaseProgress={phaseProgress}
-                  updateSize={effectiveDownloadSize}
-                  isRunning={isRunning}
-                  onOpenInstallOptions={() => {
-                    void openVersionOptions()
-                  }}
-                  onPause={pauseOrResume}
-                  onCancel={cancelJob}
-                  onResume={resumeFailedJob}
-                  isPaused={isPaused}
-                  logs={activeJob.logs}
-                  onOpenStore={() => {
-                    setSelectedGameId(null)
-                    setActiveTab('Store')
-                  }}
-                  cloudSaveStatus={cloudSaveStatus}
-                  cloudSaveBusy={cloudSaveBusy}
-                  cloudLaunchBlocked={cloudLaunchBlocked}
-                  onToggleCloudSave={(enabled) => void toggleCloudSave(enabled)}
-                  onAddCloudSaveFolder={() => void addCloudSaveFolder()}
-                  onSyncCloudSave={() => void syncCloudSave()}
-                  onResolveCloudConflict={(conflictId, resolution) => void resolveCloudConflict(conflictId, resolution)}
-                  onRestoreCloudSnapshot={(snapshotId) => void restoreCloudSnapshot(snapshotId)}
-                  onLaunchWithoutCloudSync={launchWithoutCloudSync}
-                  onConnectGoogleDrive={() => void connectAndBackupGoogleDrive()}
-                  onDisconnectGoogleDrive={() =>
-                    void runGoogleDriveAction('disconnect_google_drive', 'Disconnecting Google Drive...')
-                  }
-                  onBackupGoogleDrive={() =>
-                    void runGoogleDriveAction('backup_save_game_to_google_drive', 'Backing up save files to Google Drive...')
-                  }
-                  onRestoreMissingSaveFiles={() =>
-                    void runGoogleDriveAction('restore_missing_save_files', 'Checking Google Drive for missing save files...')
-                  }
-                  cacheBusy={cacheBusy}
-                  onClearCache={() => void clearLauncherCache()}
-                  discordUser={discordAuth.state === 'authorized' ? discordAuth.user : null}
+                  isJobRunning={isRunning}
+                  isGameRunning={playingGames[selectedGame.id] || false}
+                  canUpdate={canUpdate}
+                  installMode={installMode}
+                  selectedVersion={targetVersion}
                 />
-              )}
-            </div>
-            {showInstallOptions && selectedGame && activeDetail ? (
-              <InstallOptionsDialog
-                detail={activeDetail}
-                mode={installMode ? 'install' : 'version'}
-                currentVersion={selectedCurrentVersion}
-                selectedVersion={targetVersion}
-                availableVersions={availableVersions}
-                versionInfos={selectedGame.availableVersions.length > 0 ? selectedGame.availableVersions : activeDetail.versions}
-                downloadSize={effectiveDownloadSize}
-                installRoot={installMode ? installRoot : selectedInstallPath}
-                downloadingRoot={downloadPathForInstallRoot(installMode ? installRoot : selectedInstallPath, gameInstall)}
-                canStart={canApplySelectedVersion}
-                isStarting={isStartingDownload}
-                onVersionChange={changeTargetVersion}
-                onChangeInstallRoot={chooseInstallTarget}
-                onStart={startUpdate}
-                onClose={() => setShowInstallOptions(false)}
-              />
-            ) : null}
-            {showDrivePicker ? (
-              <DriveLibraryPickerModal
-                libraries={libraries}
-                gameName={selectedGame ? gameFolderName(selectedGame) : '007 First Light'}
-                currentRoot={installRoot}
-                onSelect={applyLibraryDrive}
-                onAddDrive={addLibraryDrive}
-                onClose={() => setShowDrivePicker(false)}
-              />
-            ) : null}
-            {launchOptions && selectedGame ? (
-              <LaunchOptionsModal
-                gameTitle={selectedGame.title}
-                config={launchOptions}
-                onClose={() => setLaunchOptions(null)}
-                onLaunch={(optionId, optionTitle) => {
-                  setLaunchOptions(null)
-                  void doLaunchGame(optionId, optionTitle)
-                }}
-              />
-            ) : null}
-            {launchSplash ? <LaunchSplash splash={launchSplash} /> : null}
-            {showNvidiaToast && <NvidiaToast onDismiss={() => setShowNvidiaToast(false)} />}
+              ) : null}
 
-            {showUninstallConfirm && selectedGame ? (
-              <div className="dialog-backdrop" role="presentation">
-                <section className="install-modal" role="dialog" aria-modal="true" aria-labelledby="uninstall-title">
-                  <div className="modal-handle" />
-                  <header>
-                    <button type="button" onClick={() => setShowUninstallConfirm(false)} aria-label="Cancel">
-                      <X size={17} />
-                    </button>
-                    <h2 id="uninstall-title">Confirm Uninstall</h2>
-                    <p>Are you sure you want to uninstall {selectedGame.title}?</p>
-                  </header>
-                  <div className="install-modal-body">
-                    <div className="warning-box" style={{ background: 'rgba(255, 60, 60, 0.1)', border: '1px solid rgba(255, 60, 60, 0.3)', padding: '16px', borderRadius: '8px', color: '#ffb3b3' }}>
-                      <CircleAlert size={20} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '10px' }} />
-                      <span style={{ verticalAlign: 'middle' }}>This will permanently delete all local files for this game from your hard drive.</span>
-                    </div>
+              <div key={activeTab} className={reducedMotion ? undefined : 'tab-enter'}>
+                {/* Offline gate: tabs requiring internet show NoInternetView when offline */}
+                {!isOnline && !['Library', 'Settings'].includes(activeTab) ? (
+                  <NoInternetView tabName={activeTab === 'Home' ? 'Home' : activeTab === 'Store' ? 'Store' : activeTab === "What's New!" ? "What's New" : activeTab === 'Downloads' ? 'Downloads' : activeTab === 'Updates' ? 'Updates' : activeTab === 'CloudRedirect' ? 'CloudRedirect' : activeTab === 'Translations' ? 'Translations' : undefined} />
+                ) : activeTab === 'Home' ? (
+                  <HomeView
+                    catalog={catalog}
+                    installStates={installStates}
+                    runtimeStates={runtimeStates}
+                    assets={assetUrls}
+                    job={job}
+                    launcherUpdate={launcherUpdate}
+                    launcherUpdateProgress={launcherUpdateProgress}
+                    preferences={preferences}
+                    reducedMotion={reducedMotion}
+                    onRequestAsset={requestHomeAsset}
+                    onOpenGame={openHomeGame}
+                    onPlayGame={playHomeGame}
+                    onOpenTab={setActiveTab}
+                    onOpenDiscord={() => void openUrl('https://discord.gg/7ZXdTUVsJE')}
+                    onOpenDonate={() => setShowDonate(true)}
+                  />
+                ) : activeTab === 'CloudRedirect' ? (
+                  <div className="settings-view settings-view-global" style={{ padding: '40px' }}>
+                    <header className="settings-page-header">
+                      <div>
+                        <span className="settings-page-icon">
+                          <Cloud size={21} />
+                        </span>
+                        <div>
+                          <h1>CloudRedirect</h1>
+                          <p>Cloud saves for lua games using Google Drive, OneDrive, or local folder.</p>
+                        </div>
+                      </div>
+                    </header>
+                    <CloudRedirectSettings />
                   </div>
-                  <footer>
-                    <button type="button" className="secondary" onClick={() => setShowUninstallConfirm(false)}>
-                      Cancel
-                    </button>
-                    <button type="button" className="danger-control" onClick={executeUninstall} style={{ padding: '8px 24px', background: '#e53935', color: '#fff', border: 'none', borderRadius: '4px', fontWeight: 'bold' }}>
-                      Uninstall
-                    </button>
-                  </footer>
-                </section>
-              </div>
-            ) : null}
-
-            {showSteamRecommendation && (
-              <div className="dialog-backdrop" role="presentation">
-                <section className="install-modal" role="dialog" aria-modal="true" aria-labelledby="steam-recommendation-title">
-                  <div className="modal-handle" />
-                  <header>
-                    <button type="button" onClick={() => setShowSteamRecommendation(false)} aria-label="Cancel">
-                      <X size={17} />
-                    </button>
-                    <h2 id="steam-recommendation-title">Steam recommended</h2>
-                    <p>We're recommended you to open Steam to play online</p>
-                  </header>
-                  <div className="install-modal-body">
-                    <div style={{ background: 'rgba(77, 164, 255, 0.1)', border: '1px solid rgba(77, 164, 255, 0.35)', padding: '16px', borderRadius: '8px', color: '#b3d8ff', lineHeight: 1.7 }}>
-                      Steam is not running. Opening it first improves compatibility for online play and Steam-based services.
-                    </div>
-                  </div>
-                  <footer>
-                    <button
-                      type="button"
-                      className="secondary"
-                      disabled={steamOpening}
-                      onClick={() => {
-                        setShowSteamRecommendation(false)
-                        void continuePlaySelectedGame()
-                      }}
-                    >
-                      Continue anyway
-                    </button>
-                    <button
-                      type="button"
-                      className="primary-control downloading-btn"
-                      disabled={steamOpening}
-                      onClick={() => void openSteamAndContinue()}
-                    >
-                      {steamOpening ? 'Opening Steam...' : 'Open Steam and Play'}
-                    </button>
-                  </footer>
-                </section>
-              </div>
-            )}
-
-            {showSpacewarPrompt && (
-              <div className="dialog-backdrop" role="presentation">
-                <section className="install-modal" role="dialog" aria-modal="true" aria-labelledby="spacewar-title">
-                  <div className="modal-handle" />
-                  <header>
-                    <button type="button" onClick={() => setShowSpacewarPrompt(false)} aria-label="Cancel">
-                      <X size={17} />
-                    </button>
-                    <h2 id="spacewar-title">⚙️ Yêu cầu: Spacewar (App 480)</h2>
-                    <p>Launcher cần <strong>Spacewar</strong> được cài trên Steam để khởi chạy game. Đây là game miễn phí, mọi tài khoản Steam đều có thể tải.</p>
-                  </header>
-                  <div className="install-modal-body">
-                    <div style={{ background: 'rgba(77, 164, 255, 0.1)', border: '1px solid rgba(77, 164, 255, 0.35)', padding: '16px', borderRadius: '8px', color: '#b3d8ff', lineHeight: 1.7 }}>
-                      <p style={{ margin: 0 }}>
-                        🎮 Nhấn <strong>"Tải Spacewar"</strong> → Steam sẽ mở và tự động tải về.<br />
-                        Sau khi tải xong (chỉ ~15MB), nhấn <strong>Play</strong> lại trên Launcher.
-                      </p>
-                    </div>
-                  </div>
-                  <footer>
-                    <button type="button" className="secondary" onClick={() => setShowSpacewarPrompt(false)}>
-                      Hủy
-                    </button>
-                    <button
-                      type="button"
-                      className="primary-control downloading-btn"
-                      style={{ padding: '8px 20px', borderRadius: '6px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}
-                      disabled={spacewarDownloading}
-                      onClick={async () => {
-                        setSpacewarDownloading(true)
-                        try {
-                          await invoke('install_spacewar')
-                          setScanStatus('Steam đang tải Spacewar (app 480). Vui lòng chờ Steam xong rồi nhấn Play lại.')
-                        } catch (e) {
-                          setScanStatus('Không thể mở Steam: ' + String(e))
-                        } finally {
-                          setSpacewarDownloading(false)
-                          setShowSpacewarPrompt(false)
+                ) : activeTab === 'Settings' ? (
+                  <SettingsView
+                    preferences={preferences}
+                    launcherSettings={launcherSettings}
+                    onChange={updatePreference}
+                    onLauncherSettingChange={<K extends keyof LauncherSettings>(key: K, value: LauncherSettings[K]) => void updateLauncherSetting(key, value)}
+                    onChooseLibrary={() => void chooseDefaultLibraryRoot()}
+                    onOpenLibrary={() => void openDefaultLibraryRoot()}
+                    onOpenCache={() => setActiveTab('Cache')}
+                    onChooseCloudRoot={() => void chooseCloudSaveRoot()}
+                    onOpenCloudRoot={() => void openCloudSaveRoot()}
+                    onCheckForUpdates={() => void checkLauncherUpdateNow()}
+                    steamEnvironment={steamEnvironment}
+                    steamStatus={steamSettingsStatus}
+                    onRefreshSteam={() => void refreshSteamEnvironment(true)}
+                    onOpenSteam={() => void openSteamFromSettings('open_steam')}
+                    onRestartSteam={() => void openSteamFromSettings('restart_steam')}
+                    onOpenBigPicture={() => void openSteamFromSettings('open_steam_big_picture')}
+                    onReset={resetLauncherPreferences}
+                    onResetOnboarding={() => {
+                      updatePreference('onboardingCompleted', false)
+                      setActiveTab('Home')
+                    }}
+                    onManageNotifications={() => setNotificationOpen(true)}
+                    appVersion={appVersion}
+                    updateStatus={settingsUpdateStatus}
+                  />
+                ) : (
+                  <ActiveView
+                    activeTab={activeTab}
+                    catalog={activeTab === 'Updates' ? updatesCatalog : activeTab === 'Library' ? libraryCatalog : catalog}
+                    catalogLoadState={catalogLoadState}
+                    onRetryCatalog={() => void loadCatalog()}
+                    selectedGame={selectedGame}
+                    selectedGameId={selectedGameId}
+                    onSelectGame={(gameId) => {
+                      versionPlanSequenceRef.current += 1
+                      setSelectedGameId(gameId)
+                      setShowInstallOptions(false)
+                      setLaunchOptions(null)
+                      const game = catalog.games.find((candidate) => candidate.id === gameId)
+                      if (game) {
+                        const latest = game.availableVersions.find((version) => version.latest)?.version ?? game.latestVersion
+                        setSelectedVersion(latest)
+                        setInstallRoot(installMetadataForStoreRoot(game, game.install, preferences.defaultLibraryRoot).defaultInstallFolder)
+                        if (game.id !== DEFAULT_GAME_ID) {
+                          setInstallPath('')
+                          setScanStatus('No install found')
                         }
-                      }}
-                    >
-                      <Download size={16} />
-                      {spacewarDownloading ? 'Đang mở Steam...' : 'Tải Spacewar qua Steam'}
-                    </button>
-                  </footer>
-                </section>
+                      }
+                    }}
+                    onRequestAsset={requestGameAsset}
+                    detail={activeDetail}
+                    assets={assetUrls}
+                    snapshot={snapshot}
+                    installPath={installPath}
+                    installTarget={displayedInstallTarget}
+                    scanStatus={scanStatus}
+                    selectedVersion={targetVersion}
+                    selectedCurrentVersion={selectedCurrentVersion}
+                    selectedVersionInfo={selectedVersionInfo}
+                    selectedInstallState={selectedInstallState}
+                    verifyStatus={selectedVerifyStatus}
+                    installMode={installMode}
+                    updateReady={updateReady}
+                    showVersionAction={selectedInstalled && hasVersionChoices}
+                    canUpdate={canUpdate}
+                    isJobRunning={isRunning}
+                    isGameRunning={selectedGame ? playingGames[selectedGame.id] || false : false}
+                    onBrowse={chooseInstallFolder}
+                    onScan={() => scanFolder()}
+                    onPrimaryAction={openVersionOptions}
+                    onPlay={playSelectedGame}
+                    onStop={stopSelectedGame}
+                    onVerify={verifySelectedGame}
+                    onUninstall={uninstallSelectedGame}
+                    job={activeJob}
+                    hasJob={hasVisibleJob}
+                    progress={progress}
+                    phaseProgress={phaseProgress}
+                    updateSize={effectiveDownloadSize}
+                    isRunning={isRunning}
+                    onOpenInstallOptions={() => {
+                      void openVersionOptions()
+                    }}
+                    onPause={pauseOrResume}
+                    onCancel={cancelJob}
+                    onResume={resumeFailedJob}
+                    isPaused={isPaused}
+                    logs={activeJob.logs}
+                    onOpenStore={() => {
+                      setSelectedGameId(null)
+                      setActiveTab('Store')
+                    }}
+                    cloudSaveStatus={cloudSaveStatus}
+                    cloudSaveBusy={cloudSaveBusy}
+                    cloudLaunchBlocked={cloudLaunchBlocked}
+                    onToggleCloudSave={(enabled) => void toggleCloudSave(enabled)}
+                    onAddCloudSaveFolder={() => void addCloudSaveFolder()}
+                    onSyncCloudSave={() => void syncCloudSave()}
+                    onResolveCloudConflict={(conflictId, resolution) => void resolveCloudConflict(conflictId, resolution)}
+                    onRestoreCloudSnapshot={(snapshotId) => void restoreCloudSnapshot(snapshotId)}
+                    onLaunchWithoutCloudSync={launchWithoutCloudSync}
+                    onConnectGoogleDrive={() => void connectAndBackupGoogleDrive()}
+                    onDisconnectGoogleDrive={() =>
+                      void runGoogleDriveAction('disconnect_google_drive', 'Disconnecting Google Drive...')
+                    }
+                    onBackupGoogleDrive={() =>
+                      void runGoogleDriveAction('backup_save_game_to_google_drive', 'Backing up save files to Google Drive...')
+                    }
+                    onRestoreMissingSaveFiles={() =>
+                      void runGoogleDriveAction('restore_missing_save_files', 'Checking Google Drive for missing save files...')
+                    }
+                    cacheBusy={cacheBusy}
+                    onClearCache={() => void clearLauncherCache()}
+                    discordUser={discordAuth.state === 'authorized' ? discordAuth.user : null}
+                  />
+                )}
               </div>
-            )}
+              {showInstallOptions && selectedGame && activeDetail ? (
+                <InstallOptionsDialog
+                  detail={activeDetail}
+                  mode={installMode ? 'install' : 'version'}
+                  currentVersion={selectedCurrentVersion}
+                  selectedVersion={targetVersion}
+                  availableVersions={availableVersions}
+                  versionInfos={selectedGame.availableVersions.length > 0 ? selectedGame.availableVersions : activeDetail.versions}
+                  downloadSize={effectiveDownloadSize}
+                  installRoot={installMode ? installRoot : selectedInstallPath}
+                  downloadingRoot={downloadPathForInstallRoot(installMode ? installRoot : selectedInstallPath, gameInstall)}
+                  canStart={canApplySelectedVersion}
+                  isStarting={isStartingDownload}
+                  onVersionChange={changeTargetVersion}
+                  onChangeInstallRoot={chooseInstallTarget}
+                  onStart={startUpdate}
+                  onClose={() => setShowInstallOptions(false)}
+                />
+              ) : null}
+              {showDrivePicker ? (
+                <DriveLibraryPickerModal
+                  libraries={libraries}
+                  gameName={selectedGame ? gameFolderName(selectedGame) : '007 First Light'}
+                  currentRoot={installRoot}
+                  onSelect={applyLibraryDrive}
+                  onAddDrive={addLibraryDrive}
+                  onClose={() => setShowDrivePicker(false)}
+                />
+              ) : null}
+              {launchOptions && selectedGame ? (
+                <LaunchOptionsModal
+                  gameTitle={selectedGame.title}
+                  config={launchOptions}
+                  onClose={() => setLaunchOptions(null)}
+                  onLaunch={(optionId, optionTitle) => {
+                    setLaunchOptions(null)
+                    void doLaunchGame(optionId, optionTitle)
+                  }}
+                />
+              ) : null}
+              {launchSplash ? <LaunchSplash splash={launchSplash} /> : null}
+              {showNvidiaToast && <NvidiaToast onDismiss={() => setShowNvidiaToast(false)} />}
 
-            {showLogoutConfirm && (
-              <div className="dialog-backdrop" role="presentation" onClick={() => setShowLogoutConfirm(false)}>
-                <section
-                  className="logout-modal"
-                  role="dialog"
-                  aria-modal="true"
-                  aria-labelledby="logout-title"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div className="logout-modal-icon">
-                    <svg width="36" height="36" viewBox="0 0 127.14 96.36" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z" fill="#5865f2" />
-                    </svg>
-                  </div>
-                  <h3 id="logout-title" className="logout-modal-title">Sign Out of Discord</h3>
-                  <p className="logout-modal-desc">Are you sure you want to sign out?<br />You will need to re-authorize to use online features.</p>
-                  <div className="logout-modal-actions">
-                    <button type="button" className="logout-modal-btn cancel" onClick={() => setShowLogoutConfirm(false)}>
-                      Cancel
-                    </button>
-                    <button type="button" className="logout-modal-btn confirm" onClick={() => void executeLogoutDiscord()}>
-                      Sign Out
-                    </button>
-                  </div>
-                </section>
-              </div>
-            )}
-          </section>
-        </main>
-        <UpdateCenter
-          open={showUpdateCenter}
-          update={launcherUpdate}
-          progress={launcherUpdateProgress}
-          speed={launcherUpdateSpeed}
-          eta={launcherUpdateEta}
-          onClose={() => setShowUpdateCenter(false)}
-          onStart={() => void applyLauncherUpdate()}
-          onRetry={() => void applyLauncherUpdate()}
-        />
-        <NotificationToasts
-          notifications={toastNotifications}
-          onOpen={openNotificationRecord}
-          onDismiss={(notificationId) =>
-            setToastNotifications((current) => current.filter((item) => item.id !== notificationId))
-          }
-        />
-        {!preferences.onboardingCompleted ? (
-          <Onboarding
-            onComplete={() => updatePreference('onboardingCompleted', true)}
-            onEnableWindowsNotifications={() => void enableWindowsNotifications()}
-          />
-        ) : null}
-        {showDonate ? (
-          <div className="donate-modal-backdrop" role="presentation" onMouseDown={() => setShowDonate(false)}>
-            <section
-              className="donate-modal"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="donate-title"
-              onMouseDown={(event) => event.stopPropagation()}
-            >
-              <button type="button" className="donate-modal-close" onClick={() => setShowDonate(false)} aria-label="Close">
-                <X size={18} />
-              </button>
-              <div className="donate-modal-copy">
-                <span><Heart size={18} /></span>
-                <h2 id="donate-title">Support 0xoLemon</h2>
-                <p>Scan the QR code with your banking app. Donation is optional and does not unlock launcher features.</p>
-              </div>
-              <img src={donateImage} alt="0xoLemon donation QR code" />
+              {showUninstallConfirm && selectedGame ? (
+                <div className="dialog-backdrop" role="presentation">
+                  <section className="install-modal" role="dialog" aria-modal="true" aria-labelledby="uninstall-title">
+                    <div className="modal-handle" />
+                    <header>
+                      <button type="button" onClick={() => setShowUninstallConfirm(false)} aria-label="Cancel">
+                        <X size={17} />
+                      </button>
+                      <h2 id="uninstall-title">Confirm Uninstall</h2>
+                      <p>Are you sure you want to uninstall {selectedGame.title}?</p>
+                    </header>
+                    <div className="install-modal-body">
+                      <div className="warning-box" style={{ background: 'rgba(255, 60, 60, 0.1)', border: '1px solid rgba(255, 60, 60, 0.3)', padding: '16px', borderRadius: '8px', color: '#ffb3b3' }}>
+                        <CircleAlert size={20} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '10px' }} />
+                        <span style={{ verticalAlign: 'middle' }}>This will permanently delete all local files for this game from your hard drive.</span>
+                      </div>
+                    </div>
+                    <footer>
+                      <button type="button" className="secondary" onClick={() => setShowUninstallConfirm(false)}>
+                        Cancel
+                      </button>
+                      <button type="button" className="danger-control" onClick={executeUninstall} style={{ padding: '8px 24px', background: '#e53935', color: '#fff', border: 'none', borderRadius: '4px', fontWeight: 'bold' }}>
+                        Uninstall
+                      </button>
+                    </footer>
+                  </section>
+                </div>
+              ) : null}
+
+              {showSteamRecommendation && (
+                <div className="dialog-backdrop" role="presentation">
+                  <section className="install-modal" role="dialog" aria-modal="true" aria-labelledby="steam-recommendation-title">
+                    <div className="modal-handle" />
+                    <header>
+                      <button type="button" onClick={() => setShowSteamRecommendation(false)} aria-label="Cancel">
+                        <X size={17} />
+                      </button>
+                      <h2 id="steam-recommendation-title">Steam recommended</h2>
+                      <p>We're recommended you to open Steam to play online</p>
+                    </header>
+                    <div className="install-modal-body">
+                      <div style={{ background: 'rgba(77, 164, 255, 0.1)', border: '1px solid rgba(77, 164, 255, 0.35)', padding: '16px', borderRadius: '8px', color: '#b3d8ff', lineHeight: 1.7 }}>
+                        Steam is not running. Opening it first improves compatibility for online play and Steam-based services.
+                      </div>
+                    </div>
+                    <footer>
+                      <button
+                        type="button"
+                        className="secondary"
+                        disabled={steamOpening}
+                        onClick={() => {
+                          setShowSteamRecommendation(false)
+                          void continuePlaySelectedGame()
+                        }}
+                      >
+                        Continue anyway
+                      </button>
+                      <button
+                        type="button"
+                        className="primary-control downloading-btn"
+                        disabled={steamOpening}
+                        onClick={() => void openSteamAndContinue()}
+                      >
+                        {steamOpening ? 'Opening Steam...' : 'Open Steam and Play'}
+                      </button>
+                    </footer>
+                  </section>
+                </div>
+              )}
+
+              {showSpacewarPrompt && (
+                <div className="dialog-backdrop" role="presentation">
+                  <section className="install-modal" role="dialog" aria-modal="true" aria-labelledby="spacewar-title">
+                    <div className="modal-handle" />
+                    <header>
+                      <button type="button" onClick={() => setShowSpacewarPrompt(false)} aria-label="Cancel">
+                        <X size={17} />
+                      </button>
+                      <h2 id="spacewar-title">⚙️ Yêu cầu: Spacewar (App 480)</h2>
+                      <p>Launcher cần <strong>Spacewar</strong> được cài trên Steam để khởi chạy game. Đây là game miễn phí, mọi tài khoản Steam đều có thể tải.</p>
+                    </header>
+                    <div className="install-modal-body">
+                      <div style={{ background: 'rgba(77, 164, 255, 0.1)', border: '1px solid rgba(77, 164, 255, 0.35)', padding: '16px', borderRadius: '8px', color: '#b3d8ff', lineHeight: 1.7 }}>
+                        <p style={{ margin: 0 }}>
+                          🎮 Nhấn <strong>"Tải Spacewar"</strong> → Steam sẽ mở và tự động tải về.<br />
+                          Sau khi tải xong (chỉ ~15MB), nhấn <strong>Play</strong> lại trên Launcher.
+                        </p>
+                      </div>
+                    </div>
+                    <footer>
+                      <button type="button" className="secondary" onClick={() => setShowSpacewarPrompt(false)}>
+                        Hủy
+                      </button>
+                      <button
+                        type="button"
+                        className="primary-control downloading-btn"
+                        style={{ padding: '8px 20px', borderRadius: '6px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}
+                        disabled={spacewarDownloading}
+                        onClick={async () => {
+                          setSpacewarDownloading(true)
+                          try {
+                            await invoke('install_spacewar')
+                            setScanStatus('Steam đang tải Spacewar (app 480). Vui lòng chờ Steam xong rồi nhấn Play lại.')
+                          } catch (e) {
+                            setScanStatus('Không thể mở Steam: ' + String(e))
+                          } finally {
+                            setSpacewarDownloading(false)
+                            setShowSpacewarPrompt(false)
+                          }
+                        }}
+                      >
+                        <Download size={16} />
+                        {spacewarDownloading ? 'Đang mở Steam...' : 'Tải Spacewar qua Steam'}
+                      </button>
+                    </footer>
+                  </section>
+                </div>
+              )}
+
+              {showLogoutConfirm && (
+                <div className="dialog-backdrop" role="presentation" onClick={() => setShowLogoutConfirm(false)}>
+                  <section
+                    className="logout-modal"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="logout-title"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="logout-modal-icon">
+                      <svg width="36" height="36" viewBox="0 0 127.14 96.36" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z" fill="#5865f2" />
+                      </svg>
+                    </div>
+                    <h3 id="logout-title" className="logout-modal-title">Sign Out of Discord</h3>
+                    <p className="logout-modal-desc">Are you sure you want to sign out?<br />You will need to re-authorize to use online features.</p>
+                    <div className="logout-modal-actions">
+                      <button type="button" className="logout-modal-btn cancel" onClick={() => setShowLogoutConfirm(false)}>
+                        Cancel
+                      </button>
+                      <button type="button" className="logout-modal-btn confirm" onClick={() => void executeLogoutDiscord()}>
+                        Sign Out
+                      </button>
+                    </div>
+                  </section>
+                </div>
+              )}
             </section>
+          </main>
+          <UpdateCenter
+            open={showUpdateCenter}
+            update={launcherUpdate}
+            progress={launcherUpdateProgress}
+            speed={launcherUpdateSpeed}
+            eta={launcherUpdateEta}
+            onClose={() => setShowUpdateCenter(false)}
+            onStart={() => void applyLauncherUpdate()}
+            onRetry={() => void applyLauncherUpdate()}
+          />
+          <NotificationToasts
+            notifications={toastNotifications}
+            onOpen={openNotificationRecord}
+            onDismiss={(notificationId) =>
+              setToastNotifications((current) => current.filter((item) => item.id !== notificationId))
+            }
+          />
+          {!preferences.onboardingCompleted ? (
+            <Onboarding
+              onComplete={() => updatePreference('onboardingCompleted', true)}
+              onEnableWindowsNotifications={() => void enableWindowsNotifications()}
+            />
+          ) : null}
+          {showDonate ? (
+            <div className="donate-modal-backdrop" role="presentation" onMouseDown={() => setShowDonate(false)}>
+              <section
+                className="donate-modal"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="donate-title"
+                onMouseDown={(event) => event.stopPropagation()}
+              >
+                <button type="button" className="donate-modal-close" onClick={() => setShowDonate(false)} aria-label="Close">
+                  <X size={18} />
+                </button>
+                <div className="donate-modal-copy">
+                  <span><Heart size={18} /></span>
+                  <h2 id="donate-title">Support 0xoLemon</h2>
+                  <p>Scan the QR code with your banking app. Donation is optional and does not unlock launcher features.</p>
+                </div>
+                <img src={donateImage} alt="0xoLemon donation QR code" />
+              </section>
+            </div>
+          ) : null}
+          {/* Gate shown when intro starts exiting (introExiting=true at 2400ms) so no gap */}
+          <div style={!introExiting ? { visibility: 'hidden', pointerEvents: 'none' } : undefined}>
+            <DiscordAccessGate
+              status={offlineModeEnabled ? { ...discordAuth, state: 'authorized' } : discordAuth}
+              busy={discordAuthBusy}
+              onLogin={() => void loginDiscord()}
+              onRefresh={() => void refreshDiscordAccess(true)}
+              onJoinServer={() => void openUrl(discordAuth.guildInvite)}
+              onLogout={() => void executeLogoutDiscord()}
+              onEnterOfflineMode={() => setOfflineModeEnabled(true)}
+            />
           </div>
-        ) : null}
-        {/* Gate hidden until intro exit animation starts (introExiting=true at 2400ms) */}
-        <div style={!introExiting ? { visibility: 'hidden', pointerEvents: 'none' } : undefined}>
-          <DiscordAccessGate
-            status={offlineModeEnabled ? { ...discordAuth, state: 'authorized' } : discordAuth}
-            busy={discordAuthBusy}
-            onLogin={() => void loginDiscord()}
-            onRefresh={() => void refreshDiscordAccess(true)}
-            onJoinServer={() => void openUrl(discordAuth.guildInvite)}
-            onLogout={() => void executeLogoutDiscord()}
-            onEnterOfflineMode={() => setOfflineModeEnabled(true)}
+          {discordAuth.state === 'authorized' && discordAuth.user ? (
+            <FirebaseRemoteControl
+              user={discordAuth.user}
+              catalog={catalog}
+              installStates={installStates}
+              runtimeStates={runtimeStates}
+              setCatalog={setCatalog}
+              setInstallStates={setInstallStates}
+              setRuntimeStates={setRuntimeStates}
+            />
+          ) : null}
+
+          {showWhatsNewModal && (
+            <ChangelogModal onClose={() => setShowWhatsNewModal(false)} />
+          )}
+
+          <DefenderExclusionDialog
+            isOpen={defenderExclusion.isDialogOpen}
+            path={defenderExclusion.exclusionPath}
+            onClose={defenderExclusion.handleClose}
+            onAccept={defenderExclusion.handleAccept}
           />
         </div>
-        {discordAuth.state === 'authorized' && discordAuth.user ? (
-          <FirebaseRemoteControl
-            user={discordAuth.user}
-            catalog={catalog}
-            installStates={installStates}
-            runtimeStates={runtimeStates}
-            setCatalog={setCatalog}
-            setInstallStates={setInstallStates}
-            setRuntimeStates={setRuntimeStates}
-          />
-        ) : null}
-
-        {showWhatsNewModal && (
-          <ChangelogModal onClose={() => setShowWhatsNewModal(false)} />
-        )}
-      </div>
+      )}
     </MotionConfig>
   )
 }

@@ -1,0 +1,10 @@
+^E:\007LAUNCHER\NATIVE\.DEPS\PROTOBUF-SRC\CMAKE\CMAKELISTS.TXT
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SE:/007Launcher/native/steam_hook -BE:/007Launcher/native/steam_hook/build --check-stamp-file E:/007Launcher/native/steam_hook/build/_deps/protobuf-build/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

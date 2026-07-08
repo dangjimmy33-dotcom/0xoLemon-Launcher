@@ -60,6 +60,7 @@ events:
         - "C:\\Program Files\\CMake\\bin"
         - "C:\\Program Files (x86)\\dotnet\\"
         - "C:\\Program Files (x86)\\Google\\Cloud SDK\\google-cloud-sdk\\bin"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit\\"
         - "C:\\Program Files\\Eclipse Adoptium\\jdk-25.0.2.10-hotspot\\bin"
         - "C:\\Python314\\Scripts\\"
         - "C:\\Python314\\"
@@ -121,7 +122,7 @@ events:
       The output was:
       0
       MSBuild version 17.14.40+3e7442088 for .NET Framework
-      Build started 7/5/2026 2:59:23 PM.
+      Build started 7/7/2026 8:50:28 AM.
       
       Project "E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\4.3.1\\CompilerIdC\\CompilerIdC.vcxproj" on node 1 (default targets).
       PrepareForBuild:
@@ -150,7 +151,7 @@ events:
           0 Warning(s)
           0 Error(s)
       
-      Time Elapsed 00:00:01.31
+      Time Elapsed 00:00:00.43
       
       
       Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CompilerIdC.exe"
@@ -203,6 +204,7 @@ events:
       - "C:/Program Files/CMake/bin/"
       - "C:/Program Files (x86)/dotnet/"
       - "C:/Program Files (x86)/Google/Cloud SDK/google-cloud-sdk/bin/"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/"
       - "E:/cursor/resources/app/codeBin/"
       - "C:/Users/conte/AppData/Local/Programs/Python/Python312/Scripts/"
       - "C:/Users/conte/AppData/Local/Programs/Python/Python312/"
@@ -249,6 +251,7 @@ events:
         - "C:\\Program Files\\CMake\\bin"
         - "C:\\Program Files (x86)\\dotnet\\"
         - "C:\\Program Files (x86)\\Google\\Cloud SDK\\google-cloud-sdk\\bin"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit\\"
         - "C:\\Program Files\\Eclipse Adoptium\\jdk-25.0.2.10-hotspot\\bin"
         - "C:\\Python314\\Scripts\\"
         - "C:\\Python314\\"
@@ -337,6 +340,7 @@ events:
       - "C:/Program Files/CMake/bin/"
       - "C:/Program Files (x86)/dotnet/"
       - "C:/Program Files (x86)/Google/Cloud SDK/google-cloud-sdk/bin/"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/"
       - "E:/cursor/resources/app/codeBin/"
       - "C:/Users/conte/AppData/Local/Programs/Python/Python312/Scripts/"
       - "C:/Users/conte/AppData/Local/Programs/Python/Python312/"
@@ -417,6 +421,9 @@ events:
       - "C:/Program Files (x86)/Google/Cloud SDK/google-cloud-sdk/bin/lld-link.com"
       - "C:/Program Files (x86)/Google/Cloud SDK/google-cloud-sdk/bin/lld-link.exe"
       - "C:/Program Files (x86)/Google/Cloud SDK/google-cloud-sdk/bin/lld-link"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/lld-link.com"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/lld-link.exe"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/lld-link"
       - "E:/cursor/resources/app/codeBin/lld-link.com"
       - "E:/cursor/resources/app/codeBin/lld-link.exe"
       - "E:/cursor/resources/app/codeBin/lld-link"
@@ -493,6 +500,7 @@ events:
         - "C:\\Program Files\\CMake\\bin"
         - "C:\\Program Files (x86)\\dotnet\\"
         - "C:\\Program Files (x86)\\Google\\Cloud SDK\\google-cloud-sdk\\bin"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit\\"
         - "C:\\Program Files\\Eclipse Adoptium\\jdk-25.0.2.10-hotspot\\bin"
         - "C:\\Python314\\Scripts\\"
         - "C:\\Python314\\"
@@ -579,6 +587,7 @@ events:
       - "C:/Program Files/CMake/bin/"
       - "C:/Program Files (x86)/dotnet/"
       - "C:/Program Files (x86)/Google/Cloud SDK/google-cloud-sdk/bin/"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/"
       - "E:/cursor/resources/app/codeBin/"
       - "C:/Users/conte/AppData/Local/Programs/Python/Python312/Scripts/"
       - "C:/Users/conte/AppData/Local/Programs/Python/Python312/"
@@ -625,6 +634,7 @@ events:
         - "C:\\Program Files\\CMake\\bin"
         - "C:\\Program Files (x86)\\dotnet\\"
         - "C:\\Program Files (x86)\\Google\\Cloud SDK\\google-cloud-sdk\\bin"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit\\"
         - "C:\\Program Files\\Eclipse Adoptium\\jdk-25.0.2.10-hotspot\\bin"
         - "C:\\Python314\\Scripts\\"
         - "C:\\Python314\\"
@@ -711,6 +721,7 @@ events:
       - "C:/Program Files/CMake/bin/"
       - "C:/Program Files (x86)/dotnet/"
       - "C:/Program Files (x86)/Google/Cloud SDK/google-cloud-sdk/bin/"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/"
       - "E:/cursor/resources/app/codeBin/"
       - "C:/Users/conte/AppData/Local/Programs/Python/Python312/Scripts/"
       - "C:/Users/conte/AppData/Local/Programs/Python/Python312/"
@@ -791,6 +802,9 @@ events:
       - "C:/Program Files (x86)/Google/Cloud SDK/google-cloud-sdk/bin/mt.com"
       - "C:/Program Files (x86)/Google/Cloud SDK/google-cloud-sdk/bin/mt.exe"
       - "C:/Program Files (x86)/Google/Cloud SDK/google-cloud-sdk/bin/mt"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/mt.com"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/mt.exe"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/mt"
       - "E:/cursor/resources/app/codeBin/mt.com"
       - "E:/cursor/resources/app/codeBin/mt.exe"
       - "E:/cursor/resources/app/codeBin/mt"
@@ -867,6 +881,7 @@ events:
         - "C:\\Program Files\\CMake\\bin"
         - "C:\\Program Files (x86)\\dotnet\\"
         - "C:\\Program Files (x86)\\Google\\Cloud SDK\\google-cloud-sdk\\bin"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit\\"
         - "C:\\Program Files\\Eclipse Adoptium\\jdk-25.0.2.10-hotspot\\bin"
         - "C:\\Python314\\Scripts\\"
         - "C:\\Python314\\"
@@ -953,6 +968,7 @@ events:
       - "C:/Program Files/CMake/bin/"
       - "C:/Program Files (x86)/dotnet/"
       - "C:/Program Files (x86)/Google/Cloud SDK/google-cloud-sdk/bin/"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/"
       - "E:/cursor/resources/app/codeBin/"
       - "C:/Users/conte/AppData/Local/Programs/Python/Python312/Scripts/"
       - "C:/Users/conte/AppData/Local/Programs/Python/Python312/"
@@ -999,6 +1015,7 @@ events:
         - "C:\\Program Files\\CMake\\bin"
         - "C:\\Program Files (x86)\\dotnet\\"
         - "C:\\Program Files (x86)\\Google\\Cloud SDK\\google-cloud-sdk\\bin"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit\\"
         - "C:\\Program Files\\Eclipse Adoptium\\jdk-25.0.2.10-hotspot\\bin"
         - "C:\\Python314\\Scripts\\"
         - "C:\\Python314\\"
@@ -1096,6 +1113,7 @@ events:
         - "C:\\Program Files\\CMake\\bin"
         - "C:\\Program Files (x86)\\dotnet\\"
         - "C:\\Program Files (x86)\\Google\\Cloud SDK\\google-cloud-sdk\\bin"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit\\"
         - "C:\\Program Files\\Eclipse Adoptium\\jdk-25.0.2.10-hotspot\\bin"
         - "C:\\Python314\\Scripts\\"
         - "C:\\Python314\\"
@@ -1157,7 +1175,7 @@ events:
       The output was:
       0
       MSBuild version 17.14.40+3e7442088 for .NET Framework
-      Build started 7/5/2026 2:59:24 PM.
+      Build started 7/7/2026 8:50:29 AM.
       
       Project "E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\4.3.1\\CompilerIdCXX\\CompilerIdCXX.vcxproj" on node 1 (default targets).
       PrepareForBuild:
@@ -1186,7 +1204,7 @@ events:
           0 Warning(s)
           0 Error(s)
       
-      Time Elapsed 00:00:00.64
+      Time Elapsed 00:00:00.43
       
       
       Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CompilerIdCXX.exe"
@@ -1239,6 +1257,7 @@ events:
       - "C:/Program Files/CMake/bin/"
       - "C:/Program Files (x86)/dotnet/"
       - "C:/Program Files (x86)/Google/Cloud SDK/google-cloud-sdk/bin/"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/"
       - "E:/cursor/resources/app/codeBin/"
       - "C:/Users/conte/AppData/Local/Programs/Python/Python312/Scripts/"
       - "C:/Users/conte/AppData/Local/Programs/Python/Python312/"
@@ -1319,6 +1338,9 @@ events:
       - "C:/Program Files (x86)/Google/Cloud SDK/google-cloud-sdk/bin/lld-link.com"
       - "C:/Program Files (x86)/Google/Cloud SDK/google-cloud-sdk/bin/lld-link.exe"
       - "C:/Program Files (x86)/Google/Cloud SDK/google-cloud-sdk/bin/lld-link"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/lld-link.com"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/lld-link.exe"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/lld-link"
       - "E:/cursor/resources/app/codeBin/lld-link.com"
       - "E:/cursor/resources/app/codeBin/lld-link.exe"
       - "E:/cursor/resources/app/codeBin/lld-link"
@@ -1395,6 +1417,7 @@ events:
         - "C:\\Program Files\\CMake\\bin"
         - "C:\\Program Files (x86)\\dotnet\\"
         - "C:\\Program Files (x86)\\Google\\Cloud SDK\\google-cloud-sdk\\bin"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit\\"
         - "C:\\Program Files\\Eclipse Adoptium\\jdk-25.0.2.10-hotspot\\bin"
         - "C:\\Python314\\Scripts\\"
         - "C:\\Python314\\"
@@ -1483,6 +1506,7 @@ events:
       - "C:/Program Files/CMake/bin/"
       - "C:/Program Files (x86)/dotnet/"
       - "C:/Program Files (x86)/Google/Cloud SDK/google-cloud-sdk/bin/"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/"
       - "E:/cursor/resources/app/codeBin/"
       - "C:/Users/conte/AppData/Local/Programs/Python/Python312/Scripts/"
       - "C:/Users/conte/AppData/Local/Programs/Python/Python312/"
@@ -1572,6 +1596,9 @@ events:
       - "C:/Program Files (x86)/Google/Cloud SDK/google-cloud-sdk/bin/rc.com"
       - "C:/Program Files (x86)/Google/Cloud SDK/google-cloud-sdk/bin/rc.exe"
       - "C:/Program Files (x86)/Google/Cloud SDK/google-cloud-sdk/bin/rc"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/rc.com"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/rc.exe"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/rc"
       - "E:/cursor/resources/app/codeBin/rc.com"
       - "E:/cursor/resources/app/codeBin/rc.exe"
       - "E:/cursor/resources/app/codeBin/rc"
@@ -1684,6 +1711,7 @@ events:
         - "C:\\Program Files\\CMake\\bin"
         - "C:\\Program Files (x86)\\dotnet\\"
         - "C:\\Program Files (x86)\\Google\\Cloud SDK\\google-cloud-sdk\\bin"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit\\"
         - "C:\\Program Files\\Eclipse Adoptium\\jdk-25.0.2.10-hotspot\\bin"
         - "C:\\Python314\\Scripts\\"
         - "C:\\Python314\\"
@@ -1744,8 +1772,8 @@ events:
     checks:
       - "Detecting C compiler ABI info"
     directories:
-      source: "E:/007Launcher/native/cloud_redirect/build/CMakeFiles/CMakeScratch/TryCompile-cj4wzj"
-      binary: "E:/007Launcher/native/cloud_redirect/build/CMakeFiles/CMakeScratch/TryCompile-cj4wzj"
+      source: "E:/007Launcher/native/cloud_redirect/build/CMakeFiles/CMakeScratch/TryCompile-0uunxb"
+      binary: "E:/007Launcher/native/cloud_redirect/build/CMakeFiles/CMakeScratch/TryCompile-0uunxb"
     cmakeVariables:
       CMAKE_CXX_STDLIB_MODULES_JSON: ""
       CMAKE_C_FLAGS: "/DWIN32 /D_WINDOWS"
@@ -1755,39 +1783,39 @@ events:
       variable: "CMAKE_C_ABI_COMPILED"
       cached: true
       stdout: |
-        Change Dir: 'E:/007Launcher/native/cloud_redirect/build/CMakeFiles/CMakeScratch/TryCompile-cj4wzj'
+        Change Dir: 'E:/007Launcher/native/cloud_redirect/build/CMakeFiles/CMakeScratch/TryCompile-0uunxb'
         
-        Run Build Command(s): "E:/visual studio 2022/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_a6091.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        Run Build Command(s): "E:/visual studio 2022/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_ad109.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
         MSBuild version 17.14.40+3e7442088 for .NET Framework
-        Build started 7/5/2026 2:59:25 PM.
+        Build started 7/7/2026 8:50:29 AM.
         
-        Project "E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\CMakeScratch\\TryCompile-cj4wzj\\cmTC_a6091.vcxproj" on node 1 (default targets).
+        Project "E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\CMakeScratch\\TryCompile-0uunxb\\cmTC_ad109.vcxproj" on node 1 (default targets).
         PrepareForBuild:
           Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
-          Creating directory "E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\CMakeScratch\\TryCompile-cj4wzj\\Debug\\".
-          Creating directory "cmTC_a6091.dir\\Debug\\cmTC_a6091.tlog\\".
+          Creating directory "E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\CMakeScratch\\TryCompile-0uunxb\\Debug\\".
+          Creating directory "cmTC_ad109.dir\\Debug\\cmTC_ad109.tlog\\".
         InitializeBuildStatus:
-          Creating "cmTC_a6091.dir\\Debug\\cmTC_a6091.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
-          Touching "cmTC_a6091.dir\\Debug\\cmTC_a6091.tlog\\unsuccessfulbuild".
+          Creating "cmTC_ad109.dir\\Debug\\cmTC_ad109.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
+          Touching "cmTC_ad109.dir\\Debug\\cmTC_ad109.tlog\\unsuccessfulbuild".
         ClCompile:
-          E:\\visual studio 2022\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_a6091.dir\\Debug\\\\" /Fd"cmTC_a6091.dir\\Debug\\vc143.pdb" /external:W1 /TC /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-4.3\\Modules\\CMakeCCompilerABI.c"
+          E:\\visual studio 2022\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_ad109.dir\\Debug\\\\" /Fd"cmTC_ad109.dir\\Debug\\vc143.pdb" /external:W1 /TC /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-4.3\\Modules\\CMakeCCompilerABI.c"
           Microsoft (R) C/C++ Optimizing Compiler Version 19.44.35228 for x64
           Copyright (C) Microsoft Corporation.  All rights reserved.
-          cl /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_a6091.dir\\Debug\\\\" /Fd"cmTC_a6091.dir\\Debug\\vc143.pdb" /external:W1 /TC /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-4.3\\Modules\\CMakeCCompilerABI.c"
+          cl /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_ad109.dir\\Debug\\\\" /Fd"cmTC_ad109.dir\\Debug\\vc143.pdb" /external:W1 /TC /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-4.3\\Modules\\CMakeCCompilerABI.c"
           CMakeCCompilerABI.c
         Link:
-          E:\\visual studio 2022\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\link.exe /OUT:"E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\CMakeScratch\\TryCompile-cj4wzj\\Debug\\cmTC_a6091.exe" /INCREMENTAL /ILK:"cmTC_a6091.dir\\Debug\\cmTC_a6091.ilk" /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"E:/007Launcher/native/cloud_redirect/build/CMakeFiles/CMakeScratch/TryCompile-cj4wzj/Debug/cmTC_a6091.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /IMPLIB:"E:/007Launcher/native/cloud_redirect/build/CMakeFiles/CMakeScratch/TryCompile-cj4wzj/Debug/cmTC_a6091.lib" /MACHINE:X64  /machine:x64 cmTC_a6091.dir\\Debug\\CMakeCCompilerABI.obj
-          cmTC_a6091.vcxproj -> E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\CMakeScratch\\TryCompile-cj4wzj\\Debug\\cmTC_a6091.exe
+          E:\\visual studio 2022\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\link.exe /OUT:"E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\CMakeScratch\\TryCompile-0uunxb\\Debug\\cmTC_ad109.exe" /INCREMENTAL /ILK:"cmTC_ad109.dir\\Debug\\cmTC_ad109.ilk" /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"E:/007Launcher/native/cloud_redirect/build/CMakeFiles/CMakeScratch/TryCompile-0uunxb/Debug/cmTC_ad109.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /IMPLIB:"E:/007Launcher/native/cloud_redirect/build/CMakeFiles/CMakeScratch/TryCompile-0uunxb/Debug/cmTC_ad109.lib" /MACHINE:X64  /machine:x64 cmTC_ad109.dir\\Debug\\CMakeCCompilerABI.obj
+          cmTC_ad109.vcxproj -> E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\CMakeScratch\\TryCompile-0uunxb\\Debug\\cmTC_ad109.exe
         FinalizeBuildStatus:
-          Deleting file "cmTC_a6091.dir\\Debug\\cmTC_a6091.tlog\\unsuccessfulbuild".
-          Touching "cmTC_a6091.dir\\Debug\\cmTC_a6091.tlog\\cmTC_a6091.lastbuildstate".
-        Done Building Project "E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\CMakeScratch\\TryCompile-cj4wzj\\cmTC_a6091.vcxproj" (default targets).
+          Deleting file "cmTC_ad109.dir\\Debug\\cmTC_ad109.tlog\\unsuccessfulbuild".
+          Touching "cmTC_ad109.dir\\Debug\\cmTC_ad109.tlog\\cmTC_ad109.lastbuildstate".
+        Done Building Project "E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\CMakeScratch\\TryCompile-0uunxb\\cmTC_ad109.vcxproj" (default targets).
         
         Build succeeded.
             0 Warning(s)
             0 Error(s)
         
-        Time Elapsed 00:00:00.48
+        Time Elapsed 00:00:00.43
         
       exitCode: 0
   -
@@ -1827,8 +1855,8 @@ events:
     checks:
       - "Detecting CXX compiler ABI info"
     directories:
-      source: "E:/007Launcher/native/cloud_redirect/build/CMakeFiles/CMakeScratch/TryCompile-w0696d"
-      binary: "E:/007Launcher/native/cloud_redirect/build/CMakeFiles/CMakeScratch/TryCompile-w0696d"
+      source: "E:/007Launcher/native/cloud_redirect/build/CMakeFiles/CMakeScratch/TryCompile-rvcenr"
+      binary: "E:/007Launcher/native/cloud_redirect/build/CMakeFiles/CMakeScratch/TryCompile-rvcenr"
     cmakeVariables:
       CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /EHsc"
       CMAKE_CXX_FLAGS_DEBUG: "/Zi /Ob0 /Od /RTC1"
@@ -1839,39 +1867,39 @@ events:
       variable: "CMAKE_CXX_ABI_COMPILED"
       cached: true
       stdout: |
-        Change Dir: 'E:/007Launcher/native/cloud_redirect/build/CMakeFiles/CMakeScratch/TryCompile-w0696d'
+        Change Dir: 'E:/007Launcher/native/cloud_redirect/build/CMakeFiles/CMakeScratch/TryCompile-rvcenr'
         
-        Run Build Command(s): "E:/visual studio 2022/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_d675f.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        Run Build Command(s): "E:/visual studio 2022/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_1c948.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
         MSBuild version 17.14.40+3e7442088 for .NET Framework
-        Build started 7/5/2026 2:59:26 PM.
+        Build started 7/7/2026 8:50:30 AM.
         
-        Project "E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\CMakeScratch\\TryCompile-w0696d\\cmTC_d675f.vcxproj" on node 1 (default targets).
+        Project "E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\CMakeScratch\\TryCompile-rvcenr\\cmTC_1c948.vcxproj" on node 1 (default targets).
         PrepareForBuild:
           Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
-          Creating directory "E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\CMakeScratch\\TryCompile-w0696d\\Debug\\".
-          Creating directory "cmTC_d675f.dir\\Debug\\cmTC_d675f.tlog\\".
+          Creating directory "E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\CMakeScratch\\TryCompile-rvcenr\\Debug\\".
+          Creating directory "cmTC_1c948.dir\\Debug\\cmTC_1c948.tlog\\".
         InitializeBuildStatus:
-          Creating "cmTC_d675f.dir\\Debug\\cmTC_d675f.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
-          Touching "cmTC_d675f.dir\\Debug\\cmTC_d675f.tlog\\unsuccessfulbuild".
+          Creating "cmTC_1c948.dir\\Debug\\cmTC_1c948.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
+          Touching "cmTC_1c948.dir\\Debug\\cmTC_1c948.tlog\\unsuccessfulbuild".
         ClCompile:
-          E:\\visual studio 2022\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /Fo"cmTC_d675f.dir\\Debug\\\\" /Fd"cmTC_d675f.dir\\Debug\\vc143.pdb" /external:W1 /TP /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-4.3\\Modules\\CMakeCXXCompilerABI.cpp"
+          E:\\visual studio 2022\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /Fo"cmTC_1c948.dir\\Debug\\\\" /Fd"cmTC_1c948.dir\\Debug\\vc143.pdb" /external:W1 /TP /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-4.3\\Modules\\CMakeCXXCompilerABI.cpp"
           Microsoft (R) C/C++ Optimizing Compiler Version 19.44.35228 for x64
           Copyright (C) Microsoft Corporation.  All rights reserved.
-          cl /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /Fo"cmTC_d675f.dir\\Debug\\\\" /Fd"cmTC_d675f.dir\\Debug\\vc143.pdb" /external:W1 /TP /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-4.3\\Modules\\CMakeCXXCompilerABI.cpp"
+          cl /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /Fo"cmTC_1c948.dir\\Debug\\\\" /Fd"cmTC_1c948.dir\\Debug\\vc143.pdb" /external:W1 /TP /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-4.3\\Modules\\CMakeCXXCompilerABI.cpp"
           CMakeCXXCompilerABI.cpp
         Link:
-          E:\\visual studio 2022\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\link.exe /OUT:"E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\CMakeScratch\\TryCompile-w0696d\\Debug\\cmTC_d675f.exe" /INCREMENTAL /ILK:"cmTC_d675f.dir\\Debug\\cmTC_d675f.ilk" /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"E:/007Launcher/native/cloud_redirect/build/CMakeFiles/CMakeScratch/TryCompile-w0696d/Debug/cmTC_d675f.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /IMPLIB:"E:/007Launcher/native/cloud_redirect/build/CMakeFiles/CMakeScratch/TryCompile-w0696d/Debug/cmTC_d675f.lib" /MACHINE:X64  /machine:x64 cmTC_d675f.dir\\Debug\\CMakeCXXCompilerABI.obj
-          cmTC_d675f.vcxproj -> E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\CMakeScratch\\TryCompile-w0696d\\Debug\\cmTC_d675f.exe
+          E:\\visual studio 2022\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\link.exe /OUT:"E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\CMakeScratch\\TryCompile-rvcenr\\Debug\\cmTC_1c948.exe" /INCREMENTAL /ILK:"cmTC_1c948.dir\\Debug\\cmTC_1c948.ilk" /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"E:/007Launcher/native/cloud_redirect/build/CMakeFiles/CMakeScratch/TryCompile-rvcenr/Debug/cmTC_1c948.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /IMPLIB:"E:/007Launcher/native/cloud_redirect/build/CMakeFiles/CMakeScratch/TryCompile-rvcenr/Debug/cmTC_1c948.lib" /MACHINE:X64  /machine:x64 cmTC_1c948.dir\\Debug\\CMakeCXXCompilerABI.obj
+          cmTC_1c948.vcxproj -> E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\CMakeScratch\\TryCompile-rvcenr\\Debug\\cmTC_1c948.exe
         FinalizeBuildStatus:
-          Deleting file "cmTC_d675f.dir\\Debug\\cmTC_d675f.tlog\\unsuccessfulbuild".
-          Touching "cmTC_d675f.dir\\Debug\\cmTC_d675f.tlog\\cmTC_d675f.lastbuildstate".
-        Done Building Project "E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\CMakeScratch\\TryCompile-w0696d\\cmTC_d675f.vcxproj" (default targets).
+          Deleting file "cmTC_1c948.dir\\Debug\\cmTC_1c948.tlog\\unsuccessfulbuild".
+          Touching "cmTC_1c948.dir\\Debug\\cmTC_1c948.tlog\\cmTC_1c948.lastbuildstate".
+        Done Building Project "E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\CMakeScratch\\TryCompile-rvcenr\\cmTC_1c948.vcxproj" (default targets).
         
         Build succeeded.
             0 Warning(s)
             0 Error(s)
         
-        Time Elapsed 00:00:00.47
+        Time Elapsed 00:00:00.60
         
       exitCode: 0
   -

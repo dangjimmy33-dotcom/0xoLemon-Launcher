@@ -98,7 +98,7 @@ namespace Settings {
     {
         std::filesystem::path cfgPath(configPath);
         g_loadedPath = configPath;
-        logDir = (cfgPath.parent_path() / "0xocore").string();
+        logDir = (cfgPath.parent_path() / "lumacore").string();
         ResetConfigValues();
 
         if (!std::filesystem::exists(cfgPath)) {

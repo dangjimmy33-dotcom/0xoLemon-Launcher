@@ -1,5 +1,5 @@
-// 0xoCore — Steam client hook layer for 0xoLemon Launcher.
-// Copyright (c) 2025-2026 dangjimmy (https://github.com/dangjimmy).
+// LumaCore — Steam client hook layer for SteaMidra.
+// Copyright (c) 2025-2026 Midrag (https://github.com/Midrags).
 // Distributed under the GNU General Public License v3 or later.
 // See <https://www.gnu.org/licenses/> for the full license text.
 
@@ -162,9 +162,9 @@ DWORD WINAPI XInputOrdinal108(DWORD a1, void* a2, void* a3, void* a4, void* a5)
 
 } // extern "C"
 
-// ─── 0xoCore Injection ──────────────────────────────────────────────
+// ─── LumaCore Injection ──────────────────────────────────────────────
 // Only inject when the host process is steam.exe (case-insensitive).
-BOOL OxoCoreLoad()
+BOOL LumaCoreLoad()
 {
     char exePath[MAX_PATH];
     if (!GetModuleFileNameA(NULL, exePath, MAX_PATH))
@@ -175,10 +175,10 @@ BOOL OxoCoreLoad()
     if (_stricmp(exeName, "steam.exe") != 0)
         return TRUE;   // not Steam — let the proxy load, but don't inject
 
-    if (GetModuleHandleA("0xoCore.dll"))
+    if (GetModuleHandleA("LumaCore.dll"))
         return TRUE;   // already loaded by another proxy
 
-    return LoadLibraryA("0xoCore.dll") != NULL;
+    return LoadLibraryA("LumaCore.dll") != NULL;
 }
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD dwReason, PVOID pvReserved)
@@ -188,7 +188,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD dwReason, PVOID pvReserved)
     case DLL_PROCESS_ATTACH:
         DisableThreadLibraryCalls(hModule);
         LoadRealXInput();
-        if (!OxoCoreLoad())
+        if (!LumaCoreLoad())
             return FALSE;
         break;
     case DLL_THREAD_ATTACH:
