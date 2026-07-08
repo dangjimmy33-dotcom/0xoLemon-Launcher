@@ -1,5 +1,14 @@
 ﻿[
     {
+        "version":  "1.0.28",
+        "date":  "2026-07-08",
+        "changes":  [
+                        "Thêm chế độ big picture",
+                        "Sửa lại quy trình tự động lua game: giờ đây lua sẽ tự động update mới nhất",
+                        "sửa 1 số bug nhỏ"
+                    ]
+    },
+    {
         "version":  "1.0.27",
         "date":  "2026-07-06",
         "changes":  [
