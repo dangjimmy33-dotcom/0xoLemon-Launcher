@@ -1,5 +1,12 @@
 ﻿[
     {
+        "version":  "1.0.32",
+        "date":  "2026-07-10",
+        "changes":  [
+                        "Thêm chế độ lua installer"
+                    ]
+    },
+    {
         "version":  "1.0.31",
         "date":  "2026-07-09",
         "changes":  [
