@@ -1316,39 +1316,6 @@ pub fn game_install_states_quick(
         .collect()
 }
 
-pub fn get_game_install_size(game_id: &str) -> Result<u64, JobError> {
-    let source = DepotSource::for_game(game_id);
-    let catalog = source.load_catalog()?;
-    if catalog.versions.is_empty() {
-        return Err(JobError::Depot("No versions available".to_string()));
-    }
-    
-    let latest_version = &catalog.versions[0].version;
-    let manifest = source.load_manifest(&catalog, latest_version)?;
-    
-    // Calculate total install size (uncompressed files)
-    let install_size: u64 = manifest.files.iter().map(|f| f.size).sum();
-    
-    // Calculate total compressed chunks size (network transfer + temporary storage)
-    // Chunks are stored until commit completes, so we need space for both
-    use std::collections::HashSet;
-    let mut unique_chunks = HashSet::new();
-    let mut chunks_compressed_size: u64 = 0;
-    
-    for file in &manifest.files {
-        for chunk in &file.chunks {
-            if unique_chunks.insert(&chunk.hash) {
-                chunks_compressed_size += chunk.compressed_size;
-            }
-        }
-    }
-    
-    // Worst-case space = install files + compressed chunks + buffer
-    // During download: chunks accumulate, staging files grow
-    // After commit: chunks deleted, only install files remain
-    Ok(install_size + chunks_compressed_size)
-}
-
 pub fn game_launch_config(
     app: &AppHandle,
     game_id: &str,
@@ -2005,6 +1972,7 @@ fn run_real_update_job(
             append_log(&mut journal, "info", &format!("Assembling {}", file.path));
             assemble_target_file(
                 &install_root,
+                None,
                 &staged_chunks_root,
                 file,
                 &local_sources,
@@ -2036,33 +2004,6 @@ fn run_real_update_job(
         "committed",
         install_root.display().to_string(),
     )?;
-    
-    // Cleanup chunks used by this game
-    append_log(
-        &mut journal,
-        "info",
-        "Cleaning up cached chunks",
-    );
-    let mut cleaned_chunks = 0;
-    for file in &changed {
-        for chunk in &file.chunks {
-            let chunk_path = staged_chunks_root.join(format!("{}.chunk", chunk.hash));
-            if chunk_path.exists() {
-                match fs::remove_file(&chunk_path) {
-                    Ok(_) => cleaned_chunks += 1,
-                    Err(e) => {
-                        eprintln!("[CLEANUP] Failed to remove chunk {}: {}", chunk.hash, e);
-                    }
-                }
-            }
-        }
-    }
-    append_log(
-        &mut journal,
-        "info",
-        &format!("Cleaned {} chunk files", cleaned_chunks),
-    );
-    
     append_log(
         &mut journal,
         "info",
@@ -2091,11 +2032,14 @@ fn run_real_install_job(
     let install_root = PathBuf::from(&journal.install_path);
     let source = DepotSource::for_game(&journal.game_id);
     let downloading_root = downloading_dir_for_install(&install_root, &source);
+    // Steam-like layout: staging files go directly into dl/{appid}/, NOT dl/{appid}/files/
+    let staging_root = downloading_root.to_path_buf();
     let staged_chunks_root = staged_chunk_dir(&downloading_root);
     append_log(&mut journal, "info", "Real install job started");
 
     set_step_running(app, &mut journal, 0, JobStatus::Running, "Prepare store")?;
     fs::create_dir_all(&install_root)?;
+    fs::create_dir_all(&staging_root)?;
     fs::create_dir_all(&staged_chunks_root)?;
     journal.install_path = install_root.display().to_string();
     append_log(
@@ -2106,8 +2050,12 @@ fn run_real_install_job(
     append_log(
         &mut journal,
         "info",
-        &format!("Chunks cached in {}", staged_chunks_root.display()),
+        &format!("Staging downloads in {}", downloading_root.display()),
     );
+    
+    // Create placeholder file to reserve disk space (Steam-like)
+    let placeholder_path = downloading_root.join(".disk_placeholder.tmp");
+    create_placeholder_file(&placeholder_path, 0)?; // Will be resized after manifest load
     
     write_download_session_marker(
         &downloading_root,
@@ -2123,13 +2071,33 @@ fn run_real_install_job(
     journal.to_version = target_version.clone();
     let target_manifest = source.load_manifest(&catalog, &target_version)?;
     
+    // Calculate total install size and resize placeholder
+    let total_install_bytes: u64 = target_manifest.files.iter().map(|f| f.size).sum();
+    let placeholder_path = downloading_root.join(".disk_placeholder.tmp");
+    if placeholder_path.exists() {
+        resize_placeholder_file(&placeholder_path, total_install_bytes)?;
+        append_log(
+            &mut journal,
+            "info",
+            &format!("Reserved {} disk space via placeholder", human_bytes(total_install_bytes)),
+        );
+    }
+    
     let changed = target_manifest.files.clone();
     let local_sources = HashMap::new();
-    
-    // We assemble directly to install folder now, no staging needed
-    let direct_stage = None;
-    
-    let missing_chunks = plan_missing_chunks(&local_sources, &staged_chunks_root, &changed)?;
+    let direct_stage = prepare_direct_stage(
+        &downloading_root,
+        &staging_root,
+        &changed,
+        &target_version,
+        &local_sources,
+        &control,
+    )?;
+    let missing_chunks = if let Some(stage) = direct_stage.as_ref() {
+        stage.filter_missing_chunks(&local_sources, &changed)
+    } else {
+        plan_missing_chunks(&local_sources, &staged_chunks_root, &changed)?
+    };
     journal.bytes_total = download_transfer_bytes(&missing_chunks);
     configure_download_metrics(&mut journal, &missing_chunks, direct_stage.is_some());
     let resumed_in_flight = existing_partial_task_progress(&staged_chunks_root, &missing_chunks);
@@ -2173,7 +2141,6 @@ fn run_real_install_job(
             in_flight.insert(progress.task_id.clone(), progress.in_flight_bytes);
         }
         downloaded += progress.committed_bytes;
-        
         wait_for_control(app, &control, &mut journal, 2)?;
         let display_done = downloaded.saturating_add(in_flight.values().copied().sum::<u64>());
         observe_download_progress(&mut journal, &progress, in_flight.values().copied().sum());
@@ -2209,6 +2176,12 @@ fn run_real_install_job(
         JobStatus::Assembling,
         "Assemble install files",
     )?;
+    let placeholder_path = downloading_root.join(".disk_placeholder.tmp");
+    let mut remaining_placeholder_size: u64 = if placeholder_path.exists() {
+        fs::metadata(&placeholder_path)?.len()
+    } else {
+        0
+    };
     
     if let Some(stage) = direct_stage.as_ref() {
         wait_for_control(app, &control, &mut journal, 3)?;
@@ -2219,6 +2192,11 @@ fn run_real_install_job(
         );
         stage.commit_files(&install_root, &changed)?;
         
+        // Shrink placeholder as files are committed
+        if placeholder_path.exists() {
+            let _ = fs::remove_file(&placeholder_path);
+        }
+        
         journal.steps[3].progress = 1.0;
         journal.overall_progress = overall_progress(3, 1.0);
         persist_and_emit(app, &journal)?;
@@ -2228,10 +2206,17 @@ fn run_real_install_job(
             append_log(&mut journal, "info", &format!("Assembling {}", file.path));
             assemble_target_file(
                 &install_root,
+                Some(&staging_root),
                 &staged_chunks_root,
                 file,
                 &local_sources,
             )?;
+            
+            // Shrink placeholder proportionally as files are installed
+            remaining_placeholder_size = remaining_placeholder_size.saturating_sub(file.size);
+            if placeholder_path.exists() {
+                let _ = resize_placeholder_file(&placeholder_path, remaining_placeholder_size);
+            }
             
             journal.steps[3].progress = progress_fraction(index + 1, changed.len());
             journal.overall_progress = overall_progress(3, journal.steps[3].progress);
@@ -2242,6 +2227,12 @@ fn run_real_install_job(
     complete_step(app, &mut journal, 3)?;
 
     set_step_running(app, &mut journal, 4, JobStatus::Running, "Finalize")?;
+    
+    // Remove placeholder file if it still exists
+    let placeholder_path = downloading_root.join(".disk_placeholder.tmp");
+    if placeholder_path.exists() {
+        let _ = fs::remove_file(&placeholder_path);
+    }
     
     write_install_marker(
         app,
@@ -2261,33 +2252,6 @@ fn run_real_install_job(
         "committed",
         install_root.display().to_string(),
     )?;
-    
-    // Cleanup chunks used by this game
-    append_log(
-        &mut journal,
-        "info",
-        "Cleaning up cached chunks",
-    );
-    let mut cleaned_chunks = 0;
-    for file in &changed {
-        for chunk in &file.chunks {
-            let chunk_path = staged_chunks_root.join(format!("{}.chunk", chunk.hash));
-            if chunk_path.exists() {
-                match fs::remove_file(&chunk_path) {
-                    Ok(_) => cleaned_chunks += 1,
-                    Err(e) => {
-                        eprintln!("[CLEANUP] Failed to remove chunk {}: {}", chunk.hash, e);
-                    }
-                }
-            }
-        }
-    }
-    append_log(
-        &mut journal,
-        "info",
-        &format!("Cleaned {} chunk files", cleaned_chunks),
-    );
-    
     append_log(
         &mut journal,
         "info",
@@ -2436,6 +2400,7 @@ fn run_real_repair_job(
             append_log(&mut journal, "info", &format!("Repairing {}", file.path));
             assemble_target_file(
                 &install_root,
+                None,
                 &staged_chunks_root,
                 file,
                 &local_sources,
@@ -4168,10 +4133,12 @@ fn cleanup_download_temp_files(dl_root: &Path) {
             
             let path = entry.path();
             let should_remove = if let Some(ext) = path.extension().and_then(|s| s.to_str()) {
-                matches!(ext, "part" | "checkpoint" | "chunk")
+                matches!(ext, "part" | "checkpoint" | "chunk" | "tmp")
             } else if let Some(name) = path.file_name().and_then(|s| s.to_str()) {
-                // Remove state JSON files
-                name.ends_with("-state.json") || name == "depot-session.json"
+                // Remove state JSON files and placeholder
+                name.ends_with("-state.json") 
+                    || name == "depot-session.json"
+                    || name == ".disk_placeholder.tmp"
             } else {
                 false
             };
@@ -4191,6 +4158,50 @@ fn cleanup_download_temp_files(dl_root: &Path) {
     }
     
     eprintln!("[CLEANUP] Cleaned up {} temporary files", cleaned_count);
+}
+
+/// Create a sparse placeholder file to reserve disk space
+/// On Windows, this uses SetFileValidData to create a sparse file efficiently
+fn create_placeholder_file(path: &Path, size: u64) -> Result<(), JobError> {
+    use std::fs::OpenOptions;
+    
+    let file = OpenOptions::new()
+        .create(true)
+        .write(true)
+        .truncate(true)
+        .open(path)?;
+    
+    #[cfg(target_os = "windows")]
+    {
+        // Set file size without allocating actual disk space (sparse file)
+        file.set_len(size)?;
+    }
+    
+    #[cfg(not(target_os = "windows"))]
+    {
+        file.set_len(size)?;
+    }
+    
+    Ok(())
+}
+
+/// Resize placeholder file to new size (shrinks as game files are installed)
+fn resize_placeholder_file(path: &Path, new_size: u64) -> Result<(), JobError> {
+    use std::fs::OpenOptions;
+    
+    if new_size == 0 {
+        // Remove file completely when size reaches 0
+        fs::remove_file(path)?;
+        return Ok(());
+    }
+    
+    let file = OpenOptions::new()
+        .write(true)
+        .open(path)?;
+    
+    file.set_len(new_size)?;
+    
+    Ok(())
 }
 
 fn download_worker_count() -> usize {
@@ -4446,25 +4457,31 @@ fn validate_format_version(version: u32, label: &str) -> Result<(), JobError> {
 
 fn assemble_target_file(
     install_root: &Path,
+    staging_root: Option<&Path>,
     staged_chunks_root: &Path,
     file: &FileEntry,
     local_sources: &HashMap<String, LocalChunkSource>,
 ) -> Result<(), JobError> {
     let target = safe_join(install_root, &file.path)
         .ok_or_else(|| JobError::Depot(format!("unsafe manifest path: {}", file.path)))?;
-    
-    // Check if target already valid
-    if target_file_valid(&target, file)? {
+    if staging_root.is_some() && target_file_valid(&target, file)? {
         return Ok(());
     }
-    
-    // Create parent dirs in install folder
     if let Some(parent) = target.parent() {
         fs::create_dir_all(parent)?;
     }
-    
-    // Assemble directly in install folder (no staging)
-    let temp = sibling_path(&target, "007launcher.tmp")?;
+    let temp_base = match staging_root {
+        Some(root) => {
+            let staged = safe_join(root, &file.path)
+                .ok_or_else(|| JobError::Depot(format!("unsafe staging path: {}", file.path)))?;
+            if let Some(parent) = staged.parent() {
+                fs::create_dir_all(parent)?;
+            }
+            staged
+        }
+        None => target.clone(),
+    };
+    let temp = sibling_path(&temp_base, "007launcher.tmp")?;
     let backup = sibling_path(&target, "007launcher.bak")?;
     let mut output = File::create(&temp)?;
     let mut hasher = Sha256::new();

@@ -85,16 +85,69 @@ export function InstallOptionsDialog({
   onClose: () => void
 }) {
   const [versionMenuOpen, setVersionMenuOpen] = useState(false)
+  const [diskCheck, setDiskCheck] = useState<{
+    has_space: boolean
+    free_space: number
+    required_space: number
+    reason: string | null
+  } | null>(null)
+
+  // Check disk space when dialog opens, game changes, or install path changes
+  useEffect(() => {
+    if (!installRoot || downloadSize === 0) {
+      setDiskCheck(null)
+      return
+    }
+
+    // Reset immediately to prevent showing stale data from previous drive
+    setDiskCheck(null)
+
+    const bufferBytes = 2 * 1024 * 1024 * 1024  // 2GB
+    const requiredBytes = downloadSize + bufferBytes
+
+    let cancelled = false
+
+    invoke<{
+      has_space: boolean
+      free_space: number
+      required_space: number
+      reason: string | null
+    }>('check_install_disk_space', {
+      installPath: installRoot,  // camelCase for Tauri
+      requiredSizeBytes: requiredBytes
+    })
+      .then((result) => {
+        if (!cancelled) setDiskCheck(result)
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setDiskCheck({
+            has_space: false,
+            free_space: 0,
+            required_space: requiredBytes,
+            reason: 'Failed to check disk space: ' + err
+          })
+        }
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [detail.gameId, installRoot, downloadSize])
+
+  // Check if we're waiting for disk space result
+  const diskCheckPending = Boolean(installRoot) && downloadSize > 0 && diskCheck === null
+
   const infos =
     versionInfos.length > 0
       ? versionInfos
       : availableVersions.map((version) => ({
-          version,
-          label: version,
-          buildId: version,
-          sizeBytes: downloadSize,
-          latest: version === availableVersions[availableVersions.length - 1],
-        }))
+        version,
+        label: version,
+        buildId: version,
+        sizeBytes: downloadSize,
+        latest: version === availableVersions[availableVersions.length - 1],
+      }))
   const selectedInfo = infos.find((info) => info.version === selectedVersion) ?? infos[0]
 
   const isVersionChange = mode === 'version'
@@ -173,6 +226,14 @@ export function InstallOptionsDialog({
               <small>{t.install.downloadSize}</small>
               <strong>{formatBytes(downloadSize)}</strong>
             </div>
+            {diskCheck && (
+              <div>
+                <small>Available disk space</small>
+                <strong style={{ color: diskCheck.has_space ? '#4ade80' : '#ff4444' }}>
+                  {formatBytes(diskCheck.required_space)} required / {formatBytes(diskCheck.free_space)} available
+                </strong>
+              </div>
+            )}
             <div>
               <small>{t.install.resumeBehavior}</small>
               <strong>{t.install.journalCache}</strong>
@@ -196,6 +257,19 @@ export function InstallOptionsDialog({
               <strong>{downloadingRoot}</strong>
             </div>
           </div>
+          {/* Disk space warning */}
+          {diskCheck && !diskCheck.has_space && (
+            <div className="install-modal-status" role="alert" style={{
+              color: '#ff4444',
+              backgroundColor: 'rgba(255, 68, 68, 0.1)',
+              padding: '12px',
+              borderRadius: '8px',
+              marginTop: '16px',
+              border: '1px solid rgba(255, 68, 68, 0.3)'
+            }}>
+              ⚠️ {diskCheck.reason}
+            </div>
+          )}
           {statusMessage ? (
             <div className="install-modal-status" role="status" aria-live="polite">
               {statusMessage}
@@ -206,13 +280,25 @@ export function InstallOptionsDialog({
           <button type="button" onClick={onClose}>
             {t.install.cancel}
           </button>
-          <button className="primary-control" type="button" onClick={onStart} disabled={!canStart || isStarting}>
+          <button className="primary-control" type="button" onClick={onStart} disabled={!canStart || isStarting || diskCheckPending || (diskCheck ? !diskCheck.has_space : false)}>
             {isStarting ? (
               <>
                 <svg className="btn-spinner" viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                   <circle cx="12" cy="12" r="9" strokeDasharray="40 20" />
                 </svg>
                 Starting…
+              </>
+            ) : diskCheckPending ? (
+              <>
+                <svg className="btn-spinner" viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <circle cx="12" cy="12" r="9" strokeDasharray="40 20" />
+                </svg>
+                Checking disk space…
+              </>
+            ) : (diskCheck && !diskCheck.has_space) ? (
+              <>
+                <X size={17} />
+                Insufficient disk space
               </>
             ) : (
               <>
@@ -248,16 +334,38 @@ export function DriveLibraryPickerModal({
 }) {
   type DriveInfo = { letter: string; label: string; free_bytes: number; total_bytes: number }
   const [driveInfos, setDriveInfos] = useState<Record<string, DriveInfo>>({})
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    setLoading(true)
     invoke<DriveInfo[]>('list_system_drives')
       .then((drives) => {
         const map: Record<string, DriveInfo> = {}
-        for (const d of drives) map[d.letter] = d
+        // Normalize: backend returns "E:", but libraries might be "E:\" or "E:"
+        for (const d of drives) {
+          map[d.letter] = d
+          map[d.letter + '\\'] = d  // Also map "E:\" variant
+        }
         setDriveInfos(map)
+        setLoading(false)
       })
-      .catch(() => {/* ignore if not in tauri */})
+      .catch(() => {
+        setLoading(false)
+      })
   }, [])
+
+  if (loading) {
+    return (
+      <div className="dialog-backdrop" role="presentation">
+        <section className="drive-picker-modal" role="dialog" aria-modal="true">
+          <header>
+            <h2>Loading...</h2>
+            <button type="button" onClick={onClose}><X size={17} /></button>
+          </header>
+        </section>
+      </div>
+    )
+  }
 
   return (
     <div className="dialog-backdrop" role="presentation" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
@@ -302,7 +410,12 @@ export function DriveLibraryPickerModal({
                       </div>
                     </>
                   ) : (
-                    <div className="drive-space-text muted">Checking…</div>
+                    <>
+                      <div className="drive-space-bar">
+                        <div className="drive-space-fill" style={{ width: '0%' }} />
+                      </div>
+                      <div className="drive-space-text muted">—</div>
+                    </>
                   )}
                   <div className="drive-path-preview">
                     {lib}\0xoLemon store\common\{gameName}

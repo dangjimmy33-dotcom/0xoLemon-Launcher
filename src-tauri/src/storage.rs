@@ -102,7 +102,7 @@ mod tests {
     #[test]
     fn cache_path_requires_chunks_below_downloading() {
         assert!(validate_cache_path(Path::new(
-            r"E:\0xoLemon store\downloading\007 First Light\chunks"
+            r"E:\0xoLemon store\dl\007 First Light\chunks"
         ))
         .is_ok());
         assert!(validate_cache_path(Path::new(r"E:\chunks")).is_err());

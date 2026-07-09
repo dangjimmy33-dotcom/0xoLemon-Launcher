@@ -50,6 +50,54 @@ fn get_disk_free_space(path: String) -> Result<u64, String> {
     fs2::free_space(PathBuf::from(path)).map_err(|err| err.to_string())
 }
 
+#[derive(serde::Serialize)]
+struct DiskSpaceCheck {
+    has_space: bool,
+    free_space: u64,
+    required_space: u64,
+    reason: Option<String>,
+}
+
+#[tauri::command]
+fn check_install_disk_space(install_path: String, required_size_bytes: u64) -> Result<DiskSpaceCheck, String> {
+    fn human_bytes(value: u64) -> String {
+        const UNITS: [&str; 5] = ["B", "KB", "MB", "GB", "TB"];
+        if value == 0 {
+            return "0 B".to_string();
+        }
+        let unit_index = ((value as f64).log2() / 10.0).floor() as usize;
+        let unit_index = unit_index.min(UNITS.len() - 1);
+        let divisor = 1u64 << (unit_index * 10);
+        let scaled = value as f64 / divisor as f64;
+        format!("{:.2} {}", scaled, UNITS[unit_index])
+    }
+    
+    // Use provided install path and pre-calculated size from frontend
+    let install_path = PathBuf::from(&install_path);
+    let required_space = required_size_bytes;  // Already includes game + chunks + buffer from frontend
+    
+    // Check free space on install drive - THIS IS FAST!
+    let free_space = fs2::free_space(&install_path).map_err(|e| e.to_string())?;
+    
+    let has_space = free_space >= required_space;
+    let reason = if !has_space {
+        Some(format!(
+            "Not enough disk space. Required: {}, Available: {}",
+            human_bytes(required_space),
+            human_bytes(free_space)
+        ))
+    } else {
+        None
+    };
+    
+    Ok(DiskSpaceCheck {
+        has_space,
+        free_space,
+        required_space,
+        reason,
+    })
+}
+
 #[tauri::command]
 fn check_spacewar_installed() -> bool {
     steam_integration::is_spacewar_installed()
@@ -811,6 +859,7 @@ pub fn run() {
             offline_cache::cache_remote_asset,
             offline_cache::get_cached_asset,
             get_disk_free_space,
+            check_install_disk_space,
             list_system_drives,
             check_launcher_update,
             apply_launcher_update,

@@ -38,7 +38,8 @@
     "createUpdaterArtifacts": true,
     "resources": [
       "resources/steam_hooks/*",
-      "resources/cloud_redirect/*"
+      "resources/cloud_redirect/*",
+      "../steam_appids_mapping.json"
     ],
     "icon": [
       "icons/32x32.png",
