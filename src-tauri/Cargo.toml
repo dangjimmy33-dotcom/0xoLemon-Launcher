@@ -69,6 +69,7 @@ tauri-plugin-global-shortcut = "~2.0.0"
 once_cell = "1.21.4"
 lazy_static = "1.5"
 tauri-plugin-localhost = "2.3.2"
+tauri-plugin-fs = "2.5.1"
 
 [features]
 default = ["custom-protocol"]

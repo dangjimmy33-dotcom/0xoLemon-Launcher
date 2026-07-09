@@ -533,3 +533,55 @@ pub fn get_installed_steam_apps() -> Result<Vec<u32>, String> {
     
     Ok(apps)
 }
+
+
+#[tauri::command]
+pub fn install_lua_from_zip(appid: String, zip_data_base64: String) -> Result<(), String> {
+    use std::io::Cursor;
+    use zip::ZipArchive;
+    
+    // Decode base64 to bytes
+    let zip_bytes = base64::engine::general_purpose::STANDARD
+        .decode(&zip_data_base64)
+        .map_err(|e| format!("Failed to decode base64: {}", e))?;
+    
+    // Get Steam path
+    let steam_path = get_steam_path().ok_or("Steam not found")?;
+    let stplug_in_dir = steam_path.join("config").join("stplug-in");
+    let depotcache_dir = steam_path.join("depotcache");
+    
+    fs::create_dir_all(&stplug_in_dir).map_err(|e| e.to_string())?;
+    fs::create_dir_all(&depotcache_dir).map_err(|e| e.to_string())?;
+    
+    // Extract zip
+    let reader = Cursor::new(zip_bytes);
+    let mut archive = ZipArchive::new(reader).map_err(|e| format!("Invalid zip: {}", e))?;
+    
+    for i in 0..archive.len() {
+        let mut file = archive.by_index(i).map_err(|e| e.to_string())?;
+        let outpath = match file.enclosed_name() {
+            Some(path) => path.to_owned(),
+            None => continue,
+        };
+
+        let file_name = outpath.file_name().and_then(|n| n.to_str()).unwrap_or("");
+        if file.is_file() {
+            if file_name.ends_with(".lua") {
+                let dest = stplug_in_dir.join(file_name);
+                let mut outfile = fs::File::create(&dest).map_err(|e| e.to_string())?;
+                std::io::copy(&mut file, &mut outfile).map_err(|e| e.to_string())?;
+                println!("Extracted lua: {:?}", dest);
+            } else if file_name.ends_with(".manifest") {
+                let dest = depotcache_dir.join(file_name);
+                let mut outfile = fs::File::create(&dest).map_err(|e| e.to_string())?;
+                std::io::copy(&mut file, &mut outfile).map_err(|e| e.to_string())?;
+                println!("Extracted manifest: {:?}", dest);
+            }
+        }
+    }
+    
+    // Update .sync_state file
+    update_sync_state(&stplug_in_dir)?;
+    
+    Ok(())
+}

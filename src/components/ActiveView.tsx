@@ -9,6 +9,7 @@ import { CachePanel, RollbackPanel, InstallSummaryPanel, ChangedFiles } from './
 import { TranslationsView } from './TranslationsView'
 import { WhatsNewView } from './WhatsNewView'
 import { OfflineActivation } from './OfflineActivation'
+import { LuaInstaller } from './LuaInstaller'
 
 export function ActiveView({
   activeTab,
@@ -206,9 +207,9 @@ export function ActiveView({
       onRequestAsset(activeGame, activeGame.heroAssetId)
     }
 
-    return <TranslationsView 
-      gameId={selectedGameId ?? undefined} 
-      gameTitle={activeGame?.title} 
+    return <TranslationsView
+      gameId={selectedGameId ?? undefined}
+      gameTitle={activeGame?.title}
       gameBanner={assetUrlForId(activeGame?.heroAssetId, assets)}
       onVerify={onVerify}
       onBack={() => onSelectGame(null)}
@@ -252,6 +253,10 @@ export function ActiveView({
     return <OfflineActivation catalog={catalog} assets={assets} />
   }
 
+  if (activeTab === 'Lua Installer') {
+    return <LuaInstaller />
+  }
+
   if (activeTab === 'Downloads' || activeTab === 'Updates') {
     if (!hasSelectedDetail && activeTab !== 'Downloads') {
       return (
@@ -269,11 +274,11 @@ export function ActiveView({
       <section className="content-grid single-main">
         <div className="main-column">
           {!installMode || hasJob ? (
-              <InstallBar
-                installPath={installPath}
-                installTarget={installTarget}
-                scanStatus={scanStatus}
-                installMode={installMode}
+            <InstallBar
+              installPath={installPath}
+              installTarget={installTarget}
+              scanStatus={scanStatus}
+              installMode={installMode}
               onBrowse={onBrowse}
               onScan={onScan}
             />

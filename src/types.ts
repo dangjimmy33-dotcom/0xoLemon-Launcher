@@ -508,6 +508,7 @@ export type TabId =
   | 'Updates'
   | 'Downloads'
   | 'CloudRedirect'
+  | 'Lua Installer'
   | 'Translations'
   | 'Cache'
   | 'Settings'

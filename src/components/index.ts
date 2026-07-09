@@ -3,6 +3,7 @@ export { LaunchSplash } from './LaunchSplash'
 export { IntroScreen } from './IntroScreen'
 export { ActiveView } from './ActiveView'
 export { Sidebar } from './layout'
+export { LuaInstaller } from './LuaInstaller'
 
 export * from './BigPictureView'
 export { StoreLibraryView, OperationHero } from './library'

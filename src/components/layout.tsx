@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Cloud, Database, Download, Home, Image as ImageIcon, Library, RefreshCcw, Settings, ShoppingBag, Wifi, WifiOff, Languages, Sparkles } from 'lucide-react'
+import { Cloud, Database, Download, Home, Image as ImageIcon, Library, RefreshCcw, Settings, ShoppingBag, Wifi, WifiOff, Languages, Sparkles, FileCode } from 'lucide-react'
 import { useLocale } from '../context/LocaleContext'
 import type { GameCatalog, TabId } from '../types'
 
@@ -9,12 +9,14 @@ export function Sidebar({
   onSelect,
   updateCount,
   downloadCount,
+  luaModeEnabled,
 }: {
   serviceStatus: string
   activeTab: TabId
   onSelect: (tab: TabId) => void
   updateCount: number
   downloadCount: number
+  luaModeEnabled: boolean
 }) {
   const { t } = useLocale()
   const normalizedStatus = serviceStatus.toLowerCase()
@@ -27,6 +29,7 @@ export function Sidebar({
     ['What\'s New!', t.nav.whatsNew, Sparkles],
     ['Home', t.nav.home, Home],
     ['Store', t.nav.store, ShoppingBag],
+    ...(luaModeEnabled ? [['Lua Installer', t.nav.luaInstaller, FileCode] as [TabId, string, typeof Home]] : []),
     ['Library', t.nav.library, Library],
     ['Offline Activation', t.nav.offlineActivation, WifiOff],
     ['Updates', t.nav.updates, RefreshCcw],

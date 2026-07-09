@@ -7,6 +7,7 @@ export const enUS = {
     updates: 'Updates',
     downloads: 'Downloads',
     cloudRedirect: 'CloudRedirect',
+    luaInstaller: 'Lua Installer',
     translations: 'Translations',
     cache: 'Cache',
     settings: 'Settings',

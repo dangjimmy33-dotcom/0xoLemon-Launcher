@@ -26,6 +26,7 @@
           "sync_to_huggingface",
           "read_file_base64",
           "get_disk_free_space",
+          "get_file_size",
           "check_install_disk_space",
           "list_system_drives",
           "check_launcher_update",
@@ -128,7 +129,8 @@
           "Steamless",
           "steamless_apply",
           "steamless_restore",
-          "steamless_status"
+          "steamless_status",
+          "install_lua_from_zip"
         ],
         "deny": []
       }

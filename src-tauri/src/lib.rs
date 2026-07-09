@@ -50,6 +50,14 @@ fn get_disk_free_space(path: String) -> Result<u64, String> {
     fs2::free_space(PathBuf::from(path)).map_err(|err| err.to_string())
 }
 
+#[tauri::command]
+fn get_file_size(path: String) -> Result<u64, String> {
+    use std::fs::metadata;
+    metadata(&path)
+        .map(|m| m.len())
+        .map_err(|e| format!("Failed to get file size: {}", e))
+}
+
 #[derive(serde::Serialize)]
 struct DiskSpaceCheck {
     has_space: bool,
@@ -859,6 +867,7 @@ pub fn run() {
             offline_cache::cache_remote_asset,
             offline_cache::get_cached_asset,
             get_disk_free_space,
+            get_file_size,
             check_install_disk_space,
             list_system_drives,
             check_launcher_update,
@@ -964,6 +973,7 @@ pub fn run() {
             steam::check_steam_update,
             steam::add_to_steam,
             steam::remove_from_steam,
+            steam::install_lua_from_zip,
         ]);
 
     builder.setup(move |app| {
@@ -1139,6 +1149,7 @@ pub fn run() {
             Ok(())
         })
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_updater::Builder::new().build())

@@ -221,6 +221,7 @@ export default function App() {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
   const [discordAuth, setDiscordAuth] = useState<DiscordAuthStatus>(initialDiscordAuthStatus)
   const [discordAuthBusy, setDiscordAuthBusy] = useState(false)
+  const [luaModeEnabled, setLuaModeEnabled] = useState(false)
 
   // Block notifications & big picture during intro or Discord verification
   const isBlockedState = showIntro || discordAuth.state === 'checking'
@@ -871,6 +872,14 @@ export default function App() {
       queueMicrotask(() => void refreshSteamEnvironment())
     }
   }, [activeTab, refreshSteamEnvironment])
+
+  // Check lua mode status on mount
+  useEffect(() => {
+    if (!isTauriRuntime()) return
+    invoke<boolean>('is_lua_game_mode_enabled')
+      .then(setLuaModeEnabled)
+      .catch(() => setLuaModeEnabled(false))
+  }, [])
 
   // Cache images for existing installed games for offline use
   useEffect(() => {
@@ -3012,6 +3021,7 @@ export default function App() {
               onSelect={setActiveTab}
               updateCount={updateReadyGameIds.length}
               downloadCount={hasVisibleJob ? 1 : 0}
+              luaModeEnabled={luaModeEnabled}
             />
             <section className="workspace premium-workspace">
               {['Updates', 'Downloads', 'Cache'].includes(activeTab) && selectedGame && activeDetail ? (

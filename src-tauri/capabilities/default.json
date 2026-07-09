@@ -31,6 +31,8 @@
     "dialog:default",
     "notification:default",
     "opener:default",
+    "fs:default",
+    "fs:allow-stat",
     "allow-all"
   ]
 }
