@@ -84,8 +84,19 @@ fn check_install_disk_space(install_path: String, required_size_bytes: u64) -> R
     let install_path = PathBuf::from(&install_path);
     let required_space = required_size_bytes;  // Already includes game + chunks + buffer from frontend
     
-    // Check free space on install drive - THIS IS FAST!
-    let free_space = fs2::free_space(&install_path).map_err(|e| e.to_string())?;
+    // Check free space on install drive or closest existing parent
+    let mut current_path = install_path.clone();
+    let mut free_space_result = fs2::free_space(&current_path);
+    while free_space_result.is_err() {
+        if let Some(parent) = current_path.parent() {
+            current_path = parent.to_path_buf();
+            free_space_result = fs2::free_space(&current_path);
+        } else {
+            break;
+        }
+    }
+    
+    let free_space = free_space_result.map_err(|e| format!("Could not determine free space for {}: {}", install_path.display(), e))?;
     
     let has_space = free_space >= required_space;
     let reason = if !has_space {

@@ -36,6 +36,8 @@ export function CustomTitleBar({
   onOpenNotificationSettings,
   onDiscordLogout,
   onToggleBigPicture,
+  onToggleSidebar,
+  isSidebarCollapsed,
 }: {
   closeBehavior?: CloseBehavior
   serviceOnline: boolean
@@ -54,6 +56,8 @@ export function CustomTitleBar({
   onOpenNotificationSettings: () => void
   onDiscordLogout: () => void
   onToggleBigPicture: () => void
+  onToggleSidebar?: () => void
+  isSidebarCollapsed?: boolean
 }) {
   const win = isTauriRuntime() ? getCurrentWindow() : null
   const [now, setNow] = useState(() => new Date())
@@ -104,8 +108,36 @@ export function CustomTitleBar({
       data-tauri-drag-region
       className={`custom-titlebar premium-titlebar${statusPreferences.glassEffects ? ' use-glass' : ''}`}
     >
+      {/* Toggle outside drag area for independent sizing */}
+      {onToggleSidebar && (
+        <button
+          className={`titlebar-sidebar-toggle${isSidebarCollapsed ? ' is-collapsed' : ''}`}
+          onClick={onToggleSidebar}
+          aria-label={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          title={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          {isSidebarCollapsed ? (
+            /* Sidebar collapsed → show open arrow */
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+              <line x1="9" y1="3" x2="9" y2="21" />
+              <path d="M14 9l3 3-3 3" />
+            </svg>
+          ) : (
+            /* Sidebar open → show collapse arrow */
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+              <line x1="9" y1="3" x2="9" y2="21" />
+              <path d="M17 9l-3 3 3 3" />
+            </svg>
+          )}
+        </button>
+      )}
       <div className="titlebar-drag-area" data-tauri-drag-region>
-        <span className="titlebar-label">0xoLemon Launcher</span>
+        <span className="titlebar-label">
+          <span className="titlebar-label-primary">0xoLemon</span>
+          <span className="titlebar-label-secondary">Launcher</span>
+        </span>
         {taskPercent !== null ? (
           <div className="titlebar-mini-progress" aria-label={`${taskPercent}% complete`}>
             <i style={{ width: `${Math.max(2, taskPercent)}%` }} />

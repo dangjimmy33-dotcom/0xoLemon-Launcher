@@ -47,16 +47,20 @@ export default defineConfig({
     })
   ],
   clearScreen: false,
+  optimizeDeps: {
+    exclude: [],
+    entries: ['src/**/*.{ts,tsx,html}'],
+  },
   server: {
     port: 1420,
     strictPort: true,
+    fs: {
+      deny: ['src-tauri'],
+    },
     watch: {
       ignored: [
-        '**/src-tauri/target/**',
-        '**/src-tauri/assets/**',
-        '**/src-tauri/gen/**',
-        '**/src-tauri/icons/**',
-        '**/src-tauri/src/**',
+        '**/src-tauri/**',
+        '**/node_modules/**',
       ],
     },
   },

@@ -94,7 +94,7 @@ export function InstallOptionsDialog({
 
   // Check disk space when dialog opens, game changes, or install path changes
   useEffect(() => {
-    if (!installRoot || downloadSize === 0) {
+    if (!installRoot) {
       setDiskCheck(null)
       return
     }
@@ -136,7 +136,7 @@ export function InstallOptionsDialog({
   }, [detail.gameId, installRoot, downloadSize])
 
   // Check if we're waiting for disk space result
-  const diskCheckPending = Boolean(installRoot) && downloadSize > 0 && diskCheck === null
+  const diskCheckPending = Boolean(installRoot) && diskCheck === null
 
   const infos =
     versionInfos.length > 0
@@ -343,8 +343,8 @@ export function DriveLibraryPickerModal({
         const map: Record<string, DriveInfo> = {}
         // Normalize: backend returns "E:", but libraries might be "E:\" or "E:"
         for (const d of drives) {
-          map[d.letter] = d
-          map[d.letter + '\\'] = d  // Also map "E:\" variant
+          map[d.letter.toUpperCase()] = d
+          map[d.letter.toUpperCase() + '\\'] = d  // Also map "E:\" variant
         }
         setDriveInfos(map)
         setLoading(false)
@@ -379,7 +379,7 @@ export function DriveLibraryPickerModal({
         </p>
         <div className="drive-list">
           {libraries.map((lib) => {
-            const info = driveInfos[lib]
+            const info = driveInfos[lib.toUpperCase()]
             const isSelected = currentRoot.toUpperCase().startsWith(lib.toUpperCase())
             const freeGB = info ? (info.free_bytes / 1024 / 1024 / 1024).toFixed(1) : null
             const totalGB = info ? (info.total_bytes / 1024 / 1024 / 1024).toFixed(0) : null

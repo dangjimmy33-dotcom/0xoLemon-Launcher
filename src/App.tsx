@@ -222,6 +222,7 @@ export default function App() {
   const [discordAuth, setDiscordAuth] = useState<DiscordAuthStatus>(initialDiscordAuthStatus)
   const [discordAuthBusy, setDiscordAuthBusy] = useState(false)
   const [luaModeEnabled, setLuaModeEnabled] = useState(false)
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
 
   // Block notifications & big picture during intro or Discord verification
   const isBlockedState = showIntro || discordAuth.state === 'checking'
@@ -3005,6 +3006,8 @@ export default function App() {
             }}
             onDiscordLogout={() => void logoutDiscord()}
             onToggleBigPicture={enterBigPicture}
+            onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
+            isSidebarCollapsed={isSidebarCollapsed}
           />
           {launcherUpdate ? (
             <UpdateBanner
@@ -3014,7 +3017,7 @@ export default function App() {
               onStart={() => void applyLauncherUpdate()}
             />
           ) : null}
-          <main className="launcher-shell premium-shell">
+        <main className={`launcher-shell premium-shell ${isSidebarCollapsed ? 'sidebar-collapsed-shell' : ''}`}>
             <Sidebar
               serviceStatus={contentServiceLabel(snapshot.proxyStatus)}
               activeTab={activeTab}
@@ -3022,6 +3025,8 @@ export default function App() {
               updateCount={updateReadyGameIds.length}
               downloadCount={hasVisibleJob ? 1 : 0}
               luaModeEnabled={luaModeEnabled}
+              isSidebarCollapsed={isSidebarCollapsed}
+              onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
             />
             <section className="workspace premium-workspace">
               {['Updates', 'Downloads', 'Cache'].includes(activeTab) && selectedGame && activeDetail ? (

@@ -234,15 +234,24 @@
 
 .premium-shell {
   background: transparent;
+  /* Override default 198px grid track from App.css so sidebar fits perfectly */
+  grid-template-columns: 218px minmax(0, 1fr);
+}
+
+.premium-shell.sidebar-collapsed-shell {
+  grid-template-columns: 76px minmax(0, 1fr);
 }
 
 .premium-shell > .sidebar {
-  width: 218px;
-  flex-basis: 218px;
+  /* Let the grid manage width, remove fixed width that causes overflow */
   border-right-color: rgba(255, 255, 255, 0.075);
   background:
     linear-gradient(180deg, rgba(12, 17, 22, 0.97), rgba(7, 11, 15, 0.99)),
     #080c10;
+}
+
+.premium-shell > .sidebar.sidebar-collapsed {
+  /* Handled by .sidebar-collapsed-shell grid-template-columns now */
 }
 
 .premium-shell .sidebar nav {
@@ -255,6 +264,13 @@
   border: 1px solid transparent;
   border-radius: 9px;
   color: rgba(190, 202, 214, 0.73);
+  transition:
+    background 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    padding 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    grid-template-columns 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .premium-shell .nav-item:hover {
@@ -267,6 +283,20 @@
   border-color: rgba(227, 181, 95, 0.12);
   background: linear-gradient(90deg, rgba(227, 181, 95, 0.17), rgba(227, 181, 95, 0.045));
   box-shadow: inset 2px 0 var(--premium-gold);
+}
+
+/* Remove inset gold left-edge shadow when sidebar is collapsed */
+.premium-shell.sidebar-collapsed-shell .nav-item.active {
+  border-color: transparent;
+  background: rgba(227, 181, 95, 0.12) !important;
+  box-shadow: none !important;
+  /* gradient must be overridden for centering to work cleanly */
+  background-image: none !important;
+}
+
+.premium-shell.sidebar-collapsed-shell .nav-item:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+  box-shadow: none;
 }
 
 .premium-shell .sidebar-status {
@@ -3284,5 +3314,6 @@ html, body, #root {
   align-items: center;
   gap: 6px;
 }
-   
+  
+ 
  

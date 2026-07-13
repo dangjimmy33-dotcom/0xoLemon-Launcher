@@ -287,6 +287,40 @@ function GameHoverCard({
 
 import type { DiscordAuthUser } from '../types'
 
+// StoreModeSwitch Component
+function StoreModeSwitch({ value, onChange }: { value: 'local' | 'hybrid' | 'steam'; onChange: (mode: 'local' | 'hybrid' | 'steam') => void }) {
+  const { t } = useLocale()
+
+  return (
+    <div className="store-mode-switch">
+      <button
+        type="button"
+        className={`mode-option ${value === 'local' ? 'active' : ''}`}
+        onClick={() => onChange('local')}
+      >
+        <HardDrive size={14} />
+        {t.library?.storeModeLocal || 'Local'}
+      </button>
+      <button
+        type="button"
+        className={`mode-option ${value === 'hybrid' ? 'active' : ''}`}
+        onClick={() => onChange('hybrid')}
+      >
+        <Sparkles size={14} />
+        {t.library?.storeModeHybrid || 'Hybrid'}
+      </button>
+      <button
+        type="button"
+        className={`mode-option ${value === 'steam' ? 'active' : ''}`}
+        onClick={() => onChange('steam')}
+      >
+        <Play size={14} />
+        {t.library?.storeModeSteam || 'Steam'}
+      </button>
+    </div>
+  )
+}
+
 export function StoreLibraryView({
   viewMode,
   catalog,
@@ -381,6 +415,7 @@ export function StoreLibraryView({
   const { t } = useLocale()
   const [query, setQuery] = useState('')
   const [tutorialVisible, setTutorialVisible] = useState(false)
+  const [storeMode, setStoreMode] = useState<'local' | 'hybrid' | 'steam'>('hybrid')
   const realtimeConfig = useRealtimeConfig()
 
   useEffect(() => {
@@ -600,6 +635,7 @@ export function StoreLibraryView({
               {visibleGames.length} game{visibleGames.length === 1 ? '' : 's'}
             </span>
           </div>
+          {viewMode === 'store' && <StoreModeSwitch value={storeMode} onChange={setStoreMode} />}
           <label className="store-search">
             <Search size={16} />
             <input aria-label="Search games" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search..." />
@@ -690,6 +726,12 @@ export function StoreLibraryView({
 
   const livePlayers = realtimeConfig.livePlayerCount?.[selectedGame.id]
 
+  // Control button visibility based on storeMode:
+  // local: show all buttons (play/install)
+  // hybrid: show all buttons (play/install + or + add to steam)
+  // steam: hide install button when not installed, show only "Add to Steam"
+  const showInstallButton = storeMode === 'local' || storeMode === 'hybrid' || (storeMode === 'steam' && installed)
+
   return (
     <section className="game-detail-view">
       {/* ── Sticky Floating Bar ── */}
@@ -722,17 +764,19 @@ export function StoreLibraryView({
             <VerifyIcon size={15} />
             {verifyLabel}
           </button>
-          <button
-            className={actionClass}
-            type="button"
-            onClick={primaryActionBtn}
-            disabled={primaryDisabled}
-            data-stop-label={isPlaying ? 'STOP' : undefined}
-          >
-            {primaryIcon}
-            <span>{actionLabel}</span>
-          </button>
-          {(!isJobRunning && !isPlaying && selectedGameId) && <SteamIntegrationButton gameId={selectedGameId} gameTitle={detail.title} />}
+          {showInstallButton && (
+            <button
+              className={actionClass}
+              type="button"
+              onClick={primaryActionBtn}
+              disabled={primaryDisabled}
+              data-stop-label={isPlaying ? 'STOP' : undefined}
+            >
+              {primaryIcon}
+              <span>{actionLabel}</span>
+            </button>
+          )}
+          {(!isJobRunning && !isPlaying && selectedGameId) && <SteamIntegrationButton gameId={selectedGameId} gameTitle={detail.title} storeMode={storeMode} />}
           {installed && showVersionAction ? (
             <button
               className="update-control"
@@ -792,16 +836,18 @@ export function StoreLibraryView({
               <VerifyIcon size={17} />
               {verifyLabel}
             </button>
-            <button
-              className={actionClass}
-              type="button"
-              onClick={primaryActionBtn}
-              disabled={primaryDisabled}
-              data-stop-label={isPlaying ? 'STOP' : undefined}
-            >
-              {primaryIcon}
-              <span>{actionLabel}</span>
-            </button>
+            {showInstallButton && (
+              <button
+                className={actionClass}
+                type="button"
+                onClick={primaryActionBtn}
+                disabled={primaryDisabled}
+                data-stop-label={isPlaying ? 'STOP' : undefined}
+              >
+                {primaryIcon}
+                <span>{actionLabel}</span>
+              </button>
+            )}
             {installed && showVersionAction ? (
               <button className="update-control" type="button" onClick={onPrimaryAction} disabled={updateDisabled}>
                 <Download size={17} />
@@ -814,7 +860,7 @@ export function StoreLibraryView({
                 {t.library.uninstall}
               </button>
             ) : null}
-            {(!isJobRunning && !isPlaying && selectedGameId) && <SteamIntegrationButton gameId={selectedGameId} gameTitle={detail.title} />}
+            {(!isJobRunning && !isPlaying && selectedGameId) && <SteamIntegrationButton gameId={selectedGameId} gameTitle={detail.title} storeMode={storeMode} />}
           </div>
         </div>
 
@@ -1111,6 +1157,7 @@ export function OperationHero({
   canUpdate,
   installMode,
   selectedVersion,
+  storeMode = 'hybrid',
 }: {  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   game: GameSummary
   detail: GameDetail
@@ -1128,6 +1175,7 @@ export function OperationHero({
   canUpdate: boolean
   installMode: boolean
   selectedVersion: string
+  storeMode?: 'local' | 'hybrid' | 'steam'
 }) {
   const { t } = useLocale()
   const hero = assetUrlForId(game.heroAssetId, assets) || firstMediaUrl(detail, assets)
@@ -1193,14 +1241,14 @@ export function OperationHero({
               ) : null}
             </>
           )}
-          {(!isJobRunning && !isGameRunning) && <SteamIntegrationButton gameId={game.id} gameTitle={game.title} />}
+          {(!isJobRunning && !isGameRunning) && <SteamIntegrationButton gameId={game.id} gameTitle={game.title} storeMode={storeMode} />}
         </div>
       </div>
     </section>
   )
 }
 
-function SteamIntegrationButton({ gameId, gameTitle }: { gameId: string, gameTitle: string }) {
+function SteamIntegrationButton({ gameId, gameTitle, storeMode }: { gameId: string, gameTitle: string, storeMode: 'local' | 'hybrid' | 'steam' }) {
   const [status, setStatus] = useState<boolean>(false)
   const [loading, setLoading] = useState(false)
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(false)
@@ -1212,6 +1260,11 @@ function SteamIntegrationButton({ gameId, gameTitle }: { gameId: string, gameTit
   const { t } = useLocale()
 
   const appid = mapping[gameId]
+
+  // Hide in "local" mode
+  if (storeMode === 'local') {
+    return null
+  }
 
   useEffect(() => {
     if (!appid) return
@@ -1366,7 +1419,7 @@ function SteamIntegrationButton({ gameId, gameTitle }: { gameId: string, gameTit
   return (
     <>
       <div className="steam-integration-wrapper" style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '10px' }}>
-        <span style={{ fontSize: '14px', color: '#888', fontWeight: 500, marginRight: '4px' }}>{(t as any).common?.or || 'or'}</span>
+        {storeMode === 'hybrid' && <span style={{ fontSize: '14px', color: '#888', fontWeight: 500, marginRight: '4px' }}>{(t as any).common?.or || 'or'}</span>}
         {status ? (
           <>
             <button

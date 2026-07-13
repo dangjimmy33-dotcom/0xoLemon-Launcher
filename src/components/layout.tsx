@@ -1,7 +1,9 @@
+import { useState, useEffect } from 'react'
 import type { ReactNode } from 'react'
-import { Cloud, Database, Download, Home, Image as ImageIcon, Library, RefreshCcw, Settings, ShoppingBag, Wifi, WifiOff, Languages, Sparkles, FileCode } from 'lucide-react'
+import { Cloud, Database, Download, Home, Image as ImageIcon, Library, RefreshCcw, Settings, ShoppingBag, Wifi, WifiOff, Languages, Sparkles, FileCode, Search } from 'lucide-react'
 import { useLocale } from '../context/LocaleContext'
 import type { GameCatalog, TabId } from '../types'
+import { assetUrlForId } from '../lib/gameMeta'
 
 export function Sidebar({
   serviceStatus,
@@ -10,6 +12,7 @@ export function Sidebar({
   updateCount,
   downloadCount,
   luaModeEnabled,
+  isSidebarCollapsed,
 }: {
   serviceStatus: string
   activeTab: TabId
@@ -17,8 +20,14 @@ export function Sidebar({
   updateCount: number
   downloadCount: number
   luaModeEnabled: boolean
+  isSidebarCollapsed?: boolean
+  onToggleSidebar?: () => void
 }) {
   const { t } = useLocale()
+
+  // Use controlled props if provided, otherwise default to expanded
+  const collapsed = isSidebarCollapsed ?? false
+
   const normalizedStatus = serviceStatus.toLowerCase()
   const connectionLabel = normalizedStatus.includes('unavailable')
     ? 'Offline'
@@ -41,7 +50,9 @@ export function Sidebar({
   ]
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${collapsed ? 'sidebar-collapsed' : ''}`}>
+      <div className="sidebar-header">
+      </div>
       <nav>
         {items.map(([tabId, label, Icon]) => (
           <button
@@ -68,10 +79,6 @@ export function Sidebar({
     </aside>
   )
 }
-
-import { useEffect, useState } from 'react'
-import { Search } from 'lucide-react'
-import { assetUrlForId } from '../lib/gameMeta'
 
 export function TabEmptyState({
   activeTab,

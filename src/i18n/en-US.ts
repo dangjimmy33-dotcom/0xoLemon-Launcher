@@ -67,6 +67,9 @@ export const enUS = {
     autoInstallSettingDesc: 'Automatically trigger game installation immediately after Steam restarts.',
     skipRestartConfirmSetting: 'Skip Restart Confirmation',
     skipRestartConfirmSettingDesc: 'Do not show the confirmation popup when clicking Restart Steam from library.',
+    storeModeLocal: 'Local',
+    storeModeHybrid: 'Hybrid',
+    storeModeSteam: 'Steam',
   },
   install: {
     title: 'Choose a version',

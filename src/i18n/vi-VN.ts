@@ -66,6 +66,9 @@ export const viVN = {
     autoInstallSettingDesc: 'Tự động mở giao diện tải game ngay lập tức sau khi Steam khởi động lại.',
     skipRestartConfirmSetting: 'Bỏ qua xác nhận khởi động lại',
     skipRestartConfirmSettingDesc: 'Không hiển thị hộp thoại xác nhận khi bạn ấn nút Khởi động lại Steam trong thư viện.',
+    storeModeLocal: 'Nội bộ',
+    storeModeHybrid: 'Lai',
+    storeModeSteam: 'Steam',
     app: 'Ứng dụng',
   },
   install: {
