@@ -1,7 +1,11 @@
 import { useEffect, useMemo, useRef, useState, cloneElement } from 'react'
+import { doc, setDoc, increment } from 'firebase/firestore'
+import { db } from '../firebase'
 import { createPortal } from 'react-dom'
 import { invoke } from '@tauri-apps/api/core'
-import { BookOpen, CheckCircle2, ChevronLeft, ChevronRight, CircleAlert, PlusCircle, Download, FolderOpen, HardDrive, Image as ImageIcon, Library, Play, RefreshCcw, Search, ShieldCheck, ShoppingBag, Trophy, X, MessageSquare, Info, Sparkles } from 'lucide-react'
+import { listen } from '@tauri-apps/api/event'
+import { BookOpen, CheckCircle2, ChevronLeft, ChevronRight, CircleAlert, PlusCircle, Download, FolderOpen, HardDrive, Image as ImageIcon, Library, Play, RefreshCcw, Search, ShieldCheck, ShoppingBag, SlidersHorizontal, ThumbsUp, Trophy, X, MessageSquare, Info, Sparkles } from 'lucide-react'
+import { useGameStats } from '../hooks/useGameStats'
 import { TutorialModal } from './TutorialModal'
 import { useLocale } from '../context/LocaleContext'
 import { useSteamAppIds } from '../hooks/useSteamAppIds'
@@ -191,9 +195,10 @@ function HoverCardPopup({
   const tags = getGameTags(game)
 
   const style: React.CSSProperties = {
-    position: 'absolute',
+    position: 'fixed',
     top: pos.top,
     zIndex: 9999,
+    transform: 'translateY(-50%)',
   }
   if (pos.alignRight) {
     style.right = pos.right
@@ -256,12 +261,13 @@ function GameHoverCard({
     const timer = setTimeout(() => {
       if (anchorRef.current) {
         const rect = anchorRef.current.getBoundingClientRect()
+        const isListMode = rect.width > 300
         const spaceRight = window.innerWidth - rect.right
         const spaceLeft = rect.left
-        const alignRight = spaceRight < 340 && spaceLeft > 340
+        const alignRight = !isListMode && spaceRight < 340 && spaceLeft > 340
         setPos({
-          top: rect.top + window.scrollY,
-          left: rect.right + 10,
+          top: rect.top + rect.height / 2,
+          left: isListMode ? rect.left + 220 : rect.right + 10,
           right: window.innerWidth - rect.left + 10,
           alignRight,
         })
@@ -321,6 +327,32 @@ function StoreModeSwitch({ value, onChange }: { value: 'local' | 'hybrid' | 'ste
   )
 }
 
+// LibraryModeSwitch Component
+function LibraryModeSwitch({ value, onChange }: { value: 'local' | 'steam'; onChange: (mode: 'local' | 'steam') => void }) {
+  const { t } = useLocale()
+
+  return (
+    <div className="store-mode-switch two-options">
+      <button
+        type="button"
+        className={`mode-option ${value === 'local' ? 'active' : ''}`}
+        onClick={() => onChange('local')}
+      >
+        <HardDrive size={14} />
+        {t.library?.storeModeLocal || 'Local'}
+      </button>
+      <button
+        type="button"
+        className={`mode-option ${value === 'steam' ? 'active' : ''}`}
+        onClick={() => onChange('steam')}
+      >
+        <Play size={14} />
+        {t.library?.storeModeSteam || 'Steam'}
+      </button>
+    </div>
+  )
+}
+
 export function StoreLibraryView({
   viewMode,
   catalog,
@@ -366,6 +398,9 @@ export function StoreLibraryView({
   onBackupGoogleDrive,
   onRestoreMissingSaveFiles,
   discordUser,
+  installStates,
+  steamInstalledAppIds,
+  steamBuildIds,
 }: {
   viewMode: 'store' | 'library'
   catalog: GameCatalog
@@ -411,12 +446,89 @@ export function StoreLibraryView({
   onBackupGoogleDrive: () => void
   onRestoreMissingSaveFiles: () => void
   discordUser?: DiscordAuthUser | null
+  installStates?: Record<string, GameInstallState>
+  steamInstalledAppIds?: number[]
+  steamBuildIds?: Record<number, string>
 }) {
   const { t } = useLocale()
   const [query, setQuery] = useState('')
   const [tutorialVisible, setTutorialVisible] = useState(false)
   const [storeMode, setStoreMode] = useState<'local' | 'hybrid' | 'steam'>('hybrid')
+  const [libraryMode, setLibraryMode] = useState<'local' | 'steam'>('local')
+  const [sortBy, setSortBy] = useState<'az' | 'za' | 'liked' | 'downloaded'>('az')
+  const [viewLayout, setViewLayout] = useState<'grid' | 'list'>(() =>
+    (localStorage.getItem('libraryViewLayout') as 'grid' | 'list') || 'grid'
+  )
+  const [wishlist, setWishlist] = useState<Set<string>>(() => {
+    try { return new Set(JSON.parse(localStorage.getItem('libraryWishlist') || '[]')) }
+    catch { return new Set() }
+  })
+  const [likedGames, setLikedGames] = useState<Set<string>>(() => {
+    try { return new Set(JSON.parse(localStorage.getItem('libraryLikedGames') || '[]')) }
+    catch { return new Set() }
+  })
+  const [sortOpen, setSortOpen] = useState(false)
   const realtimeConfig = useRealtimeConfig()
+  const gameStats = useGameStats()
+
+  const toggleWishlist = (gameId: string) => {
+    setWishlist(prev => {
+      const next = new Set(prev)
+      if (next.has(gameId)) next.delete(gameId); else next.add(gameId)
+      localStorage.setItem('libraryWishlist', JSON.stringify([...next]))
+      return next
+    })
+  }
+
+  const [optimisticLikes, setOptimisticLikes] = useState<Record<string, number>>({})
+
+  const toggleLike = async (gameId: string) => {
+    const isLiked = likedGames.has(gameId)
+    const delta = isLiked ? -1 : 1
+    setLikedGames(prev => {
+      const next = new Set(prev)
+      if (isLiked) next.delete(gameId); else next.add(gameId)
+      localStorage.setItem('libraryLikedGames', JSON.stringify([...next]))
+      return next
+    })
+    // Optimistic update so counter changes immediately
+    setOptimisticLikes(prev => ({
+      ...prev,
+      [gameId]: (prev[gameId] ?? gameStats.likes[gameId] ?? 0) + delta,
+    }))
+    try {
+      await setDoc(doc(db, 'config', 'gameStats'), {
+        likes: { [gameId]: increment(delta) }
+      }, { merge: true })
+    } catch (e) {
+      // Rollback optimistic update
+      setOptimisticLikes(prev => ({
+        ...prev,
+        [gameId]: (prev[gameId] ?? gameStats.likes[gameId] ?? 0) - delta,
+      }))
+      console.warn('Failed to update likes', e)
+    }
+  }
+
+  const toggleViewLayout = (layout: 'grid' | 'list') => {
+    setViewLayout(layout)
+    localStorage.setItem('libraryViewLayout', layout)
+  }
+
+  // When Firestore confirms the like count, clear the optimistic override
+  useEffect(() => {
+    setOptimisticLikes(prev => {
+      const next = { ...prev }
+      let changed = false
+      for (const gameId of Object.keys(next)) {
+        if (gameStats.likes[gameId] !== undefined) {
+          delete next[gameId]
+          changed = true
+        }
+      }
+      return changed ? next : prev
+    })
+  }, [gameStats.likes])
 
   useEffect(() => {
     if (selectedGame && selectedInstallState?.installed && selectedGame.id.includes('among')) {
@@ -430,18 +542,45 @@ export function StoreLibraryView({
     return undefined
   }, [selectedGame, selectedInstallState?.installed])
 
+  const { mapping } = useSteamAppIds()
+
   const visibleGames = useMemo(() => {
+    let baseGames = catalog.games
+
+    // In library view, filter based on libraryMode
+    if (viewMode === 'library' && installStates && steamInstalledAppIds) {
+      baseGames = baseGames.filter((game) => {
+        if (libraryMode === 'local') {
+          return installStates[game.id]?.installed
+        } else if (libraryMode === 'steam') {
+          const appid = mapping[game.id]
+          return appid && steamInstalledAppIds.includes(appid)
+        }
+        return false
+      })
+    }
+
     const needle = query.trim().toLowerCase()
-    if (!needle) return catalog.games
-    return catalog.games.filter((game) =>
-      [game.title, game.subtitle, game.developer, game.publisher].some((value) => value.toLowerCase().includes(needle)),
-    )
-  }, [catalog.games, query])
+    if (needle) {
+      baseGames = baseGames.filter((game) =>
+        [game.title, game.subtitle, game.developer, game.publisher].some((value) => value.toLowerCase().includes(needle)),
+      )
+    }
+
+    // Apply sort
+    const sorted = [...baseGames]
+    if (sortBy === 'az') sorted.sort((a, b) => a.title.localeCompare(b.title))
+    else if (sortBy === 'za') sorted.sort((a, b) => b.title.localeCompare(a.title))
+    else if (sortBy === 'liked') sorted.sort((a, b) => (gameStats.likes[b.id] || 0) - (gameStats.likes[a.id] || 0))
+    else if (sortBy === 'downloaded') sorted.sort((a, b) => (gameStats.downloads[b.id] || 0) - (gameStats.downloads[a.id] || 0))
+
+    return sorted
+  }, [catalog.games, query, viewMode, libraryMode, installStates, steamInstalledAppIds, mapping, sortBy, gameStats])
   const actionDockRef = useRef<HTMLDivElement>(null)
   const [stickyVisible, setStickyVisible] = useState(false)
   const [activeDetailTab, setActiveDetailTab] = useState<'overview' | 'chat' | 'lua-game'>('overview')
   const [showLuaGameTab, setShowLuaGameTab] = useState(false)
-  const { mapping } = useSteamAppIds()
+  const [steamGameRunning, setSteamGameRunning] = useState(false)
 
   // Get current game's Steam App ID
   const currentSteamAppId = selectedGame ? mapping[selectedGame.id] : undefined
@@ -488,9 +627,142 @@ export function StoreLibraryView({
     }
   }, [selectedGame, activeDetailTab, mapping])
 
+  useEffect(() => {
+    // Poll to check if the Steam game process is running
+    const executable = detail?.install?.launchExecutable
+    const appid = mapping[selectedGame?.id || '']
+    const isInstalledOnSteam = Boolean(appid && steamInstalledAppIds?.includes(appid))
+    const effectiveMode = viewMode === 'library' ? libraryMode : storeMode
+
+    if (effectiveMode !== 'steam' || !isInstalledOnSteam || !executable) {
+      if (steamGameRunning) setSteamGameRunning(false)
+      return
+    }
+
+    const interval = setInterval(async () => {
+      try {
+        const running = await invoke<boolean>('is_process_running', { executable })
+        setSteamGameRunning(running)
+      } catch (e) {
+        // ignore
+      }
+    }, 3000)
+
+    return () => clearInterval(interval)
+  }, [detail, mapping, selectedGame, steamInstalledAppIds, libraryMode, storeMode, viewMode, steamGameRunning])
+
   const [steamlessStatus, setSteamlessStatus] = useState<boolean>(false)
   const [steamlessLoading, setSteamlessLoading] = useState<boolean>(false)
   const [steamlessMessage, setSteamlessMessage] = useState<{ text: string; isError: boolean } | null>(null)
+
+  // ── Depot Version Switcher ──
+  interface DepotManifestEntry { depotId: string; manifestId: string; manifestFile: string }
+  interface DepotVersionEntry { buildId: string; depots: DepotManifestEntry[] }
+  interface DepotPatchEvent {
+    eventType: string; buildId: string; depotId?: string
+    message?: string; index?: number; total?: number; success?: boolean
+  }
+
+  const [depotVersions, setDepotVersions] = useState<DepotVersionEntry[]>([])
+  const [depotHfRepoId, setDepotHfRepoId] = useState<string>('')
+  const [depotSelectedBuildId, setDepotSelectedBuildId] = useState<string>('')
+  const [depotPatching, setDepotPatching] = useState<boolean>(false)
+  const [depotVersionsError, setDepotVersionsError] = useState<string | null>(null)
+  const [depotPatchBuildId, setDepotPatchBuildId] = useState<string | null>(null)
+  const [depotPatchLog, setDepotPatchLog] = useState<string[]>([])
+  const [depotPatchResult, setDepotPatchResult] = useState<{ ok: boolean; msg: string } | null>(null)
+  const [depotVersionsLoading, setDepotVersionsLoading] = useState<boolean>(false)
+  const [depotCurrentBuildId, setDepotCurrentBuildId] = useState<string | null>(null)
+  const [depotDropdownOpen, setDepotDropdownOpen] = useState<boolean>(false)
+
+  // Load depot HF repo ID from launcher settings (fallback to default if not set)
+  useEffect(() => {
+    invoke<any>('get_launcher_settings').then((s: any) => {
+      // Use configured value, or fall back to default repo
+      setDepotHfRepoId(s?.depotHfRepoId || 'Immaking/Luas')
+    }).catch(() => setDepotHfRepoId('Immaking/Luas'))
+  }, [])
+
+  // When Lua Mode tab is active + game has Steam appid, fetch depot versions from HF
+  useEffect(() => {
+    if (activeDetailTab !== 'lua-game' || !currentSteamAppId || !depotHfRepoId) {
+      setDepotVersions([])
+      setDepotSelectedBuildId('')
+      setDepotVersionsLoading(false)
+      setDepotCurrentBuildId(null)
+      return
+    }
+
+    // Fetch current buildID from Steam appmanifest
+    if (currentSteamAppId) {
+      const appidNum = Number(currentSteamAppId)
+      console.log('[Depot] Fetching buildID for appid:', appidNum)
+      invoke<string | null>('get_steam_game_buildid', { appid: appidNum })
+        .then(buildId => {
+          console.log('[Depot] Current buildID:', buildId)
+          setDepotCurrentBuildId(buildId)
+        })
+        .catch(err => {
+          console.error('[Depot] Failed to get buildID:', err)
+          setDepotCurrentBuildId(null)
+        })
+    }
+
+    setDepotVersionsLoading(true)
+    setDepotVersionsError(null)
+    invoke<DepotVersionEntry[]>('list_depot_versions', {
+      appid: Number(currentSteamAppId),
+      hfRepoId: depotHfRepoId,
+    }).then(versions => {
+      setDepotVersions(versions)
+      // Auto-select newest build
+      if (versions.length > 0 && !depotSelectedBuildId) {
+        setDepotSelectedBuildId(versions[0].buildId)
+      }
+      setDepotVersionsError(null)
+      setDepotVersionsLoading(false)
+    }).catch(e => {
+      setDepotVersions([])
+      setDepotVersionsError(String(e))
+      setDepotVersionsLoading(false)
+    })
+  }, [activeDetailTab, currentSteamAppId, depotHfRepoId])
+
+  // Listen to real-time depot patch events from backend
+  useEffect(() => {
+    let unlisten: (() => void) | undefined
+    listen<DepotPatchEvent>('depot-patch-progress', (event) => {
+      const ev = event.payload
+      if (ev.message) setDepotPatchLog(prev => [...prev.slice(-199), ev.message!])
+      if (ev.eventType === 'complete' || ev.eventType === 'error') {
+        setDepotPatching(false)
+        setDepotPatchResult({ ok: ev.success === true, msg: ev.message ?? '' })
+      }
+    }).then((fn) => { unlisten = fn })
+    return () => { unlisten?.() }
+  }, [])
+
+  const handleDepotPatch = async (buildId: string) => {
+    if (!currentSteamAppId || depotPatching) return
+    const installDir = await invoke<string | null>('get_steam_game_install_dir', { appid: currentSteamAppId }).catch(() => null)
+    if (!installDir) {
+      setDepotPatchResult({ ok: false, msg: 'Steam install directory not found. Please install the game via Steam first.' })
+      return
+    }
+    setDepotPatching(true)
+    setDepotPatchBuildId(buildId)
+    setDepotPatchLog([])
+    setDepotPatchResult(null)
+    invoke<string>('run_depot_patch', {
+      appid: currentSteamAppId,
+      buildId,
+      hfRepoId: depotHfRepoId,
+      installDir,
+    }).catch((e: any) => {
+      setDepotPatching(false)
+      setDepotPatchResult({ ok: false, msg: String(e) })
+    })
+  }
 
   /** Resolve the exe path: prefer Steam's own install dir over launcher's installPath */
   const resolveSteamlessExePath = async (): Promise<string | null> => {
@@ -578,6 +850,10 @@ export function StoreLibraryView({
   const renderGameCard = (game: GameSummary, variant: 'compact' | 'browse') => {
     const tags = getGameTags(game)
     const isComingSoon = gameHasTag(game, 'coming soon')
+    const inWishlist = wishlist.has(game.id)
+    const downloads = gameStats.downloads[game.id] || 0
+    const likes = gameStats.likes[game.id] || 0
+
     return (
       <button
         className={[
@@ -596,8 +872,8 @@ export function StoreLibraryView({
         <div className="store-game-card-media">
           <LazyGameCardImage
             game={game}
-            assetId={game.gridAssetId}
-            url={assetUrlForId(game.gridAssetId, assets)}
+            assetId={variant === 'browse' && viewLayout === 'list' ? (game.heroAssetId || game.gridAssetId) : game.gridAssetId}
+            url={assetUrlForId(variant === 'browse' && viewLayout === 'list' ? (game.heroAssetId || game.gridAssetId) : game.gridAssetId, assets)}
             variant={variant}
             onRequestAsset={onRequestAsset}
           />
@@ -608,12 +884,59 @@ export function StoreLibraryView({
               ))}
             </div>
           ) : null}
+          {/* Wishlist btn inside media (grid mode) */}
+          {viewLayout !== 'list' && (
+            <button
+              type="button"
+              className={`game-card-wishlist-btn ${inWishlist ? 'active' : ''}`}
+              onClick={(e) => {
+                e.stopPropagation()
+                toggleWishlist(game.id)
+              }}
+              title={inWishlist ? t.library.removeFromWishlist : t.library.addToWishlist}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill={inWishlist ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+              </svg>
+            </button>
+          )}
         </div>
-        <span>
-          <strong>{game.title}</strong>
-          <small>{game.developer}</small>
-        </span>
+        <div className="store-game-card-info">
+          <div className="store-game-card-title">
+            <strong>{game.title}</strong>
+            <small>{game.developer}</small>
+          </div>
+          <div className="game-card-stats">
+            {downloads > 0 && (
+              <span className="stat-pill" title={`${downloads.toLocaleString()} ${t.library.totalDownloads}`}>
+                <Download size={12} /> {downloads > 1000 ? `${(downloads / 1000).toFixed(1)}k` : downloads}
+              </span>
+            )}
+            {likes > 0 && (
+              <span className="stat-pill" title={`${likes.toLocaleString()} ${t.library.totalLikes}`}>
+                <ThumbsUp size={12} /> {likes > 1000 ? `${(likes / 1000).toFixed(1)}k` : likes}
+              </span>
+            )}
+          </div>
+          {/* Wishlist btn at end of info row (list mode) */}
+          {viewLayout === 'list' && (
+            <button
+              type="button"
+              className={`game-card-wishlist-btn ${inWishlist ? 'active' : ''}`}
+              onClick={(e) => {
+                e.stopPropagation()
+                toggleWishlist(game.id)
+              }}
+              title={inWishlist ? t.library.removeFromWishlist : t.library.addToWishlist}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill={inWishlist ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+              </svg>
+            </button>
+          )}
+        </div>
       </button>
+
     )
   }
 
@@ -636,13 +959,51 @@ export function StoreLibraryView({
             </span>
           </div>
           {viewMode === 'store' && <StoreModeSwitch value={storeMode} onChange={setStoreMode} />}
-          <label className="store-search">
-            <Search size={16} />
-            <input aria-label="Search games" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search..." />
-          </label>
+          {viewMode === 'library' && <LibraryModeSwitch value={libraryMode} onChange={setLibraryMode} />}
+
+          <div className="library-toolbar-actions">
+            <div className="store-sort-dropdown">
+              <button
+                type="button"
+                className="sort-toggle-btn"
+                onClick={() => setSortOpen(!sortOpen)}
+                onBlur={() => setTimeout(() => setSortOpen(false), 200)}
+              >
+                <SlidersHorizontal size={14} />
+                <span>{
+                  sortBy === 'az' ? t.library.sortAZ :
+                    sortBy === 'za' ? t.library.sortZA :
+                      sortBy === 'liked' ? t.library.sortMostLiked :
+                        t.library.sortMostDownloaded
+                }</span>
+              </button>
+              {sortOpen && (
+                <div className="sort-dropdown-menu">
+                  <button type="button" onClick={() => setSortBy('az')} className={sortBy === 'az' ? 'active' : ''}>{t.library.sortAZ}</button>
+                  <button type="button" onClick={() => setSortBy('za')} className={sortBy === 'za' ? 'active' : ''}>{t.library.sortZA}</button>
+                  <button type="button" onClick={() => setSortBy('liked')} className={sortBy === 'liked' ? 'active' : ''}>{t.library.sortMostLiked}</button>
+                  <button type="button" onClick={() => setSortBy('downloaded')} className={sortBy === 'downloaded' ? 'active' : ''}>{t.library.sortMostDownloaded}</button>
+                </div>
+              )}
+            </div>
+
+            <div className="view-layout-toggle">
+              <button type="button" className={viewLayout === 'grid' ? 'active' : ''} onClick={() => toggleViewLayout('grid')} title={t.library.viewGrid}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect width="7" height="7" x="3" y="3" rx="1" /><rect width="7" height="7" x="14" y="3" rx="1" /><rect width="7" height="7" x="14" y="14" rx="1" /><rect width="7" height="7" x="3" y="14" rx="1" /></svg>
+              </button>
+              <button type="button" className={viewLayout === 'list' ? 'active' : ''} onClick={() => toggleViewLayout('list')} title={t.library.viewList}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect width="7" height="7" x="3" y="3" rx="1" /><rect width="7" height="7" x="3" y="14" rx="1" /><path d="M14 6h7" /><path d="M14 10h7" /><path d="M14 14h7" /><path d="M14 18h7" /></svg>
+              </button>
+            </div>
+
+            <label className="store-search">
+              <Search size={16} />
+              <input aria-label="Search games" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search..." />
+            </label>
+          </div>
         </header>
 
-        <div className="library-browse-grid">
+        <div className={`library-browse-grid layout-${viewLayout}`}>
           {visibleGames.map((game) => (
             <GameHoverCard key={game.id} game={game} assets={assets} onRequestAsset={onRequestAsset}>
               {renderGameCard(game, 'browse') as React.ReactElement}
@@ -656,13 +1017,27 @@ export function StoreLibraryView({
           ) : null}
           {visibleGames.length === 0 && viewMode === 'library' ? (
             <div className="library-empty-inline library-empty-installed">
-              <Library size={28} />
-              <strong>No installed games</strong>
-              <span>Games installed from Store will appear here.</span>
-              <button type="button" onClick={onOpenStore}>
-                <ShoppingBag size={15} />
-                Open Store
-              </button>
+              {libraryMode === 'steam' ? (
+                <>
+                  <Library size={28} />
+                  <strong>{t.library.noSteamGames}</strong>
+                  <span>{t.library.noSteamGamesDesc}</span>
+                  <button type="button" onClick={onOpenStore}>
+                    <ShoppingBag size={15} />
+                    Open Store
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Library size={28} />
+                  <strong>No installed games</strong>
+                  <span>Games installed from Store will appear here.</span>
+                  <button type="button" onClick={onOpenStore}>
+                    <ShoppingBag size={15} />
+                    Open Store
+                  </button>
+                </>
+              )}
             </div>
           ) : visibleGames.length === 0 ? (
             <div className="library-empty-inline">
@@ -684,8 +1059,15 @@ export function StoreLibraryView({
   const installed = Boolean(selectedInstallState?.installed)
   const isVerifying = verifyStatus?.state === 'running'
 
+  // Determine effective mode to control button visibility
+  const effectiveMode = viewMode === 'library' ? libraryMode : storeMode
+
+  const steamAppId = mapping[selectedGame.id]
+  const isInstalledOnSteam = Boolean(steamAppId && steamInstalledAppIds?.includes(steamAppId))
+  const steamBuildId = steamAppId ? steamBuildIds?.[steamAppId] : undefined
+
   const isDownloading = isJobRunning
-  const isPlaying = isGameRunning
+  const isPlaying = isGameRunning || steamGameRunning
 
   let actionLabel: string = installed ? t.library.play : (!isTauriRuntime() ? 'Remote Install' : t.library.chooseInstall)
   let actionClass = 'primary-control'
@@ -700,12 +1082,31 @@ export function StoreLibraryView({
     actionLabel = 'Downloading'
     actionClass = 'primary-control downloading-btn'
     primaryDisabled = true
-  } else if (!installed) {
+  } else if (!installed && effectiveMode !== 'steam') {
     actionLabel = !isTauriRuntime() ? 'Remote Install' : t.library.chooseInstall
     primaryDisabled = !canUpdate
   }
 
-  const primaryActionBtn = isPlaying ? onStop : (!installed ? onOpenInstallOptions : onPlay)
+  const handleSteamStop = async () => {
+    if (!detail?.install.launchExecutable) return
+    try {
+      await invoke('kill_process_by_name', { executable: detail.install.launchExecutable })
+      setSteamGameRunning(false)
+    } catch (e) {
+      console.error('Failed to kill steam process', e)
+    }
+  }
+
+  const handleSteamPlay = async () => {
+    if (!steamAppId) return
+    await invoke('open_url', { url: `steam://run/${steamAppId}` })
+    setSteamGameRunning(true) // Optimistically set to true, will be verified by polling
+  }
+
+  const primaryActionBtn = isPlaying
+    ? (effectiveMode === 'steam' ? handleSteamStop : onStop)
+    : (effectiveMode === 'steam' ? handleSteamPlay : (!installed ? onOpenInstallOptions : onPlay))
+
   const primaryIcon = isPlaying
     ? <Play size={17} />
     : isDownloading
@@ -726,11 +1127,11 @@ export function StoreLibraryView({
 
   const livePlayers = realtimeConfig.livePlayerCount?.[selectedGame.id]
 
-  // Control button visibility based on storeMode:
-  // local: show all buttons (play/install)
-  // hybrid: show all buttons (play/install + or + add to steam)
-  // steam: hide install button when not installed, show only "Add to Steam"
-  const showInstallButton = storeMode === 'local' || storeMode === 'hybrid' || (storeMode === 'steam' && installed)
+  // local: show all buttons (play/install), hide steam
+  // hybrid (store only): show all buttons (play/install) + add to steam
+  // steam: hide install/play buttons completely, show only "Add to Steam"
+  const showInstallButton = effectiveMode === 'local' || effectiveMode === 'hybrid'
+  const showSteamButton = effectiveMode === 'steam' || effectiveMode === 'hybrid'
 
   return (
     <section className="game-detail-view">
@@ -745,25 +1146,27 @@ export function StoreLibraryView({
         )}
         <div className="sticky-bar-info">
           <strong>{detail.title}</strong>
-          <span>{displayedVersion} (Build 23244517) {livePlayers !== undefined ? `• ${livePlayers.toLocaleString()} Playing` : ''}</span>
+          <span>{effectiveMode === 'steam' ? (isInstalledOnSteam ? `Steam Build ${steamBuildId || 'Unknown'}` : 'Not Installed on Steam') : `${displayedVersion}`} {livePlayers !== undefined ? `• ${livePlayers.toLocaleString()} Playing` : ''}</span>
         </div>
         <div className="sticky-bar-actions">
-          {installed && selectedGame?.id.includes('among') && (
+          {(installed && effectiveMode !== 'steam' && selectedGame?.id.includes('among')) && (
             <button type="button" onClick={() => setTutorialVisible(true)}>
               <BookOpen size={15} />
               Tutorial
             </button>
           )}
-          {installed && (
+          {(installed && effectiveMode !== 'steam') && (
             <button type="button" onClick={() => selectedInstallState?.installPath && invoke('open_folder', { path: selectedInstallState.installPath })}>
               <FolderOpen size={15} />
               Browse
             </button>
           )}
-          <button type="button" onClick={onVerify} disabled={!installed || isVerifying}>
-            <VerifyIcon size={15} />
-            {verifyLabel}
-          </button>
+          {effectiveMode !== 'steam' && (
+            <button type="button" onClick={onVerify} disabled={!installed || isVerifying}>
+              <VerifyIcon size={15} />
+              {verifyLabel}
+            </button>
+          )}
           {showInstallButton && (
             <button
               className={actionClass}
@@ -776,19 +1179,31 @@ export function StoreLibraryView({
               <span>{actionLabel}</span>
             </button>
           )}
-          {(!isJobRunning && !isPlaying && selectedGameId) && <SteamIntegrationButton gameId={selectedGameId} gameTitle={detail.title} storeMode={storeMode} />}
-          {installed && showVersionAction ? (
+          {effectiveMode === 'steam' && isInstalledOnSteam && (
             <button
-              className="update-control"
+              className="primary-control"
               type="button"
-              onClick={onPrimaryAction}
-              disabled={updateDisabled}
+              onClick={() => steamAppId && invoke('open_url', { url: `steam://run/${steamAppId}` })}
             >
+              <Play size={15} />
+              <span>{t.library.play}</span>
+            </button>
+          )}
+          {/* Steam Versions button — shown in steam OR hybrid mode */}
+          {(effectiveMode === 'steam' || effectiveMode === 'hybrid') && isInstalledOnSteam && showLuaGameTab && (
+            <button className="update-control" type="button" onClick={() => setActiveDetailTab('lua-game')}>
+              <Download size={15} />
+              Steam Versions
+            </button>
+          )}
+          {/* Local Versions button — shown in local OR hybrid mode */}
+          {(installed && showVersionAction && effectiveMode !== 'steam') ? (
+            <button className="update-control" type="button" onClick={onPrimaryAction} disabled={updateDisabled}>
               <Download size={15} />
               {updateReady ? t.library.update : 'Versions'}
             </button>
           ) : null}
-          {installed ? (
+          {(installed && effectiveMode !== 'steam') ? (
             <button className="danger-control" type="button" onClick={onUninstall}>
               <X size={15} />
               {t.library.uninstall}
@@ -813,29 +1228,56 @@ export function StoreLibraryView({
             {logo ? <img className="detail-logo" src={logo} alt={detail.title} /> : <h1>{detail.title}</h1>}
             <p>{detail.shortDescription}</p>
             <div className="library-meta-row">
-              <span>Version {displayedVersion} (Build 23244517)</span>
-              <span>{formatBytes(downloadSize)}</span>
-              {detail.install?.supportsResume ? <span>{t.library.resumeSupported}</span> : null}
+              <span>{effectiveMode === 'steam' ? (isInstalledOnSteam ? `Steam Build ${steamBuildId || 'Unknown'}` : 'Not Installed on Steam') : `Version ${displayedVersion}`}</span>
+              {effectiveMode !== 'steam' && <span>{formatBytes(downloadSize)}</span>}
+              {effectiveMode !== 'steam' && detail.install?.supportsResume ? <span>{t.library.resumeSupported}</span> : null}
               {livePlayers !== undefined ? <span className="live-players-badge"><span className="pulse-dot"></span>{livePlayers.toLocaleString()} Online</span> : null}
+              <button
+                type="button"
+                className={`detail-action-icon-btn${wishlist.has(selectedGame.id) ? ' active-wishlist' : ''}`}
+                onClick={() => toggleWishlist(selectedGame.id)}
+                title={wishlist.has(selectedGame.id) ? t.library.removeFromWishlist : t.library.addToWishlist}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill={wishlist.has(selectedGame.id) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                </svg>
+                <span>{wishlist.has(selectedGame.id) ? t.library.removeFromWishlist : t.library.addToWishlist}</span>
+              </button>
+              <button
+                type="button"
+                className={`detail-action-icon-btn${likedGames.has(selectedGame.id) ? ' active-like' : ''}`}
+                title={likedGames.has(selectedGame.id) ? t.library.unlike : t.library.like}
+                onClick={() => toggleLike(selectedGame.id)}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill={likedGames.has(selectedGame.id) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
+                </svg>
+                {(() => {
+                  const count = optimisticLikes[selectedGame.id] ?? gameStats.likes[selectedGame.id] ?? 0
+                  return count > 1000 ? `${(count / 1000).toFixed(1)}k` : count
+                })()}
+              </button>
             </div>
           </div>
           <div className="store-action-dock" ref={actionDockRef}>
-            {installed && selectedGame?.id.includes('among') && (
+            {(installed && effectiveMode !== 'steam' && selectedGame?.id.includes('among')) && (
               <button type="button" onClick={() => setTutorialVisible(true)}>
                 <BookOpen size={15} />
                 Tutorial
               </button>
             )}
-            {installed && (
+            {(installed && effectiveMode !== 'steam') && (
               <button type="button" onClick={() => selectedInstallState?.installPath && invoke('open_folder', { path: selectedInstallState.installPath })}>
                 <FolderOpen size={15} />
                 Browse
               </button>
             )}
-            <button type="button" onClick={onVerify} disabled={!installed || isVerifying}>
-              <VerifyIcon size={17} />
-              {verifyLabel}
-            </button>
+            {effectiveMode !== 'steam' && (
+              <button type="button" onClick={onVerify} disabled={!installed || isVerifying}>
+                <VerifyIcon size={17} />
+                {verifyLabel}
+              </button>
+            )}
             {showInstallButton && (
               <button
                 className={actionClass}
@@ -848,19 +1290,49 @@ export function StoreLibraryView({
                 <span>{actionLabel}</span>
               </button>
             )}
-            {installed && showVersionAction ? (
+
+            {/* Steam Play button — shown ONLY in steam mode. Now reusing the main button logic to support STOP state */}
+            {effectiveMode === 'steam' && isInstalledOnSteam && (
+              <button
+                className={isPlaying ? 'primary-control running-btn can-stop' : 'primary-control'}
+                type="button"
+                onClick={primaryActionBtn}
+                data-stop-label={isPlaying ? 'STOP' : undefined}
+              >
+                {isPlaying ? <Play size={17} /> : <Play size={17} />}
+                <span>{isPlaying ? 'Running' : t.library.play}</span>
+              </button>
+            )}
+
+            {effectiveMode === 'hybrid' && (!isJobRunning && !isPlaying && selectedGameId) && (
+              <div style={{ display: 'flex', alignItems: 'center', margin: '0 4px', color: '#888', fontWeight: 600, fontSize: '13px' }}>or</div>
+            )}
+
+            {(showSteamButton && !isJobRunning && !isPlaying && selectedGameId) && (
+              <SteamIntegrationButton gameId={selectedGameId} gameTitle={detail.title} storeMode={effectiveMode} />
+            )}
+
+            {/* Steam Versions button — shown in steam OR hybrid mode */}
+            {(effectiveMode === 'steam' || effectiveMode === 'hybrid') && isInstalledOnSteam && showLuaGameTab && (
+              <button className="update-control" type="button" onClick={() => setActiveDetailTab('lua-game')}>
+                <Download size={17} />
+                Steam Versions
+              </button>
+            )}
+
+            {/* Local Versions button — shown in local OR hybrid mode */}
+            {(installed && showVersionAction && effectiveMode !== 'steam') ? (
               <button className="update-control" type="button" onClick={onPrimaryAction} disabled={updateDisabled}>
                 <Download size={17} />
                 {updateReady ? t.library.update : 'Versions'}
               </button>
             ) : null}
-            {installed ? (
+            {(installed && effectiveMode !== 'steam') ? (
               <button className="danger-control" type="button" onClick={onUninstall}>
                 <X size={17} />
                 {t.library.uninstall}
               </button>
             ) : null}
-            {(!isJobRunning && !isPlaying && selectedGameId) && <SteamIntegrationButton gameId={selectedGameId} gameTitle={detail.title} storeMode={storeMode} />}
           </div>
         </div>
 
@@ -940,7 +1412,7 @@ export function StoreLibraryView({
                   <Download size={20} style={{ color: '#ffa500' }} />
                   <div>
                     <div style={{ color: '#ffa500', fontWeight: '600', marginBottom: '4px' }}>
-                      🎮 Bản Lua Manifest Mới Đã Có!
+                      {t.settings.luaManifestUpdateAvailable}
                     </div>
                     <div style={{ color: '#bbb', fontSize: '13px' }}>
                       {updateInfo.reason}
@@ -991,8 +1463,271 @@ export function StoreLibraryView({
               <p style={{ color: '#aaa', maxWidth: '600px', margin: '0 auto', lineHeight: '1.6' }}>
                 {t.library.luaGameModeDesc}
               </p>
+              {/* ── Depot Version Switcher ── */}
               <div style={{
-                marginTop: '40px',
+                marginTop: '24px',
+                padding: '20px',
+                background: 'rgba(0,0,0,0.35)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                borderRadius: '12px',
+                border: '1px solid rgba(100,180,255,0.25)',
+                textAlign: 'left',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              }}>
+                {/* Header */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px', flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: '18px' }}>🔄</span>
+                  <h3 style={{ margin: 0, fontSize: '15px', color: '#79c0ff' }}>Depot Version Switcher</h3>
+                  {depotVersionsLoading ? (
+                    <span style={{
+                      fontSize: '11px',
+                      color: '#79c0ff',
+                      background: 'rgba(121,192,255,0.1)',
+                      padding: '2px 8px',
+                      borderRadius: '20px',
+                      animation: 'pulse 1.5s ease-in-out infinite',
+                    }}>
+                      Loading...
+                    </span>
+                  ) : depotVersions.length > 0 && (
+                    <span style={{ fontSize: '11px', color: '#888', background: 'rgba(255,255,255,0.06)', padding: '2px 8px', borderRadius: '20px' }}>
+                      {depotVersions.length} build{depotVersions.length !== 1 ? 's' : ''} available
+                    </span>
+                  )}
+                  {depotCurrentBuildId && (
+                    <span style={{
+                      fontSize: '11px',
+                      color: '#4cd137',
+                      background: 'rgba(76,209,55,0.1)',
+                      padding: '3px 10px',
+                      borderRadius: '20px',
+                      border: '1px solid rgba(76,209,55,0.3)',
+                      fontFamily: 'monospace',
+                      fontWeight: 600,
+                      whiteSpace: 'nowrap',
+                    }}>
+                      ✓ Current: Build {depotCurrentBuildId}
+                    </span>
+                  )}
+                </div>
+
+                {!currentSteamAppId ? (
+                  <p style={{ margin: 0, color: '#555', fontSize: '13px' }}>
+                    No Steam AppID detected for this game.
+                  </p>
+                ) : depotVersionsLoading ? (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    padding: '16px',
+                    background: 'rgba(121,192,255,0.05)',
+                    backdropFilter: 'blur(8px)',
+                    WebkitBackdropFilter: 'blur(8px)',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(121,192,255,0.15)',
+                  }}>
+                    <div style={{
+                      width: '20px',
+                      height: '20px',
+                      border: '2px solid rgba(121,192,255,0.3)',
+                      borderTop: '2px solid #79c0ff',
+                      borderRadius: '50%',
+                      animation: 'spin 0.8s linear infinite',
+                    }} />
+                    <span style={{ color: '#79c0ff', fontSize: '13px' }}>
+                      Fetching build versions from server...
+                    </span>
+                  </div>
+                ) : depotVersionsError ? (
+                  <p style={{ margin: 0, color: '#f55', fontSize: '13px' }}>
+                    Error fetching versions: <strong style={{ color: '#faa' }}>{depotVersionsError}</strong>
+                  </p>
+                ) : depotVersions.length === 0 ? (
+                  <p style={{ margin: 0, color: '#555', fontSize: '13px' }}>
+                    No build versions found for App ID <strong style={{ color: '#aaa' }}>{currentSteamAppId}</strong>.
+                    <br /><span style={{ color: '#444', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                      Depot files not yet uploaded to server for this game.
+                    </span>
+                  </p>
+                ) : (
+                  <>
+                    {/* Build ID Selection with current build indicator */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                        <label style={{ color: '#888', fontSize: '13px' }}>
+                          Select Build Version:
+                        </label>
+                        {depotCurrentBuildId ? (
+                          <span style={{
+                            fontSize: '11px',
+                            color: '#4cd137',
+                            background: 'rgba(76,209,55,0.1)',
+                            padding: '2px 8px',
+                            borderRadius: '12px',
+                            border: '1px solid rgba(76,209,55,0.25)',
+                            fontFamily: 'monospace',
+                          }}>
+                            ✓ Installed: Build {depotCurrentBuildId}
+                          </span>
+                        ) : (
+                          <span style={{
+                            fontSize: '11px',
+                            color: '#888',
+                            background: 'rgba(255,255,255,0.05)',
+                            padding: '2px 8px',
+                            borderRadius: '12px',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            fontStyle: 'italic',
+                          }}>
+                            Not installed via Steam
+                          </span>
+                        )}
+                      </div>
+
+                      <div className={`version-dropdown${depotDropdownOpen ? ' open' : ''}`}>
+                        <button
+                          type="button"
+                          className="version-dropdown-trigger primary-control"
+                          onClick={() => setDepotDropdownOpen(!depotDropdownOpen)}
+                          disabled={depotPatching}
+                        >
+                          <div style={{ display: 'contents' }}>
+                            <span>
+                              <strong>Build {depotSelectedBuildId}</strong>
+                              <small>
+                                {depotVersions.find(v => v.buildId === depotSelectedBuildId)?.depots.length || 0} depot(s)
+                              </small>
+                            </span>
+                            {depotCurrentBuildId === depotSelectedBuildId && (
+                              <em style={{ background: '#4cd137', color: '#11100d' }}>Current</em>
+                            )}
+                          </div>
+                          <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
+                        </button>
+
+                        {depotDropdownOpen && (
+                          <div className="version-dropdown-menu">
+                            {depotVersions.map(v => (
+                              <button
+                                key={v.buildId}
+                                type="button"
+                                className={`version-dropdown-option${v.buildId === depotSelectedBuildId ? ' active' : ''}`}
+                                onClick={() => {
+                                  setDepotSelectedBuildId(v.buildId)
+                                  setDepotPatchResult(null)
+                                  setDepotPatchLog([])
+                                  setDepotDropdownOpen(false)
+                                }}
+                              >
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                  <path d="M13.485 1.431a1.473 1.473 0 0 1 2.104 2.062l-7.84 9.801a1.473 1.473 0 0 1-2.12.04L.431 8.138a1.473 1.473 0 0 1 2.084-2.083l4.111 4.112 6.82-8.69a.486.486 0 0 1 .04-.045z" />
+                                </svg>
+                                <span>
+                                  <strong>Build {v.buildId}</strong>
+                                  <small>{v.depots.map(d => d.depotId).join(', ')}</small>
+                                </span>
+                                {depotCurrentBuildId === v.buildId && (
+                                  <em style={{ background: '#4cd137' }}>Installed</em>
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      <button
+                        type="button"
+                        disabled={depotPatching || !depotSelectedBuildId}
+                        onClick={() => depotSelectedBuildId && handleDepotPatch(depotSelectedBuildId)}
+                        className="primary-control"
+                        style={{
+                          padding: '12px 24px',
+                          background: depotPatching
+                            ? 'rgba(120,120,120,0.2)'
+                            : 'linear-gradient(135deg, rgba(30,111,196,0.9), rgba(26,85,160,1))',
+                          border: '1px solid rgba(100,180,255,0.4)',
+                          borderRadius: '8px',
+                          color: depotPatching ? '#555' : '#79c0ff',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          cursor: depotPatching || !depotSelectedBuildId ? 'not-allowed' : 'pointer',
+                          transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px',
+                        }}
+                      >
+                        {depotPatching && depotPatchBuildId === depotSelectedBuildId ? (
+                          <>
+                            <div style={{
+                              width: '16px',
+                              height: '16px',
+                              border: '2px solid rgba(255,255,255,0.3)',
+                              borderTop: '2px solid #fff',
+                              borderRadius: '50%',
+                              animation: 'spin 0.8s linear infinite',
+                            }} />
+                            Patching...
+                          </>
+                        ) : '⚡ Patch to Selected Build'}
+                      </button>
+                    </div>
+                  </>
+                )}
+
+                {/* Real-time log console */}
+                {(depotPatching || depotPatchLog.length > 0) && (
+                  <div style={{
+                    marginTop: '12px',
+                    padding: '12px',
+                    background: 'rgba(0,0,0,0.6)',
+                    backdropFilter: 'blur(8px)',
+                    WebkitBackdropFilter: 'blur(8px)',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(100,180,255,0.2)',
+                    fontFamily: 'monospace',
+                    fontSize: '12px',
+                    maxHeight: '180px',
+                    overflowY: 'auto',
+                    color: '#aaa',
+                    lineHeight: '1.6',
+                  }}>
+                    {depotPatching && <div style={{ color: '#79c0ff', marginBottom: '4px' }}>● Running…</div>}
+                    {depotPatchLog.map((line, i) => (
+                      <div key={i} style={{
+                        color: line.startsWith('✓') ? '#4cd137' : line.startsWith('✗') ? '#ff6b6b' : '#aaa'
+                      }}>{line}</div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Result banner */}
+                {depotPatchResult && !depotPatching && (
+                  <div style={{
+                    marginTop: '10px',
+                    padding: '12px 16px',
+                    borderRadius: '8px',
+                    background: depotPatchResult.ok ? 'rgba(50,200,100,0.12)' : 'rgba(255,50,50,0.12)',
+                    backdropFilter: 'blur(8px)',
+                    WebkitBackdropFilter: 'blur(8px)',
+                    border: `1px solid ${depotPatchResult.ok ? 'rgba(50,200,100,0.35)' : 'rgba(255,50,50,0.35)'}`,
+                    color: depotPatchResult.ok ? '#4cd137' : '#ff6b6b',
+                    fontSize: '13px',
+                    fontWeight: 500,
+                    animation: 'fadeIn 0.3s ease-out',
+                  }}>
+                    {depotPatchResult.ok ? '✅' : '❌'} {depotPatchResult.msg}
+                  </div>
+                )}
+              </div>
+
+
+              {/* ── Steamless / Error 54 Fix ── */}
+              <div style={{
+                marginTop: '16px',
                 padding: '20px',
                 background: 'rgba(0,0,0,0.2)',
                 borderRadius: '8px',
@@ -1055,30 +1790,41 @@ export function StoreLibraryView({
               <strong>{stateLabel}</strong>
             </header>
             <dl className="metric-list">
-              <div>
-                <dt>{t.library.currentVersion}</dt>
-                <dd>{installed ? selectedCurrentVersion : t.library.notInstalled}</dd>
-              </div>
-              <div>
-                <dt>{t.library.latestVersion}</dt>
-                <dd>{selectedGame.latestVersion}</dd>
-              </div>
-              <div>
-                <dt>{t.library.targetVersion}</dt>
-                <dd>{selectedVersion}</dd>
-              </div>
-              <div>
-                <dt>Install size</dt>
-                <dd>{formatBytes(downloadSize)}</dd>
-              </div>
+              {effectiveMode === 'steam' ? (
+                <div>
+                  <dt>Steam Status</dt>
+                  <dd>{isInstalledOnSteam ? `Installed (Build ${steamBuildId || 'Unknown'})` : 'Not Installed on Steam'}</dd>
+                </div>
+              ) : (
+                <>
+                  <div>
+                    <dt>{t.library.currentVersion}</dt>
+                    <dd>{installed ? selectedCurrentVersion : t.library.notInstalled}</dd>
+                  </div>
+                  <div>
+                    <dt>{t.library.latestVersion}</dt>
+                    <dd>{selectedGame.latestVersion}</dd>
+                  </div>
+                  <div>
+                    <dt>{t.library.targetVersion}</dt>
+                    <dd>{selectedVersion}</dd>
+                  </div>
+                  <div>
+                    <dt>Install size</dt>
+                    <dd>{formatBytes(downloadSize)}</dd>
+                  </div>
+                </>
+              )}
             </dl>
           </section>
-          <InstallSummaryPanel
-            selectedVersion={selectedVersion}
-            downloadSize={downloadSize}
-            installSize={installSize || selectedVersionInfo?.sizeBytes || downloadSize}
-            temporarySpace={temporarySpace || selectedVersionInfo?.sizeBytes || downloadSize}
-          />
+          {effectiveMode !== 'steam' && (
+            <InstallSummaryPanel
+              selectedVersion={selectedVersion}
+              downloadSize={downloadSize}
+              installSize={installSize || selectedVersionInfo?.sizeBytes || downloadSize}
+              temporarySpace={temporarySpace || selectedVersionInfo?.sizeBytes || downloadSize}
+            />
+          )}
           {verifyStatus ? (
             <section className={`panel verify-feedback ${verifyStatus.state}`}>
               <header className="side-header">
@@ -1158,7 +1904,7 @@ export function OperationHero({
   installMode,
   selectedVersion,
   storeMode = 'hybrid',
-}: {  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+}: {
   game: GameSummary
   detail: GameDetail
   assets: Record<string, string>

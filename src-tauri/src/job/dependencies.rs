@@ -307,6 +307,24 @@ fn dependency_specs_for_game(game_id: &str) -> Vec<DependencySpec> {
             DIRECTX_JUN2010.clone(),
         ],
 
+        // ── Yakuza: Like a Dragon ─────────────────────────────
+        "yakuza-like-a-dragon" => vec![
+            VC_REDIST_X64_2019.clone(),
+            DIRECTX_JUN2010.clone(),
+        ],
+
+        // ── Total War: Three Kingdoms ─────────────────────────
+        "total-war-three-kingdoms" => vec![
+            VC_REDIST_X64_2010.clone(),
+            VC_REDIST_X64_2019.clone(),
+            DIRECTX_JUN2010.clone(),
+        ],
+
+        // ── Assassin's Creed IV: Black Flag (Resynced) ───────
+        "assassins-creed-black-flag-resynced" => vec![
+            VC_REDIST_X64.clone(),
+        ],
+
         // ── Default: every game needs at minimum VC++ 2022 x64
         DEFAULT_GAME_ID | _ => vec![VC_REDIST_X64.clone()],
     };

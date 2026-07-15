@@ -1,0 +1,345 @@
+﻿{
+    "2067920":  {
+                    "success":  true,
+                    "data":  {
+                                 "type":  "game",
+                                 "name":  "Rogue: Genesia",
+                                 "steam_appid":  2067920,
+                                 "required_age":  0,
+                                 "is_free":  false,
+                                 "dlc":  [
+                                             2388081,
+                                             2388080
+                                         ],
+                                 "detailed_description":  "\u003cp class=\"bb_paragraph\" \u003e\u003cstrong\u003eWalk upon a new world and slay foes endangering it.\u003c/strong\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/extras/f09c98a88e0e60d841db77cf9d972155.poster.avif?t=1782910476\" width=600 height=338 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/extras/f09c98a88e0e60d841db77cf9d972155.webm?t=1782910476\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/extras/f09c98a88e0e60d841db77cf9d972155.mp4?t=1782910476\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003eFend against vast enemy forces, reaching hundreds of foes on screen at any given time\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003eIn this action rogue-lite, you play as Rog.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/extras/c330cfe00ee78819aa8998fc6140f10b.poster.avif?t=1782910476\" width=600 height=200 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/extras/c330cfe00ee78819aa8998fc6140f10b.webm?t=1782910476\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/extras/c330cfe00ee78819aa8998fc6140f10b.mp4?t=1782910476\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eMaster of all weapons, Rog can use anything to slay his numerous foes. \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cstrong\u003e\u003ci\u003eKill, grow stronger, and kill some more!\u003c/i\u003e\u003c/strong\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/extras/43fdaa981f5f67f9a430e0b4351ff24e.poster.avif?t=1782910476\" width=608 height=342 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/extras/43fdaa981f5f67f9a430e0b4351ff24e.webm?t=1782910476\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/extras/43fdaa981f5f67f9a430e0b4351ff24e.mp4?t=1782910476\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003eMake your build from more than 300+ passive upgrades and 50+ weapons.\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/extras/ff2fe4f51c6b14b33da44c0a570d098f.poster.avif?t=1782910476\" width=616 height=346 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/extras/ff2fe4f51c6b14b33da44c0a570d098f.webm?t=1782910476\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/extras/ff2fe4f51c6b14b33da44c0a570d098f.mp4?t=1782910476\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003eYou define Rog\u0027s adventure\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003eYou can choose which path Rog takes. Feel brave enough to take on a powerful foe, or would you prefer to rest at the shop? \u003cstrong\u003eThe choice is yours!\u003c/strong\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/extras/a6703017648c948c1c4c2efc0d5fef00.poster.avif?t=1782910476\" width=690 height=388 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/extras/a6703017648c948c1c4c2efc0d5fef00.webm?t=1782910476\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/extras/a6703017648c948c1c4c2efc0d5fef00.mp4?t=1782910476\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e80+ Powerful Artifacts to discover\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003eOn this journey, you\u0027ll collect many unique and powerful artifacts that will greatly impact your game experience. Harness their power to help you on your quest!\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/extras/cdd5e35446ec3f7b56c31eb16cf89cd3.poster.avif?t=1782910476\" width=616 height=346 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/extras/cdd5e35446ec3f7b56c31eb16cf89cd3.webm?t=1782910476\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/extras/cdd5e35446ec3f7b56c31eb16cf89cd3.mp4?t=1782910476\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cstrong\u003e\u003ci\u003eDifferent avatars with different playstyles!\u003c/i\u003e\u003c/strong\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eDo you prefer guns, swords or having an army of summons kill your enemies for you?\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/extras/107b2b6a898e5982f65f1c41207e61cc.avif?t=1782910476\" width=616 height=400 /\u003e\u003c/span\u003e \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e",
+                                 "about_the_game":  "\u003cp class=\"bb_paragraph\" \u003e\u003cstrong\u003eWalk upon a new world and slay foes endangering it.\u003c/strong\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/extras/f09c98a88e0e60d841db77cf9d972155.poster.avif?t=1782910476\" width=600 height=338 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/extras/f09c98a88e0e60d841db77cf9d972155.webm?t=1782910476\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/extras/f09c98a88e0e60d841db77cf9d972155.mp4?t=1782910476\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003eFend against vast enemy forces, reaching hundreds of foes on screen at any given time\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003eIn this action rogue-lite, you play as Rog.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/extras/c330cfe00ee78819aa8998fc6140f10b.poster.avif?t=1782910476\" width=600 height=200 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/extras/c330cfe00ee78819aa8998fc6140f10b.webm?t=1782910476\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/extras/c330cfe00ee78819aa8998fc6140f10b.mp4?t=1782910476\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eMaster of all weapons, Rog can use anything to slay his numerous foes. \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cstrong\u003e\u003ci\u003eKill, grow stronger, and kill some more!\u003c/i\u003e\u003c/strong\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/extras/43fdaa981f5f67f9a430e0b4351ff24e.poster.avif?t=1782910476\" width=608 height=342 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/extras/43fdaa981f5f67f9a430e0b4351ff24e.webm?t=1782910476\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/extras/43fdaa981f5f67f9a430e0b4351ff24e.mp4?t=1782910476\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003eMake your build from more than 300+ passive upgrades and 50+ weapons.\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/extras/ff2fe4f51c6b14b33da44c0a570d098f.poster.avif?t=1782910476\" width=616 height=346 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/extras/ff2fe4f51c6b14b33da44c0a570d098f.webm?t=1782910476\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/extras/ff2fe4f51c6b14b33da44c0a570d098f.mp4?t=1782910476\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003eYou define Rog\u0027s adventure\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003eYou can choose which path Rog takes. Feel brave enough to take on a powerful foe, or would you prefer to rest at the shop? \u003cstrong\u003eThe choice is yours!\u003c/strong\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/extras/a6703017648c948c1c4c2efc0d5fef00.poster.avif?t=1782910476\" width=690 height=388 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/extras/a6703017648c948c1c4c2efc0d5fef00.webm?t=1782910476\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/extras/a6703017648c948c1c4c2efc0d5fef00.mp4?t=1782910476\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003ch2 class=\"bb_tag\" \u003e80+ Powerful Artifacts to discover\u003c/h2\u003e\u003cp class=\"bb_paragraph\" \u003eOn this journey, you\u0027ll collect many unique and powerful artifacts that will greatly impact your game experience. Harness their power to help you on your quest!\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/extras/cdd5e35446ec3f7b56c31eb16cf89cd3.poster.avif?t=1782910476\" width=616 height=346 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/extras/cdd5e35446ec3f7b56c31eb16cf89cd3.webm?t=1782910476\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/extras/cdd5e35446ec3f7b56c31eb16cf89cd3.mp4?t=1782910476\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cstrong\u003e\u003ci\u003eDifferent avatars with different playstyles!\u003c/i\u003e\u003c/strong\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eDo you prefer guns, swords or having an army of summons kill your enemies for you?\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/extras/107b2b6a898e5982f65f1c41207e61cc.avif?t=1782910476\" width=616 height=400 /\u003e\u003c/span\u003e \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e",
+                                 "short_description":  "Walk upon a new world and slay foes endangering it. Rogue : Genesia is an action rogue-lite game, where you fight relentless hordes consisting of hundreds and thousands of monsters, make your build, break the balance, defeat bosses and save one of the many worlds.",
+                                 "supported_languages":  "English, French, Simplified Chinese, German, Korean, Portuguese - Brazil, Japanese, Indonesian, Traditional Chinese, Russian",
+                                 "header_image":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/header.jpg?t=1782910476",
+                                 "capsule_image":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/capsule_231x87.jpg?t=1782910476",
+                                 "capsule_imagev5":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/capsule_184x69.jpg?t=1782910476",
+                                 "website":  null,
+                                 "pc_requirements":  {
+                                                         "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003eRequires a 64-bit processor and operating system\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows 10\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e Intel i5-7200U @ 2.50GHz\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 8 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e GTX 770 / Radeon 8950 HD\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 500 MB available space\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eAdditional Notes:\u003c/strong\u003e DirectX 11 compatible GPU is required\u003c/li\u003e\u003c/ul\u003e",
+                                                         "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003eRequires a 64-bit processor and operating system\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows 11\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e Intel I5 9500 / AMD Ryzen 5 3600\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 16 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e GTX 1070/RTX 3050\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 1 GB available space\u003c/li\u003e\u003c/ul\u003e"
+                                                     },
+                                 "mac_requirements":  {
+                                                          "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e",
+                                                          "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e"
+                                                      },
+                                 "linux_requirements":  {
+                                                            "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e Intel i5-7200U @ 2.50GHz\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 8 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e GTX 770 / Radeon 8950 HD\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 500 MB available space\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eAdditional Notes:\u003c/strong\u003e DirectX 11 compatible GPU is required\u003c/li\u003e\u003c/ul\u003e",
+                                                            "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e Intel I5 9500 / AMD Ryzen 5 3600\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 16 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e GTX 1070/RTX 3050\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 1 GB available space\u003c/li\u003e\u003c/ul\u003e"
+                                                        },
+                                 "developers":  [
+                                                    "Ouadi Huard"
+                                                ],
+                                 "publishers":  [
+                                                    "Ouadi Huard",
+                                                    "Gamersky Games"
+                                                ],
+                                 "demos":  [
+                                               {
+                                                   "appid":  2099800,
+                                                   "description":  ""
+                                               }
+                                           ],
+                                 "price_overview":  {
+                                                        "currency":  "USD",
+                                                        "initial":  1499,
+                                                        "final":  1499,
+                                                        "discount_percent":  0,
+                                                        "initial_formatted":  "",
+                                                        "final_formatted":  "$14.99"
+                                                    },
+                                 "packages":  [
+                                                  738851
+                                              ],
+                                 "package_groups":  [
+                                                        {
+                                                            "name":  "default",
+                                                            "title":  "Buy Rogue: Genesia",
+                                                            "description":  "",
+                                                            "selection_text":  "Select a purchase option",
+                                                            "save_text":  "",
+                                                            "display_type":  0,
+                                                            "is_recurring_subscription":  "false",
+                                                            "subs":  [
+                                                                         {
+                                                                             "packageid":  738851,
+                                                                             "percent_savings_text":  " ",
+                                                                             "percent_savings":  0,
+                                                                             "option_text":  "Rogue : Genesia - $14.99",
+                                                                             "option_description":  "",
+                                                                             "can_get_free_license":  "0",
+                                                                             "is_free_license":  false,
+                                                                             "price_in_cents_with_discount":  1499
+                                                                         }
+                                                                     ]
+                                                        }
+                                                    ],
+                                 "platforms":  {
+                                                   "windows":  true,
+                                                   "mac":  false,
+                                                   "linux":  true
+                                               },
+                                 "categories":  [
+                                                    {
+                                                        "id":  2,
+                                                        "description":  "Single-player"
+                                                    },
+                                                    {
+                                                        "id":  22,
+                                                        "description":  "Steam Achievements"
+                                                    },
+                                                    {
+                                                        "id":  30,
+                                                        "description":  "Steam Workshop"
+                                                    },
+                                                    {
+                                                        "id":  67,
+                                                        "description":  "Camera Comfort"
+                                                    },
+                                                    {
+                                                        "id":  68,
+                                                        "description":  "Custom Volume Controls"
+                                                    },
+                                                    {
+                                                        "id":  78,
+                                                        "description":  "Adjustable Difficulty"
+                                                    },
+                                                    {
+                                                        "id":  75,
+                                                        "description":  "Keyboard Only Option"
+                                                    },
+                                                    {
+                                                        "id":  74,
+                                                        "description":  "Playable without Timed Input"
+                                                    },
+                                                    {
+                                                        "id":  79,
+                                                        "description":  "Save Anytime"
+                                                    },
+                                                    {
+                                                        "id":  69,
+                                                        "description":  "Stereo Sound"
+                                                    },
+                                                    {
+                                                        "id":  18,
+                                                        "description":  "Partial Controller Support"
+                                                    },
+                                                    {
+                                                        "id":  23,
+                                                        "description":  "Steam Cloud"
+                                                    },
+                                                    {
+                                                        "id":  25,
+                                                        "description":  "Steam Leaderboards"
+                                                    },
+                                                    {
+                                                        "id":  62,
+                                                        "description":  "Family Sharing"
+                                                    }
+                                                ],
+                                 "genres":  [
+                                                {
+                                                    "id":  "1",
+                                                    "description":  "Action"
+                                                },
+                                                {
+                                                    "id":  "4",
+                                                    "description":  "Casual"
+                                                },
+                                                {
+                                                    "id":  "3",
+                                                    "description":  "RPG"
+                                                },
+                                                {
+                                                    "id":  "2",
+                                                    "description":  "Strategy"
+                                                }
+                                            ],
+                                 "screenshots":  [
+                                                     {
+                                                         "id":  0,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/80b8630d97a4b905c8b0206d7404a724495ff273/ss_80b8630d97a4b905c8b0206d7404a724495ff273.600x338.jpg?t=1782910476",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/80b8630d97a4b905c8b0206d7404a724495ff273/ss_80b8630d97a4b905c8b0206d7404a724495ff273.1920x1080.jpg?t=1782910476"
+                                                     },
+                                                     {
+                                                         "id":  1,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/4f57fa5c64bfc0d71e1a2ab4d4f3bb7779d05e42/ss_4f57fa5c64bfc0d71e1a2ab4d4f3bb7779d05e42.600x338.jpg?t=1782910476",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/4f57fa5c64bfc0d71e1a2ab4d4f3bb7779d05e42/ss_4f57fa5c64bfc0d71e1a2ab4d4f3bb7779d05e42.1920x1080.jpg?t=1782910476"
+                                                     },
+                                                     {
+                                                         "id":  2,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/ss_c852a41af5208577f76a6e01d129ccd77d452f17.600x338.jpg?t=1782910476",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/ss_c852a41af5208577f76a6e01d129ccd77d452f17.1920x1080.jpg?t=1782910476"
+                                                     },
+                                                     {
+                                                         "id":  3,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/6aed6ac451818bc55725d755d1624cd4974ca863/ss_6aed6ac451818bc55725d755d1624cd4974ca863.600x338.jpg?t=1782910476",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/6aed6ac451818bc55725d755d1624cd4974ca863/ss_6aed6ac451818bc55725d755d1624cd4974ca863.1920x1080.jpg?t=1782910476"
+                                                     },
+                                                     {
+                                                         "id":  4,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/ss_dc2891926508cd9c02d4a1b122ceacf0d2b3797e.600x338.jpg?t=1782910476",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/ss_dc2891926508cd9c02d4a1b122ceacf0d2b3797e.1920x1080.jpg?t=1782910476"
+                                                     },
+                                                     {
+                                                         "id":  5,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/4c2ea3fca3eb2fff396718fcc3721b3acf688805/ss_4c2ea3fca3eb2fff396718fcc3721b3acf688805.600x338.jpg?t=1782910476",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/4c2ea3fca3eb2fff396718fcc3721b3acf688805/ss_4c2ea3fca3eb2fff396718fcc3721b3acf688805.1920x1080.jpg?t=1782910476"
+                                                     },
+                                                     {
+                                                         "id":  6,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/308590992551553c444b8d30297717aacf66e8b0/ss_308590992551553c444b8d30297717aacf66e8b0.600x338.jpg?t=1782910476",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/308590992551553c444b8d30297717aacf66e8b0/ss_308590992551553c444b8d30297717aacf66e8b0.1920x1080.jpg?t=1782910476"
+                                                     },
+                                                     {
+                                                         "id":  7,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/ss_2a6c4259b2f4756fe9bb675737da3feaaec5003f.600x338.jpg?t=1782910476",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/ss_2a6c4259b2f4756fe9bb675737da3feaaec5003f.1920x1080.jpg?t=1782910476"
+                                                     },
+                                                     {
+                                                         "id":  8,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/ef9e29e1d97187f1b152d0d7ed8579c5832527b5/ss_ef9e29e1d97187f1b152d0d7ed8579c5832527b5.600x338.jpg?t=1782910476",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/ef9e29e1d97187f1b152d0d7ed8579c5832527b5/ss_ef9e29e1d97187f1b152d0d7ed8579c5832527b5.1920x1080.jpg?t=1782910476"
+                                                     },
+                                                     {
+                                                         "id":  9,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/ss_412164472e69f0b1682e91619b77b2ac7d4a30d8.600x338.jpg?t=1782910476",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/ss_412164472e69f0b1682e91619b77b2ac7d4a30d8.1920x1080.jpg?t=1782910476"
+                                                     },
+                                                     {
+                                                         "id":  10,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/15110d021f325f6ae18c87af31a20105cf6f76aa/ss_15110d021f325f6ae18c87af31a20105cf6f76aa.600x338.jpg?t=1782910476",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/15110d021f325f6ae18c87af31a20105cf6f76aa/ss_15110d021f325f6ae18c87af31a20105cf6f76aa.1920x1080.jpg?t=1782910476"
+                                                     },
+                                                     {
+                                                         "id":  11,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/ss_224b5bfaa8055db6c468e5ce6188dae786c5fa9d.600x338.jpg?t=1782910476",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/ss_224b5bfaa8055db6c468e5ce6188dae786c5fa9d.1920x1080.jpg?t=1782910476"
+                                                     }
+                                                 ],
+                                 "movies":  [
+                                                {
+                                                    "id":  256993998,
+                                                    "name":  "Trailer",
+                                                    "thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256993998/movie.293x165.jpg?t=1723016634",
+                                                    "dash_av1":  "https://video.akamai.steamstatic.com/store_trailers/2067920/649931/6b7d66b7eae30af0cbf20b505b976887a5f4fcbe/1750745837/dash_av1.mpd?t=1723016634",
+                                                    "dash_h264":  "https://video.akamai.steamstatic.com/store_trailers/2067920/649931/6b7d66b7eae30af0cbf20b505b976887a5f4fcbe/1750745837/dash_h264.mpd?t=1723016634",
+                                                    "hls_h264":  "https://video.akamai.steamstatic.com/store_trailers/2067920/649931/6b7d66b7eae30af0cbf20b505b976887a5f4fcbe/1750745837/hls_264_master.m3u8?t=1723016634",
+                                                    "highlight":  true
+                                                }
+                                            ],
+                                 "recommendations":  {
+                                                         "total":  8042
+                                                     },
+                                 "achievements":  {
+                                                      "total":  361,
+                                                      "highlighted":  [
+                                                                          {
+                                                                              "icon":  "db25df60bf901c059ef33bf53f53639f43d36eac.jpg",
+                                                                              "localized_name":  "First Step as a hero",
+                                                                              "name":  "First Step as a hero",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2067920/db25df60bf901c059ef33bf53f53639f43d36eac.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "f2591066c206bf120293b1020b1dcb5111dab1ab.jpg",
+                                                                              "localized_name":  "End of the Second Danger",
+                                                                              "name":  "End of the Second Danger",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2067920/f2591066c206bf120293b1020b1dcb5111dab1ab.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "bb3b202164fbdb8fceb75f229e3f9ce703eadf81.jpg",
+                                                                              "localized_name":  "Skeletons are brutal!",
+                                                                              "name":  "Skeletons are brutal!",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2067920/bb3b202164fbdb8fceb75f229e3f9ce703eadf81.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "51d74669b74376d65eb013ac6b1b79f3eef13388.jpg",
+                                                                              "localized_name":  "Super Shop Trick!",
+                                                                              "name":  "Super Shop Trick!",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2067920/51d74669b74376d65eb013ac6b1b79f3eef13388.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "7e6767eda128a9c7bee6ab1c44d21f02b5469204.jpg",
+                                                                              "localized_name":  "Dark gods\u0027 Third Book",
+                                                                              "name":  "Dark gods\u0027 Third Book",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2067920/7e6767eda128a9c7bee6ab1c44d21f02b5469204.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "022a542e08b32af90df95dff5e117b7df20ba0ac.jpg",
+                                                                              "localized_name":  "Closed",
+                                                                              "name":  "Closed",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2067920/022a542e08b32af90df95dff5e117b7df20ba0ac.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "fa6142c24f2b90333b9f5633ee2c2072e47826db.jpg",
+                                                                              "localized_name":  "Heroes don\u0027t need heroic cards",
+                                                                              "name":  "Heroes don\u0027t need heroic cards",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2067920/fa6142c24f2b90333b9f5633ee2c2072e47826db.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "fa6142c24f2b90333b9f5633ee2c2072e47826db.jpg",
+                                                                              "localized_name":  "Just a cold!",
+                                                                              "name":  "Just a cold!",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2067920/fa6142c24f2b90333b9f5633ee2c2072e47826db.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "6643e37c3ede29d79567c49508fa3d09e52ad094.jpg",
+                                                                              "localized_name":  "Now that\u0027s a challenge!",
+                                                                              "name":  "Now that\u0027s a challenge!",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2067920/6643e37c3ede29d79567c49508fa3d09e52ad094.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "aa340b975dd6a192ce16de4ac28ac67e92395412.jpg",
+                                                                              "localized_name":  "Who needs meta-progression?",
+                                                                              "name":  "Who needs meta-progression?",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2067920/aa340b975dd6a192ce16de4ac28ac67e92395412.jpg"
+                                                                          }
+                                                                      ]
+                                                  },
+                                 "release_date":  {
+                                                      "coming_soon":  false,
+                                                      "date":  "Mar 7, 2025"
+                                                  },
+                                 "support_info":  {
+                                                      "url":  "",
+                                                      "email":  "roguegenesia@gmail.com"
+                                                  },
+                                 "background":  "https://store.akamai.steamstatic.com/images/storepagebackground/app/2067920?t=1782910476",
+                                 "background_raw":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/page_bg_raw.jpg?t=1782910476",
+                                 "content_descriptors":  {
+                                                             "ids":  [
+
+                                                                     ],
+                                                             "notes":  null
+                                                         },
+                                 "ratings":  {
+                                                 "dejus":  {
+                                                               "rating":  "10",
+                                                               "descriptors":  "Violência",
+                                                               "use_age_gate":  "true",
+                                                               "required_age":  "10"
+                                                           },
+                                                 "steam_germany":  {
+                                                                       "rating_generated":  "1",
+                                                                       "rating":  "12",
+                                                                       "required_age":  "12",
+                                                                       "banned":  "0",
+                                                                       "use_age_gate":  "0",
+                                                                       "descriptors":  "Gewalt"
+                                                                   },
+                                                 "igrs":  {
+                                                              "rating_generated":  "1",
+                                                              "rating":  "13",
+                                                              "required_age":  "13",
+                                                              "banned":  "0",
+                                                              "use_age_gate":  "0",
+                                                              "descriptors":  "Kekerasan"
+                                                          }
+                                             }
+                             }
+                }
+}

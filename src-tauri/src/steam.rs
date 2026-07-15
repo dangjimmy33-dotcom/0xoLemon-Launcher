@@ -10,7 +10,7 @@ use once_cell::sync::Lazy;
 
 static DOWNLOADING_APPS: Lazy<Mutex<HashSet<u32>>> = Lazy::new(|| Mutex::new(HashSet::new()));
 
-use tauri::command;
+use tauri::{command, Manager};
 use winreg::enums::*;
 use winreg::RegKey;
 use reqwest::blocking::Client;
@@ -163,6 +163,27 @@ pub fn remove_from_steam(appid: u32) -> Result<(), String> {
     }
     
     Ok(())
+}
+
+#[command]
+pub fn list_installed_luas() -> Result<Vec<String>, String> {
+    let steam_path = get_steam_path().ok_or("Steam not found")?;
+    let stplug_in_dir = steam_path.join("config").join("stplug-in");
+    if !stplug_in_dir.exists() {
+        return Ok(vec![]);
+    }
+    let mut result = vec![];
+    if let Ok(entries) = fs::read_dir(&stplug_in_dir) {
+        for entry in entries.flatten() {
+            let file_name = entry.file_name().to_string_lossy().to_string();
+            if file_name.ends_with(".lua") {
+                let appid = file_name.trim_end_matches(".lua").to_string();
+                result.push(appid);
+            }
+        }
+    }
+    result.sort();
+    Ok(result)
 }
 
 #[command]
@@ -517,15 +538,22 @@ fn quoted_fields(line: &str) -> Vec<String> {
 #[command]
 pub fn get_installed_steam_apps() -> Result<Vec<u32>, String> {
     let steam_path = get_steam_path().ok_or("Steam not found")?;
-    let libraryfolders_path = steam_path.join("steamapps").join("libraryfolders.vdf");
+    let stplug_in_dir = steam_path.join("config").join("stplug-in");
     
     let mut apps = Vec::new();
-    if let Ok(text) = fs::read_to_string(&libraryfolders_path) {
-        for line in text.lines() {
-            let fields = quoted_fields(line);
-            if fields.len() >= 2 && fields[1].chars().all(|c| c.is_ascii_digit()) {
-                if let Ok(appid) = fields[0].parse::<u32>() {
-                    apps.push(appid);
+    
+    if !stplug_in_dir.exists() {
+        return Ok(apps);
+    }
+    
+    if let Ok(entries) = fs::read_dir(&stplug_in_dir) {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.extension().and_then(|e| e.to_str()) == Some("lua") {
+                if let Some(stem) = path.file_stem().and_then(|s| s.to_str()) {
+                    if let Ok(appid) = stem.parse::<u32>() {
+                        apps.push(appid);
+                    }
                 }
             }
         }
@@ -553,31 +581,88 @@ pub fn install_lua_from_zip(appid: String, zip_data_base64: String) -> Result<()
     fs::create_dir_all(&stplug_in_dir).map_err(|e| e.to_string())?;
     fs::create_dir_all(&depotcache_dir).map_err(|e| e.to_string())?;
     
-    // Extract zip
-    let reader = Cursor::new(zip_bytes);
-    let mut archive = ZipArchive::new(reader).map_err(|e| format!("Invalid zip: {}", e))?;
-    
-    for i in 0..archive.len() {
-        let mut file = archive.by_index(i).map_err(|e| e.to_string())?;
-        let outpath = match file.enclosed_name() {
-            Some(path) => path.to_owned(),
-            None => continue,
-        };
+    let file_name = appid.to_lowercase();
+    let is_lua = file_name.ends_with(".lua");
+    let is_manifest = file_name.ends_with(".manifest");
+    let is_zip = file_name.ends_with(".zip");
+    let is_7z = file_name.ends_with(".7z");
+    let is_rar = file_name.ends_with(".rar");
 
-        let file_name = outpath.file_name().and_then(|n| n.to_str()).unwrap_or("");
-        if file.is_file() {
-            if file_name.ends_with(".lua") {
-                let dest = stplug_in_dir.join(file_name);
-                let mut outfile = fs::File::create(&dest).map_err(|e| e.to_string())?;
-                std::io::copy(&mut file, &mut outfile).map_err(|e| e.to_string())?;
-                println!("Extracted lua: {:?}", dest);
-            } else if file_name.ends_with(".manifest") {
-                let dest = depotcache_dir.join(file_name);
-                let mut outfile = fs::File::create(&dest).map_err(|e| e.to_string())?;
-                std::io::copy(&mut file, &mut outfile).map_err(|e| e.to_string())?;
-                println!("Extracted manifest: {:?}", dest);
+    if is_rar {
+        return Err("Định dạng .rar chưa được hỗ trợ giải nén trực tiếp, vui lòng giải nén trước hoặc dùng .zip/.7z!".to_string());
+    }
+
+    if is_lua {
+        let dest = stplug_in_dir.join(&appid);
+        fs::write(&dest, &zip_bytes).map_err(|e| format!("Failed to write lua: {}", e))?;
+        println!("Extracted lua directly: {:?}", dest);
+    } else if is_manifest {
+        let dest = depotcache_dir.join(&appid);
+        fs::write(&dest, &zip_bytes).map_err(|e| format!("Failed to write manifest: {}", e))?;
+        println!("Extracted manifest directly: {:?}", dest);
+    } else if is_zip {
+        // Extract zip
+        let reader = Cursor::new(zip_bytes);
+        let mut archive = ZipArchive::new(reader).map_err(|e| format!("Invalid zip: {}", e))?;
+        
+        for i in 0..archive.len() {
+            let mut file = archive.by_index(i).map_err(|e| e.to_string())?;
+            let outpath = match file.enclosed_name() {
+                Some(path) => path.to_owned(),
+                None => continue,
+            };
+
+            let file_name = outpath.file_name().and_then(|n| n.to_str()).unwrap_or("");
+            if file.is_file() {
+                if file_name.ends_with(".lua") {
+                    let dest = stplug_in_dir.join(file_name);
+                    let mut outfile = fs::File::create(&dest).map_err(|e| e.to_string())?;
+                    std::io::copy(&mut file, &mut outfile).map_err(|e| e.to_string())?;
+                    println!("Extracted lua: {:?}", dest);
+                } else if file_name.ends_with(".manifest") {
+                    let dest = depotcache_dir.join(file_name);
+                    let mut outfile = fs::File::create(&dest).map_err(|e| e.to_string())?;
+                    std::io::copy(&mut file, &mut outfile).map_err(|e| e.to_string())?;
+                    println!("Extracted manifest: {:?}", dest);
+                }
             }
         }
+    } else if is_7z {
+        // Extract 7z using sevenz_rust
+        let reader = Cursor::new(zip_bytes);
+        
+        // sevenz_rust doesn't provide an easy streaming in-memory extraction for specific extensions, 
+        // but we can extract everything to a temp dir and then move .lua and .manifest
+        let temp_dir = std::env::temp_dir().join(format!("0xoLemon_7z_{}", std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis()));
+        fs::create_dir_all(&temp_dir).map_err(|e| e.to_string())?;
+        
+        match sevenz_rust::decompress(reader, &temp_dir) {
+            Ok(_) => {
+                // Find all .lua and .manifest in temp_dir
+                for entry in walkdir::WalkDir::new(&temp_dir).into_iter().filter_map(|e| e.ok()) {
+                    let path = entry.path();
+                    if path.is_file() {
+                        let fname = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
+                        if fname.ends_with(".lua") {
+                            let dest = stplug_in_dir.join(fname);
+                            let _ = fs::copy(path, &dest);
+                            println!("Extracted lua from 7z: {:?}", dest);
+                        } else if fname.ends_with(".manifest") {
+                            let dest = depotcache_dir.join(fname);
+                            let _ = fs::copy(path, &dest);
+                            println!("Extracted manifest from 7z: {:?}", dest);
+                        }
+                    }
+                }
+            },
+            Err(e) => {
+                let _ = fs::remove_dir_all(&temp_dir);
+                return Err(format!("Invalid 7z: {}", e));
+            }
+        }
+        let _ = fs::remove_dir_all(&temp_dir);
+    } else {
+        return Err(format!("Unsupported file extension for: {}", appid));
     }
     
     // Update .sync_state file
@@ -585,3 +670,505 @@ pub fn install_lua_from_zip(appid: String, zip_data_base64: String) -> Result<()
     
     Ok(())
 }
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  DEPOT PATCH — Version Switcher (HuggingFace-backed)
+//
+//  HF repo layout (admin uploads):
+//    {hf_repo_id}/
+//    └── {appid}/
+//        ├── {appid}.key                           ← depot decryption key
+//        ├── {appid}.token                         ← optional app token
+//        └── BuildID_{buildid}/
+//            ├── {depotA}_{manifestA}.manifest
+//            └── {depotB}_{manifestB}.manifest
+//
+//  User flow:
+//    1. Launcher fetches file list from HF API for {appid}/
+//    2. UI shows available BuildIDs
+//    3. User clicks Patch → launcher downloads manifest + key to temp dir
+//    4. Launcher runs bundled DepotDownloaderMod sidecar
+//    5. DepotDownloaderMod delta-patches the Steam game install
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// One .manifest entry (info only, no local path yet)
+#[derive(Serialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct DepotManifestEntry {
+    pub depot_id: String,
+    pub manifest_id: String,
+    /// Filename in HF repo: "{depotId}_{manifestId}.manifest"
+    pub manifest_file: String,
+}
+
+/// A single buildID version with its list of depots
+#[derive(Serialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct DepotVersionEntry {
+    pub build_id: String,
+    pub depots: Vec<DepotManifestEntry>,
+}
+
+/// HuggingFace tree API response item
+#[derive(Deserialize)]
+struct HfTreeItem {
+    path: String,
+    #[serde(rename = "type")]
+    item_type: String,
+}
+
+
+/// Base URL for HuggingFace dataset raw files
+fn hf_raw_url(repo_id: &str, path: &str, _hf_token: &str) -> String {
+    format!(
+        "https://huggingface.co/datasets/{}/resolve/main/{}",
+        repo_id, path
+    )
+}
+
+/// Look up HF token for a given repo ID from huggingface-repos.json
+fn get_hf_token_for(repo_id: &str) -> String {
+    let json_str = include_str!("../huggingface-repos.json");
+    #[derive(Deserialize)]
+    struct Repo { #[serde(rename = "repoId")] repo_id: String, token: String }
+    #[derive(Deserialize)]
+    struct Config { repositories: Vec<Repo> }
+    if let Ok(cfg) = serde_json::from_str::<Config>(json_str) {
+        for r in cfg.repositories {
+            if r.repo_id == repo_id {
+                return r.token;
+            }
+        }
+    }
+    String::new()
+}
+
+/// Find the game subfolder under "Depotdownloader/" whose name ends with "({appid})".
+/// Returns the full HF-relative path, e.g. "Depotdownloader/Hello Kitty Island Adventure (2495100)"
+fn find_game_folder(
+    client: &Client,
+    repo_id: &str,
+    appid: u32,
+    token: &str,
+) -> Option<String> {
+    let url = format!(
+        "https://huggingface.co/api/datasets/{}/tree/main/Depotdownloader/",
+        repo_id
+    );
+    let mut req = client.get(&url);
+    if !token.is_empty() { req = req.bearer_auth(token); }
+    let items: Vec<HfTreeItem> = req.send().ok()?.json().ok()?;
+    let suffix = format!("({})", appid);
+    for item in items {
+        if item.item_type == "directory" {
+            let name = item.path.split('/').last().unwrap_or("");
+            if name.ends_with(&suffix) {
+                return Some(item.path);
+            }
+        }
+    }
+    None
+}
+
+/// Fetch all available build versions for an appid from HF repo.
+/// HF structure:
+///   Depotdownloader/{game} ({appid})/{appid}/BuildID_{id}/{depotId}_{manifestId}.manifest
+/// Returns sorted list (newest BuildID first by numeric value).
+#[command]
+pub fn list_depot_versions(
+    appid: u32,
+    hf_repo_id: String,
+) -> Result<Vec<DepotVersionEntry>, String> {
+    if hf_repo_id.is_empty() {
+        return Ok(vec![]);
+    }
+
+    let token = get_hf_token_for(&hf_repo_id);
+    let client = Client::builder()
+        .timeout(std::time::Duration::from_secs(20))
+        .build()
+        .map_err(|e| format!("HTTP client: {}", e))?;
+
+    // ── Step 1: Find game folder under Depotdownloader/ ────────────────────
+    let game_folder = match find_game_folder(&client, &hf_repo_id, appid, &token) {
+        Some(f) => {
+            let _ = std::fs::write("E:\\007Launcher\\hf_debug.txt", format!("Found game_folder: {}", f));
+            f
+        },
+        None => {
+            let _ = std::fs::write("E:\\007Launcher\\hf_debug.txt", "find_game_folder returned None");
+            return Ok(vec![]);
+        }
+    };
+
+    // ── Step 2: List {game_folder}/{appid}/ for BuildID folders ───────────
+    // e.g. "Depotdownloader/Hello Kitty Island Adventure (2495100)/2495100"
+    let appid_path = format!("{}/{}", game_folder, appid);
+    let encoded_path = urlencoding::encode(&appid_path).replace("%2F", "/");
+    let api_url = format!(
+        "https://huggingface.co/api/datasets/{}/tree/main/{}/",
+        hf_repo_id, encoded_path
+    );
+    let mut req = client.get(&api_url);
+    if !token.is_empty() { req = req.bearer_auth(&token); }
+
+    let resp = match req.send() {
+        Ok(r) => r,
+        Err(e) => {
+            let _ = std::fs::write("E:\\007Launcher\\hf_debug.txt", format!("HF API Step 2 request failed: {}", e));
+            return Err(format!("HF API: {}", e));
+        }
+    };
+    if !resp.status().is_success() {
+        let status = resp.status();
+        let _ = std::fs::write("E:\\007Launcher\\hf_debug.txt", format!("HF API Step 2 returned non-success: {}", status));
+        return if status.as_u16() == 404 { Ok(vec![]) }
+               else { Err(format!("HF API error: {}", status)) };
+    }
+    
+    let text = match resp.text() {
+        Ok(t) => t,
+        Err(e) => {
+            let _ = std::fs::write("E:\\007Launcher\\hf_debug.txt", format!("HF API Step 2 get text failed: {}", e));
+            return Err(format!("HF API parse: {}", e));
+        }
+    };
+    let _ = std::fs::write("E:\\007Launcher\\hf_debug.txt", format!("HF API Step 2 response: {}", text));
+    
+    let build_entries: Vec<HfTreeItem> = match serde_json::from_str(&text) {
+        Ok(v) => v,
+        Err(e) => {
+            let _ = std::fs::write("E:\\007Launcher\\hf_debug.txt", format!("HF API Step 2 json parse failed: {}", e));
+            return Err(format!("HF API parse: {}", e));
+        }
+    };
+
+    // ── Step 3: For each BuildID_ folder, list its manifests ───────────────
+    let mut versions: Vec<DepotVersionEntry> = vec![];
+
+    for entry in &build_entries {
+        if entry.item_type != "directory" { continue; }
+        let folder_name = entry.path.split('/').last().unwrap_or("");
+        if !folder_name.starts_with("BuildID_") { continue; }
+        let build_id = folder_name["BuildID_".len()..].to_string();
+
+        let manifest_url = format!(
+            "https://huggingface.co/api/datasets/{}/tree/main/{}/",
+            hf_repo_id, entry.path
+        );
+        let mut mreq = client.get(&manifest_url);
+        if !token.is_empty() { mreq = mreq.bearer_auth(&token); }
+        let files: Vec<HfTreeItem> = match mreq.send().and_then(|r| r.json()) {
+            Ok(f) => f,
+            Err(_) => continue,
+        };
+
+        let mut depots: Vec<DepotManifestEntry> = vec![];
+        for f in &files {
+            if f.item_type != "file" { continue; }
+            let fname = f.path.split('/').last().unwrap_or("").to_string();
+            if !fname.ends_with(".manifest") { continue; }
+            let stem = fname.trim_end_matches(".manifest");
+            if let Some(idx) = stem.rfind('_') {
+                let depot_id = stem[..idx].to_string();
+                let manifest_id = stem[idx + 1..].to_string();
+                if !depot_id.is_empty() && !manifest_id.is_empty() {
+                    depots.push(DepotManifestEntry { depot_id, manifest_id, manifest_file: fname });
+                }
+            }
+        }
+        if !depots.is_empty() {
+            depots.sort_by(|a, b| a.depot_id.cmp(&b.depot_id));
+            versions.push(DepotVersionEntry { build_id, depots });
+        }
+    }
+
+    versions.sort_by(|a, b| {
+        let an: u64 = a.build_id.parse().unwrap_or(0);
+        let bn: u64 = b.build_id.parse().unwrap_or(0);
+        bn.cmp(&an)
+    });
+
+    Ok(versions)
+}
+
+
+/// Download a file from HF repo to a local path. Returns the local path.
+fn hf_download_file(
+    client: &Client,
+    repo_id: &str,
+    hf_path: &str,
+    dest: &Path,
+    hf_token: &str,
+) -> Result<(), String> {
+    let url = hf_raw_url(repo_id, hf_path, hf_token);
+    let mut req = client.get(&url);
+    if !hf_token.is_empty() {
+        req = req.bearer_auth(hf_token);
+    }
+    let resp = req.send().map_err(|e| format!("Download failed {}: {}", url, e))?;
+    if !resp.status().is_success() {
+        return Err(format!("HF download {} → HTTP {}", hf_path, resp.status()));
+    }
+    let bytes = resp.bytes().map_err(|e| format!("Read body error: {}", e))?;
+    if let Some(parent) = dest.parent() {
+        fs::create_dir_all(parent).ok();
+    }
+    fs::write(dest, &bytes).map_err(|e| format!("Write {} failed: {}", dest.display(), e))
+}
+
+/// Resolve path to the bundled DepotDownloaderMod sidecar.
+/// Tauri names sidecars:  binaries/{name}-{target-triple}.exe
+fn resolve_sidecar_exe(app_handle: &tauri::AppHandle) -> Option<PathBuf> {
+    // Tauri resource dir contains sidecar as: DepotDownloaderMod-x86_64-pc-windows-msvc.exe
+    let res_dir = app_handle.path().resource_dir().ok()?;
+    let name = "DepotDownloaderMod-x86_64-pc-windows-msvc.exe";
+    let candidate = res_dir.join(name);
+    if candidate.is_file() {
+        return Some(candidate);
+    }
+    // Dev mode: look relative to crate root
+    let dev_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("binaries")
+        .join(name);
+    if dev_path.is_file() {
+        return Some(dev_path);
+    }
+    None
+}
+
+/// Progress event payload emitted to the frontend
+#[derive(Serialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct DepotPatchEvent {
+    pub event_type: String,   // "start"|"depot-start"|"log"|"depot-done"|"complete"|"error"
+    pub build_id: String,
+    pub depot_id: Option<String>,
+    pub message: Option<String>,
+    pub index: Option<usize>,
+    pub total: Option<usize>,
+    pub success: Option<bool>,
+}
+
+/// Download manifests + key from HF, then run the bundled sidecar for each depot.
+/// Emits "depot-patch-progress" Tauri events with DepotPatchEvent payloads.
+#[command]
+pub fn run_depot_patch(
+    app_handle: tauri::AppHandle,
+    appid: u32,
+    build_id: String,
+    hf_repo_id: String,
+    install_dir: String,
+) -> Result<String, String> {
+    use std::io::BufRead;
+    use tauri::Emitter;
+
+    // ── 1. Resolve sidecar exe ──────────────────────────────────────────────
+    let exe = resolve_sidecar_exe(&app_handle)
+        .ok_or_else(|| "DepotDownloaderMod sidecar not found. Please reinstall the launcher.".to_string())?;
+
+    let hf_token = get_hf_token_for(&hf_repo_id);
+    let client = Client::builder()
+        .timeout(std::time::Duration::from_secs(120))
+        .build()
+        .map_err(|e| format!("HTTP client: {}", e))?;
+
+    // ── 2. Temp dir for downloaded files ────────────────────────────────────
+    let tmp_dir = std::env::temp_dir().join(format!("0xo_depot_{}_{}", appid, build_id));
+    fs::create_dir_all(&tmp_dir).map_err(|e| format!("Cannot create temp dir: {}", e))?;
+
+    // ── 3. Find game folder in HF (Depotdownloader/{game} ({appid})/) ───────
+    let _ = app_handle.emit("depot-patch-progress", DepotPatchEvent {
+        event_type: "start".to_string(),
+        build_id: build_id.clone(),
+        depot_id: None,
+        message: Some("Locating game depot in server…".to_string()),
+        index: None, total: None, success: None,
+    });
+
+    let game_folder = find_game_folder(&client, &hf_repo_id, appid, &hf_token)
+        .ok_or_else(|| format!("Game with AppID {} not found in HF repo {}. Upload depot files first.", appid, hf_repo_id))?;
+
+    // Full HF base path for this game's appid subfolder:
+    // Depotdownloader/{game} ({appid})/{appid}/
+    let appid_path = format!("{}/{}", game_folder, appid);
+
+    // ── 4. Download depot key ──────────────────────────────────────────────
+    let _ = app_handle.emit("depot-patch-progress", DepotPatchEvent {
+        event_type: "start".to_string(),
+        build_id: build_id.clone(),
+        depot_id: None,
+        message: Some("Downloading depot keys from server…".to_string()),
+        index: None, total: None, success: None,
+    });
+
+    // Key path: Depotdownloader/{game} ({appid})/{appid}/{appid}.key
+    let key_hf_path = format!("{}/{}.key", appid_path, appid);
+    let key_local = tmp_dir.join(format!("{}.key", appid));
+    hf_download_file(&client, &hf_repo_id, &key_hf_path, &key_local, &hf_token)?;
+
+    // Token is optional
+    let token_hf_path = format!("{}/{}.token", appid_path, appid);
+    let token_local = tmp_dir.join(format!("{}.token", appid));
+    let has_token = hf_download_file(&client, &hf_repo_id, &token_hf_path, &token_local, &hf_token).is_ok();
+
+    // ── 5. Fetch manifest list for this BuildID ────────────────────────────
+    let build_folder = format!("BuildID_{}", build_id);
+    // Path: Depotdownloader/{game} ({appid})/{appid}/BuildID_{id}/
+    let build_hf_path = format!("{}/{}", appid_path, build_folder);
+    let api_url = format!(
+        "https://huggingface.co/api/datasets/{}/tree/main/{}/",
+        hf_repo_id, build_hf_path
+    );
+    let mut req = client.get(&api_url);
+    if !hf_token.is_empty() { req = req.bearer_auth(&hf_token); }
+    let items: Vec<HfTreeItem> = req.send()
+        .map_err(|e| format!("HF manifest list failed: {}", e))?
+        .json()
+        .map_err(|e| format!("HF manifest list parse: {}", e))?;
+
+    let mut manifests: Vec<DepotManifestEntry> = vec![];
+    for item in &items {
+        if item.item_type != "file" { continue; }
+        let fname = item.path.split('/').last().unwrap_or("").to_string();
+        if !fname.ends_with(".manifest") { continue; }
+        let stem = fname.trim_end_matches(".manifest");
+        if let Some(idx) = stem.rfind('_') {
+            let depot_id = stem[..idx].to_string();
+            let manifest_id = stem[idx + 1..].to_string();
+            if !depot_id.is_empty() && !manifest_id.is_empty() {
+                manifests.push(DepotManifestEntry { depot_id, manifest_id, manifest_file: fname });
+            }
+        }
+    }
+    manifests.sort_by(|a, b| a.depot_id.cmp(&b.depot_id));
+
+    if manifests.is_empty() {
+        return Err(format!("No manifests found for BuildID {} in HF repo", build_id));
+    }
+
+
+    let total = manifests.len();
+    let mut any_failed = false;
+
+    // ── 5. For each depot: download manifest → run sidecar ─────────────────
+    for (i, entry) in manifests.iter().enumerate() {
+        // Download manifest
+        // Depotdownloader/{game} ({appid})/{appid}/BuildID_{id}/{depotId}_{manifestId}.manifest
+        let manifest_hf_path = format!("{}/{}", build_hf_path, entry.manifest_file);
+        let manifest_local = tmp_dir.join(&entry.manifest_file);
+
+        let _ = app_handle.emit("depot-patch-progress", DepotPatchEvent {
+            event_type: "depot-start".to_string(),
+            build_id: build_id.clone(),
+            depot_id: Some(entry.depot_id.clone()),
+            message: Some(format!("[{}/{}] Downloading manifest for depot {}…", i + 1, total, entry.depot_id)),
+            index: Some(i + 1), total: Some(total), success: None,
+        });
+
+        if let Err(e) = hf_download_file(&client, &hf_repo_id, &manifest_hf_path, &manifest_local, &hf_token) {
+            let _ = app_handle.emit("depot-patch-progress", DepotPatchEvent {
+                event_type: "error".to_string(),
+                build_id: build_id.clone(),
+                depot_id: Some(entry.depot_id.clone()),
+                message: Some(format!("Failed to download manifest: {}", e)),
+                index: Some(i + 1), total: Some(total), success: Some(false),
+            });
+            any_failed = true;
+            continue;
+        }
+
+        // Build sidecar command
+        let mut cmd = Command::new(&exe);
+        cmd.arg("-app").arg(appid.to_string())
+           .arg("-depot").arg(&entry.depot_id)
+           .arg("-manifest").arg(&entry.manifest_id)
+           .arg("-manifestfile").arg(&manifest_local)
+           .arg("-dir").arg(&install_dir)
+           .arg("-depotkeys").arg(&key_local)
+           .arg("-max-downloads").arg("16");
+
+        if has_token {
+            // Read token value from file
+            if let Ok(tok_str) = fs::read_to_string(&token_local) {
+                let tok = tok_str.trim().to_string();
+                if !tok.is_empty() {
+                    cmd.arg("-apptoken").arg(tok);
+                }
+            }
+        }
+
+        cmd.creation_flags(0x08000000) // CREATE_NO_WINDOW
+           .stdout(std::process::Stdio::piped())
+           .stderr(std::process::Stdio::piped());
+
+        let mut child = match cmd.spawn() {
+            Ok(c) => c,
+            Err(e) => {
+                let _ = app_handle.emit("depot-patch-progress", DepotPatchEvent {
+                    event_type: "error".to_string(),
+                    build_id: build_id.clone(),
+                    depot_id: Some(entry.depot_id.clone()),
+                    message: Some(format!("Failed to launch sidecar: {}", e)),
+                    index: Some(i + 1), total: Some(total), success: Some(false),
+                });
+                any_failed = true;
+                continue;
+            }
+        };
+
+        // Stream stdout line-by-line
+        if let Some(stdout) = child.stdout.take() {
+            let reader = std::io::BufReader::new(stdout);
+            for line in reader.lines().flatten() {
+                let trimmed = line.trim().to_string();
+                if trimmed.is_empty() { continue; }
+                let _ = app_handle.emit("depot-patch-progress", DepotPatchEvent {
+                    event_type: "log".to_string(),
+                    build_id: build_id.clone(),
+                    depot_id: Some(entry.depot_id.clone()),
+                    message: Some(trimmed),
+                    index: Some(i + 1), total: Some(total), success: None,
+                });
+            }
+        }
+
+        let success = child.wait().map(|s| s.success()).unwrap_or(false);
+        if !success { any_failed = true; }
+
+        let _ = app_handle.emit("depot-patch-progress", DepotPatchEvent {
+            event_type: "depot-done".to_string(),
+            build_id: build_id.clone(),
+            depot_id: Some(entry.depot_id.clone()),
+            message: Some(if success {
+                format!("✓ Depot {} patched", entry.depot_id)
+            } else {
+                format!("✗ Depot {} failed", entry.depot_id)
+            }),
+            index: Some(i + 1), total: Some(total), success: Some(success),
+        });
+    }
+
+    // ── 6. Cleanup temp dir ─────────────────────────────────────────────────
+    let _ = fs::remove_dir_all(&tmp_dir);
+
+    let _ = app_handle.emit("depot-patch-progress", DepotPatchEvent {
+        event_type: "complete".to_string(),
+        build_id: build_id.clone(),
+        depot_id: None,
+        message: Some(if any_failed {
+            format!("Patch completed with errors. Build: {}", build_id)
+        } else {
+            format!("✅ Game patched to build {}!", build_id)
+        }),
+        index: Some(total), total: Some(total), success: Some(!any_failed),
+    });
+
+    if any_failed {
+        Err(format!("Some depots failed during patch to build {}", build_id))
+    } else {
+        Ok(format!("Successfully patched to build {}", build_id))
+    }
+}
+

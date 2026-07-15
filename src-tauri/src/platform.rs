@@ -56,6 +56,10 @@ pub struct LauncherSettings {
     pub game_update_mode: GameUpdateMode,
     pub game_update_schedule_start: String,
     pub game_update_schedule_end: String,
+    /// HuggingFace repo ID hosting depot manifests and keys.
+    /// Format: "owner/repo-name"  e.g. "dangjimmy33-dotcom/depots"
+    #[serde(default)]
+    pub depot_hf_repo_id: String,
 }
 
 impl Default for LauncherSettings {
@@ -75,6 +79,7 @@ impl Default for LauncherSettings {
             game_update_mode: GameUpdateMode::Automatic,
             game_update_schedule_start: "02:00".to_string(),
             game_update_schedule_end: "06:00".to_string(),
+            depot_hf_repo_id: String::new(),
         }
     }
 }

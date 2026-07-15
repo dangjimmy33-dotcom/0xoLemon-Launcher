@@ -1,0 +1,549 @@
+﻿{
+    "appId":  1985820,
+    "title":  "Call of Duty Vanguard",
+    "steamMetadataCountry":  "us",
+    "steamMetadataLanguage":  "english",
+    "type":  "game",
+    "requiredAge":  "18",
+    "isFree":  false,
+    "shortDescription":  "Call of Duty®: Vanguard includes a deeply engaging single player Campaign, a massive Multiplayer offering featuring over 20 maps including 16 built for core Multiplayer and an exciting new Zombies experience developed by Treyarch.",
+    "detailedDescriptionHtml":  "Standard edition includes:\u003cbr /\u003e\r\n\u003cbr /\u003e\r\n- Call of Duty®: Vanguard\u003cbr /\u003e\r\n- Digital Exclusive - Frontline Weapons Pack\u003cbr /\u003e\r\n\u003cbr /\u003e\r\nRise on every front: Dogfight over the Pacific, airdrop over France, defend Stalingrad with a sniper’s precision and blast through advancing forces in North Africa. The Call of Duty® franchise returns with Call of Duty®: Vanguard, developed by Sledgehammer Games, where players will be immersed in visceral WWII combat on an unprecedented global scale. \u003cbr /\u003e\r\n\u003cbr /\u003e\r\nCall of Duty®: Vanguard includes a deeply engaging single player Campaign, a massive Multiplayer offering featuring over 20 maps including 16 built for core Multiplayer and an exciting new Zombies experience developed by Treyarch.\u003cbr /\u003e\r\n\u003cbr /\u003e\r\nCall of Duty®: Vanguard features cross-progression and cross-generation play, in addition to Multiplayer maps, modes and more.",
+    "aboutTheGameHtml":  "Standard edition includes:\u003cbr /\u003e\r\n\u003cbr /\u003e\r\n- Call of Duty®: Vanguard\u003cbr /\u003e\r\n- Digital Exclusive - Frontline Weapons Pack\u003cbr /\u003e\r\n\u003cbr /\u003e\r\nRise on every front: Dogfight over the Pacific, airdrop over France, defend Stalingrad with a sniper’s precision and blast through advancing forces in North Africa. The Call of Duty® franchise returns with Call of Duty®: Vanguard, developed by Sledgehammer Games, where players will be immersed in visceral WWII combat on an unprecedented global scale. \u003cbr /\u003e\r\n\u003cbr /\u003e\r\nCall of Duty®: Vanguard includes a deeply engaging single player Campaign, a massive Multiplayer offering featuring over 20 maps including 16 built for core Multiplayer and an exciting new Zombies experience developed by Treyarch.\u003cbr /\u003e\r\n\u003cbr /\u003e\r\nCall of Duty®: Vanguard features cross-progression and cross-generation play, in addition to Multiplayer maps, modes and more.",
+    "supportedLanguagesHtml":  "English\u003cstrong\u003e*\u003c/strong\u003e, French\u003cstrong\u003e*\u003c/strong\u003e, Italian\u003cstrong\u003e*\u003c/strong\u003e, German\u003cstrong\u003e*\u003c/strong\u003e, Spanish - Spain\u003cstrong\u003e*\u003c/strong\u003e, Arabic\u003cstrong\u003e*\u003c/strong\u003e, Japanese, Korean, Polish, Portuguese - Brazil, Russian, Spanish - Latin America, Traditional Chinese\u003cbr\u003e\u003cstrong\u003e*\u003c/strong\u003elanguages with full audio support",
+    "pcRequirements":  {
+                           "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003eRequires a 64-bit processor and operating system\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows 10 64 Bit (latest update)\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e Intel Core i3-4340 or AMD FX-6300\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 8 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e NVIDIA GeForce GTX 960 or AMD Radeon RX 470\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eDirectX:\u003c/strong\u003e Version 12\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eNetwork:\u003c/strong\u003e Broadband Internet connection\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 36 GB available space\u003c/li\u003e\u003c/ul\u003e",
+                           "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003eRequires a 64-bit processor and operating system\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Window 10 64 Bit (latest update) or Windows 11 64 Bit (latest update)\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e Intel Core i5-2500k or AMD Ryzen 5 1600X\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 12 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e NVIDIA GeForce GTX 1060 or AMD Radeon RX 580\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eDirectX:\u003c/strong\u003e Version 12\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eNetwork:\u003c/strong\u003e Broadband Internet connection\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 177 GB available space\u003c/li\u003e\u003c/ul\u003e"
+                       },
+    "macRequirements":  {
+                            "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e",
+                            "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e"
+                        },
+    "linuxRequirements":  {
+                              "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e",
+                              "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e"
+                          },
+    "dlc":  [
+                2289410,
+                2289411,
+                2289412,
+                2289413,
+                2289414,
+                2289415,
+                2289416,
+                2289417,
+                2289418,
+                2296290
+            ],
+    "website":  "https://www.callofduty.com/vanguard",
+    "developers":  [
+                       "Sledgehammer Games",
+                       "Treyarch",
+                       "High Moon Studios",
+                       "Raven Software",
+                       "Beenox",
+                       "Demonware"
+                   ],
+    "publishers":  "Activision",
+    "releaseDate":  {
+                        "coming_soon":  false,
+                        "date":  "Mar 8, 2023"
+                    },
+    "genres":  "Action",
+    "categories":  [
+                       "Single-player",
+                       "Multi-player",
+                       "PvP",
+                       "Online PvP",
+                       "Co-op",
+                       "Online Co-op",
+                       "Steam Achievements",
+                       "Full controller support",
+                       "In-App Purchases"
+                   ],
+    "platforms":  {
+                      "windows":  true,
+                      "mac":  false,
+                      "linux":  false
+                  },
+    "metacritic":  null,
+    "recommendations":  {
+                            "total":  4033
+                        },
+    "reviewsSummary":  null,
+    "newsItems":  [
+                      {
+                          "gid":  "1833968530889441",
+                          "title":  "Modern Warfare 4 Editions: Pre-order Benefits Detailed",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1833968530889441",
+                          "is_external_url":  true,
+                          "author":  "RedBruto",
+                          "contents":  "[p][/p][p][/p][p][img src=\"{STEAM_CLAN_IMAGE}/45718718/46f4a9dd22524376ef871230f18d6eddcdc9959a.jpg\"][/img][/p][p][b] [/b][/p][p][/p][previewyoutube=\"jLbst85USN8;full\"][/previewyoutube][p][/p][h2]Modern Warfare 4: Pre-order Benefits[/h2][p][b]Warfare Without Limits: [/b][i]Call of Duty®: Modern Warfare®[/i] 4 launches on October 23, 2026. Lock in your preferred edition now to secure a full slate of rewards and bonus content available with digital pre-purchases on PC. See the full breakdown of included benefits in the chart below:[/p][p][b] [/b][/p][p][img src=\"{STEAM_CLAN_IMAGE}/45718718/6ea1ef82196468198d9b2c5f8c15b9b945a41c14.jpg\"][/img][/p][p][dynamiclink href=\"https://store.steampowered.com/app/4435490/Call_of_Duty_Modern_Warfare_4/\"][/dynamiclink][b] [/b][/p][p][/p][p]Pre-purchases are rolling live for Steam as of today, May 28. Note that it may take some time for pre-order pages to fully cascade across these platforms and by region. Continue to check-in throughout the day if you don\u0027t immediately see pages live for your platform of choice.[/p][p] [/p][h3]What are the Available Editions?[/h3][p]There are two editions of [i]Modern Warfare 4[/i] to consider for pre-order or pre-purchase:[/p][p]·      [b]Digital:[/b] Vault Edition (all platforms).[/p][p]·      [b]Digital:[/b] Standard Edition (all platforms).[/p][h2] [/h2][h2]Modern Warfare 4: Vault Edition[/h2][p][b] [/b][img src=\"{STEAM_CLAN_IMAGE}/45718718/46f4a9dd22524376ef871230f18d6eddcdc9959a.jpg\"][/img][/p][p][/p][p][/p][p]With an incredible selection of premium content, the [i]Modern Warfare 4[/i] Vault Edition offers exceptional value — especially when combined with the 10% Loyalty Discount† — alongside exclusive rewards available only through this edition. Secure the Vault Edition to gain access to all included content, rewards, and edition-specific benefits:[/p][p]·      [i]Call of Duty: Modern Warfare 4[/i] Digital Edition[/p][p]·      Early access to the Open Beta*[/p][p]·      Hunter Killer Operator Skin**[/p][p]·      Hostile Alliance Operator Pack[/p][p]·      Special Forces Operator Pack[/p][p]·      Signature Weapon Collection[/p][p]·      BlackCell (One Season)***[/p][p]·      DMZ Deployment Bonus[/p][p] [/p][p]Want the full details about the Vault Edition Loyalty Discount? Keep reading.[/p][p][b] [/b][/p][h2]What are the Pre-order and Vault Edition Benefits?[/h2][p] [/p][p]Let’s take a closer look at the rewards and bonus content included with your pre-order or pre-purchase, as well as Vault Edition content:[/p][p] [/p][h3]Early Access to the Open Beta*[/h3][p][i][b]Pre-order or Pre-purchase:[/b] Digital Standard or Vault  Standard Edition[/i][/p][p][b]Availability:[/b] At the start of the [i]Modern Warfare 4 [/i]Open Beta, later this year.[/p][p][b] [/b][/p][p][/p][p][img src=\"{STEAM_CLAN_IMAGE}/45718718/3b36b86b54da444e47687eefaa03e46e6d605de5.jpg\"][/img][/p][p]Pre-order any of the two editions of [i]Modern Warfare 4[/i] to secure early access to the [b]Open Beta[/b]. Exact Beta timing and availability details will be announced soon.[/p][p][b]Beta Codes: [/b]Players who digitally pre-order [i]Modern Warfare 4 [/i]are automatically granted Early Access to the Open Beta and do not require a Beta Code.[/p][p]Players who do not pre-order [i]Modern Warfare 4[/i] should still expect to access the open portion of the Beta.[/p][p][i]* Actual launch date(s), times, and platform availability of MP Beta subject to change. See [/i][/p][p][/p][p][/p][p][url=\"https://www.callofduty.com/beta\"]www.callofduty.com/beta[/url][/p][p][/p][p][/p][p][i] for more details. Minimum Open Beta duration is 2 days. Limited time only. Internet connection required. Online multiplayer subscription may be required for MP Beta.[/i][/p][p][b] [/b][/p][h3]Hunter Killer Operator Skin**[/h3][p][i][b]Pre-order or Pre-purchase:[/b] Digital Standard or Vault Edition[/i][/p][p]·      [b]Availability:[/b] Instantly in [i]Call of Duty: Black Ops 7[/i] and [i]Call of Duty[/i]: [i]Warzone[/i]™, and at launch in [i]Modern Warfare 4[/i], upon pre-order or pre-purchase.[/p][p][b] [/b][/p][p][img src=\"{STEAM_CLAN_IMAGE}/45718718/9c3c764b4d156b4d58a6095532325018d4188476.jpg\"][/img][/p][p][/p][p][/p][p]Pre-order or pre-purchase either of the Digital Editions of [i]Modern Warfare 4[/i], and immediately receive [b]Hunter Killer[/b], a clandestine field operative with a talent for ending engagements.[/p][p]·      Hunter Killer (and the Hunter Killer Skin) instantly becomes available in the Operators Menu of Call of Duty: [i]Black Ops 7[/i] or [i]Call of Duty: Warzone[/i] next time you access the game.[/p][p] [/p][p]The Hunter Killer Operator Skin will also be available in [i]Modern Warfare 4[/i] at launch on October 23. [i](**Call of Duty: Black Ops 7 or Call of Duty: Warzone on your chosen platform is required to redeem. Sold / downloaded separately. Must be redeemed by October 23, 2027.)[/i][/p][p] [/p][h3]Hostile Alliance Operator Pack[/h3][p][i][b]Pre-order, Pre-purchase, or Purchase: [/b]Vault Edition[/i][/p][p]·      [b]Availability:[/b] At game launch on October 23.[/p][p][/p][p][img src=\"{STEAM_CLAN_IMAGE}/45718718/381cdc27c05d5a93e83376c2a1b742a07de5ab03.jpg\"][/img][/p][p]Unlock the [b]Hostile Alliance Operator Pack[/b], enabling access to the following Operators at launch: Price, Valeria, Ghost, and Blix. Note that Price and Valeria have masked and unmasked variant skins.[/p][p] [/p][h3]Special Forces Operator Pack[/h3][p][i][b]Pre-order, Pre-purchase, or Purchase: [/b]Vault Edition[/i][/p][p]·      [b]Availability:[/b] At game launch on October 23.[/p][p][b] [/b][/p][p][img src=\"{STEAM_CLAN_IMAGE}/45718718/270cac7988aa7cc0181b9d656165f9ed36bc2965.jpg\"][/img][/p][p][/p][p]An additional Operator Pack is available for those with the [i]Modern Warfare 4 Vault Edition[/i]: Unlock the [b]Special Forces Operator Pack[/b], including four Operators, each with a skin representing their country of origin, each with a voice pack in their local language:[/p][p]·      COM SFT (France)[/p][p]·      KSK Amphibious (Germany)[/p][p]·      South Korean Special Forces (South Korea)[/p][p]·      SAS (United Kingdom)[/p][p][b] [/b][/p][h3]Signature Weapon Collection[/h3][p][i][b]Pre-order, Pre-purchase, or Purchase: [/b]Vault Edition[/i][/p][p]·      [b]Availability:[/b] At game launch on October 23.[/p][p][b] [/b][/p][p][img src=\"{STEAM_CLAN_IMAGE}/45718718/6051653ca2e35214e018fe3058acbd46f159911f.jpg\"][/img][/p][p][/p][p]Own the [i]Modern Warfare 4 Vault Edition[/i] to immediately unlock five different weapons that form the [b]Signature Weapon Collection[/b]. The ranged weapons come with multiple Attachments including an Apex Attachment, all of which are accessible at game launch. Here are the available weapons and Blueprints:[/p][p]·      [b]Kastov 762 Assault Rifle[/b] and [b]“Voltspine”[/b] Blueprint[/p][p]·      [b]ISO Nightshade Submachine Gun[/b] and [b]“La Sombra Venenosa”[/b] (“The Poisonous Shadow”) Blueprint[/p][p]·      [b]Rezi 12 Shotgun[/b] and [b]“Shattered Code”[/b] Blueprint[/p][p]·      [b]Oris 8.6 Marksman Rifle[/b] and [b]“Volt-Edge”[/b] Blueprint[/p][p]·      [b]Combat Knife (Melee) [/b]and [b]“Sombra Besada” [/b](“Shadow’s Kiss”) Blueprint[/p][p] [/p][p]Kastov 762 and “Voltspine” Blueprint[/p][p][b] [/b][/p][p][/p][p][img src=\"{STEAM_CLAN_IMAGE}/45718718/cc2b37eccbc62f59b4d8a4025f77a0ca53c76793.jpg\"][/img][/p][p][/p][p]A full-auto 7.62x39mm rifle offering heavy per-shot impact with equally firm recoil. Reliable and forceful but requires control to keep on target.[/p][p][b]Kastov Arc (Apex Attachment):[/b] An experimental disruption barrel that emits a concentrated high-intensity RF pulse capable of incapacitating infantry, crippling electronics, and destabilizing vehicles caught in its crosshairs.[/p][p] [/p][p]Iso Nightshade and “La Sombra Venenosa” Blueprint[/p][p][b] [/b][/p][p][/p][p][img src=\"{STEAM_CLAN_IMAGE}/45718718/212e11ebef3e910063648b72dc6b8199175741e2.jpg\"][/img][/p][p]A full-auto 9x19mm SMG with a fast rate of fire, the ISO Nightshade balances controllability, mobility, and close-quarters stopping power into a versatile platform suited for any operator.[/p][p][b]ISO Trace (Apex Attachment):[/b] When hitting a target, Special RFID ammunition transmits a signal back to a built-in optic display on the gun, letting you to track down the victim and finish the job.[/p][p] [/p][p]Rezi 12 and “Shattered Code” Blueprint[/p][p][b] [/b][/p][p][/p][p][img src=\"{STEAM_CLAN_IMAGE}/45718718/e0c616f7026fc710550ccdf10ff22cfdfd55d53b.jpg\"][/img][/p][p][/p][p]A fast-cycling semi-auto 12-gauge, the Rezi 12 delivers powerful, controlled shots with smooth recovery. Built tough and tuned for decisive close-range work.[/p][p][b]Rezi Enforcer (Apex Attachment):[/b] Enables pump-action cycling and is outfitted with a side-saddle for hot-loaded explosive slugs. The added capability extends the platform’s engagement envelope well beyond traditional 12-gauge roles.[/p][p] [/p][p]Oris 8.6 and “Volt-Edge” Blueprint[/p][p][/p][p][img src=\"{STEAM_CLAN_IMAGE}/45718718/9da9e5bdb7a24024f69a73ad0a91ac2d3978f16b.jpg\"][/img][/p][p][/p][p]A lightweight bolt-action rifle chambered in 8.6 Blackout, the Oris 8.6 delivers impressive energy from a compact, modular frame. Sleek monolithic design and smooth cycling make it effective for precision fire in tight or mobile engagements.[/p][p][b]Oris Razor (Apex Attachment):[/b] A compact blade module mounted to the receiver, housing up to three quick access throwing knives for close-range, low-signature engagements. Designed as a reliable fallback when stealth or conservation of fire matters most.[/p][p] [/p][p]Combat Knife and “Sombra Besada” Blueprint[/p][p][/p][p][img src=\"{STEAM_CLAN_IMAGE}/45718718/1cf6a2a43a963f42c73cd312270ba146edec398c.jpg\"][/img][/p][p][/p][p]Lightweight combat blade with a reinforced spine and vented profile for fast, lethal use in close quarters.[/p][p][b] [/b][/p][h3]BlackCell: One Season of Content***[/h3][p][i][b]Pre-order, Pre-purchase, or Purchase: [/b]Vault Edition[/i][/p][p]·      [b]Availability: [/b]Access begins with Season 1 (date to be announced).[/p][p][b] [/b][/p][p][img src=\"{STEAM_CLAN_IMAGE}/45718718/29cdde509b5866addf31d466bbf216876cfa4f18.jpg\"][/img][/p][p]Own the [i]Modern Warfare 4 Vault Edition[/i] to unlock [b]a single season of BlackCell access. [/b]Timing determines which season of BlackCell of you receive, with the first opportunity being in Season 1:[/p][p]·      Pre-order, pre-purchase, or purchase the [i]Modern Warfare 4 Vault Edition and play [/i]before or during Season 1 to unlock Season 1 BlackCell.[/p][p]·      Purchase the [i]Modern Warfare 4 Vault Edition [/i]and play after Season 1 to unlock the current BlackCell season.[/p][p]BlackCell includes:[/p][p]·      20 Battle Pass Tier Skips and 1,100 COD Points, instantly unlocked[/p][p]·      Instant access to exclusive content, including a new Operator and Weapon Blueprint.[/p][p]·      BlackCell variants of select Battle Pass content including Operators, Weapon Blueprints, and more.[/p][p]·      Full Battle Pass with 100+ rewards, including weapons, Operator Skins, Blueprints, and COD Points.[/p][p][i](*** BlackCell, Battle Pass, Call of Duty Points and Tier Skips will be accessible in Modern Warfare 4 upon availability of the Season 1 Battle Pass in-game. Redemption applies to one Season of the Modern Warfare 4 Battle Pass only.)[/i][/p][p][i] [/i][/p][h3]DMZ Deployment Bonus[/h3][p][i][b]Pre-order, Pre-purchase, or Purchase: [/b]Vault Edition[/i][/p][p]·      [b]Availability:[/b] At game launch on October 23.[/p][p][b] [/b][/p][p][img src=\"{STEAM_CLAN_IMAGE}/45718718/4e4f89217278f38796cbb0cae4be571e1c820528.jpg\"][/img][/p][p][/p][p]Vault Edition owners can expect additional DMZ content via a Deployment Bonus at launch. Stay tuned for more details on the exact contents of the Deployment Bonus.[/p][p][b] [/b][/p][h2]Vault Edition: [i]Call of Duty[/i] Loyalty Discount†[/h2][p][i]Via digital Pre-order and Pre-purchase on platform storefronts[/i][/p][p]If you’ve digitally or physically owned and played a premium [i]Call of Duty[/i] title dating back to [i]Call of Duty: Modern Warfare[/i] (2019), or have played one of these titles via Game Pass and have an active Game Pass Ultimate, Premium, or PC subscription, expect to digitally [b]preorder the Vault Edition of [i]Call of Duty: Modern Warfare 4[/i] with a 10% discount[/b] compared to the  standard MSRP.[/p][p]Here’s how this works:[/p][h2]Qualifying Call of Duty Titles[/h2][p]The discount is available if you own and have played a qualifying previous title, through digital or physical purchase, via an active Game Pass Ultimate, Premium, or PC subscription that has previously played one of these titles, or by claiming the title via PlayStation® Plus Monthly Games. Any edition of the previous title qualifies. Here are the titles:[/p][p]·      [i]Call of Duty: Modern Warfare[/i] (2019)[/p][p]·      [i]Call of Duty: Modern Warfare 2 Campaign Remastered (2020)[/i][/p][p]·      [i]Call of Duty: Black Ops Cold War[/i][/p][p]·      [i]Call of Duty: Vanguard[/i][/p][p]·      [i]Call of Duty: Modern Warfare II[/i] (2022)[/p][p]·      [i]Call of Duty: Modern Warfare III[/i] (2023)[/p][p]·      [i]Call of Duty: Black Ops 6[/i][/p][p]·      [i]Call of Duty: Black Ops 7[/i][/p][h3]Qualifying Platform Eligibility[/h3][p]The discount is only available at checkout if you pre-order or pre-purchase [i]Modern Warfare 4[/i] on the same gaming platform and with the same platform account used for the previous qualifying title.[/p][h3]Loyalty Discount: Additional Information[/h3][p]Ensure you claim your Loyalty Discount in time, and note the following intel:[/p][p]·      Expect a 10% discount to the Vault Edition of [i]Modern Warfare 4[/i].[/p][p]·      This discount applies to the [b]Vault Edition of [i]Modern Warfare 4[/i] only[/b].[/p][p]·      The discount should appear [b]within the in-game store or platform digital storefront[/b], prior to checkout.[/p][p]·      This discount [b]only applies to pre-orders and pre-purchases[/b]; this offer is valid until October 23, 2026. This offer is subject to change.[/p][p]·      This discount is [b]not available to Vault upgrades[/b]; meaning you cannot pre-order or pre-purchase the Standard Digital Edition and then upgrade to the Vault Edition afterwards and obtain the discount.[/p][p][b] [/b][/p][p][b]Further Information: [/b]If you require additional support information or guidance regarding the Loyalty Discount, please visit [url=\"http://support.activision.com/mw4\"]Activision Support’s [/url][url=\"http://support.activision.com/mw4\"][i]Modern Warfare 4[/i][/url][url=\"http://support.activision.com/mw4\"] page[/url].[/p][p] [/p][h2]Modern Warfare 4: Digital Standard Editions[/h2][p][b] [/b][/p][p][img src=\"{STEAM_CLAN_IMAGE}/45718718/4fc5b3f3ff2c35e65cc0e14c0da381646033138d.jpg\"][/img][/p][p]In addition to the Vault Edition, you can pre-purchase (on PC) a Digital Standard Edition of [i]Modern Warfare 4[/i] on the platforms listed at the start of this Blog. The Digital Standard Edition consists of the full game and the following benefits:[/p][p]·      Open Beta Early Access (Pre-order or Pre-purchase benefit)[/p][p]·      Hunter Killer Operator Skin (Pre-order or Pre-purchase Instant benefit in [i]Black Ops 7[/i] and [i]Call of Duty[/i]: [i]Warzone[/i])[/p][h3] [/h3][h3]Vault Edition Upgrade[/h3][p][i]From Digital Edition to Vault Edition[/i][/p][p]If you pre-order the Digital Standard Edition of [i]Modern Warfare 4[/i], you can upgrade to the Vault Edition at a later date, provided the upgrade is made on the same platform as your original purchase.[/p][p][b]Note: [/b]Upgrade steps may vary by platform. Refer to your platform’s storefront for details.[/p][h3]How Do I Upgrade to the Vault Edition?[/h3][p][b]Steam:[/b] Upgrade via the in-game store or Steam where the Digital Standard Edition was pre-purchased.[/p][p]Additional Notes:[/p][p][b]Price:[/b] The cost to upgrade from a Digital Standard Edition to the Vault Edition is $30 U.S. SRP (or regional equivalent).[/p][p][b]Ineligibility Notes:[/b] The Vault Edition is only available digitally. The Vault Edition Loyalty Discount (see above) is not available if you decide to upgrade.[/p][p] [/p][h2]Stay Frosty: Additional Intel Incoming[/h2][p][b] [/b][/p][p][/p][p][img src=\"{STEAM_CLAN_IMAGE}/45718718/73f3eeca662281a3f3d3b18c319c887ca30b36d6.jpg\"][/img][/p][p][/p][p]Track the latest official [i]Modern Warfare 4[/i] intel on the Call of Duty Blog as we move toward additional information drops, the [i]Modern Warfare 4[/i] Open Beta, and launch on October 23.[/p][p][/p][p]Preorders are available now at participating retailers, in-game, on platform stores, or at [/p][p][/p][p][url=\"https://CallofDuty.com\"]CallofDuty.com[/url][/p][p][/p][p].[/p][h3]Development Credits[/h3][p] [/p][p]Call of Duty: Modern Warfare 4 development is led by Infinity Ward, and will be available globally on PC via Steam on Friday, October 23rd, 2026.[/p][p] [/p][p]Call of Duty: Modern Warfare 4 for the PC delivers a fully optimized experience, led by Infinity Ward in partnership with Beenox, for Steam.[/p][p] [/p][p]Additional development by — in alphabetical order — Activision Central Design, Activision Central Technology, Activision QA, Activision Shanghai, Beenox, Demonware, High Moon Studios, Raven Software, Sledgehammer Games, and Treyarch.[/p][p][i]Online multiplayer subscription may be required (sold separately).[/i][/p][p][i] [/i][/p][p][i]On PC, TPM 2.0 and Secure Boot required, other security measures may be enforced. [/i][url=\"https://support.activision.com/articles/trusted-platform-module-and-secure-boot\"]Learn more here[/url].[/p][p][i] [/i][/p][p][i]Content, features, services, online play, and support not available in all regions, and may vary, change, or terminate.[/i][/p][p][i] [/i][/p][p][i]Requires an Activision account and acceptance of the Activision Software License and Services Agreement. A mobile phone number linked to your Activision account may be required to play Modern Warfare 4.[/i][/p][p][i] [/i][/p][p][i]Additional storage space may be required for mandatory game updates.[/i][/p][p] [/p][p][i]†Loyalty discount of 10% is based on MSRP.[/i][/p][p][i] [/i][/p][p][i]©/TM/[/i]©[i] 2026 Activision Publishing, Inc.For more information, please visit [/i][/p][p][/p][p][/p][p][url=\"https://www.callofduty.com\"]www.callofduty.com[/url][/p][p][/p][p][/p][p][i] and [/i][/p][p][/p][p][i], and follow [url=\"https://twitter.com/activision\"]@Activision[/url] and [url=\"https://twitter.com/CallofDuty\"]@CallofDuty[/url] on X, Instagram, and Facebook. For Call of Duty Updates, follow [url=\"https://twitter.com/CODUpdates\"]@CODUpdates[/url] on X.[/i][/p][p] [/p][p][i]Join [url=\"http://discord.gg/CallofdutyOfficial\"]Call of Duty\u0027s Official Discord[/url] to get the latest updates and maybe even meet your next squadmate![/i][/p][p] [/p][p] [/p]",
+                          "feedlabel":  "Community Announcements",
+                          "date":  1780001969,
+                          "feedname":  "steam_community_announcements",
+                          "feed_type":  1,
+                          "appid":  1985820,
+                          "tags":  [
+                                       "workshop"
+                                   ]
+                      },
+                      {
+                          "gid":  "5070528810289329833",
+                          "title":  "Vanguard launches on Steam for 50% off!",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/5070528810289329833",
+                          "is_external_url":  true,
+                          "author":  "ATVI_CM",
+                          "contents":  "Enjoy Call of Duty®: Vanguard, now available on Steam 🔥\n\nCall of Duty®: Vanguard includes a deeply engaging single player Campaign, a massive Multiplayer offering featuring over 20 maps including 16 built for core Multiplayer and an exciting new Zombies experience developed by Treyarch.\n\nSecure it for up to 50% off for a limited time!\n\nhttps://store.steampowered.com/app/1985820",
+                          "feedlabel":  "Community Announcements",
+                          "date":  1678301232,
+                          "feedname":  "steam_community_announcements",
+                          "feed_type":  1,
+                          "appid":  1985820
+                      }
+                  ],
+    "achievements":  {
+                         "total":  44,
+                         "items":  [
+                                       {
+                                           "apiName":  "SP_PHNX_EXTINGUISHED",
+                                           "displayName":  "Phoenix Extinguished",
+                                           "description":  "Beat Call of Duty: Vanguard Campaign on any difficulty.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/db5c4409fa162a97b2f27622212f5604314f60b4.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/dc2853c246bc5a57b36820a69d4cc4b5c02490fe.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SP_TIP_OF_THE_SPEAR",
+                                           "displayName":  "The Tip of the Spear",
+                                           "description":  "Beat Call of Duty: Vanguard Campaign on Veteran difficulty.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/e25faa49f0e23178022925773a846fa2d33284b0.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/e4acdca84747d2b9b19449df495bb3496b979ac2.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SP_DID_I_GET_EM",
+                                           "displayName":  "Did I Get \u0027Em?",
+                                           "description":  "In Campaign, get 15 kills using Blind Fire.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/82bf49182f249cdd876f74f0233152953d976112.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/91ae97800e5503c5016d5b193c3616b6f06b27d7.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SP_MUNITION_MAGPIE",
+                                           "displayName":  "Munition Magpie",
+                                           "description":  "In Campaign, scavenge ammo from 15 enemy corpses within 3 seconds of killing them.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/915bcbef0fbd62d64de48a4a1b32be1ab36ca3f0.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/23624cfe0880ed4eed39dd58c9318e12549ab594.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SP_GOTTA_TRY_THEM_ALL",
+                                           "displayName":  "Gotta Try Them All!",
+                                           "description":  "In Campaign, kill enemies with 15 different weapons throughout the game.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/478ea5b1adc80cc71e71fbc29496f7983f64a425.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/343989e045d2751b437c030b9e62071ffd629c81.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SP_OH_YEAH",
+                                           "displayName":  "OH YEAH!",
+                                           "description":  "In Campaign, tactical sprint through 5 destructible walls.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/f2ba6565507fd833149b5e410efb14b4b864fbdf.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/1488fc7d435a1f7767b4287aa75e95ae648867bc.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SP_F_REFERENCE",
+                                           "displayName":  "F",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/999fb528dd9fad87fe2b8161fc68e5de59a3ea45.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/6d74e5849a1d53d81340922838bebef8e4320a0b.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SP_NOT_YOUR_FAIRY_GODMOTHER",
+                                           "displayName":  "Not Your Fairy Godmother",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/5d7774b01839cb6417aebe8f44e49d100292b3af.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/af1988c3d74381327c42ec790ed8e35363f9e15d.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SP_COULDNT_DO_IT_WITHOUT_YOU",
+                                           "displayName":  "Couldn\u0027t Have Done it Without You",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/b917db1bf3a6ca7bf4e58b53b7427b8f60adc7d2.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/85f2e1811ee865781ed0e71021af7262126dd22a.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SP_SHOT_CALLER",
+                                           "displayName":  "Shot Caller",
+                                           "description":  "Give 15 different commands to your allies as Arthur.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/240c7580ac3ad766f9fcec08aaa65f37b56566ac.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/df16a4becdcabae67363c737d16264ab37b66c87.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SP_POP_GOES_THE_NIGHTINGALE",
+                                           "displayName":  "Pop Goes the Nightingale",
+                                           "description":  "As Polina, kill 15 enemies immediately after emerging from a crawlspace.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/53ab3c61815531c0aceb2c623b5248fb5f42a360.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/9c3a39ae27c69a7f5058c3d28e3259a4a39c1eb8.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SP_HEIGHTENED_SENSES",
+                                           "displayName":  "Heightened Senses",
+                                           "description":  "As Wade, kill 15 enemies using the focus ability.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/76bf7682d676dafa94a254fdd0fb5e9963955a0d.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/41c1332993f2fa6544cef3e144bd105499012576.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SP_POCKET_FULL_OF_FUN",
+                                           "displayName":  "Pocket Full of Fun",
+                                           "description":  "As Lucas, use 4 types of lethal equipment, getting 3 kills with each. ",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/7a75c93a3ec4882f85940425d4c580b24a2834cc.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/5ab677b48bc56164d87ea8d2b2e88ae2b565239a.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SP_TICKET_PLEASE",
+                                           "displayName":  "Ticket Please",
+                                           "description":  "In Phoenix, kill 15 enemies while standing atop a train car roof.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/2777c53f66941eea73551e5806371fd7055d9d9c.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/2112bb9e7c0cff8d6833a4e9cca25c54a2a635ac.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SP_BEWARE_OF_TRAINS",
+                                           "displayName":  "Beware of Trains",
+                                           "description":  "In Phoenix, shoot a truck driver transporting a vehicle full of soldiers.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/483217da4229578d8b3bf14500c9c6e9a0d0d0db.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/717e5ad2ed38acf5fbe1a814a738b28124f86432.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SP_ACTIONS_LOUDER_THAN_WORDS",
+                                           "displayName":  "Actions Speak Louder than Words",
+                                           "description":  "In Operation Tonga, protect Evans with quick reflexes.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/dfe6ef882ba0ed502f45ad3ea8c16a0098d49853.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/8dfe5b8735faf07b696ec4e4fef31ab4fe9de9bf.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SP_ONLY_YOU_CAN_PREVENT",
+                                           "displayName":  "Only You Can Prevent Friendly Casualties",
+                                           "description":  "In Operation Tonga, throw smoke from the anti-tank ditch to provide cover for the charge.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/7a6cd33bf863dead27f092bee4f4c2c437c5610a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/93b931ea50e192cb0ba56c7e774a3282e3907572.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SP_LEGEND_IN_THE_MAKING",
+                                           "displayName":  "Legend in the Making",
+                                           "description":  "In Stalingrad, protect the Partisans without missing a shot.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/c624314725af3cc93c6c058b0c6129dc8b41df18.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/186ea6ccc165cac2676dd6e07ba514cd313ab57f.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SP_RAIN_OF_FIRE",
+                                           "displayName":  "Rain of Fire",
+                                           "description":  "In Stalingrad, hit a halftrack with a Molotov Cocktail.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/75a6e3c1fafea538047980528d91a171783100fb.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/5a190d387f89f18bd2102541508eeefff87c6f93.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SP_SAVIOR",
+                                           "displayName":  "Slow But Deadly",
+                                           "description":  "In The Battle of Midway, help 5 threatened Allies during the dogfight.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/6743ce86c5169ff0060067a26c882452211eb52c.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/748cc005749e983e37f06a8e15525e6c22b1a24a.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SP_DO_A_BARREL_ROLL",
+                                           "displayName":  "Duck and Dive",
+                                           "description":  "In The Battle of Midway, avoid getting hit by bullets during the first Dive-Bomb.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/4ab02844e07c633292022190385c3862b8e318a1.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/baa48646edf209e36f3bd8f3e77e561f245448c8.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SP_UNTOUCHABLE",
+                                           "displayName":  "Untouchable",
+                                           "description":  "In Numa Numa Trail, avoid getting hit by the sniper.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/8c048e4a9ab94f6a0d4f52d2e6228ce824ff592a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/7eeb08ccd65fe4104cf0c8b65d9ba7fa4ac6fbce.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SP_SURVIVALIST",
+                                           "displayName":  "Survivalist",
+                                           "description":  "In Numa Numa Trail, find Mateo without firing a bullet.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/1a93d1da2abd33c502edcf9961f27c3344c1862b.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/364650648f6e5998939df1f688823f9f079ce6c5.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SP_BIRD_OF_PREY",
+                                           "displayName":  "Bird of Prey",
+                                           "description":  "In Lady Nightingale, kill 5 snipers across the open field without getting hit by them.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/9938e533fbfda8ea98d28eefe7b5f114d4773369.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/54e1333b0dbc1d522b50af3981411d907dc91605.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SP_BEHIND_YOU",
+                                           "displayName":  "Behind You",
+                                           "description":  "In Lady Nightingale, take out all of Steiner\u0027s troops in the department store using only takedowns.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/35b2616766346e42aa111869ecbb18d7f6efe57b.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/43fab7c6df6e44d71b5c0f7ebb9d4c4be51e9679.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SP_THATS_NOT_A_KNIFE",
+                                           "displayName":  "That\u0027s Definitely Not a Knife",
+                                           "description":  "In the Rats of Tobruk, bring down the Stuka with a pistol, grenade or rocket.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/9f61b1e7e70c6fa077230360a56ca505595345da.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/f048d4916cb9c16c74c20aabcdd4fc6bf8c47ac5.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SP_PIED_PIPER",
+                                           "displayName":  "Pied Piper",
+                                           "description":  "In The Rats of Tobruk, lead the Rats through the desert without getting detected.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/e85e779d6fa3c0d12fbfb1c4f3a4fa66d8953ec2.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/2fdd813f5ed1ae55592f2fbfa6ae815c7dc7311d.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SP_LEAVING_AN_IMPRESSION",
+                                           "displayName":  "Leaving an Impression",
+                                           "description":  "In the battle of El Alamein, get run over by a tank. Be more careful next time...",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/dfdd19bc4fe54aace81930acf398465a7c90f063.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/30685a5ca3dfb54cf84970b1f9c7c7f76b9fffd4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SP_SHELL_BE_RIGHT_MATE",
+                                           "displayName":  "She\u0027ll be Right Mate",
+                                           "description":  "In the battle of El Alamein, get twice as many kills as Des during the final defend.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/07926bddee2ca84f753e4ce40fdfe0606b2e083a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/50948d501f9bd8a3f0ce19fa87fd0cafce887262.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SP_ALLIES_TOGETHER_STRONG",
+                                           "displayName":  "Allies Together, Strong",
+                                           "description":  "In The Fourth Reich, use Leadership to help takedown a Jäger Mörder.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/da658a5ee545f644c35c3b008c688d969900932e.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/d7a09ec0be29ff722855a19836e0bf12b0714d12.jpg"
+                                       },
+                                       {
+                                           "apiName":  "SP_ORDER_IN_CHAOS",
+                                           "displayName":  "Order in Chaos",
+                                           "description":  "In The Fourth Reich, go through the level without any instances of friendly fire.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/a2fdaced2cd88b3360646edf062f7207b4930c5f.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/7151fa0448502b3ff2a8312675054fc6d6d77970.jpg"
+                                       },
+                                       {
+                                           "apiName":  "MP_LEET_SKILLS",
+                                           "displayName":  "Leet Skills",
+                                           "description":  "Reach level 55 in Multiplayer.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/b365a3479e1ed998749fff746041ed59cefb47c4.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/bd6a5c02e513482ba324b9a16a2860ada114eaee.jpg"
+                                       },
+                                       {
+                                           "apiName":  "MP_TOP_OF_THE_MOUNTAIN",
+                                           "displayName":  "Top of the Mountain",
+                                           "description":  "Reach max level with an operator in Multiplayer (base game operators only).",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/928d8462ed8215a638b37f56a9d038b12f685696.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/f1c936e216cac37eba08d74e857f32209ce19883.jpg"
+                                       },
+                                       {
+                                           "apiName":  "MP_BLING_PRO_2",
+                                           "displayName":  "Bling Pro 2.0",
+                                           "description":  "Reach max level with a weapon (base game weapons only).",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/c524d89a7014bee2faec8be9a68bb99ba7a73d4c.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/23cf5e477d50aad12c1933b1f9001090ff1276c1.jpg"
+                                       },
+                                       {
+                                           "apiName":  "MP_HELLO_THERE",
+                                           "displayName":  "Hello There",
+                                           "description":  "Start the Campaign.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/debca0105b58e514a6af78cb76ec70a5ca36a90f.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/f011fa7b8e83ff3afcbc62867cb86c6047a7a33c.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ZM_DEAL_WITH_THE_DEVIL",
+                                           "displayName":  "Deal With the Devil",
+                                           "description":  "Equip 3 Covenants.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/bd018b44c61b34bb70c08fb34a1c06dffd8156d6.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/821d57dc4ee174cd1e387581b6221f225dd9dc85.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ZM_BAKERS_DOZEN",
+                                           "displayName":  "Baker\u0027s Dozen",
+                                           "description":  "Sacrifice 13 Hearts.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/a260d7a8449ef2ac5d490215ccb14b6470ef9682.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/4a7973e1b67d074f617af2a920359b8735d7c822.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ZM_THIRST_QUENCHER",
+                                           "displayName":  "Thirst Quencher",
+                                           "description":  "Drink from all 5 Demonic Fountains in a single session.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/8b571456c43a1a333928722c78e1e6a13e94ceb8.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/ef7ddfd646a4cb6115e49c56516720160451a1d7.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ZM_COLD_AS_ICE",
+                                           "displayName":  "As Cold as Ice",
+                                           "description":  "Eliminate 10 zombies via melee that have been slowed by the Frost Blast Artifact.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/0868e75c438905fe2575ef48e4c4b5f7c8e66ba1.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/7d47c87263f9975bbcb01e3b9e353d6bf05eb3a3.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ZM_SHOCKING_BEHAVIOUR",
+                                           "displayName":  "Shocking Behavior",
+                                           "description":  "Eliminate 10 zombies that were damaged by the Energy Mine Artifact.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/49097f8d9e4fb2b4b336c81d2bbd4d5b2e8102ca.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/6963957f7c6ebe1f31221e7d7a95570f315d45a2.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ZM_ESCAPE_ARTIST",
+                                           "displayName":  "Escape Artist",
+                                           "description":  "While using the Aether Shroud Artifact, enter the Aether Shroud 5 times with less than 25% health.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/1f6446f5e0a1d78bc269444abbe698c24d495ebd.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/9603feb7f109bb33b53d74eb87ced353c5411aba.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ZM_HOT_TEMPERED",
+                                           "displayName":  "Hot Tempered",
+                                           "description":  "Eliminate 10 zombies while your damage is increased by the Ring of Fire Artifact.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/3a5bd52fb4cc3e16adb7b818ddc4a206c546497c.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/d764dae52071b5863f7caffe0c3afc7406e94339.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ZM_DEATH_DEALER",
+                                           "displayName":  "Death Dealer",
+                                           "description":  "In Der Anfang, eliminate 2500 zombies with a Pack-a-Punch level 3 weapon.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/96e7de1dcda7f63466d4a5b8c776c663dc33614f.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/d81e222e4c5c5d3bb24b690badc3241d172ef186.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ZM_GRIM_REAPER",
+                                           "displayName":  "Grim Reaper",
+                                           "description":  "Eliminate 10,000 zombies.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/31837cd0ba16c6ab8543148e59e2b61c8283c1eb.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/37f58eae5a8d5b5c30af83043b0e31f0e9cda194.jpg"
+                                       }
+                                   ]
+                     }
+}

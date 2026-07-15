@@ -1392,6 +1392,27 @@ pub fn disable_lua_game_mode() -> Result<(), String> {
 /// Returns None if the game is not found in any Steam library.
 #[tauri::command]
 pub fn get_steam_game_install_dir(appid: u32) -> Option<String> {
+    get_steam_game_install_info(appid).map(|(dir, _)| dir)
+}
+
+#[tauri::command]
+pub fn get_steam_game_buildid(appid: u32) -> Option<String> {
+    for library in steam_library_roots() {
+        let steamapps = library.join("steamapps");
+        let manifest = steamapps.join(format!("appmanifest_{}.acf", appid));
+        if !manifest.is_file() {
+            continue;
+        }
+        let text = fs::read_to_string(&manifest).unwrap_or_default();
+        if let Some(buildid) = text_vdf_value(&text, "buildid") {
+            return Some(buildid);
+        }
+    }
+    None
+}
+
+/// Returns (install_dir, buildid)
+pub fn get_steam_game_install_info(appid: u32) -> Option<(String, String)> {
     for library in steam_library_roots() {
         let steamapps = library.join("steamapps");
         let manifest = steamapps.join(format!("appmanifest_{}.acf", appid));
@@ -1400,9 +1421,11 @@ pub fn get_steam_game_install_dir(appid: u32) -> Option<String> {
         }
         let text = fs::read_to_string(&manifest).unwrap_or_default();
         let install_dir = text_vdf_value(&text, "installdir")?;
+        let buildid = text_vdf_value(&text, "buildid").unwrap_or_else(|| "unknown".to_string());
+        
         let game_dir = steamapps.join("common").join(install_dir.trim());
         if game_dir.is_dir() {
-            return Some(game_dir.to_string_lossy().into_owned());
+            return Some((game_dir.to_string_lossy().into_owned(), buildid));
         }
     }
     None

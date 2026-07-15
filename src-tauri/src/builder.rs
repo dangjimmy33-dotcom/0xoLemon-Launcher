@@ -42,6 +42,7 @@ pub struct BuildVersionInput {
     pub version: String,
     pub root: PathBuf,
     pub launch_executable: Option<String>,
+    pub launch_options: Vec<crate::manifest::LaunchOption>,
 }
 
 #[derive(Debug, Clone)]
@@ -286,6 +287,7 @@ pub fn build_depot(input: BuildDepotInput) -> Result<BuildReport, BuildError> {
             created_at: created_at.clone(),
             root_label: format!("{} {}", input.game_id, version_input.version),
             launch_executable: version_input.launch_executable.clone(),
+            launch_options: version_input.launch_options.clone(),
             total_size,
             files,
             signature: None,

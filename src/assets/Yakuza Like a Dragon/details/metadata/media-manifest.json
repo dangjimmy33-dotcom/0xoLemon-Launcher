@@ -1,0 +1,322 @@
+﻿[
+    {
+        "role":  "header",
+        "title":  "Steam header",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/header.jpg?t=1781264130",
+        "file":  "store_art/header.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-12T11:46:56.749Z"
+    },
+    {
+        "role":  "capsule",
+        "title":  "Steam capsule",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/capsule_231x87.jpg?t=1781264130",
+        "file":  "store_art/capsule.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-12T11:46:56.753Z"
+    },
+    {
+        "role":  "capsule-v5",
+        "title":  "Steam capsule v5",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/capsule_184x69.jpg?t=1781264130",
+        "file":  "store_art/capsule-v5.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-12T11:46:56.753Z"
+    },
+    {
+        "role":  "background",
+        "title":  "Steam background",
+        "sourceUrl":  "https://store.akamai.steamstatic.com/images/storepagebackground/app/1235140?t=1781264130",
+        "file":  "store_art/background.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-12T11:46:56.754Z"
+    },
+    {
+        "role":  "background-raw",
+        "title":  "Steam background raw",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/page_bg_raw.jpg?t=1781264130",
+        "file":  "store_art/background-raw.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-12T11:46:56.754Z"
+    },
+    {
+        "role":  "description-image",
+        "title":  "Description image 1",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/extras/322f8d85fa7e5d9c9f99a1cb9da31ff7.avif?t=1781264130",
+        "file":  "description_images/001_322f8d85fa7e5d9c9f99a1cb9da31ff7.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-12T11:46:56.767Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 1",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/ss_3672df00523861cd37b0f969d80604003ba14fd4.1920x1080.jpg?t=1781264130",
+        "file":  "screenshots/001_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-12T11:46:56.774Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 2",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/ss_9cecfb713527a480f607bbde54c01763b18bf354.1920x1080.jpg?t=1781264130",
+        "file":  "screenshots/002_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-12T11:46:56.775Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 3",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/ss_d8bcb8c72368ec09506d3a60d42ff2a1901e39f7.1920x1080.jpg?t=1781264130",
+        "file":  "screenshots/003_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-12T11:46:56.775Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 4",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/ss_23d607ec8ceaca26edc88b6445d92ddcd111fea4.1920x1080.jpg?t=1781264130",
+        "file":  "screenshots/004_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-12T11:46:56.776Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 5",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/ss_66151ac4259635b4f90e7945706498dacf6e98c1.1920x1080.jpg?t=1781264130",
+        "file":  "screenshots/005_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-12T11:46:56.776Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 6",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/ss_b7336fc083ba36c6073c25659fe23075234b179a.1920x1080.jpg?t=1781264130",
+        "file":  "screenshots/006_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-12T11:46:56.777Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 7",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/ss_8562245f8ca68976ffb5404023d148fb0cbc13e9.1920x1080.jpg?t=1781264130",
+        "file":  "screenshots/007_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-12T11:46:56.778Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 8",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/ss_fe349bb52fa4a8243ba8d9b861bb52c3a4f4b5b0.1920x1080.jpg?t=1781264130",
+        "file":  "screenshots/008_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-12T11:46:56.778Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 9",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/ss_a46dfebb4726aa042c76636131f8bbaa1a079fb9.1920x1080.jpg?t=1781264130",
+        "file":  "screenshots/009_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-12T11:46:56.779Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 10",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/ss_5a17b24cc9582e458a3db0f5f9ecc3f956ded072.1920x1080.jpg?t=1781264130",
+        "file":  "screenshots/010_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-12T11:46:56.779Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 11",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/ss_d3fe630add22247a497f0c2d22e568df66a39f48.1920x1080.jpg?t=1781264130",
+        "file":  "screenshots/011_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-12T11:46:56.779Z"
+    },
+    {
+        "role":  "video",
+        "title":  "YLAD_Launch_16x9_US",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/1235140/325573/5e8c72a66ccd699fce5f2fbb082ec3cbe275b596/1750646874/hls_264_master.m3u8?t=1605027728",
+        "file":  "videos/001_ylad_launch_16x9_us.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-12T11:46:56.790Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "YLAD_Launch_16x9_US",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256808897/movie.293x165.jpg?t=1605027728",
+        "file":  "video_thumbnails/001_ylad_launch_16x9_us_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-12T11:46:56.790Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "YLAD_Launch_16x9_US",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256808897/movie_600x337.jpg?t=1605027728",
+        "file":  "video_thumbnails/001_ylad_launch_16x9_us_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-12T11:46:56.790Z"
+    },
+    {
+        "role":  "video",
+        "title":  "Yazawa_IchiQuest_Steam_US",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/1235140/317517/5edc59b3dd0b0dfade827dfd50542f10c70f79eb/1750646822/hls_264_master.m3u8?t=1602066147",
+        "file":  "videos/002_yazawa_ichiquest_steam_us.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-12T11:46:56.791Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "Yazawa_IchiQuest_Steam_US",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256803879/movie.293x165.jpg?t=1602066147",
+        "file":  "video_thumbnails/002_yazawa_ichiquest_steam_us_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-12T11:46:56.791Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "Yazawa_IchiQuest_Steam_US",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256803879/movie_600x337.jpg?t=1602066147",
+        "file":  "video_thumbnails/002_yazawa_ichiquest_steam_us_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-12T11:46:56.791Z"
+    },
+    {
+        "role":  "video",
+        "title":  "Yakuza_Howwillyourise_ESRB",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/1235140/307244/fdeece6378a2b5b8d68958bd3673afb587d1a77e/1750646794/hls_264_master.m3u8?t=1661159086",
+        "file":  "videos/003_yakuza_howwillyourise_esrb.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-12T11:46:56.792Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "Yakuza_Howwillyourise_ESRB",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256798066/movie.293x165.jpg?t=1661159086",
+        "file":  "video_thumbnails/003_yakuza_howwillyourise_esrb_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-12T11:46:56.792Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "Yakuza_Howwillyourise_ESRB",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256798066/movie_600x337.jpg?t=1661159086",
+        "file":  "video_thumbnails/003_yakuza_howwillyourise_esrb_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-12T11:46:56.792Z"
+    },
+    {
+        "role":  "video",
+        "title":  "YakuzaGameplay_Full_16x9_STEAM_ESRB_Preorder_FINAL",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/1235140/299904/1a45772d30214f7ae8c5dc3ceb25bfcfd3dddb30/1750646761/hls_264_master.m3u8?t=1595433924",
+        "file":  "videos/004_yakuzagameplay_full_16x9_steam_esrb_preorder_final.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-12T11:46:56.794Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "YakuzaGameplay_Full_16x9_STEAM_ESRB_Preorder_FINAL",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256793637/movie.293x165.jpg?t=1595433924",
+        "file":  "video_thumbnails/004_yakuzagameplay_full_16x9_steam_esrb_preorder_final_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-12T11:46:56.794Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "YakuzaGameplay_Full_16x9_STEAM_ESRB_Preorder_FINAL",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256793637/movie_600x337.jpg?t=1595433924",
+        "file":  "video_thumbnails/004_yakuzagameplay_full_16x9_steam_esrb_preorder_final_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-12T11:46:56.794Z"
+    },
+    {
+        "role":  "video",
+        "title":  "Announce_ESRB",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/1235140/283646/4bfaf92e70fe9b84fe2f7ecaa0fab12229ceff59/1750646692/hls_264_master.m3u8?t=1588868821",
+        "file":  "videos/005_announce_esrb.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-12T11:46:56.795Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "Announce_ESRB",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256784455/movie.293x165.jpg?t=1588868821",
+        "file":  "video_thumbnails/005_announce_esrb_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-12T11:46:56.795Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "Announce_ESRB",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256784455/movie_600x337.jpg?t=1588868821",
+        "file":  "video_thumbnails/005_announce_esrb_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-12T11:46:56.795Z"
+    }
+]

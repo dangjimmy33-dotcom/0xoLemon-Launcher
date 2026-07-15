@@ -14,10 +14,24 @@ interface DroppedFile {
 }
 
 export function LuaInstaller() {
-  const [file, setFile] = useState<File | DroppedFile | null>(null)
+  const [files, setFiles] = useState<(File | DroppedFile)[]>([])
   const [status, setStatus] = useState<InstallStatus>('idle')
   const [message, setMessage] = useState('')
   const [isDragOver, setIsDragOver] = useState(false)
+  const [installedLuas, setInstalledLuas] = useState<string[]>([])
+  
+  const fetchInstalled = useCallback(async () => {
+    try {
+      const luas = await invoke<string[]>('list_installed_luas')
+      setInstalledLuas(luas)
+    } catch (err) {
+      console.error('Failed to fetch installed luas:', err)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchInstalled()
+  }, [fetchInstalled])
 
   // Listen for Tauri file drop events
   useEffect(() => {
@@ -34,41 +48,35 @@ export function LuaInstaller() {
           } else if (event.payload.type === 'drop') {
             setIsDragOver(false)
             const paths = event.payload.paths
-            if (paths && paths.length > 0) {
-              const filePath = paths[0]
-              const validExtensions = ['.zip', '.rar', '.7z', '.lua']
-              const hasValidExt = validExtensions.some(ext => filePath.toLowerCase().endsWith(ext))
-
-              if (hasValidExt) {
-                const fileName = filePath.split(/[\\/]/).pop() || 'unknown'
-
-                try {
-                  // Use @tauri-apps/plugin-fs stat to get file metadata
-                  const fileInfo = await stat(filePath)
-
-                  console.log('[LuaInstaller] stat SUCCESS:', filePath, '→', fileInfo.size, 'bytes')
-                  setFile({
-                    name: fileName,
-                    path: filePath,
-                    size: fileInfo.size
-                  })
-                  setStatus('idle')
-                  setMessage('')
-                } catch (err) {
-                  console.error('[LuaInstaller] stat FAILED:', filePath, '→', err)
-                  setFile({
-                    name: fileName,
-                    path: filePath,
-                    size: 0
-                  })
-                  setStatus('idle')
-                  setMessage('')
+              if (paths && paths.length > 0) {
+                const validExtensions = ['.zip', '.rar', '.7z', '.lua', '.manifest']
+                const validPaths = paths.filter(p => validExtensions.some(ext => p.toLowerCase().endsWith(ext)))
+                
+                if (validPaths.length > 0) {
+                  const newFiles: DroppedFile[] = []
+                  for (const filePath of validPaths) {
+                    const fileName = filePath.split(/[\\/]/).pop() || 'unknown'
+                    try {
+                      const fileInfo = await stat(filePath)
+                      newFiles.push({ name: fileName, path: filePath, size: fileInfo.size })
+                    } catch (err) {
+                      console.error('[LuaInstaller] stat FAILED:', filePath, '→', err)
+                    }
+                  }
+                  
+                  if (newFiles.length > 0) {
+                    setFiles(newFiles)
+                    setStatus('idle')
+                    setMessage('')
+                  } else {
+                    setStatus('error')
+                    setMessage('Failed to read dropped files.')
+                  }
+                } else {
+                  setStatus('error')
+                  setMessage('Please drop valid files (.zip, .rar, .7z, .lua, .manifest)')
                 }
-              } else {
-                setStatus('error')
-                setMessage('Please drop a valid file (.zip, .rar, .7z, or .lua)')
               }
-            }
           } else if (event.payload.type === 'leave') {
             setIsDragOver(false)
           }
@@ -90,24 +98,24 @@ export function LuaInstaller() {
     e.stopPropagation()
     setIsDragOver(false)
 
-    const droppedFile = e.dataTransfer.files[0]
-    if (!droppedFile) {
+    if (!e.dataTransfer.files || e.dataTransfer.files.length === 0) {
       setStatus('error')
-      setMessage('No file detected')
+      setMessage('No files detected')
       return
     }
 
-    // Accept .zip, .rar, .7z, .lua files
-    const validExtensions = ['.zip', '.rar', '.7z', '.lua']
-    const hasValidExt = validExtensions.some(ext => droppedFile.name.toLowerCase().endsWith(ext))
+    const validExtensions = ['.zip', '.rar', '.7z', '.lua', '.manifest']
+    const validFiles = Array.from(e.dataTransfer.files).filter(f => 
+      validExtensions.some(ext => f.name.toLowerCase().endsWith(ext))
+    )
 
-    if (hasValidExt) {
-      setFile(droppedFile)
+    if (validFiles.length > 0) {
+      setFiles(validFiles)
       setStatus('idle')
       setMessage('')
     } else {
       setStatus('error')
-      setMessage('Please drop a valid file (.zip, .rar, .7z, or .lua)')
+      setMessage('Please drop valid files (.zip, .rar, .7z, .lua, .manifest)')
     }
   }, [])
 
@@ -124,61 +132,64 @@ export function LuaInstaller() {
   }, [])
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0]
-    if (!selectedFile) return
+    if (!e.target.files || e.target.files.length === 0) return
 
-    const validExtensions = ['.zip', '.rar', '.7z', '.lua']
-    const hasValidExt = validExtensions.some(ext => selectedFile.name.toLowerCase().endsWith(ext))
+    const validExtensions = ['.zip', '.rar', '.7z', '.lua', '.manifest']
+    const validFiles = Array.from(e.target.files).filter(f => 
+      validExtensions.some(ext => f.name.toLowerCase().endsWith(ext))
+    )
 
-    if (hasValidExt) {
-      setFile(selectedFile)
+    if (validFiles.length > 0) {
+      setFiles(validFiles)
       setStatus('idle')
       setMessage('')
     } else {
       setStatus('error')
-      setMessage('Please select a valid file (.zip, .rar, .7z, or .lua)')
+      setMessage('Please select valid files (.zip, .rar, .7z, .lua, .manifest)')
     }
   }, [])
 
   const handleInstall = useCallback(async () => {
-    if (!file) return
+    if (files.length === 0) return
 
     setStatus('processing')
-    setMessage('Installing Lua script...')
+    setMessage('Installing files...')
 
     try {
-      let fileData: string
+      for (const f of files) {
+        let fileData: string
 
-      // Check if it's a browser File object or DroppedFile
-      if ('path' in file && typeof file.path === 'string') {
-        // DroppedFile from Tauri drag & drop - read from backend
-        fileData = await invoke<string>('read_file_base64', { filepath: file.path })
-      } else {
-        // Regular browser File object - read in frontend
-        const reader = new FileReader()
-        fileData = await new Promise<string>((resolve, reject) => {
-          reader.onload = () => resolve((reader.result as string).split(',')[1])
-          reader.onerror = reject
-          reader.readAsDataURL(file as File)
+        if ('path' in f && typeof f.path === 'string') {
+          fileData = await invoke<string>('read_file_base64', { filepath: f.path })
+        } else {
+          const reader = new FileReader()
+          fileData = await new Promise<string>((resolve, reject) => {
+            reader.onload = () => resolve((reader.result as string).split(',')[1])
+            reader.onerror = reject
+            reader.readAsDataURL(f as File)
+          })
+        }
+
+        // We still use install_lua_from_zip for backwards compatibility with the rust command name, 
+        // but now the Rust command will handle different extensions.
+        // To tell Rust what the file extension is, we can pass it via appid for now, e.g. "123456.manifest",
+        // but wait, install_lua_from_zip in Rust currently expects appid as String.
+        // Actually, we can just send the full filename as appid and parse it in Rust!
+        await invoke('install_lua_from_zip', {
+          appid: f.name, // Send FULL filename to backend so it knows the extension
+          zipDataBase64: fileData
         })
       }
 
-      // Extract appid from filename (e.g., "123456.zip" -> "123456")
-      const appid = file.name.replace(/\.(zip|rar|7z|lua)$/, '')
-
-      // Call backend to install
-      await invoke('install_lua_from_zip', {
-        appid,
-        zipDataBase64: fileData
-      })
-
       setStatus('success')
-      setMessage('Lua script installed successfully! Restart Steam to apply changes.')
+      setMessage('All files installed successfully! Restart Steam to apply changes.')
+      setFiles([])
+      fetchInstalled()
     } catch (error) {
       setStatus('error')
       setMessage(`Installation failed: ${error}`)
     }
-  }, [file])
+  }, [files, fetchInstalled])
 
   const handleRestartSteam = useCallback(async () => {
     try {
@@ -207,31 +218,26 @@ export function LuaInstaller() {
         </header>
 
         <div
-          className={`drop-zone ${isDragOver ? 'drag-over' : ''} ${file ? 'has-file' : ''}`}
+          className={`drop-zone ${isDragOver ? 'drag-over' : ''} ${files.length > 0 ? 'has-file' : ''}`}
           onDrop={handleDrop}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
         >
-          {file ? (
+          {files.length > 0 ? (
             <div className="file-info">
               <Upload size={48} />
-              <span className="file-name">{file.name}</span>
-              <span className="file-size">
-                {file.size >= 1024 * 1024
-                  ? `${(file.size / (1024 * 1024)).toFixed(2)} MB`
-                  : `${(file.size / 1024).toFixed(2)} KB`
-                }
-              </span>
+              <span className="file-name">{files.length} file(s) selected</span>
+              <button className="clear-btn" onClick={() => setFiles([])}>Clear</button>
             </div>
           ) : (
             <div className="drop-placeholder">
               <Upload size={48} />
               <p>Drop .zip, .rar, .7z, or .lua file here</p>
-              <p className="drop-hint">Supported: ZIP archives, RAR, 7Z, Lua scripts</p>
               <input
                 type="file"
-                accept=".zip,.rar,.7z,.lua"
+                accept=".zip,.rar,.7z,.lua,.manifest"
                 onChange={handleFileSelect}
+                multiple
                 style={{ display: 'none' }}
                 id="file-input"
               />
@@ -256,16 +262,16 @@ export function LuaInstaller() {
             type="button"
             className="install-btn primary-control"
             onClick={handleInstall}
-            disabled={!file || status === 'processing'}
+            disabled={files.length === 0 || status === 'processing'}
           >
             {status === 'processing' ? 'Installing...' : 'Install'}
           </button>
-          {file && (
+          {files.length > 0 && (
             <button
               type="button"
               className="clear-btn"
               onClick={() => {
-                setFile(null)
+                setFiles([])
                 setStatus('idle')
                 setMessage('')
               }}
@@ -286,6 +292,36 @@ export function LuaInstaller() {
             <li>The game will appear in your Steam library</li>
           </ol>
         </div>
+      </div>
+
+      <div className="lua-installed-list" style={{ marginTop: '30px', background: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+        <h3 style={{ margin: '0 0 15px 0', fontSize: '15px', fontWeight: 600, color: '#e0e0e0' }}>Installed Luas</h3>
+        {installedLuas.length === 0 ? (
+          <p style={{ color: '#888', fontSize: '13px', margin: 0 }}>No Lua manifests installed in Steam config.</p>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {installedLuas.map(appid => (
+              <div key={appid} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.05)', padding: '8px 12px', borderRadius: '6px' }}>
+                <span style={{ fontFamily: 'monospace', fontSize: '13px', color: '#ccc' }}>{appid}.lua</span>
+                <button 
+                  onClick={async () => {
+                    if (confirm(`Are you sure you want to remove lua ${appid}?`)) {
+                      try {
+                        await invoke('remove_from_steam', { appid: parseInt(appid) })
+                        fetchInstalled()
+                      } catch(e) {
+                        alert('Failed to remove: ' + e)
+                      }
+                    }
+                  }}
+                  style={{ background: 'rgba(255,50,50,0.15)', color: '#ff6b6b', border: 'none', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}
+                >
+                  Delete
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )

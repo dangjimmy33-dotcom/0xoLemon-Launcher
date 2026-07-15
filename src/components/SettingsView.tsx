@@ -615,6 +615,7 @@ export function SettingsView({
           </div>
         </section>
 
+
         <section className="settings-group">
           <header>
             <HardDrive size={18} />

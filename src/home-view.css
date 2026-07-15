@@ -29,7 +29,6 @@
   overflow-y: auto;
   height: 100%;
   padding: 26px clamp(16px, 3vw, 40px) 80px;
-  padding-left: 0;
   background: #0a0d14;
   -webkit-font-smoothing: antialiased;
 }

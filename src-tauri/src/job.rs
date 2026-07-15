@@ -4863,6 +4863,61 @@ fn write_install_marker(
         let canonical_manifest = canonicalize_manifest_version(manifest.clone(), installed_version);
         write_installed_manifest(install_root, &canonical_manifest)?;
     }
+
+    // If the manifest has explicit launch options (e.g. Vanilla / Modded), write
+    // a 0xo-launch.json so the picker opens automatically on Play.
+    if !manifest.launch_options.is_empty() {
+        use crate::launch::{GameLaunchConfig, GameLaunchOption, GameLaunchProcess};
+        let options: Vec<GameLaunchOption> = manifest
+            .launch_options
+            .iter()
+            .enumerate()
+            .map(|(idx, opt)| {
+                let id = opt.name
+                    .to_ascii_lowercase()
+                    .chars()
+                    .map(|c| if c.is_alphanumeric() { c } else { '-' })
+                    .collect::<String>();
+                let args: Vec<String> = if opt.arguments.trim().is_empty() {
+                    vec![]
+                } else {
+                    opt.arguments.split_whitespace().map(String::from).collect()
+                };
+                GameLaunchOption {
+                    id: id.clone(),
+                    title: opt.name.clone(),
+                    description: String::new(),
+                    recommended: idx == 0,
+                    processes: vec![GameLaunchProcess {
+                        path: opt.executable.clone(),
+                        args,
+                        working_directory: String::new(),
+                        environment: std::collections::HashMap::new(),
+                        run_as_admin: false,
+                        hidden: None,
+                        wait_for_exit: false,
+                        delay_before_ms: 0,
+                        delay_after_ms: 0,
+                        optional: false,
+                        role: "main".to_string(),
+                    }],
+                }
+            })
+            .collect();
+        let first_id = options.first().map(|o| o.id.clone()).unwrap_or_default();
+        let launch_config = GameLaunchConfig {
+            schema_version: 1,
+            game_id: source.game_id.clone(),
+            picker_mode: "auto".to_string(),
+            default_option_id: first_id,
+            options,
+        };
+        let launch_json_path = install_root.join("0xo-launch.json");
+        if let Ok(json) = serde_json::to_string_pretty(&launch_config) {
+            let _ = fs::write(&launch_json_path, json);
+        }
+    }
+
     crate::platform::register_install(
         app,
         &source.game_id,

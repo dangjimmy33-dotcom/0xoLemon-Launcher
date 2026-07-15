@@ -1,3 +1,0 @@
-E:/007Launcher/native/steam_hook/build/_deps/lua-subbuild/CMakeFiles/lua-populate.dir
-E:/007Launcher/native/steam_hook/build/_deps/lua-subbuild/CMakeFiles/ALL_BUILD.dir
-E:/007Launcher/native/steam_hook/build/_deps/lua-subbuild/CMakeFiles/ZERO_CHECK.dir

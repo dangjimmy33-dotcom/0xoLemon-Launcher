@@ -73,6 +73,9 @@ export function ActiveView({
   cacheBusy,
   onClearCache,
   discordUser,
+  installStates,
+  steamInstalledAppIds,
+  steamBuildIds,
 }: {
   activeTab: TabId
   catalog: GameCatalog
@@ -135,6 +138,9 @@ export function ActiveView({
   cacheBusy: boolean
   onClearCache: () => void
   discordUser?: DiscordAuthUser | null
+  installStates?: Record<string, GameInstallState>
+  steamInstalledAppIds?: number[]
+  steamBuildIds?: Record<number, string>
 }) {
   const hasSelectedDetail = Boolean(selectedGame && detail)
 
@@ -185,6 +191,9 @@ export function ActiveView({
         onBackupGoogleDrive={onBackupGoogleDrive}
         onRestoreMissingSaveFiles={onRestoreMissingSaveFiles}
         discordUser={discordUser}
+        installStates={installStates}
+        steamInstalledAppIds={steamInstalledAppIds}
+        steamBuildIds={steamBuildIds}
       />
     )
   }

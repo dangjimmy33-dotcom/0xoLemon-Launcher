@@ -1,0 +1,212 @@
+﻿[
+    {
+        "role":  "header",
+        "title":  "Steam header",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/header.jpg?t=1782910476",
+        "file":  "store_art/header.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-15T09:01:45.854Z"
+    },
+    {
+        "role":  "capsule",
+        "title":  "Steam capsule",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/capsule_231x87.jpg?t=1782910476",
+        "file":  "store_art/capsule.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-15T09:01:45.858Z"
+    },
+    {
+        "role":  "capsule-v5",
+        "title":  "Steam capsule v5",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/capsule_184x69.jpg?t=1782910476",
+        "file":  "store_art/capsule-v5.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-15T09:01:45.859Z"
+    },
+    {
+        "role":  "background",
+        "title":  "Steam background",
+        "sourceUrl":  "https://store.akamai.steamstatic.com/images/storepagebackground/app/2067920?t=1782910476",
+        "file":  "store_art/background.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-15T09:01:45.859Z"
+    },
+    {
+        "role":  "background-raw",
+        "title":  "Steam background raw",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/page_bg_raw.jpg?t=1782910476",
+        "file":  "store_art/background-raw.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-15T09:01:45.861Z"
+    },
+    {
+        "role":  "description-image",
+        "title":  "Description image 1",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/extras/107b2b6a898e5982f65f1c41207e61cc.avif?t=1782910476",
+        "file":  "description_images/001_107b2b6a898e5982f65f1c41207e61cc.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-15T09:01:45.874Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 1",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/80b8630d97a4b905c8b0206d7404a724495ff273/ss_80b8630d97a4b905c8b0206d7404a724495ff273.1920x1080.jpg?t=1782910476",
+        "file":  "screenshots/001_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-15T09:01:45.882Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 2",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/4f57fa5c64bfc0d71e1a2ab4d4f3bb7779d05e42/ss_4f57fa5c64bfc0d71e1a2ab4d4f3bb7779d05e42.1920x1080.jpg?t=1782910476",
+        "file":  "screenshots/002_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-15T09:01:45.882Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 3",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/ss_c852a41af5208577f76a6e01d129ccd77d452f17.1920x1080.jpg?t=1782910476",
+        "file":  "screenshots/003_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-15T09:01:45.883Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 4",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/6aed6ac451818bc55725d755d1624cd4974ca863/ss_6aed6ac451818bc55725d755d1624cd4974ca863.1920x1080.jpg?t=1782910476",
+        "file":  "screenshots/004_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-15T09:01:45.883Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 5",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/ss_dc2891926508cd9c02d4a1b122ceacf0d2b3797e.1920x1080.jpg?t=1782910476",
+        "file":  "screenshots/005_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-15T09:01:45.883Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 6",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/4c2ea3fca3eb2fff396718fcc3721b3acf688805/ss_4c2ea3fca3eb2fff396718fcc3721b3acf688805.1920x1080.jpg?t=1782910476",
+        "file":  "screenshots/006_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-15T09:01:45.885Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 7",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/308590992551553c444b8d30297717aacf66e8b0/ss_308590992551553c444b8d30297717aacf66e8b0.1920x1080.jpg?t=1782910476",
+        "file":  "screenshots/007_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-15T09:01:45.885Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 8",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/ss_2a6c4259b2f4756fe9bb675737da3feaaec5003f.1920x1080.jpg?t=1782910476",
+        "file":  "screenshots/008_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-15T09:01:45.885Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 9",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/ef9e29e1d97187f1b152d0d7ed8579c5832527b5/ss_ef9e29e1d97187f1b152d0d7ed8579c5832527b5.1920x1080.jpg?t=1782910476",
+        "file":  "screenshots/009_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-15T09:01:45.886Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 10",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/ss_412164472e69f0b1682e91619b77b2ac7d4a30d8.1920x1080.jpg?t=1782910476",
+        "file":  "screenshots/010_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-15T09:01:45.886Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 11",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/15110d021f325f6ae18c87af31a20105cf6f76aa/ss_15110d021f325f6ae18c87af31a20105cf6f76aa.1920x1080.jpg?t=1782910476",
+        "file":  "screenshots/011_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-15T09:01:45.886Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 12",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2067920/ss_224b5bfaa8055db6c468e5ce6188dae786c5fa9d.1920x1080.jpg?t=1782910476",
+        "file":  "screenshots/012_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-15T09:01:45.888Z"
+    },
+    {
+        "role":  "video",
+        "title":  "Trailer",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/2067920/649931/6b7d66b7eae30af0cbf20b505b976887a5f4fcbe/1750745837/hls_264_master.m3u8?t=1723016634",
+        "file":  "videos/001_trailer.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-15T09:01:45.902Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "Trailer",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256993998/movie.293x165.jpg?t=1723016634",
+        "file":  "video_thumbnails/001_trailer_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-15T09:01:45.902Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "Trailer",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256993998/movie_600x337.jpg?t=1723016634",
+        "file":  "video_thumbnails/001_trailer_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-15T09:01:45.903Z"
+    }
+]

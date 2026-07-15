@@ -9,6 +9,7 @@ param(
   [string]$InputDir,
 
   [string]$LaunchExecutable = "",
+  [string]$LaunchOptionsJson = "",
   [string]$Repo = "CatManga/Cat-Manga",
   [string]$RepoType = "dataset",
   [string]$RepoPrefix = "",
@@ -174,7 +175,9 @@ if (-not $UploadOnly) {
       $builderArgs += "--extend-existing"
     }
 
-    if (-not [string]::IsNullOrWhiteSpace($LaunchExecutable)) {
+    if (-not [string]::IsNullOrWhiteSpace($LaunchOptionsJson)) {
+      $builderArgs += @("--launch-options-json", $LaunchOptionsJson)
+    } elseif (-not [string]::IsNullOrWhiteSpace($LaunchExecutable)) {
       $builderArgs += @("--launch-executable", $LaunchExecutable)
     }
 

@@ -81,6 +81,7 @@ import {
   BigPictureView,
   DefenderExclusionDialog,
 } from './components'
+import { useLocale } from './context/LocaleContext'
 
 const initialLauncherPreferences = loadLauncherPreferences()
 const emptyCatalog: GameCatalog = { defaultLocale: 'en-US', games: [] }
@@ -112,18 +113,21 @@ const defaultLauncherSettings: LauncherSettings = {
   gameUpdateMode: 'automatic',
   gameUpdateScheduleStart: '02:00',
   gameUpdateScheduleEnd: '06:00',
+  depotHfRepoId: '',
 }
 
 import { useRealtimeGameTags } from './hooks/useRealtimeGameTags'
 import { useFirestoreCatalog } from './hooks/useFirestoreCatalog'
-import { useRealtimeAssets } from './hooks/useRealtimeAssets'
+import { useSteamAppIds } from './hooks/useSteamAppIds'
 import { useFirestoreDetail } from './hooks/useFirestoreDetail'
+import { useRealtimeAssets } from './hooks/useRealtimeAssets'
 import { useScrollReveal } from './hooks/useScrollReveal'
 import { useDefenderExclusion } from './hooks/useDefenderExclusion'
 import { GlobalChatSync } from './components/GlobalChatSync'
 import { NoInternetView } from './components/NoInternetView'
 
 export default function App() {
+  const { t } = useLocale()
   useEffect(() => {
     // Smooth scrolling is handled by CSS scroll-behavior: smooth on .workspace.
     // We keep a minimal __lenis stub so modal code (lenis.stop/start) doesn't crash.
@@ -1057,9 +1061,48 @@ export default function App() {
     () => ({ ...catalog, games: catalog.games.filter((game) => updateReadyGameIds.includes(game.id)) }),
     [catalog, updateReadyGameIds],
   )
+  const { mapping } = useSteamAppIds()
+  const [steamInstalledAppIds, setSteamInstalledAppIds] = useState<number[]>([])
+  const [steamBuildIds, setSteamBuildIds] = useState<Record<number, string>>({})
+
+  useEffect(() => {
+    const fetchSteamApps = () => {
+      invoke<number[]>('get_installed_steam_apps')
+        .then(async (appIds) => {
+          setSteamInstalledAppIds(appIds)
+          const buildIds: Record<number, string> = {}
+          await Promise.all(
+            appIds.map(async (appId) => {
+              try {
+                const buildId = await invoke<string | null>('get_steam_game_buildid', { appid: appId })
+                buildIds[appId] = buildId || 'Unknown'
+              } catch (e) {
+                buildIds[appId] = 'Unknown'
+              }
+            })
+          )
+          setSteamBuildIds(buildIds)
+        })
+        .catch(() => undefined)
+    }
+    fetchSteamApps()
+
+    const handleLuaGameModeChange = () => fetchSteamApps()
+    window.addEventListener('lua-game-mode-changed' as any, handleLuaGameModeChange)
+    return () => window.removeEventListener('lua-game-mode-changed' as any, handleLuaGameModeChange)
+  }, [])
+
   const libraryCatalog = useMemo(
-    () => ({ ...catalog, games: catalog.games.filter((game) => installStates[game.id]?.installed) }),
-    [catalog, installStates],
+    () => ({
+      ...catalog,
+      games: catalog.games.filter((game) => {
+        const isLocal = installStates[game.id]?.installed
+        const appId = mapping[game.id]
+        const isSteam = appId && steamInstalledAppIds.includes(appId)
+        return isLocal || isSteam
+      }),
+    }),
+    [catalog, installStates, mapping, steamInstalledAppIds],
   )
 
   const effectiveGameId = useMemo(() => {
@@ -1070,7 +1113,11 @@ export default function App() {
       return selectedGameId
     }
     if (activeTab === 'Library') {
-      return selectedGameId && installStates[selectedGameId]?.installed ? selectedGameId : null
+      if (!selectedGameId) return null
+      const isLocal = installStates[selectedGameId]?.installed
+      const appId = mapping[selectedGameId]
+      const isSteam = appId && steamInstalledAppIds.includes(appId)
+      return (isLocal || isSteam) ? selectedGameId : null
     }
     const activeJobGameId = job?.gameId || snapshot.lastJob?.gameId
     if (activeTab === 'Downloads') {
@@ -1662,6 +1709,7 @@ export default function App() {
   const isPaused = activeJob.status === 'paused'
   const isRunning = job !== null && ['running', 'downloading', 'assembling', 'paused'].includes(activeJob.status)
   const hasVersionChoices = availableVersions.length > 1
+  const showVersionAction = selectedInstalled && hasVersionChoices
   const canUpdate =
     Boolean(selectedGame && activeDetail) &&
     !isRunning &&
@@ -2276,6 +2324,12 @@ export default function App() {
     if (!selectedGame || !activeDetail) {
       setScanStatus('Select a game first')
       return
+    }
+
+    const isSteamGame = steamInstalledAppIds.includes(mapping[selectedGame.id])
+    if (isSteamGame && !selectedInstalled) {
+      const proceed = window.confirm(t.library.steamDuplicateWarning)
+      if (!proceed) return
     }
 
     const preferredVersion = selectedInstalled
@@ -3037,7 +3091,7 @@ export default function App() {
                   currentVersion={selectedCurrentVersion}
                   latestVersion={latestCatalogVersion}
                   updateReady={updateReady}
-                  showVersionAction={selectedInstalled && hasVersionChoices}
+                  showVersionAction={showVersionAction}
                   updateSize={effectiveDownloadSize}
                   onUpdate={openVersionOptions}
                   onPlay={playSelectedGame}
@@ -3148,11 +3202,14 @@ export default function App() {
                     selectedVersion={targetVersion}
                     selectedCurrentVersion={selectedCurrentVersion}
                     selectedVersionInfo={selectedVersionInfo}
+                    installStates={installStates}
+                    steamInstalledAppIds={steamInstalledAppIds}
+                    steamBuildIds={steamBuildIds}
                     selectedInstallState={selectedInstallState}
                     verifyStatus={selectedVerifyStatus}
                     installMode={installMode}
                     updateReady={updateReady}
-                    showVersionAction={selectedInstalled && hasVersionChoices}
+                    showVersionAction={showVersionAction}
                     canUpdate={canUpdate}
                     isJobRunning={isRunning}
                     isGameRunning={selectedGame ? playingGames[selectedGame.id] || false : false}

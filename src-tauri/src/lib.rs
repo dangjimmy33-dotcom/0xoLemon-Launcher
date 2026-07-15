@@ -636,6 +636,60 @@ fn kill_game(_app: AppHandle, game_id: String) -> Result<(), String> {
 }
 
 #[tauri::command]
+fn is_process_running(executable: String) -> bool {
+    #[cfg(target_os = "windows")]
+    {
+        use std::process::Command;
+        use std::os::windows::process::CommandExt;
+        const CREATE_NO_WINDOW: u32 = 0x08000000;
+
+        let mut command = Command::new("tasklist");
+        command.creation_flags(CREATE_NO_WINDOW);
+        let output = command.args(["/FI", &format!("IMAGENAME eq {}", executable), "/FO", "CSV", "/NH"]).output();
+        
+        output
+            .ok()
+            .filter(|result| result.status.success())
+            .map(|result| {
+                let text = String::from_utf8_lossy(&result.stdout).to_ascii_lowercase();
+                text.contains(&executable.to_ascii_lowercase())
+            })
+            .unwrap_or(false)
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        false
+    }
+}
+
+#[tauri::command]
+fn kill_process_by_name(executable: String) -> Result<(), String> {
+    #[cfg(target_os = "windows")]
+    {
+        use std::process::Command;
+        use std::os::windows::process::CommandExt;
+        const CREATE_NO_WINDOW: u32 = 0x08000000;
+
+        let mut command = Command::new("taskkill");
+        command.creation_flags(CREATE_NO_WINDOW);
+        command.args(["/F", "/IM", &executable]);
+        
+        let status = command
+            .status()
+            .map_err(|e| format!("Failed to execute taskkill: {}", e))?;
+
+        if !status.success() {
+            return Err(format!("taskkill failed with status: {}", status));
+        }
+        Ok(())
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        Err("Not supported on this OS".into())
+    }
+}
+
+#[tauri::command]
 fn verify_install_integrity(
     app: AppHandle,
     game_id: String,
@@ -934,6 +988,8 @@ pub fn run() {
             abort_and_clean_job,
             open_folder,
             open_url,
+            is_process_running,
+            kill_process_by_name,
             check_spacewar_installed,
             install_spacewar,
             get_discord_auth_status,
@@ -948,6 +1004,7 @@ pub fn run() {
             enable_lua_game_mode,
             disable_lua_game_mode,
             steam_integration::get_steam_game_install_dir,
+            steam_integration::get_steam_game_buildid,
             steam_integration::check_defender_realtime_status,
             check_defender_exclusion,
             add_defender_exclusion,
@@ -985,6 +1042,10 @@ pub fn run() {
             steam::add_to_steam,
             steam::remove_from_steam,
             steam::install_lua_from_zip,
+            // Depot Patch — Version Switcher
+            steam::list_depot_versions,
+            steam::run_depot_patch,
+            steam::list_installed_luas,
         ]);
 
     builder.setup(move |app| {

@@ -1,0 +1,85 @@
+﻿{
+    "appnews":  {
+                    "appid":  2067920,
+                    "newsitems":  [
+                                      {
+                                          "gid":  "1830163047255333",
+                                          "title":  "Patch 1.01.1.0.3",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1830163047255333",
+                                          "is_external_url":  true,
+                                          "author":  "Plexus",
+                                          "contents":  "[h2]Changes[/h2]\n[list]\n[*] Mana crystal is no longer banned by Wisdom of the Forgoten\n[*] Pacifist challenge can no longer be recorded on Wanderstrider\n[/list]\n\n[h2]Fixes[/h2]\n[list]\n[*] Dropdown option not letting themselve be properly set\n[*] Ascended mode leaving player at 1hp\n[*] Some translation issues causing errors\n[*] Being able to upgrade item level above level 10 with \"controle\" modifier\n[*] Lava Titan\u0027s hand being affected by Vine\n[/list]",
+                                          "feedlabel":  "Community Announcements",
+                                          "date":  1776268373,
+                                          "feedname":  "steam_community_announcements",
+                                          "feed_type":  1,
+                                          "appid":  2067920,
+                                          "tags":  [
+                                                       "patchnotes"
+                                                   ]
+                                      },
+                                      {
+                                          "gid":  "1828894815554863",
+                                          "title":  "DLSS 5 is coming in Rogue: Genesia !",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1828894815554863",
+                                          "is_external_url":  true,
+                                          "author":  "Plexus",
+                                          "contents":  "[h1][b][u]OF COURSE THIS IS AN APRIL FOOL ![/u][/b][/h1][p][/p][h1][b]Greetings, players![/b][/h1][h3]It is with unparalleled excitement and a deep commitment to innovation excellence that I am thrilled to officially announce a transformative, industry-defining strategic partnership, \nwherein NVidio has identified [i]Rogue: Genesia[/i] as a cornerstone flagship value proposition to holistically demonstrate, amplify, and evangelize the next-generation, paradigm-shifting capabilities of DLSS 5 technology.[/h3][p][/p][p]We are prepared to kick off this rollout in the coming weeks, aligned with a paradigm shift in our balancing roadmap. [/p][p]These strategic initiatives include streamlining the ecosystem by [u][b]sunsetting all NPC adversaries[/b][/u], optimizing card quality across the board, and leveraging a robust player-safety framework to ensure z[u][b]ero-risk engagement[/b][/u]. [/p][p]While our internal teams engaged in multiple blue-sky ideation cycles to explore alternative deliverables in collaboration with Nvidio, we ultimately achieved full-spectrum alignment due to the synergistic impact of their substantial capital enablement package.[/p][p][/p][h3]📊 Visual Fidelity Enhancements[/h3][p]Please review the below visualization slot, which captures the quantum leap we have achieved in graphical fidelity through DLSS 5 integration:[/p][p][/p][p][img src=\"{STEAM_CLAN_IMAGE}/42709358/0e409b96aed8454c3b8a1a3078e0ffff87727ad1.png\"][/img][/p][p][img src=\"{STEAM_CLAN_IMAGE}/42709358/1904eabbb7dd1b40a1679600ca368ada9017076c.jpg\"][/img][img src=\"{STEAM_CLAN_IMAGE}/42709358/902b2205b399e1eccdb935cc0b573609c574d918.jpg\"][/img][img src=\"{STEAM_CLAN_IMAGE}/42709358/b6712b85a7ca04d48844f9a4315d99e77a553317.jpg\"][/img][/p][p][img src=\"{STEAM_CLAN_IMAGE}/42709358/b9b91bb32fad37c950e61b4e67fecbc4a9214e85.png\"][/img][/p][h3]🎨 UI/UX Paradigm Evolution[/h3][p]Furthermore, observe how we have utilized these best practices to enhance the UI/UX interface:[/p][p][/p][p][img src=\"{STEAM_CLAN_IMAGE}/42709358/401aa7a2ded69a1639995ff39073a2d4d0c6f3cb.png\"][/img][/p][p][img src=\"{STEAM_CLAN_IMAGE}/42709358/85ce4156974bf97aa1af35fe3acf50b5a6966ced.png\"][/img][/p][p][/p][h3]⚠️ Customer Feedback Realignment[/h3][p]While we acknowledge that certain user segments may experience short-term friction or localized pain points as a result of this strategic pivot, we would like to gently reinforce that our core competencies in game development, systems architecture, and visionary execution meaningfully exceed the scope of external feedback loops.[/p][p]As such, we remain steadfast in prioritizing our long-term innovation roadmap, scalable growth vectors, and internal thought leadership over anecdotal user sentiment, or whatever this mean.[/p][p][/p][h3]💼 Monetization \u0026 Wellness Initiative[/h3][p]Finally, in alignment with our commitment to ethical monetization frameworks and player-centric wellness paradigms, we will be sunsetting all future promotional sales events.[/p][p]Our data-driven insights have conclusively determined that discounted offerings are not operationally scalable within our holistic customer wellness strategy, and may inadvertently conflict with our corporate social responsibility pillars surrounding compulsive purchasing behavior mitigation.[/p][hr][/hr][p]We thank you for your continued alignment, trust, and participation in this exciting new chapter of [i]Rogue: Genesia[/i]’s evolution.[/p][p]Together, we are not just building a game — we are redefining the boundaries of interactive possibility.[/p]",
+                                          "feedlabel":  "Community Announcements",
+                                          "date":  1775052362,
+                                          "feedname":  "steam_community_announcements",
+                                          "feed_type":  1,
+                                          "appid":  2067920
+                                      },
+                                      {
+                                          "gid":  "1828441623105151",
+                                          "title":  "Patch 1.1.0.2",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1828441623105151",
+                                          "is_external_url":  true,
+                                          "author":  "Plexus",
+                                          "contents":  "[h2]QoL[/h2]\n[list]\n[*] The number of card left to pick is now displayed on the bottom right, even during selection (the prompt is hidden when you cannot use it)\n[*] In the Forge, when upgrading an item, keeping \"Shift\" pressed will directly tier-up an item if possible (otherwise it\u0027ll increase it\u0027s level as most as possible)\nThe cost stay the same as if you leveled it manually\n[*] Similarly, having Control pressed will allow you to increase tier of item by up to 10 tier at once (if you have the material for, otherwise, it\u0027ll increase the item tier as much as possible)\nControl alone only work if your equipment is at max level, if you want to both level-up and tier-up, press both shift and control\n[/list]\n\n[h2]Equipment[/h2]\n[list]\n[*] Trainer gloves max rank is now set at ZZZ-Tier\n[*] Trainer gloves can now be evolved into Master Gloves\nIncrease starting level of all weapon\nScale much much much slower than trainer gloves\nRequire ZZZ-tier Trainer gloves and a knight pendant\n[/list]\n\n[h2]Changes[/h2]\n[list]\n[*] Increase shop-keeper investment event  chance to appear when you hold more than 100K gold\n[/list]\n\n[h2]Fixes[/h2]\n[list]\n[*] Automatic card selection crashing the game in reward screen if you have a lot of level-up left (it now only pick as single card in this screen)\n[*] Auto-banishment will no longer banish card in black market (since banishment rules were ignored in black market, this caused it to consume all banishment charge for no reasons)\n[*] Trainer glove sometime applying it\u0027s effect on every weapon for the whole run\nRequired some very specifics set-up, and was caused by avatar owner reference not being the current player, so the equipment was thinking the player had no weapon and soo... never disabling it\u0027s effect\n[*] Auto-banishment sometime causing error and locking the game\n[*] Card drop rate can no longer be lower than -99.9%\n[*] Changing card selection mode during card selection blocking the card selection screen\n[/list]\n",
+                                          "feedlabel":  "Community Announcements",
+                                          "date":  1774631635,
+                                          "feedname":  "steam_community_announcements",
+                                          "feed_type":  1,
+                                          "appid":  2067920,
+                                          "tags":  [
+                                                       "patchnotes"
+                                                   ]
+                                      },
+                                      {
+                                          "gid":  "1827626365769004",
+                                          "title":  "Hotfix 1.1.0.1c",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1827626365769004",
+                                          "is_external_url":  true,
+                                          "author":  "Plexus",
+                                          "contents":  "[h2]QoL[/h2]\n[list]\n[*] Auto card selection will now try to reroll if there is only \"avoid\" card available\n[*] Auto card selection will stop when forced to pick avoid card or that no card are available to be picked (so no card selection is wasted)\nYou can resume auto card selection by pressing the card selection button, but it\u0027ll stop again if it pick an avoid card\n[/list]\n\n[h2]Fixes[/h2]\n[list]\n[*] Projectile opacity not affecting some projectiles\n[*] Trackers sometime pointing in the wrong direction (fixed for good this time, completely changed my approach)\n[*] Error with game history will no longer softlock end of run screen\n[/list]\n",
+                                          "feedlabel":  "Community Announcements",
+                                          "date":  1774469704,
+                                          "feedname":  "steam_community_announcements",
+                                          "feed_type":  1,
+                                          "appid":  2067920,
+                                          "tags":  [
+                                                       "patchnotes"
+                                                   ]
+                                      },
+                                      {
+                                          "gid":  "1827626365765407",
+                                          "title":  "Hotfix 1.1.0.1b",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1827626365765407",
+                                          "is_external_url":  true,
+                                          "author":  "Plexus",
+                                          "contents":  "[h2]Fixes[/h2]\n[list]\n[*] Crossbow targeting issue\n[/list]",
+                                          "feedlabel":  "Community Announcements",
+                                          "date":  1774350714,
+                                          "feedname":  "steam_community_announcements",
+                                          "feed_type":  1,
+                                          "appid":  2067920,
+                                          "tags":  [
+                                                       "patchnotes"
+                                                   ]
+                                      }
+                                  ],
+                    "count":  300
+                }
+}

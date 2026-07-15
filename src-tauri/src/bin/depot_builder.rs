@@ -4,6 +4,7 @@ use std::path::PathBuf;
 use first_light_launcher::builder::{
     build_depot, BuildDepotInput, BuildVersionInput, DepotEncryptionConfig, PublishTarget,
 };
+use first_light_launcher::manifest::LaunchOption;
 
 fn main() {
     if let Err(err) = run() {
@@ -75,6 +76,19 @@ fn depot_format_version(args: &[String]) -> u32 {
         .unwrap_or(1)
 }
 
+/// Parse --launch-options-json argument which is a JSON array like:
+/// [{"name":"Vanilla","executable":"game.exe","arguments":""},{"name":"Modded","executable":"modded.exe","arguments":""}]
+fn parse_launch_options(args: &[String]) -> Vec<LaunchOption> {
+    match take_arg(args, "--launch-options-json") {
+        Ok(json_str) => serde_json::from_str::<Vec<LaunchOption>>(&json_str)
+            .unwrap_or_else(|e| {
+                eprintln!("[DEPOT] Warning: failed to parse --launch-options-json: {e}");
+                vec![]
+            }),
+        Err(_) => vec![],
+    }
+}
+
 fn build_pair(args: &[String]) -> Result<(), String> {
     let old_input = take_arg(&args, "--old-input")?;
     let old_version = take_arg(&args, "--old-version").unwrap_or_else(|_| "v1.0".to_string());
@@ -88,6 +102,7 @@ fn build_pair(args: &[String]) -> Result<(), String> {
     let keep_local_packs = has_flag(&args, "--keep-local-packs");
     let extend_existing = has_flag(&args, "--extend-existing");
     let launch_executable = take_arg(&args, "--launch-executable").ok();
+    let launch_options = parse_launch_options(&args);
     let delete_source_after_pack = has_flag(&args, "--delete-source-after-pack");
     let upload_packs_incrementally = has_flag(&args, "--upload-packs-incrementally");
 
@@ -111,11 +126,13 @@ fn build_pair(args: &[String]) -> Result<(), String> {
                 version: old_version,
                 root: PathBuf::from(old_input),
                 launch_executable: launch_executable.clone(),
+                launch_options: launch_options.clone(),
             },
             BuildVersionInput {
                 version: new_version,
                 root: PathBuf::from(new_input),
                 launch_executable,
+                launch_options,
             },
         ],
         publish: upload_repo.map(|repo_id| PublishTarget {
@@ -153,6 +170,7 @@ fn build_version(args: &[String]) -> Result<(), String> {
     let keep_local_packs = has_flag(&args, "--keep-local-packs");
     let extend_existing = has_flag(&args, "--extend-existing");
     let launch_executable = take_arg(&args, "--launch-executable").ok();
+    let launch_options = parse_launch_options(&args);
     let delete_source_after_pack = has_flag(&args, "--delete-source-after-pack");
     let upload_packs_incrementally = has_flag(&args, "--upload-packs-incrementally");
 
@@ -175,6 +193,7 @@ fn build_version(args: &[String]) -> Result<(), String> {
             version,
             root: PathBuf::from(input),
             launch_executable,
+            launch_options,
         }],
         publish: upload_repo.map(|repo_id| PublishTarget {
             repo_id,

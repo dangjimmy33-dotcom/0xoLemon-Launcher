@@ -1,0 +1,403 @@
+﻿{
+    "game":  {
+                 "gameName":  "Call of Duty®: Vanguard",
+                 "gameVersion":  "8",
+                 "availableGameStats":  {
+                                            "achievements":  [
+                                                                 {
+                                                                     "name":  "SP_PHNX_EXTINGUISHED",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Phoenix Extinguished",
+                                                                     "hidden":  0,
+                                                                     "description":  "Beat Call of Duty: Vanguard Campaign on any difficulty.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/db5c4409fa162a97b2f27622212f5604314f60b4.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/dc2853c246bc5a57b36820a69d4cc4b5c02490fe.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SP_TIP_OF_THE_SPEAR",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "The Tip of the Spear",
+                                                                     "hidden":  0,
+                                                                     "description":  "Beat Call of Duty: Vanguard Campaign on Veteran difficulty.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/e25faa49f0e23178022925773a846fa2d33284b0.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/e4acdca84747d2b9b19449df495bb3496b979ac2.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SP_DID_I_GET_EM",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Did I Get \u0027Em?",
+                                                                     "hidden":  0,
+                                                                     "description":  "In Campaign, get 15 kills using Blind Fire.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/82bf49182f249cdd876f74f0233152953d976112.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/91ae97800e5503c5016d5b193c3616b6f06b27d7.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SP_MUNITION_MAGPIE",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Munition Magpie",
+                                                                     "hidden":  0,
+                                                                     "description":  "In Campaign, scavenge ammo from 15 enemy corpses within 3 seconds of killing them.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/915bcbef0fbd62d64de48a4a1b32be1ab36ca3f0.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/23624cfe0880ed4eed39dd58c9318e12549ab594.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SP_GOTTA_TRY_THEM_ALL",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Gotta Try Them All!",
+                                                                     "hidden":  0,
+                                                                     "description":  "In Campaign, kill enemies with 15 different weapons throughout the game.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/478ea5b1adc80cc71e71fbc29496f7983f64a425.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/343989e045d2751b437c030b9e62071ffd629c81.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SP_OH_YEAH",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "OH YEAH!",
+                                                                     "hidden":  0,
+                                                                     "description":  "In Campaign, tactical sprint through 5 destructible walls.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/f2ba6565507fd833149b5e410efb14b4b864fbdf.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/1488fc7d435a1f7767b4287aa75e95ae648867bc.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SP_F_REFERENCE",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "F",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/999fb528dd9fad87fe2b8161fc68e5de59a3ea45.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/6d74e5849a1d53d81340922838bebef8e4320a0b.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SP_NOT_YOUR_FAIRY_GODMOTHER",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Not Your Fairy Godmother",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/5d7774b01839cb6417aebe8f44e49d100292b3af.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/af1988c3d74381327c42ec790ed8e35363f9e15d.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SP_COULDNT_DO_IT_WITHOUT_YOU",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Couldn\u0027t Have Done it Without You",
+                                                                     "hidden":  1,
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/b917db1bf3a6ca7bf4e58b53b7427b8f60adc7d2.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/85f2e1811ee865781ed0e71021af7262126dd22a.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SP_SHOT_CALLER",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Shot Caller",
+                                                                     "hidden":  0,
+                                                                     "description":  "Give 15 different commands to your allies as Arthur.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/240c7580ac3ad766f9fcec08aaa65f37b56566ac.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/df16a4becdcabae67363c737d16264ab37b66c87.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SP_POP_GOES_THE_NIGHTINGALE",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Pop Goes the Nightingale",
+                                                                     "hidden":  0,
+                                                                     "description":  "As Polina, kill 15 enemies immediately after emerging from a crawlspace.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/53ab3c61815531c0aceb2c623b5248fb5f42a360.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/9c3a39ae27c69a7f5058c3d28e3259a4a39c1eb8.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SP_HEIGHTENED_SENSES",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Heightened Senses",
+                                                                     "hidden":  0,
+                                                                     "description":  "As Wade, kill 15 enemies using the focus ability.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/76bf7682d676dafa94a254fdd0fb5e9963955a0d.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/41c1332993f2fa6544cef3e144bd105499012576.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SP_POCKET_FULL_OF_FUN",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Pocket Full of Fun",
+                                                                     "hidden":  0,
+                                                                     "description":  "As Lucas, use 4 types of lethal equipment, getting 3 kills with each. ",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/7a75c93a3ec4882f85940425d4c580b24a2834cc.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/5ab677b48bc56164d87ea8d2b2e88ae2b565239a.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SP_TICKET_PLEASE",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Ticket Please",
+                                                                     "hidden":  0,
+                                                                     "description":  "In Phoenix, kill 15 enemies while standing atop a train car roof.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/2777c53f66941eea73551e5806371fd7055d9d9c.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/2112bb9e7c0cff8d6833a4e9cca25c54a2a635ac.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SP_BEWARE_OF_TRAINS",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Beware of Trains",
+                                                                     "hidden":  0,
+                                                                     "description":  "In Phoenix, shoot a truck driver transporting a vehicle full of soldiers.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/483217da4229578d8b3bf14500c9c6e9a0d0d0db.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/717e5ad2ed38acf5fbe1a814a738b28124f86432.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SP_ACTIONS_LOUDER_THAN_WORDS",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Actions Speak Louder than Words",
+                                                                     "hidden":  0,
+                                                                     "description":  "In Operation Tonga, protect Evans with quick reflexes.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/dfe6ef882ba0ed502f45ad3ea8c16a0098d49853.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/8dfe5b8735faf07b696ec4e4fef31ab4fe9de9bf.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SP_ONLY_YOU_CAN_PREVENT",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Only You Can Prevent Friendly Casualties",
+                                                                     "hidden":  0,
+                                                                     "description":  "In Operation Tonga, throw smoke from the anti-tank ditch to provide cover for the charge.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/7a6cd33bf863dead27f092bee4f4c2c437c5610a.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/93b931ea50e192cb0ba56c7e774a3282e3907572.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SP_LEGEND_IN_THE_MAKING",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Legend in the Making",
+                                                                     "hidden":  0,
+                                                                     "description":  "In Stalingrad, protect the Partisans without missing a shot.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/c624314725af3cc93c6c058b0c6129dc8b41df18.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/186ea6ccc165cac2676dd6e07ba514cd313ab57f.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SP_RAIN_OF_FIRE",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Rain of Fire",
+                                                                     "hidden":  0,
+                                                                     "description":  "In Stalingrad, hit a halftrack with a Molotov Cocktail.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/75a6e3c1fafea538047980528d91a171783100fb.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/5a190d387f89f18bd2102541508eeefff87c6f93.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SP_SAVIOR",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Slow But Deadly",
+                                                                     "hidden":  0,
+                                                                     "description":  "In The Battle of Midway, help 5 threatened Allies during the dogfight.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/6743ce86c5169ff0060067a26c882452211eb52c.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/748cc005749e983e37f06a8e15525e6c22b1a24a.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SP_DO_A_BARREL_ROLL",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Duck and Dive",
+                                                                     "hidden":  0,
+                                                                     "description":  "In The Battle of Midway, avoid getting hit by bullets during the first Dive-Bomb.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/4ab02844e07c633292022190385c3862b8e318a1.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/baa48646edf209e36f3bd8f3e77e561f245448c8.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SP_UNTOUCHABLE",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Untouchable",
+                                                                     "hidden":  0,
+                                                                     "description":  "In Numa Numa Trail, avoid getting hit by the sniper.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/8c048e4a9ab94f6a0d4f52d2e6228ce824ff592a.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/7eeb08ccd65fe4104cf0c8b65d9ba7fa4ac6fbce.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SP_SURVIVALIST",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Survivalist",
+                                                                     "hidden":  0,
+                                                                     "description":  "In Numa Numa Trail, find Mateo without firing a bullet.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/1a93d1da2abd33c502edcf9961f27c3344c1862b.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/364650648f6e5998939df1f688823f9f079ce6c5.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SP_BIRD_OF_PREY",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Bird of Prey",
+                                                                     "hidden":  0,
+                                                                     "description":  "In Lady Nightingale, kill 5 snipers across the open field without getting hit by them.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/9938e533fbfda8ea98d28eefe7b5f114d4773369.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/54e1333b0dbc1d522b50af3981411d907dc91605.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SP_BEHIND_YOU",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Behind You",
+                                                                     "hidden":  0,
+                                                                     "description":  "In Lady Nightingale, take out all of Steiner\u0027s troops in the department store using only takedowns.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/35b2616766346e42aa111869ecbb18d7f6efe57b.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/43fab7c6df6e44d71b5c0f7ebb9d4c4be51e9679.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SP_THATS_NOT_A_KNIFE",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "That\u0027s Definitely Not a Knife",
+                                                                     "hidden":  0,
+                                                                     "description":  "In the Rats of Tobruk, bring down the Stuka with a pistol, grenade or rocket.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/9f61b1e7e70c6fa077230360a56ca505595345da.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/f048d4916cb9c16c74c20aabcdd4fc6bf8c47ac5.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SP_PIED_PIPER",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Pied Piper",
+                                                                     "hidden":  0,
+                                                                     "description":  "In The Rats of Tobruk, lead the Rats through the desert without getting detected.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/e85e779d6fa3c0d12fbfb1c4f3a4fa66d8953ec2.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/2fdd813f5ed1ae55592f2fbfa6ae815c7dc7311d.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SP_LEAVING_AN_IMPRESSION",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Leaving an Impression",
+                                                                     "hidden":  0,
+                                                                     "description":  "In the battle of El Alamein, get run over by a tank. Be more careful next time...",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/dfdd19bc4fe54aace81930acf398465a7c90f063.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/30685a5ca3dfb54cf84970b1f9c7c7f76b9fffd4.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SP_SHELL_BE_RIGHT_MATE",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "She\u0027ll be Right Mate",
+                                                                     "hidden":  0,
+                                                                     "description":  "In the battle of El Alamein, get twice as many kills as Des during the final defend.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/07926bddee2ca84f753e4ce40fdfe0606b2e083a.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/50948d501f9bd8a3f0ce19fa87fd0cafce887262.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SP_ALLIES_TOGETHER_STRONG",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Allies Together, Strong",
+                                                                     "hidden":  0,
+                                                                     "description":  "In The Fourth Reich, use Leadership to help takedown a Jäger Mörder.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/da658a5ee545f644c35c3b008c688d969900932e.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/d7a09ec0be29ff722855a19836e0bf12b0714d12.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "SP_ORDER_IN_CHAOS",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Order in Chaos",
+                                                                     "hidden":  0,
+                                                                     "description":  "In The Fourth Reich, go through the level without any instances of friendly fire.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/a2fdaced2cd88b3360646edf062f7207b4930c5f.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/7151fa0448502b3ff2a8312675054fc6d6d77970.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "MP_LEET_SKILLS",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Leet Skills",
+                                                                     "hidden":  0,
+                                                                     "description":  "Reach level 55 in Multiplayer.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/b365a3479e1ed998749fff746041ed59cefb47c4.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/bd6a5c02e513482ba324b9a16a2860ada114eaee.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "MP_TOP_OF_THE_MOUNTAIN",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Top of the Mountain",
+                                                                     "hidden":  0,
+                                                                     "description":  "Reach max level with an operator in Multiplayer (base game operators only).",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/928d8462ed8215a638b37f56a9d038b12f685696.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/f1c936e216cac37eba08d74e857f32209ce19883.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "MP_BLING_PRO_2",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Bling Pro 2.0",
+                                                                     "hidden":  0,
+                                                                     "description":  "Reach max level with a weapon (base game weapons only).",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/c524d89a7014bee2faec8be9a68bb99ba7a73d4c.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/23cf5e477d50aad12c1933b1f9001090ff1276c1.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "MP_HELLO_THERE",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Hello There",
+                                                                     "hidden":  0,
+                                                                     "description":  "Start the Campaign.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/debca0105b58e514a6af78cb76ec70a5ca36a90f.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/f011fa7b8e83ff3afcbc62867cb86c6047a7a33c.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ZM_DEAL_WITH_THE_DEVIL",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Deal With the Devil",
+                                                                     "hidden":  0,
+                                                                     "description":  "Equip 3 Covenants.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/bd018b44c61b34bb70c08fb34a1c06dffd8156d6.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/821d57dc4ee174cd1e387581b6221f225dd9dc85.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ZM_BAKERS_DOZEN",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Baker\u0027s Dozen",
+                                                                     "hidden":  0,
+                                                                     "description":  "Sacrifice 13 Hearts.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/a260d7a8449ef2ac5d490215ccb14b6470ef9682.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/4a7973e1b67d074f617af2a920359b8735d7c822.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ZM_THIRST_QUENCHER",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Thirst Quencher",
+                                                                     "hidden":  0,
+                                                                     "description":  "Drink from all 5 Demonic Fountains in a single session.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/8b571456c43a1a333928722c78e1e6a13e94ceb8.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/ef7ddfd646a4cb6115e49c56516720160451a1d7.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ZM_COLD_AS_ICE",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "As Cold as Ice",
+                                                                     "hidden":  0,
+                                                                     "description":  "Eliminate 10 zombies via melee that have been slowed by the Frost Blast Artifact.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/0868e75c438905fe2575ef48e4c4b5f7c8e66ba1.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/7d47c87263f9975bbcb01e3b9e353d6bf05eb3a3.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ZM_SHOCKING_BEHAVIOUR",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Shocking Behavior",
+                                                                     "hidden":  0,
+                                                                     "description":  "Eliminate 10 zombies that were damaged by the Energy Mine Artifact.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/49097f8d9e4fb2b4b336c81d2bbd4d5b2e8102ca.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/6963957f7c6ebe1f31221e7d7a95570f315d45a2.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ZM_ESCAPE_ARTIST",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Escape Artist",
+                                                                     "hidden":  0,
+                                                                     "description":  "While using the Aether Shroud Artifact, enter the Aether Shroud 5 times with less than 25% health.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/1f6446f5e0a1d78bc269444abbe698c24d495ebd.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/9603feb7f109bb33b53d74eb87ced353c5411aba.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ZM_HOT_TEMPERED",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Hot Tempered",
+                                                                     "hidden":  0,
+                                                                     "description":  "Eliminate 10 zombies while your damage is increased by the Ring of Fire Artifact.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/3a5bd52fb4cc3e16adb7b818ddc4a206c546497c.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/d764dae52071b5863f7caffe0c3afc7406e94339.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ZM_DEATH_DEALER",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Death Dealer",
+                                                                     "hidden":  0,
+                                                                     "description":  "In Der Anfang, eliminate 2500 zombies with a Pack-a-Punch level 3 weapon.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/96e7de1dcda7f63466d4a5b8c776c663dc33614f.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/d81e222e4c5c5d3bb24b690badc3241d172ef186.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "ZM_GRIM_REAPER",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Grim Reaper",
+                                                                     "hidden":  0,
+                                                                     "description":  "Eliminate 10,000 zombies.",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/31837cd0ba16c6ab8543148e59e2b61c8283c1eb.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/1985820/37f58eae5a8d5b5c30af83043b0e31f0e9cda194.jpg"
+                                                                 }
+                                                             ]
+                                        }
+             }
+}

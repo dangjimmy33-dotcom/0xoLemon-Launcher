@@ -1,7 +1,0 @@
-{
-	"InstallScripts" : 
-	[
-		"E:/007Launcher/native/steam_hook/build/_deps/lua-subbuild/cmake_install.cmake"
-	],
-	"Parallel" : false
-}

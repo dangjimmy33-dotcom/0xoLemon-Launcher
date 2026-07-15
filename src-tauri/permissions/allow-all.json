@@ -130,7 +130,10 @@
           "steamless_apply",
           "steamless_restore",
           "steamless_status",
-          "install_lua_from_zip"
+          "install_lua_from_zip",
+          "list_depot_versions",
+          "run_depot_patch",
+          "list_installed_luas"
         ],
         "deny": []
       }

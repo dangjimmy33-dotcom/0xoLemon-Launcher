@@ -1,0 +1,401 @@
+﻿{
+    "1235140":  {
+                    "success":  true,
+                    "data":  {
+                                 "type":  "game",
+                                 "name":  "Yakuza: Like a Dragon",
+                                 "steam_appid":  1235140,
+                                 "required_age":  "18",
+                                 "is_free":  false,
+                                 "controller_support":  "full",
+                                 "dlc":  [
+                                             1289211,
+                                             1289191,
+                                             1289190,
+                                             1289234,
+                                             1253350,
+                                             1261270
+                                         ],
+                                 "detailed_description":  "\u003ch1\u003eFeature List\u003c/h1\u003e\u003cp\u003e\u003c/p\u003e\u003cbr\u003e\u003ch1\u003eFeature List\u003c/h1\u003e\u003cp\u003e\u003c/p\u003e\u003cbr\u003e\u003ch1\u003eAbout the Game\u003c/h1\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/extras/322f8d85fa7e5d9c9f99a1cb9da31ff7.avif?t=1781264130\" width=616 height=346 /\u003e\u003c/span\u003e\u003cbr\u003e\u003cbr\u003e\u003cstrong\u003eYakuza: Like a Dragon’s Hero Edition \u003c/strong\u003eincludes a selection of the game’s DLC, Job Set, and Management Mode Set.\u003cbr\u003e\u003cbr\u003e\u003cstrong\u003eYakuza: Like a Dragon’s Legendary Hero Edition\u003c/strong\u003e adds a wide variety of in-game bonus content, including the Job Set, which unlocks the ‘Devil Rocker’ and ‘Matriarch’ Jobs, as well as the Management Mode Set, Crafting Set, Karaoke Set, Ultimate Costume Set, and Stat Boost Set.\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eRISE LIKE A DRAGON  \u003c/strong\u003e\u003c/h2\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/extras/6b0e6a4484e1b8cc3d38bff6aaf9301c.poster.avif?t=1781264130\" width=616 height=346 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/extras/6b0e6a4484e1b8cc3d38bff6aaf9301c.webm?t=1781264130\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/extras/6b0e6a4484e1b8cc3d38bff6aaf9301c.mp4?t=1781264130\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003cbr\u003eIchiban Kasuga, a low-ranking grunt of a low-ranking yakuza family in Tokyo, faces an 18-year prison sentence after taking the fall for a crime he didn\u0027t commit. Never losing faith, he loyally serves his time and returns to society to discover that no one was waiting for him on the outside, and his clan has been destroyed by the man he respected most.\u003cbr\u003eIchiban sets out to discover the truth behind his family\u0027s betrayal and take his life back, drawing a ragtag group of society’s outcasts to his side: Adachi, a rogue cop, Nanba, a homeless ex-nurse, and Saeko, a hostess on a mission. Together, they are drawn into a conflict brewing beneath the surface in Yokohama and must rise to become the heroes they never expected to be.\u003cbr\u003e\u003cbr\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/extras/5a52e5f79b9be269be94d99920148b7e.poster.avif?t=1781264130\" width=616 height=346 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/extras/5a52e5f79b9be269be94d99920148b7e.webm?t=1781264130\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/extras/5a52e5f79b9be269be94d99920148b7e.mp4?t=1781264130\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eLEVEL UP FROM UNDERDOG TO DRAGON IN DYNAMIC RPG COMBAT\u003c/strong\u003e\u003c/h2\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/extras/e2dc82eb441099fa59d574da500180b5.poster.avif?t=1781264130\" width=616 height=346 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/extras/e2dc82eb441099fa59d574da500180b5.webm?t=1781264130\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/extras/e2dc82eb441099fa59d574da500180b5.mp4?t=1781264130\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003cbr\u003eExperience dynamic RPG combat like none other. Switch between 19 unique Jobs ranging from Bodyguard to Musician, using the battlefield as your weapon. Take up bats, umbrellas, bikes, signs, and everything else at your disposal to clean up the streets!\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eENTER THE UNDERWORLD PLAYGROUND\u003c/strong\u003e\u003c/h2\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/extras/072e7a4958421b722f9db52ff20cac60.poster.avif?t=1781264130\" width=616 height=346 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/extras/072e7a4958421b722f9db52ff20cac60.webm?t=1781264130\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/extras/072e7a4958421b722f9db52ff20cac60.mp4?t=1781264130\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003cbr\u003eWhen you\u0027re not busy bashing heads, relax by hitting up the local arcade for some classic SEGA games, compete with locals in a no holds barred go-kart race around Yokohama, complete 50 unique substories, or just take in the scenery of a modern-day Japanese city. There’s always something new around the corner.",
+                                 "about_the_game":  "\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/extras/322f8d85fa7e5d9c9f99a1cb9da31ff7.avif?t=1781264130\" width=616 height=346 /\u003e\u003c/span\u003e\u003cbr\u003e\u003cbr\u003e\u003cstrong\u003eYakuza: Like a Dragon’s Hero Edition \u003c/strong\u003eincludes a selection of the game’s DLC, Job Set, and Management Mode Set.\u003cbr\u003e\u003cbr\u003e\u003cstrong\u003eYakuza: Like a Dragon’s Legendary Hero Edition\u003c/strong\u003e adds a wide variety of in-game bonus content, including the Job Set, which unlocks the ‘Devil Rocker’ and ‘Matriarch’ Jobs, as well as the Management Mode Set, Crafting Set, Karaoke Set, Ultimate Costume Set, and Stat Boost Set.\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eRISE LIKE A DRAGON  \u003c/strong\u003e\u003c/h2\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/extras/6b0e6a4484e1b8cc3d38bff6aaf9301c.poster.avif?t=1781264130\" width=616 height=346 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/extras/6b0e6a4484e1b8cc3d38bff6aaf9301c.webm?t=1781264130\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/extras/6b0e6a4484e1b8cc3d38bff6aaf9301c.mp4?t=1781264130\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003cbr\u003eIchiban Kasuga, a low-ranking grunt of a low-ranking yakuza family in Tokyo, faces an 18-year prison sentence after taking the fall for a crime he didn\u0027t commit. Never losing faith, he loyally serves his time and returns to society to discover that no one was waiting for him on the outside, and his clan has been destroyed by the man he respected most.\u003cbr\u003eIchiban sets out to discover the truth behind his family\u0027s betrayal and take his life back, drawing a ragtag group of society’s outcasts to his side: Adachi, a rogue cop, Nanba, a homeless ex-nurse, and Saeko, a hostess on a mission. Together, they are drawn into a conflict brewing beneath the surface in Yokohama and must rise to become the heroes they never expected to be.\u003cbr\u003e\u003cbr\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/extras/5a52e5f79b9be269be94d99920148b7e.poster.avif?t=1781264130\" width=616 height=346 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/extras/5a52e5f79b9be269be94d99920148b7e.webm?t=1781264130\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/extras/5a52e5f79b9be269be94d99920148b7e.mp4?t=1781264130\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eLEVEL UP FROM UNDERDOG TO DRAGON IN DYNAMIC RPG COMBAT\u003c/strong\u003e\u003c/h2\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/extras/e2dc82eb441099fa59d574da500180b5.poster.avif?t=1781264130\" width=616 height=346 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/extras/e2dc82eb441099fa59d574da500180b5.webm?t=1781264130\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/extras/e2dc82eb441099fa59d574da500180b5.mp4?t=1781264130\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003cbr\u003eExperience dynamic RPG combat like none other. Switch between 19 unique Jobs ranging from Bodyguard to Musician, using the battlefield as your weapon. Take up bats, umbrellas, bikes, signs, and everything else at your disposal to clean up the streets!\u003ch2 class=\"bb_tag\" \u003e\u003cstrong\u003eENTER THE UNDERWORLD PLAYGROUND\u003c/strong\u003e\u003c/h2\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/extras/072e7a4958421b722f9db52ff20cac60.poster.avif?t=1781264130\" width=616 height=346 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/extras/072e7a4958421b722f9db52ff20cac60.webm?t=1781264130\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/extras/072e7a4958421b722f9db52ff20cac60.mp4?t=1781264130\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003cbr\u003eWhen you\u0027re not busy bashing heads, relax by hitting up the local arcade for some classic SEGA games, compete with locals in a no holds barred go-kart race around Yokohama, complete 50 unique substories, or just take in the scenery of a modern-day Japanese city. There’s always something new around the corner.",
+                                 "short_description":  "Become Ichiban Kasuga, a low-ranking yakuza grunt left on the brink of death by the man he trusted most. Take up your legendary bat and get ready to crack some underworld skulls in dynamic RPG combat set against the backdrop of modern-day Japan.",
+                                 "supported_languages":  "English\u003cstrong\u003e*\u003c/strong\u003e, Japanese\u003cstrong\u003e*\u003c/strong\u003e, French, Italian, German, Spanish - Spain, Korean, Portuguese - Brazil, Russian, Simplified Chinese, Traditional Chinese\u003cbr\u003e\u003cstrong\u003e*\u003c/strong\u003elanguages with full audio support",
+                                 "header_image":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/header.jpg?t=1781264130",
+                                 "capsule_image":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/capsule_231x87.jpg?t=1781264130",
+                                 "capsule_imagev5":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/capsule_184x69.jpg?t=1781264130",
+                                 "website":  "https://likeadragon.sega.com/",
+                                 "pc_requirements":  {
+                                                         "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003eRequires a 64-bit processor and operating system\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows 10\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e Intel Core i5-3470 | AMD FX-8350\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 8 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e Nvidia GeForce GTX 660, 2 GB | AMD Radeon HD 7870, 2 GB\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 40 GB available space\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eAdditional Notes:\u003c/strong\u003e Requires a CPU which supports the AVX and SSE4.2 instruction set. Microsoft no longer supports Windows 10 or older versions.\u003c/li\u003e\u003c/ul\u003e",
+                                                         "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003eRequires a 64-bit processor and operating system\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows 10\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e Intel Core i7-6700 | AMD Ryzen 5 1400\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 8 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e Nvidia GeForce GTX 1060, 3 GB | AMD Radeon RX 580, 4 GB\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 60 GB available space\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eAdditional Notes:\u003c/strong\u003e Requires a CPU which supports the AVX and SSE4.2 instruction set. Microsoft no longer supports Windows 10 or older versions.\u003c/li\u003e\u003c/ul\u003e"
+                                                     },
+                                 "mac_requirements":  {
+                                                          "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cstrong\u003eAdditional Notes:\u003c/strong\u003e Coming Soon\u003c/li\u003e\u003c/ul\u003e",
+                                                          "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cstrong\u003eAdditional Notes:\u003c/strong\u003e Coming Soon\u003c/li\u003e\u003c/ul\u003e"
+                                                      },
+                                 "linux_requirements":  {
+                                                            "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cstrong\u003eAdditional Notes:\u003c/strong\u003e Coming Soon\u003c/li\u003e\u003c/ul\u003e",
+                                                            "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003e\u003cstrong\u003eAdditional Notes:\u003c/strong\u003e Coming Soon\u003c/li\u003e\u003c/ul\u003e"
+                                                        },
+                                 "legal_notice":  "© SEGA. All rights reserved. SEGA is registered in the U.S. Patent and Trademark Office. SEGA, the SEGA logo, YAKUZA and LIKE A DRAGON are either registered trademarks or trademarks of SEGA CORPORATION. All other trademarks, logos and copyrights are property of their respective owners.",
+                                 "drm_notice":  "Denuvo Anti-Tamper",
+                                 "developers":  [
+                                                    "RGG Studio"
+                                                ],
+                                 "publishers":  [
+                                                    "SEGA"
+                                                ],
+                                 "price_overview":  {
+                                                        "currency":  "USD",
+                                                        "initial":  1999,
+                                                        "final":  1999,
+                                                        "discount_percent":  0,
+                                                        "initial_formatted":  "",
+                                                        "final_formatted":  "$19.99"
+                                                    },
+                                 "packages":  [
+                                                  561449,
+                                                  561450,
+                                                  561451
+                                              ],
+                                 "package_groups":  [
+                                                        {
+                                                            "name":  "default",
+                                                            "title":  "Buy Yakuza: Like a Dragon",
+                                                            "description":  "",
+                                                            "selection_text":  "Select a purchase option",
+                                                            "save_text":  "",
+                                                            "display_type":  0,
+                                                            "is_recurring_subscription":  "false",
+                                                            "subs":  [
+                                                                         {
+                                                                             "packageid":  561449,
+                                                                             "percent_savings_text":  " ",
+                                                                             "percent_savings":  0,
+                                                                             "option_text":  "Yakuza: Like a Dragon - $19.99",
+                                                                             "option_description":  "",
+                                                                             "can_get_free_license":  "0",
+                                                                             "is_free_license":  false,
+                                                                             "price_in_cents_with_discount":  1999
+                                                                         },
+                                                                         {
+                                                                             "packageid":  561450,
+                                                                             "percent_savings_text":  " ",
+                                                                             "percent_savings":  0,
+                                                                             "option_text":  "Yakuza: Like a Dragon Hero Edition - $24.99",
+                                                                             "option_description":  "",
+                                                                             "can_get_free_license":  "0",
+                                                                             "is_free_license":  false,
+                                                                             "price_in_cents_with_discount":  2499
+                                                                         },
+                                                                         {
+                                                                             "packageid":  561451,
+                                                                             "percent_savings_text":  " ",
+                                                                             "percent_savings":  0,
+                                                                             "option_text":  "Yakuza: Like a Dragon Legendary Hero Edition - $29.99",
+                                                                             "option_description":  "",
+                                                                             "can_get_free_license":  "0",
+                                                                             "is_free_license":  false,
+                                                                             "price_in_cents_with_discount":  2999
+                                                                         }
+                                                                     ]
+                                                        }
+                                                    ],
+                                 "platforms":  {
+                                                   "windows":  true,
+                                                   "mac":  false,
+                                                   "linux":  false
+                                               },
+                                 "metacritic":  {
+                                                    "score":  83,
+                                                    "url":  "https://www.metacritic.com/game/pc/yakuza-like-a-dragon?ftag=MCD-06-10aaa1f"
+                                                },
+                                 "categories":  [
+                                                    {
+                                                        "id":  2,
+                                                        "description":  "Single-player"
+                                                    },
+                                                    {
+                                                        "id":  22,
+                                                        "description":  "Steam Achievements"
+                                                    },
+                                                    {
+                                                        "id":  28,
+                                                        "description":  "Full controller support"
+                                                    },
+                                                    {
+                                                        "id":  29,
+                                                        "description":  "Steam Trading Cards"
+                                                    },
+                                                    {
+                                                        "id":  62,
+                                                        "description":  "Family Sharing"
+                                                    }
+                                                ],
+                                 "genres":  [
+                                                {
+                                                    "id":  "1",
+                                                    "description":  "Action"
+                                                },
+                                                {
+                                                    "id":  "25",
+                                                    "description":  "Adventure"
+                                                },
+                                                {
+                                                    "id":  "3",
+                                                    "description":  "RPG"
+                                                }
+                                            ],
+                                 "screenshots":  [
+                                                     {
+                                                         "id":  0,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/ss_3672df00523861cd37b0f969d80604003ba14fd4.600x338.jpg?t=1781264130",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/ss_3672df00523861cd37b0f969d80604003ba14fd4.1920x1080.jpg?t=1781264130"
+                                                     },
+                                                     {
+                                                         "id":  1,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/ss_9cecfb713527a480f607bbde54c01763b18bf354.600x338.jpg?t=1781264130",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/ss_9cecfb713527a480f607bbde54c01763b18bf354.1920x1080.jpg?t=1781264130"
+                                                     },
+                                                     {
+                                                         "id":  2,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/ss_d8bcb8c72368ec09506d3a60d42ff2a1901e39f7.600x338.jpg?t=1781264130",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/ss_d8bcb8c72368ec09506d3a60d42ff2a1901e39f7.1920x1080.jpg?t=1781264130"
+                                                     },
+                                                     {
+                                                         "id":  3,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/ss_23d607ec8ceaca26edc88b6445d92ddcd111fea4.600x338.jpg?t=1781264130",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/ss_23d607ec8ceaca26edc88b6445d92ddcd111fea4.1920x1080.jpg?t=1781264130"
+                                                     },
+                                                     {
+                                                         "id":  4,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/ss_66151ac4259635b4f90e7945706498dacf6e98c1.600x338.jpg?t=1781264130",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/ss_66151ac4259635b4f90e7945706498dacf6e98c1.1920x1080.jpg?t=1781264130"
+                                                     },
+                                                     {
+                                                         "id":  5,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/ss_b7336fc083ba36c6073c25659fe23075234b179a.600x338.jpg?t=1781264130",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/ss_b7336fc083ba36c6073c25659fe23075234b179a.1920x1080.jpg?t=1781264130"
+                                                     },
+                                                     {
+                                                         "id":  6,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/ss_8562245f8ca68976ffb5404023d148fb0cbc13e9.600x338.jpg?t=1781264130",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/ss_8562245f8ca68976ffb5404023d148fb0cbc13e9.1920x1080.jpg?t=1781264130"
+                                                     },
+                                                     {
+                                                         "id":  7,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/ss_fe349bb52fa4a8243ba8d9b861bb52c3a4f4b5b0.600x338.jpg?t=1781264130",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/ss_fe349bb52fa4a8243ba8d9b861bb52c3a4f4b5b0.1920x1080.jpg?t=1781264130"
+                                                     },
+                                                     {
+                                                         "id":  8,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/ss_a46dfebb4726aa042c76636131f8bbaa1a079fb9.600x338.jpg?t=1781264130",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/ss_a46dfebb4726aa042c76636131f8bbaa1a079fb9.1920x1080.jpg?t=1781264130"
+                                                     },
+                                                     {
+                                                         "id":  9,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/ss_5a17b24cc9582e458a3db0f5f9ecc3f956ded072.600x338.jpg?t=1781264130",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/ss_5a17b24cc9582e458a3db0f5f9ecc3f956ded072.1920x1080.jpg?t=1781264130"
+                                                     },
+                                                     {
+                                                         "id":  10,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/ss_d3fe630add22247a497f0c2d22e568df66a39f48.600x338.jpg?t=1781264130",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/ss_d3fe630add22247a497f0c2d22e568df66a39f48.1920x1080.jpg?t=1781264130"
+                                                     }
+                                                 ],
+                                 "movies":  [
+                                                {
+                                                    "id":  256808897,
+                                                    "name":  "YLAD_Launch_16x9_US",
+                                                    "thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256808897/movie.293x165.jpg?t=1605027728",
+                                                    "dash_av1":  "https://video.akamai.steamstatic.com/store_trailers/1235140/325573/5e8c72a66ccd699fce5f2fbb082ec3cbe275b596/1750646874/dash_av1.mpd?t=1605027728",
+                                                    "dash_h264":  "https://video.akamai.steamstatic.com/store_trailers/1235140/325573/5e8c72a66ccd699fce5f2fbb082ec3cbe275b596/1750646874/dash_h264.mpd?t=1605027728",
+                                                    "hls_h264":  "https://video.akamai.steamstatic.com/store_trailers/1235140/325573/5e8c72a66ccd699fce5f2fbb082ec3cbe275b596/1750646874/hls_264_master.m3u8?t=1605027728",
+                                                    "highlight":  true
+                                                },
+                                                {
+                                                    "id":  256803879,
+                                                    "name":  "Yazawa_IchiQuest_Steam_US",
+                                                    "thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256803879/movie.293x165.jpg?t=1602066147",
+                                                    "dash_av1":  "https://video.akamai.steamstatic.com/store_trailers/1235140/317517/5edc59b3dd0b0dfade827dfd50542f10c70f79eb/1750646822/dash_av1.mpd?t=1602066147",
+                                                    "dash_h264":  "https://video.akamai.steamstatic.com/store_trailers/1235140/317517/5edc59b3dd0b0dfade827dfd50542f10c70f79eb/1750646822/dash_h264.mpd?t=1602066147",
+                                                    "hls_h264":  "https://video.akamai.steamstatic.com/store_trailers/1235140/317517/5edc59b3dd0b0dfade827dfd50542f10c70f79eb/1750646822/hls_264_master.m3u8?t=1602066147",
+                                                    "highlight":  true
+                                                },
+                                                {
+                                                    "id":  256798066,
+                                                    "name":  "Yakuza_Howwillyourise_ESRB",
+                                                    "thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256798066/movie.293x165.jpg?t=1661159086",
+                                                    "dash_av1":  "https://video.akamai.steamstatic.com/store_trailers/1235140/307244/fdeece6378a2b5b8d68958bd3673afb587d1a77e/1750646794/dash_av1.mpd?t=1661159086",
+                                                    "dash_h264":  "https://video.akamai.steamstatic.com/store_trailers/1235140/307244/fdeece6378a2b5b8d68958bd3673afb587d1a77e/1750646794/dash_h264.mpd?t=1661159086",
+                                                    "hls_h264":  "https://video.akamai.steamstatic.com/store_trailers/1235140/307244/fdeece6378a2b5b8d68958bd3673afb587d1a77e/1750646794/hls_264_master.m3u8?t=1661159086",
+                                                    "highlight":  true
+                                                },
+                                                {
+                                                    "id":  256793637,
+                                                    "name":  "YakuzaGameplay_Full_16x9_STEAM_ESRB_Preorder_FINAL",
+                                                    "thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256793637/movie.293x165.jpg?t=1595433924",
+                                                    "dash_av1":  "https://video.akamai.steamstatic.com/store_trailers/1235140/299904/1a45772d30214f7ae8c5dc3ceb25bfcfd3dddb30/1750646761/dash_av1.mpd?t=1595433924",
+                                                    "dash_h264":  "https://video.akamai.steamstatic.com/store_trailers/1235140/299904/1a45772d30214f7ae8c5dc3ceb25bfcfd3dddb30/1750646761/dash_h264.mpd?t=1595433924",
+                                                    "hls_h264":  "https://video.akamai.steamstatic.com/store_trailers/1235140/299904/1a45772d30214f7ae8c5dc3ceb25bfcfd3dddb30/1750646761/hls_264_master.m3u8?t=1595433924",
+                                                    "highlight":  true
+                                                },
+                                                {
+                                                    "id":  256784455,
+                                                    "name":  "Announce_ESRB",
+                                                    "thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256784455/movie.293x165.jpg?t=1588868821",
+                                                    "dash_av1":  "https://video.akamai.steamstatic.com/store_trailers/1235140/283646/4bfaf92e70fe9b84fe2f7ecaa0fab12229ceff59/1750646692/dash_av1.mpd?t=1588868821",
+                                                    "dash_h264":  "https://video.akamai.steamstatic.com/store_trailers/1235140/283646/4bfaf92e70fe9b84fe2f7ecaa0fab12229ceff59/1750646692/dash_h264.mpd?t=1588868821",
+                                                    "hls_h264":  "https://video.akamai.steamstatic.com/store_trailers/1235140/283646/4bfaf92e70fe9b84fe2f7ecaa0fab12229ceff59/1750646692/hls_264_master.m3u8?t=1588868821",
+                                                    "highlight":  true
+                                                }
+                                            ],
+                                 "recommendations":  {
+                                                         "total":  27675
+                                                     },
+                                 "achievements":  {
+                                                      "total":  63,
+                                                      "highlighted":  [
+                                                                          {
+                                                                              "icon":  "2a976280a73e1083434a6de2b18c3cf7c3ad61f8.jpg",
+                                                                              "localized_name":  "The New Dragon",
+                                                                              "name":  "The New Dragon",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/1235140/2a976280a73e1083434a6de2b18c3cf7c3ad61f8.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "8d6bb2c561475baef8ef0c415b12c1ea16cf76f4.jpg",
+                                                                              "localized_name":  "For the Family",
+                                                                              "name":  "For the Family",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/1235140/8d6bb2c561475baef8ef0c415b12c1ea16cf76f4.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "d787706dcad980550c57fbc9380774caffca6276.jpg",
+                                                                              "localized_name":  "Rock Bottom",
+                                                                              "name":  "Rock Bottom",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/1235140/d787706dcad980550c57fbc9380774caffca6276.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "646eeb59a22badfcde2fafa99dffcffb4ee6c65b.jpg",
+                                                                              "localized_name":  "Heroes and Villains",
+                                                                              "name":  "Heroes and Villains",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/1235140/646eeb59a22badfcde2fafa99dffcffb4ee6c65b.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "8958219ca8f8c67fd4f364ebd6ad84caf4c664eb.jpg",
+                                                                              "localized_name":  "Soap on a Rope",
+                                                                              "name":  "Soap on a Rope",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/1235140/8958219ca8f8c67fd4f364ebd6ad84caf4c664eb.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "19359d24f924e36ce80e352cd026e2679cd1244c.jpg",
+                                                                              "localized_name":  "Smoked",
+                                                                              "name":  "Smoked",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/1235140/19359d24f924e36ce80e352cd026e2679cd1244c.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "2e7581615b037f993feadc0916bda29215d441f5.jpg",
+                                                                              "localized_name":  "Ignition",
+                                                                              "name":  "Ignition",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/1235140/2e7581615b037f993feadc0916bda29215d441f5.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "0907d031a16f8f31034f77f6e5274de7017ed71c.jpg",
+                                                                              "localized_name":  "Three Spiders",
+                                                                              "name":  "Three Spiders",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/1235140/0907d031a16f8f31034f77f6e5274de7017ed71c.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "e03a7926c77fb1c9f6961fa876117a4237c3e455.jpg",
+                                                                              "localized_name":  "The Statesman",
+                                                                              "name":  "The Statesman",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/1235140/e03a7926c77fb1c9f6961fa876117a4237c3e455.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "d271d145a8ce56a112b8e23dc687313dbe3da827.jpg",
+                                                                              "localized_name":  "Time to Talk",
+                                                                              "name":  "Time to Talk",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/1235140/d271d145a8ce56a112b8e23dc687313dbe3da827.jpg"
+                                                                          }
+                                                                      ]
+                                                  },
+                                 "release_date":  {
+                                                      "coming_soon":  false,
+                                                      "date":  "Nov 10, 2020"
+                                                  },
+                                 "support_info":  {
+                                                      "url":  "https://support.sega.co.uk/hc/en-us",
+                                                      "email":  ""
+                                                  },
+                                 "background":  "https://store.akamai.steamstatic.com/images/storepagebackground/app/1235140?t=1781264130",
+                                 "background_raw":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1235140/page_bg_raw.jpg?t=1781264130",
+                                 "content_descriptors":  {
+                                                             "ids":  [
+                                                                         1,
+                                                                         2,
+                                                                         5
+                                                                     ],
+                                                             "notes":  "This Game may contain content not appropriate for all ages, or may not be appropriate for viewing at work: Blood, Intense Violence,  Partial Nudity, Sexual Themes, Strong Language, and Use of Alcohol."
+                                                         },
+                                 "ratings":  {
+                                                 "dejus":  {
+                                                               "rating":  "18",
+                                                               "descriptors":  "Violência\r\nTemas sensíveis\r\nViolência Extrema\r\nLinguagem imprópria\r\nConteúdo sexual\r\nDrogas lícitas\r\nDrogas ilícitas",
+                                                               "use_age_gate":  "true",
+                                                               "required_age":  "18"
+                                                           },
+                                                 "esrb":  {
+                                                              "rating":  "m",
+                                                              "descriptors":  "Blood\r\nIntense Violence\r\nSexual Themes\r\nStrong Language\r\nUse of Alcohol",
+                                                              "required_age":  "18",
+                                                              "use_age_gate":  "true"
+                                                          },
+                                                 "pegi":  {
+                                                              "rating":  "18",
+                                                              "use_age_gate":  "true",
+                                                              "required_age":  "18",
+                                                              "descriptors":  "Violence\r\nBad Language\r\nGambling"
+                                                          },
+                                                 "usk":  {
+                                                             "rating":  "18",
+                                                             "required_age":  "18",
+                                                             "use_age_gate":  "true"
+                                                         },
+                                                 "oflc":  {
+                                                              "rating":  "r18",
+                                                              "descriptors":  "References to sexual violence"
+                                                          },
+                                                 "kgrb":  {
+                                                              "rating":  "18",
+                                                              "required_age":  "18",
+                                                              "descriptors":  "Sexuality\r\nViolence\r\nAlcohol, Tobacco, Drug\r\nGambling",
+                                                              "use_age_gate":  "true"
+                                                          },
+                                                 "nzoflc":  {
+                                                                "rating":  "r16",
+                                                                "descriptors":  "Violence\r\nOffensive Language\r\nSexual Themes",
+                                                                "required_age":  "16"
+                                                            },
+                                                 "cero":  {
+                                                              "rating":  "d",
+                                                              "required_age":  "17",
+                                                              "descriptors":  "セクシャル\r\n暴力\r\nギャンブル\r\n犯罪"
+                                                          },
+                                                 "steam_germany":  {
+                                                                       "rating_generated":  "1",
+                                                                       "rating":  "16",
+                                                                       "required_age":  "16",
+                                                                       "banned":  "0",
+                                                                       "use_age_gate":  "0",
+                                                                       "descriptors":  "Sexuelle Inhalte\nGewalt\nAlkohol / Tabak"
+                                                                   },
+                                                 "igrs":  {
+                                                              "rating_generated":  "1",
+                                                              "rating":  "BANNED",
+                                                              "required_age":  "2147483647",
+                                                              "banned":  "1",
+                                                              "use_age_gate":  "0",
+                                                              "descriptors":  "Rokok dan/atau rokok elektronik, minuman beralkohol, narkotika, psikotropika, dan/atau zat adiktif lainnya\nPenampilan Tokoh\nKekerasan"
+                                                          }
+                                             }
+                             }
+                }
+}

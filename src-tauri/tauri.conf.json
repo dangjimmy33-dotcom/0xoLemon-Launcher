@@ -36,6 +36,9 @@
     "active": true,
     "targets": "all",
     "createUpdaterArtifacts": true,
+    "externalBin": [
+      "binaries/DepotDownloaderMod"
+    ],
     "resources": [
       "resources/steam_hooks/*",
       "resources/cloud_redirect/*",

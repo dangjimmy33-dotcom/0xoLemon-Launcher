@@ -43,6 +43,47 @@
   background: transparent;
 }
 
+/* ══════════════════════════════════════════════════════════════
+   Animations for Depot Version Switcher & Loading States
+   ══════════════════════════════════════════════════════════════ */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hidden {
+  display: none !important;
+}
+
 .launcher-shell {
   height: 100%;
   display: grid;
@@ -72,7 +113,7 @@
 }
 
 /* Make direct children sit above the ::before layer */
-.launcher-shell > * {
+.launcher-shell>* {
   position: relative;
   z-index: 1;
 }
@@ -147,12 +188,14 @@
   grid-template-columns: 34px minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px;
-  padding: 0 22px 0 18px; /* left=18 so border-left 4px + 18px = 22px visual indent */
+  padding: 0 22px 0 18px;
+  /* left=18 so border-left 4px + 18px = 22px visual indent */
   color: var(--muted);
   background: transparent;
   border: 0;
   border-left: 4px solid transparent;
-  border-radius: 0; /* no radius: flush with sidebar edge */
+  border-radius: 0;
+  /* no radius: flush with sidebar edge */
   box-sizing: border-box;
   font: inherit;
   text-align: left;
@@ -225,7 +268,8 @@
   color: var(--text-strong);
   background: linear-gradient(90deg, rgba(213, 166, 78, 0.22), rgba(213, 166, 78, 0.04));
   border-left-color: var(--gold);
-  border-radius: 0; /* flush with sidebar — no gap at right edge */
+  border-radius: 0;
+  /* flush with sidebar — no gap at right edge */
 }
 
 .sidebar-collapsed .nav-item.active {
@@ -315,7 +359,6 @@
   align-content: start;
   gap: 22px;
   padding: 34px 38px 46px;
-  padding-left: 0;
   background:
     radial-gradient(circle at 68% 6%, rgba(46, 40, 74, 0.34), transparent 34%),
     linear-gradient(90deg, rgba(4, 6, 10, 0.48), transparent 16%, transparent 82%, rgba(16, 14, 22, 0.42)),
@@ -332,8 +375,118 @@
   padding: 0;
 }
 
+.library-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.store-sort-dropdown {
+  position: relative;
+}
+
+.sort-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-base);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sort-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.sort-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  width: 160px;
+  background: #1a1f26;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.sort-dropdown-menu button {
+  text-align: left;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--text-base);
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.1s;
+}
+
+.sort-dropdown-menu button:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.sort-dropdown-menu button.active {
+  color: #fff;
+  background: rgba(207, 159, 70, 0.2);
+}
+
+.view-layout-toggle {
+  display: flex;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 2px;
+}
+
+.view-layout-toggle button {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.view-layout-toggle button svg {
+  width: 16px;
+  height: 16px;
+  stroke: rgba(255, 255, 255, 0.6);
+}
+
+.view-layout-toggle button:hover svg {
+  stroke: rgba(255, 255, 255, 0.8);
+}
+
+.view-layout-toggle button.active svg {
+  stroke: #ffffff;
+}
+
+.view-layout-toggle button.active {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
 /* Store Mode Pill Switch */
 .store-mode-switch {
+  --options-count: 3;
   display: inline-flex;
   align-items: center;
   background: rgba(0, 0, 0, 0.3);
@@ -345,6 +498,10 @@
   position: relative;
 }
 
+.store-mode-switch.two-options {
+  --options-count: 2;
+}
+
 /* Sliding background indicator */
 .store-mode-switch::before {
   content: '';
@@ -352,7 +509,7 @@
   top: 3px;
   left: 3px;
   height: calc(100% - 6px);
-  width: calc(33.333% - 4px);
+  width: calc((100% - 6px - (var(--options-count) - 1) * 2px) / var(--options-count));
   background: linear-gradient(135deg, rgba(207, 159, 70, 0.9), rgba(180, 130, 50, 0.9));
   border-radius: 999px;
   box-shadow:
@@ -378,6 +535,7 @@
 
 .store-mode-switch .mode-option {
   display: inline-flex;
+  flex: 1;
   align-items: center;
   justify-content: center;
   gap: 6px;
@@ -463,9 +621,14 @@
   padding: 0 0 28px;
 }
 
+.library-browse-grid.layout-list {
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
 .store-game-card.browse-game-card {
   width: 156px;
-  height: 250px;
+  height: auto;
   gap: 9px;
   opacity: 0.96;
   transition:
@@ -474,9 +637,19 @@
     filter 0.16s ease;
 }
 
+.store-game-card.browse-game-card .store-game-card-media {
+  width: 156px;
+  height: 234px;
+  overflow: hidden;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
 .store-game-card.browse-game-card img,
 .store-game-card.browse-game-card .asset-placeholder {
-  height: 208px;
+  width: 156px !important;
+  height: 234px !important;
+  object-fit: cover !important;
   border-radius: 4px;
   box-shadow: 0 18px 34px rgba(0, 0, 0, 0.32);
 }
@@ -491,6 +664,234 @@
   opacity: 1;
   filter: brightness(1.08);
   transform: translateY(-3px);
+}
+
+/* List layout specific styles for game cards */
+.layout-list .store-game-card.browse-game-card {
+  display: flex !important;
+  width: 100% !important;
+  height: 72px !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  padding: 6px 12px 6px 6px !important;
+  background: rgba(255, 255, 255, 0.025) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-radius: 10px !important;
+  gap: 0 !important;
+  opacity: 1 !important;
+  overflow: visible !important;
+}
+
+.layout-list .store-game-card.browse-game-card:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  transform: none !important;
+  filter: none !important;
+}
+
+.layout-list .store-game-card.browse-game-card .store-game-card-media {
+  width: 100px !important;
+  height: 60px !important;
+  min-width: 100px !important;
+  flex-shrink: 0 !important;
+  position: relative !important;
+  overflow: hidden !important;
+  border-radius: 6px !important;
+  margin-right: 12px !important;
+}
+
+.layout-list .store-game-card.browse-game-card .store-game-card-media img,
+.layout-list .store-game-card.browse-game-card .store-game-card-media .asset-placeholder {
+  width: 100px !important;
+  height: 60px !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  object-fit: cover !important;
+}
+
+.layout-list .store-game-card.browse-game-card .game-card-tags {
+  display: none !important;
+}
+
+.layout-list .store-game-card.browse-game-card .store-game-card-info {
+  flex: 1 !important;
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
+.layout-list .store-game-card.browse-game-card .store-game-card-title {
+  flex: 1 !important;
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 2px !important;
+}
+
+.layout-list .store-game-card.browse-game-card .store-game-card-info strong {
+  font-size: 14px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  max-width: 100% !important;
+}
+
+.layout-list .store-game-card.browse-game-card .store-game-card-info small {
+  font-size: 12px !important;
+  color: var(--muted) !important;
+}
+
+.layout-list .store-game-card.browse-game-card .game-card-stats {
+  display: flex !important;
+  flex-shrink: 0 !important;
+  gap: 6px !important;
+}
+
+/* Wishlist Button on grid/list cards */
+.game-card-wishlist-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.7);
+  opacity: 0;
+  transform: scale(0.85);
+  box-sizing: border-box;
+  min-width: 28px;
+  min-height: 28px;
+  max-width: 28px;
+  max-height: 28px;
+  transition: opacity 0.18s ease, transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.15s ease, color 0.15s ease;
+  backdrop-filter: blur(4px);
+  z-index: 2;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.store-game-card-media:hover .game-card-wishlist-btn,
+.game-card-wishlist-btn.active {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.game-card-wishlist-btn:hover {
+  background: rgba(0, 0, 0, 0.8);
+  color: #ff4757;
+  border-color: rgba(255, 71, 87, 0.3);
+  transform: scale(1.1);
+}
+
+.game-card-wishlist-btn.active {
+  color: #ff4757;
+  background: rgba(255, 71, 87, 0.1);
+  border-color: rgba(255, 71, 87, 0.3);
+}
+
+/* In list mode: wishlist btn is static at end of info row */
+.layout-list .store-game-card.browse-game-card .game-card-wishlist-btn {
+  position: static !important;
+  opacity: 1 !important;
+  transform: scale(1) !important;
+  flex-shrink: 0 !important;
+  margin-left: 8px !important;
+}
+
+/* Hide the tags/wishlist btn inside .store-game-card-media in list mode */
+.layout-list .store-game-card-media .game-card-wishlist-btn {
+  display: none !important;
+}
+
+/* Game Card Info & Stats */
+.store-game-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.store-game-card-title {
+  display: flex;
+  flex-direction: column;
+}
+
+.game-card-stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.layout-list .game-card-stats {
+  margin-top: 0;
+  gap: 16px;
+}
+
+.stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+/* Detail action icon buttons (wishlist + like) in library-meta-row */
+.detail-action-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  line-height: 1;
+}
+
+.detail-action-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.detail-action-icon-btn.active-wishlist {
+  color: #ff4757;
+  background: rgba(255, 71, 87, 0.12);
+  border-color: rgba(255, 71, 87, 0.35);
+}
+
+.detail-action-icon-btn.active-wishlist:hover {
+  background: rgba(255, 71, 87, 0.2);
+}
+
+.detail-action-icon-btn.active-like {
+  color: #1e90ff;
+  background: rgba(30, 144, 255, 0.12);
+  border-color: rgba(30, 144, 255, 0.35);
+}
+
+.detail-action-icon-btn.active-like:hover {
+  background: rgba(30, 144, 255, 0.2);
 }
 
 .library-search-skeleton {
@@ -854,7 +1255,7 @@
   min-width: 0;
   height: 196px;
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-rows: auto 1fr;
   gap: 8px;
   padding: 0;
   border: 1px solid transparent;
@@ -918,11 +1319,25 @@
   font-weight: 900;
 }
 
-.store-game-card span {
+.store-game-card-info {
+  min-width: 0;
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  padding: 0 4px;
+}
+
+.store-game-card-title {
   min-width: 0;
   display: grid;
   gap: 1px;
-  padding: 0 4px;
+}
+
+.game-card-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
 }
 
 .store-game-card strong,
@@ -2899,6 +3314,9 @@ button:disabled {
   justify-self: end;
   color: var(--muted);
   transition: transform 160ms ease;
+  flex-shrink: 0;
+  margin-left: auto;
+  pointer-events: none;
 }
 
 .version-dropdown.open .version-dropdown-trigger>svg {
@@ -4946,12 +5364,12 @@ button:disabled {
 @keyframes hoverCardFadeIn {
   from {
     opacity: 0;
-    transform: translateY(4px) scale(0.98);
+    transform: translateY(calc(-50% + 4px)) scale(0.98);
   }
 
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(-50%) scale(1);
   }
 }
 
@@ -5994,91 +6412,5 @@ button:disabled {
 
   .confirm-dialog-footer button {
     max-width: none;
-  }
-}
-
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   Store Mode Switch with Sliding Indicator Animation
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-
-.store-mode-switch {
-  position: relative;
-  display: inline-flex;
-  gap: 4px;
-  padding: 4px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.store-mode-switch::before {
-  content: '';
-  position: absolute;
-  top: 4px;
-  bottom: 4px;
-  width: calc(33.333% - 3px);
-  background: linear-gradient(135deg, rgba(213, 166, 78, 0.3), rgba(213, 166, 78, 0.15));
-  border-radius: 6px;
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  pointer-events: none;
-  z-index: 0;
-  border: 1px solid rgba(213, 166, 78, 0.3);
-}
-
-.store-mode-switch:has(.mode-option:nth-child(1).active)::before {
-  transform: translateX(0%);
-}
-
-.store-mode-switch:has(.mode-option:nth-child(2).active)::before {
-  transform: translateX(calc(100% + 4px));
-}
-
-.store-mode-switch:has(.mode-option:nth-child(3).active)::before {
-  transform: translateX(calc(200% + 8px));
-}
-
-.store-mode-switch .mode-option {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  background: transparent;
-  border: none;
-  border-radius: 6px;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: color 0.3s ease;
-  white-space: nowrap;
-}
-
-.store-mode-switch .mode-option:hover {
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.store-mode-switch .mode-option.active {
-  color: #fff;
-}
-
-.store-mode-switch .mode-option svg {
-  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.store-mode-switch .mode-option.active svg {
-  animation: iconPulse 0.6s ease;
-}
-
-@keyframes iconPulse {
-
-  0%,
-  100% {
-    transform: scale(1);
-  }
-
-  50% {
-    transform: scale(1.15);
   }
 }

@@ -1,0 +1,79 @@
+﻿{
+    "appnews":  {
+                    "appid":  3751950,
+                    "newsitems":  [
+                                      {
+                                          "gid":  "1837955055355867",
+                                          "title":  "Ubisoft \"поздравила\" разработчиков Assassin\u0027s Creed Black Flag Resynced с премьерой увольнениями",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/Gamemag.ru/1837955055355867",
+                                          "is_external_url":  true,
+                                          "author":  "Deacon",
+                                          "contents":  "\u003cimg src=\"https://gamemag.ru/images/cache/News/News200194/d574b8da29-2_1390x600.jpg\" alt=\"\"\u003e\u003cp\u003e\u003cstrong\u003eAssassin\u0027s Creed Black Flag Resynced \u003ca href=\"https://gamemag.ru/news/200186/asbfr-scores\"\u003eполучила хорошие оценки\u003c/a\u003e\u003c/strong\u003e и ещё даже не успела добраться до всех платформ, а \u003cstrong\u003e\u003cu\u003eUbisoft уже начала сокращать создавших её разработчиков\u003c/u\u003e\u003c/strong\u003e.\u003c/p\u003e",
+                                          "feedlabel":  "Gamemag.ru",
+                                          "date":  1783636920,
+                                          "feedname":  "Gamemag.ru",
+                                          "feed_type":  0,
+                                          "appid":  3751950
+                                      },
+                                      {
+                                          "gid":  "1836506165584305",
+                                          "title":  "Known issue updare: cutscenes on PC locked to 30 FPS (workaround)",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1836506165584305",
+                                          "is_external_url":  true,
+                                          "author":  "Ubi_Grogu",
+                                          "contents":  "[p]Hello Assassins,    [/p][p][/p][p]We are aware that there is an issue where cutscenes on PC are locked to 30 FPS when using Raytracing, BVH or Terrain Quality at Ultra High setting.   [/p][p][/p][p]We have a fix coming soon, but in the meantime, we\u0027ve provided a temporary workaround:  Reset the graphics Overall Preset to any pre-configured setting and avoid manually setting Raytracing, BVH or Terrain Quality to the Ultra High setting.   [/p][p][/p][p]Thanks for your patience! [/p][hr][/hr][p align=\"start\"]Link to Known Issues: Day 1 Known Issues -[url=\"https://steamcommunity.com/app/3751950/discussions/0/570417328562421186/\"] AC Black Flag resynced :: Assassin\u0027s Creed Black Flag Resynced General Discussion[/url][/p][p align=\"start\"]Link to Bug Reporter: [url=\"https://www.ubisoft.com/en-us/game/assassins-creed/black-flag-resynced/bug-reporter/\"]Assassin\u0027s Creed Black Flag Resynced Bug Report[/url][/p]",
+                                          "feedlabel":  "Community Announcements",
+                                          "date":  1783620911,
+                                          "feedname":  "steam_community_announcements",
+                                          "feed_type":  1,
+                                          "appid":  3751950,
+                                          "tags":  [
+                                                       "mod_reviewed",
+                                                       "ModAct_1889321037_1783621708_0",
+                                                       "ModAct_1751692459_1783630453_4",
+                                                       "mod_require_rereview"
+                                                   ]
+                                      },
+                                      {
+                                          "gid":  "1836506165584512",
+                                          "title":  "Assassin\u0027s Creed Black Flag Resynced вышла на консолях — релиз для ПК состоится вечером",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/Gamemag.ru/1836506165584512",
+                                          "is_external_url":  true,
+                                          "author":  "Rakot",
+                                          "contents":  "\u003cimg src=\"https://gamemag.ru/images/cache/News/News200191/c86e65ff36-3_1390x600.jpg\" alt=\"\"\u003e\u003cp\u003eВ минувшую полночь \u003cstrong\u003eAssassin\u0027s Creed Black Flag Resynced\u003c/strong\u003e стала доступна для игры на\u003cstrong\u003e PlayStation 5 \u003c/strong\u003eи \u003cstrong\u003eXbox Series X|S\u003c/strong\u003e. Пользователям ПК придётся подождать вечера из-за особенностей релиза в \u003cstrong\u003eSteam\u003c/strong\u003e.\u003c/p\u003e",
+                                          "feedlabel":  "Gamemag.ru",
+                                          "date":  1783619760,
+                                          "feedname":  "Gamemag.ru",
+                                          "feed_type":  0,
+                                          "appid":  3751950
+                                      },
+                                      {
+                                          "gid":  "1836506165583857",
+                                          "title":  "How to access the local language packs",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1836506165583857",
+                                          "is_external_url":  true,
+                                          "author":  "Ubi_Grogu",
+                                          "contents":  "[p]Hello everyone, [/p][p] [/p][p]We have addressed an issue where some players could not find find their local language pack. \nIn case you are still encountering the issue, here are some instructions to access the language packs:[/p][olist][*][p]Close the game[/p][/*][*][p]Close Steam + Reopen Steam[/p][/*][*][p]Set the language as seen on the following screenshot[/p][p][/p][/*][/olist][p][img src=\"{STEAM_CLAN_IMAGE}/46094181/7cbc758faecb2d770a55684a3626600c70874879.jpg\"][/img][/p][p][/p][p][/p]",
+                                          "feedlabel":  "Community Announcements",
+                                          "date":  1783613041,
+                                          "feedname":  "steam_community_announcements",
+                                          "feed_type":  1,
+                                          "appid":  3751950
+                                      },
+                                      {
+                                          "gid":  "1836506165583621",
+                                          "title":  "Ubisoft has added a cash shop and weekly challenges to its \u0027faithful\u0027 remake of the 13-year-old Black Flag, because of course it has",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/PC Gamer/1836506165583621",
+                                          "is_external_url":  true,
+                                          "author":  "Rory Norris",
+                                          "contents":  "\u003cimg src=\"https://cdn.mos.cms.futurecdn.net/gHokeGPVt85vkVmfq9N2CW-1280-80.png\"/\u003e\u003cbr\u003e\u003cbr\u003e\n                For the most part, the long-awaited and worst-kept secret, \u003ca href=\"http://www.pcgamer.com/games/assassins-creed/black-flag-resynced-new-content\" target=\"_blank\"\u003eAssassin\u0027s Creed Black Flag Resynced\u003c/a\u003e, is very faithful to one of my favourite games from 13 years ago. And anything that\u0027s brand-new, like some islands, the ship officers, and an extended story, fits in pretty seamlessly, almost like they were there in the original...\n                \u003ca href=\"https://www.pcgamer.com/games/assassins-creed/ubisoft-has-added-a-cash-shop-and-weekly-challenges-to-its-faithful-remake-of-the-13-year-old-black-flag-because-of-course-it-has/?utm_source=steam\u0026utm_medium=referral\" target=\"_blank\"\u003eRead more.\u003c/a\u003e",
+                                          "feedlabel":  "PC Gamer",
+                                          "date":  1783608849,
+                                          "feedname":  "PC Gamer",
+                                          "feed_type":  0,
+                                          "appid":  3751950
+                                      }
+                                  ],
+                    "count":  56
+                }
+}

@@ -119,6 +119,8 @@ export type LauncherSettings = {
   gameUpdateMode: GameUpdateMode
   gameUpdateScheduleStart: string
   gameUpdateScheduleEnd: string
+  /** HuggingFace dataset repo ID hosting depot manifests and keys. Format: "owner/repo-name" */
+  depotHfRepoId: string
 }
 
 export type CloudSaveMetadata = {

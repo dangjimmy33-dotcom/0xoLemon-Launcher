@@ -43,6 +43,15 @@ pub struct CatalogVersion {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct LaunchOption {
+    pub name: String,
+    pub executable: String,
+    #[serde(default)]
+    pub arguments: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct VersionManifest {
     pub format_version: u32,
     pub game_id: String,
@@ -51,6 +60,8 @@ pub struct VersionManifest {
     pub root_label: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub launch_executable: Option<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub launch_options: Vec<LaunchOption>,
     pub total_size: u64,
     pub files: Vec<FileEntry>,
     pub signature: Option<SignatureEnvelope>,
