@@ -118,7 +118,7 @@ mod paths;
 mod progress;
 
 use dependencies::{
-    create_game_shortcut, ensure_game_dependencies, launch_option_processes, remove_game_shortcut,
+    create_game_shortcut, create_game_shortcut_no_exe, ensure_game_dependencies, launch_option_processes, remove_game_shortcut,
 };
 use direct::DirectStagePlan;
 use paths::*;
@@ -1367,14 +1367,15 @@ fn effective_launch_config(
     launch_executable: Option<String>,
 ) -> Result<(GameLaunchConfig, String, String), JobError> {
     let source = DepotSource::for_game(game_id);
-    let marker_executable = read_install_marker(install_path)?
-        .filter(|marker| install_marker_matches_source(marker, &source))
-        .and_then(|marker| marker.launch_executable);
+    let marker = read_install_marker(install_path)?
+        .filter(|marker| install_marker_matches_source(marker, &source));
+    let marker_executable = marker.as_ref().and_then(|m| m.launch_executable.clone());
     let fallback_executable = launch_executable
         .filter(|value| !value.trim().is_empty())
         .or(marker_executable)
         .unwrap_or_else(|| default_launch_executable(&source.game_id));
 
+    // 1. Try 0xo-launch.json / .0xolemon/launch.json in the install dir
     if let Some((override_config, path)) =
         load_install_override(install_path).map_err(JobError::Depot)?
     {
@@ -1388,6 +1389,82 @@ fn effective_launch_config(
         ));
     }
 
+    // 2. Check the local depot's build-info.json for launchOptions.
+    //    This handles games that were installed before the multi-launch feature
+    //    was added, without requiring a full reinstall. If launchOptions are
+    //    found, we materialise 0xo-launch.json so Play, shortcuts, and future
+    //    calls all work correctly.
+    if let Some(installed_version) = marker.as_ref().map(|m| m.version.as_str()) {
+        let build_info_path = format!("versions/{}/build-info.json", installed_version);
+        if let Ok(build_info) = source.load_json::<serde_json::Value>(&build_info_path) {
+            if let Some(opts) = build_info.get("launchOptions").and_then(|v| v.as_array()) {
+                let parsed: Vec<crate::manifest::LaunchOption> = opts
+                    .iter()
+                    .filter_map(|o| serde_json::from_value(o.clone()).ok())
+                    .collect();
+                if parsed.len() >= 2 {
+                    use crate::launch::{GameLaunchConfig, GameLaunchOption, GameLaunchProcess};
+                    let options: Vec<GameLaunchOption> = parsed
+                        .iter()
+                        .enumerate()
+                        .map(|(idx, opt)| {
+                            let id = opt.name
+                                .to_ascii_lowercase()
+                                .chars()
+                                .map(|c| if c.is_alphanumeric() { c } else { '-' })
+                                .collect::<String>();
+                            let args: Vec<String> = if opt.arguments.trim().is_empty() {
+                                vec![]
+                            } else {
+                                opt.arguments.split_whitespace().map(String::from).collect()
+                            };
+                            GameLaunchOption {
+                                id: id.clone(),
+                                title: opt.name.clone(),
+                                description: String::new(),
+                                recommended: idx == 0,
+                                processes: vec![GameLaunchProcess {
+                                    path: opt.executable.clone(),
+                                    args,
+                                    working_directory: String::new(),
+                                    environment: std::collections::HashMap::new(),
+                                    run_as_admin: true,
+                                    hidden: None,
+                                    wait_for_exit: false,
+                                    delay_before_ms: 0,
+                                    delay_after_ms: 0,
+                                    optional: false,
+                                    role: "main".to_string(),
+                                }],
+                            }
+                        })
+                        .collect();
+                    let first_id = options.first().map(|o| o.id.clone()).unwrap_or_default();
+                    let launch_config = GameLaunchConfig {
+                        schema_version: 1,
+                        game_id: source.game_id.clone(),
+                        picker_mode: "auto".to_string(),
+                        default_option_id: first_id,
+                        options,
+                    };
+                    // Persist 0xo-launch.json so future calls and shortcuts work.
+                    let launch_json_path = install_path.join("0xo-launch.json");
+                    if let Ok(json) = serde_json::to_string_pretty(&launch_config) {
+                        let _ = fs::write(&launch_json_path, json);
+                    }
+                    let config = normalize_launch_config(
+                        launch_config,
+                        &source.game_id,
+                        &fallback_executable,
+                    )
+                    .map_err(JobError::Depot)?;
+                    return Ok((config, "depot build-info".to_string(), fallback_executable));
+                }
+            }
+        }
+    }
+
+    // 3. Try the embedded launch config from the asset pack.
     let embedded = asset_pack::get_game_detail(app, &source.game_id, None)
         .map(|detail| detail.launch)
         .unwrap_or_default();
@@ -2910,8 +2987,36 @@ impl DepotSource {
         let path = find_catalog_version_entry(catalog, version)
             .map(|entry| entry.manifest_path.as_str())
             .ok_or_else(|| JobError::Depot(format!("version not found in catalog: {version}")))?;
-        let manifest: VersionManifest = self.load_json(path)?;
+        let mut manifest: VersionManifest = self.load_json(path)?;
         validate_format_version(manifest.format_version, "manifest")?;
+
+        // If the manifest itself carries no launch options (e.g. older depots
+        // uploaded before the multi-launch feature), fall back to build-info.json
+        // which is now the canonical location for launch config.
+        if manifest.launch_options.is_empty() {
+            let build_info_path = format!("versions/{}/build-info.json", version);
+            // load_json is best-effort here; ignore errors silently.
+            if let Ok(build_info) = self.load_json::<serde_json::Value>(&build_info_path) {
+                if let Some(opts) = build_info.get("launchOptions").and_then(|v| v.as_array()) {
+                    let parsed: Vec<crate::manifest::LaunchOption> = opts
+                        .iter()
+                        .filter_map(|o| serde_json::from_value(o.clone()).ok())
+                        .collect();
+                    if !parsed.is_empty() {
+                        manifest.launch_options = parsed;
+                    }
+                }
+                // Also pick up launchExecutable from build-info if the manifest lacks it.
+                if manifest.launch_executable.is_none() {
+                    if let Some(exe) = build_info.get("launchExecutable").and_then(|v| v.as_str()) {
+                        if !exe.is_empty() {
+                            manifest.launch_executable = Some(exe.to_string());
+                        }
+                    }
+                }
+            }
+        }
+
         Ok(canonicalize_manifest_version(manifest, version))
     }
 
@@ -4893,7 +4998,7 @@ fn write_install_marker(
                         args,
                         working_directory: String::new(),
                         environment: std::collections::HashMap::new(),
-                        run_as_admin: false,
+                        run_as_admin: true,
                         hidden: None,
                         wait_for_exit: false,
                         delay_before_ms: 0,
@@ -4926,16 +5031,36 @@ fn write_install_marker(
         &launch_executable,
     )
     .map_err(JobError::Depot)?;
-    if let Some(executable) = safe_join(install_root, &launch_executable) {
-        let _ = create_game_shortcut(app, source, install_root, &executable, &launch_executable);
-        let _ = crate::steam_integration::ensure_game_shortcut(
-            app,
-            &source.game_id,
-            &source.game_dir_name,
-            install_root,
-            &launch_executable,
-            Some(&executable),
-        );
+
+    // Determine the best exe to use as the shortcut icon and target.
+    // For multi-exe games, use the first launch option's exe so the shortcut
+    // always gets created. The shortcut itself doesn't pin a specific option,
+    // so clicking it will trigger the picker.
+    let shortcut_exe_relative = if !manifest.launch_options.is_empty() {
+        manifest.launch_options[0].executable.clone()
+    } else {
+        launch_executable.clone()
+    };
+
+    if let Some(executable) = safe_join(install_root, &shortcut_exe_relative) {
+        if executable.exists() {
+            // For multi-exe games, don't pass --launch-executable so the picker appears.
+            let shortcut_relative = if manifest.launch_options.len() >= 2 {
+                // Create shortcut without pinning to a specific exe — picker will show.
+                let _ = create_game_shortcut_no_exe(app, source, install_root, &executable);
+            } else {
+                let _ = create_game_shortcut(app, source, install_root, &executable, &shortcut_exe_relative);
+            };
+            let _ = shortcut_relative;
+            let _ = crate::steam_integration::ensure_game_shortcut(
+                app,
+                &source.game_id,
+                &source.game_dir_name,
+                install_root,
+                &shortcut_exe_relative,
+                Some(&executable),
+            );
+        }
     }
     Ok(())
 }

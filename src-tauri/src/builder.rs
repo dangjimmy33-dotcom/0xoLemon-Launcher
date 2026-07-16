@@ -307,6 +307,7 @@ pub fn build_depot(input: BuildDepotInput) -> Result<BuildReport, BuildError> {
                 "createdAt": created_at,
                 "sourceLabel": format!("{} {}", input.game_id, version_input.version),
                 "launchExecutable": version_input.launch_executable.clone(),
+                "launchOptions": version_input.launch_options.clone(),
                 "totalSize": total_size,
                 "fileCount": manifest.files.len(),
                 "chunkCount": chunk_count,

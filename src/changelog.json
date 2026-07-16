@@ -1,5 +1,33 @@
 ﻿[
     {
+        "version":  "1.0.38",
+        "date":  "2026-07-16",
+        "changes":  [
+                        "sửa 1 số lỗi, cải thiện ổn định"
+                    ]
+    },
+    {
+        "version":  "1.0.37",
+        "date":  "2026-07-16",
+        "changes":  [
+                        "-sửa lỗi exe option"
+                    ]
+    },
+    {
+        "version":  "1.0.36",
+        "date":  "2026-07-16",
+        "changes":  [
+                        "-sửa thêm 1 số bug nhỏ"
+                    ]
+    },
+    {
+        "version":  "1.0.35",
+        "date":  "2026-07-16",
+        "changes":  [
+                        "sửa 1 số bug nhỏ"
+                    ]
+    },
+    {
         "version":  "1.0.34",
         "date":  "2026-07-15",
         "changes":  [

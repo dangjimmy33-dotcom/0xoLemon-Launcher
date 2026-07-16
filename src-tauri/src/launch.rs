@@ -116,9 +116,8 @@ pub fn fallback_launch_config(game_id: &str, relative_executable: &str) -> GameL
         args: Vec::new(),
         working_directory: String::new(),
         environment: HashMap::new(),
-        // Games should start with the user's normal token unless a per-game
-        // launch.json explicitly requests elevation.
-        run_as_admin: false,
+        // Always run as admin.
+        run_as_admin: true,
         hidden: None,
         wait_for_exit: false,
         delay_before_ms: 0,
@@ -224,6 +223,8 @@ pub fn normalize_launch_config(
                 "helper" | "server" | "auxiliary" => "helper".to_string(),
                 _ => "main".to_string(),
             };
+            // Always run every game process as admin.
+            process.run_as_admin = true;
         }
     }
 

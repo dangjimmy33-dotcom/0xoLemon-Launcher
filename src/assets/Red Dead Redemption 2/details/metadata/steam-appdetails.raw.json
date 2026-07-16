@@ -1,0 +1,325 @@
+﻿{
+    "1174180":  {
+                    "success":  true,
+                    "data":  {
+                                 "type":  "game",
+                                 "name":  "Red Dead Redemption 2",
+                                 "steam_appid":  1174180,
+                                 "required_age":  "17",
+                                 "is_free":  false,
+                                 "detailed_description":  "\u003ch1\u003eUltimate Edition\u003c/h1\u003e\u003cp\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1174180/extras/53502f85ab23215cde9e1f8ed71c5993.avif?t=1759502961\" width=614 height=346 /\u003e\u003c/span\u003e\u003cbr\u003eThe Red Dead Redemption 2:  Ultimate Edition delivers all of the Story Mode content from the Special Edition plus additional content for online including Bonus Outfits for your online Character, Rank Bonuses, Black Chestnut Thoroughbred and free access to the Survivor Camp Theme.\u003cbr\u003e\u003cbr\u003ePlus get free access to Additional Weapons in online.\u003c/p\u003e\u003cbr\u003e\u003ch1\u003eAbout the Game\u003c/h1\u003eAmerica, 1899. Arthur Morgan and the Van der Linde Gang are outlaws on the run. With federal agents and the best bounty hunters in the nation massing on their heels, the gang must rob, steal, and fight their way across the rugged heartland of America in order to survive. As deepening internal divisions threaten to tear the gang apart, Arthur must make a choice between his own ideals and loyalty to the gang who raised him. \u003cbr\u003e\u003cbr\u003eWinner of over 175 Game of the Year Awards and recipient of over 250 perfect scores, Red Dead Redemption 2 is an epic tale of honor and loyalty at the dawn of the modern age. \u003cbr\u003e\u003cbr\u003eRed Dead Redemption 2 also includes Red Dead Online — the multiplayer experience set in the living world of Red Dead Redemption 2 — ride solo or form a posse; run moonshine; battle lawmen, outlaw gangs, ferocious wild animals, and much more as you forge your own path on the American frontier.",
+                                 "about_the_game":  "America, 1899. Arthur Morgan and the Van der Linde Gang are outlaws on the run. With federal agents and the best bounty hunters in the nation massing on their heels, the gang must rob, steal, and fight their way across the rugged heartland of America in order to survive. As deepening internal divisions threaten to tear the gang apart, Arthur must make a choice between his own ideals and loyalty to the gang who raised him. \u003cbr /\u003e\r\n\u003cbr /\u003e\r\nWinner of over 175 Game of the Year Awards and recipient of over 250 perfect scores, Red Dead Redemption 2 is an epic tale of honor and loyalty at the dawn of the modern age. \u003cbr /\u003e\r\n\u003cbr /\u003e\r\nRed Dead Redemption 2 also includes Red Dead Online — the multiplayer experience set in the living world of Red Dead Redemption 2 — ride solo or form a posse; run moonshine; battle lawmen, outlaw gangs, ferocious wild animals, and much more as you forge your own path on the American frontier.",
+                                 "short_description":  "Arthur Morgan and the Van der Linde Gang are outlaws on the run. With federal agents and bounty hunters massing on their heels, the gang must rob, steal, and fight their way across the rugged heartland in order to survive.",
+                                 "supported_languages":  "English\u003cstrong\u003e*\u003c/strong\u003e, French, Italian, German, Spanish - Spain, Japanese, Korean, Polish, Russian, Simplified Chinese, Spanish - Latin America, Traditional Chinese, Portuguese - Brazil\u003cbr\u003e\u003cstrong\u003e*\u003c/strong\u003elanguages with full audio support",
+                                 "header_image":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1174180/header.jpg?t=1759502961",
+                                 "capsule_image":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1174180/capsule_231x87.jpg?t=1759502961",
+                                 "capsule_imagev5":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1174180/capsule_184x69.jpg?t=1759502961",
+                                 "website":  "https://www.rockstargames.com/reddeadredemption2/",
+                                 "pc_requirements":  {
+                                                         "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003eRequires a 64-bit processor and operating system\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows 10 - 64-bit\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e Intel® Core™ i5-2500K / AMD FX-6300\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 8 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e Nvidia GeForce GTX 770 2GB / AMD Radeon R9 280 3GB\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eNetwork:\u003c/strong\u003e Broadband Internet connection\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 150 GB available space\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eSound Card:\u003c/strong\u003e Direct X Compatible\u003c/li\u003e\u003c/ul\u003e",
+                                                         "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003eRequires a 64-bit processor and operating system\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows 10 - 64-bit\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e Intel® Core™ i7-4770K / AMD Ryzen 5 1500X\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 12 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e Nvidia GeForce GTX 1060 6GB / AMD Radeon RX 480 4GB\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eNetwork:\u003c/strong\u003e Broadband Internet connection\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 150 GB available space\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eSound Card:\u003c/strong\u003e Direct X Compatible\u003c/li\u003e\u003c/ul\u003e"
+                                                     },
+                                 "mac_requirements":  {
+                                                          "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e",
+                                                          "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e"
+                                                      },
+                                 "linux_requirements":  {
+                                                            "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e",
+                                                            "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e"
+                                                        },
+                                 "legal_notice":  "Software license terms in game and at www.rockstargames.com/eula; online account terms at www.rockstargames.com/socialclub. Non-transferable access to special features, such as exclusive/unlockable/downloadable/multiplayer/online \u0026 bonus content/services/functions, may require single-use serial code, additional fee, and/or non-transferrable online account registration (varies 13+). Special features access may require internet connection, may not be available to all users or at all times, and may be terminated/modified/offered under different terms without notice. Violation of EULA, Code of Conduct, or other policies may result in restriction or termination of access to game or online account. For info, customer \u0026 tech support visit www.rockstargames.com/support. This game is fictional. It may depict people, places, companies, groups, events, buildings, and other things that are similar to those in the real world; they are not affiliated or associated in any way with this game, and such depictions are not factual. The makers/publishers/licensors of this video game do not endorse/condone/encourage any content. Unauthorized copying, alteration, reverse engineering, decompiling, transmission, public performance, rental, pay for play, or copy protection circumvention is prohibited \u0026 violates EULA. Certain limits apply to purchase, use, and redemption. See EULA www.rockstargames.com/eula and Terms of Service www.rockstargames.com/legal for details.\u003cbr /\u003e\r\n \u003cbr /\u003e\r\nRockstar Games, Inc.  ©2005-19. Rockstar Games, Red Dead Redemption, R*, Redemption, Red Dead, Dead Eye are marks/logos/copyrights of Take-Two Interactive. Dolby and the Double-D symbols are trademarks of Dolby Laboratories. The ratings icon is a trademark of the Entertainment Software Association. All other marks and trademarks are properties of their respective owners.  All rights reserved.",
+                                 "ext_user_account_notice":  "Rockstar Games (Supports Linking to Steam Account)",
+                                 "developers":  [
+                                                    "Rockstar Games"
+                                                ],
+                                 "publishers":  [
+                                                    "Rockstar Games"
+                                                ],
+                                 "price_overview":  {
+                                                        "currency":  "USD",
+                                                        "initial":  5999,
+                                                        "final":  1499,
+                                                        "discount_percent":  75,
+                                                        "initial_formatted":  "$59.99",
+                                                        "final_formatted":  "$14.99"
+                                                    },
+                                 "packages":  [
+                                                  402134,
+                                                  412454
+                                              ],
+                                 "package_groups":  [
+                                                        {
+                                                            "name":  "default",
+                                                            "title":  "Buy Red Dead Redemption 2",
+                                                            "description":  "",
+                                                            "selection_text":  "Select a purchase option",
+                                                            "save_text":  "",
+                                                            "display_type":  0,
+                                                            "is_recurring_subscription":  "false",
+                                                            "subs":  [
+                                                                         {
+                                                                             "packageid":  402134,
+                                                                             "percent_savings_text":  "-75% ",
+                                                                             "percent_savings":  0,
+                                                                             "option_text":  "Red Dead Redemption 2 - \u003cspan class=\"discount_original_price\"\u003e$59.99\u003c/span\u003e $14.99",
+                                                                             "option_description":  "",
+                                                                             "can_get_free_license":  "0",
+                                                                             "is_free_license":  false,
+                                                                             "price_in_cents_with_discount":  1499
+                                                                         },
+                                                                         {
+                                                                             "packageid":  412454,
+                                                                             "percent_savings_text":  "-80% ",
+                                                                             "percent_savings":  0,
+                                                                             "option_text":  "Red Dead Redemption 2: Ultimate Edition - \u003cspan class=\"discount_original_price\"\u003e$99.99\u003c/span\u003e $19.99",
+                                                                             "option_description":  "",
+                                                                             "can_get_free_license":  "0",
+                                                                             "is_free_license":  false,
+                                                                             "price_in_cents_with_discount":  1999
+                                                                         }
+                                                                     ]
+                                                        }
+                                                    ],
+                                 "platforms":  {
+                                                   "windows":  true,
+                                                   "mac":  false,
+                                                   "linux":  false
+                                               },
+                                 "metacritic":  {
+                                                    "score":  93,
+                                                    "url":  "https://www.metacritic.com/game/pc/red-dead-redemption-2?ftag=MCD-06-10aaa1f"
+                                                },
+                                 "categories":  [
+                                                    {
+                                                        "id":  2,
+                                                        "description":  "Single-player"
+                                                    },
+                                                    {
+                                                        "id":  1,
+                                                        "description":  "Multi-player"
+                                                    },
+                                                    {
+                                                        "id":  49,
+                                                        "description":  "PvP"
+                                                    },
+                                                    {
+                                                        "id":  36,
+                                                        "description":  "Online PvP"
+                                                    },
+                                                    {
+                                                        "id":  9,
+                                                        "description":  "Co-op"
+                                                    },
+                                                    {
+                                                        "id":  38,
+                                                        "description":  "Online Co-op"
+                                                    },
+                                                    {
+                                                        "id":  22,
+                                                        "description":  "Steam Achievements"
+                                                    },
+                                                    {
+                                                        "id":  35,
+                                                        "description":  "In-App Purchases"
+                                                    },
+                                                    {
+                                                        "id":  18,
+                                                        "description":  "Partial Controller Support"
+                                                    },
+                                                    {
+                                                        "id":  41,
+                                                        "description":  "Remote Play on Phone"
+                                                    },
+                                                    {
+                                                        "id":  42,
+                                                        "description":  "Remote Play on Tablet"
+                                                    }
+                                                ],
+                                 "genres":  [
+                                                {
+                                                    "id":  "1",
+                                                    "description":  "Action"
+                                                },
+                                                {
+                                                    "id":  "25",
+                                                    "description":  "Adventure"
+                                                }
+                                            ],
+                                 "screenshots":  [
+                                                     {
+                                                         "id":  0,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1174180/ss_66b553f4c209476d3e4ce25fa4714002cc914c4f.600x338.jpg?t=1759502961",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1174180/ss_66b553f4c209476d3e4ce25fa4714002cc914c4f.1920x1080.jpg?t=1759502961"
+                                                     },
+                                                     {
+                                                         "id":  1,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1174180/ss_bac60bacbf5da8945103648c08d27d5e202444ca.600x338.jpg?t=1759502961",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1174180/ss_bac60bacbf5da8945103648c08d27d5e202444ca.1920x1080.jpg?t=1759502961"
+                                                     },
+                                                     {
+                                                         "id":  2,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1174180/ss_668dafe477743f8b50b818d5bbfcec669e9ba93e.600x338.jpg?t=1759502961",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1174180/ss_668dafe477743f8b50b818d5bbfcec669e9ba93e.1920x1080.jpg?t=1759502961"
+                                                     },
+                                                     {
+                                                         "id":  3,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1174180/ss_4ce07ae360b166f0f650e9a895a3b4b7bf15e34f.600x338.jpg?t=1759502961",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1174180/ss_4ce07ae360b166f0f650e9a895a3b4b7bf15e34f.1920x1080.jpg?t=1759502961"
+                                                     },
+                                                     {
+                                                         "id":  4,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1174180/ss_d1a8f5a69155c3186c65d1da90491fcfd43663d9.600x338.jpg?t=1759502961",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1174180/ss_d1a8f5a69155c3186c65d1da90491fcfd43663d9.1920x1080.jpg?t=1759502961"
+                                                     }
+                                                 ],
+                                 "movies":  [
+                                                {
+                                                    "id":  256767979,
+                                                    "name":  "RDR2 Launch Trailer (US)",
+                                                    "thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256767979/movie.293x165.jpg?t=1574881964",
+                                                    "dash_av1":  "https://video.akamai.steamstatic.com/store_trailers/1174180/254050/b2cc520c692391e65f2d09067f95001dcf4b434d/1750634049/dash_av1.mpd?t=1574881964",
+                                                    "dash_h264":  "https://video.akamai.steamstatic.com/store_trailers/1174180/254050/b2cc520c692391e65f2d09067f95001dcf4b434d/1750634049/dash_h264.mpd?t=1574881964",
+                                                    "hls_h264":  "https://video.akamai.steamstatic.com/store_trailers/1174180/254050/b2cc520c692391e65f2d09067f95001dcf4b434d/1750634049/hls_264_master.m3u8?t=1574881964",
+                                                    "highlight":  true
+                                                },
+                                                {
+                                                    "id":  256767971,
+                                                    "name":  "RDR2 60 FPS Trailer (US)",
+                                                    "thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256767971/movie.293x165.jpg?t=1574881973",
+                                                    "dash_av1":  "https://video.akamai.steamstatic.com/store_trailers/1174180/254038/f9d6239440402cbc2d1a8dac68da112c9c7f45a9/1750634048/dash_av1.mpd?t=1574881973",
+                                                    "dash_h264":  "https://video.akamai.steamstatic.com/store_trailers/1174180/254038/f9d6239440402cbc2d1a8dac68da112c9c7f45a9/1750634048/dash_h264.mpd?t=1574881973",
+                                                    "hls_h264":  "https://video.akamai.steamstatic.com/store_trailers/1174180/254038/f9d6239440402cbc2d1a8dac68da112c9c7f45a9/1750634048/hls_264_master.m3u8?t=1574881973",
+                                                    "highlight":  true
+                                                }
+                                            ],
+                                 "recommendations":  {
+                                                         "total":  826063
+                                                     },
+                                 "achievements":  {
+                                                      "total":  51,
+                                                      "highlighted":  [
+                                                                          {
+                                                                              "icon":  "3f5b6b4295a58d39b7619e5723f94b8f475dd81e.jpg",
+                                                                              "localized_name":  "Back in the Mud",
+                                                                              "name":  "Back in the Mud",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/1174180/3f5b6b4295a58d39b7619e5723f94b8f475dd81e.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "1d0bdc25d376a74b0ee37355ee32f9eb308dd90c.jpg",
+                                                                              "localized_name":  "Just a Scratch",
+                                                                              "name":  "Just a Scratch",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/1174180/1d0bdc25d376a74b0ee37355ee32f9eb308dd90c.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "cede247d21de983c4d0d8aed8b75d1324cac9bf3.jpg",
+                                                                              "localized_name":  "To Greener Pastures",
+                                                                              "name":  "To Greener Pastures",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/1174180/cede247d21de983c4d0d8aed8b75d1324cac9bf3.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "ab025f0eacc998f62125d7a7bb186e9fbdd95d24.jpg",
+                                                                              "localized_name":  "Settling Feuds",
+                                                                              "name":  "Settling Feuds",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/1174180/ab025f0eacc998f62125d7a7bb186e9fbdd95d24.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "a07e4dac160f638c24ac851ffc0aea19bc51f12d.jpg",
+                                                                              "localized_name":  "Washed Ashore",
+                                                                              "name":  "Washed Ashore",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/1174180/a07e4dac160f638c24ac851ffc0aea19bc51f12d.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "79a6c1cb5ac1f88150802768ab8c6a7078d272c1.jpg",
+                                                                              "localized_name":  "No Traitors",
+                                                                              "name":  "No Traitors",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/1174180/79a6c1cb5ac1f88150802768ab8c6a7078d272c1.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "70286589047c58568477e6ba124161d6047cd023.jpg",
+                                                                              "localized_name":  "Third Time Lucky",
+                                                                              "name":  "Third Time Lucky",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/1174180/70286589047c58568477e6ba124161d6047cd023.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "94fa0722da3453c6cd222b97b77880c29f7dc97c.jpg",
+                                                                              "localized_name":  "Redemption",
+                                                                              "name":  "Redemption",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/1174180/94fa0722da3453c6cd222b97b77880c29f7dc97c.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "d2fdc9461799c466b1ff7a9f3666cd2dbb4f61e3.jpg",
+                                                                              "localized_name":  "Cowboy Builder",
+                                                                              "name":  "Cowboy Builder",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/1174180/d2fdc9461799c466b1ff7a9f3666cd2dbb4f61e3.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "caca2e3bed70ec5ce18c7d7e9a261aef5cf55737.jpg",
+                                                                              "localized_name":  "Endless Summer",
+                                                                              "name":  "Endless Summer",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/1174180/caca2e3bed70ec5ce18c7d7e9a261aef5cf55737.jpg"
+                                                                          }
+                                                                      ]
+                                                  },
+                                 "release_date":  {
+                                                      "coming_soon":  false,
+                                                      "date":  "Dec 5, 2019"
+                                                  },
+                                 "support_info":  {
+                                                      "url":  "https://support.rockstargames.com/",
+                                                      "email":  ""
+                                                  },
+                                 "background":  "https://store.akamai.steamstatic.com/images/storepagebackground/app/1174180?t=1759502961",
+                                 "background_raw":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1174180/page_bg_raw.jpg?t=1759502961",
+                                 "content_descriptors":  {
+                                                             "ids":  [
+                                                                         5
+                                                                     ],
+                                                             "notes":  null
+                                                         },
+                                 "ratings":  {
+                                                 "esrb":  {
+                                                              "rating":  "m",
+                                                              "use_age_gate":  "true",
+                                                              "required_age":  "17",
+                                                              "descriptors":  "Blood and Gore\r\nIntense Violence\r\nNudity\r\nSexual Content\r\nStrong Language\r\nUse of Drugs and Alcohol",
+                                                              "interactive_elements":  "In-Game Purchases\r\nUsers Interact"
+                                                          },
+                                                 "pegi":  {
+                                                              "rating":  "18",
+                                                              "descriptors":  "Strong Language\r\nViolence\r\nGambling"
+                                                          },
+                                                 "usk":  {
+                                                             "rating":  "18",
+                                                             "descriptors":  "No youth"
+                                                         },
+                                                 "oflc":  {
+                                                              "rating":  "ma15",
+                                                              "descriptors":  "Online Interactivity\r\nStrong Themes\r\nViolence"
+                                                          },
+                                                 "nzoflc":  {
+                                                                "rating":  "r16",
+                                                                "descriptors":  "Cruelty\r\nOffensive Language\r\nViolence"
+                                                            },
+                                                 "kgrb":  {
+                                                              "rating":  "18",
+                                                              "descriptors":  "Alcohol, Tobacco, Drug\r\nCrime, Anti-Societal or Anti-Governmental\r\nMessages\r\nGambling\r\nLanguage\r\nSexuality\r\nViolence"
+                                                          },
+                                                 "dejus":  {
+                                                               "rating":  "18",
+                                                               "descriptors":  "Violência\r\nAtos criminosos\r\nDrogas ilícitas"
+                                                           },
+                                                 "fpb":  {
+                                                             "rating":  "18",
+                                                             "descriptors":  "Competitive Intensity\r\nLanguage\r\nNudity\r\nPrejudice\r\nSex\r\nViolence"
+                                                         },
+                                                 "csrr":  {
+                                                              "rating":  "R",
+                                                              "descriptors":  "Inappropriate Language\r\nSex\r\nViolence"
+                                                          },
+                                                 "crl":  {
+                                                             "rating":  "18"
+                                                         }
+                                             }
+                             }
+                }
+}
