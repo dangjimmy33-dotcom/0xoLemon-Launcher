@@ -1,5 +1,12 @@
 ﻿[
     {
+        "version":  "1.0.40",
+        "date":  "2026-07-18",
+        "changes":  [
+                        "sửa 1 số lỗi về vấn đề download"
+                    ]
+    },
+    {
         "version":  "1.0.39",
         "date":  "2026-07-16",
         "changes":  [
