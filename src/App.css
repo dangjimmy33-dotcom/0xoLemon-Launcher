@@ -1248,6 +1248,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
   gap: 12px;
+  content-visibility: auto;
 }
 
 .store-game-card {
@@ -1308,6 +1309,7 @@
   border-radius: 8px;
   object-fit: cover;
   background: #070a0c;
+  will-change: transform;
 }
 
 .asset-placeholder {
@@ -2322,6 +2324,7 @@
   height: 176px;
   object-fit: cover;
   opacity: 0.86;
+  will-change: opacity;
 }
 
 .hero-panel::after {

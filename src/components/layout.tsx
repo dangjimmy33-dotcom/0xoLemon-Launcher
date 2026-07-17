@@ -147,7 +147,7 @@ export function TabEmptyState({
           visibleGames.map((game) => (
             <button className="tab-game-row reveal" key={game.id} type="button" onClick={() => onSelectGame(game.id)}>
               {assetUrlForId(game.gridAssetId, assets) ? (
-                <img src={assetUrlForId(game.gridAssetId, assets)} alt="" />
+                <img src={assetUrlForId(game.gridAssetId, assets)} alt="" loading="lazy" decoding="async" />
               ) : (
                 <div className="tab-game-art">
                   <ImageIcon size={22} />

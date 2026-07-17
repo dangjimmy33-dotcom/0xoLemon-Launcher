@@ -221,6 +221,8 @@ export function BigPictureView({
               transition={{ duration: 0.7 }}
               alt=""
               draggable={false}
+              fetchPriority="high"
+              decoding="async"
             />
           )}
         </AnimatePresence>

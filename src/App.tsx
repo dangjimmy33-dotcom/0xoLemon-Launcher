@@ -1383,6 +1383,10 @@ export default function App() {
         canceledJobIdRef.current = null
       }
       setJob(nextJob)
+      // Clear the resume loading state as soon as backend confirms the job is running
+      if (nextJob.status === 'running' || nextJob.status === 'downloading' || nextJob.status === 'assembling') {
+        setIsResuming(false)
+      }
       if (
         selectedGameIdRef.current === nextJob.gameId &&
         nextJob.toVersion &&
@@ -1707,6 +1711,7 @@ export default function App() {
     latestCatalogVersion !== 'unknown' &&
     selectedCurrentVersion !== latestCatalogVersion
   const isPaused = activeJob.status === 'paused'
+  const [isResuming, setIsResuming] = useState(false)
   const isRunning = job !== null && ['running', 'downloading', 'assembling', 'paused'].includes(activeJob.status)
   const hasVersionChoices = availableVersions.length > 1
   const showVersionAction = selectedInstalled && hasVersionChoices
@@ -2852,13 +2857,16 @@ export default function App() {
       return
     }
 
+    setIsResuming(true)
     try {
       await invoke('resume_job')
       setJob((current) => (current ? { ...current, status: 'downloading', phase: current.phase || 'Download packs' } : current))
       setScanStatus('Resuming download...')
     } catch (error) {
       setScanStatus(String(error))
+      setIsResuming(false)
     }
+    // isResuming will be cleared when the first job event arrives from backend
   }
 
   async function cancelJob() {
@@ -3232,6 +3240,7 @@ export default function App() {
                     onPause={pauseOrResume}
                     onCancel={cancelJob}
                     onResume={resumeFailedJob}
+                    isResuming={isResuming}
                     isPaused={isPaused}
                     logs={activeJob.logs}
                     onOpenStore={() => {

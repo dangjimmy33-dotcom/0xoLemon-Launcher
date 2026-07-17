@@ -1,0 +1,452 @@
+﻿[
+    {
+        "role":  "header",
+        "title":  "Steam header",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/header.jpg?t=1767883716",
+        "file":  "store_art/header.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.108Z"
+    },
+    {
+        "role":  "capsule",
+        "title":  "Steam capsule",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/capsule_231x87.jpg?t=1767883716",
+        "file":  "store_art/capsule.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.112Z"
+    },
+    {
+        "role":  "capsule-v5",
+        "title":  "Steam capsule v5",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/capsule_184x69.jpg?t=1767883716",
+        "file":  "store_art/capsule-v5.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.113Z"
+    },
+    {
+        "role":  "background",
+        "title":  "Steam background",
+        "sourceUrl":  "https://store.akamai.steamstatic.com/images/storepagebackground/app/1245620?t=1767883716",
+        "file":  "store_art/background.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.113Z"
+    },
+    {
+        "role":  "background-raw",
+        "title":  "Steam background raw",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/page_bg_raw.jpg?t=1767883716",
+        "file":  "store_art/background-raw.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.115Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 1",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/ss_943bf6fe62352757d9070c1d33e50b92fe8539f1.1920x1080.jpg?t=1767883716",
+        "file":  "screenshots/001_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.126Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 2",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/ss_dcdac9e4b26ac0ee5248bfd2967d764fd00cdb42.1920x1080.jpg?t=1767883716",
+        "file":  "screenshots/002_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.127Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 3",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/ss_3c41384a24d86dddd58a8f61db77f9dc0bfda8b5.1920x1080.jpg?t=1767883716",
+        "file":  "screenshots/003_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.127Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 4",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/ss_e0316c76f8197405c1312d072b84331dd735d60b.1920x1080.jpg?t=1767883716",
+        "file":  "screenshots/004_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.128Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 5",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/ss_ef61b771ee6b269b1f0cb484233e07a0bfb5f81b.1920x1080.jpg?t=1767883716",
+        "file":  "screenshots/005_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.128Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 6",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/ss_b1b91299d7e4b94201ac840aa64de54d9f5cb7f3.1920x1080.jpg?t=1767883716",
+        "file":  "screenshots/006_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.128Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 7",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/ss_510a02cf3045e841e180f2b77fb87545e0c8b59d.1920x1080.jpg?t=1767883716",
+        "file":  "screenshots/007_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.130Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 8",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/ss_c494372930ca791bdc6221eca134f2270fb2cb9f.1920x1080.jpg?t=1767883716",
+        "file":  "screenshots/008_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.130Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 9",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/ss_fa6b881ef7c30522012ab2b2b83001e79baee093.1920x1080.jpg?t=1767883716",
+        "file":  "screenshots/009_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.130Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 10",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1245620/ss_c2baf8aada6140beee79d701d14043899e91af47.1920x1080.jpg?t=1767883716",
+        "file":  "screenshots/010_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.131Z"
+    },
+    {
+        "role":  "video",
+        "title":  "ELDEN RING - Accolades Trailer",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/1245620/468143/7a6be00f78fb0fd8b419e92cea72cc4a19ec45f8/1750650501/hls_264_master.m3u8?t=1716311566",
+        "file":  "videos/001_elden-ring-accolades-trailer.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.139Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "ELDEN RING - Accolades Trailer",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256889452/movie.293x165.jpg?t=1716311566",
+        "file":  "video_thumbnails/001_elden-ring-accolades-trailer_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.139Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "ELDEN RING - Accolades Trailer",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256889452/movie_600x337.jpg?t=1716311566",
+        "file":  "video_thumbnails/001_elden-ring-accolades-trailer_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.139Z"
+    },
+    {
+        "role":  "video",
+        "title":  "ELDEN RING - Story Trailer",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/1245620/424516/9e2f1e655055aaa387fb5987a893bc2990e18085/1750650297/hls_264_master.m3u8?t=1739917119",
+        "file":  "videos/002_elden-ring-story-trailer.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.141Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "ELDEN RING - Story Trailer",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256864891/5231d5fc8ff9010cc6b18d1905e05f2dfc330457/movie_600x337.jpg?t=1739917119",
+        "file":  "video_thumbnails/002_elden-ring-story-trailer_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.141Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "ELDEN RING - Story Trailer",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256864891/5231d5fc8ff9010cc6b18d1905e05f2dfc330457/movie_600x337.jpg?t=1739917119",
+        "file":  "video_thumbnails/002_elden-ring-story-trailer_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.141Z"
+    },
+    {
+        "role":  "video",
+        "title":  "ELDEN RING Shadow of the Erdtree - Gameplay Reveal Trailer",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/1245620/665332/4021bcd03e70a49cb23b598f5407b8290152f9e2/1750650652/hls_264_master.m3u8?t=1709086258",
+        "file":  "videos/003_elden-ring-shadow-of-the-erdtree-gameplay-reveal-trailer.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.141Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "ELDEN RING Shadow of the Erdtree - Gameplay Reveal Trailer",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257002650/movie.293x165.jpg?t=1709086258",
+        "file":  "video_thumbnails/003_elden-ring-shadow-of-the-erdtree-gameplay-reveal-trailer_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.141Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "ELDEN RING Shadow of the Erdtree - Gameplay Reveal Trailer",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257002650/movie_600x337.jpg?t=1709086258",
+        "file":  "video_thumbnails/003_elden-ring-shadow-of-the-erdtree-gameplay-reveal-trailer_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.141Z"
+    },
+    {
+        "role":  "video",
+        "title":  "ELDEN RING - Rise, Tarnished | Official Launch Trailer",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/1245620/442816/aa7a26b8b7da66bf324ce24555fe0848d4650711/1750650397/hls_264_master.m3u8?t=1739917121",
+        "file":  "videos/004_elden-ring-rise-tarnished-official-launch-trailer.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.142Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "ELDEN RING - Rise, Tarnished | Official Launch Trailer",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256875477/8041f25c0a2422fe434c4ce158b729e565570de4/movie_600x337.jpg?t=1739917121",
+        "file":  "video_thumbnails/004_elden-ring-rise-tarnished-official-launch-trailer_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.142Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "ELDEN RING - Rise, Tarnished | Official Launch Trailer",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256875477/8041f25c0a2422fe434c4ce158b729e565570de4/movie_600x337.jpg?t=1739917121",
+        "file":  "video_thumbnails/004_elden-ring-rise-tarnished-official-launch-trailer_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.142Z"
+    },
+    {
+        "role":  "video",
+        "title":  "ELDEN RING - Official Gameplay Trailer",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/1245620/377844/2912096cfadf6d63b7a35b7e7bc4e488c91cb31e/1750649918/hls_264_master.m3u8?t=1739917125",
+        "file":  "videos/005_elden-ring-official-gameplay-trailer.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.142Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "ELDEN RING - Official Gameplay Trailer",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256839312/3bcf246a6f06cc165a6afb8b15db4626efe10fcf/movie_600x337.jpg?t=1739917125",
+        "file":  "video_thumbnails/005_elden-ring-official-gameplay-trailer_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.142Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "ELDEN RING - Official Gameplay Trailer",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256839312/3bcf246a6f06cc165a6afb8b15db4626efe10fcf/movie_600x337.jpg?t=1739917125",
+        "file":  "video_thumbnails/005_elden-ring-official-gameplay-trailer_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.142Z"
+    },
+    {
+        "role":  "video",
+        "title":  "ELDEN RING - Colosseum Update Trailer",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/1245620/523578/04c32976ad6ae1199674713e076b5ef49512864c/1750650609/hls_264_master.m3u8?t=1739917128",
+        "file":  "videos/006_elden-ring-colosseum-update-trailer.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.144Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "ELDEN RING - Colosseum Update Trailer",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256921983/997facc1c3f48cafddc7e4d5133a66622c11645b/movie_600x337.jpg?t=1739917128",
+        "file":  "video_thumbnails/006_elden-ring-colosseum-update-trailer_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.144Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "ELDEN RING - Colosseum Update Trailer",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256921983/997facc1c3f48cafddc7e4d5133a66622c11645b/movie_600x337.jpg?t=1739917128",
+        "file":  "video_thumbnails/006_elden-ring-colosseum-update-trailer_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.144Z"
+    },
+    {
+        "role":  "video",
+        "title":  "ELDEN RING Shadow of the Erdtree - Accolades Trailer",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/1245620/721583/6b982c4d1b6a2df516cc81817bcc8f488c145f88/1750650730/hls_264_master.m3u8?t=1719960966",
+        "file":  "videos/007_elden-ring-shadow-of-the-erdtree-accolades-trailer.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.144Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "ELDEN RING Shadow of the Erdtree - Accolades Trailer",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257035416/movie.293x165.jpg?t=1719960966",
+        "file":  "video_thumbnails/007_elden-ring-shadow-of-the-erdtree-accolades-trailer_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.144Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "ELDEN RING Shadow of the Erdtree - Accolades Trailer",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257035416/movie_600x337.jpg?t=1719960966",
+        "file":  "video_thumbnails/007_elden-ring-shadow-of-the-erdtree-accolades-trailer_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.144Z"
+    },
+    {
+        "role":  "video",
+        "title":  "ELDEN RING Shadow of the Erdtree - Official Launch Trailer",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/1245620/716614/658de74e240706b1cd8410e4598c1ad4805732a8/1750650718/hls_264_master.m3u8?t=1739922032",
+        "file":  "videos/008_elden-ring-shadow-of-the-erdtree-official-launch-trailer.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.145Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "ELDEN RING Shadow of the Erdtree - Official Launch Trailer",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257032751/65f9c2f9b53a005bdcf2b828a7789407907cef92/movie_600x337.jpg?t=1739922032",
+        "file":  "video_thumbnails/008_elden-ring-shadow-of-the-erdtree-official-launch-trailer_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.145Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "ELDEN RING Shadow of the Erdtree - Official Launch Trailer",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257032751/65f9c2f9b53a005bdcf2b828a7789407907cef92/movie_600x337.jpg?t=1739922032",
+        "file":  "video_thumbnails/008_elden-ring-shadow-of-the-erdtree-official-launch-trailer_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.145Z"
+    },
+    {
+        "role":  "video",
+        "title":  "ELDEN RING Shadow of the Erdtree - Story Trailer",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/1245620/709333/0bf320e7b68f9e4a2e2d061595dec6f66783039a/1750650709/hls_264_master.m3u8?t=1739922034",
+        "file":  "videos/009_elden-ring-shadow-of-the-erdtree-story-trailer.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.146Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "ELDEN RING Shadow of the Erdtree - Story Trailer",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257028328/58855f3c493b4ccf5b995880b057dfb031bf0969/movie_600x337.jpg?t=1739922034",
+        "file":  "video_thumbnails/009_elden-ring-shadow-of-the-erdtree-story-trailer_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.146Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "ELDEN RING Shadow of the Erdtree - Story Trailer",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257028328/58855f3c493b4ccf5b995880b057dfb031bf0969/movie_600x337.jpg?t=1739922034",
+        "file":  "video_thumbnails/009_elden-ring-shadow-of-the-erdtree-story-trailer_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.146Z"
+    },
+    {
+        "role":  "video",
+        "title":  "ELDEN RING - Pre-Order Trailer",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/1245620/416117/75fbbd1528fe741f8284c60d4c1f16bb87951206/1750650038/hls_264_master.m3u8?t=1716311581",
+        "file":  "videos/010_elden-ring-pre-order-trailer.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.146Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "ELDEN RING - Pre-Order Trailer",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256859890/movie.293x165.jpg?t=1716311581",
+        "file":  "video_thumbnails/010_elden-ring-pre-order-trailer_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.146Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "ELDEN RING - Pre-Order Trailer",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256859890/movie_600x337.jpg?t=1716311581",
+        "file":  "video_thumbnails/010_elden-ring-pre-order-trailer_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-17T00:22:01.147Z"
+    }
+]

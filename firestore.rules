@@ -1,0 +1,57 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // ── config/ ───────────────────────────────────────────────────────────────
+    // gameCatalog, gameStats — public read; only admin writes.
+    // TODO: Replace with your real Firebase UID (find it in Firebase Console →
+    //       Authentication → Users → your account → UID column).
+    match /config/{docId} {
+      allow read: if true;
+      allow write: if isSignedIn() && request.auth.uid == "YOUR_ADMIN_UID_HERE";
+    }
+
+    // ── gameDetails/ ─────────────────────────────────────────────────────────
+    // Public read; admin-only write.
+    match /gameDetails/{gameId} {
+      allow read: if true;
+      allow write: if isSignedIn() && request.auth.uid == "YOUR_ADMIN_UID_HERE";
+    }
+
+    // ── chats/ ───────────────────────────────────────────────────────────────
+    // Any signed-in user can read messages.
+    // Any signed-in user can post a message (create only).
+    // Only the original sender can edit/delete their own message.
+    match /chats/{gameId}/messages/{messageId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && request.resource.data.senderId is string
+        && request.resource.data.senderId.size() > 0
+        && request.resource.data.text is string;
+      allow update, delete: if isSignedIn()
+        && resource.data.senderId == request.auth.uid;
+    }
+
+    // ── chat_meta/ ───────────────────────────────────────────────────────────
+    // HF sync leader election — any signed-in client can coordinate.
+    match /chat_meta/{gameId} {
+      allow read, write: if isSignedIn();
+    }
+
+    // ── users/ ───────────────────────────────────────────────────────────────
+    // Each user has full access to their own subtree only.
+    match /users/{userId}/{document=**} {
+      allow read, write: if isOwner(userId);
+    }
+  }
+}

@@ -54,6 +54,7 @@ export function ActiveView({
   onPause,
   onCancel,
   onResume,
+  isResuming,
   isPaused,
   logs,
   onOpenStore,
@@ -119,6 +120,7 @@ export function ActiveView({
   onPause: () => void
   onCancel: () => void
   onResume?: () => void
+  isResuming?: boolean
   isPaused: boolean
   logs: JobLog[]
   onOpenStore: () => void
@@ -307,6 +309,7 @@ export function ActiveView({
               onPause={onPause}
               onCancel={onCancel}
               onResume={onResume}
+              isResuming={isResuming}
             />
           ) : null}
           {hasJob || activeTab === 'Updates' ? (

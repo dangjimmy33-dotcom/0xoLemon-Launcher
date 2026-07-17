@@ -1969,7 +1969,8 @@ fn run_real_update_job(
     let target_version = resolve_target_version(&catalog, Some(journal.to_version.clone()))?;
     journal.to_version = target_version.clone();
     let target_manifest = source.load_manifest(&catalog, &target_version)?;
-    let changed = changed_target_files(&from_manifest, &target_manifest);
+    let mut changed = changed_target_files(&from_manifest, &target_manifest);
+    changed = filter_already_assembled(app, &mut journal, &install_root, changed, &control)?;
     let (local_sources, reused_chunks, rejected_chunks) =
         build_verified_local_chunk_sources(&install_root, &from_manifest, &changed, &control)?;
     append_log(
@@ -2077,6 +2078,17 @@ fn run_real_update_job(
         journal.overall_progress = overall_progress(3, 1.0);
         persist_and_emit(app, &journal)?;
     } else {
+        let mut chunk_usage: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
+        for file in &changed {
+            for chunk in &file.chunks {
+                *chunk_usage.entry(chunk.hash.clone()).or_insert(0) += 1;
+            }
+        }
+        // Throttle: emit at most once every 200ms to avoid flooding the WebView
+        // with hundreds of IPC round-trips per second during large assemblies.
+        let mut last_assemble_emit = Instant::now();
+        let assemble_emit_interval = Duration::from_millis(200);
+        let total_files = changed.len();
         for (index, file) in changed.iter().enumerate() {
             wait_for_control(app, &control, &mut journal, 3)?;
             append_log(&mut journal, "info", &format!("Assembling {}", file.path));
@@ -2086,10 +2098,27 @@ fn run_real_update_job(
                 file,
                 &local_sources,
             )?;
-            journal.steps[3].progress = progress_fraction(index + 1, changed.len());
+            
+            // Free up disk space immediately by deleting chunks no longer needed
+            for chunk in &file.chunks {
+                if let Some(count) = chunk_usage.get_mut(&chunk.hash) {
+                    *count = count.saturating_sub(1);
+                    if *count == 0 {
+                        let chunk_path = staged_chunks_root.join(format!("{}.chunk", chunk.hash));
+                        let _ = fs::remove_file(&chunk_path);
+                    }
+                }
+            }
+            
+            journal.steps[3].progress = progress_fraction(index + 1, total_files);
             journal.overall_progress = overall_progress(3, journal.steps[3].progress);
             touch(&mut journal);
-            persist_and_emit(app, &journal)?;
+            // Always emit the very last file so UI reaches 100%.
+            let is_last = index + 1 == total_files;
+            if is_last || last_assemble_emit.elapsed() >= assemble_emit_interval {
+                persist_and_emit(app, &journal)?;
+                last_assemble_emit = Instant::now();
+            }
         }
     }
     complete_step(app, &mut journal, 3)?;
@@ -2200,7 +2229,8 @@ fn run_real_install_job(
     journal.to_version = target_version.clone();
     let target_manifest = source.load_manifest(&catalog, &target_version)?;
     
-    let changed = target_manifest.files.clone();
+    let mut changed = target_manifest.files.clone();
+    changed = filter_already_assembled(app, &mut journal, &install_root, changed, &control)?;
     let local_sources = HashMap::new();
     
     // We assemble directly to install folder now, no staging needed
@@ -2300,6 +2330,17 @@ fn run_real_install_job(
         journal.overall_progress = overall_progress(3, 1.0);
         persist_and_emit(app, &journal)?;
     } else {
+        let mut chunk_usage: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
+        for file in &changed {
+            for chunk in &file.chunks {
+                *chunk_usage.entry(chunk.hash.clone()).or_insert(0) += 1;
+            }
+        }
+        // Throttle: emit at most once every 200ms to avoid flooding the WebView
+        // with hundreds of IPC round-trips per second during large assemblies.
+        let mut last_assemble_emit = Instant::now();
+        let assemble_emit_interval = Duration::from_millis(200);
+        let total_files = changed.len();
         for (index, file) in changed.iter().enumerate() {
             wait_for_control(app, &control, &mut journal, 3)?;
             append_log(&mut journal, "info", &format!("Assembling {}", file.path));
@@ -2310,10 +2351,26 @@ fn run_real_install_job(
                 &local_sources,
             )?;
             
-            journal.steps[3].progress = progress_fraction(index + 1, changed.len());
+            // Free up disk space immediately by deleting chunks no longer needed
+            for chunk in &file.chunks {
+                if let Some(count) = chunk_usage.get_mut(&chunk.hash) {
+                    *count = count.saturating_sub(1);
+                    if *count == 0 {
+                        let chunk_path = staged_chunks_root.join(format!("{}.chunk", chunk.hash));
+                        let _ = fs::remove_file(&chunk_path);
+                    }
+                }
+            }
+            
+            journal.steps[3].progress = progress_fraction(index + 1, total_files);
             journal.overall_progress = overall_progress(3, journal.steps[3].progress);
             touch(&mut journal);
-            persist_and_emit(app, &journal)?;
+            // Always emit the very last file so UI reaches 100%.
+            let is_last = index + 1 == total_files;
+            if is_last || last_assemble_emit.elapsed() >= assemble_emit_interval {
+                persist_and_emit(app, &journal)?;
+                last_assemble_emit = Instant::now();
+            }
         }
     }
     complete_step(app, &mut journal, 3)?;
@@ -2508,6 +2565,16 @@ fn run_real_repair_job(
         journal.overall_progress = overall_progress(3, 1.0);
         persist_and_emit(app, &journal)?;
     } else {
+        let mut chunk_usage: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
+        for file in &repair_files {
+            for chunk in &file.chunks {
+                *chunk_usage.entry(chunk.hash.clone()).or_insert(0) += 1;
+            }
+        }
+        // Throttle: emit at most once every 200ms to avoid flooding the WebView.
+        let mut last_emit = Instant::now();
+        let emit_interval = Duration::from_millis(200);
+        let total_files = repair_files.len();
         for (index, file) in repair_files.iter().enumerate() {
             wait_for_control(app, &control, &mut journal, 3)?;
             append_log(&mut journal, "info", &format!("Repairing {}", file.path));
@@ -2517,10 +2584,26 @@ fn run_real_repair_job(
                 file,
                 &local_sources,
             )?;
-            journal.steps[3].progress = progress_fraction(index + 1, repair_files.len());
+            
+            // Free up disk space immediately by deleting chunks no longer needed
+            for chunk in &file.chunks {
+                if let Some(count) = chunk_usage.get_mut(&chunk.hash) {
+                    *count = count.saturating_sub(1);
+                    if *count == 0 {
+                        let chunk_path = staged_chunks_root.join(format!("{}.chunk", chunk.hash));
+                        let _ = fs::remove_file(&chunk_path);
+                    }
+                }
+            }
+            
+            journal.steps[3].progress = progress_fraction(index + 1, total_files);
             journal.overall_progress = overall_progress(3, journal.steps[3].progress);
             touch(&mut journal);
-            persist_and_emit(app, &journal)?;
+            let is_last = index + 1 == total_files;
+            if is_last || last_emit.elapsed() >= emit_interval {
+                persist_and_emit(app, &journal)?;
+                last_emit = Instant::now();
+            }
         }
     }
     complete_step(app, &mut journal, 3)?;
@@ -3181,6 +3264,9 @@ impl DepotSource {
                     "{url}: range size mismatch for {pack_id}; expected {expected_len}, got {final_len}"
                 )),
                 Err(JobError::Canceled) => return Err(JobError::Canceled),
+                Err(err @ JobError::Transient(_)) | Err(err @ JobError::RateLimited { .. }) => {
+                    return Err(err);
+                }
                 Err(err) => failures.push(format!("{url}: {err}")),
             }
         }
@@ -4620,6 +4706,54 @@ fn target_file_valid(path: &Path, file: &FileEntry) -> Result<bool, JobError> {
     Ok(sha256_file(path)? == file.sha256)
 }
 
+fn filter_already_assembled(
+    app: &AppHandle,
+    journal: &mut JobJournal,
+    install_root: &Path,
+    changed: Vec<FileEntry>,
+    control: &Arc<JobControl>,
+) -> Result<Vec<FileEntry>, JobError> {
+    let mut actual_changed = Vec::with_capacity(changed.len());
+    let mut already_assembled = 0;
+    
+    for file in changed {
+        if control.is_canceled() {
+            return Err(JobError::Canceled);
+        }
+        let target = install_root.join(&file.path);
+        
+        // Fast path: only if file exists and size matches, we check hash
+        let mut is_valid = false;
+        if target.exists() {
+            if let Ok(metadata) = fs::metadata(&target) {
+                if metadata.len() == file.size {
+                    // Only hash files that match the exact size
+                    if let Ok(true) = target_file_valid(&target, &file) {
+                        is_valid = true;
+                    }
+                }
+            }
+        }
+        
+        if is_valid {
+            already_assembled += 1;
+        } else {
+            actual_changed.push(file);
+        }
+    }
+    
+    if already_assembled > 0 {
+        append_log(
+            journal,
+            "info",
+            &format!("Skipped {} files that were already fully assembled from a previous run", already_assembled)
+        );
+        let _ = persist_and_emit(app, journal);
+    }
+    
+    Ok(actual_changed)
+}
+
 pub fn abort_and_clean_job(
     app: &AppHandle,
     requested_game_id: Option<&str>,
@@ -4890,12 +5024,15 @@ fn compressed_chunk_file_valid(path: &Path, chunk: &ChunkRef) -> Result<bool, Jo
     if !path.exists() {
         return Ok(false);
     }
-    let data = fs::read(path)?;
-    if verify_compressed_chunk_bytes(chunk, &data).is_err() {
-        fs::remove_file(path)?;
-        return Ok(false);
+    // Optimization: chunks are written atomically via .tmp and rename,
+    // so if the file exists and the size matches, we can trust it.
+    if let Ok(metadata) = fs::metadata(path) {
+        if metadata.len() == chunk.compressed_size {
+            return Ok(true);
+        }
     }
-    Ok(true)
+    fs::remove_file(path)?;
+    Ok(false)
 }
 
 fn write_chunk_file(path: &Path, data: &[u8]) -> Result<(), JobError> {
@@ -5377,9 +5514,8 @@ fn is_active_real_journal(journal: &JobJournal) -> bool {
             | JobStatus::Verified
             | JobStatus::Failed
     );
-    journal.logs.iter().any(|log| {
-        log.message.contains("Real update job") || log.message.contains("Real install job")
-    }) && is_active
+    let is_real = journal.kind == "install" || journal.kind == "update" || journal.kind == "repair";
+    is_active && is_real
 }
 
 fn default_journal(

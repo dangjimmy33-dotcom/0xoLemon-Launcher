@@ -54,7 +54,7 @@ function LazyGameCardImage({
   }, [assetId, game, onRequestAsset, url])
 
   if (url) {
-    return <img src={url} alt="" loading="lazy" />
+    return <img src={url} alt="" loading="lazy" decoding="async" />
   }
 
   return (
@@ -1942,10 +1942,10 @@ export function OperationHero({
 
   return (
     <section className="hero-panel">
-      {hero ? <img src={hero} alt="" loading="eager" /> : null}
+      {hero ? <img src={hero} alt="" loading="eager" fetchPriority="high" decoding="async" /> : null}
       <div className="game-strip">
         <div className="game-emblem">
-          {assetUrlForId(game.iconAssetId, assets) ? <img src={assetUrlForId(game.iconAssetId, assets)} alt="" /> : <ImageIcon size={28} />}
+          {assetUrlForId(game.iconAssetId, assets) ? <img src={assetUrlForId(game.iconAssetId, assets)} alt="" decoding="async" loading="lazy" /> : <ImageIcon size={28} />}
         </div>
         <div>
           <h1>{game.title}</h1>

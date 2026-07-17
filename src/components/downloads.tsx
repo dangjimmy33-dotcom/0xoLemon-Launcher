@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Archive, CheckCircle2, CircleAlert, Download, Pause, Play, ShieldCheck, TerminalSquare, X } from 'lucide-react'
+import { Archive, CheckCircle2, CircleAlert, Download, Loader2, Pause, Play, ShieldCheck, TerminalSquare, X } from 'lucide-react'
 import { enUS as t } from '../i18n/en-US'
 import type { JobJournal, JobLog, JobStep, PhaseProgress } from '../types'
 import { formatBytes, formatDuration } from '../lib/format'
@@ -24,6 +24,7 @@ export function DownloadQueuePanel({
   onPause,
   onCancel,
   onResume,
+  isResuming = false,
 }: {
   gameTitle: string
   job: JobJournal
@@ -38,6 +39,7 @@ export function DownloadQueuePanel({
   onPause: () => void
   onCancel: () => void
   onResume?: () => void
+  isResuming?: boolean
 }) {
   const displayProgress = useSmoothNumber(progress)
 
@@ -100,8 +102,20 @@ export function DownloadQueuePanel({
           </div>
         </div>
         {failed || canceled ? (
-          <button type="button" onClick={failed ? (onResume ?? onOpenOptions) : onOpenOptions}>
-            {failed ? 'Resume' : t.library.chooseInstall}
+          <button
+            type="button"
+            onClick={!isResuming ? (failed ? (onResume ?? onOpenOptions) : onOpenOptions) : undefined}
+            disabled={isResuming}
+            style={{ opacity: isResuming ? 0.7 : 1, cursor: isResuming ? 'not-allowed' : 'pointer' }}
+          >
+            {isResuming ? (
+              <>
+                <Loader2 size={15} style={{ animation: 'spin 0.8s linear infinite', display: 'inline-block', verticalAlign: 'middle', marginRight: 5 }} />
+                Resuming...
+              </>
+            ) : (
+              failed ? 'Resume' : t.library.chooseInstall
+            )}
           </button>
         ) : isRunning ? (
           <div className="queue-actions">
