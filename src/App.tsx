@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
+import { collection, addDoc, serverTimestamp, doc, setDoc, increment } from 'firebase/firestore'
 import { db } from './firebase'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
@@ -2440,6 +2440,11 @@ export default function App() {
       if (installMode) {
         setInstallPath(installRoot)
         setScanStatus(`Installing ${versionToApply}`)
+        
+        // Increment download count in Firebase
+        setDoc(doc(db, 'config', 'gameStats'), {
+          downloads: { [selectedGame.id]: increment(1) }
+        }, { merge: true }).catch((e: unknown) => console.warn('Failed to increment download count:', e))
       }
     } catch (error) {
       setScanStatus(String(error))

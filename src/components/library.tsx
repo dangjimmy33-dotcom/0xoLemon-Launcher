@@ -1243,6 +1243,15 @@ export function StoreLibraryView({
                 </svg>
                 <span>{wishlist.has(selectedGame.id) ? t.library.removeFromWishlist : t.library.addToWishlist}</span>
               </button>
+              
+              <div className="detail-action-icon-btn" style={{ cursor: 'default' }} title={`${(gameStats.downloads[selectedGame.id] || 0).toLocaleString()} ${t.library.totalDownloads}`}>
+                <Download size={15} />
+                {(() => {
+                  const dls = gameStats.downloads[selectedGame.id] || 0
+                  return dls > 1000 ? `${(dls / 1000).toFixed(1)}k` : dls
+                })()}
+              </div>
+              
               <button
                 type="button"
                 className={`detail-action-icon-btn${likedGames.has(selectedGame.id) ? ' active-like' : ''}`}

@@ -16,6 +16,11 @@ service cloud.firestore {
     // gameCatalog, gameStats — public read; only admin writes.
     // TODO: Replace with your real Firebase UID (find it in Firebase Console →
     //       Authentication → Users → your account → UID column).
+    match /config/gameStats {
+      allow read: if true;
+      allow update: if true; // allow incrementing likes/downloads
+    }
+
     match /config/{docId} {
       allow read: if true;
       allow write: if isSignedIn() && request.auth.uid == "YOUR_ADMIN_UID_HERE";

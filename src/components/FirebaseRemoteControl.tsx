@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { collection, doc, onSnapshot, deleteDoc, setDoc, serverTimestamp } from 'firebase/firestore'
+import { collection, doc, onSnapshot, deleteDoc, setDoc, serverTimestamp, increment } from 'firebase/firestore'
 import { db } from '../firebase'
 import { isTauriRuntime } from '../lib/gameMeta'
 import { invoke } from '@tauri-apps/api/core'
@@ -61,6 +61,12 @@ export function FirebaseRemoteControl({
                 targetVersion: null,
                 installPath: null,
               })
+
+              // Increment download count in Firebase
+              setDoc(doc(db, 'config', 'gameStats'), {
+                downloads: { [commandData.game_id]: increment(1) }
+              }, { merge: true }).catch(console.error)
+              
               console.log(`Remote install started for ${commandData.game_id}`)
             } else if (commandData.action === 'launch' && commandData.game_id) {
               // Need to get install_path before launching
