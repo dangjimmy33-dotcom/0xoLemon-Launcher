@@ -865,8 +865,25 @@ export default function App() {
     if (firestoreCatalog && firestoreCatalog.games.length > 0) {
       setCatalog(firestoreCatalog)
       setCatalogLoadState('ready')
+      
+      const newestGame = firestoreCatalog.games[firestoreCatalog.games.length - 1]
+      if (newestGame) {
+        const lastNewGameId = localStorage.getItem('lastNotifiedNewGameId')
+        if (lastNewGameId !== newestGame.id) {
+          localStorage.setItem('lastNotifiedNewGameId', newestGame.id)
+          void publishNotification({
+            category: 'launcher',
+            severity: 'info',
+            title: 'New Game Added!',
+            message: `${newestGame.title} has just arrived. Check it out!`,
+            dedupeKey: `new-game-added-${newestGame.id}`,
+            entity: { kind: 'game', id: newestGame.id },
+            action: { kind: 'open-store', tab: 'Store', gameId: newestGame.id },
+          })
+        }
+      }
     }
-  }, [firestoreCatalog])
+  }, [firestoreCatalog, publishNotification])
 
   useEffect(() => {
     queueMicrotask(() => void loadCatalog())
@@ -1052,7 +1069,16 @@ export default function App() {
         if (!state?.installed || state.currentVersion === 'unknown' || state.currentVersion === 'not installed') {
           return false
         }
-        const latest = game.availableVersions.find((version) => version.latest)?.version ?? game.latestVersion
+        const latest = 
+          game.availableVersions.find((version) => version.latest)?.version ||
+          (game.availableVersions.length === 1 ? game.availableVersions[0].version : '') ||
+          game.latestVersion
+        
+        // If the local state is 'installed' (unknown version string), and the game only has 1 version, assume it's up-to-date
+        if (state.currentVersion === 'installed' && game.availableVersions.length <= 1) {
+          return false
+        }
+
         return Boolean(latest && latest !== 'unknown' && state.currentVersion !== latest)
       })
       .map((game) => game.id)
@@ -1685,10 +1711,12 @@ export default function App() {
   const selectedVerifyStatus = selectedGame && verifyStatus?.gameId === selectedGame.id ? verifyStatus : null
   const availableVersions = selectedGame ? versionOptions(snapshot, selectedGame, isDefaultGame) : []
   const latestCatalogVersion =
-    selectedGame?.availableVersions.find((version) => version.latest)?.version ??
-    activeDetail?.versions.find((version) => version.latest)?.version ??
-    selectedGame?.latestVersion ??
-    availableVersions[availableVersions.length - 1] ??
+    selectedGame?.availableVersions.find((version) => version.latest)?.version ||
+    activeDetail?.versions.find((version) => version.latest)?.version ||
+    (selectedGame?.availableVersions.length === 1 ? selectedGame.availableVersions[0].version : '') ||
+    (activeDetail?.versions.length === 1 ? activeDetail.versions[0].version : '') ||
+    selectedGame?.latestVersion ||
+    availableVersions[availableVersions.length - 1] ||
     'unknown'
   const fallbackTargetVersion = isDefaultGame && availableVersions.includes(snapshot.latestVersion)
     ? snapshot.latestVersion
@@ -1704,10 +1732,14 @@ export default function App() {
     selectedGame?.availableVersions.find((version) => version.version === targetVersion) ??
     activeDetail?.versions.find((version) => version.version === targetVersion)
   const installMode = !selectedInstalled
+  const isInstalledUnknownWithSingleVersion = 
+    selectedCurrentVersion === 'installed' && availableVersions.length <= 1
+
   const updateReady =
     selectedInstalled &&
     selectedCurrentVersion !== 'unknown' &&
     selectedCurrentVersion !== 'not installed' &&
+    !isInstalledUnknownWithSingleVersion &&
     latestCatalogVersion !== 'unknown' &&
     selectedCurrentVersion !== latestCatalogVersion
   const isPaused = activeJob.status === 'paused'

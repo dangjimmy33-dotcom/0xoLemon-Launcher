@@ -398,6 +398,7 @@
   color: var(--text-base);
   font-size: 13px;
   cursor: pointer;
+  white-space: nowrap;
   transition: all 0.2s;
 }
 
@@ -614,12 +615,16 @@
 
 .library-browse-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, 156px);
+  grid-template-columns: repeat(var(--grid-cols, 8), 1fr);
   align-content: start;
   justify-content: start;
   gap: 26px 28px;
   padding: 0 0 28px;
 }
+
+.library-browse-grid.grid-cols-4 { --grid-cols: 4; }
+.library-browse-grid.grid-cols-6 { --grid-cols: 6; }
+.library-browse-grid.grid-cols-8 { --grid-cols: 8; }
 
 .library-browse-grid.layout-list {
   grid-template-columns: 1fr;
@@ -627,7 +632,7 @@
 }
 
 .store-game-card.browse-game-card {
-  width: 156px;
+  width: 100%;
   height: auto;
   gap: 9px;
   opacity: 0.96;
@@ -638,8 +643,9 @@
 }
 
 .store-game-card.browse-game-card .store-game-card-media {
-  width: 156px;
-  height: 234px;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 2/3;
   overflow: hidden;
   border-radius: 4px;
   flex-shrink: 0;
@@ -647,8 +653,8 @@
 
 .store-game-card.browse-game-card img,
 .store-game-card.browse-game-card .asset-placeholder {
-  width: 156px !important;
-  height: 234px !important;
+  width: 100% !important;
+  height: 100% !important;
   object-fit: cover !important;
   border-radius: 4px;
   box-shadow: 0 18px 34px rgba(0, 0, 0, 0.32);
@@ -4671,7 +4677,126 @@ button:disabled {
   color: #fff;
 }
 
-/* Ă¢â€â‚¬Ă¢â€â‚¬ Global launcher settings Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬Ă¢â€â‚¬ */
+.game-card-demo-sash {
+  position: absolute;
+  top: 12px;
+  left: -28px;
+  background-color: #8cc34a;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  padding: 4px 30px;
+  transform: rotate(-45deg);
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  pointer-events: none;
+  text-align: center;
+}
+
+.game-card-new-sash {
+  position: absolute;
+  top: 12px;
+  left: -28px;
+  background-color: #2196f3;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  padding: 4px 30px;
+  transform: rotate(-45deg);
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  pointer-events: none;
+  text-align: center;
+}
+
+/* Pagination */
+.library-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 0 40px;
+  width: 100%;
+}
+
+.library-pagination button {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.library-pagination button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.library-pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.library-pagination span {
+  font-size: 13px;
+  color: #aaa;
+  margin: 0 10px;
+}
+
+/* Sidebar tags */
+.game-detail-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.game-detail-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  font-size: 12px;
+  color: #ddd;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.game-detail-tag.tone-demo {
+  background: rgba(140, 195, 74, 0.15);
+  color: #8cc34a;
+  border: 1px solid rgba(140, 195, 74, 0.3);
+}
+
+.game-detail-tag.tone-danger {
+  background: rgba(255, 84, 84, 0.15);
+  color: #ff5454;
+  border: 1px solid rgba(255, 84, 84, 0.3);
+}
+
+.game-detail-tag.tone-online {
+  background: rgba(69, 182, 255, 0.15);
+  color: #45b6ff;
+  border: 1px solid rgba(69, 182, 255, 0.3);
+}
+
+.game-detail-tag.tone-warning {
+  background: rgba(255, 179, 64, 0.15);
+  color: #ffb340;
+  border: 1px solid rgba(255, 179, 64, 0.3);
+}
+
+/* Ă¢â€ â‚¬Ă¢â€ â‚¬ Global launcher settings Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬ */
 .settings-view-global {
   min-height: 100%;
   padding: 30px 34px 48px;

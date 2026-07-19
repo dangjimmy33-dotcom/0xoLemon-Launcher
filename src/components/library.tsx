@@ -453,12 +453,21 @@ export function StoreLibraryView({
   const { t } = useLocale()
   const [query, setQuery] = useState('')
   const [tutorialVisible, setTutorialVisible] = useState(false)
-  const [storeMode, setStoreMode] = useState<'local' | 'hybrid' | 'steam'>('hybrid')
-  const [libraryMode, setLibraryMode] = useState<'local' | 'steam'>('local')
+  const [storeMode, setStoreMode] = useState<'local' | 'hybrid' | 'steam'>(() =>
+    (localStorage.getItem('libraryStoreMode') as 'local' | 'hybrid' | 'steam') || 'hybrid'
+  )
+  const [libraryMode, setLibraryMode] = useState<'local' | 'steam'>(() =>
+    (localStorage.getItem('libraryMode') as 'local' | 'steam') || 'local'
+  )
   const [sortBy, setSortBy] = useState<'az' | 'za' | 'liked' | 'downloaded'>('az')
   const [viewLayout, setViewLayout] = useState<'grid' | 'list'>(() =>
     (localStorage.getItem('libraryViewLayout') as 'grid' | 'list') || 'grid'
   )
+  const [currentPage, setCurrentPage] = useState(1)
+  const [gridCols, setGridCols] = useState<number>(() => {
+    const saved = localStorage.getItem('libraryGridCols')
+    return saved ? parseInt(saved, 10) : 8
+  })
   const [wishlist, setWishlist] = useState<Set<string>>(() => {
     try { return new Set(JSON.parse(localStorage.getItem('libraryWishlist') || '[]')) }
     catch { return new Set() }
@@ -513,6 +522,11 @@ export function StoreLibraryView({
   const toggleViewLayout = (layout: 'grid' | 'list') => {
     setViewLayout(layout)
     localStorage.setItem('libraryViewLayout', layout)
+  }
+
+  const handleSetGridCols = (cols: number) => {
+    setGridCols(cols)
+    localStorage.setItem('libraryGridCols', cols.toString())
   }
 
   // When Firestore confirms the like count, clear the optimistic override
@@ -574,8 +588,28 @@ export function StoreLibraryView({
     else if (sortBy === 'liked') sorted.sort((a, b) => (gameStats.likes[b.id] || 0) - (gameStats.likes[a.id] || 0))
     else if (sortBy === 'downloaded') sorted.sort((a, b) => (gameStats.downloads[b.id] || 0) - (gameStats.downloads[a.id] || 0))
 
+    // Always push the newest game to the front
+    const newestGameId = catalog.games.length > 0 ? catalog.games[catalog.games.length - 1].id : null
+    if (newestGameId) {
+      const newestIndex = sorted.findIndex(g => g.id === newestGameId)
+      if (newestIndex > 0) {
+        const [newest] = sorted.splice(newestIndex, 1)
+        sorted.unshift(newest)
+      }
+    }
+
     return sorted
   }, [catalog.games, query, viewMode, libraryMode, installStates, steamInstalledAppIds, mapping, sortBy, gameStats])
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [query, sortBy, viewLayout, viewMode, libraryMode, gridCols])
+
+  const itemsPerPage = viewLayout === 'list' ? 70 : 50
+  const paginatedGames = visibleGames.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+  const totalPages = Math.ceil(visibleGames.length / itemsPerPage)
+  const newestGameIdForSash = catalog.games.length > 0 ? catalog.games[catalog.games.length - 1].id : null
+
   const actionDockRef = useRef<HTMLDivElement>(null)
   const [stickyVisible, setStickyVisible] = useState(false)
   const [activeDetailTab, setActiveDetailTab] = useState<'overview' | 'chat' | 'lua-game'>('overview')
@@ -877,12 +911,10 @@ export function StoreLibraryView({
             variant={variant}
             onRequestAsset={onRequestAsset}
           />
-          {tags.length > 0 ? (
-            <div className="game-card-tags" aria-label="Game tags">
-              {tags.map((tag) => (
-                <i className={`game-card-tag tone-${tag.tone}`} key={tag.id}>{tag.label}</i>
-              ))}
-            </div>
+          {game.id === newestGameIdForSash ? (
+            <div className="game-card-new-sash">NEW!</div>
+          ) : tags.some(t => t.id === 'demo bypass' || t.tone === 'demo') ? (
+            <div className="game-card-demo-sash">DEMO</div>
           ) : null}
           {/* Wishlist btn inside media (grid mode) */}
           {viewLayout !== 'list' && (
@@ -958,8 +990,8 @@ export function StoreLibraryView({
               {visibleGames.length} game{visibleGames.length === 1 ? '' : 's'}
             </span>
           </div>
-          {viewMode === 'store' && <StoreModeSwitch value={storeMode} onChange={setStoreMode} />}
-          {viewMode === 'library' && <LibraryModeSwitch value={libraryMode} onChange={setLibraryMode} />}
+          {viewMode === 'store' && <StoreModeSwitch value={storeMode} onChange={(v) => { setStoreMode(v); localStorage.setItem('libraryStoreMode', v) }} />}
+          {viewMode === 'library' && <LibraryModeSwitch value={libraryMode} onChange={(v) => { setLibraryMode(v); localStorage.setItem('libraryMode', v) }} />}
 
           <div className="library-toolbar-actions">
             <div className="store-sort-dropdown">
@@ -987,7 +1019,14 @@ export function StoreLibraryView({
               )}
             </div>
 
-            <div className="view-layout-toggle">
+            <div className="view-layout-toggle" style={{ gap: '4px' }}>
+              {viewLayout === 'grid' && (
+                <div style={{ display: 'flex', gap: '2px', marginRight: '8px', opacity: 0.8 }}>
+                  <button type="button" className={gridCols === 4 ? 'active' : ''} onClick={() => handleSetGridCols(4)} title="4 Columns" style={{ fontSize: '11px', padding: '0 4px' }}>4x</button>
+                  <button type="button" className={gridCols === 6 ? 'active' : ''} onClick={() => handleSetGridCols(6)} title="6 Columns" style={{ fontSize: '11px', padding: '0 4px' }}>6x</button>
+                  <button type="button" className={gridCols === 8 ? 'active' : ''} onClick={() => handleSetGridCols(8)} title="8 Columns" style={{ fontSize: '11px', padding: '0 4px' }}>8x</button>
+                </div>
+              )}
               <button type="button" className={viewLayout === 'grid' ? 'active' : ''} onClick={() => toggleViewLayout('grid')} title={t.library.viewGrid}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect width="7" height="7" x="3" y="3" rx="1" /><rect width="7" height="7" x="14" y="3" rx="1" /><rect width="7" height="7" x="14" y="14" rx="1" /><rect width="7" height="7" x="3" y="14" rx="1" /></svg>
               </button>
@@ -1002,13 +1041,27 @@ export function StoreLibraryView({
             </label>
           </div>
         </header>
-
-        <div className={`library-browse-grid layout-${viewLayout}`}>
-          {visibleGames.map((game) => (
+        <div className={`library-browse-grid layout-${viewLayout} ${viewLayout === 'grid' ? `grid-cols-${gridCols}` : ''}`}>
+          {paginatedGames.map((game) => (
             <GameHoverCard key={game.id} game={game} assets={assets} onRequestAsset={onRequestAsset}>
               {renderGameCard(game, 'browse') as React.ReactElement}
             </GameHoverCard>
           ))}
+        </div>
+        
+        {totalPages > 1 && (
+          <div className="library-pagination">
+            <button type="button" disabled={currentPage <= 1} onClick={() => {
+              setCurrentPage(p => p - 1)
+              window.scrollTo({ top: 0, behavior: 'smooth' })
+            }}>Prev</button>
+            <span>Page {currentPage} of {totalPages}</span>
+            <button type="button" disabled={currentPage >= totalPages} onClick={() => {
+              setCurrentPage(p => p + 1)
+              window.scrollTo({ top: 0, behavior: 'smooth' })
+            }}>Next</button>
+          </div>
+        )}
           {visibleGames.length > 0 && viewMode === 'store' ? (
             <div className="store-more-coming-banner">
               <span className="store-more-coming-title">{t.library.storeMoreComingTitle}</span>
@@ -1045,7 +1098,6 @@ export function StoreLibraryView({
               <strong>No matching games</strong>
             </div>
           ) : null}
-        </div>
       </section>
     )
   }
@@ -1269,7 +1321,7 @@ export function StoreLibraryView({
             </div>
           </div>
           <div className="store-action-dock" ref={actionDockRef}>
-            {(installed && effectiveMode !== 'steam' && selectedGame?.id.includes('among')) && (
+            {(installed && effectiveMode !== 'steam' && (selectedGame?.id.includes('among') || selectedGame?.id === 'persona-3-reload')) && (
               <button type="button" onClick={() => setTutorialVisible(true)}>
                 <BookOpen size={15} />
                 Tutorial
@@ -1883,6 +1935,7 @@ export function StoreLibraryView({
               onRestoreMissingFiles={onRestoreMissingSaveFiles}
             />
           ) : null}
+          <GameTagsPreview game={selectedGame} />
           <AchievementPreview achievements={detail.achievements} assets={assets} />
         </aside>
       )}
@@ -2460,6 +2513,20 @@ export function MediaRail({ detail, assets }: { detail: GameDetail; assets: Reco
         ))}
       </div>
     </section>
+  )
+}
+
+function GameTagsPreview({ game }: { game: GameSummary }) {
+  const tags = getGameTags(game)
+  if (!tags || tags.length === 0) return null
+  return (
+    <div className="game-detail-tags">
+      {tags.map((tag) => (
+        <span key={tag.id} className={`game-detail-tag tone-${tag.tone}`}>
+          {tag.label}
+        </span>
+      ))}
+    </div>
   )
 }
 
