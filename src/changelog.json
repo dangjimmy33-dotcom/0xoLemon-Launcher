@@ -1,5 +1,12 @@
 ﻿[
     {
+        "version":  "1.0.42",
+        "date":  "2026-07-19",
+        "changes":  [
+                        "sửa bug khi cập nhật game và 1 số bug khác"
+                    ]
+    },
+    {
         "version":  "1.0.41",
         "date":  "2026-07-18",
         "changes":  [
