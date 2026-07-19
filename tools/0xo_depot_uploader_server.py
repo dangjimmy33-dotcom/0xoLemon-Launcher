@@ -520,7 +520,8 @@ def run_publish_script(payload: Dict[str, Any], env: Dict[str, str]) -> int:
     launch_opts_json = safe_str(payload.get("launchOptionsJson")).strip()
     exe_name = safe_str(payload.get("exeName")).strip()
     if launch_opts_json:
-        args += ["-LaunchOptionsJson", launch_opts_json]
+        env["LAUNCH_OPTIONS_JSON"] = launch_opts_json
+        args += ["-LaunchOptionsJson", "ENV"]
     elif exe_name:
         args += ["-LaunchExecutable", exe_name]
     if bool_value(payload.get("keepLocalPacks", False)):
@@ -535,6 +536,8 @@ def run_publish_script(payload: Dict[str, Any], env: Dict[str, str]) -> int:
         args += ["-NoExtendExisting"]
     if bool_value(payload.get("deleteSourceAfterPack", False)):
         args += ["-DeleteSourceAfterPack"]
+    if bool_value(payload.get("uploadPacksIncrementally", False)):
+        args += ["-UploadPacksIncrementally"]
     add_log("[SAFE] Chạy publish_depot_version.ps1 với đúng Sync/Extend/ForceRebuild/Encrypt flags từ GUI.", "step")
     return run_process(args, cwd=BASE_DIR, env=env)
 

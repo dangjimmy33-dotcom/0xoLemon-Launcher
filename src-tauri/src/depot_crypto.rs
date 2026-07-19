@@ -65,8 +65,13 @@ pub fn encrypt_compressed_chunk(
 ) -> Result<(Vec<u8>, String), DepotCryptoError> {
     let key = derive_key(key_material);
     let cipher = XChaCha20Poly1305::new((&key).into());
+    let mut hasher = blake3::Hasher::new();
+    hasher.update(b"oxo-depot-nonce-v1");
+    hasher.update(key_material.as_bytes());
+    hasher.update(chunk_hash.as_bytes());
+    let hash = hasher.finalize();
     let mut nonce_bytes = [0_u8; 24];
-    OsRng.fill_bytes(&mut nonce_bytes);
+    nonce_bytes.copy_from_slice(&hash.as_bytes()[..24]);
     let nonce = XNonce::from_slice(&nonce_bytes);
     let aad = chunk_aad(chunk_hash, plaintext_compressed_sha256);
     let encrypted = cipher

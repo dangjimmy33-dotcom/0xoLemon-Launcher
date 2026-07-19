@@ -4917,12 +4917,25 @@ fn read_chunk_bytes(
     staged_chunks_root: &Path,
 ) -> Result<Vec<u8>, JobError> {
     if let Some(source) = local_sources.get(&chunk.hash) {
-        let mut file = File::open(&source.path)?;
-        file.seek(SeekFrom::Start(source.offset))?;
-        let mut buffer = vec![0_u8; source.size as usize];
-        file.read_exact(&mut buffer)?;
-        verify_chunk_bytes(chunk, &buffer)?;
-        return Ok(buffer);
+        // The local source file may have been overwritten/renamed by a previous assemble
+        // step (os error 2). If so, fall back to the staged chunk silently.
+        match File::open(&source.path) {
+            Ok(mut file) => {
+                if file.seek(SeekFrom::Start(source.offset)).is_ok() {
+                    let mut buffer = vec![0_u8; source.size as usize];
+                    if file.read_exact(&mut buffer).is_ok() {
+                        if verify_chunk_bytes(chunk, &buffer).is_ok() {
+                            return Ok(buffer);
+                        }
+                    }
+                }
+                // File exists but seek/read/verify failed — fall through to staged chunk
+            }
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                // Local source was removed by a previous assemble step — fall through
+            }
+            Err(e) => return Err(e.into()),
+        }
     }
 
     let path = staged_chunk_path_from(staged_chunks_root, &chunk.hash);
@@ -4938,6 +4951,7 @@ fn read_chunk_bytes(
     let data = decode_chunk_payload(chunk, &compressed)?;
     verify_chunk_bytes(chunk, &data)?;
     Ok(data)
+
 }
 
 fn decode_chunk_payload(chunk: &ChunkRef, encoded: &[u8]) -> Result<Vec<u8>, JobError> {

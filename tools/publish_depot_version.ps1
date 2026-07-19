@@ -25,6 +25,7 @@ param(
   [switch]$UseBuilderUpload,
   [switch]$UploadOnly,
   [switch]$DeleteSourceAfterPack,
+  [switch]$UploadPacksIncrementally,
   [int]$PackTargetMb = 256,
   [int]$PackStartIndex = 0,
   [string]$PackIdPrefix = "pack-"
@@ -81,7 +82,7 @@ if (-not [string]::IsNullOrWhiteSpace($EncryptionKey)) {
 # Make Hugging Face uploads less spammy and safe for normal Windows machines.
 # Do NOT force Xet high-performance by default: it can spike CPU/disk/RAM on very large depots.
 # Users can still set HF_XET_HIGH_PERFORMANCE=1 manually before starting the tool.
-if ([string]::IsNullOrWhiteSpace($env:HF_HUB_DISABLE_PROGRESS_BARS)) { $env:HF_HUB_DISABLE_PROGRESS_BARS = "1" }
+if ([string]::IsNullOrWhiteSpace($env:HF_HUB_DISABLE_PROGRESS_BARS)) { $env:HF_HUB_DISABLE_PROGRESS_BARS = "0" }
 if ([string]::IsNullOrWhiteSpace($env:HF_XET_HIGH_PERFORMANCE)) { $env:HF_XET_HIGH_PERFORMANCE = "0" }
 if ([string]::IsNullOrWhiteSpace($env:PYTHONUTF8)) { $env:PYTHONUTF8 = "1" }
 
@@ -165,7 +166,7 @@ if (-not $UploadOnly) {
       "--pack-start-index", ([string]$PackStartIndex)
     )
 
-    if ($UseBuilderUpload) {
+    if ($UseBuilderUpload -or $UploadPacksIncrementally) {
       $builderArgs += @("--upload-repo", $Repo, "--repo-type", $RepoType, "--repo-prefix", $RepoPrefix)
     } else {
       Write-Host "[SAFE] Builder upload disabled. Build local depot first, then upload incrementally per file."
@@ -176,7 +177,13 @@ if (-not $UploadOnly) {
     }
 
     if (-not [string]::IsNullOrWhiteSpace($LaunchOptionsJson)) {
-      $builderArgs += @("--launch-options-json", $LaunchOptionsJson)
+      if ($LaunchOptionsJson -eq "ENV") {
+        $json = $env:LAUNCH_OPTIONS_JSON.Replace('"', '\"')
+        $builderArgs += @("--launch-options-json", $json)
+      } else {
+        $json = $LaunchOptionsJson.Replace('"', '\"')
+        $builderArgs += @("--launch-options-json", $json)
+      }
     } elseif (-not [string]::IsNullOrWhiteSpace($LaunchExecutable)) {
       $builderArgs += @("--launch-executable", $LaunchExecutable)
     }
@@ -195,6 +202,11 @@ if (-not $UploadOnly) {
     if ($DeleteSourceAfterPack) {
       Write-Host "[SAFE] WARNING: --delete-source-after-pack is enabled. Source files will be deleted as they are packed!"
       $builderArgs += "--delete-source-after-pack"
+    }
+
+    if ($UploadPacksIncrementally) {
+      Write-Host "[SAFE] INCREMENTAL MODE: Each pack will be uploaded and deleted immediately after creation to save disk space."
+      $builderArgs += "--upload-packs-incrementally"
     }
 
     Write-Host "[SAFE] Running depot_builder build-version..."
@@ -227,7 +239,11 @@ if (-not $UploadOnly) {
   Write-Host "[SAFE] UploadOnly flag is set. Skipping depot builder and proceeding directly to incremental HF uploader."
 }
 
-if (-not $UseBuilderUpload) {
+if ($UploadOnly -and $UploadPacksIncrementally) {
+  throw "ERROR: You cannot use both 'Upload Only' and 'Upload & delete incrementally'. Incremental mode deletes packs during build, so there are no local packs left to 'just upload'. Please uncheck one of them."
+}
+
+if ((-not $UseBuilderUpload) -and (-not $UploadPacksIncrementally)) {
   Write-Host "[SAFE] Uploading depot with incremental per-file HF uploader; no .hf_upload_stage will be created."
   $uploadArgs = @(
     $incrementalUploadTool,

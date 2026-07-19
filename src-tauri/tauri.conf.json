@@ -65,7 +65,7 @@
         "https://github.com/dangjimmy33-dotcom/0xoLemon-Launcher/releases/latest/download/latest.json"
       ],
       "windows": {
-        "installMode": "basicUi"
+        "installMode": "passive"
       }
     }
   }

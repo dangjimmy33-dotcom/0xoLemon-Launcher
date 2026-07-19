@@ -582,6 +582,7 @@ fn upload_owned_file(
         publish.repo_id,
         remote_path
     );
+    println!("(Uploading... this may take 1-5 minutes per pack depending on your network speed. Please do not close the window...)");
     let status = Command::new("hf")
         .arg("upload")
         .arg(&publish.repo_id)
