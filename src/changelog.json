@@ -1,5 +1,12 @@
 ﻿[
     {
+        "version":  "1.0.44",
+        "date":  "2026-07-21",
+        "changes":  [
+                        "thêm play list sound track và 1 số tính năng khác"
+                    ]
+    },
+    {
         "version":  "1.0.43",
         "date":  "2026-07-20",
         "changes":  [
