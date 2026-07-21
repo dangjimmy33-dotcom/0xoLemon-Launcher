@@ -1172,3 +1172,100 @@ pub fn run_depot_patch(
     }
 }
 
+/// Decode the XOR-obfuscated Steam Web API key at runtime.
+/// Key: C8389A6AE249466D0A5234DC9D2D23C6  XOR mask: 0x5A
+fn steam_api_key() -> String {
+    const MASK: u8 = 0x5A;
+    const ENC: &[u8] = &[
+        0x19, 0x62, 0x69, 0x62, 0x63, 0x1B, 0x6C, 0x1B,
+        0x1F, 0x68, 0x6E, 0x63, 0x6E, 0x6C, 0x6C, 0x1E,
+        0x6A, 0x1B, 0x6F, 0x68, 0x69, 0x6E, 0x1E, 0x19,
+        0x63, 0x1E, 0x68, 0x1E, 0x68, 0x69, 0x19, 0x6C,
+    ];
+    ENC.iter().map(|b| (b ^ MASK) as char).collect()
+}
+
+#[derive(Serialize)]
+pub struct SteamGameInfo {
+    pub name: String,
+    pub header_image: String,
+}
+
+#[command]
+pub fn fetch_steam_game_name(appid: u32) -> Result<SteamGameInfo, String> {
+    let client = Client::builder()
+        .timeout(std::time::Duration::from_secs(8))
+        .user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) 0xoLauncher/1.0")
+        .default_headers({
+            let mut headers = reqwest::header::HeaderMap::new();
+            headers.insert(
+                reqwest::header::COOKIE,
+                reqwest::header::HeaderValue::from_static("birthtime=568022401; lastagecheckage=1-January-1988; mature_content=1")
+            );
+            headers
+        })
+        .build()
+        .map_err(|e| e.to_string())?;
+
+    let countries = ["us", "sg", "gb", "jp", "kr", "tw", "hk", "th", "vn", "de", "fr", "ca", "au"];
+    let mut last_error = String::new();
+
+    for cc in countries.iter() {
+        let url = format!(
+            "https://store.steampowered.com/api/appdetails?appids={}&cc={}&l=english",
+            appid, cc
+        );
+
+        let resp = match client.get(&url).send() {
+            Ok(r) => r,
+            Err(e) => {
+                last_error = e.to_string();
+                continue;
+            }
+        };
+
+        if !resp.status().is_success() {
+            last_error = format!("Status {}", resp.status());
+            continue;
+        }
+
+        let json: serde_json::Value = match resp.json() {
+            Ok(j) => j,
+            Err(_) => continue,
+        };
+
+        let app_str = appid.to_string();
+        let entry = match json.get(&app_str) {
+            Some(e) => e,
+            None => continue,
+        };
+
+        if !entry.get("success").and_then(|v| v.as_bool()).unwrap_or(false) {
+            last_error = "success=false".to_string();
+            continue;
+        }
+
+        let data = match entry.get("data") {
+            Some(d) => d,
+            None => continue,
+        };
+
+        let name = data.get("name")
+            .and_then(|v| v.as_str())
+            .unwrap_or("")
+            .to_string();
+
+        let header_image = data.get("header_image")
+            .and_then(|v| v.as_str())
+            .unwrap_or(&format!(
+                "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/{}/header.jpg",
+                appid
+            ))
+            .to_string();
+
+        return Ok(SteamGameInfo { name, header_image });
+    }
+
+    Err(format!("Could not fetch info for {}: {}", appid, last_error))
+}
+

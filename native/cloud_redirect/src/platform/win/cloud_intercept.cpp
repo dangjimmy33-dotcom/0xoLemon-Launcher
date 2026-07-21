@@ -347,8 +347,10 @@ static void RunAutoResolver() {
 
 static std::string g_steamPath;
 static std::string g_manifestEndpoint;
-static RecvPktFn g_originalRecvPkt = nullptr;
-static void** g_recvPktSlot = nullptr;            // address of the patched RecvPkt vtable slot, for shutdown restore
+static RecvPktFn g_originalRecvPkt = nullptr;       // trampoline to original RecvPkt (via inline detour)
+static uint8_t* g_recvPktDetourSite = nullptr;      // address of hooked RecvPkt prologue (for shutdown restore)
+static uint8_t  g_recvPktOrigBytes[15] = {};        // original bytes we overwrote
+static uint8_t* g_recvPktTrampoline = nullptr;      // executable trampoline page
 static std::atomic<void*> g_cmInterface{nullptr};  // real CCMInterface* (found via CSteamEngine)
 static std::atomic<bool> g_shuttingDown{false};
 static std::atomic<bool> g_cloudSaveOnly{false};    // third-party mode (no SteamTools DLL)
@@ -4893,29 +4895,96 @@ void Init(const std::string& steamPath, bool cloudSaveOnly, CR_NotifyFn notifyCa
     InstallExitProcessHook();
 }
 
-// InstallRecvPktMonitor / SetSendPktAddr
-void InstallRecvPktMonitor(void* savedOrigPtrAddr) {
-    if (!savedOrigPtrAddr) {
-        LOG("InstallRecvPktMonitor: saved original ptr addr is null");
-        return;
-    }
-    auto* slot = reinterpret_cast<RecvPktFn*>(savedOrigPtrAddr);
-    g_originalRecvPkt = *slot;
-    LOG("InstallRecvPktMonitor: original RecvPkt at slot %p = %p", savedOrigPtrAddr, g_originalRecvPkt);
+// InstallRecvPktDetour: inline-hook CCMConnection::RecvPkt via sig-scan.
+// Finds the function by scanning for the VProf string reference.
+static constexpr size_t DETOUR_PATCH_SIZE = 14;   // FF 25 00 00 00 00 <8-byte addr>
+static constexpr size_t TRAMPOLINE_COPY  = 15;    // first 3 instructions of RecvPkt prologue
 
+void InstallRecvPktDetour() {
+    HMODULE hSC = GetModuleHandleA("steamclient64.dll");
+    if (!hSC) { LOG("[RecvPkt] steamclient64.dll not loaded"); return; }
+    uintptr_t scBase = (uintptr_t)hSC;
+
+    MODULEINFO mi = {};
+    if (!GetModuleInformation(GetCurrentProcess(), hSC, &mi, sizeof(mi))) {
+        LOG("[RecvPkt] GetModuleInformation failed"); return;
+    }
+
+    // Scan for "CCMConnection::RecvPkt() multi" in .rdata
+    const char* needle = "CCMConnection::RecvPkt() multi";
+    size_t needleLen = strlen(needle);
+    const uint8_t* base = (const uint8_t*)scBase;
+    const uint8_t* end = base + mi.SizeOfImage - needleLen;
+    const uint8_t* strAddr = nullptr;
+    for (const uint8_t* p = base; p < end; ++p) {
+        if (memcmp(p, needle, needleLen) == 0) { strAddr = p; break; }
+    }
+    if (!strAddr) { LOG("[RecvPkt] VProf string not found"); return; }
+    LOG("[RecvPkt] VProf string at %p (RVA 0x%llX)", strAddr, (uint64_t)(strAddr - base));
+
+    // Find LEA rcx, [rip+disp] (48 8D 0D xx xx xx xx) targeting this string.
+    // Search .text only (first ~80% of image is typically .text).
+    const uint8_t* textEnd = base + mi.SizeOfImage;
+    const uint8_t* leaRef = nullptr;
+    for (const uint8_t* p = base + 0x1000; p < textEnd - 7; ++p) {
+        if (p[0] == 0x48 && p[1] == 0x8D && p[2] == 0x0D) {
+            int32_t disp;
+            memcpy(&disp, p + 3, 4);
+            if ((p + 7 + disp) == strAddr) { leaRef = p; break; }
+        }
+    }
+    if (!leaRef) { LOG("[RecvPkt] LEA reference to VProf string not found"); return; }
+    LOG("[RecvPkt] LEA ref at %p (RVA 0x%llX)", leaRef, (uint64_t)(leaRef - base));
+
+    // Walk backward to find the function prologue (48 89 5C 24 08).
+    uint8_t* funcStart = nullptr;
+    for (const uint8_t* p = leaRef; p > leaRef - 0x200 && p > base + 0x1000; --p) {
+        if (p[0] == 0x48 && p[1] == 0x89 && p[2] == 0x5C && p[3] == 0x24 && p[4] == 0x08) {
+            funcStart = (uint8_t*)p;
+            break;
+        }
+    }
+    if (!funcStart) { LOG("[RecvPkt] could not locate function prologue"); return; }
+    LOG("[RecvPkt] CCMConnection::RecvPkt at %p (RVA 0x%llX)", funcStart, (uint64_t)(funcStart - base));
+
+    // Allocate executable trampoline.
+    g_recvPktTrampoline = (uint8_t*)VirtualAlloc(nullptr, 64,
+        MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+    if (!g_recvPktTrampoline) { LOG("[RecvPkt] VirtualAlloc trampoline failed"); return; }
+
+    // Copy original prologue bytes (15 bytes = 3 full instructions).
+    memcpy(g_recvPktOrigBytes, funcStart, TRAMPOLINE_COPY);
+    memcpy(g_recvPktTrampoline, funcStart, TRAMPOLINE_COPY);
+
+    // Append JMP [rip+0] <original+15> to trampoline.
+    g_recvPktTrampoline[TRAMPOLINE_COPY + 0] = 0xFF;
+    g_recvPktTrampoline[TRAMPOLINE_COPY + 1] = 0x25;
+    memset(g_recvPktTrampoline + TRAMPOLINE_COPY + 2, 0, 4);  // disp = 0
+    uintptr_t resumeAddr = (uintptr_t)funcStart + TRAMPOLINE_COPY;
+    memcpy(g_recvPktTrampoline + TRAMPOLINE_COPY + 6, &resumeAddr, 8);
+    g_originalRecvPkt = (RecvPktFn)g_recvPktTrampoline;
+
+    // Patch original with JMP [rip+0] <hook>.
     DWORD oldProt;
-    if (!VirtualProtect(slot, sizeof(void*), PAGE_READWRITE, &oldProt)) {
-        LOG("InstallRecvPktMonitor: VirtualProtect failed (%u)", GetLastError());
+    if (!VirtualProtect(funcStart, TRAMPOLINE_COPY, PAGE_EXECUTE_READWRITE, &oldProt)) {
+        LOG("[RecvPkt] VirtualProtect failed (%u)", GetLastError());
+        VirtualFree(g_recvPktTrampoline, 0, MEM_RELEASE);
+        g_recvPktTrampoline = nullptr;
+        g_originalRecvPkt = nullptr;
         return;
     }
-    *slot = RecvPktMonitorHook;
-    VirtualProtect(slot, sizeof(void*), oldProt, &oldProt);
-    // Remember the slot only on success so shutdown never restores an
-    // unpatched slot.
-    g_recvPktSlot = reinterpret_cast<void**>(slot);
-    RecvPktFn readback = *slot;
-    LOG("InstallRecvPktMonitor: hooked -> %p (readback=%p, match=%d)",
-        RecvPktMonitorHook, readback, readback == RecvPktMonitorHook);
+    funcStart[0] = 0xFF;
+    funcStart[1] = 0x25;
+    memset(funcStart + 2, 0, 4);   // disp = 0
+    uintptr_t hookAddr = (uintptr_t)RecvPktMonitorHook;
+    memcpy(funcStart + 6, &hookAddr, 8);
+    funcStart[14] = 0x90;          // NOP the 15th byte
+    FlushInstructionCache(GetCurrentProcess(), funcStart, TRAMPOLINE_COPY);
+    VirtualProtect(funcStart, TRAMPOLINE_COPY, oldProt, &oldProt);
+    g_recvPktDetourSite = funcStart;
+
+    LOG("[RecvPkt] Detour installed: hook=%p trampoline=%p original=%p",
+        RecvPktMonitorHook, g_recvPktTrampoline, funcStart);
 }
 
 void InstallManifestPinHook() {
@@ -5476,7 +5545,7 @@ static uint8_t __fastcall BAsyncSendHook(void* pMsg, uint32_t connHandle) {
                 uint64_t sid = *(uint64_t*)(hb + 104);
                 uint32_t ses = *(uint32_t*)(hb + 112);
                 uint32_t rlm = *(uint32_t*)(hb + 156);
-                if (sid != 0) {
+                if (sid != 0 && ses != 0) {
                     g_hdrSteamId.store(sid, std::memory_order_relaxed);
                     g_hdrSessionId.store(ses, std::memory_order_relaxed);
                     g_hdrRealm.store(rlm, std::memory_order_relaxed);
@@ -6772,17 +6841,17 @@ static void ShutdownImpl() {
         }
     }
 
-    // Restore RecvPkt vtable slot (null g_recvPktSlot = failed install, skip).
-    if (g_recvPktSlot && g_originalRecvPkt) {
+    // Restore RecvPkt inline detour (write back original prologue bytes).
+    if (g_recvPktDetourSite) {
         DWORD oldProt;
-        if (VirtualProtect(g_recvPktSlot, sizeof(void*), PAGE_READWRITE, &oldProt)) {
-            *g_recvPktSlot = reinterpret_cast<void*>(g_originalRecvPkt);
-            VirtualProtect(g_recvPktSlot, sizeof(void*), oldProt, &oldProt);
-            LOG("Shutdown: restored RecvPkt slot (%p -> %p)", g_recvPktSlot, g_originalRecvPkt);
-        } else {
-            LOG("Shutdown: VirtualProtect failed restoring RecvPkt slot (%u)", GetLastError());
+        if (VirtualProtect(g_recvPktDetourSite, TRAMPOLINE_COPY, PAGE_EXECUTE_READWRITE, &oldProt)) {
+            memcpy(g_recvPktDetourSite, g_recvPktOrigBytes, TRAMPOLINE_COPY);
+            FlushInstructionCache(GetCurrentProcess(), g_recvPktDetourSite, TRAMPOLINE_COPY);
+            VirtualProtect(g_recvPktDetourSite, TRAMPOLINE_COPY, oldProt, &oldProt);
+            LOG("Shutdown: restored RecvPkt detour at %p", g_recvPktDetourSite);
         }
-        g_recvPktSlot = nullptr;
+        g_recvPktDetourSite = nullptr;
+        // Trampoline page deliberately leaked (another thread may be mid-trampoline).
     }
 
     // Drop pre-shutdown inject queue entries (RecvPktMonitorHook bails now).

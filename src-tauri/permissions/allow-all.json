@@ -42,6 +42,7 @@
           "get_launcher_snapshot",
           "get_launcher_settings",
           "set_launcher_settings",
+          "get_game_ost_repo_info",
           "get_cloud_save_status",
           "set_cloud_save_config",
           "sync_cloud_save",
@@ -133,7 +134,8 @@
           "install_lua_from_zip",
           "list_depot_versions",
           "run_depot_patch",
-          "list_installed_luas"
+          "list_installed_luas",
+          "fetch_steam_game_name"
         ],
         "deny": []
       }

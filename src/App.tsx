@@ -3072,7 +3072,6 @@ export default function App() {
           <GlobalChatSync catalog={catalog} />
           <CustomTitleBar
             closeBehavior={preferences.closeBehavior}
-            serviceOnline={!contentServiceLabel(snapshot.proxyStatus).toLowerCase().includes('unavailable')}
             job={job}
             updateProgress={launcherUpdateProgress}
             notifications={notifications}

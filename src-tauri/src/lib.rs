@@ -46,6 +46,24 @@ fn exit_app(app: AppHandle) {
 }
 
 #[tauri::command]
+fn get_game_ost_repo_info(game_id: String) -> Vec<(String, String, Option<String>)> {
+    let mut results = Vec::new();
+    let bases = remote_paths::depot_repo_base_urls();
+    let hf_dir_name = remote_paths::hf_dir_name_for_game_id(&game_id);
+    let encoded_dir = remote_paths::encode_hf_relative_path(&hf_dir_name);
+    
+    for (base, token) in bases {
+        let tree_base = base.replace("https://huggingface.co/", "https://huggingface.co/api/").replace("/resolve/", "/tree/");
+        
+        let tree_url = format!("{tree_base}/{encoded_dir}/sound_tracks");
+        let resolve_url = format!("{base}/{encoded_dir}/sound_tracks");
+        
+        results.push((tree_url, resolve_url, token));
+    }
+    results
+}
+
+#[tauri::command]
 fn get_disk_free_space(path: String) -> Result<u64, String> {
     fs2::free_space(PathBuf::from(path)).map_err(|err| err.to_string())
 }
@@ -916,6 +934,7 @@ pub fn run() {
             steam::force_restart_steam,
             steam::add_to_steam,
             steam::get_installed_steam_apps,
+            steam::fetch_steam_game_name,
             chat::load_chat_history,
             chat::save_chat_message,
             chat::delete_chat_message,
@@ -948,6 +967,7 @@ pub fn run() {
             get_launcher_snapshot,
             get_launcher_settings,
             set_launcher_settings,
+            get_game_ost_repo_info,
             get_cloud_save_status,
             set_cloud_save_config,
             sync_cloud_save,

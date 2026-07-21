@@ -106,12 +106,12 @@
       <SupportJustMyCode></SupportJustMyCode>
       <TreatWChar_tAsBuiltInType></TreatWChar_tAsBuiltInType>
       <UseFullPaths>false</UseFullPaths>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;MINIZ_NO_STDIO;CR_VERSION_STRING="2.0.0-0xoLemon+10b3662-dirty";CR_RELEASE_VERSION="2.0.0-0xoLemon";CMAKE_INTDIR="Debug";cloud_redirect_EXPORTS</PreprocessorDefinitions>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;MINIZ_NO_STDIO;CR_VERSION_STRING="2.0.0-0xoLemon+f9a5016-dirty";CR_RELEASE_VERSION="2.0.0-0xoLemon";CMAKE_INTDIR="Debug";cloud_redirect_EXPORTS</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_DEBUG;_WINDOWS;MINIZ_NO_STDIO;CR_VERSION_STRING=\"2.0.0-0xoLemon+10b3662-dirty\";CR_RELEASE_VERSION=\"2.0.0-0xoLemon\";CMAKE_INTDIR=\"Debug\";cloud_redirect_EXPORTS</PreprocessorDefinitions>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_DEBUG;_WINDOWS;MINIZ_NO_STDIO;CR_VERSION_STRING=\"2.0.0-0xoLemon+f9a5016-dirty\";CR_RELEASE_VERSION=\"2.0.0-0xoLemon\";CMAKE_INTDIR=\"Debug\";cloud_redirect_EXPORTS</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>E:\007Launcher\native\cloud_redirect\src\common;E:\007Launcher\native\cloud_redirect\src\providers;E:\007Launcher\native\cloud_redirect\src\platform\win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
@@ -160,14 +160,14 @@
       <SupportJustMyCode></SupportJustMyCode>
       <TreatWChar_tAsBuiltInType></TreatWChar_tAsBuiltInType>
       <UseFullPaths>false</UseFullPaths>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;MINIZ_NO_STDIO;CR_VERSION_STRING="2.0.0-0xoLemon+10b3662-dirty";CR_RELEASE_VERSION="2.0.0-0xoLemon";CMAKE_INTDIR="Release";cloud_redirect_EXPORTS</PreprocessorDefinitions>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;MINIZ_NO_STDIO;CR_VERSION_STRING="2.0.0-0xoLemon+f9a5016-dirty";CR_RELEASE_VERSION="2.0.0-0xoLemon";CMAKE_INTDIR="Release";cloud_redirect_EXPORTS</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <DebugInformationFormat>
       </DebugInformationFormat>
       <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;MINIZ_NO_STDIO;CR_VERSION_STRING=\"2.0.0-0xoLemon+10b3662-dirty\";CR_RELEASE_VERSION=\"2.0.0-0xoLemon\";CMAKE_INTDIR=\"Release\";cloud_redirect_EXPORTS</PreprocessorDefinitions>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;MINIZ_NO_STDIO;CR_VERSION_STRING=\"2.0.0-0xoLemon+f9a5016-dirty\";CR_RELEASE_VERSION=\"2.0.0-0xoLemon\";CMAKE_INTDIR=\"Release\";cloud_redirect_EXPORTS</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>E:\007Launcher\native\cloud_redirect\src\common;E:\007Launcher\native\cloud_redirect\src\providers;E:\007Launcher\native\cloud_redirect\src\platform\win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
@@ -216,14 +216,14 @@
       <SupportJustMyCode></SupportJustMyCode>
       <TreatWChar_tAsBuiltInType></TreatWChar_tAsBuiltInType>
       <UseFullPaths>false</UseFullPaths>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;MINIZ_NO_STDIO;CR_VERSION_STRING="2.0.0-0xoLemon+10b3662-dirty";CR_RELEASE_VERSION="2.0.0-0xoLemon";CMAKE_INTDIR="MinSizeRel";cloud_redirect_EXPORTS</PreprocessorDefinitions>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;MINIZ_NO_STDIO;CR_VERSION_STRING="2.0.0-0xoLemon+f9a5016-dirty";CR_RELEASE_VERSION="2.0.0-0xoLemon";CMAKE_INTDIR="MinSizeRel";cloud_redirect_EXPORTS</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <DebugInformationFormat>
       </DebugInformationFormat>
       <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;MINIZ_NO_STDIO;CR_VERSION_STRING=\"2.0.0-0xoLemon+10b3662-dirty\";CR_RELEASE_VERSION=\"2.0.0-0xoLemon\";CMAKE_INTDIR=\"MinSizeRel\";cloud_redirect_EXPORTS</PreprocessorDefinitions>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;MINIZ_NO_STDIO;CR_VERSION_STRING=\"2.0.0-0xoLemon+f9a5016-dirty\";CR_RELEASE_VERSION=\"2.0.0-0xoLemon\";CMAKE_INTDIR=\"MinSizeRel\";cloud_redirect_EXPORTS</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>E:\007Launcher\native\cloud_redirect\src\common;E:\007Launcher\native\cloud_redirect\src\providers;E:\007Launcher\native\cloud_redirect\src\platform\win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
@@ -273,12 +273,12 @@
       <SupportJustMyCode></SupportJustMyCode>
       <TreatWChar_tAsBuiltInType></TreatWChar_tAsBuiltInType>
       <UseFullPaths>false</UseFullPaths>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;MINIZ_NO_STDIO;CR_VERSION_STRING="2.0.0-0xoLemon+10b3662-dirty";CR_RELEASE_VERSION="2.0.0-0xoLemon";CMAKE_INTDIR="RelWithDebInfo";cloud_redirect_EXPORTS</PreprocessorDefinitions>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;MINIZ_NO_STDIO;CR_VERSION_STRING="2.0.0-0xoLemon+f9a5016-dirty";CR_RELEASE_VERSION="2.0.0-0xoLemon";CMAKE_INTDIR="RelWithDebInfo";cloud_redirect_EXPORTS</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;MINIZ_NO_STDIO;CR_VERSION_STRING=\"2.0.0-0xoLemon+10b3662-dirty\";CR_RELEASE_VERSION=\"2.0.0-0xoLemon\";CMAKE_INTDIR=\"RelWithDebInfo\";cloud_redirect_EXPORTS</PreprocessorDefinitions>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;MINIZ_NO_STDIO;CR_VERSION_STRING=\"2.0.0-0xoLemon+f9a5016-dirty\";CR_RELEASE_VERSION=\"2.0.0-0xoLemon\";CMAKE_INTDIR=\"RelWithDebInfo\";cloud_redirect_EXPORTS</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>E:\007Launcher\native\cloud_redirect\src\common;E:\007Launcher\native\cloud_redirect\src\providers;E:\007Launcher\native\cloud_redirect\src\platform\win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>

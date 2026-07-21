@@ -14,7 +14,7 @@ import type { CloudSaveStatus, GameAchievement, GameCatalog, GameDetail, GameSum
 import { assetUrlForId, firstMediaUrl, isCarouselMedia, mediaPriority, processDescriptionHtml, isTauriRuntime } from '../lib/gameMeta'
 import { formatBytes } from '../lib/format'
 import { getGameTags, gameHasTag } from '../lib/gameTags'
-import { GameDetailsPanel, InstallSummaryPanel } from './panels'
+import { GameDetailsPanel, InstallSummaryPanel, OSTPlayer } from './panels'
 import { CloudSavePanel } from './CloudSavePanel'
 import { GameChat } from './GameChat'
 import { ConfirmDialog } from './ConfirmDialog'
@@ -1041,27 +1041,31 @@ export function StoreLibraryView({
             </label>
           </div>
         </header>
-        <div className={`library-browse-grid layout-${viewLayout} ${viewLayout === 'grid' ? `grid-cols-${gridCols}` : ''}`}>
-          {paginatedGames.map((game) => (
-            <GameHoverCard key={game.id} game={game} assets={assets} onRequestAsset={onRequestAsset}>
-              {renderGameCard(game, 'browse') as React.ReactElement}
-            </GameHoverCard>
-          ))}
-        </div>
-        
-        {totalPages > 1 && (
-          <div className="library-pagination">
-            <button type="button" disabled={currentPage <= 1} onClick={() => {
-              setCurrentPage(p => p - 1)
-              window.scrollTo({ top: 0, behavior: 'smooth' })
-            }}>Prev</button>
-            <span>Page {currentPage} of {totalPages}</span>
-            <button type="button" disabled={currentPage >= totalPages} onClick={() => {
-              setCurrentPage(p => p + 1)
-              window.scrollTo({ top: 0, behavior: 'smooth' })
-            }}>Next</button>
-          </div>
-        )}
+        {visibleGames.length > 0 ? (
+          <>
+            <div className={`library-browse-grid layout-${viewLayout} ${viewLayout === 'grid' ? `grid-cols-${gridCols}` : ''}`}>
+              {paginatedGames.map((game) => (
+                <GameHoverCard key={game.id} game={game} assets={assets} onRequestAsset={onRequestAsset}>
+                  {renderGameCard(game, 'browse') as React.ReactElement}
+                </GameHoverCard>
+              ))}
+            </div>
+            
+            {totalPages > 1 && (
+              <div className="library-pagination">
+                <button type="button" disabled={currentPage <= 1} onClick={() => {
+                  setCurrentPage(p => p - 1)
+                  window.scrollTo({ top: 0, behavior: 'smooth' })
+                }}>Prev</button>
+                <span>Page {currentPage} of {totalPages}</span>
+                <button type="button" disabled={currentPage >= totalPages} onClick={() => {
+                  setCurrentPage(p => p + 1)
+                  window.scrollTo({ top: 0, behavior: 'smooth' })
+                }}>Next</button>
+              </div>
+            )}
+          </>
+        ) : null}
           {visibleGames.length > 0 && viewMode === 'store' ? (
             <div className="store-more-coming-banner">
               <span className="store-more-coming-title">{t.library.storeMoreComingTitle}</span>
@@ -1935,6 +1939,7 @@ export function StoreLibraryView({
               onRestoreMissingFiles={onRestoreMissingSaveFiles}
             />
           ) : null}
+          <OSTPlayer bgImage={hero || logo || undefined} gameId={selectedGame.id} />
           <GameTagsPreview game={selectedGame} />
           <AchievementPreview achievements={detail.achievements} assets={assets} />
         </aside>

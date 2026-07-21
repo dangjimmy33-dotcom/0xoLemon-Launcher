@@ -35,6 +35,8 @@ events:
     found: "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeCCompilerId.c.in"
     search_context:
       ENV{PATH}:
+        - "C:/Users/conte/.gemini/antigravity/bin"
+        - "C:\\Users\\conte\\AppData\\Roaming\\Antigravity\\bin"
         - "C:\\Program Files\\Eclipse Adoptium\\jdk-25.0.2.10-hotspot\\bin"
         - "C:\\Python314\\Scripts\\"
         - "C:\\Python314\\"
@@ -103,7 +105,6 @@ events:
         - "C:\\Users\\conte\\AppData\\Local\\Microsoft\\WinGet\\Packages\\DynamoRIO.DynamoRIO_Microsoft.Winget.Source_8wekyb3d8bbwe\\DynamoRIO-Windows-11.90.20168\\bin32"
         - "C:\\Users\\conte\\.dotnet\\tools"
         - "C:\\Users\\conte\\AppData\\Local\\Microsoft\\WinGet\\Links"
-        - "E:\\Microsoft VS Code\\bin"
         - "C:\\Program Files (x86)\\Steam\\ext\\bin"
         - "E:\\Kiro\\bin"
   -
@@ -122,7 +123,7 @@ events:
       The output was:
       0
       MSBuild version 17.14.40+3e7442088 for .NET Framework
-      Build started 7/7/2026 8:50:28 AM.
+      Build started 7/20/2026 11:40:35 PM.
       
       Project "E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\4.3.1\\CompilerIdC\\CompilerIdC.vcxproj" on node 1 (default targets).
       PrepareForBuild:
@@ -151,7 +152,7 @@ events:
           0 Warning(s)
           0 Error(s)
       
-      Time Elapsed 00:00:00.43
+      Time Elapsed 00:00:01.28
       
       
       Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CompilerIdC.exe"
@@ -184,6 +185,8 @@ events:
       - "link"
     candidate_directories:
       - "E:/visual studio 2022/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/"
+      - "C:/Users/conte/.gemini/antigravity/bin/"
+      - "C:/Users/conte/AppData/Roaming/Antigravity/bin/"
       - "C:/Program Files/Eclipse Adoptium/jdk-25.0.2.10-hotspot/bin/"
       - "C:/Python314/Scripts/"
       - "C:/Python314/"
@@ -218,7 +221,6 @@ events:
       - "C:/Users/conte/AppData/Local/Microsoft/WinGet/Packages/Microsoft.Sysinternals.ProcessMonitor_Microsoft.Winget.Source_8wekyb3d8bbwe/"
       - "C:/Users/conte/AppData/Local/Microsoft/WinGet/Packages/DynamoRIO.DynamoRIO_Microsoft.Winget.Source_8wekyb3d8bbwe/DynamoRIO-Windows-11.90.20168/bin32/"
       - "C:/Users/conte/AppData/Local/Microsoft/WinGet/Links/"
-      - "E:/Microsoft VS Code/bin/"
       - "C:/Program Files (x86)/Steam/ext/bin/"
       - "E:/Kiro/bin/"
     searched_directories:
@@ -226,6 +228,8 @@ events:
     found: "E:/visual studio 2022/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/link.exe"
     search_context:
       ENV{PATH}:
+        - "C:/Users/conte/.gemini/antigravity/bin"
+        - "C:\\Users\\conte\\AppData\\Roaming\\Antigravity\\bin"
         - "C:\\Program Files\\Eclipse Adoptium\\jdk-25.0.2.10-hotspot\\bin"
         - "C:\\Python314\\Scripts\\"
         - "C:\\Python314\\"
@@ -294,7 +298,6 @@ events:
         - "C:\\Users\\conte\\AppData\\Local\\Microsoft\\WinGet\\Packages\\DynamoRIO.DynamoRIO_Microsoft.Winget.Source_8wekyb3d8bbwe\\DynamoRIO-Windows-11.90.20168\\bin32"
         - "C:\\Users\\conte\\.dotnet\\tools"
         - "C:\\Users\\conte\\AppData\\Local\\Microsoft\\WinGet\\Links"
-        - "E:\\Microsoft VS Code\\bin"
         - "C:\\Program Files (x86)\\Steam\\ext\\bin"
         - "E:\\Kiro\\bin"
   -
@@ -320,6 +323,8 @@ events:
       - "lld-link"
     candidate_directories:
       - "E:/visual studio 2022/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/"
+      - "C:/Users/conte/.gemini/antigravity/bin/"
+      - "C:/Users/conte/AppData/Roaming/Antigravity/bin/"
       - "C:/Program Files/Eclipse Adoptium/jdk-25.0.2.10-hotspot/bin/"
       - "C:/Python314/Scripts/"
       - "C:/Python314/"
@@ -354,13 +359,18 @@ events:
       - "C:/Users/conte/AppData/Local/Microsoft/WinGet/Packages/Microsoft.Sysinternals.ProcessMonitor_Microsoft.Winget.Source_8wekyb3d8bbwe/"
       - "C:/Users/conte/AppData/Local/Microsoft/WinGet/Packages/DynamoRIO.DynamoRIO_Microsoft.Winget.Source_8wekyb3d8bbwe/DynamoRIO-Windows-11.90.20168/bin32/"
       - "C:/Users/conte/AppData/Local/Microsoft/WinGet/Links/"
-      - "E:/Microsoft VS Code/bin/"
       - "C:/Program Files (x86)/Steam/ext/bin/"
       - "E:/Kiro/bin/"
     searched_directories:
       - "E:/visual studio 2022/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/lld-link.com"
       - "E:/visual studio 2022/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/lld-link.exe"
       - "E:/visual studio 2022/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/lld-link"
+      - "C:/Users/conte/.gemini/antigravity/bin/lld-link.com"
+      - "C:/Users/conte/.gemini/antigravity/bin/lld-link.exe"
+      - "C:/Users/conte/.gemini/antigravity/bin/lld-link"
+      - "C:/Users/conte/AppData/Roaming/Antigravity/bin/lld-link.com"
+      - "C:/Users/conte/AppData/Roaming/Antigravity/bin/lld-link.exe"
+      - "C:/Users/conte/AppData/Roaming/Antigravity/bin/lld-link"
       - "C:/Program Files/Eclipse Adoptium/jdk-25.0.2.10-hotspot/bin/lld-link.com"
       - "C:/Program Files/Eclipse Adoptium/jdk-25.0.2.10-hotspot/bin/lld-link.exe"
       - "C:/Program Files/Eclipse Adoptium/jdk-25.0.2.10-hotspot/bin/lld-link"
@@ -463,9 +473,6 @@ events:
       - "C:/Users/conte/AppData/Local/Microsoft/WinGet/Links/lld-link.com"
       - "C:/Users/conte/AppData/Local/Microsoft/WinGet/Links/lld-link.exe"
       - "C:/Users/conte/AppData/Local/Microsoft/WinGet/Links/lld-link"
-      - "E:/Microsoft VS Code/bin/lld-link.com"
-      - "E:/Microsoft VS Code/bin/lld-link.exe"
-      - "E:/Microsoft VS Code/bin/lld-link"
       - "C:/Program Files (x86)/Steam/ext/bin/lld-link.com"
       - "C:/Program Files (x86)/Steam/ext/bin/lld-link.exe"
       - "C:/Program Files (x86)/Steam/ext/bin/lld-link"
@@ -475,6 +482,8 @@ events:
     found: false
     search_context:
       ENV{PATH}:
+        - "C:/Users/conte/.gemini/antigravity/bin"
+        - "C:\\Users\\conte\\AppData\\Roaming\\Antigravity\\bin"
         - "C:\\Program Files\\Eclipse Adoptium\\jdk-25.0.2.10-hotspot\\bin"
         - "C:\\Python314\\Scripts\\"
         - "C:\\Python314\\"
@@ -543,7 +552,6 @@ events:
         - "C:\\Users\\conte\\AppData\\Local\\Microsoft\\WinGet\\Packages\\DynamoRIO.DynamoRIO_Microsoft.Winget.Source_8wekyb3d8bbwe\\DynamoRIO-Windows-11.90.20168\\bin32"
         - "C:\\Users\\conte\\.dotnet\\tools"
         - "C:\\Users\\conte\\AppData\\Local\\Microsoft\\WinGet\\Links"
-        - "E:\\Microsoft VS Code\\bin"
         - "C:\\Program Files (x86)\\Steam\\ext\\bin"
         - "E:\\Kiro\\bin"
   -
@@ -567,6 +575,8 @@ events:
       - "link"
     candidate_directories:
       - "E:/visual studio 2022/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/"
+      - "C:/Users/conte/.gemini/antigravity/bin/"
+      - "C:/Users/conte/AppData/Roaming/Antigravity/bin/"
       - "C:/Program Files/Eclipse Adoptium/jdk-25.0.2.10-hotspot/bin/"
       - "C:/Python314/Scripts/"
       - "C:/Python314/"
@@ -601,7 +611,6 @@ events:
       - "C:/Users/conte/AppData/Local/Microsoft/WinGet/Packages/Microsoft.Sysinternals.ProcessMonitor_Microsoft.Winget.Source_8wekyb3d8bbwe/"
       - "C:/Users/conte/AppData/Local/Microsoft/WinGet/Packages/DynamoRIO.DynamoRIO_Microsoft.Winget.Source_8wekyb3d8bbwe/DynamoRIO-Windows-11.90.20168/bin32/"
       - "C:/Users/conte/AppData/Local/Microsoft/WinGet/Links/"
-      - "E:/Microsoft VS Code/bin/"
       - "C:/Program Files (x86)/Steam/ext/bin/"
       - "E:/Kiro/bin/"
     searched_directories:
@@ -609,6 +618,8 @@ events:
     found: "E:/visual studio 2022/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/link.exe"
     search_context:
       ENV{PATH}:
+        - "C:/Users/conte/.gemini/antigravity/bin"
+        - "C:\\Users\\conte\\AppData\\Roaming\\Antigravity\\bin"
         - "C:\\Program Files\\Eclipse Adoptium\\jdk-25.0.2.10-hotspot\\bin"
         - "C:\\Python314\\Scripts\\"
         - "C:\\Python314\\"
@@ -677,7 +688,6 @@ events:
         - "C:\\Users\\conte\\AppData\\Local\\Microsoft\\WinGet\\Packages\\DynamoRIO.DynamoRIO_Microsoft.Winget.Source_8wekyb3d8bbwe\\DynamoRIO-Windows-11.90.20168\\bin32"
         - "C:\\Users\\conte\\.dotnet\\tools"
         - "C:\\Users\\conte\\AppData\\Local\\Microsoft\\WinGet\\Links"
-        - "E:\\Microsoft VS Code\\bin"
         - "C:\\Program Files (x86)\\Steam\\ext\\bin"
         - "E:\\Kiro\\bin"
   -
@@ -701,6 +711,8 @@ events:
       - "mt"
     candidate_directories:
       - "E:/visual studio 2022/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/"
+      - "C:/Users/conte/.gemini/antigravity/bin/"
+      - "C:/Users/conte/AppData/Roaming/Antigravity/bin/"
       - "C:/Program Files/Eclipse Adoptium/jdk-25.0.2.10-hotspot/bin/"
       - "C:/Python314/Scripts/"
       - "C:/Python314/"
@@ -735,13 +747,18 @@ events:
       - "C:/Users/conte/AppData/Local/Microsoft/WinGet/Packages/Microsoft.Sysinternals.ProcessMonitor_Microsoft.Winget.Source_8wekyb3d8bbwe/"
       - "C:/Users/conte/AppData/Local/Microsoft/WinGet/Packages/DynamoRIO.DynamoRIO_Microsoft.Winget.Source_8wekyb3d8bbwe/DynamoRIO-Windows-11.90.20168/bin32/"
       - "C:/Users/conte/AppData/Local/Microsoft/WinGet/Links/"
-      - "E:/Microsoft VS Code/bin/"
       - "C:/Program Files (x86)/Steam/ext/bin/"
       - "E:/Kiro/bin/"
     searched_directories:
       - "E:/visual studio 2022/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/mt.com"
       - "E:/visual studio 2022/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/mt.exe"
       - "E:/visual studio 2022/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/mt"
+      - "C:/Users/conte/.gemini/antigravity/bin/mt.com"
+      - "C:/Users/conte/.gemini/antigravity/bin/mt.exe"
+      - "C:/Users/conte/.gemini/antigravity/bin/mt"
+      - "C:/Users/conte/AppData/Roaming/Antigravity/bin/mt.com"
+      - "C:/Users/conte/AppData/Roaming/Antigravity/bin/mt.exe"
+      - "C:/Users/conte/AppData/Roaming/Antigravity/bin/mt"
       - "C:/Program Files/Eclipse Adoptium/jdk-25.0.2.10-hotspot/bin/mt.com"
       - "C:/Program Files/Eclipse Adoptium/jdk-25.0.2.10-hotspot/bin/mt.exe"
       - "C:/Program Files/Eclipse Adoptium/jdk-25.0.2.10-hotspot/bin/mt"
@@ -844,9 +861,6 @@ events:
       - "C:/Users/conte/AppData/Local/Microsoft/WinGet/Links/mt.com"
       - "C:/Users/conte/AppData/Local/Microsoft/WinGet/Links/mt.exe"
       - "C:/Users/conte/AppData/Local/Microsoft/WinGet/Links/mt"
-      - "E:/Microsoft VS Code/bin/mt.com"
-      - "E:/Microsoft VS Code/bin/mt.exe"
-      - "E:/Microsoft VS Code/bin/mt"
       - "C:/Program Files (x86)/Steam/ext/bin/mt.com"
       - "C:/Program Files (x86)/Steam/ext/bin/mt.exe"
       - "C:/Program Files (x86)/Steam/ext/bin/mt"
@@ -856,6 +870,8 @@ events:
     found: false
     search_context:
       ENV{PATH}:
+        - "C:/Users/conte/.gemini/antigravity/bin"
+        - "C:\\Users\\conte\\AppData\\Roaming\\Antigravity\\bin"
         - "C:\\Program Files\\Eclipse Adoptium\\jdk-25.0.2.10-hotspot\\bin"
         - "C:\\Python314\\Scripts\\"
         - "C:\\Python314\\"
@@ -924,7 +940,6 @@ events:
         - "C:\\Users\\conte\\AppData\\Local\\Microsoft\\WinGet\\Packages\\DynamoRIO.DynamoRIO_Microsoft.Winget.Source_8wekyb3d8bbwe\\DynamoRIO-Windows-11.90.20168\\bin32"
         - "C:\\Users\\conte\\.dotnet\\tools"
         - "C:\\Users\\conte\\AppData\\Local\\Microsoft\\WinGet\\Links"
-        - "E:\\Microsoft VS Code\\bin"
         - "C:\\Program Files (x86)\\Steam\\ext\\bin"
         - "E:\\Kiro\\bin"
   -
@@ -948,6 +963,8 @@ events:
       - "lib"
     candidate_directories:
       - "E:/visual studio 2022/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/"
+      - "C:/Users/conte/.gemini/antigravity/bin/"
+      - "C:/Users/conte/AppData/Roaming/Antigravity/bin/"
       - "C:/Program Files/Eclipse Adoptium/jdk-25.0.2.10-hotspot/bin/"
       - "C:/Python314/Scripts/"
       - "C:/Python314/"
@@ -982,7 +999,6 @@ events:
       - "C:/Users/conte/AppData/Local/Microsoft/WinGet/Packages/Microsoft.Sysinternals.ProcessMonitor_Microsoft.Winget.Source_8wekyb3d8bbwe/"
       - "C:/Users/conte/AppData/Local/Microsoft/WinGet/Packages/DynamoRIO.DynamoRIO_Microsoft.Winget.Source_8wekyb3d8bbwe/DynamoRIO-Windows-11.90.20168/bin32/"
       - "C:/Users/conte/AppData/Local/Microsoft/WinGet/Links/"
-      - "E:/Microsoft VS Code/bin/"
       - "C:/Program Files (x86)/Steam/ext/bin/"
       - "E:/Kiro/bin/"
     searched_directories:
@@ -990,6 +1006,8 @@ events:
     found: "E:/visual studio 2022/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/lib.exe"
     search_context:
       ENV{PATH}:
+        - "C:/Users/conte/.gemini/antigravity/bin"
+        - "C:\\Users\\conte\\AppData\\Roaming\\Antigravity\\bin"
         - "C:\\Program Files\\Eclipse Adoptium\\jdk-25.0.2.10-hotspot\\bin"
         - "C:\\Python314\\Scripts\\"
         - "C:\\Python314\\"
@@ -1058,7 +1076,6 @@ events:
         - "C:\\Users\\conte\\AppData\\Local\\Microsoft\\WinGet\\Packages\\DynamoRIO.DynamoRIO_Microsoft.Winget.Source_8wekyb3d8bbwe\\DynamoRIO-Windows-11.90.20168\\bin32"
         - "C:\\Users\\conte\\.dotnet\\tools"
         - "C:\\Users\\conte\\AppData\\Local\\Microsoft\\WinGet\\Links"
-        - "E:\\Microsoft VS Code\\bin"
         - "C:\\Program Files (x86)\\Steam\\ext\\bin"
         - "E:\\Kiro\\bin"
   -
@@ -1088,6 +1105,8 @@ events:
     found: "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeCXXCompilerId.cpp.in"
     search_context:
       ENV{PATH}:
+        - "C:/Users/conte/.gemini/antigravity/bin"
+        - "C:\\Users\\conte\\AppData\\Roaming\\Antigravity\\bin"
         - "C:\\Program Files\\Eclipse Adoptium\\jdk-25.0.2.10-hotspot\\bin"
         - "C:\\Python314\\Scripts\\"
         - "C:\\Python314\\"
@@ -1156,7 +1175,6 @@ events:
         - "C:\\Users\\conte\\AppData\\Local\\Microsoft\\WinGet\\Packages\\DynamoRIO.DynamoRIO_Microsoft.Winget.Source_8wekyb3d8bbwe\\DynamoRIO-Windows-11.90.20168\\bin32"
         - "C:\\Users\\conte\\.dotnet\\tools"
         - "C:\\Users\\conte\\AppData\\Local\\Microsoft\\WinGet\\Links"
-        - "E:\\Microsoft VS Code\\bin"
         - "C:\\Program Files (x86)\\Steam\\ext\\bin"
         - "E:\\Kiro\\bin"
   -
@@ -1175,7 +1193,7 @@ events:
       The output was:
       0
       MSBuild version 17.14.40+3e7442088 for .NET Framework
-      Build started 7/7/2026 8:50:29 AM.
+      Build started 7/20/2026 11:40:37 PM.
       
       Project "E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\4.3.1\\CompilerIdCXX\\CompilerIdCXX.vcxproj" on node 1 (default targets).
       PrepareForBuild:
@@ -1204,7 +1222,7 @@ events:
           0 Warning(s)
           0 Error(s)
       
-      Time Elapsed 00:00:00.43
+      Time Elapsed 00:00:00.60
       
       
       Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CompilerIdCXX.exe"
@@ -1237,6 +1255,8 @@ events:
       - "lld-link"
     candidate_directories:
       - "E:/visual studio 2022/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/"
+      - "C:/Users/conte/.gemini/antigravity/bin/"
+      - "C:/Users/conte/AppData/Roaming/Antigravity/bin/"
       - "C:/Program Files/Eclipse Adoptium/jdk-25.0.2.10-hotspot/bin/"
       - "C:/Python314/Scripts/"
       - "C:/Python314/"
@@ -1271,13 +1291,18 @@ events:
       - "C:/Users/conte/AppData/Local/Microsoft/WinGet/Packages/Microsoft.Sysinternals.ProcessMonitor_Microsoft.Winget.Source_8wekyb3d8bbwe/"
       - "C:/Users/conte/AppData/Local/Microsoft/WinGet/Packages/DynamoRIO.DynamoRIO_Microsoft.Winget.Source_8wekyb3d8bbwe/DynamoRIO-Windows-11.90.20168/bin32/"
       - "C:/Users/conte/AppData/Local/Microsoft/WinGet/Links/"
-      - "E:/Microsoft VS Code/bin/"
       - "C:/Program Files (x86)/Steam/ext/bin/"
       - "E:/Kiro/bin/"
     searched_directories:
       - "E:/visual studio 2022/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/lld-link.com"
       - "E:/visual studio 2022/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/lld-link.exe"
       - "E:/visual studio 2022/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/lld-link"
+      - "C:/Users/conte/.gemini/antigravity/bin/lld-link.com"
+      - "C:/Users/conte/.gemini/antigravity/bin/lld-link.exe"
+      - "C:/Users/conte/.gemini/antigravity/bin/lld-link"
+      - "C:/Users/conte/AppData/Roaming/Antigravity/bin/lld-link.com"
+      - "C:/Users/conte/AppData/Roaming/Antigravity/bin/lld-link.exe"
+      - "C:/Users/conte/AppData/Roaming/Antigravity/bin/lld-link"
       - "C:/Program Files/Eclipse Adoptium/jdk-25.0.2.10-hotspot/bin/lld-link.com"
       - "C:/Program Files/Eclipse Adoptium/jdk-25.0.2.10-hotspot/bin/lld-link.exe"
       - "C:/Program Files/Eclipse Adoptium/jdk-25.0.2.10-hotspot/bin/lld-link"
@@ -1380,9 +1405,6 @@ events:
       - "C:/Users/conte/AppData/Local/Microsoft/WinGet/Links/lld-link.com"
       - "C:/Users/conte/AppData/Local/Microsoft/WinGet/Links/lld-link.exe"
       - "C:/Users/conte/AppData/Local/Microsoft/WinGet/Links/lld-link"
-      - "E:/Microsoft VS Code/bin/lld-link.com"
-      - "E:/Microsoft VS Code/bin/lld-link.exe"
-      - "E:/Microsoft VS Code/bin/lld-link"
       - "C:/Program Files (x86)/Steam/ext/bin/lld-link.com"
       - "C:/Program Files (x86)/Steam/ext/bin/lld-link.exe"
       - "C:/Program Files (x86)/Steam/ext/bin/lld-link"
@@ -1392,6 +1414,8 @@ events:
     found: false
     search_context:
       ENV{PATH}:
+        - "C:/Users/conte/.gemini/antigravity/bin"
+        - "C:\\Users\\conte\\AppData\\Roaming\\Antigravity\\bin"
         - "C:\\Program Files\\Eclipse Adoptium\\jdk-25.0.2.10-hotspot\\bin"
         - "C:\\Python314\\Scripts\\"
         - "C:\\Python314\\"
@@ -1460,7 +1484,6 @@ events:
         - "C:\\Users\\conte\\AppData\\Local\\Microsoft\\WinGet\\Packages\\DynamoRIO.DynamoRIO_Microsoft.Winget.Source_8wekyb3d8bbwe\\DynamoRIO-Windows-11.90.20168\\bin32"
         - "C:\\Users\\conte\\.dotnet\\tools"
         - "C:\\Users\\conte\\AppData\\Local\\Microsoft\\WinGet\\Links"
-        - "E:\\Microsoft VS Code\\bin"
         - "C:\\Program Files (x86)\\Steam\\ext\\bin"
         - "E:\\Kiro\\bin"
   -
@@ -1486,6 +1509,8 @@ events:
     names:
       - "rc"
     candidate_directories:
+      - "C:/Users/conte/.gemini/antigravity/bin/"
+      - "C:/Users/conte/AppData/Roaming/Antigravity/bin/"
       - "C:/Program Files/Eclipse Adoptium/jdk-25.0.2.10-hotspot/bin/"
       - "C:/Python314/Scripts/"
       - "C:/Python314/"
@@ -1520,7 +1545,6 @@ events:
       - "C:/Users/conte/AppData/Local/Microsoft/WinGet/Packages/Microsoft.Sysinternals.ProcessMonitor_Microsoft.Winget.Source_8wekyb3d8bbwe/"
       - "C:/Users/conte/AppData/Local/Microsoft/WinGet/Packages/DynamoRIO.DynamoRIO_Microsoft.Winget.Source_8wekyb3d8bbwe/DynamoRIO-Windows-11.90.20168/bin32/"
       - "C:/Users/conte/AppData/Local/Microsoft/WinGet/Links/"
-      - "E:/Microsoft VS Code/bin/"
       - "C:/Program Files (x86)/Steam/ext/bin/"
       - "E:/Kiro/bin/"
       - "C:/Program Files/bin/"
@@ -1536,6 +1560,12 @@ events:
       - "C:/Program Files/CloudRedirect/sbin/"
       - "C:/Program Files/CloudRedirect/"
     searched_directories:
+      - "C:/Users/conte/.gemini/antigravity/bin/rc.com"
+      - "C:/Users/conte/.gemini/antigravity/bin/rc.exe"
+      - "C:/Users/conte/.gemini/antigravity/bin/rc"
+      - "C:/Users/conte/AppData/Roaming/Antigravity/bin/rc.com"
+      - "C:/Users/conte/AppData/Roaming/Antigravity/bin/rc.exe"
+      - "C:/Users/conte/AppData/Roaming/Antigravity/bin/rc"
       - "C:/Program Files/Eclipse Adoptium/jdk-25.0.2.10-hotspot/bin/rc.com"
       - "C:/Program Files/Eclipse Adoptium/jdk-25.0.2.10-hotspot/bin/rc.exe"
       - "C:/Program Files/Eclipse Adoptium/jdk-25.0.2.10-hotspot/bin/rc"
@@ -1638,9 +1668,6 @@ events:
       - "C:/Users/conte/AppData/Local/Microsoft/WinGet/Links/rc.com"
       - "C:/Users/conte/AppData/Local/Microsoft/WinGet/Links/rc.exe"
       - "C:/Users/conte/AppData/Local/Microsoft/WinGet/Links/rc"
-      - "E:/Microsoft VS Code/bin/rc.com"
-      - "E:/Microsoft VS Code/bin/rc.exe"
-      - "E:/Microsoft VS Code/bin/rc"
       - "C:/Program Files (x86)/Steam/ext/bin/rc.com"
       - "C:/Program Files (x86)/Steam/ext/bin/rc.exe"
       - "C:/Program Files (x86)/Steam/ext/bin/rc"
@@ -1686,6 +1713,8 @@ events:
     found: false
     search_context:
       ENV{PATH}:
+        - "C:/Users/conte/.gemini/antigravity/bin"
+        - "C:\\Users\\conte\\AppData\\Roaming\\Antigravity\\bin"
         - "C:\\Program Files\\Eclipse Adoptium\\jdk-25.0.2.10-hotspot\\bin"
         - "C:\\Python314\\Scripts\\"
         - "C:\\Python314\\"
@@ -1754,7 +1783,6 @@ events:
         - "C:\\Users\\conte\\AppData\\Local\\Microsoft\\WinGet\\Packages\\DynamoRIO.DynamoRIO_Microsoft.Winget.Source_8wekyb3d8bbwe\\DynamoRIO-Windows-11.90.20168\\bin32"
         - "C:\\Users\\conte\\.dotnet\\tools"
         - "C:\\Users\\conte\\AppData\\Local\\Microsoft\\WinGet\\Links"
-        - "E:\\Microsoft VS Code\\bin"
         - "C:\\Program Files (x86)\\Steam\\ext\\bin"
         - "E:\\Kiro\\bin"
       CMAKE_INSTALL_PREFIX: "C:/Program Files/CloudRedirect"
@@ -1772,8 +1800,8 @@ events:
     checks:
       - "Detecting C compiler ABI info"
     directories:
-      source: "E:/007Launcher/native/cloud_redirect/build/CMakeFiles/CMakeScratch/TryCompile-0uunxb"
-      binary: "E:/007Launcher/native/cloud_redirect/build/CMakeFiles/CMakeScratch/TryCompile-0uunxb"
+      source: "E:/007Launcher/native/cloud_redirect/build/CMakeFiles/CMakeScratch/TryCompile-fyhnrr"
+      binary: "E:/007Launcher/native/cloud_redirect/build/CMakeFiles/CMakeScratch/TryCompile-fyhnrr"
     cmakeVariables:
       CMAKE_CXX_STDLIB_MODULES_JSON: ""
       CMAKE_C_FLAGS: "/DWIN32 /D_WINDOWS"
@@ -1783,39 +1811,39 @@ events:
       variable: "CMAKE_C_ABI_COMPILED"
       cached: true
       stdout: |
-        Change Dir: 'E:/007Launcher/native/cloud_redirect/build/CMakeFiles/CMakeScratch/TryCompile-0uunxb'
+        Change Dir: 'E:/007Launcher/native/cloud_redirect/build/CMakeFiles/CMakeScratch/TryCompile-fyhnrr'
         
-        Run Build Command(s): "E:/visual studio 2022/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_ad109.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        Run Build Command(s): "E:/visual studio 2022/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_38c7e.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
         MSBuild version 17.14.40+3e7442088 for .NET Framework
-        Build started 7/7/2026 8:50:29 AM.
+        Build started 7/20/2026 11:40:38 PM.
         
-        Project "E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\CMakeScratch\\TryCompile-0uunxb\\cmTC_ad109.vcxproj" on node 1 (default targets).
+        Project "E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\CMakeScratch\\TryCompile-fyhnrr\\cmTC_38c7e.vcxproj" on node 1 (default targets).
         PrepareForBuild:
           Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
-          Creating directory "E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\CMakeScratch\\TryCompile-0uunxb\\Debug\\".
-          Creating directory "cmTC_ad109.dir\\Debug\\cmTC_ad109.tlog\\".
+          Creating directory "E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\CMakeScratch\\TryCompile-fyhnrr\\Debug\\".
+          Creating directory "cmTC_38c7e.dir\\Debug\\cmTC_38c7e.tlog\\".
         InitializeBuildStatus:
-          Creating "cmTC_ad109.dir\\Debug\\cmTC_ad109.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
-          Touching "cmTC_ad109.dir\\Debug\\cmTC_ad109.tlog\\unsuccessfulbuild".
+          Creating "cmTC_38c7e.dir\\Debug\\cmTC_38c7e.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
+          Touching "cmTC_38c7e.dir\\Debug\\cmTC_38c7e.tlog\\unsuccessfulbuild".
         ClCompile:
-          E:\\visual studio 2022\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_ad109.dir\\Debug\\\\" /Fd"cmTC_ad109.dir\\Debug\\vc143.pdb" /external:W1 /TC /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-4.3\\Modules\\CMakeCCompilerABI.c"
+          E:\\visual studio 2022\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_38c7e.dir\\Debug\\\\" /Fd"cmTC_38c7e.dir\\Debug\\vc143.pdb" /external:W1 /TC /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-4.3\\Modules\\CMakeCCompilerABI.c"
           Microsoft (R) C/C++ Optimizing Compiler Version 19.44.35228 for x64
           Copyright (C) Microsoft Corporation.  All rights reserved.
-          cl /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_ad109.dir\\Debug\\\\" /Fd"cmTC_ad109.dir\\Debug\\vc143.pdb" /external:W1 /TC /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-4.3\\Modules\\CMakeCCompilerABI.c"
+          cl /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_38c7e.dir\\Debug\\\\" /Fd"cmTC_38c7e.dir\\Debug\\vc143.pdb" /external:W1 /TC /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-4.3\\Modules\\CMakeCCompilerABI.c"
           CMakeCCompilerABI.c
         Link:
-          E:\\visual studio 2022\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\link.exe /OUT:"E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\CMakeScratch\\TryCompile-0uunxb\\Debug\\cmTC_ad109.exe" /INCREMENTAL /ILK:"cmTC_ad109.dir\\Debug\\cmTC_ad109.ilk" /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"E:/007Launcher/native/cloud_redirect/build/CMakeFiles/CMakeScratch/TryCompile-0uunxb/Debug/cmTC_ad109.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /IMPLIB:"E:/007Launcher/native/cloud_redirect/build/CMakeFiles/CMakeScratch/TryCompile-0uunxb/Debug/cmTC_ad109.lib" /MACHINE:X64  /machine:x64 cmTC_ad109.dir\\Debug\\CMakeCCompilerABI.obj
-          cmTC_ad109.vcxproj -> E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\CMakeScratch\\TryCompile-0uunxb\\Debug\\cmTC_ad109.exe
+          E:\\visual studio 2022\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\link.exe /OUT:"E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\CMakeScratch\\TryCompile-fyhnrr\\Debug\\cmTC_38c7e.exe" /INCREMENTAL /ILK:"cmTC_38c7e.dir\\Debug\\cmTC_38c7e.ilk" /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"E:/007Launcher/native/cloud_redirect/build/CMakeFiles/CMakeScratch/TryCompile-fyhnrr/Debug/cmTC_38c7e.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /IMPLIB:"E:/007Launcher/native/cloud_redirect/build/CMakeFiles/CMakeScratch/TryCompile-fyhnrr/Debug/cmTC_38c7e.lib" /MACHINE:X64  /machine:x64 cmTC_38c7e.dir\\Debug\\CMakeCCompilerABI.obj
+          cmTC_38c7e.vcxproj -> E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\CMakeScratch\\TryCompile-fyhnrr\\Debug\\cmTC_38c7e.exe
         FinalizeBuildStatus:
-          Deleting file "cmTC_ad109.dir\\Debug\\cmTC_ad109.tlog\\unsuccessfulbuild".
-          Touching "cmTC_ad109.dir\\Debug\\cmTC_ad109.tlog\\cmTC_ad109.lastbuildstate".
-        Done Building Project "E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\CMakeScratch\\TryCompile-0uunxb\\cmTC_ad109.vcxproj" (default targets).
+          Deleting file "cmTC_38c7e.dir\\Debug\\cmTC_38c7e.tlog\\unsuccessfulbuild".
+          Touching "cmTC_38c7e.dir\\Debug\\cmTC_38c7e.tlog\\cmTC_38c7e.lastbuildstate".
+        Done Building Project "E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\CMakeScratch\\TryCompile-fyhnrr\\cmTC_38c7e.vcxproj" (default targets).
         
         Build succeeded.
             0 Warning(s)
             0 Error(s)
         
-        Time Elapsed 00:00:00.43
+        Time Elapsed 00:00:00.45
         
       exitCode: 0
   -
@@ -1855,8 +1883,8 @@ events:
     checks:
       - "Detecting CXX compiler ABI info"
     directories:
-      source: "E:/007Launcher/native/cloud_redirect/build/CMakeFiles/CMakeScratch/TryCompile-rvcenr"
-      binary: "E:/007Launcher/native/cloud_redirect/build/CMakeFiles/CMakeScratch/TryCompile-rvcenr"
+      source: "E:/007Launcher/native/cloud_redirect/build/CMakeFiles/CMakeScratch/TryCompile-zm1eto"
+      binary: "E:/007Launcher/native/cloud_redirect/build/CMakeFiles/CMakeScratch/TryCompile-zm1eto"
     cmakeVariables:
       CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /EHsc"
       CMAKE_CXX_FLAGS_DEBUG: "/Zi /Ob0 /Od /RTC1"
@@ -1867,39 +1895,39 @@ events:
       variable: "CMAKE_CXX_ABI_COMPILED"
       cached: true
       stdout: |
-        Change Dir: 'E:/007Launcher/native/cloud_redirect/build/CMakeFiles/CMakeScratch/TryCompile-rvcenr'
+        Change Dir: 'E:/007Launcher/native/cloud_redirect/build/CMakeFiles/CMakeScratch/TryCompile-zm1eto'
         
-        Run Build Command(s): "E:/visual studio 2022/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_1c948.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        Run Build Command(s): "E:/visual studio 2022/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_70352.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
         MSBuild version 17.14.40+3e7442088 for .NET Framework
-        Build started 7/7/2026 8:50:30 AM.
+        Build started 7/20/2026 11:40:39 PM.
         
-        Project "E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\CMakeScratch\\TryCompile-rvcenr\\cmTC_1c948.vcxproj" on node 1 (default targets).
+        Project "E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\CMakeScratch\\TryCompile-zm1eto\\cmTC_70352.vcxproj" on node 1 (default targets).
         PrepareForBuild:
           Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
-          Creating directory "E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\CMakeScratch\\TryCompile-rvcenr\\Debug\\".
-          Creating directory "cmTC_1c948.dir\\Debug\\cmTC_1c948.tlog\\".
+          Creating directory "E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\CMakeScratch\\TryCompile-zm1eto\\Debug\\".
+          Creating directory "cmTC_70352.dir\\Debug\\cmTC_70352.tlog\\".
         InitializeBuildStatus:
-          Creating "cmTC_1c948.dir\\Debug\\cmTC_1c948.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
-          Touching "cmTC_1c948.dir\\Debug\\cmTC_1c948.tlog\\unsuccessfulbuild".
+          Creating "cmTC_70352.dir\\Debug\\cmTC_70352.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
+          Touching "cmTC_70352.dir\\Debug\\cmTC_70352.tlog\\unsuccessfulbuild".
         ClCompile:
-          E:\\visual studio 2022\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /Fo"cmTC_1c948.dir\\Debug\\\\" /Fd"cmTC_1c948.dir\\Debug\\vc143.pdb" /external:W1 /TP /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-4.3\\Modules\\CMakeCXXCompilerABI.cpp"
+          E:\\visual studio 2022\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /Fo"cmTC_70352.dir\\Debug\\\\" /Fd"cmTC_70352.dir\\Debug\\vc143.pdb" /external:W1 /TP /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-4.3\\Modules\\CMakeCXXCompilerABI.cpp"
           Microsoft (R) C/C++ Optimizing Compiler Version 19.44.35228 for x64
           Copyright (C) Microsoft Corporation.  All rights reserved.
-          cl /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /Fo"cmTC_1c948.dir\\Debug\\\\" /Fd"cmTC_1c948.dir\\Debug\\vc143.pdb" /external:W1 /TP /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-4.3\\Modules\\CMakeCXXCompilerABI.cpp"
+          cl /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /Fo"cmTC_70352.dir\\Debug\\\\" /Fd"cmTC_70352.dir\\Debug\\vc143.pdb" /external:W1 /TP /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-4.3\\Modules\\CMakeCXXCompilerABI.cpp"
           CMakeCXXCompilerABI.cpp
         Link:
-          E:\\visual studio 2022\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\link.exe /OUT:"E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\CMakeScratch\\TryCompile-rvcenr\\Debug\\cmTC_1c948.exe" /INCREMENTAL /ILK:"cmTC_1c948.dir\\Debug\\cmTC_1c948.ilk" /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"E:/007Launcher/native/cloud_redirect/build/CMakeFiles/CMakeScratch/TryCompile-rvcenr/Debug/cmTC_1c948.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /IMPLIB:"E:/007Launcher/native/cloud_redirect/build/CMakeFiles/CMakeScratch/TryCompile-rvcenr/Debug/cmTC_1c948.lib" /MACHINE:X64  /machine:x64 cmTC_1c948.dir\\Debug\\CMakeCXXCompilerABI.obj
-          cmTC_1c948.vcxproj -> E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\CMakeScratch\\TryCompile-rvcenr\\Debug\\cmTC_1c948.exe
+          E:\\visual studio 2022\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\link.exe /OUT:"E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\CMakeScratch\\TryCompile-zm1eto\\Debug\\cmTC_70352.exe" /INCREMENTAL /ILK:"cmTC_70352.dir\\Debug\\cmTC_70352.ilk" /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"E:/007Launcher/native/cloud_redirect/build/CMakeFiles/CMakeScratch/TryCompile-zm1eto/Debug/cmTC_70352.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /IMPLIB:"E:/007Launcher/native/cloud_redirect/build/CMakeFiles/CMakeScratch/TryCompile-zm1eto/Debug/cmTC_70352.lib" /MACHINE:X64  /machine:x64 cmTC_70352.dir\\Debug\\CMakeCXXCompilerABI.obj
+          cmTC_70352.vcxproj -> E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\CMakeScratch\\TryCompile-zm1eto\\Debug\\cmTC_70352.exe
         FinalizeBuildStatus:
-          Deleting file "cmTC_1c948.dir\\Debug\\cmTC_1c948.tlog\\unsuccessfulbuild".
-          Touching "cmTC_1c948.dir\\Debug\\cmTC_1c948.tlog\\cmTC_1c948.lastbuildstate".
-        Done Building Project "E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\CMakeScratch\\TryCompile-rvcenr\\cmTC_1c948.vcxproj" (default targets).
+          Deleting file "cmTC_70352.dir\\Debug\\cmTC_70352.tlog\\unsuccessfulbuild".
+          Touching "cmTC_70352.dir\\Debug\\cmTC_70352.tlog\\cmTC_70352.lastbuildstate".
+        Done Building Project "E:\\007Launcher\\native\\cloud_redirect\\build\\CMakeFiles\\CMakeScratch\\TryCompile-zm1eto\\cmTC_70352.vcxproj" (default targets).
         
         Build succeeded.
             0 Warning(s)
             0 Error(s)
         
-        Time Elapsed 00:00:00.60
+        Time Elapsed 00:00:00.43
         
       exitCode: 0
   -

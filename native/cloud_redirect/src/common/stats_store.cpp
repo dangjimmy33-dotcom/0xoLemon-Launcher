@@ -114,12 +114,10 @@ static bool RefreshCloudBlobCache() {
     if (g_isNamespaceApp) {
         size_t before = fetched.size();
         for (auto it = fetched.begin(); it != fetched.end(); ) {
-            if (!g_isNamespaceApp(it->first)) {
-                LOG("[Stats] Cloud blob: DROPPED app %u (not a namespace app for this account)", it->first);
+            if (!g_isNamespaceApp(it->first))
                 it = fetched.erase(it);
-            } else {
+            else
                 ++it;
-            }
         }
         if (fetched.size() != before)
             LOG("[Stats] Cloud blob decontamination: %zu -> %zu app(s)", before, fetched.size());
@@ -131,20 +129,16 @@ static bool RefreshCloudBlobCache() {
     if (firstRefresh || g_cloudBlobByApp.size() != prevCount)
         LOG("[Stats] Cloud blob refreshed: %zu app(s)", g_cloudBlobByApp.size());
     if (firstRefresh) {
+        size_t appsWithData = 0;
         for (const auto& [appId, json] : g_cloudBlobByApp) {
             AppStats cs;
-            if (!ParseAppStatsJson(json, cs)) {
-                LOG("[Stats]   cloud[%u]: PARSE FAILED (%zu bytes)", appId, json.size());
-                continue;
-            }
-            size_t unlocked = 0;
-            for (const auto& a : cs.achievements)
-                for (int i = 0; i < 32; i++) if (a.unlockTimes[i]) unlocked++;
+            if (!ParseAppStatsJson(json, cs)) continue;
             if (!cs.achievements.empty() || !cs.stats.empty() || cs.playtime.minutesForever)
-                LOG("[Stats]   cloud[%u]: ach_blocks=%zu unlocked=%zu stats=%zu schema=%zuB forever=%umin",
-                    appId, cs.achievements.size(), unlocked, cs.stats.size(),
-                    cs.schema.size(), cs.playtime.minutesForever);
+                appsWithData++;
         }
+        if (appsWithData)
+            LOG("[Stats] Cloud blob: %zu/%zu app(s) have stats/playtime data",
+                appsWithData, g_cloudBlobByApp.size());
         firstRefresh = false;
     }
     return true;
@@ -460,7 +454,6 @@ static void ReconcileLocalConfig(const std::string& cloudRoot, const std::string
             // server-tracked playtime and are never reconciled or synced.
             bool isNs = g_isNamespaceApp && g_isNamespaceApp(appId);
             if (!isNs) return true;
-            LOG("[Stats] Reconcile: considering app %u (ns=1)", appId);
 
             std::string appIdStr = std::to_string(appId);
             const char* appPath[] = {"UserLocalConfigStore", "Software", "Valve", "Steam", appsKey, appIdStr.c_str()};
@@ -533,10 +526,6 @@ static void ReconcileLocalConfig(const std::string& cloudRoot, const std::string
 
             WriteAppStats(appId, stats, false, /*bypassDiskMerge=*/true);
             reconciled++;
-            LOG("[Stats] Reconciled app %u lastPlayed=%u (win=%u mac=%u linux=%u, migrated=%u)",
-                appId, vdfLastPlayed,
-                stats.playtime.playtimeWindows, stats.playtime.playtimeMac,
-                stats.playtime.playtimeLinux, vdfPlaytime);
             return true;
         });
     if (reconciled > 0) {
@@ -701,7 +690,6 @@ static bool ImportNativeStats(uint32_t appId, AppStats& out) {
         if (sf.good()) {
             out.schema.assign(std::istreambuf_iterator<char>(sf),
                               std::istreambuf_iterator<char>());
-            LOG("[Stats] ImportNativeStats app=%u: schema read %zuB", appId, out.schema.size());
         }
         // Refresh schema from Steam's server (picks up newly-added achievements).
         if (g_schemaMissingCb)
@@ -712,34 +700,22 @@ static bool ImportNativeStats(uint32_t appId, AppStats& out) {
     fs::path statsPath = FileUtil::Utf8ToPath(g_steamPath) / "appcache" / "stats"
         / ("UserGameStats_" + std::to_string(accountId) + "_" + std::to_string(appId) + ".bin");
     std::ifstream f(statsPath, std::ios::binary);
-    // No native blob but schema loaded -- adopt schema so cloud achievements are serveable.
-    if (!f.good()) {
-        if (!out.schema.empty())
-            LOG("[Stats] ImportNativeStats app=%u: no native blob, adopt schema only (%zuB)",
-                appId, out.schema.size());
+    if (!f.good())
         return !out.schema.empty();
-    }
     std::vector<uint8_t> blob((std::istreambuf_iterator<char>(f)),
                               std::istreambuf_iterator<char>());
     f.close();
-    if (blob.empty()) {
-        LOG("[Stats] ImportNativeStats app=%u: native blob is empty (0 bytes)", appId);
+    if (blob.empty())
         return !out.schema.empty();
-    }
 
     size_t pos = 0, nodeCount = 0;
     std::vector<BkvNode> root;
-    if (!BkvRead(blob.data(), blob.size(), pos, root, 0, nodeCount)) {
-        LOG("[Stats] ImportNativeStats app=%u: BKV parse failed (%zu bytes)", appId, blob.size());
+    if (!BkvRead(blob.data(), blob.size(), pos, root, 0, nodeCount))
         return !out.schema.empty();
-    }
 
     const BkvNode* cache = BkvFind(root, "cache");
-    if (!cache) {
-        LOG("[Stats] ImportNativeStats app=%u: no 'cache' node in native blob (%zu bytes)",
-            appId, blob.size());
+    if (!cache)
         return !out.schema.empty();
-    }
 
     // Parse the schema (if present) for human-readable achievement names and
     // per-stat merge strategies (type_int / resolution_method).
@@ -800,10 +776,139 @@ static bool ImportNativeStats(uint32_t appId, AppStats& out) {
     }
 
     ReconcileAchievementBits(out.stats, out.achievements);
-    LOG("[Stats] ImportNativeStats app=%u: imported %zu stat(s), %zu achievement block(s) "
-        "(%zu unlocked), schema=%zu bytes", appId, importedStats, importedAch,
-        CountUnlockedAchievements(out.achievements), out.schema.size());
     return importedStats > 0 || !out.schema.empty();
+}
+
+// Writes UserGameStats .bin for SLSsteam's NO_CONNECTION fallback.
+// Format: cache { crc; PendingChanges; <statId> { data; AchievementTimes { <bit>=ts } } }
+
+namespace {
+
+class BkvWriter {
+public:
+    void BeginSection(const char* name) {
+        m_buf.push_back(BKV_SECTION);
+        WriteCStr(name);
+    }
+    void EndSection() { m_buf.push_back(BKV_END); }
+
+    void WriteInt(const char* name, uint32_t val) {
+        m_buf.push_back(BKV_INT);
+        WriteCStr(name);
+        WriteU32(val);
+    }
+
+    const std::vector<uint8_t>& Data() const { return m_buf; }
+
+private:
+    void WriteCStr(const char* s) {
+        while (*s) m_buf.push_back(static_cast<uint8_t>(*s++));
+        m_buf.push_back(0);
+    }
+    void WriteU32(uint32_t v) {
+        m_buf.push_back(v & 0xFF);
+        m_buf.push_back((v >> 8) & 0xFF);
+        m_buf.push_back((v >> 16) & 0xFF);
+        m_buf.push_back((v >> 24) & 0xFF);
+    }
+
+    std::vector<uint8_t> m_buf;
+};
+
+} // anon namespace
+
+// Caller holds g_mutex.
+static bool ExportNativeStats(uint32_t appId, const AppStats& stats) {
+    if (g_steamPath.empty() || !g_accountIdProvider) return false;
+    uint32_t accountId = g_accountIdProvider();
+    if (accountId == 0) return false;
+
+    if (stats.stats.empty() && stats.achievements.empty()) return false;
+
+    std::unordered_map<uint32_t, const AchievementBlock*> achMap;
+    for (const auto& a : stats.achievements)
+        achMap[a.statId] = &a;
+
+    std::unordered_set<uint32_t> emittedAch;
+
+    BkvWriter bkv;
+    bkv.BeginSection("cache");
+    bkv.WriteInt("crc", stats.crcStats);
+    bkv.WriteInt("PendingChanges", 0);
+
+    for (const auto& s : stats.stats) {
+        char statName[16];
+        snprintf(statName, sizeof(statName), "%u", s.statId);
+
+        bkv.BeginSection(statName);
+        bkv.WriteInt("data", s.value);
+
+        auto achIt = achMap.find(s.statId);
+        if (achIt != achMap.end()) {
+            emittedAch.insert(s.statId);
+            const AchievementBlock& blk = *achIt->second;
+            bkv.BeginSection("AchievementTimes");
+            for (uint32_t bit = 0; bit < 32; bit++) {
+                if (blk.unlockTimes[bit] != 0) {
+                    char bitName[8];
+                    snprintf(bitName, sizeof(bitName), "%u", bit);
+                    bkv.WriteInt(bitName, blk.unlockTimes[bit]);
+                }
+            }
+            bkv.EndSection(); // AchievementTimes
+        }
+        bkv.EndSection(); // stat section
+    }
+
+    // Orphan AchievementBlocks (no matching StatEntry, e.g. cross-device merge).
+    for (const auto& a : stats.achievements) {
+        if (emittedAch.count(a.statId)) continue;
+        char statName[16];
+        snprintf(statName, sizeof(statName), "%u", a.statId);
+        bkv.BeginSection(statName);
+        bkv.WriteInt("data", a.bits);  // bitfield is the stat value for achievement stats
+        bkv.BeginSection("AchievementTimes");
+        for (uint32_t bit = 0; bit < 32; bit++) {
+            if (a.unlockTimes[bit] != 0) {
+                char bitName[8];
+                snprintf(bitName, sizeof(bitName), "%u", bit);
+                bkv.WriteInt(bitName, a.unlockTimes[bit]);
+            }
+        }
+        bkv.EndSection(); // AchievementTimes
+        bkv.EndSection(); // stat section
+    }
+
+    bkv.EndSection(); // cache
+    bkv.EndSection(); // root terminator
+
+    fs::path statsDir = FileUtil::Utf8ToPath(g_steamPath) / "appcache" / "stats";
+    std::error_code ec;
+    fs::create_directories(statsDir, ec);
+
+    fs::path statsPath = statsDir /
+        ("UserGameStats_" + std::to_string(accountId) + "_" + std::to_string(appId) + ".bin");
+    std::ofstream f(statsPath, std::ios::binary | std::ios::trunc);
+    if (!f.good()) {
+        LOG("[Stats] ExportNativeStats app=%u: failed to open %s",
+            appId, statsPath.string().c_str());
+        return false;
+    }
+    f.write(reinterpret_cast<const char*>(bkv.Data().data()), bkv.Data().size());
+    f.close();
+
+    // Schema too, if available (Steam needs it for achievement names/icons).
+    if (!stats.schema.empty()) {
+        fs::path schemaPath = statsDir /
+            ("UserGameStatsSchema_" + std::to_string(appId) + ".bin");
+        std::ofstream sf(schemaPath, std::ios::binary | std::ios::trunc);
+        if (sf.good())
+            sf.write(reinterpret_cast<const char*>(stats.schema.data()), stats.schema.size());
+    }
+
+    LOG("[Stats] ExportNativeStats app=%u: wrote %zu bytes (%zu stats, %zu ach blocks)",
+        appId, bkv.Data().size(), stats.stats.size(), stats.achievements.size());
+    return true;
 }
 
 // Parse the JSON document (stats/achievements/playtime) into `out`.
@@ -1010,18 +1115,27 @@ static bool IsLegacyDeviceKey(const std::string& key) {
     return key.rfind("__legacy_", 0) == 0;
 }
 
+// Recomputed each launch from localconfig; never max-merge from external sources.
+static bool IsReconcileOwnedKey(const std::string& key) {
+    return key == "__migrated_localconfig";
+}
+
+static bool IsSyntheticKey(const std::string& key) {
+    return IsLegacyDeviceKey(key) || IsReconcileOwnedKey(key);
+}
+
 // Union-merge playtime (max per device+platform). Legacy-only blobs are discounted
-// by real-device totals to avoid double-counting.
+// by real-device totals; reconcile-owned buckets are never adopted from src.
 static void MergePlaytime(PlaytimeData& dst, const PlaytimeData& src) {
     bool srcHasRealKeys = false;
     for (const auto& [dev, sdp] : src.perDevice) {
-        if (!IsLegacyDeviceKey(dev)) { srcHasRealKeys = true; break; }
+        if (!IsSyntheticKey(dev)) { srcHasRealKeys = true; break; }
     }
     bool srcLegacyOnly = !src.perDevice.empty() && !srcHasRealKeys;
 
     // Union real device keys first (so the discount below sees all of them).
     for (const auto& [dev, sdp] : src.perDevice) {
-        if (IsLegacyDeviceKey(dev)) continue;
+        if (IsSyntheticKey(dev)) continue;
         DevicePlaytime& ddp = dst.perDevice[dev];
         ddp.windows = (std::max)(ddp.windows, sdp.windows);
         ddp.mac     = (std::max)(ddp.mac,     sdp.mac);
@@ -1032,7 +1146,7 @@ static void MergePlaytime(PlaytimeData& dst, const PlaytimeData& src) {
     uint64_t realWin = 0, realMac = 0, realLin = 0;
     if (srcLegacyOnly) {
         for (const auto& [dev, ddp] : dst.perDevice) {
-            if (IsLegacyDeviceKey(dev)) continue;
+            if (IsSyntheticKey(dev)) continue;
             realWin += ddp.windows; realMac += ddp.mac; realLin += ddp.lin;
         }
     }
@@ -1041,6 +1155,7 @@ static void MergePlaytime(PlaytimeData& dst, const PlaytimeData& src) {
     };
 
     for (const auto& [dev, sdp] : src.perDevice) {
+        if (IsReconcileOwnedKey(dev)) continue;   // never adopt from external source
         if (!IsLegacyDeviceKey(dev)) continue;
         DevicePlaytime eff = sdp;
         if (srcLegacyOnly) {
@@ -1264,11 +1379,7 @@ bool LoadAppStats(uint32_t appId, AppStats& out) {
     // No per-app network read -- the whole account blob was fetched in one shot.
     if (MergeCloudBlobLocked(appId, out, haveLocal)) {
         haveLocal = true;
-        // Materialize the merged result locally for fast subsequent reads.
         WriteAppStats(appId, out, false);
-        LOG("[Stats] Merged app %u with cloud blob (forever=%u win=%u mac=%u linux=%u)",
-            appId, out.playtime.minutesForever, out.playtime.playtimeWindows,
-            out.playtime.playtimeMac, out.playtime.playtimeLinux);
     }
 
     if (!haveLocal) return false;
@@ -1403,10 +1514,9 @@ static void EnsureNativeImportLocked(uint32_t appId, AppStats& stats) {
         size_t haveAfter = CountUnlockedAchievements(stats.achievements);
         // If cloud (haveBefore) held more than native, the merge must keep the
         // superset -- haveAfter dropping below haveBefore means an unlock was lost.
-        LOG("[Stats] NativeImport merge app=%u: store_had=%zu native_had=%zu -> store_now=%zu "
-            "(stats=%zu schema=%zuB)%s", appId, haveBefore, nativeHas, haveAfter,
-            stats.stats.size(), stats.schema.size(),
-            haveAfter < haveBefore ? " [WARN: unlock regressed]" : "");
+        if (haveAfter < haveBefore)
+            LOG("[Stats] NativeImport merge app=%u: unlock regressed (%zu -> %zu)",
+                appId, haveBefore, haveAfter);
         if (merged || schemaAdopted) {
             stats.crcStats = ComputeCrcLocked(stats);
             g_dirty[appId] = true;
@@ -1453,7 +1563,7 @@ void CaptureNativeUnlocks(uint32_t appId) {
     if (changed) PushAccountBlobIfDirty();
 }
 
-// Core seed/lookup. Caller MUST hold g_mutex. Returns a live cache reference.
+// Caller MUST hold g_mutex.
 static AppStats& GetOrCreateLocked(uint32_t appId) {
     auto it = g_cache.find(appId);
     if (it != g_cache.end()) {
@@ -1733,6 +1843,16 @@ void SeedApps(const std::vector<uint32_t>& appIds) {
         if (appId == 0) continue;
         GetOrCreate(appId);  // merges cached cloud blob + imports native + loads local
     }
+    // Write .bin files for SLSsteam's NO_CONNECTION fallback.
+    {
+        std::lock_guard<std::mutex> lock(g_mutex);
+        for (uint32_t appId : appIds) {
+            if (appId == 0) continue;
+            auto it = g_cache.find(appId);
+            if (it != g_cache.end())
+                ExportNativeStats(appId, it->second);
+        }
+    }
     // SeedApps also materializes imported native stats; flush the account blob
     // once so newly-seeded local stats reach the cloud.
     PushAccountBlobIfDirty();
@@ -1855,6 +1975,8 @@ std::vector<uint32_t> RefreshFromCloud(const std::vector<uint32_t>& appIds) {
             if (achChanged || statChanged)
                 cur.crcStats = ComputeCrcLocked(cur);
             WriteAppStats(appId, cur, false);
+            if (achChanged || statChanged)
+                ExportNativeStats(appId, cur);
             changed.push_back(appId);
             LOG("[Stats] Cloud advanced app %u: forever %u -> %u (win=%u mac=%u linux=%u) ach=%d stat=%d",
                 appId, before.minutesForever, cur.playtime.minutesForever,
@@ -2039,6 +2161,7 @@ static bool EndSessionLocked(uint32_t appId) {
     g_dirty[appId] = true;
     SaveAppStats(appId, stats);   // updates account blob + dirty flag
     g_dirty[appId] = false;
+    ExportNativeStats(appId, stats);
     LOG("[Stats] Session ended for app %u: +%u min (total %u)",
         appId, minutes, stats.playtime.minutesForever);
     return true;
@@ -2105,16 +2228,18 @@ std::unordered_set<uint32_t> ConsumeResetApps() {
 void FlushAll() {
     {
         std::lock_guard<std::mutex> lock(g_mutex);
+        int flushed = 0;
         for (auto& [appId, dirty] : g_dirty) {
             if (dirty) {
                 auto it = g_cache.find(appId);
-                if (it != g_cache.end()) {
-                    SaveAppStats(appId, it->second);  // updates account blob + dirty flag
-                    LOG("[Stats] Flushed app %u to disk", appId);
-                }
+                if (it != g_cache.end())
+                    SaveAppStats(appId, it->second);
                 dirty = false;
+                flushed++;
             }
         }
+        if (flushed)
+            LOG("[Stats] Flushed %d app(s) to disk", flushed);
     }
     // Push the account blob once for all flushed apps (outside the lock).
     PushAccountBlobIfDirty();

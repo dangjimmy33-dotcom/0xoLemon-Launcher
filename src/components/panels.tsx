@@ -1,4 +1,4 @@
-import { Archive, Download, HardDrive, RotateCcw, ShieldCheck, Square } from 'lucide-react'
+import { Archive, Download, HardDrive, RotateCcw, ShieldCheck, Square, Play, SkipBack, SkipForward, Music, ArrowRight, Repeat, Shuffle } from 'lucide-react'
 import { enUS as t } from '../i18n/en-US'
 import type { ChangedFile, GameDetail, Snapshot } from '../types'
 import { formatBytes, formatDelta } from '../lib/format'
@@ -195,6 +195,214 @@ export function ChangedFiles({ files }: { files: ChangedFile[] }) {
       <button type="button" disabled={files.length === 0}>
         {files.length === 0 ? 'NO CHANGED FILES' : 'VIEW ALL FILES'}
       </button>
+    </section>
+  )
+}
+import { useState, useRef, useEffect } from 'react'
+import { useOSTData } from '../hooks/useOSTData'
+
+export function OSTPlayer({ bgImage, gameId }: { bgImage?: string, gameId: string }) {
+  const { tracks, loading } = useOSTData(gameId)
+  
+  const [playMode, setPlayMode] = useState<'sequential' | 'repeat' | 'shuffle'>('sequential')
+  const [activeTrackIndex, setActiveTrackIndex] = useState(0)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [transitioning, setTransitioning] = useState(false)
+  const [progress, setProgress] = useState(0)
+  const [actualDurations, setActualDurations] = useState<Record<string, string>>({})
+
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+
+  const activeTrack = tracks.length > 0 ? tracks[activeTrackIndex] : null
+
+  // Auto-play when active track changes
+  useEffect(() => {
+    if (audioRef.current && activeTrack) {
+      if (isPlaying) {
+        audioRef.current.play().catch(e => console.warn('Autoplay prevented', e))
+      }
+    }
+  }, [activeTrackIndex])
+
+  const togglePlayMode = () => {
+    if (playMode === 'sequential') setPlayMode('repeat')
+    else if (playMode === 'repeat') setPlayMode('shuffle')
+    else setPlayMode('sequential')
+  }
+
+  const handleTrackSelect = (index: number) => {
+    if (index === activeTrackIndex) {
+      togglePlayPause()
+      return
+    }
+    changeTrack(index)
+  }
+
+  const changeTrack = (newIndex: number) => {
+    setTransitioning(true)
+    setTimeout(() => {
+      setActiveTrackIndex(newIndex)
+      setTransitioning(false)
+      // If we weren't playing, start playing when selecting a new track
+      if (!isPlaying) {
+        setIsPlaying(true)
+      }
+    }, 300)
+  }
+
+  const togglePlayPause = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause()
+      } else {
+        audioRef.current.play().catch(e => console.warn('Play prevented', e))
+      }
+      setIsPlaying(!isPlaying)
+    }
+  }
+
+  const handleNext = () => {
+    if (tracks.length === 0) return
+    if (playMode === 'shuffle') {
+      let nextIndex = Math.floor(Math.random() * tracks.length)
+      if (nextIndex === activeTrackIndex && tracks.length > 1) {
+         nextIndex = (nextIndex + 1) % tracks.length
+      }
+      changeTrack(nextIndex)
+    } else {
+      const nextIndex = (activeTrackIndex + 1) % tracks.length
+      // If sequential and we reached the end, stop playing
+      if (playMode === 'sequential' && nextIndex === 0) {
+        setIsPlaying(false)
+        setActiveTrackIndex(0)
+      } else {
+        changeTrack(nextIndex)
+      }
+    }
+  }
+
+  const handlePrev = () => {
+    if (tracks.length === 0) return
+    const prevIndex = activeTrackIndex === 0 ? tracks.length - 1 : activeTrackIndex - 1
+    changeTrack(prevIndex)
+  }
+
+  const handleTimeUpdate = () => {
+    if (audioRef.current) {
+      const current = audioRef.current.currentTime
+      const duration = audioRef.current.duration
+      if (duration > 0) {
+        setProgress((current / duration) * 100)
+      }
+    }
+  }
+
+  const handleLoadedMetadata = () => {
+    if (audioRef.current && activeTrack) {
+      const duration = audioRef.current.duration
+      if (duration > 0 && (!activeTrack.durationStr || activeTrack.durationStr === '0:00')) {
+        const mins = Math.floor(duration / 60)
+        const secs = Math.floor(duration % 60).toString().padStart(2, '0')
+        setActualDurations(prev => ({ ...prev, [activeTrack.id]: `${mins}:${secs}` }))
+      }
+    }
+  }
+
+  const handleEnded = () => {
+    if (playMode === 'repeat' && audioRef.current) {
+      // Actually 'repeat' usually means repeat list. 'repeat-1' is repeat one.
+      // If we treat repeat as repeat-list:
+      handleNext()
+    } else {
+      handleNext()
+    }
+  }
+
+  if (loading && tracks.length === 0) {
+    return (
+      <section className="ost-player-panel ost-player-expanded" style={{ marginBottom: '16px', marginTop: '16px', justifyContent: 'center' }}>
+        <div style={{ color: 'rgba(255,255,255,0.5)', padding: '20px' }}>Loading Soundtrack...</div>
+      </section>
+    )
+  }
+
+  if (tracks.length === 0) {
+    return null
+  }
+
+  return (
+    <section className="ost-player-panel ost-player-expanded" style={{ marginBottom: '16px', marginTop: '16px' }}>
+      <div className="ost-player-bg" style={{ backgroundImage: bgImage ? `url(${bgImage})` : undefined }} />
+      
+      <div className="ost-player-content">
+        <div className={`ost-vinyl-container ${isPlaying && !transitioning ? 'spinning' : ''} ${transitioning ? 'fade-out' : 'fade-in'}`}>
+          <div className="ost-vinyl">
+            {bgImage ? <img src={bgImage} alt="" /> : <Music size={20} color="rgba(255,255,255,0.2)" />}
+            <div className="ost-hole" />
+          </div>
+        </div>
+        
+        <div className={`ost-info ${transitioning ? 'fade-out' : 'fade-in'}`}>
+          <strong>{activeTrack?.title || 'Unknown Track'}</strong>
+          <span>{activeTrack?.artist || 'Unknown Artist'}</span>
+        </div>
+        
+        <div className="ost-controls">
+          <button type="button" onClick={togglePlayMode} title={`Play Mode: ${playMode}`}>
+            {playMode === 'sequential' && <ArrowRight size={14} />}
+            {playMode === 'repeat' && <Repeat size={14} />}
+            {playMode === 'shuffle' && <Shuffle size={14} />}
+          </button>
+          <button type="button" onClick={handlePrev}><SkipBack size={16} fill="currentColor" /></button>
+          <button type="button" className="play-btn" onClick={togglePlayPause}>
+            {isPlaying ? (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+            ) : (
+              <Play size={18} fill="currentColor" />
+            )}
+          </button>
+          <button type="button" onClick={handleNext}><SkipForward size={16} fill="currentColor" /></button>
+        </div>
+      </div>
+      
+      <div className="ost-tracklist">
+        {tracks.map((track, index) => {
+          const isActive = index === activeTrackIndex
+          return (
+            <div 
+              key={track.id} 
+              className={`ost-track ${isActive ? 'active' : ''}`}
+              onClick={() => handleTrackSelect(index)}
+            >
+              <div className="ost-track-num">
+                {isActive && isPlaying ? (
+                  <div className="ost-visualizer">
+                    <span/><span/><span/><span/>
+                  </div>
+                ) : (
+                  <Music size={12} className="ost-track-icon" />
+                )}
+              </div>
+              <div className="ost-track-title">{track.title}</div>
+              <div className="ost-track-duration">{actualDurations[track.id] || track.durationStr}</div>
+            </div>
+          )
+        })}
+      </div>
+      
+      <div className="ost-progress-bar">
+        <div className="ost-progress-fill" style={{ width: `${progress}%`, animation: 'none' }} />
+      </div>
+
+      {activeTrack && (
+        <audio 
+          ref={audioRef}
+          src={activeTrack.url}
+          onTimeUpdate={handleTimeUpdate}
+          onLoadedMetadata={handleLoadedMetadata}
+          onEnded={handleEnded}
+        />
+      )}
     </section>
   )
 }
