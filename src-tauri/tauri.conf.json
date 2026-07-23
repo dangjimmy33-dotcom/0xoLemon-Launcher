@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "0xoLemon",
-  "version": "1.0.44",
-  "identifier": "com.oxolemon.launcher",
+  "productName": "0xoLemon Launcher",
+  "version": "1.0.47",
+  "identifier": "com.0xolemon.launcher",
   "build": {
     "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build",
@@ -42,6 +42,7 @@
     "resources": [
       "resources/steam_hooks/*",
       "resources/cloud_redirect/*",
+      "resources/emu/**/*",
       "../steam_appids_mapping.json"
     ],
     "icon": [
