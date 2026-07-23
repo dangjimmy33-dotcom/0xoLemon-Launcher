@@ -596,20 +596,33 @@ pub(super) fn remove_game_shortcut(
     #[cfg(target_os = "windows")]
     {
         let desktop = desktop_directory(app, install_root);
-        let primary = desktop.join(format!("{}.lnk", source.game_dir_name));
-        let mut candidates = vec![primary];
+        // Remove both old .lnk and new .url shortcut types
+        let mut candidates = vec![
+            desktop.join(format!("{}.lnk", source.game_dir_name)),
+            desktop.join(format!("{}.url", source.game_dir_name)),
+        ];
         if let Ok(profile) = env::var("USERPROFILE") {
             candidates.push(
-                PathBuf::from(profile)
+                PathBuf::from(&profile)
                     .join("Desktop")
                     .join(format!("{}.lnk", source.game_dir_name)),
+            );
+            candidates.push(
+                PathBuf::from(&profile)
+                    .join("Desktop")
+                    .join(format!("{}.url", source.game_dir_name)),
             );
         }
         if let Ok(one_drive) = env::var("OneDrive") {
             candidates.push(
-                PathBuf::from(one_drive)
+                PathBuf::from(&one_drive)
                     .join("Desktop")
                     .join(format!("{}.lnk", source.game_dir_name)),
+            );
+            candidates.push(
+                PathBuf::from(&one_drive)
+                    .join("Desktop")
+                    .join(format!("{}.url", source.game_dir_name)),
             );
         }
         candidates.sort();
@@ -657,61 +670,44 @@ pub(super) fn create_game_shortcut(
     }
     #[cfg(target_os = "windows")]
     {
+        use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD};
+
         let desktop = desktop_directory(app, install_root);
         fs::create_dir_all(&desktop)?;
-        let shortcut_path = desktop.join(format!("{}.lnk", source.game_dir_name));
-        let launcher_exe = std::env::current_exe().unwrap_or_else(|_| executable.to_path_buf());
-        // Keep the per-game launcher bootstrap in the actual game directory. Windows
-        // Explorer's "Open file location" follows a shortcut's TargetPath, so storing
-        // this file in AppData made that action open AppData instead of the game folder.
-        let bootstrap_exe = game_shortcut_bootstrap_path(install_root);
-        refresh_game_shortcut_bootstrap(&launcher_exe, &bootstrap_exe)?;
 
-        // Clean up the legacy AppData copy after the new in-game bootstrap is ready.
-        if let Ok(app_data) = app.path().app_data_dir() {
-            let legacy_bootstrap = app_data.join(format!("0xoLemon-{}.exe", source.game_id));
-            if !same_file_path(&legacy_bootstrap, &bootstrap_exe) && legacy_bootstrap.is_file() {
-                let _ = fs::remove_file(legacy_bootstrap);
-            }
+        // Clean up legacy .lnk shortcut
+        let old_lnk = desktop.join(format!("{}.lnk", source.game_dir_name));
+        if old_lnk.is_file() {
+            let _ = fs::remove_file(&old_lnk);
         }
+        // Clean up legacy AppData bootstrap exe
+        if let Ok(app_data) = app.path().app_data_dir() {
+            let legacy = app_data.join(format!("0xoLemon-{}.exe", source.game_id));
+            if legacy.is_file() { let _ = fs::remove_file(legacy); }
+        }
+        // Clean up in-game bootstrap exe
+        let legacy_bootstrap = install_root.join(GAME_SHORTCUT_BOOTSTRAP_FILE);
+        if legacy_bootstrap.is_file() {
+            let _ = fs::remove_file(legacy_bootstrap);
+        }
+
+        // Build 0xolemon:// URL
+        // Format: 0xolemon://launch-game/<game_id>/<base64_install_path>/<base64_exe>
+        let path_b64 = URL_SAFE_NO_PAD.encode(install_root.display().to_string().as_bytes());
+        let exe_b64 = URL_SAFE_NO_PAD.encode(relative_executable.as_bytes());
+        let url = format!("0xolemon://launch-game/{}/{}/{}", source.game_id, path_b64, exe_b64);
 
         let icon_location = format!("{},0", executable.display());
-        let working_dir = install_root;
-        let arguments = shortcut_argument_line(&[
-            ("--launch-game", &source.game_id),
-            ("--install-path", &install_root.display().to_string()),
-            ("--launch-executable", relative_executable),
-        ]);
-        let script = format!(
-            "$shell = New-Object -ComObject WScript.Shell; \
-             $shortcut = $shell.CreateShortcut({}); \
-             $shortcut.TargetPath = {}; \
-             $shortcut.Arguments = {}; \
-             $shortcut.WorkingDirectory = {}; \
-             $shortcut.IconLocation = {}; \
-             $shortcut.Description = {}; \
-             $shortcut.Save()",
-            ps_quote(&shortcut_path.display().to_string()),
-            ps_quote(&bootstrap_exe.display().to_string()),
-            ps_quote(&arguments),
-            ps_quote(&working_dir.display().to_string()),
-            ps_quote(&icon_location),
-            ps_quote(&format!("Launch {}", source.game_dir_name)),
+        let shortcut_path = desktop.join(format!("{}.url", source.game_dir_name));
+
+        // Write Internet Shortcut (.url) file — same format Steam uses
+        // Windows hides "Open file location" for .url files, so no game-folder bootstrap needed.
+        let content = format!(
+            "[InternetShortcut]\r\nURL={}\r\nIconFile={}\r\nIconIndex=0\r\n",
+            url, icon_location
         );
-        let status = hidden_command("powershell.exe")
-            .args([
-                "-NoProfile",
-                "-ExecutionPolicy",
-                "Bypass",
-                "-Command",
-                &script,
-            ])
-            .status()?;
-        if status.success() {
-            Ok(Some(shortcut_path))
-        } else {
-            Ok(None)
-        }
+        fs::write(&shortcut_path, content.as_bytes())?;
+        Ok(Some(shortcut_path))
     }
 
     #[cfg(not(target_os = "windows"))]
@@ -734,58 +730,41 @@ pub(super) fn create_game_shortcut_no_exe(
     }
     #[cfg(target_os = "windows")]
     {
+        use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD};
+
         let desktop = desktop_directory(app, install_root);
         fs::create_dir_all(&desktop)?;
-        let shortcut_path = desktop.join(format!("{}.lnk", source.game_dir_name));
-        let launcher_exe = std::env::current_exe().unwrap_or_else(|_| icon_executable.to_path_buf());
-        let bootstrap_exe = game_shortcut_bootstrap_path(install_root);
-        refresh_game_shortcut_bootstrap(&launcher_exe, &bootstrap_exe)?;
 
-        if let Ok(app_data) = app.path().app_data_dir() {
-            let legacy_bootstrap = app_data.join(format!("0xoLemon-{}.exe", source.game_id));
-            if !same_file_path(&legacy_bootstrap, &bootstrap_exe) && legacy_bootstrap.is_file() {
-                let _ = fs::remove_file(legacy_bootstrap);
-            }
+        // Clean up legacy .lnk shortcut
+        let old_lnk = desktop.join(format!("{}.lnk", source.game_dir_name));
+        if old_lnk.is_file() {
+            let _ = fs::remove_file(&old_lnk);
         }
+        // Clean up legacy AppData bootstrap exe
+        if let Ok(app_data) = app.path().app_data_dir() {
+            let legacy = app_data.join(format!("0xoLemon-{}.exe", source.game_id));
+            if legacy.is_file() { let _ = fs::remove_file(legacy); }
+        }
+        // Clean up in-game bootstrap exe
+        let legacy_bootstrap = install_root.join(GAME_SHORTCUT_BOOTSTRAP_FILE);
+        if legacy_bootstrap.is_file() {
+            let _ = fs::remove_file(legacy_bootstrap);
+        }
+
+        // Build 0xolemon:// URL — no exe pinned, launcher shows picker
+        // Format: 0xolemon://launch-game/<game_id>/<base64_install_path>
+        let path_b64 = URL_SAFE_NO_PAD.encode(install_root.display().to_string().as_bytes());
+        let url = format!("0xolemon://launch-game/{}/{}", source.game_id, path_b64);
 
         let icon_location = format!("{},0", icon_executable.display());
-        let working_dir = install_root;
-        // Only --launch-game, no --launch-executable: launcher will call game_launch_config
-        // which detects multiple options and shows the picker.
-        let arguments = shortcut_argument_line(&[
-            ("--launch-game", &source.game_id),
-            ("--install-path", &install_root.display().to_string()),
-        ]);
-        let script = format!(
-            "$shell = New-Object -ComObject WScript.Shell; \
-             $shortcut = $shell.CreateShortcut({}); \
-             $shortcut.TargetPath = {}; \
-             $shortcut.Arguments = {}; \
-             $shortcut.WorkingDirectory = {}; \
-             $shortcut.IconLocation = {}; \
-             $shortcut.Description = {}; \
-             $shortcut.Save()",
-            ps_quote(&shortcut_path.display().to_string()),
-            ps_quote(&bootstrap_exe.display().to_string()),
-            ps_quote(&arguments),
-            ps_quote(&working_dir.display().to_string()),
-            ps_quote(&icon_location),
-            ps_quote(&format!("Launch {}", source.game_dir_name)),
+        let shortcut_path = desktop.join(format!("{}.url", source.game_dir_name));
+
+        let content = format!(
+            "[InternetShortcut]\r\nURL={}\r\nIconFile={}\r\nIconIndex=0\r\n",
+            url, icon_location
         );
-        let status = hidden_command("powershell.exe")
-            .args([
-                "-NoProfile",
-                "-ExecutionPolicy",
-                "Bypass",
-                "-Command",
-                &script,
-            ])
-            .status()?;
-        if status.success() {
-            Ok(Some(shortcut_path))
-        } else {
-            Ok(None)
-        }
+        fs::write(&shortcut_path, content.as_bytes())?;
+        Ok(Some(shortcut_path))
     }
 
     #[cfg(not(target_os = "windows"))]

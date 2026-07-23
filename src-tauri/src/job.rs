@@ -1269,6 +1269,12 @@ fn install_root_candidates(app: &AppHandle, source: &DepotSource) -> Vec<PathBuf
 
     push_unique_path(&mut candidates, source.default_common_game_dir());
 
+    // Recover installs when the launcher is placed in the same directory as the game.
+    if let Ok(exe_path) = std::env::current_exe() {
+        if let Some(parent) = exe_path.parent() {
+            push_unique_path(&mut candidates, parent.to_path_buf());
+        }
+    }
     // Recover installs made before path persistence was enabled. Only direct
     // children of known library/common directories are inspected.
     let configured_library = crate::platform::current_settings().default_library;

@@ -1261,6 +1261,7 @@ pub fn run() {
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_deep_link::init())
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
                 .with_shortcut("Shift+F1")
@@ -1293,6 +1294,46 @@ pub fn run() {
 
 fn parse_shortcut_launch_request() -> Option<ShortcutLaunchRequest> {
     let args = std::env::args().collect::<Vec<_>>();
+    
+    // First, check for deep link URL format (0xolemon://launch-game/...)
+    if let Some(url_arg) = args.iter().find(|arg| arg.starts_with("0xolemon://")) {
+        if let Some(path) = url_arg.strip_prefix("0xolemon://launch-game/") {
+            // Path is in format: game_id/install_path_b64[/launch_executable_b64]
+            let parts: Vec<&str> = path.split('/').filter(|s| !s.is_empty()).collect();
+            if parts.len() >= 2 {
+                let game_id = parts[0].to_string();
+                
+                // Decode base64 paths (URL safe)
+                use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD};
+                
+                let install_path = if let Ok(decoded) = URL_SAFE_NO_PAD.decode(parts[1]) {
+                    String::from_utf8(decoded).unwrap_or_default()
+                } else {
+                    String::new()
+                };
+                
+                if !install_path.is_empty() {
+                    let launch_executable = if parts.len() >= 3 {
+                        if let Ok(decoded) = URL_SAFE_NO_PAD.decode(parts[2]) {
+                            Some(String::from_utf8(decoded).unwrap_or_default())
+                        } else {
+                            None
+                        }
+                    } else {
+                        None
+                    };
+                    
+                    return Some(ShortcutLaunchRequest {
+                        game_id,
+                        install_path,
+                        launch_executable,
+                    });
+                }
+            }
+        }
+    }
+
+    // Fallback to legacy CLI arguments format
     let game_id = flag_value(&args, "--launch-game")?;
     let install_path = flag_value(&args, "--install-path")?;
     Some(ShortcutLaunchRequest {
