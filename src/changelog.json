@@ -1,5 +1,12 @@
 ﻿[
     {
+        "version":  "1.0.52",
+        "date":  "2026-07-23",
+        "changes":  [
+                        "thêm backup manifest"
+                    ]
+    },
+    {
         "version":  "1.0.51",
         "date":  "2026-07-23",
         "changes":  [
