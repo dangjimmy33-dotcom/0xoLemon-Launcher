@@ -1,5 +1,12 @@
 ﻿[
     {
+        "version":  "2.0.1",
+        "date":  "2026-07-24",
+        "changes":  [
+                        "cải tiến 1 số thứ"
+                    ]
+    },
+    {
         "version":  "1.0.52",
         "date":  "2026-07-23",
         "changes":  [
