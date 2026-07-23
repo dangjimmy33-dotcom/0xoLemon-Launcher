@@ -97,21 +97,25 @@ pub async fn download_and_apply(app: &AppHandle) -> Result<(), String> {
 
     let total = bytes.len() as u64;
     emit_progress(app, &version, "installing", total, Some(total), None);
-    if let Err(error) = update.install(&bytes) {
-        let message = error.to_string();
-        emit_progress(
-            app,
-            &version,
-            "failed",
-            total,
-            Some(total),
-            Some(message.clone()),
-        );
-        return Err(message);
+
+    let temp_dir = std::env::temp_dir();
+    let installer_path = temp_dir.join(format!("0xolemon_update_{}.exe", version));
+    
+    if let Err(e) = std::fs::write(&installer_path, &bytes) {
+        let msg = format!("Failed to save installer: {}", e);
+        emit_progress(app, &version, "failed", total, Some(total), Some(msg.clone()));
+        return Err(msg);
+    }
+    
+    if let Err(e) = std::process::Command::new(&installer_path).spawn() {
+        let msg = format!("Failed to launch installer: {}", e);
+        emit_progress(app, &version, "failed", total, Some(total), Some(msg.clone()));
+        return Err(msg);
     }
 
     emit_progress(app, &version, "restarting", total, Some(total), None);
-    app.restart()
+    app.exit(0);
+    Ok(())
 }
 
 fn emit_progress(
