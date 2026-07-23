@@ -1,0 +1,90 @@
+﻿{
+    "appnews":  {
+                    "appid":  2661300,
+                    "newsitems":  [
+                                      {
+                                          "gid":  "1837955055366790",
+                                          "title":  "Hotfix Patch 0.4.2.2 has Been Released",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1837955055366790",
+                                          "is_external_url":  true,
+                                          "author":  "Obsidian Aarik",
+                                          "contents":  "[p]Greetings! In preparation for the 0.5 Into the Abyss Update, we are releasing another hotfix patch that should continue to improve stability. Please note that this update will not trigger a resource regrow, but the 0.5 update will.[/p][p][/p][p]Please let us know if you run into any issues and we\u0027ll work with you to investigate them.[/p][p][url=\"https://grounded2.obsidian.net/issue-tracker#contact\"]https://grounded2.obsidian.net/issue-tracker#contact[/url][/p][p] [/p][p]Thanks for your continued support of Grounded 2, and we can\u0027t wait to see you all in the Abyss![/p]",
+                                          "feedlabel":  "Community Announcements",
+                                          "date":  1784051150,
+                                          "feedname":  "steam_community_announcements",
+                                          "feed_type":  1,
+                                          "appid":  2661300,
+                                          "tags":  [
+                                                       "patchnotes"
+                                                   ]
+                                      },
+                                      {
+                                          "gid":  "1836506165568611",
+                                          "title":  "Hotfix Patch 0.4.2.1 Has Been Released",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1836506165568611",
+                                          "is_external_url":  true,
+                                          "author":  "Obsidian Aarik",
+                                          "contents":  "[p]Greetings friends![/p][p]Thank you all for your continued feedback and for taking the time to report the issues you\u0027ve been experiencing in Grounded 2. We are releasing a new patch today with additional stability fixes that we hope will improve your experience. We also want to remind you that while this update won\u0027t trigger a resources regrow, our Into the Abyss 0.5 update will.[/p][p][/p][p]As always, please don\u0027t hesitate to report any issues using the in game report feature or our Grounded 2 Community Issue Tracker. Every report helps us identify and resolve issues more quickly. [/p][p][url=\"https://grounded2.obsidian.net/issue-tracker#contact\"]https://grounded2.obsidian.net/issue-tracker#contact[/url][/p][p][/p][p]Thanks for your continued support and for helping make Grounded 2 even better! [/p]",
+                                          "feedlabel":  "Community Announcements",
+                                          "date":  1783012048,
+                                          "feedname":  "steam_community_announcements",
+                                          "feed_type":  1,
+                                          "appid":  2661300,
+                                          "tags":  [
+                                                       "patchnotes"
+                                                   ]
+                                      },
+                                      {
+                                          "gid":  "1835871199301451",
+                                          "title":  "Patch 0.4.2 Has Been Released",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1835871199301451",
+                                          "is_external_url":  true,
+                                          "author":  "Obsidian Aarik",
+                                          "contents":  "[p]Hello friends,[/p][p align=\"start\"]Patch 0.4.2 for Grounded 2 is now available to all players. Thank you again for your patience; we greatly appreciate the reports everyone has submitted to our support team! We hope this update will address the performance issues you\u0027ve been experiencing.[/p][h3][b]Performance Optimizations:[/b][/h3][list][*][p]Reduced the streaming range of the player, so that less things now load at one time. This should cause significantly less hitching around the Park[/p][list][*][p]This will cause all resources to re-grow through your bases[/p][/*][/list][/*][*][p]Performance around player bases and the Park have been optimized to reduce stutters and hitching[/p][/*][/list][h3][b]Omni-Tool Change:[/b][/h3][list][*][p]Due to the changes listed above, we have changed the Omni-Tool to[b] one-hit [u]all[/u] resources[/b] that are re-growing only [b]through player-built structures[/b][/p][list][*][p]This will occur again in the 0.5 \"Into the Abyss\" Update on August 11[/p][/*][*][p]We expect this to be taken full advantage of, have fun.[/p][/*][/list][/*][/list][h3][b]Crashing/Stability:[/b][/h3][list][*][p]Fixed various crashes in 0.4.2.[/p][list][*][p]35% of the crashes hit in 0.4.1 should be fixed in 0.4.2[/p][/*][/list][/*][/list][h3][b]Bug Fixes:[/b][/h3][list][*][p]Fixed an issue where AXL could be softlocked mid fight and roar infinitely[/p][/*][*][p]Fixed an issue that was causing Half Int. Corner Stairs to change and rotate into a different position[/p][/*][/list]",
+                                          "feedlabel":  "Community Announcements",
+                                          "date":  1781715875,
+                                          "feedname":  "steam_community_announcements",
+                                          "feed_type":  1,
+                                          "appid":  2661300,
+                                          "tags":  [
+                                                       "patchnotes"
+                                                   ]
+                                      },
+                                      {
+                                          "gid":  "1835236783561424",
+                                          "title":  "Patch 0.4.2 and Summer Update Info",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1835236783561424",
+                                          "is_external_url":  true,
+                                          "author":  "Obsidian Aarik",
+                                          "contents":  "[p]Thank you so much for your performance reports and bug submissions. We know that some of you have been experiencing performance issues, and we\u0027re happy to let our players know that the next two patches, 0.4.2 and 0.5, should address those issues.[/p][p align=\"start\"]As a side effect of these changes, almost all harvestable resources will repopulate in the park. This will occur twice, once in 0.4.2 and once in the Summer Update. To help with this, starting in 0.4.2, any resource that repopulates through your floors can be harvested in a single Omni-Tool hit if you\u0027re standing on a floor or crafted structure.[/p][p align=\"start\"]The following resources are not impacted:[/p][list][*][p]Candies[/p][/*][*][p]Acorns[/p][/*][*][p]Fast Food[/p][/*][/list][p align=\"start\"]We recognize this will affect most players and are hopeful the Omni-Tool change makes clearing out your bases as smooth as possible. We sincerely apologize for the inconvenience, as getting these fixes sooner felt like the right call from our team. We truly appreciate your patience and Grounded 2 wouldn\u0027t be the game it is today without your feedback, suggestions, and bug reports.[/p][p align=\"start\"]Thank you always for taking this journey with us![/p]",
+                                          "feedlabel":  "Community Announcements",
+                                          "date":  1781201226,
+                                          "feedname":  "steam_community_announcements",
+                                          "feed_type":  1,
+                                          "appid":  2661300,
+                                          "tags":  [
+                                                       "hide_library_overview"
+                                                   ]
+                                      },
+                                      {
+                                          "gid":  "1834602721199434",
+                                          "title":  "Dive Into the Depths in Grounded 2\u0027s \"Into the Abyss\" Update",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1834602721199434",
+                                          "is_external_url":  true,
+                                          "author":  "Obsidian Aarik",
+                                          "contents":  "[p][img src=\"{STEAM_CLAN_IMAGE}/45651847/ed4465f2f7119b12b3aec4cb480c4aad3876aaa1.jpg\"][/img][/p][p][b]Dive Into the Depths in [i]Grounded 2[/i]\u0027s \"Into the Abyss\" Update[/b] [/p][list][*][p][i]Grounded 2[/i]\u0027s \"Into the Abyss\" update launches August 11, opening the pond and one of the biggest new areas in Brookhollow Park  [/p][/*][/list][list][*][p]Explore above and below the water\u0027s surface with new progression systems, discoveries, and challenges waiting in the depths  [/p][/*][/list][list][*][p]Traverse land and water with the new amphibious Toe-biter Buggy while facing familiar and new threats throughout the pond [/p][/*][/list][p] [/p][p]The pond is finally opening. [/p][p]On August 11, [i]Grounded 2\u0027s[/i] next major content update, [i]Into the Abyss[/i], arrives and brings players into one of the biggest new areas added to Brookhollow Park so far. [/p][p]For the first time, players will be able to explore both above and below the water\u0027s surface, uncovering new locations, new challenges, and new mysteries hidden beneath the pond. [/p][p]The deeper you go, the more there is to discover. [/p][p][img src=\"{STEAM_CLAN_IMAGE}/45651847/1e9ea87fced340c9c90a23f443f82aaf1e293725.jpg\"][/img][/p][p]Exploration plays a huge role in [i]Into the Abyss[/i]. New diving suits help players stay underwater longer and reach deeper sections of the pond, opening up new paths and opportunities as they progress through the area. [i]Into the Abyss[/i] is all about exploration. Players will journey through new areas like the Mountains, the Bayou, and the depths beneath the pond, each offering new discoveries and challenges along the way. New diving suits will help players stay underwater longer and reach deeper parts of the pond as they continue their adventure.  [/p][p][/p][p]Of course, the water isn\u0027t empty.  [/p][p][img src=\"{STEAM_CLAN_IMAGE}/45651847/1eaf3c54934bdba2d01d0379a6e195a1f97ce287.jpg\"][/img][/p][p]Creatures like the koi fish and diving bell spider make their return, while new threats wait beneath the surface for players brave enough to dive in.  [/p][p]Whether you\u0027re exploring solo or with friends, the pond is designed to make every trip into the depths feel like a brand new adventure. [/p][p]Getting around the new area also comes with a new companion. The Toe-biter joins [i]Grounded 2[/i] as a new amphibious Buggy capable of traveling across both land and water, helping players explore more of the pond and tackle encounters in new ways. [/p][p]For the team, [i]Into the Abyss[/i] has been an opportunity to build on what players loved about underwater exploration in the original [i]Grounded[/i] while applying everything we\u0027ve learned since then. Community feedback helped shape our approach, and we\u0027re excited for players to finally get their hands on it. [/p][p] [/p][p][img src=\"{STEAM_CLAN_IMAGE}/45651847/cd03cb9b4b390a3f8a61eb2ff8b368188d75b61b.jpg\"][/img][/p][p]And while the pond is the star of this update, it\u0027s only one step in the journey. Brookhollow Park will continue to expand with new areas, creatures, systems, and surprises as development continues. [/p][p]We can\u0027t wait to see what you find beneath the surface. [/p][p][/p][p][/p][p][i]Grounded 2 is currently available in Game Preview for XBOX Series X|S, XBOX on PC, and ROG XBOX Ally handhelds, in Early Access on Steam, and you can play it on Game Pass Ultimate or PC Game Pass. Play it on both XBOX Series X|S and XBOX on PC at no additional cost with XBOX Play Anywhere. Coming to PlayStation 5 on August 11, 2026[/i][/p]",
+                                          "feedlabel":  "Community Announcements",
+                                          "date":  1780935266,
+                                          "feedname":  "steam_community_announcements",
+                                          "feed_type":  1,
+                                          "appid":  2661300,
+                                          "tags":  [
+                                                       "mod_reviewed",
+                                                       "ModAct_1691520782_1780938984_0",
+                                                       "mod_require_rereview"
+                                                   ]
+                                      }
+                                  ],
+                    "count":  65
+                }
+}

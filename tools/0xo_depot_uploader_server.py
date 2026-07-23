@@ -443,8 +443,9 @@ def build_direct_args(payload: Dict[str, Any]) -> List[str]:
             args += ["--extend-existing"]
 
     args += ["--out", out_path, "--game-id", game_id, "--pack-target-mb", str(pack_mb), "--pack-start-index", str(pack_start), "--pack-id-prefix", pack_prefix]
-    launch_opts_json = safe_str(payload.get("launchOptionsJson")).strip()
-    if launch_opts_json:
+    raw_opts = payload.get("launchOptionsJson")
+    launch_opts_json = (json.dumps(raw_opts, ensure_ascii=False) if isinstance(raw_opts, (list, dict)) else safe_str(raw_opts)).strip()
+    if launch_opts_json and launch_opts_json not in ('[]', '{}', 'null'):
         args += ["--launch-options-json", launch_opts_json]
     elif exe_name:
         args += ["--launch-executable", exe_name]
@@ -517,9 +518,9 @@ def run_publish_script(payload: Dict[str, Any], env: Dict[str, str]) -> int:
     if bool_value(payload.get("uploadOnly", False)):
         args.append("-UploadOnly")
     
-    launch_opts_json = safe_str(payload.get("launchOptionsJson")).strip()
-    exe_name = safe_str(payload.get("exeName")).strip()
-    if launch_opts_json:
+    raw_opts = payload.get("launchOptionsJson")
+    launch_opts_json = (json.dumps(raw_opts, ensure_ascii=False) if isinstance(raw_opts, (list, dict)) else safe_str(raw_opts)).strip()
+    if launch_opts_json and launch_opts_json not in ('[]', '{}', 'null'):
         env["LAUNCH_OPTIONS_JSON"] = launch_opts_json
         args += ["-LaunchOptionsJson", "ENV"]
     elif exe_name:

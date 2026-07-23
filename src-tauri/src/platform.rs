@@ -67,7 +67,7 @@ impl Default for LauncherSettings {
         Self {
             default_library: r"E:\0xoLemon store".to_string(),
             download_workers: 8,
-            download_retries: 5,
+            download_retries: 20,
             pack_range_mb: 16,
             keep_chunk_cache: true,
             notifications_enabled: true,
@@ -97,7 +97,7 @@ impl LauncherSettings {
         };
         self.download_workers = workers;
         self.download_queue_mb = queue_mb;
-        self.download_retries = self.download_retries.clamp(0, 12);
+        self.download_retries = self.download_retries.clamp(0, 25);
         self.pack_range_mb = self.pack_range_mb.clamp(8, 64);
         self.cloud_save_root = self.cloud_save_root.trim().to_string();
         if !valid_clock_time(&self.game_update_schedule_start) {

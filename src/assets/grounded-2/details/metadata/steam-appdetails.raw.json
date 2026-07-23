@@ -1,0 +1,297 @@
+﻿{
+    "2661300":  {
+                    "success":  true,
+                    "data":  {
+                                 "type":  "game",
+                                 "name":  "Grounded 2",
+                                 "steam_appid":  2661300,
+                                 "required_age":  0,
+                                 "is_free":  false,
+                                 "controller_support":  "full",
+                                 "dlc":  [
+                                             3784940,
+                                             3788090
+                                         ],
+                                 "detailed_description":  "\u003ch1\u003eGame Editions\u003c/h1\u003e\u003cp\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/extras/cc23ab9eb55ba33c66a84513757f4ca9.avif?t=1784045614\" data-big-src=https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/extras_big/cc23ab9eb55ba33c66a84513757f4ca9.webp?t=1784045614 width=1560 height=1098 /\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/extras/21efe3b37cde6b65948de561fbfeb6fb.avif?t=1784045614\" width=1560 height=787 /\u003e\u003c/span\u003e\u003c/p\u003e\u003c/p\u003e\u003cbr\u003e\u003ch1\u003eAbout the Game\u003c/h1\u003e\u003cp class=\"bb_paragraph\" \u003eWhen you\u0027ve been shrunk to the size of an ant, what was once familiar is now a wild, uncharted frontier. Traverse sprawling manmade spaces overgrown with nature with buggies that can fight alongside with you, uncover hidden secrets, and fight to survive in a world much larger than the backyard. The playground may seem familiar, but beneath its bright colors and towering structures lie mysteries hidden in plain sight. Are you ready to uncover them?  \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e \u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/extras/6e31f40564e56e76b50be584a070ea27.poster.avif?t=1784045614\" width=1170 height=658 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/extras/6e31f40564e56e76b50be584a070ea27.webm?t=1784045614\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/extras/6e31f40564e56e76b50be584a070ea27.mp4?t=1784045614\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cu\u003e\u003cstrong\u003eSurvive, Adapt, Overcome\u003c/strong\u003e\u003c/u\u003e  \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eThe world is relentless, but so are you. Shape your adventure with unique archetypes, each offering distinct abilities to match your playstyle. Whether you rely on precision, cunning, or sheer strength, you’ll need every advantage to survive against the threats lurking in the park.  \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/extras/9533d85f4dd859368eb85035edd1621e.poster.avif?t=1784045614\" width=1170 height=658 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/extras/9533d85f4dd859368eb85035edd1621e.webm?t=1784045614\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/extras/9533d85f4dd859368eb85035edd1621e.mp4?t=1784045614\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cu\u003e\u003cstrong\u003eStronger Together\u003c/strong\u003e\u003c/u\u003e  \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eThe perils of the park are daunting alone, but with friends, every challenge becomes an adventure. Work together to build, fight, and uncover the secrets buried beneath the grass. Whether you’re facing danger side by side or continuing your journey in a shared world, survival is always better with allies.  \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/extras/76949b99caa3784e791da448ee6a4183.poster.avif?t=1784045614\" width=1170 height=658 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/extras/76949b99caa3784e791da448ee6a4183.webm?t=1784045614\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/extras/76949b99caa3784e791da448ee6a4183.mp4?t=1784045614\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e \u003cstrong\u003e\u003cu\u003eWalking is Bogus - Introducing Buggies\u003c/u\u003e\u003c/strong\u003e \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eThey scurry, they fight, and now—they help you survive. Hatch, raise, and ride your own insect friends - buggies! Saddle up and ride through the park, command them in battle, or have them help gather resources. The right partner could mean the difference between thriving and barely surviving.  \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/extras/6a3f1e2962e2d15a040f30f9c92ad895.poster.avif?t=1784045614\" width=1170 height=658 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/extras/6a3f1e2962e2d15a040f30f9c92ad895.webm?t=1784045614\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/extras/6a3f1e2962e2d15a040f30f9c92ad895.mp4?t=1784045614\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cu\u003e\u003cstrong\u003eBig Baddies of the Park\u003c/strong\u003e\u003c/u\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e The park is home to creatures other than the bugs you know and love. AXL, the tarantula, and the Lizard stand as apex predators that demand preparation, strategy, and courage. The snake is a different kind of challenge. To master it, you will need to learn its patterns, ride it, and harvest its scales. And let\u0027s not forget about the bird. Every encounter makes you stronger. Claim rare materials, craft powerful gear, and unlock upgrades that push you further into a world built to overwhelm you.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/extras/aa752c57c7558c2b9f2252964bb6d0a1.poster.avif?t=1784045614\" width=1170 height=658 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/extras/aa752c57c7558c2b9f2252964bb6d0a1.webm?t=1784045614\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/extras/aa752c57c7558c2b9f2252964bb6d0a1.mp4?t=1784045614\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cu\u003e\u003cstrong\u003ePlaygrounds\u003c/strong\u003e\u003c/u\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eSurvival is only the beginning. With Playgrounds, you can build your own challenges using powerful tools that shape combat, puzzles, and unpredictable encounters. Download, play, and vote on community creations to discover new ways to test your skills. The park is no longer just a place to survive. It is a place to create.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/extras/0e0af5bff5d6486960c182c0ea4ae9c7.poster.avif?t=1784045614\" width=1170 height=658 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/extras/0e0af5bff5d6486960c182c0ea4ae9c7.webm?t=1784045614\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/extras/0e0af5bff5d6486960c182c0ea4ae9c7.mp4?t=1784045614\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cu\u003e\u003cstrong\u003eA Shadow That Follows You\u003c/strong\u003e\u003c/u\u003e  \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eThe threat is always there—watching, learning, waiting. You don’t know where it’s coming from, only that it never leaves. The deeper you dig, the closer it gets. Some mysteries should stay buried, but it’s too late now. It knows you’re looking. And it’s ready. Every answer drags you deeper, every step invites something closer. You were never alone. You thought you were in control. You were wrong.\u003c/p\u003e",
+                                 "about_the_game":  "\u003cp class=\"bb_paragraph\" \u003eWhen you\u0027ve been shrunk to the size of an ant, what was once familiar is now a wild, uncharted frontier. Traverse sprawling manmade spaces overgrown with nature with buggies that can fight alongside with you, uncover hidden secrets, and fight to survive in a world much larger than the backyard. The playground may seem familiar, but beneath its bright colors and towering structures lie mysteries hidden in plain sight. Are you ready to uncover them?  \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e \u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/extras/6e31f40564e56e76b50be584a070ea27.poster.avif?t=1784045614\" width=1170 height=658 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/extras/6e31f40564e56e76b50be584a070ea27.webm?t=1784045614\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/extras/6e31f40564e56e76b50be584a070ea27.mp4?t=1784045614\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cu\u003e\u003cstrong\u003eSurvive, Adapt, Overcome\u003c/strong\u003e\u003c/u\u003e  \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eThe world is relentless, but so are you. Shape your adventure with unique archetypes, each offering distinct abilities to match your playstyle. Whether you rely on precision, cunning, or sheer strength, you’ll need every advantage to survive against the threats lurking in the park.  \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/extras/9533d85f4dd859368eb85035edd1621e.poster.avif?t=1784045614\" width=1170 height=658 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/extras/9533d85f4dd859368eb85035edd1621e.webm?t=1784045614\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/extras/9533d85f4dd859368eb85035edd1621e.mp4?t=1784045614\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cu\u003e\u003cstrong\u003eStronger Together\u003c/strong\u003e\u003c/u\u003e  \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eThe perils of the park are daunting alone, but with friends, every challenge becomes an adventure. Work together to build, fight, and uncover the secrets buried beneath the grass. Whether you’re facing danger side by side or continuing your journey in a shared world, survival is always better with allies.  \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/extras/76949b99caa3784e791da448ee6a4183.poster.avif?t=1784045614\" width=1170 height=658 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/extras/76949b99caa3784e791da448ee6a4183.webm?t=1784045614\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/extras/76949b99caa3784e791da448ee6a4183.mp4?t=1784045614\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e \u003cstrong\u003e\u003cu\u003eWalking is Bogus - Introducing Buggies\u003c/u\u003e\u003c/strong\u003e \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eThey scurry, they fight, and now—they help you survive. Hatch, raise, and ride your own insect friends - buggies! Saddle up and ride through the park, command them in battle, or have them help gather resources. The right partner could mean the difference between thriving and barely surviving.  \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/extras/6a3f1e2962e2d15a040f30f9c92ad895.poster.avif?t=1784045614\" width=1170 height=658 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/extras/6a3f1e2962e2d15a040f30f9c92ad895.webm?t=1784045614\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/extras/6a3f1e2962e2d15a040f30f9c92ad895.mp4?t=1784045614\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cu\u003e\u003cstrong\u003eBig Baddies of the Park\u003c/strong\u003e\u003c/u\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e The park is home to creatures other than the bugs you know and love. AXL, the tarantula, and the Lizard stand as apex predators that demand preparation, strategy, and courage. The snake is a different kind of challenge. To master it, you will need to learn its patterns, ride it, and harvest its scales. And let\u0027s not forget about the bird. Every encounter makes you stronger. Claim rare materials, craft powerful gear, and unlock upgrades that push you further into a world built to overwhelm you.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/extras/aa752c57c7558c2b9f2252964bb6d0a1.poster.avif?t=1784045614\" width=1170 height=658 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/extras/aa752c57c7558c2b9f2252964bb6d0a1.webm?t=1784045614\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/extras/aa752c57c7558c2b9f2252964bb6d0a1.mp4?t=1784045614\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cu\u003e\u003cstrong\u003ePlaygrounds\u003c/strong\u003e\u003c/u\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eSurvival is only the beginning. With Playgrounds, you can build your own challenges using powerful tools that shape combat, puzzles, and unpredictable encounters. Download, play, and vote on community creations to discover new ways to test your skills. The park is no longer just a place to survive. It is a place to create.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/extras/0e0af5bff5d6486960c182c0ea4ae9c7.poster.avif?t=1784045614\" width=1170 height=658 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/extras/0e0af5bff5d6486960c182c0ea4ae9c7.webm?t=1784045614\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/extras/0e0af5bff5d6486960c182c0ea4ae9c7.mp4?t=1784045614\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cu\u003e\u003cstrong\u003eA Shadow That Follows You\u003c/strong\u003e\u003c/u\u003e  \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eThe threat is always there—watching, learning, waiting. You don’t know where it’s coming from, only that it never leaves. The deeper you dig, the closer it gets. Some mysteries should stay buried, but it’s too late now. It knows you’re looking. And it’s ready. Every answer drags you deeper, every step invites something closer. You were never alone. You thought you were in control. You were wrong.\u003c/p\u003e",
+                                 "short_description":  "Shrunk again, but the world is much larger. In this open-world, single-player or co-op survival adventure, craft weapons and armor, build your base, and traverse the playground on your buggy. But something else is out there—and it hasn’t forgotten you.",
+                                 "supported_languages":  "English\u003cstrong\u003e*\u003c/strong\u003e, French\u003cstrong\u003e*\u003c/strong\u003e, Italian, German, Spanish - Spain, Spanish - Latin America, Simplified Chinese, Japanese, Portuguese - Portugal\u003cbr\u003e\u003cstrong\u003e*\u003c/strong\u003elanguages with full audio support",
+                                 "header_image":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/c4fc47c7e6ece14e438f0957d066dc9ab2a3412a/header.jpg?t=1784045614",
+                                 "capsule_image":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/ce147cec019716287018816a5cec8fcf524d9119/capsule_231x87.jpg?t=1784045614",
+                                 "capsule_imagev5":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/ce147cec019716287018816a5cec8fcf524d9119/capsule_184x69.jpg?t=1784045614",
+                                 "website":  null,
+                                 "pc_requirements":  {
+                                                         "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003eRequires a 64-bit processor and operating system\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows 10/11 with updates\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e AMD Ryzen 5 2600 / Intel i5-8400\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 16 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e AMD RX 5700 / Nvidia GTX 1070 / Intel Arc A580\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eDirectX:\u003c/strong\u003e Version 12\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 40 GB available space\u003c/li\u003e\u003c/ul\u003e",
+                                                         "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003eRequires a 64-bit processor and operating system\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows 10/11 with updates\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e AMD Ryzen 5 5600X / Intel i7-10700K\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 16 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e AMD RX 6800 XT / Nvidia RTX 3080\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eDirectX:\u003c/strong\u003e Version 12\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 40 GB available space\u003c/li\u003e\u003c/ul\u003e"
+                                                     },
+                                 "mac_requirements":  {
+                                                          "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e",
+                                                          "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e"
+                                                      },
+                                 "linux_requirements":  {
+                                                            "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e",
+                                                            "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e"
+                                                        },
+                                 "developers":  [
+                                                    "Obsidian Entertainment",
+                                                    "Eidos-Montréal"
+                                                ],
+                                 "publishers":  [
+                                                    "Xbox Game Studios"
+                                                ],
+                                 "price_overview":  {
+                                                        "currency":  "USD",
+                                                        "initial":  2999,
+                                                        "final":  2999,
+                                                        "discount_percent":  0,
+                                                        "initial_formatted":  "",
+                                                        "final_formatted":  "$29.99"
+                                                    },
+                                 "packages":  [
+                                                  1341960
+                                              ],
+                                 "package_groups":  [
+                                                        {
+                                                            "name":  "default",
+                                                            "title":  "Buy Grounded 2",
+                                                            "description":  "",
+                                                            "selection_text":  "Select a purchase option",
+                                                            "save_text":  "",
+                                                            "display_type":  0,
+                                                            "is_recurring_subscription":  "false",
+                                                            "subs":  [
+                                                                         {
+                                                                             "packageid":  1341960,
+                                                                             "percent_savings_text":  " ",
+                                                                             "percent_savings":  0,
+                                                                             "option_text":  "Grounded 2 - $29.99",
+                                                                             "option_description":  "",
+                                                                             "can_get_free_license":  "0",
+                                                                             "is_free_license":  false,
+                                                                             "price_in_cents_with_discount":  2999
+                                                                         }
+                                                                     ]
+                                                        }
+                                                    ],
+                                 "platforms":  {
+                                                   "windows":  true,
+                                                   "mac":  false,
+                                                   "linux":  false
+                                               },
+                                 "categories":  [
+                                                    {
+                                                        "id":  2,
+                                                        "description":  "Single-player"
+                                                    },
+                                                    {
+                                                        "id":  1,
+                                                        "description":  "Multi-player"
+                                                    },
+                                                    {
+                                                        "id":  9,
+                                                        "description":  "Co-op"
+                                                    },
+                                                    {
+                                                        "id":  38,
+                                                        "description":  "Online Co-op"
+                                                    },
+                                                    {
+                                                        "id":  28,
+                                                        "description":  "Full controller support"
+                                                    },
+                                                    {
+                                                        "id":  59,
+                                                        "description":  "Steam Input API Support"
+                                                    },
+                                                    {
+                                                        "id":  62,
+                                                        "description":  "Family Sharing"
+                                                    }
+                                                ],
+                                 "genres":  [
+                                                {
+                                                    "id":  "1",
+                                                    "description":  "Action"
+                                                },
+                                                {
+                                                    "id":  "25",
+                                                    "description":  "Adventure"
+                                                },
+                                                {
+                                                    "id":  "70",
+                                                    "description":  "Early Access"
+                                                }
+                                            ],
+                                 "screenshots":  [
+                                                     {
+                                                         "id":  0,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/7aa1c763b0ffeddcefc29ab5b712a238e8bb7e99/ss_7aa1c763b0ffeddcefc29ab5b712a238e8bb7e99.600x338.jpg?t=1784045614",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/7aa1c763b0ffeddcefc29ab5b712a238e8bb7e99/ss_7aa1c763b0ffeddcefc29ab5b712a238e8bb7e99.1920x1080.jpg?t=1784045614"
+                                                     },
+                                                     {
+                                                         "id":  1,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/9d02b8ad55777d9e2a94a78e41a7dc8de1b1c545/ss_9d02b8ad55777d9e2a94a78e41a7dc8de1b1c545.600x338.jpg?t=1784045614",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/9d02b8ad55777d9e2a94a78e41a7dc8de1b1c545/ss_9d02b8ad55777d9e2a94a78e41a7dc8de1b1c545.1920x1080.jpg?t=1784045614"
+                                                     },
+                                                     {
+                                                         "id":  2,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/7722cad8aa8a0c86c2f7f9eae18345a76ae7ab2c/ss_7722cad8aa8a0c86c2f7f9eae18345a76ae7ab2c.600x338.jpg?t=1784045614",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/7722cad8aa8a0c86c2f7f9eae18345a76ae7ab2c/ss_7722cad8aa8a0c86c2f7f9eae18345a76ae7ab2c.1920x1080.jpg?t=1784045614"
+                                                     },
+                                                     {
+                                                         "id":  3,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/28a962ecdb398fb4c57937297693a6fc11db1c99/ss_28a962ecdb398fb4c57937297693a6fc11db1c99.600x338.jpg?t=1784045614",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/28a962ecdb398fb4c57937297693a6fc11db1c99/ss_28a962ecdb398fb4c57937297693a6fc11db1c99.1920x1080.jpg?t=1784045614"
+                                                     },
+                                                     {
+                                                         "id":  4,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/07fe70a7d489fc221cb0093585e0f24c1fb57a0a/ss_07fe70a7d489fc221cb0093585e0f24c1fb57a0a.600x338.jpg?t=1784045614",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/07fe70a7d489fc221cb0093585e0f24c1fb57a0a/ss_07fe70a7d489fc221cb0093585e0f24c1fb57a0a.1920x1080.jpg?t=1784045614"
+                                                     },
+                                                     {
+                                                         "id":  5,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/bd079e7ed3efb705d3dd44aa1b8a3a5a2cc19ef1/ss_bd079e7ed3efb705d3dd44aa1b8a3a5a2cc19ef1.600x338.jpg?t=1784045614",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/bd079e7ed3efb705d3dd44aa1b8a3a5a2cc19ef1/ss_bd079e7ed3efb705d3dd44aa1b8a3a5a2cc19ef1.1920x1080.jpg?t=1784045614"
+                                                     },
+                                                     {
+                                                         "id":  6,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/2ded29a36709833c15c0639b2d16bf6e893978fc/ss_2ded29a36709833c15c0639b2d16bf6e893978fc.600x338.jpg?t=1784045614",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/2ded29a36709833c15c0639b2d16bf6e893978fc/ss_2ded29a36709833c15c0639b2d16bf6e893978fc.1920x1080.jpg?t=1784045614"
+                                                     },
+                                                     {
+                                                         "id":  7,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/fe1ab0909aadafa46a6092103934545823bb0a7e/ss_fe1ab0909aadafa46a6092103934545823bb0a7e.600x338.jpg?t=1784045614",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/fe1ab0909aadafa46a6092103934545823bb0a7e/ss_fe1ab0909aadafa46a6092103934545823bb0a7e.1920x1080.jpg?t=1784045614"
+                                                     },
+                                                     {
+                                                         "id":  8,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/6301fe8fd9399942d8674232a43b3c80ec3cda52/ss_6301fe8fd9399942d8674232a43b3c80ec3cda52.600x338.jpg?t=1784045614",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/6301fe8fd9399942d8674232a43b3c80ec3cda52/ss_6301fe8fd9399942d8674232a43b3c80ec3cda52.1920x1080.jpg?t=1784045614"
+                                                     },
+                                                     {
+                                                         "id":  9,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/084669ce844c3fca2b1299f89d5d225530a8dd54/ss_084669ce844c3fca2b1299f89d5d225530a8dd54.600x338.jpg?t=1784045614",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/084669ce844c3fca2b1299f89d5d225530a8dd54/ss_084669ce844c3fca2b1299f89d5d225530a8dd54.1920x1080.jpg?t=1784045614"
+                                                     },
+                                                     {
+                                                         "id":  10,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/b79e7e89d039533f3374ebbea1ed6272afe5cc8a/ss_b79e7e89d039533f3374ebbea1ed6272afe5cc8a.600x338.jpg?t=1784045614",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/b79e7e89d039533f3374ebbea1ed6272afe5cc8a/ss_b79e7e89d039533f3374ebbea1ed6272afe5cc8a.1920x1080.jpg?t=1784045614"
+                                                     },
+                                                     {
+                                                         "id":  11,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/076db339dc9ed3276d82fdbfc0d3a411c131a60c/ss_076db339dc9ed3276d82fdbfc0d3a411c131a60c.600x338.jpg?t=1784045614",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/076db339dc9ed3276d82fdbfc0d3a411c131a60c/ss_076db339dc9ed3276d82fdbfc0d3a411c131a60c.1920x1080.jpg?t=1784045614"
+                                                     },
+                                                     {
+                                                         "id":  12,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/7b60ea839cdb37ccc48aed38879f8a399a9646aa/ss_7b60ea839cdb37ccc48aed38879f8a399a9646aa.600x338.jpg?t=1784045614",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/7b60ea839cdb37ccc48aed38879f8a399a9646aa/ss_7b60ea839cdb37ccc48aed38879f8a399a9646aa.1920x1080.jpg?t=1784045614"
+                                                     }
+                                                 ],
+                                 "movies":  [
+                                                {
+                                                    "id":  257316335,
+                                                    "name":  "Grounded 2: Beat the Heat Trailer",
+                                                    "thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257316335/94d67153dfb44d6df9b0d6ef5056d6175f8f3b8c/movie_600x337.jpg?t=1776193474",
+                                                    "dash_av1":  "https://video.akamai.steamstatic.com/store_trailers/2661300/1677248027/bacb2de5a6343eea91c07075b815333ab8b2636a/1775668492/dash_av1.mpd?t=1776193474",
+                                                    "dash_h264":  "https://video.akamai.steamstatic.com/store_trailers/2661300/1677248027/bacb2de5a6343eea91c07075b815333ab8b2636a/1775668492/dash_h264.mpd?t=1776193474",
+                                                    "hls_h264":  "https://video.akamai.steamstatic.com/store_trailers/2661300/1677248027/bacb2de5a6343eea91c07075b815333ab8b2636a/1775668492/hls_264_master.m3u8?t=1776193474",
+                                                    "highlight":  true
+                                                },
+                                                {
+                                                    "id":  257273055,
+                                                    "name":  "Winter Update Trailer",
+                                                    "thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257273055/e00b42e86d19cb24ee3b29212cfb57a907e37686/movie_600x337.jpg?t=1776193475",
+                                                    "dash_av1":  "https://video.akamai.steamstatic.com/store_trailers/2661300/243435595/9844e704ffe799bcfb269c7f6397e0333b3003b4/1769447783/dash_av1.mpd?t=1776193475",
+                                                    "dash_h264":  "https://video.akamai.steamstatic.com/store_trailers/2661300/243435595/9844e704ffe799bcfb269c7f6397e0333b3003b4/1769447783/dash_h264.mpd?t=1776193475",
+                                                    "hls_h264":  "https://video.akamai.steamstatic.com/store_trailers/2661300/243435595/9844e704ffe799bcfb269c7f6397e0333b3003b4/1769447783/hls_264_master.m3u8?t=1776193475",
+                                                    "highlight":  false
+                                                },
+                                                {
+                                                    "id":  257174814,
+                                                    "name":  "Story Trailer",
+                                                    "thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257174814/d03456c969c8900a78473d69ba6aa084fa611c3c/movie_600x337.jpg?t=1753808808",
+                                                    "dash_av1":  "https://video.akamai.steamstatic.com/store_trailers/2661300/2028043208/968ebe8a1dfea306c573795f6a483df8de1d66c5/1753696781/dash_av1.mpd?t=1753808808",
+                                                    "dash_h264":  "https://video.akamai.steamstatic.com/store_trailers/2661300/2028043208/968ebe8a1dfea306c573795f6a483df8de1d66c5/1753696781/dash_h264.mpd?t=1753808808",
+                                                    "hls_h264":  "https://video.akamai.steamstatic.com/store_trailers/2661300/2028043208/968ebe8a1dfea306c573795f6a483df8de1d66c5/1753696781/hls_264_master.m3u8?t=1753808808",
+                                                    "highlight":  false
+                                                },
+                                                {
+                                                    "id":  257174852,
+                                                    "name":  "Announce Trailer",
+                                                    "thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257174852/afa8455bc21aaa821fcc5cb258363d41288a05f3/movie_600x337.jpg?t=1769536964",
+                                                    "dash_av1":  "https://video.akamai.steamstatic.com/store_trailers/2661300/192071787/5694a3c82b56b90da953ff5c87ed2dc229ff2579/1753703277/dash_av1.mpd?t=1769536964",
+                                                    "dash_h264":  "https://video.akamai.steamstatic.com/store_trailers/2661300/192071787/5694a3c82b56b90da953ff5c87ed2dc229ff2579/1753703277/dash_h264.mpd?t=1769536964",
+                                                    "hls_h264":  "https://video.akamai.steamstatic.com/store_trailers/2661300/192071787/5694a3c82b56b90da953ff5c87ed2dc229ff2579/1753703277/hls_264_master.m3u8?t=1769536964",
+                                                    "highlight":  false
+                                                }
+                                            ],
+                                 "recommendations":  {
+                                                         "total":  19571
+                                                     },
+                                 "release_date":  {
+                                                      "coming_soon":  false,
+                                                      "date":  "Jul 29, 2025"
+                                                  },
+                                 "support_info":  {
+                                                      "url":  "https://support.obsidian.net/contact",
+                                                      "email":  "support@obsidian.net"
+                                                  },
+                                 "background":  "https://store.akamai.steamstatic.com/images/storepagebackground/app/2661300?t=1784045614",
+                                 "background_raw":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2661300/186ade3c9cb9853001c71592d8d79474bb4558ae/page_bg_raw.jpg?t=1784045614",
+                                 "content_descriptors":  {
+                                                             "ids":  [
+
+                                                                     ],
+                                                             "notes":  null
+                                                         },
+                                 "ratings":  {
+                                                 "esrb":  {
+                                                              "rating":  "t",
+                                                              "descriptors":  "Fantasy Violence\r\nBlood",
+                                                              "interactive_elements":  "Users Interact\r\n"
+                                                          },
+                                                 "pegi":  {
+                                                              "rating":  "12",
+                                                              "descriptors":  "Violencee\r\nBad Language"
+                                                          },
+                                                 "kgrb":  {
+                                                              "rating":  "15",
+                                                              "descriptors":  "Violence "
+                                                          },
+                                                 "gmedia":  {
+                                                                "rating":  "12"
+                                                            },
+                                                 "csrr":  {
+                                                              "rating":  "C15",
+                                                              "descriptors":  "Violence "
+                                                          },
+                                                 "dejus":  {
+                                                               "rating_generated":  "1",
+                                                               "rating":  "14",
+                                                               "required_age":  "14",
+                                                               "banned":  "0",
+                                                               "use_age_gate":  "0",
+                                                               "descriptors":  "Linguagem imprópria\nMedo"
+                                                           },
+                                                 "steam_germany":  {
+                                                                       "rating_generated":  "1",
+                                                                       "rating":  "12",
+                                                                       "required_age":  "12",
+                                                                       "banned":  "0",
+                                                                       "use_age_gate":  "0",
+                                                                       "descriptors":  "Derbe Sprache\nÄngstigende Inhalte"
+                                                                   },
+                                                 "igrs":  {
+                                                              "rating_generated":  "1",
+                                                              "rating":  "18",
+                                                              "required_age":  "18",
+                                                              "banned":  "0",
+                                                              "use_age_gate":  "0",
+                                                              "descriptors":  "Interaksi Daring\nHoror\nPenggunaan bahasa"
+                                                          }
+                                             }
+                             }
+                }
+}

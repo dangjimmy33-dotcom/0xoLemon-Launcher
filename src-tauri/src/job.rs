@@ -3281,7 +3281,7 @@ impl DepotSource {
         let has_token = token.is_some();
         let mut response = send(has_token).map_err(|error| {
             self.rate_coordinator.record_transient_failure(base_url);
-            JobError::Transient(format!("{url}: {error}"))
+            JobError::Transient(format!("download failed: {}", error.without_url()))
         })?;
 
         if matches!(
@@ -3293,7 +3293,7 @@ impl DepotSource {
             // HF_TOKEN is present. Private repositories still fail clearly below.
             response = send(false).map_err(|error| {
                 self.rate_coordinator.record_transient_failure(base_url);
-                JobError::Transient(format!("{url}: anonymous retry failed ({error})"))
+                JobError::Transient(format!("anonymous retry failed ({})", error.without_url()))
             })?;
         }
 
@@ -3308,22 +3308,22 @@ impl DepotSource {
             let delay = rate_delay.unwrap_or(Duration::from_secs(30));
             self.rate_coordinator.block_for(base_url, delay);
             return Err(JobError::RateLimited {
-                detail: format!("{url}: HTTP 429"),
+                detail: format!("HTTP 429"),
                 retry_after_ms: delay.as_millis().min(u128::from(u64::MAX)) as u64,
             });
         }
         if matches!(status, StatusCode::UNAUTHORIZED | StatusCode::FORBIDDEN) {
-            return Err(JobError::Unauthorized(format!("{url}: HTTP {status}")));
+            return Err(JobError::Unauthorized(format!("HTTP {status}")));
         }
         if status == StatusCode::NOT_FOUND {
-            return Err(JobError::NotFound(format!("{url}: HTTP 404")));
+            return Err(JobError::NotFound(format!("HTTP 404")));
         }
         if status == StatusCode::REQUEST_TIMEOUT || status.is_server_error() {
             self.rate_coordinator.record_transient_failure(base_url);
-            return Err(JobError::Transient(format!("{url}: HTTP {status}")));
+            return Err(JobError::Transient(format!("HTTP {status}")));
         }
         if !status.is_success() {
-            return Err(JobError::Depot(format!("{url}: HTTP {status}")));
+            return Err(JobError::Depot(format!("HTTP {status}")));
         }
 
         self.rate_coordinator.record_success(base_url);

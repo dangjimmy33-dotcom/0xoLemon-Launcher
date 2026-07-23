@@ -178,10 +178,12 @@ if (-not $UploadOnly) {
 
     if (-not [string]::IsNullOrWhiteSpace($LaunchOptionsJson)) {
       if ($LaunchOptionsJson -eq "ENV") {
-        $json = $env:LAUNCH_OPTIONS_JSON.Replace('"', '\"')
-        $builderArgs += @("--launch-options-json", $json)
+        $json = $env:LAUNCH_OPTIONS_JSON
+        if (-not [string]::IsNullOrWhiteSpace($json)) {
+          $builderArgs += @("--launch-options-json", $json)
+        }
       } else {
-        $json = $LaunchOptionsJson.Replace('"', '\"')
+        $json = $LaunchOptionsJson
         $builderArgs += @("--launch-options-json", $json)
       }
     } elseif (-not [string]::IsNullOrWhiteSpace($LaunchExecutable)) {
