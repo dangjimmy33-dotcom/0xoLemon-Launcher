@@ -1,5 +1,12 @@
 ﻿[
     {
+        "version":  "1.0.48",
+        "date":  "2026-07-23",
+        "changes":  [
+                        "cải thiện hiệu năng, thêm tính năng mới, sửa 1 số bug"
+                    ]
+    },
+    {
         "version":  "1.0.44",
         "date":  "2026-07-21",
         "changes":  [
