@@ -104,7 +104,7 @@ export function versionOptions(snapshot: Snapshot, game: GameSummary, useSnapsho
     return snapshot.availableVersions
   }
   if (game.availableVersions.length > 0) {
-    return game.availableVersions.map((version) => version.version)
+    return game.availableVersions.map((version) => typeof version === 'string' ? version : version.version)
   }
   return snapshot.latestVersion === 'unknown' ? [] : [snapshot.latestVersion]
 }

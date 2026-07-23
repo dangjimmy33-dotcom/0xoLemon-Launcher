@@ -23,6 +23,7 @@ export function createIdleJob(snapshot: Snapshot): JobJournal {
       { name: 'Download packs', detail: 'Resume missing byte ranges from proxy', status: 'waiting', progress: 0, retryCount: 0 },
       { name: 'Assemble files', detail: 'Rebuild files into verified temp outputs', status: 'waiting', progress: 0, retryCount: 0 },
       { name: 'Finalize', detail: 'Replace only after full-file hash match', status: 'waiting', progress: 0, retryCount: 0 },
+      { name: 'Patch fix', detail: 'Checking for version-specific file patches', status: 'waiting', progress: 0, retryCount: 0 },
     ],
     logs: [
       { at: new Date().toLocaleTimeString(), level: 'info', message: 'No launcher job is running.' },

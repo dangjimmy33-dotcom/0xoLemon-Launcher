@@ -62,6 +62,8 @@ pub struct GameVersionInfo {
     pub build_id: String,
     pub size_bytes: u64,
     pub latest: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tags: Option<Vec<String>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

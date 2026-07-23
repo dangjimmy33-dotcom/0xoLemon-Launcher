@@ -1,0 +1,73 @@
+﻿{
+    "appnews":  {
+                    "appid":  2215200,
+                    "newsitems":  [
+                                      {
+                                          "gid":  "1834602721201390",
+                                          "title":  "There\u0027s a wildly obscure easter egg in Lego Batman, I\u0027m surprised anyone found it: it\u0027s hidden in BASIC code for the Commodore 64",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/PC Gamer/1834602721201390",
+                                          "is_external_url":  true,
+                                          "author":  "James Bentley",
+                                          "contents":  "\u003cimg src=\"https://cdn.mos.cms.futurecdn.net/mZnZz6HU4cqQfbdL4okmdb-1280-80.jpg\"/\u003e\u003cbr\u003e\u003cbr\u003e\n                Lego Batman, like all Lego games, is absolutely loaded with references and easter eggs. As well as recreating \u003ca href=\"https://www.pcgamer.com/games/action/the-next-lego-batman-recreates-a-memorable-scene-from-the-1989-movie-complete-with-prince-soundtrack/\" target=\"_blank\"\u003ememorable scenes from the Dark Knight\u0027s storied history\u003c/a\u003e, it is packed with geeky, niche in-jokes. One such easter egg requires a Commodore 64 to actually make sense of...\n                \u003ca href=\"https://www.pcgamer.com/hardware/theres-a-wildly-obscure-easter-egg-in-lego-batman-im-surprised-anyone-found-it-its-hidden-in-basic-code-for-the-commodore-64/?utm_source=steam\u0026utm_medium=referral\" target=\"_blank\"\u003eRead more.\u003c/a\u003e",
+                                          "feedlabel":  "PC Gamer",
+                                          "date":  1781001180,
+                                          "feedname":  "PC Gamer",
+                                          "feed_type":  0,
+                                          "appid":  2215200
+                                      },
+                                      {
+                                          "gid":  "1834602721191581",
+                                          "title":  "Mayhem Collection DLC launches on September 18!",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1834602721191581",
+                                          "is_external_url":  true,
+                                          "author":  "jordan.archer",
+                                          "contents":  "[p][img src=\"{STEAM_CLAN_IMAGE}/45746841/851781464876b2c67bca4dcc2b2bbb5c6d4198f6.png\"][/img][/p][p]Who doesn\u0027t love a little bit of chaos? [/p][p][img src=\"https://a.slack-edge.com/production-standard-emoji-assets/16.0/google-medium/1f0cf@2x.png\"][/img][img src=\"https://a.slack-edge.com/production-standard-emoji-assets/16.0/google-medium/2666-fe0f@2x.png\"][/img] [/p][p][/p][p]The Joker and Harley Quinn invade LEGO® Batman™: Legacy of the Dark Knight Mayhem Collection on September 18! [/p][p][/p][p]Pick up your Deluxe copy of #LEGOBatmanGame now![/p][p][dynamiclink href=\"https://store.steampowered.com/app/2215200/LEGO_Batman_Legacy_of_the_Dark_Knight/\"][/dynamiclink][/p]",
+                                          "feedlabel":  "Community Announcements",
+                                          "date":  1780680896,
+                                          "feedname":  "steam_community_announcements",
+                                          "feed_type":  1,
+                                          "appid":  2215200
+                                      },
+                                      {
+                                          "gid":  "1833968530900517",
+                                          "title":  "Steam Global Top Sellers for week of 26 May — 2 June 2026",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/SteamDB/1833968530900517",
+                                          "is_external_url":  true,
+                                          "author":  "SteamDB",
+                                          "contents":  "\u003ca href=\"https://steamdb.info/topsellers/2026W23/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003e\u003cimg src=\"https://steamdb.info/topsellers/2026W23.png\"\u003e\u003c/a\u003e\u003col\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/3768760/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003e007 First Light\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/2483190/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eForza Horizon 6\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/1675200/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eSteam Deck\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/1118520/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eParalives\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/2694490/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003ePath of Exile 2\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/1962700/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eSubnautica 2\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/2215200/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eLEGO® Batman™: Legacy of the Dark Knight\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/1875580/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eMina the Hollower\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/3240220/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eGrand Theft Auto V Enhanced\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/2183900/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eWarhammer 40,000: Space Marine 2\u003c/a\u003e\u003c/li\u003e\u003c/ol\u003e\u003cbr\u003e\u003ci\u003e* excluding free to play games\u003c/i\u003e\u003cbr\u003e\u003ca href=\"https://steamdb.info/topsellers/2026W23/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eView top 100 on SteamDB\u003c/a\u003e",
+                                          "feedlabel":  "SteamDB",
+                                          "date":  1780390800,
+                                          "feedname":  "SteamDB",
+                                          "feed_type":  0,
+                                          "appid":  1118520
+                                      },
+                                      {
+                                          "gid":  "1833968530892927",
+                                          "title":  "Рыцари Готэма в кубе: Обзор LEGO Batman: Legacy of the Dark Knight",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/Gamemag.ru/1833968530892927",
+                                          "is_external_url":  true,
+                                          "author":  "Вадим Съедин",
+                                          "contents":  "\u003cimg src=\"https://gamemag.ru/images/cache/Reviews/Reviews2695/d74b13f7ff-2_1390x600.jpg\" alt=\"\"\u003e\u003cp\u003eВ начале года я поставил перед собой откровенно бредовую цель – пройти на 100% ремастер дилогии \u003cstrong\u003eLEGO Harry Potter\u003c/strong\u003e. Позднее я всё проклял из-за устаревшего геймдизайна, откровенно кривых решений разработчиков и паршивого качества самого переиздания, в котором никто не правил серьёзные баги. Впрочем, данный опыт заставил ещё больше ценить тот прогресс, которого достигла \u003cstrong\u003eTT Games\u003c/strong\u003e в\u003cstrong\u003e \u003ca href=\"https://gamemag.ru/reviews/lego-star-wars-the-skywalker-saga-review\"\u003eLEGO Star Wars: The Skywalker Saga\u003c/a\u003e\u003c/strong\u003e. Несмотря на производственный ад и ряд просчётов, в плане геймплея игра была на голову выше всех предыдущих работ команды.\u003c/p\u003e",
+                                          "feedlabel":  "Gamemag.ru",
+                                          "date":  1780106400,
+                                          "feedname":  "Gamemag.ru",
+                                          "feed_type":  0,
+                                          "appid":  2215200
+                                      },
+                                      {
+                                          "gid":  "1833968530889079",
+                                          "title":  "Аналитика: LEGO Batman: Legacy of the Dark Knight разошлась тиражом более 1,2 миллиона копий",
+                                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/Gamemag.ru/1833968530889079",
+                                          "is_external_url":  true,
+                                          "author":  "Rakot",
+                                          "contents":  "\u003cimg src=\"https://gamemag.ru/images/cache/News/News199445/a0398fbb73-2_1390x600.jpg\" alt=\"\"\u003e\u003cp\u003eСогласно \u003cstrong\u003eAlinea Analytics\u003c/strong\u003e, продажи \u003cstrong\u003eLEGO Batman: Legacy of the Dark Knight \u003c/strong\u003eпревысили \u003cstrong\u003e1,2 миллиона копий\u003c/strong\u003e. Стоит учесть, что компания занимается данными игрового рынка, используя собственные алгоритмы подсчёта. По словам \u003cstrong\u003eДжеффа Грабба\u003c/strong\u003e, её оценочные тиражи недавно выпущенных проектов довольно хороши, но не идеальны.\u003c/p\u003e",
+                                          "feedlabel":  "Gamemag.ru",
+                                          "date":  1779989280,
+                                          "feedname":  "Gamemag.ru",
+                                          "feed_type":  0,
+                                          "appid":  2215200
+                                      }
+                                  ],
+                    "count":  46
+                }
+}

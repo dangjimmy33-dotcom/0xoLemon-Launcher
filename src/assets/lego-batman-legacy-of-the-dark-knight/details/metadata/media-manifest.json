@@ -1,0 +1,342 @@
+﻿[
+    {
+        "role":  "header",
+        "title":  "Steam header",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/header.jpg?t=1783025238",
+        "file":  "store_art/header.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-21T08:08:06.410Z"
+    },
+    {
+        "role":  "capsule",
+        "title":  "Steam capsule",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/capsule_231x87.jpg?t=1783025238",
+        "file":  "store_art/capsule.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-21T08:08:06.414Z"
+    },
+    {
+        "role":  "capsule-v5",
+        "title":  "Steam capsule v5",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/capsule_184x69.jpg?t=1783025238",
+        "file":  "store_art/capsule-v5.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-21T08:08:06.415Z"
+    },
+    {
+        "role":  "background",
+        "title":  "Steam background",
+        "sourceUrl":  "https://store.akamai.steamstatic.com/images/storepagebackground/app/2215200?t=1783025238",
+        "file":  "store_art/background.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-21T08:08:06.415Z"
+    },
+    {
+        "role":  "background-raw",
+        "title":  "Steam background raw",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/page_bg_raw.jpg?t=1783025238",
+        "file":  "store_art/background-raw.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-21T08:08:06.416Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 1",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/26d8ea3f288ffaa1fe9956620cbd920f10b171f4/ss_26d8ea3f288ffaa1fe9956620cbd920f10b171f4.1920x1080.jpg?t=1783025238",
+        "file":  "screenshots/001_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-21T08:08:06.427Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 2",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/3c98a7a4d4624f8799d553a58fdb31d33ce1e494/ss_3c98a7a4d4624f8799d553a58fdb31d33ce1e494.1920x1080.jpg?t=1783025238",
+        "file":  "screenshots/002_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-21T08:08:06.428Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 3",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/fdbad71e14ed79de392e8d4b3915d2bec2895dbb/ss_fdbad71e14ed79de392e8d4b3915d2bec2895dbb.1920x1080.jpg?t=1783025238",
+        "file":  "screenshots/003_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-21T08:08:06.429Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 4",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/ce6fbdc2574a3c8119d4b6200a9728f0b0d10573/ss_ce6fbdc2574a3c8119d4b6200a9728f0b0d10573.1920x1080.jpg?t=1783025238",
+        "file":  "screenshots/004_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-21T08:08:06.429Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 5",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/d8a37aef421cac8d67dbdf76f103b332d6040e4a/ss_d8a37aef421cac8d67dbdf76f103b332d6040e4a.1920x1080.jpg?t=1783025238",
+        "file":  "screenshots/005_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-21T08:08:06.430Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 6",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/5f100b6c92ce7a0b860dea928bcdc9bc5b1676b4/ss_5f100b6c92ce7a0b860dea928bcdc9bc5b1676b4.1920x1080.jpg?t=1783025238",
+        "file":  "screenshots/006_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-21T08:08:06.430Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 7",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/976fe59f0cb0b31d6f1fddd488c1a05742245bac/ss_976fe59f0cb0b31d6f1fddd488c1a05742245bac.1920x1080.jpg?t=1783025238",
+        "file":  "screenshots/007_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-21T08:08:06.431Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 8",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/261056fb830839878fb4fcb8af6f5804e4bc6899/ss_261056fb830839878fb4fcb8af6f5804e4bc6899.1920x1080.jpg?t=1783025238",
+        "file":  "screenshots/008_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-21T08:08:06.431Z"
+    },
+    {
+        "role":  "video",
+        "title":  "Launch Trailer ESRB",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/2215200/2065567447/ede2da92d21e772c7b442d2c14a80ce8b2897abe/1779385649/hls_264_master.m3u8?t=1779469292",
+        "file":  "videos/001_launch-trailer-esrb.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-21T08:08:06.441Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "Launch Trailer ESRB",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257332595/0000daa059c2245d313df4d2cbc428f186b1d4bb/movie_600x337.jpg?t=1779469292",
+        "file":  "video_thumbnails/001_launch-trailer-esrb_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-21T08:08:06.441Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "Launch Trailer ESRB",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257332595/0000daa059c2245d313df4d2cbc428f186b1d4bb/movie_600x337.jpg?t=1779469292",
+        "file":  "video_thumbnails/001_launch-trailer-esrb_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-21T08:08:06.441Z"
+    },
+    {
+        "role":  "video",
+        "title":  "Accolades Trailer ESRB",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/2215200/994484613/1e7536c233faa620aeca11b7bf9f142c003b3189/1779498841/hls_264_master.m3u8?t=1779499105",
+        "file":  "videos/002_accolades-trailer-esrb.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-21T08:08:06.442Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "Accolades Trailer ESRB",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257341796/f7649bbb2661308bb59684a0a22c830649ac1396/movie_600x337.jpg?t=1779499105",
+        "file":  "video_thumbnails/002_accolades-trailer-esrb_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-21T08:08:06.442Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "Accolades Trailer ESRB",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257341796/f7649bbb2661308bb59684a0a22c830649ac1396/movie_600x337.jpg?t=1779499105",
+        "file":  "video_thumbnails/002_accolades-trailer-esrb_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-21T08:08:06.442Z"
+    },
+    {
+        "role":  "video",
+        "title":  "Deluxe Edition Trailer ESRB",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/2215200/487452793/2f6bcf29cb01880cd0c361f1ebcff45ee01b4cfb/1779385559/hls_264_master.m3u8?t=1779469296",
+        "file":  "videos/003_deluxe-edition-trailer-esrb.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-21T08:08:06.442Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "Deluxe Edition Trailer ESRB",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257335484/c4df5fb1dbc7095efea8fd606d15a59d4f13c374/movie_600x337.jpg?t=1779469296",
+        "file":  "video_thumbnails/003_deluxe-edition-trailer-esrb_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-21T08:08:06.442Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "Deluxe Edition Trailer ESRB",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257335484/c4df5fb1dbc7095efea8fd606d15a59d4f13c374/movie_600x337.jpg?t=1779469296",
+        "file":  "video_thumbnails/003_deluxe-edition-trailer-esrb_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-21T08:08:06.442Z"
+    },
+    {
+        "role":  "video",
+        "title":  "Heroes \u0026 Villains Trailer ESRB",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/2215200/1581074056/ac9700c298f76515300f144d68b6ba2166eedbc1/1779384269/hls_264_master.m3u8?t=1779469298",
+        "file":  "videos/004_heroes-villains-trailer-esrb.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-21T08:08:06.443Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "Heroes \u0026 Villains Trailer ESRB",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257245341/aed3677ce0fa35d0ab357bcfcd93ea333848d0d1/movie_600x337.jpg?t=1779469298",
+        "file":  "video_thumbnails/004_heroes-villains-trailer-esrb_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-21T08:08:06.443Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "Heroes \u0026 Villains Trailer ESRB",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257245341/aed3677ce0fa35d0ab357bcfcd93ea333848d0d1/movie_600x337.jpg?t=1779469298",
+        "file":  "video_thumbnails/004_heroes-villains-trailer-esrb_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-21T08:08:06.443Z"
+    },
+    {
+        "role":  "video",
+        "title":  "The Joker Cinematic Trailer ESRB",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/2215200/1013681407/9228aa67c94b38fa6d22b8eac2c40f31303799e5/1779383729/hls_264_master.m3u8?t=1779469300",
+        "file":  "videos/005_the-joker-cinematic-trailer-esrb.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-21T08:08:06.444Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "The Joker Cinematic Trailer ESRB",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257312235/f5cd7f6a7f46c7ae4ebcc9f7cf5e3c9b0786b5f5/movie_600x337.jpg?t=1779469300",
+        "file":  "video_thumbnails/005_the-joker-cinematic-trailer-esrb_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-21T08:08:06.444Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "The Joker Cinematic Trailer ESRB",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257312235/f5cd7f6a7f46c7ae4ebcc9f7cf5e3c9b0786b5f5/movie_600x337.jpg?t=1779469300",
+        "file":  "video_thumbnails/005_the-joker-cinematic-trailer-esrb_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-21T08:08:06.444Z"
+    },
+    {
+        "role":  "video",
+        "title":  "Building the Legacy ESRB",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/2215200/904580400/f64660fc7a8f7f18ec0c32ef5c2971379db4a1ef/1779381689/hls_264_master.m3u8?t=1779469303",
+        "file":  "videos/006_building-the-legacy-esrb.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-21T08:08:06.445Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "Building the Legacy ESRB",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257312293/00e3e0854dc6b3015c7777b1b150bcd3a5f289f2/movie_600x337.jpg?t=1779469303",
+        "file":  "video_thumbnails/006_building-the-legacy-esrb_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-21T08:08:06.445Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "Building the Legacy ESRB",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257312293/00e3e0854dc6b3015c7777b1b150bcd3a5f289f2/movie_600x337.jpg?t=1779469303",
+        "file":  "video_thumbnails/006_building-the-legacy-esrb_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-21T08:08:06.445Z"
+    },
+    {
+        "role":  "video",
+        "title":  "Reveal Trailer ESRB",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/2215200/450685655/1ce33296802f5f051d2bd78d27993f7de1f97a5a/1779380849/hls_264_master.m3u8?t=1779469305",
+        "file":  "videos/007_reveal-trailer-esrb.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-21T08:08:06.446Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "Reveal Trailer ESRB",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257312209/804ad940842907106cfca91802c4bf4d1926d984/movie_600x337.jpg?t=1779469305",
+        "file":  "video_thumbnails/007_reveal-trailer-esrb_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-21T08:08:06.446Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "Reveal Trailer ESRB",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257312209/804ad940842907106cfca91802c4bf4d1926d984/movie_600x337.jpg?t=1779469305",
+        "file":  "video_thumbnails/007_reveal-trailer-esrb_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-21T08:08:06.446Z"
+    }
+]

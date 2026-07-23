@@ -76,10 +76,10 @@ export function useOSTData(gameId: string | null) {
           const headers: Record<string, string> = {}
           if (cached.token) headers['Authorization'] = `Bearer ${cached.token}`
           try {
-            const res = await fetch(cached.treeUrl, { headers })
+            const res = await fetch(`${cached.treeUrl}?t=${Date.now()}`, { headers, cache: 'no-store' })
             if (res.ok) {
               const files = await res.json()
-              const mp3s = files.filter((f: any) => f.type === 'file' && f.path.toLowerCase().endsWith('.mp3'))
+              const mp3s = files.filter((f: any) => f.type === 'file' && (f.path.toLowerCase().endsWith('.mp3') || f.path.toLowerCase().endsWith('.flac')))
               if (mp3s.length > 0) {
                 mp3Files = mp3s
                 activeResolveBaseUrl = cached.resolveBaseUrl
@@ -97,10 +97,10 @@ export function useOSTData(gameId: string | null) {
             const headers: Record<string, string> = {}
             if (token) headers['Authorization'] = `Bearer ${token}`
             try {
-              const res = await fetch(treeUrl, { headers })
+              const res = await fetch(`${treeUrl}?t=${Date.now()}`, { headers, cache: 'no-store' })
               if (res.ok) {
                 const files = await res.json()
-                const mp3s = files.filter((f: any) => f.type === 'file' && f.path.toLowerCase().endsWith('.mp3'))
+                const mp3s = files.filter((f: any) => f.type === 'file' && (f.path.toLowerCase().endsWith('.mp3') || f.path.toLowerCase().endsWith('.flac')))
                 if (mp3s.length > 0) {
                   mp3Files = mp3s
                   activeResolveBaseUrl = resolveBaseUrl
@@ -130,7 +130,7 @@ export function useOSTData(gameId: string | null) {
           const encodedFileName = encodeURIComponent(fileName)
           const url = `${activeResolveBaseUrl}/${encodedFileName}`
 
-          let title = fileName.replace(/\.mp3$/i, '')
+          let title = fileName.replace(/\.(mp3|flac)$/i, '')
           let artist = 'Original Soundtrack'
           let durationStr = '0:00'
 
@@ -141,7 +141,8 @@ export function useOSTData(gameId: string | null) {
               const buffer = await metaRes.arrayBuffer()
               // For xet/LFS files the real size is in lfs.size; file.size is also real for xet
               const fileSize = (file as any).lfs?.size ?? ((file as any).size > 10000 ? (file as any).size : undefined)
-              const metadata = await mm.parseBuffer(new Uint8Array(buffer), 'audio/mpeg', {
+              const isFlac = fileName.toLowerCase().endsWith('.flac')
+              const metadata = await mm.parseBuffer(new Uint8Array(buffer), isFlac ? 'audio/flac' : 'audio/mpeg', {
                 skipCovers: true,
                 duration: true
               })

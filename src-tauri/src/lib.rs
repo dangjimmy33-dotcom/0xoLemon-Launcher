@@ -27,7 +27,8 @@ pub mod steamless;
 pub mod offline_cache;
 pub mod defender_exclusion;
 pub mod debug_log;
-
+pub mod process_manager;
+pub mod achievement_watcher;
 use std::path::PathBuf;
 use std::sync::Arc;
 
@@ -85,7 +86,7 @@ struct DiskSpaceCheck {
 }
 
 #[tauri::command]
-fn check_install_disk_space(install_path: String, required_size_bytes: u64) -> Result<DiskSpaceCheck, String> {
+async fn check_install_disk_space(install_path: String, required_size_bytes: u64) -> Result<DiskSpaceCheck, String> {
     fn human_bytes(value: u64) -> String {
         const UNITS: [&str; 5] = ["B", "KB", "MB", "GB", "TB"];
         if value == 0 {
@@ -390,6 +391,11 @@ fn open_notification_action(app: AppHandle, notification_id: String) -> Result<(
 #[tauri::command]
 fn get_game_runtime_states(app: AppHandle) -> Result<Vec<platform::GameRuntimeState>, String> {
     platform::get_runtime_states(&app)
+}
+
+#[tauri::command]
+fn get_game_platform_state(app: AppHandle, game_id: String) -> Result<platform::GamePlatformState, String> {
+    platform::get_game_platform_state(&app, &game_id)
 }
 
 #[tauri::command]
@@ -850,6 +856,11 @@ fn abort_and_clean_job(
     job::abort_and_clean_job(&app, Some(&game_id)).map_err(|e| e.to_string())
 }
 
+#[tauri::command]
+fn clear_job_journal(app: AppHandle) -> Result<(), String> {
+    job::clear_current_journal(&app).map_err(|e| e.to_string())
+}
+
 #[derive(Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 struct ShortcutLaunchRequest {
@@ -965,6 +976,7 @@ pub fn run() {
             get_game_runtime_states,
             clear_chunk_cache,
             get_launcher_snapshot,
+            get_game_platform_state,
             get_launcher_settings,
             set_launcher_settings,
             get_game_ost_repo_info,
@@ -1005,6 +1017,7 @@ pub fn run() {
             pause_job,
             resume_job,
             cancel_job,
+            clear_job_journal,
             abort_and_clean_job,
             open_folder,
             open_url,
@@ -1077,6 +1090,9 @@ pub fn run() {
             debug_log::debug_log(&format!("Debug log path: {:?}", log_path));
             
             let main_url = {
+                #[cfg(debug_assertions)]
+                let url: tauri::Url = "http://localhost:1420".parse().unwrap();
+                #[cfg(not(debug_assertions))]
                 let url: tauri::Url = "http://localhost:14201".parse().unwrap();
                 tauri::WebviewUrl::External(url)
             };

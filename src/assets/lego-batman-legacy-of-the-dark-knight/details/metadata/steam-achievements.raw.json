@@ -1,0 +1,590 @@
+﻿{
+    "game":  {
+                 "gameName":  "LEGO Batman: Legacy of the Dark Knight",
+                 "gameVersion":  "9",
+                 "availableGameStats":  {
+                                            "achievements":  [
+                                                                 {
+                                                                     "name":  "Achievement_0_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "\"I am Batman.\"",
+                                                                     "hidden":  0,
+                                                                     "description":  "Collect all Achievements",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/9ff6cdbaa992e49a42ec337d6839c16d6fe9311c.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/bf66e2292b2acaf4e0144437cbac8c7cfb665608.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_1_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "\"A hero can be anyone.\"",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete Story Mode",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/f3c01cf6de6862e724db2156061ae3857bc51361.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/84857601110972016baf5c5dc38276e7c2409fff.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_2_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "\"Hopefully, because he\u0027s busy.\"",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete every side activity in Gotham",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/9dfc631959de8c977f1de406677f1fcd9f66cabb.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/2437f3a2de1912115c781d62c8bd9444041d10c3.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_3_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "A Watchful Collector",
+                                                                     "hidden":  0,
+                                                                     "description":  "Collect all Collectibles",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/b395ebd80d34fd7e2d38d85d66ce7e3286fc91ea.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/b8ab6ace74493185d1d49e425106bdeb7f42e957.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_4_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "\"I\u0027m not wearing hockey pads.\"",
+                                                                     "hidden":  0,
+                                                                     "description":  "Unlock All Suits",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/2bcb44d29f99b4f69ae1df5d57a050adbaba5793.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/6fb54b6bd7ddc3dc59c9d5d466c0166669228f5a.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_5_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "\"Wanna know how I got these cars?\"",
+                                                                     "hidden":  0,
+                                                                     "description":  "Unlock All Vehicles",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/371ce218d248a5cd22fd5e0489b03a93950af3d3.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/4299386f2a8a7176b81e4af05356ec314566a773.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_6_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "\"Holy Skill Upgrades, Batman!\"",
+                                                                     "hidden":  0,
+                                                                     "description":  "Unlock All Skill Upgrades",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/417fa37103d49e692de5a1d3bba1c384c207a86b.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/bcf1e2a57f701863b12313824b765d64c9d4f7dd.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_7_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "\"This is too much power for one person.\"",
+                                                                     "hidden":  0,
+                                                                     "description":  "Collect all Red Bricks",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/c9915d8d4aef6f1fab8e3ab7c84d4fe76f179ddf.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/b38997727834261530e9d069016d8b385d6d02b6.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_8_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Up for the Challenge",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete 20 Challenges",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/4deee2ecd2f4e79c468d1c4604d9a864c4bd748a.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/46c1ed42434f0624cbb7799aed3f2e91e6fb0220.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_9_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "\"It\u0027s a big city. I can\u0027t be everywhere.\"",
+                                                                     "hidden":  0,
+                                                                     "description":  "Unlock all fast travel points",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/87a9d9dcdea83413a3724dba7129757077cfc045.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/73033f4e3e6c2cc2556a0e0ed13d310e29cef83a.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_10_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "A Friend",
+                                                                     "hidden":  0,
+                                                                     "description":  "Unlock Jim Gordon",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/26b1e0a074e14c81a4a9e6e0534027a6b2f5715b.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/1ca1435ddb28b7d4856a8e2455d005e375294aa2.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_11_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "\"Hear me roar.\"",
+                                                                     "hidden":  0,
+                                                                     "description":  "Unlock Catwoman",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/aa28829bfdb5a004e259d002a07e2a7c0fc61e97.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/85d84d842c0210be9b73b6203dc784589ea6e8cf.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_12_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "The Boy Wonder",
+                                                                     "hidden":  0,
+                                                                     "description":  "Unlock Robin",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/55c2afa7ae298ad0c58c1465ba97bde1b7b48478.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/784ea66c129201b1bfe4b7dc9a181c86f998be16.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_13_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "\"Let\u0027s see what Batgirl can do!\"",
+                                                                     "hidden":  0,
+                                                                     "description":  "Unlock Batgirl",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/286ac2291a1e406ccf95154470c1311f70eb8b45.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/e362ef9fdae806a198a05edca33d6fa2bea7629b.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_14_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "A Grayson Graduation",
+                                                                     "hidden":  0,
+                                                                     "description":  "Unlock Nightwing",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/523958200f01ee4bc4f5b875a28ce66e936e8f95.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/46cfbaee0afaf9e5b27c8b5b6fdca75ffa1a592a.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_15_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Out of the Shadows",
+                                                                     "hidden":  0,
+                                                                     "description":  "Unlock Talia",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/f7c8c8d2ec5948152f9ae02950d39e970794d7e7.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/2fbb0081d8a073930dc05f0a3e24fdbab81b3ba4.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_16_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "\"It\u0027s not exactly a normal world.\"",
+                                                                     "hidden":  0,
+                                                                     "description":  "Visit every District",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/7a6d8b5e578d06fc7a6fe3b951fb80fe49fcc8d3.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/e0a7fe625ee4c9afa71b45d9ef5aeefa6f500ef0.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_17_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Wonderful Toys",
+                                                                     "hidden":  0,
+                                                                     "description":  "Purchase all Gadget Upgrades for any single character",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/50249fe5acfdd265850875488d08cce68f68fa93.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/f77900f996c40de94fa8be6b4d9631d7d955113c.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_18_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Beware the Gray Ghost!",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete Bruce\u0027s Gray Ghost costume",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/b6a8f180731b537ae450b79dccd1df9784dff01b.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/0b5f5abc52aaec0c19c801a299767e970f304dd1.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_19_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "\"A legend, Mr. Wayne.\"",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete the Prologue",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/3365dc03e4ad5be09c133fe563d824309a104703.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/88fe23b4294b28bf1853539c12f1c091ddc2865c.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_20_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "One Bad Day",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete Chapter One",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/09d36fb610e28b05647c7b26e40a196a0066f8ab.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/39f08056f997ff7dc5788bf2ae0fe239ea564c4e.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_21_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "\"Do I look like I\u0027m joking?\"",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete Chapter Two",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/55c633a12f189636c035ff7827f642019e95fc22.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/27ff731fb704efe30386dd0de0296a9752fbfcec.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_22_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "The Dynamic Duo",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete Chapter Three",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/cdb55314ec94aa6275ade4e9bfac70237d419dd2.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/ab432477dab975489ec8e5d16b60994b1d11cb73.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_23_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "An Endless Winter",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete Chapter Four",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/0dd2880adb5da0e6707a40981238479998d934f8.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/17ca716868450ae9b571da1dcf2e11357d3be3e8.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_24_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Knightfall",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete Chapter Five",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/cf69b4332d734f88046d7c58ed675ee81d4ecd0a.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/07f771b6f654a605111c9cad048786ed501344de.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_25_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "\"You have a name to maintain.\"",
+                                                                     "hidden":  0,
+                                                                     "description":  "Open every WayneTech Cache",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/e41d1f3d8e96a7d5de0f9e827331754f4c9c92d9.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/b9df128345e66d74d7774193b5adeba4b45d5e4a.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_26_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "\"The idea was to be a symbol.\"",
+                                                                     "hidden":  0,
+                                                                     "description":  "Collect 25 Bat-Symbols",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/603d0c210a4a78d78b7111c9e06f1f603fb86dbe.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/c073ed28b4a662df519756d61fdcb306dd549214.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_27_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "\"Quite the collection, Master Bruce.\"",
+                                                                     "hidden":  0,
+                                                                     "description":  "Collect all Batcave Trophies",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/a2b5e20eda3d95448fe3ffcb07308f130d5f5cf2.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/464b93b6caf7c4d8be88d272c40bdd6a394e42d9.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_28_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Too Many Questions",
+                                                                     "hidden":  0,
+                                                                     "description":  "Complete every Puzzle Room",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/198861f862eb334bf998461af3db79faeb95f2b5.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/3a51d50e06f2d7a13b13c685526f0911422c9988.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_29_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "\"Lighter, faster, more agile.\"",
+                                                                     "hidden":  0,
+                                                                     "description":  "Purchase a Skill Upgrade from each category",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/aee4d4da0767ed0a50eb446f55418dad88ff3966.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/6570a99159ef6b1cf798b19fd37b94e8b1919689.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_30_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Theatricality and Deception",
+                                                                     "hidden":  0,
+                                                                     "description":  "Purchase 3 Gadget Upgrades",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/1292a0012d70c255aff371b5d286418ca1fd59a3.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/d610a76e80ee71197eb5502146b3328569733380.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_31_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "\"I own the place.\"",
+                                                                     "hidden":  0,
+                                                                     "description":  "Purchase all Batcave Expansions",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/a4d9d6597a8b90ae6da77dcb4e6ac6c81ae4a1d1.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/5fb3bf71da7ff0dcbf75c317750104b70060e7a6.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_32_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Not Just a Cave",
+                                                                     "hidden":  0,
+                                                                     "description":  "Place 5 Props or Trophies in the Batcave",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/4ef5a52baecb765e4e8418151a270bf3dbc900f6.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/555d393d34cb1d68edf16907bd03c1fe456b79d3.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_33_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "\"No, sir. The OTHER car.\"",
+                                                                     "hidden":  0,
+                                                                     "description":  "Purchase 3 Vehicles from the Batcave",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/ab19463ac7c85d088ce915044400674f0ff6e348.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/190c7e0d7bff2b232638f35d01f1bc38b4aaed04.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_34_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "\"You either buy a hero…\"",
+                                                                     "hidden":  0,
+                                                                     "description":  "Purchase 5 Items from Shops",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/0257cff63191c59b7cd21302aba3de4781b23d9d.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/bd2fb3b7ce7d1d7ae2cd96587ec70aa1a9b67c59.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_35_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "\"Does it come in black?\"",
+                                                                     "hidden":  0,
+                                                                     "description":  "Equip a Red Brick",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/68fec05beb1f4da2a9d3ae79496b570911b5445c.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/1253f454c1d7a49819ab0a5c6e012a658cc76e10.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_36_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "\"Wouldn\u0027t wanna make things too easy.\"",
+                                                                     "hidden":  0,
+                                                                     "description":  "Get 5 Gold Medals in AR Trials",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/bcd0d213e83d1c99379b9a729b0bdc4829108601.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/24175c70e73650de0759d9ae88d9a870cd1f1512.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_37_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Rebuilding Gotham",
+                                                                     "hidden":  0,
+                                                                     "description":  "Cash in a Challenge in the Batcave",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/b464760a6c663d63b786b0b5a0dcd3f89820a2fa.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/12eb48547c5d9e9072a8b75c3ee6b94b9775ee07.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_38_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Collecting Evidence",
+                                                                     "hidden":  0,
+                                                                     "description":  "Roll the camera over 20 degrees in Photo Mode",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/d42c7cdd131784d90054ae12716382b8d2ea4dbf.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/2075ef916aab290b9cc2be401f53e4b41056447b.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_39_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Computer Privileges",
+                                                                     "hidden":  0,
+                                                                     "description":  "Change the screensaver on the Batcomputer",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/037f4ee00a185eb9cadd078c637769bfb917f34a.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/9db544a577070c65808fffb8fa4c75e3c4b1189c.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_40_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "\"Life\u0027s been good to me.\"",
+                                                                     "hidden":  0,
+                                                                     "description":  "Collect 1,000,000 Studs",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/71c23bb1c9f3fb27d140dbeb898bb1e15fdd1c23.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/2afc3a6547a1b5e7f71a018d5f38ae7204704bdf.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_41_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Caped Defender",
+                                                                     "hidden":  0,
+                                                                     "description":  "Perform 100 Successful Counters",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/a58c9db08eb34db3dac2cd9d2047645bbe5880e9.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/2828313b5e7542970846aca96b5ed44e792a6313.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_42_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "\"Never do it for free.\"",
+                                                                     "hidden":  0,
+                                                                     "description":  "Collect 30,000 Studs within a single stud combo",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/63a2b11776bacf376bdb4881dc6d2e388226fc28.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/e8724313049a8dd98d53886ccb42cf1db55d4c0f.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_43_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "\"I\u0027m good with calculation.\"",
+                                                                     "hidden":  0,
+                                                                     "description":  "Maintain Max Stud Combo for 60 Seconds",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/2cf3335c3bc829cf0d5e9f31a3dbc0cfe1cee82e.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/9d93fa3edf967f5055c7dd737e180d4550a1ce84.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_44_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "The Strength to Fight",
+                                                                     "hidden":  0,
+                                                                     "description":  "Reach Combat Combo of 99 hits",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/9b9dffa73cb6ce32c064021eeb1d8f59e7ecd50b.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/95a636bde3bf01d6ea83ea4a0cb590dc6627ba28.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_45_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "\"I am the shadows.\"",
+                                                                     "hidden":  0,
+                                                                     "description":  "Perform 100 Stealth Takedowns",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/7c0e38f5070028fc328c5fe385d8d8064d726d85.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/0f39aca399d260cf461e6aab827fe04b3e5c5ec5.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_46_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "\"This is my city.\"",
+                                                                     "hidden":  0,
+                                                                     "description":  "Place a Pin on the Map",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/4fd89d43a8c7a8016583963ebd39f0e9bbf19f90.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/4f671fa8ffe9bf6a5b4f286f73dfd40f147bcfd4.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_47_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "\"You\u0027re becoming quite a celebrity.\"",
+                                                                     "hidden":  0,
+                                                                     "description":  "Discover 100 open world events",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/b36b6334821fd3437b92ece28a67dfd3d0257f55.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/ccf91121d9bfcc4fccedd12f197c22e4e48b26f5.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_48_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "Cowardly and Superstitious Lot",
+                                                                     "hidden":  0,
+                                                                     "description":  "Defeat every type of enemy once",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/ed416e8779caba680991d51758f07cff995d5328.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/5ecb560e0a4010b2b93304bcf33f00444d6883d2.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_49_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "\"Gotham can feel a little safer.\"",
+                                                                     "hidden":  0,
+                                                                     "description":  "Prevent 30 Crimes",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/00d37607778594ebb941462b3ccea589835423ff.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/7717ebe7d5d541a86dabae3b500173d013312e6e.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_50_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "\"Things have improved.\"",
+                                                                     "hidden":  0,
+                                                                     "description":  "Prevent each type of Crime in Gotham once",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/0973d10bb9d25948e4ce41c9c09d1943a5fe1e98.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/6e9d7c9e6b2a5efc4a692154dec11b722d282c05.jpg"
+                                                                 },
+                                                                 {
+                                                                     "name":  "Achievement_51_Id",
+                                                                     "defaultvalue":  0,
+                                                                     "displayName":  "\"Is that like parachuting?\"",
+                                                                     "hidden":  0,
+                                                                     "description":  "Glide in 10 different wind tunnels",
+                                                                     "icon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/46ba55ad5f233e37901f9c0e8a23516e94f35f55.jpg",
+                                                                     "icongray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/78d945ea2ce7fe28aefa55125a99c5fc0105d533.jpg"
+                                                                 }
+                                                             ],
+                                            "stats":  [
+                                                          {
+                                                              "name":  "stat_8",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_26",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_27",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_30",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_32",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_33",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_34",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_36",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_41",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_45",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_49",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_51",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_4",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_5",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_7",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_6",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_9",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_16",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_25",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_28",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_31",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          },
+                                                          {
+                                                              "name":  "stat_47",
+                                                              "defaultvalue":  0,
+                                                              "displayName":  ""
+                                                          }
+                                                      ]
+                                        }
+             }
+}

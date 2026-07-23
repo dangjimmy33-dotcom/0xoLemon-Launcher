@@ -71,6 +71,8 @@ export type JobJournal = {
     throughputP50BytesPerSecond: number
     throughputP95BytesPerSecond: number
   }
+  /** Set when a patch job commits – lets the UI immediately clear the pending-patch badge. */
+  appliedPatchId?: string
 }
 
 export type ChangedFile = {
@@ -99,6 +101,7 @@ export type Snapshot = {
   }
   changedFiles: ChangedFile[]
   lastJob: JobJournal | null
+  appliedPatchId?: string
 }
 
 export type DownloadProfile = 'eco' | 'balanced' | 'turbo'
@@ -226,6 +229,7 @@ export type GameVersionInfo = {
   buildId: string
   sizeBytes: number
   latest: boolean
+  tags?: string[]
 }
 
 export type GameInstallMetadata = {
@@ -412,6 +416,7 @@ export type GameInstallState = {
   currentVersion: string
   installPath: string
   launchExecutable: string
+  appliedPatchId?: string
 }
 
 export type VerifyInstallReport = {

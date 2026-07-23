@@ -1,0 +1,1825 @@
+1000:                category: 'launcher',
+ 1001:               severity: 'info',
+ 1002:               title: `Launcher ${info.version} is available`,
+ 1003:               message: 'A signed launcher update is ready to download.',
+ 1004:               dedupeKey: `launcher-update:${info.version}:available`,
+ 1005:               entity: { kind: 'launcher-update', id: info.version },
+ 1006:               action: { kind: 'update-center', tab: null, gameId: null },
+ 1007:             })
+ 1008:           }
+ 1009:         })
+ 1010:         .catch(console.error)
+ 1011:     }, 1800)
+ 1012: 
+ 1013:     return () => window.clearTimeout(updateTimer)
+ 1014:   }, [preferences.autoCheckLauncherUpdates, publishNotification])
+ 1015: 
+ 1016:   async function refreshInstallState(gameId: string, committedInstallPath?: string) {
+ 1017:     if (!isTauriRuntime()) {
+ 1018:       return
+ 1019:     }
+ 1020:     const state = await invoke<GameInstallState>('get_game_install_state', { gameId })
+ 1021:     setInstallStates((current) => {
+ 1022:       const existing = current[gameId]
+ 1023:       if (
+ 1024:         committedInstallPath &&
+ 1025:         !state.installed &&
+ 1026:         existing?.installed &&
+ 1027:         existing.installPath === committedInstallPath
+ 1028:       ) {
+ 1029:         return current
+ 1030:       }
+ 1031:       return { ...current, [gameId]: state }
+ 1032:     })
+ 1033: 
+ 1034:     // Check for remote patch
+ 1035:     if (state.installed && state.currentVersion && state.currentVersion !== 'unknown' && state.installPath) {
+ 1036:       invoke<string | null>('check_patch_available', { gameId, version: state.currentVersion })
+ 1037:         .then((patchId) => {
+ 1038:           if (patchId) {
+ 1039:             setPendingPatches((current) => ({ ...current, [gameId]: patchId }))
+ 1040:             
+ 1041:             // Auto start patch job if not already applied
+ 1042:             if (patchId !== state.appliedPatchId) {
+ 1043:               const currentJob = latestJobRef.current
+ 1044:               if (!currentJob || currentJob.status !== 'running') {
+ 1045:                 invoke<JobJournal>('start_patch_job', {
+ 1046:                   gameId,
+ 1047:                   installPath: state.installPath,
+ 1048:                   targetVersion: state.currentVersion,
+ 1049:                 })
+ 1050:                   .then((nextJob) => {
+ 1051:                     setJob(nextJob)
+ 1052:                     // Optionally notify or switch tabs if you want, but silent download is often preferred
+ 1053:                   })
+ 1054:                   .catch(console.error)
+ 1055:               }
+ 1056:             }
+ 1057:           }
+ 1058:         })
+ 1059:         .catch(console.error)
+ 1060:     }
+ 1061:   }
+ 1062: 
+ 1063:   useEffect(() => {
+ 1064:     if (!isTauriRuntime() || catalog.games.length === 0) {
+ 1065:       return
+ 1066:     }
+ 1067: 
+ 1068:     let disposed = false
+ 1069:     const gameIds = catalog.games.map((game) => game.id)
+ 1070:     invoke<GameInstallState[]>('get_game_install_states', { gameIds })
+ 1071:       .then((states) => {
+ 1072:         if (disposed) return
+ 1073:         const next: Record<string, GameInstallState> = {}
+ 1074:         for (const state of states) {
+ 1075:           next[state.gameId] = state
+1016:   async function refreshInstallState(gameId: string, committedInstallPath?: string) {
+1020:     const state = await invoke<GameInstallState>('get_game_install_state', { gameId })
+1021:     setInstallStates((current) => {
+1025:          !state.installed &&
+ 1026:         existing?.installed &&
+ 1027:         existing.installPath === committedInstallPath
+ 1028:       ) {
+ 1029:         return current
+ 1030:       }
+ 1031:       return { ...current, [gameId]: state }
+ 1032:     })
+ 1033: 
+ 1034:     // Check for remote patch
+ 1035:     if (state.installed && state.currentVersion && state.currentVersion !== 'unknown' && state.installPath) {
+ 1036:       invoke<string | null>('check_patch_available', { gameId, version: state.currentVersion })
+ 1037:         .then((patchId) => {
+ 1038:           if (patchId) {
+ 1039:             setPendingPatches((current) => ({ ...current, [gameId]: patchId }))
+ 1040:             
+ 1041:             // Auto start patch job if not already applied
+ 1042:             if (patchId !== state.appliedPatchId) {
+ 1043:               const currentJob = latestJobRef.current
+ 1044:               if (!currentJob || currentJob.status !== 'running') {
+ 1045:                 invoke<JobJournal>('start_patch_job', {
+ 1046:                   gameId,
+ 1047:                   installPath: state.installPath,
+ 1048:                   targetVersion: state.currentVersion,
+ 1049:                 })
+ 1050:                   .then((nextJob) => {
+ 1051:                     setJob(nextJob)
+ 1052:                     // Optionally notify or switch tabs if you want, but silent download is often preferred
+ 1053:                   })
+ 1054:                   .catch(console.error)
+ 1055:               }
+ 1056:             }
+ 1057:           }
+ 1058:         })
+ 1059:         .catch(console.error)
+ 1060:     }
+ 1061:   }
+ 1062: 
+ 1063:   useEffect(() => {
+ 1064:     if (!isTauriRuntime() || catalog.games.length === 0) {
+ 1065:       return
+1030:          return current
+ 1031:       }
+ 1032:       return { ...current, [gameId]: state }
+ 1033:     })
+ 1034: 
+ 1035:     // Check for remote patch
+ 1036:     if (state.installed && state.currentVersion && state.currentVersion !== 'unknown' && state.installPath) {
+ 1037:       invoke<string | null>('check_patch_available', { gameId, version: state.currentVersion })
+ 1038:         .then((patchId) => {
+ 1039:           if (!patchId) {
+ 1040:             setPendingPatches((current) => {
+ 1041:               if (!(gameId in current)) return current
+ 1042:               const next = { ...current }
+ 1043:               delete next[gameId]
+ 1044:               return next
+ 1045:             })
+ 1046:             delete autoPatchAttemptRef.current[gameId]
+ 1047:             return
+ 1048:           }
+ 1049: 
+ 1050:           setPendingPatches((current) => ({ ...current, [gameId]: patchId }))
+ 1051:           if (patchId === state.appliedPatchId) {
+ 1052:             if (autoPatchAttemptRef.current[gameId] === patchId) {
+ 1053:               delete autoPatchAttemptRef.current[gameId]
+ 1054:             }
+ 1055:             return
+ 1056:           }
+ 1057: 
+ 1058:           const currentJob = latestJobRef.current
+ 1059:           const hasActivePatchJob =
+ 1060:             currentJob?.id !== 'idle' &&
+ 1061:             currentJob?.kind === 'patch' &&
+ 1062:             currentJob.gameId === gameId &&
+ 1063:             currentJob.toVersion === state.currentVersion &&
+ 1064:             ['planned', 'running', 'paused', 'downloading', 'assembling', 'verified'].includes(currentJob.status)
+ 1065: 
+ 1066:           if (hasActivePatchJob || autoPatchAttemptRef.current[gameId] === patchId) {
+ 1067:             return
+ 1068:           }
+ 1069: 
+ 1070:           autoPatchAttemptRef.current[gameId] = patchId
+ 1071:           invoke<JobJournal>('start_patch_job', {
+ 1072:             gameId,
+ 1073:             installPath: state.installPath,
+ 1074:             targetVersion: state.currentVersion,
+ 1075:           })
+ 1076:             .then((nextJob) => {
+ 1077:               setJob(nextJob)
+ 1078:             })
+ 1079:             .catch(console.error)
+ 1080:         })
+ 1081:         .catch(console.error)
+ 1082:     }
+ 1083:   }
+ 1084: 
+ 1085:   useEffect(() => {
+1036:       invoke<string | null>('check_patch_available', { gameId, version: state.currentVersion })
+src\App.tsx:1115:        const remotePatchId = pendingPatches[game.id]
+src\App.tsx:1122:  }, [catalog.games, installStates, pendingPatches])
+src\App.tsx:2500:        const remotePatchId = pendingPatches[selectedGame.id]
+src\App.tsx:181:  const [pendingPatches, setPendingPatches] = useState<Record<string, string>>({})
+src\App.tsx:1036:      invoke<string | null>('check_patch_available', { gameId, version: state.currentVersion })
+src\App.tsx:1115:        const remotePatchId = pendingPatches[game.id]
+src\App.tsx:1122:  }, [catalog.games, installStates, pendingPatches])
+src\App.tsx:2500:        const remotePatchId = pendingPatches[selectedGame.id]
+1042:             let _ = clear_current_journal_if_matches(&app_for_thread, &canceled_job_id);
+src-tauri\src\job.rs:1047:                let _ = clear_current_journal_if_matches(&app_for_thread, &canceled_job_id);
+src-tauri\src\job.rs:1060:                let _ = clear_current_journal_if_matches(&app_for_thread, &canceled_job_id);
+src-tauri\src\job.rs:1076:                failed.status = JobStatus::Failed;
+src-tauri\src\job.rs:1162:                    JobStatus::Planned
+src-tauri\src\job.rs:1163:                        | JobStatus::Running
+src-tauri\src\job.rs:1164:                        | JobStatus::Paused
+src-tauri\src\job.rs:1165:                        | JobStatus::Downloading
+src-tauri\src\job.rs:1166:                        | JobStatus::Assembling
+src-tauri\src\job.rs:1167:                        | JobStatus::Verified
+src-tauri\src\job.rs:1168:                        | JobStatus::Failed
+src-tauri\src\job.rs:1227:    if journal.status == JobStatus::Committed
+src-tauri\src\job.rs:1230:        let _ = clear_current_journal_if_matches(app, &journal.id);
+src-tauri\src\job.rs:1911:            let _ = clear_current_journal_if_matches(app, &active.id);
+src-tauri\src\job.rs:1930:    mut journal: JobJournal,
+src-tauri\src\job.rs:1931:) -> Result<JobJournal, JobError> {
+src-tauri\src\job.rs:1944:        JobStatus::Running,
+src-tauri\src\job.rs:1971:    set_step_running(app, &mut journal, 1, JobStatus::Running, "Verify manifests")?;
+src-tauri\src\job.rs:2025:        JobStatus::Downloading,
+src-tauri\src\job.rs:2069:        JobStatus::Assembling,
+src-tauri\src\job.rs:2129:    set_step_running(app, &mut journal, 4, JobStatus::Running, "Finalize")?;
+src-tauri\src\job.rs:2137:    journal.status = JobStatus::Committed;
+src-tauri\src\job.rs:2203:    mut journal: JobJournal,
+src-tauri\src\job.rs:2204:) -> Result<JobJournal, JobError> {
+src-tauri\src\job.rs:2211:    set_step_running(app, &mut journal, 0, JobStatus::Running, "Prepare store")?;
+src-tauri\src\job.rs:2234:    set_step_running(app, &mut journal, 1, JobStatus::Running, "Verify manifests")?;
+src-tauri\src\job.rs:2279:        JobStatus::Downloading,
+src-tauri\src\job.rs:2324:        JobStatus::Assembling,
+src-tauri\src\job.rs:2386:    set_step_running(app, &mut journal, 4, JobStatus::Running, "Finalize")?;
+src-tauri\src\job.rs:2395:    journal.status = JobStatus::Committed;
+src-tauri\src\job.rs:2461:    mut journal: JobJournal,
+src-tauri\src\job.rs:2464:) -> Result<JobJournal, JobError> {
+src-tauri\src\job.rs:2471:    set_step_running(app, &mut journal, 0, JobStatus::Running, "Prepare repair")?;
+src-tauri\src\job.rs:2481:    set_step_running(app, &mut journal, 1, JobStatus::Running, "Plan repair")?;
+src-tauri\src\job.rs:2528:        JobStatus::Downloading,
+src-tauri\src\job.rs:2568:    set_step_running(app, &mut journal, 3, JobStatus::Assembling, "Repair files")?;
+src-tauri\src\job.rs:2624:    set_step_running(app, &mut journal, 4, JobStatus::Running, "Finalize repair")?;
+src-tauri\src\job.rs:2632:    journal.status = JobStatus::Committed;
+src-tauri\src\job.rs:4528:    journal: &mut JobJournal,
+src-tauri\src\job.rs:4549:    journal: &mut JobJournal,
+src-tauri\src\job.rs:4726:    journal: &mut JobJournal,
+src-tauri\src\job.rs:4801:        clear_current_journal_if_matches(app, job_id)?;
+src-tauri\src\job.rs:4813:                let _ = clear_current_journal_if_matches(&app_for_cleanup, job_id);
+src-tauri\src\job.rs:4818:                        let _ = clear_current_journal_if_matches(&app_for_cleanup, job_id);
+src-tauri\src\job.rs:5350:    journal: &JobJournal,
+src-tauri\src\job.rs:5396:    journal: &mut JobJournal,
+src-tauri\src\job.rs:5400:        journal.status = JobStatus::Canceled;
+src-tauri\src\job.rs:5403:        clear_current_journal_if_matches(app, &journal.id)?;
+src-tauri\src\job.rs:5409:        journal.status = JobStatus::Paused;
+src-tauri\src\job.rs:5418:                journal.status = JobStatus::Canceled;
+src-tauri\src\job.rs:5421:                clear_current_journal_if_matches(app, &journal.id)?;
+src-tauri\src\job.rs:5430:        journal.status = JobStatus::Downloading;
+src-tauri\src\job.rs:5441:    journal: &mut JobJournal,
+src-tauri\src\job.rs:5443:    status: JobStatus,
+src-tauri\src\job.rs:5457:    journal: &mut JobJournal,
+src-tauri\src\job.rs:5467:fn mark_running_step_failed(journal: &mut JobJournal) {
+src-tauri\src\job.rs:5480:pub fn read_latest_journal(app: &AppHandle) -> Result<Option<JobJournal>, JobError> {
+src-tauri\src\job.rs:5486:    match serde_json::from_slice::<JobJournal>(&data) {
+src-tauri\src\job.rs:5498:            let _ = app.emit("launcher://job-cleared", ());
+src-tauri\src\job.rs:5509:    let _ = app.emit("launcher://job-cleared", ());
+src-tauri\src\job.rs:5515:fn clear_current_journal_if_matches(
+src-tauri\src\job.rs:5521:        let _ = app.emit("launcher://job-cleared", ());
+src-tauri\src\job.rs:5527:        .and_then(|bytes| serde_json::from_slice::<JobJournal>(&bytes).ok())
+src-tauri\src\job.rs:5532:        let _ = app.emit("launcher://job-cleared", ());
+src-tauri\src\job.rs:5537:fn is_active_real_journal(journal: &JobJournal) -> bool {
+src-tauri\src\job.rs:5540:        JobStatus::Planned
+src-tauri\src\job.rs:5541:            | JobStatus::Running
+src-tauri\src\job.rs:5542:            | JobStatus::Paused
+src-tauri\src\job.rs:5543:            | JobStatus::Downloading
+src-tauri\src\job.rs:5544:            | JobStatus::Assembling
+src-tauri\src\job.rs:5545:            | JobStatus::Verified
+src-tauri\src\job.rs:5546:            | JobStatus::Failed
+src-tauri\src\job.rs:5559:) -> JobJournal {
+src-tauri\src\job.rs:5561:    JobJournal {
+src-tauri\src\job.rs:5565:        status: JobStatus::Planned,
+src-tauri\src\job.rs:5602:fn append_log(journal: &mut JobJournal, level: &str, message: &str) {
+src-tauri\src\job.rs:5615:fn touch(journal: &mut JobJournal) {
+src-tauri\src\job.rs:5619:fn persist_and_emit(app: &AppHandle, journal: &JobJournal) -> Result<(), JobError> {
+src-tauri\src\job.rs:5637:    let _ = app.emit("launcher://job", journal);
+src-tauri\src\job.rs:5865:) -> Result<JobJournal, JobError> {
+src-tauri\src\job.rs:5899:            let _ = clear_current_journal_if_matches(&app_for_thread, &canceled_job_id);
+src-tauri\src\job.rs:5904:                let _ = clear_current_journal_if_matches(&app_for_thread, &final_journal.id);
+src-tauri\src\job.rs:5908:                errored.status = JobStatus::Failed;
+src-tauri\src\job.rs:5910:                errored.status = JobStatus::Failed;
+src-tauri\src\job.rs:5913:                let _ = clear_current_journal_if_matches(&app_for_thread, &errored.id);
+src-tauri\src\job.rs:5924:    mut journal: JobJournal,
+src-tauri\src\job.rs:5925:) -> Result<JobJournal, JobError> {
+src-tauri\src\job.rs:5942:    journal: &mut JobJournal,
+src-tauri\src\job.rs:6044:    journal.status = JobStatus::Committed;
+1043:               const currentJob = latestJobRef.current
+1044:               if (!currentJob || currentJob.status !== 'running') {
+1045:                 invoke<JobJournal>('start_patch_job', {
+1046:             delete autoPatchAttemptRef.current[gameId]
+src\App.tsx:1052:            if (autoPatchAttemptRef.current[gameId] === patchId) {
+src\App.tsx:1053:              delete autoPatchAttemptRef.current[gameId]
+src\App.tsx:1059:          const hasActivePatchJob =
+src\App.tsx:1066:          if (hasActivePatchJob || autoPatchAttemptRef.current[gameId] === patchId) {
+src\App.tsx:1070:          autoPatchAttemptRef.current[gameId] = patchId
+src-tauri\src\job.rs:1173:fn remove_dir_all_with_retry(path: &Path, attempts: usize) -> Result<(), JobError> {
+src-tauri\src\job.rs:1181:        match fs::remove_dir_all(path) {
+src-tauri\src\job.rs:1243:    let _ = remove_dir_all_with_retry(&downloading_root, 24);
+src-tauri\src\job.rs:1915:    let _ = remove_dir_all_with_retry(&downloading_root, 24);
+src-tauri\src\job.rs:4815:            match fs::remove_dir_all(&downloading_root) {
+src-tauri\src\job.rs:4851:    remove_dir_all_with_retry(downloading_root, 24)
+src-tauri\src\job.rs:5859:pub fn spawn_patch_job(
+src-tauri\src\job.rs:5970:            append_log(journal, "error", &format!("[Patch fix] Could not load patch manifest: {err}"));
+1047:                 let _ = clear_current_journal_if_matches(&app_for_thread, &canceled_job_id);
+1058:            const currentJob = latestJobRef.current
+ 1059:           const hasActivePatchJob =
+ 1060:             currentJob !== null &&
+ 1061:             currentJob.id !== 'idle' &&
+ 1062:             currentJob.kind === 'patch' &&
+ 1063:             currentJob.gameId === gameId &&
+ 1064:             currentJob.toVersion === state.currentVersion &&
+ 1065:             ['planned', 'running', 'paused', 'downloading', 'assembling', 'verified'].includes(currentJob.status)
+ 1066: 
+ 1067:           if (hasActivePatchJob || autoPatchAttemptRef.current[gameId] === patchId) {
+1060:      }
+ 1061:   }
+ 1062: 
+ 1063:   useEffect(() => {
+ 1064:     if (!isTauriRuntime() || catalog.games.length === 0) {
+ 1065:       return
+ 1066:     }
+ 1067: 
+ 1068:     let disposed = false
+ 1069:     const gameIds = catalog.games.map((game) => game.id)
+ 1070:     invoke<GameInstallState[]>('get_game_install_states', { gameIds })
+ 1071:       .then((states) => {
+ 1072:         if (disposed) return
+ 1073:         const next: Record<string, GameInstallState> = {}
+ 1074:         for (const state of states) {
+ 1075:           next[state.gameId] = state
+ 1076:         }
+ 1077:         setInstallStates(next)
+ 1078:       })
+ 1079:       .catch(() => {
+ 1080:         // Compatibility fallback for older backends: stagger single calls so the
+ 1081:         // WebView is not hammered by N simultaneous IPC requests at startup.
+ 1082:         gameIds.forEach((gameId, index) => {
+ 1083:           window.setTimeout(() => {
+ 1084:             if (!disposed) void refreshInstallState(gameId).catch(() => undefined)
+ 1085:           }, index * 120)
+ 1086:         })
+ 1087:       })
+ 1088: 
+ 1089:     return () => {
+ 1090:       disposed = true
+ 1091:     }
+ 1092:   }, [catalog.games])
+ 1093: 
+ 1094:   const updateReadyGameIds = useMemo(() => {
+ 1095:     return catalog.games
+ 1096:       .filter((game) => {
+ 1097:         const state = installStates[game.id]
+ 1098:         if (!state?.installed || state.currentVersion === 'unknown' || state.currentVersion === 'not installed') {
+ 1099:           return false
+ 1100:         }
+ 1101:         
+ 1102:         const latest = 
+ 1103:           game.availableVersions.find((version) => version.latest)?.version ||
+ 1104:           (game.availableVersions.length === 1 ? game.availableVersions[0].version : '') ||
+ 1105:           game.latestVersion
+ 1106:         
+ 1107:         // If the local state is 'installed' (unknown version string), and the game only has 1 version, assume it's up-to-date
+ 1108:         if (state.currentVersion === 'installed' && game.availableVersions.length <= 1) {
+ 1109:           return false
+ 1110:         }
+ 1111: 
+ 1112:         const isVersionMismatch = Boolean(latest && latest !== 'unknown' && state.currentVersion !== latest)
+ 1113:         
+ 1114:         // Check if there is a pending patch (meaning a patch is available and it hasn't been applied yet)
+ 1115:         const remotePatchId = pendingPatches[game.id]
+ 1116:         const localPatchId = state.appliedPatchId
+ 1117:         const hasPendingPatch = Boolean(remotePatchId && remotePatchId !== localPatchId)
+ 1118: 
+ 1119:         return isVersionMismatch || hasPendingPatch
+ 1120:       })
+ 1121:       .map((game) => game.id)
+ 1122:   }, [catalog.games, installStates, pendingPatches])
+ 1123:   const updatesCatalog = useMemo(
+ 1124:     () => ({ ...catalog, games: catalog.games.filter((game) => updateReadyGameIds.includes(game.id)) }),
+ 1125:     [catalog, updateReadyGameIds],
+ 1126:   )
+ 1127:   const { mapping } = useSteamAppIds()
+ 1128:   const [steamInstalledAppIds, setSteamInstalledAppIds] = useState<number[]>([])
+ 1129:   const [steamBuildIds, setSteamBuildIds] = useState<Record<number, string>>({})
+ 1130: 
+1070:     invoke<GameInstallState[]>('get_game_install_states', { gameIds })
+1076:                 failed.status = JobStatus::Failed;
+src-tauri\src\job.rs:1162:                    JobStatus::Planned
+src-tauri\src\job.rs:1163:                        | JobStatus::Running
+src-tauri\src\job.rs:1164:                        | JobStatus::Paused
+src-tauri\src\job.rs:1165:                        | JobStatus::Downloading
+src-tauri\src\job.rs:1166:                        | JobStatus::Assembling
+src-tauri\src\job.rs:1167:                        | JobStatus::Verified
+src-tauri\src\job.rs:1168:                        | JobStatus::Failed
+src-tauri\src\job.rs:1227:    if journal.status == JobStatus::Committed
+src-tauri\src\job.rs:1944:        JobStatus::Running,
+src-tauri\src\job.rs:1971:    set_step_running(app, &mut journal, 1, JobStatus::Running, "Verify manifests")?;
+src-tauri\src\job.rs:2025:        JobStatus::Downloading,
+src-tauri\src\job.rs:2069:        JobStatus::Assembling,
+src-tauri\src\job.rs:2129:    set_step_running(app, &mut journal, 4, JobStatus::Running, "Finalize")?;
+src-tauri\src\job.rs:2137:    journal.status = JobStatus::Committed;
+src-tauri\src\job.rs:2211:    set_step_running(app, &mut journal, 0, JobStatus::Running, "Prepare store")?;
+src-tauri\src\job.rs:2234:    set_step_running(app, &mut journal, 1, JobStatus::Running, "Verify manifests")?;
+src-tauri\src\job.rs:2279:        JobStatus::Downloading,
+src-tauri\src\job.rs:2324:        JobStatus::Assembling,
+src-tauri\src\job.rs:2386:    set_step_running(app, &mut journal, 4, JobStatus::Running, "Finalize")?;
+src-tauri\src\job.rs:2395:    journal.status = JobStatus::Committed;
+src-tauri\src\job.rs:2471:    set_step_running(app, &mut journal, 0, JobStatus::Running, "Prepare repair")?;
+src-tauri\src\job.rs:2481:    set_step_running(app, &mut journal, 1, JobStatus::Running, "Plan repair")?;
+src-tauri\src\job.rs:2528:        JobStatus::Downloading,
+src-tauri\src\job.rs:2568:    set_step_running(app, &mut journal, 3, JobStatus::Assembling, "Repair files")?;
+src-tauri\src\job.rs:2624:    set_step_running(app, &mut journal, 4, JobStatus::Running, "Finalize repair")?;
+src-tauri\src\job.rs:2632:    journal.status = JobStatus::Committed;
+src-tauri\src\job.rs:5400:        journal.status = JobStatus::Canceled;
+src-tauri\src\job.rs:5409:        journal.status = JobStatus::Paused;
+src-tauri\src\job.rs:5418:                journal.status = JobStatus::Canceled;
+src-tauri\src\job.rs:5430:        journal.status = JobStatus::Downloading;
+src-tauri\src\job.rs:5443:    status: JobStatus,
+src-tauri\src\job.rs:5540:        JobStatus::Planned
+src-tauri\src\job.rs:5541:            | JobStatus::Running
+src-tauri\src\job.rs:5542:            | JobStatus::Paused
+src-tauri\src\job.rs:5543:            | JobStatus::Downloading
+src-tauri\src\job.rs:5544:            | JobStatus::Assembling
+src-tauri\src\job.rs:5545:            | JobStatus::Verified
+src-tauri\src\job.rs:5546:            | JobStatus::Failed
+src-tauri\src\job.rs:5565:        status: JobStatus::Planned,
+src-tauri\src\job.rs:5908:                errored.status = JobStatus::Failed;
+src-tauri\src\job.rs:5910:                errored.status = JobStatus::Failed;
+src-tauri\src\job.rs:6044:    journal.status = JobStatus::Committed;
+src\types.ts:7:export type JobStatus =
+src\types.ts:50:  status: JobStatus
+1077:         setInstallStates(next)
+1084:             if (!disposed) void refreshInstallState(gameId).catch(() => undefined)
+1097:         const state = installStates[game.id]
+1116:         const localPatchId = state.appliedPatchId
+1118:  [    return catalog.games]
+ 1119: [      .filter((game) => {]
+ 1120: [        const state = installStates[game.id]]
+ 1121: [        if (!state?.installed || state.currentVersion === 'unknown' || state.currentVersion === 'not installed') {]
+ 1122: [          return false]
+ 1123: [        }]
+ 1124: [        ]
+ 1125: [        const latest = ]
+ 1126: [          game.availableVersions.find((version) => version.latest)?.version ||]
+ 1127: [          (game.availableVersions.length === 1 ? game.availableVersions[0].version : '') ||]
+ 1128: [          game.latestVersion]
+ 1129: [        ]
+ 1130: [        // If the local state is 'installed' (unknown version string), and the game only has 1 version, assume it's up-to-date]
+ 1131: [        if (state.currentVersion === 'installed' && game.availableVersions.length <= 1) {]
+ 1132: [          return false]
+ 1133: [        }]
+ 1134: []
+ 1135: [        const isVersionMismatch = Boolean(latest && latest !== 'unknown' && state.currentVersion !== latest)]
+ 1136: [        ]
+ 1137: [        // Check if there is a pending patch (meaning a patch is available and it hasn't been applied yet)]
+ 1138: [        const remotePatchId = pendingPatches[game.id]]
+ 1139: [        const localPatchId = state.appliedPatchId]
+ 1140: [        const hasPendingPatch = Boolean(remotePatchId && remotePatchId !== localPatchId)]
+1122:   }, [catalog.games, installStates, pendingPatches])
+1162:         const isLocal = installStates[game.id]?.installed
+1168:     [catalog, installStates, mapping, steamInstalledAppIds],
+1177: 4
+     |
+1177 | fn steam_api_key() -> String {
+     |    ^^^^^^^^^^^^^
+
+warning: function `transcode_stream_preview` is never used
+   --> src\asset_pack.rs:951:4
+    |
+951 | fn transcode_stream_preview(url: &str, id: &str) -> Option<Vec<u8>> {
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `safe_temp_stem` is never used
+    --> src\asset_pack.rs:1008:4
+     |
+1008 | fn safe_temp_stem(value: &str) -> String {
+     |    ^^^^^^^^^^^^^^
+
+warning: field `icon_url` is never read
+   --> src\asset_pack\model.rs:203:16
+    |
+199 | pub(super) struct RemoteAchievement {
+    |                   ----------------- field in this struct
+...
+203 |     pub(super) icon_url: String,
+    |                ^^^^^^^^
+    |
+    = note: `RemoteAchievement` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+
+warning: struct `TokenRequest` is never constructed
+  --> src\cloud_redirect_v2\oauth.rs:37:8
+   |
+37 | struct TokenRequest {
+   |        ^^^^^^^^^^^^
+
+warning: method `default_downloading_game_dir` is never used
+    --> src\job.rs:2914:8
+     |
+2835 | impl DepotSource {
+     | ---------------- method in this implementation
+...
+2914 |     fn default_downloading_game_dir(&self) -> PathBuf {
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `load_manifest_pair` is never used
+    --> src\job.rs:4006:4
+     |
+4006 | fn load_manifest_pair(
+     |    ^^^^^^^^^^^^^^^^^^
+
+warning: function `cleanup_empty_owned_download_dirs` is never used
+    --> src\job.rs:4870:4
+     |
+4870 | fn cleanup_empty_owned_download_dirs(downloading_root: &Path) -> Result<(), JobError> {
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `VC_REDIST_X86` is never used
+  --> src\job\dependencies.rs:93:7
+   |
+93 | const VC_REDIST_X86: DependencySpec = DependencySpec {
+   |       ^^^^^^^^^^^^^
+
+warning: function `remote_repo_prefix` is never used
+   --> src\job\paths.rs:189:15
+    |
+189 | pub(super) fn remote_repo_prefix(game_id: &str) -> String {
+    |               ^^^^^^^^^^^^^^^^^^
+
+warning: function `write_u64_le` is never used
+  --> src\steamless.rs:75:4
+   |
+75 | fn write_u64_le(data: &mut [u8], offset: usize, val: u64) {
+   |    ^^^^^^^^^^^^
+
+warning: function `xtea_decrypt_pass2` is never used
+   --> src\steamless.rs:247:4
+    |
+247 | fn xtea_decrypt_pass2(keys: &[u32; 4], v1: u32, v2: u32, n: u32) -> (u32, u32) {
+    |    ^^^^^^^^^^^^^^^^^^
+
+warning: function `steam_drmp_decrypt` is never used
+   --> src\steamless.rs:268:4
+    |
+268 | fn steam_drmp_decrypt(data: &mut [u8], keys: &[u32; 4]) {
+    |    ^^^^^^^^^^^^^^^^^^
+
+warning: fields `drmp_dll_offset`, `drmp_dll_size`, `code_section_raw_size`, and `encryption_keys` are never read
+   --> src\steamless.rs:316:5
+    |
+306 | struct SteamStub64Var31 {
+    |        ---------------- fields in this struct
+...
+316 |     drmp_dll_offset: u32,
+    |     ^^^^^^^^^^^^^^^
+317 |     drmp_dll_size: u32,
+    |     ^^^^^^^^^^^^^
+...
+323 |     code_section_raw_size: u64,
+    |     ^^^^^^^^^^^^^^^^^^^^^
+...
+327 |     encryption_keys: [u32; 4],
+    |     ^^^^^^^^^^^^^^^
+    |
+    = note: `SteamStub64Var31` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: `first-light-smart-launcher` (lib) generated 34 warnings (run `cargo fix --lib -p first-light-smart-launcher` to apply 11 suggestions)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 4.80s
+1180:       const isLocal = installStates[selectedGameId]?.installed
+1185:     const activeJobGameId = job?.gameId || snapshot.lastJob?.gameId
+src\App.tsx:1193:          : snapshot.lastJob?.kind === 'update'
+src\App.tsx:1194:            ? snapshot.lastJob.gameId
+src\App.tsx:1202:  }, [activeTab, installStates, job?.gameId, job?.kind, snapshot.lastJob?.gameId, snapshot.lastJob?.kind, selectedGameId, updateReadyGameIds])
+src\App.tsx:1425:          setJob(next.lastJob)
+src\App.tsx:1933:      setJob(planned.lastJob)
+src\App.tsx:1968:      setJob(planned.lastJob)
+src\lib\installPaths.ts:28:  lastJob: null,
+src\components\downloads.tsx:8:function lastJobError(job: JobJournal) {
+src\components\downloads.tsx:89:            {failed ? lastJobError(job) : `${phaseProgress.name} - ${phaseProgress.detail}`}
+src-tauri\src\lib.rs:577:fn read_job_journal(app: AppHandle) -> Result<Option<JobJournal>, String> {
+src-tauri\src\lib.rs:1013:            read_job_journal,
+src-tauri\src\job.rs:2001:    configure_download_metrics(&mut journal, &missing_chunks, direct_stage.is_some());
+src-tauri\src\job.rs:2039:        observe_download_progress(&mut journal, &progress, in_flight.values().copied().sum());
+src-tauri\src\job.rs:2249:    configure_download_metrics(&mut journal, &missing_chunks, direct_stage.is_some());
+src-tauri\src\job.rs:2294:        observe_download_progress(&mut journal, &progress, in_flight.values().copied().sum());
+src-tauri\src\job.rs:2499:    configure_download_metrics(&mut journal, &missing_chunks, direct_stage.is_some());
+src-tauri\src\job.rs:2542:        observe_download_progress(&mut journal, &progress, in_flight.values().copied().sum());
+src-tauri\src\job.rs:4797:    // Remove current-job.json immediately so the Downloads tab clears at once.
+src-tauri\src\job.rs:5490:            // malformed current-job.json permanently trap the launcher in Downloads.
+src-tauri\src\job.rs:5492:                "current-job.corrupt-{}.json",
+src-tauri\src\job.rs:5646:        .join("current-job.json"))
+1202:   }, [activeTab, installStates, job?.gameId, job?.kind, snapshot.lastJob?.gameId, snapshot.lastJob?.kind, selectedGameId, updateReadyGameIds])
+1215:          }
+ 1216:     }
+ 1217: 
+ 1218:     Err(last_error
+ 1219:         .unwrap_or_else(|| std::io::Error::new(std::io::ErrorKind::Other, "file cleanup failed"))
+ 1220:         .into())
+ 1221: }
+ 1222: 
+ 1223: fn clear_completed_journal_for_game(app: &AppHandle, game_id: &str) {
+ 1224:     let Ok(Some(journal)) = read_latest_journal(app) else {
+ 1225:         return;
+ 1226:     };
+ 1227:     if journal.status == JobStatus::Committed
+ 1228:         && sanitize_game_id(&journal.game_id) == sanitize_game_id(game_id)
+ 1229:     {
+ 1230:         let _ = clear_current_journal_if_matches(app, &journal.id);
+ 1231:     }
+ 1232: }
+ 1233: 
+ 1234: fn cleanup_completed_download_data_if_idle(
+ 1235:     app: &AppHandle,
+1223: fn clear_completed_journal_for_game(app: &AppHandle, game_id: &str) {
+1227:     if journal.status == JobStatus::Committed
+1230:         let _ = clear_current_journal_if_matches(app, &journal.id);
+1250:      if let Some((install_root, marker)) = resolved {
+ 1251:         let launch_executable = marker
+ 1252:             .launch_executable
+ 1253:             .clone()
+ 1254:             .unwrap_or_else(|| default_launch_executable(&source.game_id));
+ 1255:         let current_version = if marker.version.is_empty() {
+ 1256:             "installed".to_string()
+ 1257:         } else {
+ 1258:             marker.version.clone()
+ 1259:         };
+ 1260: 
+ 1261:         write_sanitized_install_marker(&install_root, &source, &marker, &launch_executable)?;
+ 1262:         crate::platform::register_install(
+ 1263:             app,
+ 1264:             &source.game_id,
+ 1265:             &install_root,
+ 1266:             &current_version,
+ 1267:             &launch_executable,
+ 1268:         )
+ 1269:         .map_err(JobError::Depot)?;
+ 1270: 
+ 1271:         if read_installed_manifest(&install_root)?.is_none() {
+ 1272:             if let Ok(catalog) = source.load_local_catalog() {
+ 1273:                 if let Ok(manifest) = source.load_local_manifest(&catalog, &marker.version) {
+ 1274:                     let _ = write_installed_manifest(&install_root, &manifest);
+ 1275:                 }
+ 1276:             }
+ 1277:         }
+ 1278: 
+ 1279:         // Also repairs installs completed by an older launcher build: clear a
+ 1280:         // stale committed journal and remove its completed downloading folder.
+ 1281:         clear_completed_journal_for_game(app, &source.game_id);
+ 1282:         cleanup_completed_download_data_if_idle(app, &install_root, &source);
+ 1283: 
+ 1284:         return Ok(GameInstallState {
+ 1285:             game_id: source.game_id,
+ 1286:             installed: install_root.exists(),
+ 1287:             current_version,
+ 1288:             install_path: install_root.display().to_string(),
+ 1289:             launch_executable,
+ 1290:             applied_patch_id: marker.applied_patch_id.clone(),
+1281:         clear_completed_journal_for_game(app, &source.game_id);
+1290:             applied_patch_id: marker.applied_patch_id.clone(),
+src-tauri\src\job.rs:1301:        applied_patch_id: None,
+src-tauri\src\job.rs:2780:    applied_patch_id: Option<String>,
+src-tauri\src\job.rs:5145:        applied_patch_id: None,
+src-tauri\src\job.rs:5291:        applied_patch_id: marker.applied_patch_id.clone(),
+src-tauri\src\job.rs:5875:pub fn spawn_patch_job(
+src-tauri\src\job.rs:5911:        let result = run_real_patch_job(&app_for_thread, control_for_thread.clone(), initial.clone());
+src-tauri\src\job.rs:5920:                // Keep the terminal patch journal so the frontend can observe
+src-tauri\src\job.rs:5921:                // `committed`, refresh GameInstallState, and read applied_patch_id.
+src-tauri\src\job.rs:5940:fn run_real_patch_job(
+src-tauri\src\job.rs:5976:    manifest_errors_are_fatal: bool,
+src-tauri\src\job.rs:5995:            if manifest_errors_are_fatal {
+src-tauri\src\job.rs:6091:        marker.applied_patch_id = Some(patch_manifest.created_at.clone());
+src\App.tsx:182:  const autoPatchAttemptRef = useRef<Record<string, string>>({})
+src\App.tsx:1046:            delete autoPatchAttemptRef.current[gameId]
+src\App.tsx:1052:            if (autoPatchAttemptRef.current[gameId] === patchId) {
+src\App.tsx:1053:              delete autoPatchAttemptRef.current[gameId]
+src\App.tsx:1059:          const hasActivePatchJob =
+src\App.tsx:1067:          if (hasActivePatchJob || autoPatchAttemptRef.current[gameId] === patchId) {
+src\App.tsx:1071:          autoPatchAttemptRef.current[gameId] = patchId
+1299:       setInstallStates((current) => ({
+1369:     const state = installStates[selectedGame.id]
+1390:   }, [installStates, preferences.defaultLibraryRoot, selectedGame])
+1410:        requestGameAsset(selectedGame, assetId, true)
+ 1411:     }
+ 1412:   }, [activeDetail, requestGameAsset, selectedGame])
+ 1413: 
+ 1414:   useEffect(() => {
+ 1415:     if (!isTauriRuntime()) {
+ 1416:       return
+ 1417:     }
+ 1418: 
+ 1419:     let disposed = false
+ 1420:     const snapshotTimer = window.setTimeout(() => {
+ 1421:       invoke<Snapshot>('get_launcher_snapshot')
+ 1422:         .then((next) => {
+ 1423:           if (disposed) return
+ 1424:           setSnapshot(next)
+ 1425:           setJob(next.lastJob)
+ 1426:           if (next.detectedInstallPath) {
+ 1427:             setInstallPath(next.detectedInstallPath)
+ 1428:             setInstallRoot(next.detectedInstallPath)
+ 1429:             setHasScanned(next.currentVersion !== 'unknown' && next.currentVersion !== 'not installed')
+ 1430:             setScanStatus(`0xoLemon store install recognized (${next.currentVersion})`)
+1430:              setScanStatus(`0xoLemon store install recognized (${next.currentVersion})`)
+ 1431:           }
+ 1432:         })
+ 1433:         .catch(() => {
+ 1434:           if (!disposed) setSnapshot(fallbackSnapshot)
+ 1435:         })
+ 1436:     }, 250)
+ 1437: 
+ 1438:     let unsubscribe: (() => void) | undefined
+ 1439:     let unsubscribeJobCleared: (() => void) | undefined
+ 1440:     listen<JobJournal>('launcher://job', (event) => {
+ 1441:       const nextJob = event.payload
+ 1442:       if (canceledJobIdRef.current === nextJob.id) {
+ 1443:         return
+ 1444:       }
+ 1445:       if (canceledJobIdRef.current && canceledJobIdRef.current !== nextJob.id) {
+ 1446:         canceledJobIdRef.current = null
+ 1447:       }
+ 1448:       setJob(nextJob)
+ 1449:       // Clear the resume loading state as soon as backend confirms the job is running
+ 1450:       if (nextJob.status === 'running' || nextJob.status === 'downloading' || nextJob.status === 'assembling') {
+ 1451:         setIsResuming(false)
+ 1452:       }
+ 1453:       if (
+ 1454:         selectedGameIdRef.current === nextJob.gameId &&
+ 1455:         nextJob.toVersion &&
+ 1456:         nextJob.toVersion !== 'unknown'
+ 1457:       ) {
+ 1458:         // The job target is authoritative while install/update/repair is active.
+ 1459:         // Keep the picker on that exact version instead of letting a delayed
+ 1460:         // planning response or an old marker make the UI jump backwards.
+ 1461:         setSelectedVersion(nextJob.toVersion)
+ 1462:       }
+ 1463:       if (nextJob.status === 'committed') {
+ 1464:         playInstallCompleteSound(nextJob)
+ 1465:         const gameTitle =
+ 1466:           catalogRef.current.games.find((game) => game.id === nextJob.gameId)?.title ??
+ 1467:           nextJob.gameId
+ 1468:         void publishNotification({
+ 1469:           category: 'installs',
+ 1470:           severity: 'success',
+ 1471:           title:
+ 1472:             nextJob.kind === 'install'
+ 1473:               ? `${gameTitle} installed`
+ 1474:               : nextJob.kind === 'repair'
+ 1475:                 ? `${gameTitle} repaired`
+ 1476:                 : `${gameTitle} updated`,
+ 1477:           message: `Version ${nextJob.toVersion} committed successfully.`,
+ 1478:           dedupeKey: `job:${nextJob.id}:committed`,
+ 1479:           entity: { kind: 'game', id: nextJob.gameId },
+ 1480:           action: { kind: 'open-game', tab: 'Library', gameId: nextJob.gameId },
+ 1481:         })
+ 1482:         setInstallPath(nextJob.installPath)
+ 1483:         setInstallRoot(nextJob.installPath)
+ 1484:         setHasScanned(true)
+ 1485:         setScanStatus(`${nextJob.kind === 'install' ? 'Installed' : 'Updated'} ${nextJob.toVersion}`)
+ 1486:         setShowInstallOptions(false)
+ 1487:         setInstallStates((current) => ({
+ 1488:           ...current,
+ 1489:           [nextJob.gameId]: {
+ 1490:             gameId: nextJob.gameId,
+ 1491:             installed: true,
+ 1492:             currentVersion: nextJob.toVersion,
+ 1493:             installPath: nextJob.installPath,
+ 1494:             launchExecutable: current[nextJob.gameId]?.launchExecutable ?? '',
+ 1495:           },
+ 1496:         }))
+ 1497:         window.setTimeout(() => {
+ 1498:           void refreshInstallState(nextJob.gameId, nextJob.installPath).catch(() => undefined)
+ 1499:         }, 350)
+ 1500:         // Auto-cache the 4 key image assets for offline use (only remote URLs)
+ 1501:         window.setTimeout(() => {
+ 1502:           const installedGame = catalogRef.current.games.find((g) => g.id === nextJob.gameId)
+ 1503:           if (installedGame && isTauriRuntime()) {
+ 1504:             const assetIdsToCache = [
+ 1505:               installedGame.gridAssetId,
+ 1506:               installedGame.heroAssetId,
+ 1507:               installedGame.logoAssetId,
+ 1508:               installedGame.iconAssetId,
+ 1509:             ].filter((id): id is string => Boolean(id) && (id.startsWith('http://') || id.startsWith('https://')))
+ 1510:             for (const assetId of assetIdsToCache) {
+ 1511:               invoke('cache_remote_asset', { url: assetId, gameId: nextJob.gameId, assetId }).catch(() => undefined)
+ 1512:             }
+ 1513:           }
+ 1514:         }, 2000)
+ 1515:         setSnapshot((current) => ({
+ 1516:           ...current,
+ 1517:           currentVersion: nextJob.toVersion,
+ 1518:           detectedInstallPath: nextJob.installPath,
+ 1519:           updateSize: 0,
+ 1520:           changedFiles: [],
+ 1521:         }))
+ 1522:         setVerifyStatus((current) => {
+ 1523:           if (current?.gameId === nextJob.gameId) {
+ 1524:             return nextJob.kind === 'repair'
+ 1525:               ? { ...current, state: 'ok', message: 'Repair completed successfully.', percent: 1 }
+ 1526:               : null
+ 1527:           }
+ 1528:           return current
+ 1529:         })
+ 1530:       } else if (nextJob.status === 'failed' || nextJob.status === 'canceled') {
+ 1531:         const gameTitle =
+ 1532:           catalogRef.current.games.find((game) => game.id === nextJob.gameId)?.title ??
+ 1533:           nextJob.gameId
+ 1534:         void publishNotification({
+ 1535:           category: nextJob.status === 'failed' ? 'errors' : 'downloads',
+ 1536:           severity: nextJob.status === 'failed' ? 'error' : 'warning',
+ 1537:           title: `${titleCase(nextJob.kind)} ${nextJob.status}`,
+ 1538:           message: `${gameTitle} ${nextJob.kind} job ${nextJob.status}.`,
+ 1539:           dedupeKey: `job:${nextJob.id}:${nextJob.status}`,
+ 1540:           entity: { kind: 'job', id: nextJob.id },
+ 1541:           action: { kind: 'open-downloads', tab: 'Downloads', gameId: nextJob.gameId },
+ 1542:         })
+ 1543:         setVerifyStatus((current) => {
+ 1544:           if (current?.gameId === nextJob.gameId && current.state === 'running') {
+ 1545:             return {
+ 1546:               ...current,
+ 1547:               state: 'failed',
+ 1548:               message: `Repair ${nextJob.status}.`,
+ 1549:             }
+ 1550:           }
+ 1551:           return current
+ 1552:         })
+ 1553:       }
+ 1554:     }).then((fn) => {
+ 1555:       if (disposed) {
+ 1556:         fn()
+ 1557:       } else {
+ 1558:         unsubscribe = fn
+ 1559:       }
+ 1560:     })
+ 1561: 
+ 1562:     listen('launcher://job-cleared', () => {
+ 1563:       setJob(null)
+ 1564:       setDownloadRate(0)
+ 1565:       downloadRateWindowRef.current = null
+ 1566:       setVerifyStatus((current) => (current?.state === 'running' ? null : current))
+ 1567:     }).then((fn) => {
+ 1568:       if (disposed) {
+ 1569:         fn()
+ 1570:       } else {
+ 1571:         unsubscribeJobCleared = fn
+ 1572:       }
+ 1573:     })
+ 1574: 
+ 1575:     return () => {
+ 1576:       disposed = true
+ 1577:       window.clearTimeout(snapshotTimer)
+ 1578:       unsubscribe?.()
+ 1579:       unsubscribeJobCleared?.()
+ 1580:     }
+ 1581:   }, [playInstallCompleteSound, publishNotification])
+ 1582: 
+ 1583:   useEffect(() => {
+ 1584:     if (!isTauriRuntime()) return
+ 1585: 
+1440:     listen<JobJournal>('launcher://job', (event) => {
+1487:         setInstallStates((current) => ({
+1498:           void refreshInstallState(nextJob.gameId, nextJob.installPath).catch(() => undefined)
+1562:     listen('launcher://job-cleared', () => {
+1599:       const current = latestJobRef.current
+1626:       if (canAutoResume(latestJobRef.current)) {
+1680:          unsubscribe = fn
+ 1681:       }
+ 1682:     })
+ 1683: 
+ 1684:     return () => {
+ 1685:       disposed = true
+ 1686:       unsubscribe?.()
+ 1687:     }
+ 1688:   }, [])
+ 1689: 
+ 1690:   const activeJob = job ?? createIdleJob(snapshot)
+ 1691:   latestJobRef.current = activeJob
+ 1692: 
+ 1693:   useEffect(() => {
+ 1694:     if (activeJob.status !== 'downloading') {
+ 1695:       downloadRateWindowRef.current = null
+ 1696:       return
+ 1697:     }
+ 1698: 
+ 1699:     const sampleWindowMs = 10_000
+ 1700:     const tick = () => {
+ 1701:       const current = latestJobRef.current
+ 1702:       if (!current || current.status !== 'downloading' || current.id !== activeJob.id) {
+ 1703:         return
+ 1704:       }
+ 1705: 
+ 1706:       const now = performance.now()
+ 1707:       let windowState = downloadRateWindowRef.current
+ 1708:       if (!windowState || windowState.jobId !== current.id) {
+ 1709:         windowState = { jobId: current.id, points: [] }
+ 1710:       }
+ 1711: 
+ 1712:       const lastPoint = windowState.points[windowState.points.length - 1]
+ 1713:       if (!lastPoint || current.bytesDone !== lastPoint.bytesDone || now - lastPoint.at >= 900) {
+ 1714:         windowState.points.push({ bytesDone: current.bytesDone, at: now })
+ 1715:       }
+ 1716:       windowState.points = windowState.points.filter((point) => now - point.at <= sampleWindowMs)
+ 1717:       if (windowState.points.length > 12) {
+ 1718:         windowState.points.splice(0, windowState.points.length - 12)
+ 1719:       }
+ 1720:       downloadRateWindowRef.current = windowState
+ 1721: 
+ 1722:       const first = windowState.points[0]
+ 1723:       const last = windowState.points[windowState.points.length - 1]
+ 1724:       const elapsedMs = last && first ? last.at - first.at : 0
+ 1725:       const transferred = last && first ? Math.max(last.bytesDone - first.bytesDone, 0) : 0
+1690:   const activeJob = job ?? createIdleJob(snapshot)
+src\lib\jobProgress.ts:4:export function createIdleJob(snapshot: Snapshot): JobJournal {
+src\App_backup.tsx:28:import { createIdleJob, getPhaseProgress } from './lib/jobProgress'
+src\App_backup.tsx:564:  const activeJob = job ?? createIdleJob(snapshot)
+src\App.tsx:56:import { createIdleJob, getPhaseProgress } from './lib/jobProgress'
+src\App.tsx:1690:  const activeJob = job ?? createIdleJob(snapshot)
+1691:   latestJobRef.current = activeJob
+1701:       const current = latestJobRef.current
+1738:   const selectedInstallState = selectedGame ? installStates[selectedGame.id] : undefined
+1911:             let _ = clear_current_journal_if_matches(app, &active.id);
+1915:        return
+ 1916:     }
+ 1917: 
+ 1918:     try {
+ 1919:       const gameId = selectedGame.id
+ 1920:       const [report, planned] = await Promise.all([
+ 1921:         invoke<{ fileCount: number; detectedVersion?: string | null; warnings: string[] }>('scan_install', {
+ 1922:           path,
+ 1923:         }),
+ 1924:         invoke<Snapshot>('plan_install_update', { path, targetVersion, gameId }),
+ 1925:       ])
+ 1926:       const plannedVersion =
+ 1927:         planned.currentVersion !== 'unknown' && planned.currentVersion !== 'not installed'
+ 1928:           ? planned.currentVersion
+ 1929:           : report.detectedVersion
+ 1930:       const versionLabel = plannedVersion ? `installed ${plannedVersion}` : 'version state not found'
+ 1931:       setScanStatus(`${report.fileCount} files, ${versionLabel}`)
+ 1932:       setSnapshot(planned)
+ 1933:       setJob(planned.lastJob)
+ 1934:       setHasScanned(Boolean(plannedVersion))
+ 1935:     } catch (error) {
+ 1936:       setScanStatus(String(error))
+ 1937:       setHasScanned(false)
+ 1938:     }
+ 1939:   }
+ 1940: 
+ 1941:   async function changeTargetVersion(version: string) {
+ 1942:     if (!selectedGame) {
+ 1943:       setScanStatus('Select a game first')
+ 1944:       return
+ 1945:     }
+ 1946:     const gameId = selectedGame.id
+ 1947:     const requestSequence = ++versionPlanSequenceRef.current
+ 1948:     setSelectedVersion(version)
+ 1949:     if (!isTauriRuntime()) {
+ 1950:       return
+ 1951:     }
+ 1952: 
+ 1953:     try {
+ 1954:       const planned = selectedInstalled
+ 1955:         ? await invoke<Snapshot>('plan_install_update', {
+ 1956:           path: selectedInstallPath,
+ 1957:           targetVersion: version,
+ 1958:           gameId,
+ 1959:         })
+ 1960:         : await invoke<Snapshot>('plan_fresh_install', { targetVersion: version, gameId })
+ 1961:       if (
+ 1962:         requestSequence !== versionPlanSequenceRef.current ||
+ 1963:         selectedGameIdRef.current !== gameId
+ 1964:       ) {
+ 1965:         return
+ 1966:       }
+ 1967:       setSnapshot(planned)
+ 1968:       setJob(planned.lastJob)
+ 1969:     } catch (error) {
+ 1970:       if (requestSequence === versionPlanSequenceRef.current) {
+ 1971:         setScanStatus(String(error))
+ 1972:       }
+ 1973:     }
+ 1974:   }
+ 1975: 
+1940:     set_step_running(
+1971:     set_step_running(app, &mut journal, 1, JobStatus::Running, "Verify manifests")?;
+2021:     set_step_running(
+2043:         journal.overall_progress = overall_progress(2, journal.steps[2].progress);
+2065:     set_step_running(
+2081:         journal.overall_progress = overall_progress(3, 1.0);
+2117:             journal.overall_progress = overall_progress(3, journal.steps[3].progress);
+2129:     set_step_running(app, &mut journal, 4, JobStatus::Running, "Finalize")?;
+2137:     journal.status = JobStatus::Committed;
+2188:          );
+ 2189:     }
+ 2190:     append_log(&mut journal, "info", "Real update committed");
+ 2191:     persist_and_emit(app, &journal)?;
+ 2192: 
+ 2193:     // After step 4 finishes, we do step 5 (Patch fix)
+ 2194:     let to_version = journal.to_version.clone();
+ 2195:     try_apply_patch_fix(
+ 2196:         app,
+ 2197:         &mut journal,
+ 2198:         &source,
+ 2199:         &install_root,
+ 2200:         &to_version,
+ 2201:         &control,
+ 2202:         false,
+ 2203:     )?;
+ 2204: 
+ 2205:     Ok(journal)
+ 2206: }
+ 2207: 
+ 2208: fn run_real_install_job(
+ 2209:     app: &AppHandle,
+ 2210:     control: Arc<JobControl>,
+2193:      // After step 4 finishes, we do step 5 (Patch fix)
+ 2194:     let to_version = journal.to_version.clone();
+ 2195:     try_apply_patch_fix(
+ 2196:         app,
+ 2197:         &mut journal,
+ 2198:         &source,
+ 2199:         &install_root,
+ 2200:         &to_version,
+ 2201:         &control,
+ 2202:         false,
+ 2203:     )?;
+ 2204: 
+2195:     try_apply_patch_fix(
+2211:     set_step_running(app, &mut journal, 0, JobStatus::Running, "Prepare store")?;
+2234:     set_step_running(app, &mut journal, 1, JobStatus::Running, "Verify manifests")?;
+2275:     set_step_running(
+2298:         journal.overall_progress = overall_progress(2, journal.steps[2].progress);
+2320:     set_step_running(
+2338:         journal.overall_progress = overall_progress(3, 1.0);
+2374:             journal.overall_progress = overall_progress(3, journal.steps[3].progress);
+2386:     set_step_running(app, &mut journal, 4, JobStatus::Running, "Finalize")?;
+2395:     journal.status = JobStatus::Committed;
+2446:              downloading_root.display()
+ 2447:         ),
+ 2448:     );
+ 2449:     if let Err(err) = cleanup_committed_download_session(&downloading_root, &source) {
+ 2450:         append_log(
+ 2451:             &mut journal,
+ 2452:             "warning",
+ 2453:             &format!("Could not remove completed install download data: {err}"),
+ 2454:         );
+ 2455:     }
+ 2456:     append_log(&mut journal, "info", "Real install committed");
+ 2457:     persist_and_emit(app, &journal)?;
+ 2458: 
+ 2459:     // After step 4 finishes, we do step 5 (Patch fix)
+ 2460:     let to_version = journal.to_version.clone();
+ 2461:     try_apply_patch_fix(
+ 2462:         app,
+ 2463:         &mut journal,
+ 2464:         &source,
+ 2465:         &install_root,
+ 2466:         &to_version,
+ 2467:         &control,
+ 2468:         true,
+2453:     try_apply_patch_fix(app, &mut journal, &source, &install_root, &to_version, &control)?;
+2459:      // After step 4 finishes, we do step 5 (Patch fix)
+ 2460:     let to_version = journal.to_version.clone();
+ 2461:     try_apply_patch_fix(
+ 2462:         app,
+ 2463:         &mut journal,
+ 2464:         &source,
+ 2465:         &install_root,
+ 2466:         &to_version,
+ 2467:         &control,
+ 2468:         false,
+ 2469:     )?;
+ 2470: 
+2461:     try_apply_patch_fix(
+2471:     set_step_running(app, &mut journal, 0, JobStatus::Running, "Prepare repair")?;
+2481:     set_step_running(app, &mut journal, 1, JobStatus::Running, "Plan repair")?;
+2485:          // Continue anyway if the check fails (e.g. path doesn't exist yet)
+ 2486:       }
+ 2487: 
+ 2488:       const versionToApply = targetVersion
+ 2489:       setSelectedVersion(versionToApply)
+ 2490:       
+ 2491:       let next: JobJournal
+ 2492:       if (installMode) {
+ 2493:         next = await invoke<JobJournal>('start_install_job', {
+ 2494:           gameId: selectedGame.id,
+ 2495:           targetVersion: versionToApply,
+ 2496:           installPath: installRoot,
+ 2497:         })
+ 2498:       } else {
+ 2499:         const state = installStates[selectedGame.id]
+ 2500:         const remotePatchId = pendingPatches[selectedGame.id]
+ 2501:         const localPatchId = state?.appliedPatchId
+ 2502:         const hasPendingPatch = Boolean(remotePatchId && remotePatchId !== localPatchId)
+ 2503:         
+ 2504:         // If versions match but there's a pending patch, run patch job instead of full update
+ 2505:         if (state && versionToApply === state.currentVersion && hasPendingPatch) {
+ 2506:           next = await invoke<JobJournal>('start_patch_job', {
+ 2507:             gameId: selectedGame.id,
+ 2508:             installPath: selectedInstallPath,
+ 2509:             targetVersion: versionToApply,
+ 2510:           })
+ 2511:         } else {
+ 2512:           next = await invoke<JobJournal>('start_update_job', {
+ 2513:             gameId: selectedGame.id,
+ 2514:             installPath: selectedInstallPath,
+ 2515:             targetVersion: versionToApply,
+ 2516:           })
+ 2517:         }
+ 2518:       }
+ 2519:       setJob(next)
+ 2520:       if (installMode) {
+ 2521:         audibleInstallJobIdsRef.current.add(next.id)
+ 2522:       }
+ 2523:       if (preferences.openDownloadsOnJobStart) {
+ 2524:         setActiveTab('Downloads')
+ 2525:       }
+2499:         const state = installStates[selectedGame.id]
+2501:         const localPatchId = state?.appliedPatchId
+2506:           next = await invoke<JobJournal>('start_patch_job', {
+2508:  [        // Continue anyway if the check fails (e.g. path doesn't exist yet)]
+ 2509: [      }]
+ 2510: []
+ 2511: [      const versionToApply = targetVersion]
+ 2512: [      setSelectedVersion(versionToApply)]
+ 2513: [      ]
+ 2514: [      let next: JobJournal]
+ 2515: [      if (installMode) {]
+ 2516: [        next = await invoke<JobJournal>('start_install_job', {]
+ 2517: [          gameId: selectedGame.id,]
+ 2518: [          targetVersion: versionToApply,]
+ 2519: [          installPath: installRoot,]
+ 2520: [        })]
+ 2521: [      } else {]
+ 2522: [        const state = installStates[selectedGame.id]]
+ 2523: [        const remotePatchId = pendingPatches[selectedGame.id]]
+ 2524: [        const localPatchId = state?.appliedPatchId]
+ 2525: [        const hasPendingPatch = Boolean(remotePatchId && remotePatchId !== localPatchId)]
+ 2526: [        ]
+ 2527: [        // If versions match but there's a pending patch, run patch job instead of full update]
+ 2528: [        if (state && versionToApply === state.currentVersion && hasPendingPatch) {]
+ 2529: [          next = await invoke<JobJournal>('start_patch_job', {]
+ 2530: [            gameId: selectedGame.id,]
+2509:  [      }]
+ 2510: []
+ 2511: [      const versionToApply = targetVersion]
+ 2512: [      setSelectedVersion(versionToApply)]
+ 2513: [      ]
+ 2514: [      let next: JobJournal]
+ 2515: [      if (installMode) {]
+ 2516: [        next = await invoke<JobJournal>('start_install_job', {]
+2513:  trailing whitespace.
++      
+warning: in the working copy of 'src-tauri/src/job.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/App.tsx', LF will be replaced by CRLF the next time Git touches it
+2524:     set_step_running(
+2546:         journal.overall_progress = overall_progress(2, journal.steps[2].progress);
+2568:     set_step_running(app, &mut journal, 3, JobStatus::Assembling, "Repair files")?;
+2578:         journal.overall_progress = overall_progress(3, 1.0);
+2613:             journal.overall_progress = overall_progress(3, journal.steps[3].progress);
+2622:     const isInstalled = installStates[gameId] && installStates[gameId].currentVersion !== 'not installed' && installStates[gameId].currentVersion !== 'unknown'
+2624:     set_step_running(app, &mut journal, 4, JobStatus::Running, "Finalize repair")?;
+2632:     journal.status = JobStatus::Committed;
+2892:       setInstallStates((current) => ({
+3007:       // Clear immediately; the backend job-cleared event repeats this after the
+3213:                     installStates={installStates}
+3304:                     installStates={installStates}
+3617:               installStates={installStates}
+3620:               setInstallStates={setInstallStates}
+3672:  [function titleCase(value: string) {]
+ 3673: [  return value]
+ 3674: [    .replace(/[-_]/g, ' ')]
+ 3675: [    .replace(/\b\w/g, (letter) => letter.toUpperCase())]
+ 3676: [}]
+ 3677: []
+ 3678: []
+ 3679: []
+ 3680: []
+4801:         clear_current_journal_if_matches(app, job_id)?;
+4813:                 let _ = clear_current_journal_if_matches(&app_for_cleanup, job_id);
+4818:                         let _ = clear_current_journal_if_matches(&app_for_cleanup, job_id);
+5403:         clear_current_journal_if_matches(app, &journal.id)?;
+5421:                 clear_current_journal_if_matches(app, &journal.id)?;
+5435:  
+ 5436:     Ok(())
+ 5437: }
+ 5438: 
+ 5439: fn set_step_running(
+ 5440:     app: &AppHandle,
+ 5441:     journal: &mut JobJournal,
+ 5442:     step_index: usize,
+ 5443:     status: JobStatus,
+ 5444:     phase: &str,
+ 5445: ) -> Result<(), JobError> {
+ 5446:     journal.status = status;
+ 5447:     journal.phase = phase.to_string();
+ 5448:     journal.steps[step_index].status = StepStatus::Running;
+ 5449:     journal.steps[step_index].progress = 0.0;
+ 5450:     journal.overall_progress = overall_progress(step_index, 0.0);
+ 5451:     touch(journal);
+ 5452:     persist_and_emit(app, journal)
+ 5453: }
+ 5454: 
+ 5455: fn complete_step(
+ 5456:     app: &AppHandle,
+ 5457:     journal: &mut JobJournal,
+ 5458:     step_index: usize,
+ 5459: ) -> Result<(), JobError> {
+ 5460:     journal.steps[step_index].status = StepStatus::Completed;
+ 5461:     journal.steps[step_index].progress = 1.0;
+ 5462:     journal.overall_progress = overall_progress(step_index, 1.0);
+ 5463:     touch(journal);
+ 5464:     persist_and_emit(app, journal)
+ 5465: }
+5439: fn set_step_running(
+5450:     journal.overall_progress = overall_progress(step_index, 0.0);
+5462:     journal.overall_progress = overall_progress(step_index, 1.0);
+5465:  }
+ 5466: 
+ 5467: fn mark_running_step_failed(journal: &mut JobJournal) {
+ 5468:     if let Some(step) = journal
+ 5469:         .steps
+ 5470:         .iter_mut()
+ 5471:         .find(|step| step.status == StepStatus::Running || step.status == StepStatus::Paused)
+ 5472:     {
+ 5473:         step.status = StepStatus::Failed;
+ 5474:     }
+ 5475:     touch(journal);
+ 5476: }
+ 5477: 
+ 5478: // Journal progress helper functions live in job/progress.rs
+5480:  pub fn read_latest_journal(app: &AppHandle) -> Result<Option<JobJournal>, JobError> {
+ 5481:     let path = journal_path(app)?;
+ 5482:     if !path.exists() {
+ 5483:         return Ok(None);
+ 5484:     }
+ 5485:     let data = fs::read(&path)?;
+ 5486:     match serde_json::from_slice::<JobJournal>(&data) {
+ 5487:         Ok(journal) => Ok(Some(journal)),
+ 5488:         Err(_) => {
+ 5489:             // A process exit can interrupt an old non-atomic write. Do not let a
+ 5490:             // malformed current-job.json permanently trap the launcher in Downloads.
+ 5491:             let corrupt_path = path.with_file_name(format!(
+ 5492:                 "current-job.corrupt-{}.json",
+ 5493:                 Utc::now().timestamp_millis()
+ 5494:             ));
+ 5495:             if fs::rename(&path, &corrupt_path).is_err() {
+ 5496:                 let _ = remove_file_with_retry(&path, 12);
+ 5497:             }
+ 5498:             let _ = app.emit("launcher://job-cleared", ());
+ 5499:             Ok(None)
+ 5500:         }
+ 5501:     }
+ 5502: }
+ 5503: 
+ 5504: /// Delete the active job journal and tell every frontend window to clear its
+ 5505: /// download state. Missing files are treated as success, making cancel idempotent.
+ 5506: pub fn clear_current_journal(app: &AppHandle) -> Result<(), JobError> {
+ 5507:     let path = journal_path(app)?;
+ 5508:     remove_file_with_retry(&path, 12)?;
+ 5509:     let _ = app.emit("launcher://job-cleared", ());
+ 5510:     Ok(())
+ 5511: }
+ 5512: 
+ 5513: /// Clear only the journal belonging to the canceled job. This protects a newly
+ 5514: /// started job from a late exit callback belonging to the previous worker.
+ 5515: fn clear_current_journal_if_matches(
+ 5516:     app: &AppHandle,
+ 5517:     expected_job_id: &str,
+ 5518: ) -> Result<(), JobError> {
+ 5519:     let path = journal_path(app)?;
+ 5520:     if !path.exists() {
+ 5521:         let _ = app.emit("launcher://job-cleared", ());
+ 5522:         return Ok(());
+ 5523:     }
+ 5524: 
+ 5525:     let matches = fs::read(&path)
+ 5526:         .ok()
+ 5527:         .and_then(|bytes| serde_json::from_slice::<JobJournal>(&bytes).ok())
+ 5528:         .map(|journal| journal.id == expected_job_id)
+ 5529:         .unwrap_or(true);
+ 5530:     if matches {
+ 5531:         remove_file_with_retry(&path, 12)?;
+ 5532:         let _ = app.emit("launcher://job-cleared", ());
+ 5533:     }
+ 5534:     Ok(())
+ 5535: }
+ 5536: 
+ 5537: fn is_active_real_journal(journal: &JobJournal) -> bool {
+ 5538:     let is_active = matches!(
+ 5539:         journal.status,
+ 5540:         JobStatus::Planned
+ 5541:             | JobStatus::Running
+ 5542:             | JobStatus::Paused
+ 5543:             | JobStatus::Downloading
+ 5544:             | JobStatus::Assembling
+ 5545:             | JobStatus::Verified
+ 5546:             | JobStatus::Failed
+ 5547:     );
+ 5548:     let is_real = journal.kind == "install" || journal.kind == "update" || journal.kind == "repair";
+ 5549:     is_active && is_real
+ 5550: }
+ 5551: 
+ 5552: fn default_journal(
+ 5553:     game_id: &str,
+ 5554:     kind: &str,
+ 5555:     install_path: String,
+ 5556:     from_version: &str,
+ 5557:     to_version: &str,
+ 5558:     bytes_total: u64,
+ 5559: ) -> JobJournal {
+ 5560:     let now = Utc::now().to_rfc3339();
+ 5561:     JobJournal {
+ 5562:         id: format!("job-{}", Utc::now().timestamp_millis()),
+ 5563:         game_id: game_id.to_string(),
+ 5564:         kind: kind.to_string(),
+ 5565:         status: JobStatus::Planned,
+ 5566:         install_path,
+ 5567:         from_version: from_version.to_string(),
+ 5568:         to_version: to_version.to_string(),
+ 5569:         phase: "Planned".to_string(),
+ 5570:         overall_progress: 0.0,
+ 5571:         bytes_done: 0,
+ 5572:         bytes_total,
+ 5573:         retry_count: 0,
+ 5574:         resumable: true,
+ 5575:         updated_at: now.clone(),
+ 5576:         steps: vec![
+ 5577:             step("Scan", "Find local files and detect version"),
+ 5578:             step("Verify", "Hash manifest-owned files"),
+ 5579:             step("Download packs", "Resume missing byte ranges from proxy"),
+ 5580:             step("Assemble files", "Rebuild files into verified temp outputs"),
+ 5581:             step("Finalize", "Replace only after full-file hash match"),
+ 5582:         ],
+ 5583:         logs: vec![JobLog {
+ 5584:             at: now,
+ 5585:             level: "info".to_string(),
+ 5586:             message: "Ready to start resumable update".to_string(),
+ 5587:         }],
+ 5588:         metrics: DownloadMetrics::default(),
+ 5589:     }
+ 5590: }
+ 5591: 
+ 5592: fn step(name: &str, detail: &str) -> JobStep {
+ 5593:     JobStep {
+ 5594:         name: name.to_string(),
+ 5595:         detail: detail.to_string(),
+ 5596:         status: StepStatus::Waiting,
+ 5597:         progress: 0.0,
+ 5598:         retry_count: 0,
+ 5599:     }
+ 5600: }
+ 5601: 
+ 5602: fn append_log(journal: &mut JobJournal, level: &str, message: &str) {
+ 5603:     journal.logs.push(JobLog {
+ 5604:         at: Utc::now().format("%H:%M:%S").to_string(),
+ 5605:         level: level.to_string(),
+ 5606:         message: message.to_string(),
+ 5607:     });
+ 5608:     if journal.logs.len() > 80 {
+ 5609:         let excess = journal.logs.len() - 80;
+ 5610:         journal.logs.drain(0..excess);
+ 5611:     }
+ 5612:     touch(journal);
+ 5613: }
+ 5614: 
+ 5615: fn touch(journal: &mut JobJournal) {
+ 5616:     journal.updated_at = Utc::now().to_rfc3339();
+ 5617: }
+ 5618: 
+ 5619: fn persist_and_emit(app: &AppHandle, journal: &JobJournal) -> Result<(), JobError> {
+ 5620:     let path = journal_path(app)?;
+ 5621:     if let Some(parent) = path.parent() {
+ 5622:         fs::create_dir_all(parent)?;
+ 5623:     }
+ 5624:     let data = serde_json::to_vec_pretty(journal)?;
+ 5625:     let temp = path.with_extension("json.tmp");
+ 5626:     {
+ 5627:         let mut file = File::create(&temp)?;
+ 5628:         file.write_all(&data)?;
+ 5629:         file.sync_all()?;
+ 5630:     }
+ 5631:     if let Err(first_error) = fs::rename(&temp, &path) {
+ 5632:         // Some Windows filesystems refuse replacement by rename. Fall back to a
+ 5633:         // short remove-and-rename sequence while keeping the complete temp file.
+ 5634:         remove_file_with_retry(&path, 4)?;
+ 5635:         fs::rename(&temp, &path).map_err(|_| first_error)?;
+ 5636:     }
+ 5637:     let _ = app.emit("launcher://job", journal);
+ 5638:     Ok(())
+ 5639: }
+ 5640: 
+ 5641: fn journal_path(app: &AppHandle) -> Result<PathBuf, JobError> {
+ 5642:     Ok(app
+ 5643:         .path()
+ 5644:         .app_data_dir()?
+ 5645:         .join("journals")
+5498:             let _ = app.emit("launcher://job-cleared", ());
+5509:     let _ = app.emit("launcher://job-cleared", ());
+5515: fn clear_current_journal_if_matches(
+5521:         let _ = app.emit("launcher://job-cleared", ());
+5532:         let _ = app.emit("launcher://job-cleared", ());
+5546:             | JobStatus::Failed
+5840:              signature: None,
+ 5841:         }
+ 5842:     }
+ 5843: }
+ 5844: pub fn check_patch_available(
+ 5845:     game_id: &str,
+ 5846:     version: &str,
+ 5847: ) -> Result<Option<String>, String> {
+ 5848:     let source = DepotSource::for_game(game_id);
+ 5849:     let patch_path = format!("patches/{}/manifest.json", version);
+ 5850:     match source.load_json::<VersionManifest>(&patch_path) {
+ 5851:         Ok(m) => Ok(Some(m.created_at.clone())),
+ 5852:         Err(e) => {
+ 5853:             println!("check_patch_available failed: {:?}", e);
+ 5854:             Ok(None)
+ 5855:         }
+ 5856:     }
+ 5857: }
+ 5858: 
+ 5859: pub fn spawn_patch_job(
+ 5860:     app: AppHandle,
+ 5861:     control: Arc<JobControl>,
+ 5862:     install_path: String,
+ 5863:     target_version: Option<String>,
+ 5864:     game_id: Option<String>,
+ 5865: ) -> Result<JobJournal, JobError> {
+ 5866:     let source = DepotSource::for_game(game_id.as_deref().unwrap_or(DEFAULT_GAME_ID));
+ 5867:     let catalog = source.load_catalog()?;
+ 5868:     let target_version = resolve_target_version(&catalog, target_version)?;
+ 5869:     
+ 5870:     let mut journal = default_journal(
+ 5871:         &source.game_id,
+ 5872:         "patch",
+ 5873:         install_path,
+ 5874:         "patching",
+ 5875:         &target_version,
+ 5876:         0,
+ 5877:     );
+ 5878:     // Since patch uses try_apply_patch_fix which expects step 5, we pad the initial steps.
+ 5879:     journal.steps[0] = step("Wait", "Initializing patch...");
+ 5880:     journal.steps[1] = step("Wait", "Initializing patch...");
+ 5881:     journal.steps[2] = step("Wait", "Initializing patch...");
+ 5882:     journal.steps[3] = step("Wait", "Initializing patch...");
+ 5883:     journal.steps[4] = step("Wait", "Initializing patch...");
+ 5884:     journal.steps.push(step("Patch fix", "Applying hotfixes (if available)"));
+ 5885:     
+ 5886:     persist_and_emit(&app, &journal)?;
+ 5887:     let app_for_thread = app.clone();
+ 5888:     let initial = journal.clone();
+ 5889:     let return_journal = journal.clone();
+ 5890: 
+ 5891:     control.set_running(true);
+ 5892:     let control_for_thread = control.clone();
+ 5893:     thread::spawn(move || {
+ 5894:         let canceled_job_id = initial.id.clone();
+ 5895:         let result = run_real_patch_job(&app_for_thread, control_for_thread.clone(), initial.clone());
+ 5896:         let canceled = control_for_thread.is_canceled();
+ 5897:         control_for_thread.set_running(false);
+ 5898:         if canceled {
+ 5899:             let _ = clear_current_journal_if_matches(&app_for_thread, &canceled_job_id);
+ 5900:             return;
+ 5901:         }
+ 5902:         match result {
+ 5903:             Ok(final_journal) => {
+ 5904:                 let _ = clear_current_journal_if_matches(&app_for_thread, &final_journal.id);
+ 5905:             }
+ 5906:             Err(e) => {
+ 5907:                 let mut errored = initial.clone();
+ 5908:                 errored.status = JobStatus::Failed;
+ 5909:                 errored.phase = "Failed".to_string();
+ 5910:                 errored.status = JobStatus::Failed;
+ 5911:                 append_log(&mut errored, "error", &format!("Job failed: {}", e));
+ 5912:                 let _ = persist_and_emit(&app_for_thread, &errored);
+ 5913:                 let _ = clear_current_journal_if_matches(&app_for_thread, &errored.id);
+ 5914:             }
+ 5915:         }
+ 5916:     });
+ 5917: 
+ 5918:     Ok(return_journal)
+ 5919: }
+ 5920: 
+ 5921: fn run_real_patch_job(
+ 5922:     app: &AppHandle,
+ 5923:     control: Arc<JobControl>,
+ 5924:     mut journal: JobJournal,
+ 5925: ) -> Result<JobJournal, JobError> {
+ 5926:     let source = DepotSource::for_game(&journal.game_id);
+ 5927:     let install_root = PathBuf::from(&journal.install_path);
+ 5928:     
+ 5929:     for i in 0..=4 {
+ 5930:         journal.steps[i].status = StepStatus::Completed;
+5859: pub fn spawn_patch_job(
+5878:  [    install_path: String,]
+ 5879: [    target_version: Option<String>,]
+ 5880: [    game_id: Option<String>,]
+ 5881: [) -> Result<JobJournal, JobError> {]
+ 5882: [    let source = DepotSource::for_game(game_id.as_deref().unwrap_or(DEFAULT_GAME_ID));]
+ 5883: [    let catalog = source.load_catalog()?;]
+ 5884: [    let target_version = resolve_target_version(&catalog, target_version)?;]
+ 5885: [    ]
+ 5886: [    let mut journal = default_journal(]
+ 5887: [        &source.game_id,]
+ 5888: [        "patch",]
+ 5889: [        install_path,]
+ 5890: [        "patching",]
+ 5891: [        &target_version,]
+ 5892: [        0,]
+ 5893: [    );]
+ 5894: [    // Since patch uses try_apply_patch_fix which expects step 5, we pad the initial steps.]
+ 5895: [    journal.steps[0] = step("Wait", "Initializing patch...");]
+ 5896: [    journal.steps[1] = step("Wait", "Initializing patch...");]
+ 5897: [    journal.steps[2] = step("Wait", "Initializing patch...");]
+ 5898: [    journal.steps[3] = step("Wait", "Initializing patch...");]
+ 5899: [    journal.steps[4] = step("Wait", "Initializing patch...");]
+ 5900: [    journal.steps.push(step("Patch fix", "Applying hotfixes (if available)"));]
+ 5901: [    ]
+ 5902: [    persist_and_emit(&app, &journal)?;]
+ 5903: [    let app_for_thread = app.clone();]
+ 5904: [    let initial = journal.clone();]
+ 5905: [    let return_journal = journal.clone();]
+ 5906: []
+ 5907: [    control.set_running(true);]
+ 5908: [    let control_for_thread = control.clone();]
+ 5909: [    thread::spawn(move || {]
+ 5910: [        let canceled_job_id = initial.id.clone();]
+ 5911: [        let result = run_real_patch_job(&app_for_thread, control_for_thread.clone(), initial.clone());]
+ 5912: [        let canceled = control_for_thread.is_canceled();]
+ 5913: [        control_for_thread.set_running(false);]
+ 5914: [        if canceled {]
+ 5915: [            let _ = clear_current_journal_if_matches(&app_for_thread, &canceled_job_id);]
+ 5916: [            return;]
+ 5917: [        }]
+ 5918: [        match result {]
+ 5919: [            Ok(_) => {]
+ 5920: [                // Keep the terminal patch journal so the frontend can observe]
+ 5921: [                // `committed`, refresh GameInstallState, and read applied_patch_id.]
+ 5922: [            }]
+ 5923: [            Err(e) => {]
+ 5924: [                let mut errored = read_latest_journal(&app_for_thread)]
+ 5925: [                    .ok()]
+ 5926: [                    .flatten()]
+ 5927: [                    .unwrap_or_else(|| initial.clone());]
+ 5928: [                errored.status = JobStatus::Failed;]
+ 5929: [                errored.phase = "Failed".to_string();]
+ 5930: [                mark_running_step_failed(&mut errored);]
+ 5931: [                append_log(&mut errored, "error", &format!("Job failed: {}", e));]
+ 5932: [                let _ = persist_and_emit(&app_for_thread, &errored);]
+ 5933: [            }]
+ 5934: [        }]
+ 5935: [    });]
+ 5936: []
+ 5937: [    Ok(return_journal)]
+ 5938: [}]
+ 5939: []
+ 5940: [fn run_real_patch_job(]
+ 5941: [    app: &AppHandle,]
+ 5942: [    control: Arc<JobControl>,]
+ 5943: [    mut journal: JobJournal,]
+ 5944: [) -> Result<JobJournal, JobError> {]
+ 5945: [    let source = DepotSource::for_game(&journal.game_id);]
+ 5946: [    let install_root = PathBuf::from(&journal.install_path);]
+ 5947: [    ]
+ 5948: [    journal.status = JobStatus::Running;]
+ 5949: [    journal.phase = "Patch fix".to_string();]
+ 5950: [    for i in 0..=4 {]
+ 5951: [        journal.steps[i].status = StepStatus::Completed;]
+ 5952: [        journal.steps[i].progress = 1.0;]
+ 5953: [    }]
+ 5954: [    persist_and_emit(app, &journal)?;]
+ 5955: [    ]
+ 5956: [    let to_version = journal.to_version.clone();]
+ 5957: [    try_apply_patch_fix(]
+ 5958: [        app,]
+5885:  trailing whitespace.
++    
+src-tauri/src/job.rs:5901: trailing whitespace.
++    
+src-tauri/src/job.rs:5947: trailing whitespace.
++    
+src-tauri/src/job.rs:5955: trailing whitespace.
++    
+src/App.tsx:1124: trailing whitespace.
++        
+src/App.tsx:1136: trailing whitespace.
++        
+src/App.tsx:2513: trailing whitespace.
++      
+src/App.tsx:2526: trailing whitespace.
++        
+src/App.tsx:3677: new blank line at EOF.
+warning: in the working copy of 'src-tauri/src/job.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/App.tsx', LF will be replaced by CRLF the next time Git touches it
+5895:         let result = run_real_patch_job(&app_for_thread, control_for_thread.clone(), initial.clone());
+5899:             let _ = clear_current_journal_if_matches(&app_for_thread, &canceled_job_id);
+5904:                 let _ = clear_current_journal_if_matches(&app_for_thread, &final_journal.id);
+5908:                 errored.status = JobStatus::Failed;
+5910:                 errored.status = JobStatus::Failed;
+5913:                 let _ = clear_current_journal_if_matches(&app_for_thread, &errored.id);
+5921:  fn run_real_patch_job(
+ 5922:     app: &AppHandle,
+ 5923:     control: Arc<JobControl>,
+ 5924:     mut journal: JobJournal,
+ 5925: ) -> Result<JobJournal, JobError> {
+ 5926:     let source = DepotSource::for_game(&journal.game_id);
+ 5927:     let install_root = PathBuf::from(&journal.install_path);
+ 5928:     
+ 5929:     for i in 0..=4 {
+ 5930:         journal.steps[i].status = StepStatus::Completed;
+ 5931:         journal.steps[i].progress = 1.0;
+ 5932:     }
+ 5933:     persist_and_emit(app, &journal)?;
+ 5934:     
+ 5935:     let to_version = journal.to_version.clone();
+ 5936:     try_apply_patch_fix(app, &mut journal, &source, &install_root, &to_version, &control)?;
+ 5937:     Ok(journal)
+ 5938: }
+ 5939: 
+ 5940: fn try_apply_patch_fix(
+ 5941:     app: &AppHandle,
+ 5942:     journal: &mut JobJournal,
+ 5943:     source: &DepotSource,
+ 5944:     install_root: &Path,
+ 5945:     version: &str,
+ 5946:     control: &Arc<JobControl>,
+ 5947: ) -> Result<(), JobError> {
+ 5948:     let patch_path = format!("patches/{}/manifest.json", version);
+ 5949:     let patch_manifest: VersionManifest = match source.load_json(&patch_path) {
+ 5950:         Ok(m) => m,
+ 5951:         Err(JobError::NotFound(_)) => {
+ 5952:             append_log(journal, "info", &format!("[Patch fix] No patch for {} - skipping", version));
+ 5953:             if let Some(step) = journal.steps.get_mut(5) {
+ 5954:                 step.status = StepStatus::Completed;
+ 5955:                 step.detail = "No patch required for this version".to_string();
+ 5956:                 step.progress = 1.0;
+ 5957:             }
+ 5958:             journal.overall_progress = 1.0;
+ 5959:             persist_and_emit(app, journal)?;
+ 5960:             return Ok(());
+ 5961:         }
+ 5962:         Err(err) => {
+ 5963:             append_log(journal, "warning", &format!("[Patch fix] Could not load patch manifest: {err} - skipping"));
+ 5964:             if let Some(step) = journal.steps.get_mut(5) {
+ 5965:                 step.status = StepStatus::Completed;
+ 5966:                 step.detail = "Skipped (patch manifest unavailable)".to_string();
+ 5967:                 step.progress = 1.0;
+ 5968:             }
+ 5969:             journal.overall_progress = 1.0;
+ 5970:             persist_and_emit(app, journal)?;
+ 5971:             return Ok(());
+ 5972:         }
+ 5973:     };
+ 5974: 
+ 5975:     let file_count = patch_manifest.files.len();
+ 5976:     append_log(journal, "info", &format!("[Patch fix] Found patch for {} ({} file(s))", version, file_count));
+ 5977:     journal.phase = "Patch fix".to_string();
+ 5978:     if let Some(step) = journal.steps.get_mut(5) {
+ 5979:         step.status = StepStatus::Running;
+ 5980:         step.progress = 0.0;
+ 5981:         step.detail = format!("Applying {} fix file(s)...", file_count);
+ 5982:     }
+ 5983:     journal.overall_progress = overall_progress(5, 0.0);
+ 5984:     persist_and_emit(app, journal)?;
+ 5985: 
+ 5986:     let patch_stage = install_root.join(".0xolemon").join("patch_stage");
+ 5987:     fs::create_dir_all(&patch_stage)?;
+ 5988:     let (progress_tx, _rx) = std::sync::mpsc::channel::<Result<DownloadProgress, String>>();
+ 5989: 
+ 5990:     for (idx, file) in patch_manifest.files.iter().enumerate() {
+ 5991:         if control.is_canceled() {
+ 5992:             return Err(JobError::Canceled);
+ 5993:         }
+ 5994:         let target_path = install_root.join(relative_to_path(&file.path));
+ 5995:         append_log(journal, "info", &format!("[Patch fix] ({}/{}) {}", idx + 1, file_count, file.path));
+ 5996:         let mut assembled: Vec<u8> = Vec::with_capacity(file.size as usize);
+ 5997:         for chunk in &file.chunks {
+ 5998:             let pack_relative = format!("patches/{}/packs/{}.bin", version, chunk.pack_id);
+ 5999:             let task_id = format!("patch-{}-{}", version, chunk.hash);
+ 6000:             let partial_path = patch_stage.join(format!("{}.partial", chunk.hash));
+ 6001:             let transport = source.fetch_pack_span_with_progress(
+ 6002:                 &chunk.pack_id,
+ 6003:                 chunk.pack_offset,
+ 6004:                 chunk.pack_offset + chunk.compressed_size,
+ 6005:                 &pack_relative,
+ 6006:                 &task_id,
+ 6007:                 &partial_path,
+ 6008:                 control,
+ 6009:                 &progress_tx,
+ 6010:             )?;
+ 6011:             verify_compressed_chunk_bytes(chunk, &transport)?;
+ 6012:             let compressed = decode_transport_chunk(chunk, &transport)?;
+ 6013:             let plain = decode_chunk_payload(chunk, &compressed)?;
+ 6014:             verify_chunk_bytes(chunk, &plain)?;
+ 6015:             assembled.extend_from_slice(&plain);
+ 6016:         }
+ 6017:         if let Some(parent) = target_path.parent() {
+ 6018:             fs::create_dir_all(parent)?;
+ 6019:         }
+ 6020:         let lp = long_path(&target_path);
+ 6021:         let tmp_path = lp.with_extension("patch_tmp");
+ 6022:         fs::write(&tmp_path, &assembled)?;
+ 6023:         fs::rename(&tmp_path, &lp)?;
+ 6024:         let step_prog = (idx + 1) as f32 / file_count as f32;
+ 6025:         if let Some(step) = journal.steps.get_mut(5) {
+ 6026:             step.progress = step_prog;
+ 6027:         }
+ 6028:         journal.overall_progress = overall_progress(5, step_prog);
+ 6029:         persist_and_emit(app, journal)?;
+ 6030:     }
+ 6031:     let _ = fs::remove_dir_all(&patch_stage);
+ 6032:     append_log(journal, "info", &format!("[Patch fix] Applied {} file(s)", file_count));
+ 6033:     if let Some(step) = journal.steps.get_mut(5) {
+ 6034:         step.status = StepStatus::Completed;
+ 6035:         step.progress = 1.0;
+ 6036:         step.detail = format!("Applied {} fix file(s)", file_count);
+ 6037:     }
+ 6038:     if let Ok(Some(mut marker)) = read_install_marker(install_root) {
+ 6039:         marker.applied_patch_id = Some(patch_manifest.created_at.clone());
+ 6040:         let _ = write_install_marker_file(install_root, &marker);
+ 6041:     }
+ 6042:     journal.overall_progress = 1.0;
+ 6043:     journal.phase = "Committed".to_string();
+ 6044:     journal.status = JobStatus::Committed;
+ 6045:     persist_and_emit(app, journal)?;
+ 6046:     Ok(())
+ 6047: }
+5935:          journal.steps[i].status = StepStatus::Completed;
+ 5936:         journal.steps[i].progress = 1.0;
+ 5937:     }
+ 5938:     persist_and_emit(app, &journal)?;
+ 5939:     
+ 5940:     let to_version = journal.to_version.clone();
+ 5941:     try_apply_patch_fix(app, &mut journal, &source, &install_root, &to_version, &control)?;
+ 5942:     Ok(journal)
+ 5943: }
+ 5944: 
+ 5945: fn try_apply_patch_fix(
+ 5946:     app: &AppHandle,
+ 5947:     journal: &mut JobJournal,
+ 5948:     source: &DepotSource,
+ 5949:     install_root: &Path,
+ 5950:     version: &str,
+ 5951:     control: &Arc<JobControl>,
+ 5952: ) -> Result<(), JobError> {
+ 5953:     let patch_path = format!("patches/{}/manifest.json", version);
+ 5954:     let patch_manifest: VersionManifest = match source.load_json(&patch_path) {
+ 5955:         Ok(m) => m,
+ 5956:         Err(JobError::NotFound(_)) => {
+ 5957:             append_log(journal, "info", &format!("[Patch fix] No patch for {} - skipping", version));
+ 5958:             if let Some(step) = journal.steps.get_mut(5) {
+ 5959:                 step.status = StepStatus::Completed;
+ 5960:                 step.detail = "No patch required for this version".to_string();
+ 5961:                 step.progress = 1.0;
+ 5962:             }
+ 5963:             journal.overall_progress = 1.0;
+ 5964:             journal.phase = "Committed".to_string();
+ 5965:             journal.status = JobStatus::Committed;
+ 5966:             persist_and_emit(app, journal)?;
+ 5967:             return Ok(());
+ 5968:         }
+ 5969:         Err(err) => {
+ 5970:             append_log(journal, "error", &format!("[Patch fix] Could not load patch manifest: {err}"));
+ 5971:             return Err(err);
+ 5972:         }
+ 5973:     };
+ 5974: 
+ 5975:     let file_count = patch_manifest.files.len();
+ 5976:     append_log(journal, "info", &format!("[Patch fix] Found patch for {} ({} file(s))", version, file_count));
+ 5977:     journal.phase = "Patch fix".to_string();
+ 5978:     if let Some(step) = journal.steps.get_mut(5) {
+5941:     try_apply_patch_fix(app, &mut journal, &source, &install_root, &to_version, &control)?;
+5945: fn try_apply_patch_fix(
+5948:      journal.status = JobStatus::Running;
+ 5949:     journal.phase = "Patch fix".to_string();
+ 5950:     for i in 0..=4 {
+ 5951:         journal.steps[i].status = StepStatus::Completed;
+ 5952:         journal.steps[i].progress = 1.0;
+ 5953:     }
+ 5954:     persist_and_emit(app, &journal)?;
+ 5955:     
+ 5956:     let to_version = journal.to_version.clone();
+ 5957:     try_apply_patch_fix(
+ 5958:         app,
+ 5959:         &mut journal,
+ 5960:         &source,
+ 5961:         &install_root,
+ 5962:         &to_version,
+ 5963:         &control,
+ 5964:         false,
+ 5965:     )?;
+ 5966:     Ok(journal)
+ 5967: }
+ 5968: 
+ 5969: fn try_apply_patch_fix(
+ 5970:     app: &AppHandle,
+ 5971:     journal: &mut JobJournal,
+ 5972:     source: &DepotSource,
+ 5973:     install_root: &Path,
+ 5974:     version: &str,
+ 5975:     control: &Arc<JobControl>,
+ 5976:     manifest_errors_are_fatal: bool,
+ 5977: ) -> Result<(), JobError> {
+ 5978:     let patch_path = format!("patches/{}/manifest.json", version);
+ 5979:     let patch_manifest: VersionManifest = match source.load_json(&patch_path) {
+ 5980:         Ok(m) => m,
+ 5981:         Err(JobError::NotFound(_)) => {
+ 5982:             append_log(journal, "info", &format!("[Patch fix] No patch for {} - skipping", version));
+ 5983:             if let Some(step) = journal.steps.get_mut(5) {
+ 5984:                 step.status = StepStatus::Completed;
+ 5985:                 step.detail = "No patch required for this version".to_string();
+ 5986:                 step.progress = 1.0;
+ 5987:             }
+ 5988:             journal.overall_progress = 1.0;
+ 5989:             journal.phase = "Committed".to_string();
+ 5990:             journal.status = JobStatus::Committed;
+ 5991:             persist_and_emit(app, journal)?;
+ 5992:             return Ok(());
+ 5993:         }
+ 5994:         Err(err) => {
+ 5995:             if manifest_errors_are_fatal {
+5955:      
+ 5956:     let to_version = journal.to_version.clone();
+ 5957:     try_apply_patch_fix(
+ 5958:         app,
+ 5959:         &mut journal,
+ 5960:         &source,
+ 5961:         &install_root,
+ 5962:         &to_version,
+ 5963:         &control,
+ 5964:         true,
+ 5965:     )?;
+ 5966:     Ok(journal)
+ 5967: }
+5957:     try_apply_patch_fix(
+5969: fn try_apply_patch_fix(
+5983:     journal.overall_progress = overall_progress(5, 0.0);
+6028:         journal.overall_progress = overall_progress(5, step_prog);
+6044:     journal.status = JobStatus::Committed;

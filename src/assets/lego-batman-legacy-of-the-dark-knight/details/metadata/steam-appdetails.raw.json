@@ -1,0 +1,433 @@
+﻿{
+    "2215200":  {
+                    "success":  true,
+                    "data":  {
+                                 "type":  "game",
+                                 "name":  "LEGO® Batman™: Legacy of the Dark Knight",
+                                 "steam_appid":  2215200,
+                                 "required_age":  0,
+                                 "is_free":  false,
+                                 "controller_support":  "full",
+                                 "dlc":  [
+                                             4468750
+                                         ],
+                                 "detailed_description":  "\u003ch1\u003eLEGO® Batman™: Legacy of the Dark Knight Deluxe Edition\u003c/h1\u003e\u003cp\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cimg class=\"bb_img\" src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/38c6083cfef56de2346dddab40895046.avif?t=1783025238\" width=1414 height=464 /\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eSuit up with new gear, vehicles, and more, to expand your experience with the LEGO® Batman™: Legacy of the Dark Knight Deluxe Edition\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eIncludes:\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e• Full Base Game\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e• Legacy Collection: \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e- Over 30 launch-day items included across 3 Themed Packs: Arkham Trilogy Pack, Batman Beyond Pack, Party Music Pack\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e- Each Themed Pack includes 7 suits (1 for each playable character), 1 Batmobile, and a set of 5 Batcave customization props\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e• Mayhem Collection*:\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e- Includes new Story Mission and Mayhem Mode featuring The Joker and Harley Quinn, along with a villain-themed Sinister Pack\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e- Break out of Arkham Asylum as playable characters The Joker and Harley Quinn in an all-new Story Mission\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e- Cause chaos on the streets of Gotham City in the all-new Mayhem Mode\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e- Sinister Pack includes 7 suits (1 for each of the original playable characters), 1 Batmobile, and 1 Batcave prop set\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eLEGO Batman: Legacy of the Dark Knight is a narrative led action-adventure from TT Games, creators of LEGO® Star Wars™: The Skywalker Saga.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e  *Mayhem Collection is a separate post-launch DLC releasing September 18, 2026 and will be included in the LEGO Batman: Legacy of the Dark Knight Deluxe Edition (full base game required)\u003c/p\u003e\u003c/p\u003e\u003cbr\u003e\u003ch1\u003eAbout the Game\u003c/h1\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/16806c89c9d4b53a8f7aaedd2b48857e.poster.avif?t=1783025238\" width=820 height=256 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/16806c89c9d4b53a8f7aaedd2b48857e.webm?t=1783025238\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/16806c89c9d4b53a8f7aaedd2b48857e.mp4?t=1783025238\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eLEGO® Batman™: Legacy of the Dark Knight is a narrative led action-adventure from TT Games, creators of LEGO® Star Wars™: The Skywalker Saga. Step into Bruce Wayne’s journey to become Batman, forging bonds with trusted allies while facing Gotham City’s most dangerous and iconic DC Super-Villains.  \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/74e03c680f8c5031de655d94c22b6d35.poster.avif?t=1783025238\" width=1170 height=292 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/74e03c680f8c5031de655d94c22b6d35.webm?t=1783025238\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/74e03c680f8c5031de655d94c22b6d35.mp4?t=1783025238\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eEmbark on a journey that begins with the origins of Batman as a young Bruce Wayne trains with The League of Shadows, becomes the hero of Gotham City, and forge a new family of allies with Jim Gordon, Catwoman, Robin, Nightwing, and Batgirl. Confront an ever-growing threat from across Batman’s Rogue’s Gallery as you face The Joker, The Penguin, Mr. Freeze, Poison Ivy, Bane, and more.   \u003cbr\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/5f55693c4a96e1d791b741b259ddf2f5.poster.avif?t=1783025238\" width=1170 height=292 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/5f55693c4a96e1d791b741b259ddf2f5.webm?t=1783025238\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/5f55693c4a96e1d791b741b259ddf2f5.mp4?t=1783025238\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003ePlay as Batman with an exhilarating new combat system, combining fluid combos, stealth techniques, and detective skills to take on crime across the streets and rooftops of Gotham City. Command a full range of Batmobiles and Batcycles, including the legendary Tumbler, as you navigate an open and immersive Gotham City. Grapple, glide, or drive through the open world with agility and speed, while discovering crimes, challenges, rewards, secrets, and iconic landmarks such as Arkham Asylum, Ace Chemicals, and Wayne Tower.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/f96deff2d4247ef753f2dab33355ff1c.poster.avif?t=1783025238\" width=1170 height=390 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/f96deff2d4247ef753f2dab33355ff1c.webm?t=1783025238\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/f96deff2d4247ef753f2dab33355ff1c.mp4?t=1783025238\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e  \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eAre you ready to build the legacy of the Dark Knight and protect Gotham City? \u003c/p\u003e",
+                                 "about_the_game":  "\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/16806c89c9d4b53a8f7aaedd2b48857e.poster.avif?t=1783025238\" width=820 height=256 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/16806c89c9d4b53a8f7aaedd2b48857e.webm?t=1783025238\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/16806c89c9d4b53a8f7aaedd2b48857e.mp4?t=1783025238\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eLEGO® Batman™: Legacy of the Dark Knight is a narrative led action-adventure from TT Games, creators of LEGO® Star Wars™: The Skywalker Saga. Step into Bruce Wayne’s journey to become Batman, forging bonds with trusted allies while facing Gotham City’s most dangerous and iconic DC Super-Villains.  \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/74e03c680f8c5031de655d94c22b6d35.poster.avif?t=1783025238\" width=1170 height=292 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/74e03c680f8c5031de655d94c22b6d35.webm?t=1783025238\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/74e03c680f8c5031de655d94c22b6d35.mp4?t=1783025238\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eEmbark on a journey that begins with the origins of Batman as a young Bruce Wayne trains with The League of Shadows, becomes the hero of Gotham City, and forge a new family of allies with Jim Gordon, Catwoman, Robin, Nightwing, and Batgirl. Confront an ever-growing threat from across Batman’s Rogue’s Gallery as you face The Joker, The Penguin, Mr. Freeze, Poison Ivy, Bane, and more.   \u003cbr\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/5f55693c4a96e1d791b741b259ddf2f5.poster.avif?t=1783025238\" width=1170 height=292 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/5f55693c4a96e1d791b741b259ddf2f5.webm?t=1783025238\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/5f55693c4a96e1d791b741b259ddf2f5.mp4?t=1783025238\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003ePlay as Batman with an exhilarating new combat system, combining fluid combos, stealth techniques, and detective skills to take on crime across the streets and rooftops of Gotham City. Command a full range of Batmobiles and Batcycles, including the legendary Tumbler, as you navigate an open and immersive Gotham City. Grapple, glide, or drive through the open world with agility and speed, while discovering crimes, challenges, rewards, secrets, and iconic landmarks such as Arkham Asylum, Ace Chemicals, and Wayne Tower.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/f96deff2d4247ef753f2dab33355ff1c.poster.avif?t=1783025238\" width=1170 height=390 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/f96deff2d4247ef753f2dab33355ff1c.webm?t=1783025238\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/f96deff2d4247ef753f2dab33355ff1c.mp4?t=1783025238\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e  \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eAre you ready to build the legacy of the Dark Knight and protect Gotham City? \u003c/p\u003e",
+                                 "short_description":  "Rise as the Dark Knight and experience the essential Batman story in a bold, action-packed adventure with hard-hitting combat, an open-world Gotham City, and the signature LEGO charm that fans know and love.",
+                                 "supported_languages":  "English\u003cstrong\u003e*\u003c/strong\u003e, French\u003cstrong\u003e*\u003c/strong\u003e, Italian\u003cstrong\u003e*\u003c/strong\u003e, German\u003cstrong\u003e*\u003c/strong\u003e, Spanish - Spain\u003cstrong\u003e*\u003c/strong\u003e, Arabic, Danish, Dutch, Japanese\u003cstrong\u003e*\u003c/strong\u003e, Korean, Polish\u003cstrong\u003e*\u003c/strong\u003e, Portuguese - Brazil\u003cstrong\u003e*\u003c/strong\u003e, Russian, Simplified Chinese, Spanish - Latin America\u003cstrong\u003e*\u003c/strong\u003e, Traditional Chinese\u003cbr\u003e\u003cstrong\u003e*\u003c/strong\u003elanguages with full audio support",
+                                 "header_image":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/a07a9a6c0c9c1225f5b260b4f29fe40e6f099f6b/header.jpg?t=1783025238",
+                                 "capsule_image":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/4933722fc48c284f30ea2d0f9eb932c0ab3de1b5/capsule_231x87.jpg?t=1783025238",
+                                 "capsule_imagev5":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/4933722fc48c284f30ea2d0f9eb932c0ab3de1b5/capsule_184x69.jpg?t=1783025238",
+                                 "website":  "https://legobatmangame.com/",
+                                 "pc_requirements":  {
+                                                         "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003eRequires a 64-bit processor and operating system\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows 11\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e Intel Core i5-10600K or AMD Ryzen 5 1600\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 16 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e NVIDIA GeForce GTX 960, 4 GB or AMD Radeon RX 6400, 4 GB or Intel Arc A580, 8 GB\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 50 GB available space\u003c/li\u003e\u003c/ul\u003e",
+                                                         "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003eRequires a 64-bit processor and operating system\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows 11\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e Intel Core i7-12700 or AMD Ryzen 7 5800X\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 16 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e NVIDIA GeForce RTX 2070 SUPER, 8 GB or AMD Radeon RX 6650 XT, 8 GB or Intel Arc B580, 12 GB\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 50 GB available space\u003c/li\u003e\u003c/ul\u003e"
+                                                     },
+                                 "mac_requirements":  {
+                                                          "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e",
+                                                          "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e"
+                                                      },
+                                 "linux_requirements":  {
+                                                            "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e",
+                                                            "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e"
+                                                        },
+                                 "legal_notice":  "LEGO® BATMAN™: LEGACY OF THE DARK KNIGHT © 2026 TT Games Ltd. Produced by TT Games under license from the LEGO Group. LEGO, the LEGO logo, the Brick, and the Knob configurations and the Minifigure are trademarks and/or copyrights of the LEGO Group. © 2026. DC LOGO, BATMAN, and all related characters and elements © and TM DC (s26).",
+                                 "drm_notice":  "Denuvo Anti-Tamper",
+                                 "developers":  [
+                                                    "TT Games"
+                                                ],
+                                 "publishers":  [
+                                                    "Warner Bros. Games",
+                                                    "Warner Bros. Interactive Entertainment"
+                                                ],
+                                 "price_overview":  {
+                                                        "currency":  "USD",
+                                                        "initial":  6999,
+                                                        "final":  6999,
+                                                        "discount_percent":  0,
+                                                        "initial_formatted":  "",
+                                                        "final_formatted":  "$69.99"
+                                                    },
+                                 "packages":  [
+                                                  793456,
+                                                  1468123
+                                              ],
+                                 "package_groups":  [
+                                                        {
+                                                            "name":  "default",
+                                                            "title":  "Buy LEGO® Batman™: Legacy of the Dark Knight",
+                                                            "description":  "",
+                                                            "selection_text":  "Select a purchase option",
+                                                            "save_text":  "",
+                                                            "display_type":  0,
+                                                            "is_recurring_subscription":  "false",
+                                                            "subs":  [
+                                                                         {
+                                                                             "packageid":  793456,
+                                                                             "percent_savings_text":  " ",
+                                                                             "percent_savings":  0,
+                                                                             "option_text":  "LEGO Batman: Legacy of the Dark Knight - $69.99",
+                                                                             "option_description":  "",
+                                                                             "can_get_free_license":  "0",
+                                                                             "is_free_license":  false,
+                                                                             "price_in_cents_with_discount":  6999
+                                                                         },
+                                                                         {
+                                                                             "packageid":  1468123,
+                                                                             "percent_savings_text":  " ",
+                                                                             "percent_savings":  0,
+                                                                             "option_text":  "LEGO Batman: Legacy of the Dark Knight Deluxe Edition - $89.99",
+                                                                             "option_description":  "",
+                                                                             "can_get_free_license":  "0",
+                                                                             "is_free_license":  false,
+                                                                             "price_in_cents_with_discount":  8999
+                                                                         }
+                                                                     ]
+                                                        }
+                                                    ],
+                                 "platforms":  {
+                                                   "windows":  true,
+                                                   "mac":  false,
+                                                   "linux":  false
+                                               },
+                                 "metacritic":  {
+                                                    "score":  84,
+                                                    "url":  "https://www.metacritic.com/game/pc/lego-batman-legacy-of-the-dark-knight?ftag=MCD-06-10aaa1f"
+                                                },
+                                 "categories":  [
+                                                    {
+                                                        "id":  2,
+                                                        "description":  "Single-player"
+                                                    },
+                                                    {
+                                                        "id":  1,
+                                                        "description":  "Multi-player"
+                                                    },
+                                                    {
+                                                        "id":  9,
+                                                        "description":  "Co-op"
+                                                    },
+                                                    {
+                                                        "id":  39,
+                                                        "description":  "Shared/Split Screen Co-op"
+                                                    },
+                                                    {
+                                                        "id":  24,
+                                                        "description":  "Shared/Split Screen"
+                                                    },
+                                                    {
+                                                        "id":  22,
+                                                        "description":  "Steam Achievements"
+                                                    },
+                                                    {
+                                                        "id":  28,
+                                                        "description":  "Full controller support"
+                                                    },
+                                                    {
+                                                        "id":  29,
+                                                        "description":  "Steam Trading Cards"
+                                                    },
+                                                    {
+                                                        "id":  60,
+                                                        "description":  "Gamepad Recommended"
+                                                    },
+                                                    {
+                                                        "id":  55,
+                                                        "description":  "DualShock Controller Support"
+                                                    },
+                                                    {
+                                                        "id":  56,
+                                                        "description":  "DualShock Controller Support"
+                                                    },
+                                                    {
+                                                        "id":  57,
+                                                        "description":  "DualSense Controller Support"
+                                                    },
+                                                    {
+                                                        "id":  58,
+                                                        "description":  "DualSense Controller Support"
+                                                    },
+                                                    {
+                                                        "id":  23,
+                                                        "description":  "Steam Cloud"
+                                                    },
+                                                    {
+                                                        "id":  43,
+                                                        "description":  "Remote Play on TV"
+                                                    },
+                                                    {
+                                                        "id":  44,
+                                                        "description":  "Remote Play Together"
+                                                    },
+                                                    {
+                                                        "id":  61,
+                                                        "description":  "HDR available"
+                                                    },
+                                                    {
+                                                        "id":  62,
+                                                        "description":  "Family Sharing"
+                                                    }
+                                                ],
+                                 "genres":  [
+                                                {
+                                                    "id":  "1",
+                                                    "description":  "Action"
+                                                },
+                                                {
+                                                    "id":  "25",
+                                                    "description":  "Adventure"
+                                                }
+                                            ],
+                                 "screenshots":  [
+                                                     {
+                                                         "id":  0,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/26d8ea3f288ffaa1fe9956620cbd920f10b171f4/ss_26d8ea3f288ffaa1fe9956620cbd920f10b171f4.600x338.jpg?t=1783025238",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/26d8ea3f288ffaa1fe9956620cbd920f10b171f4/ss_26d8ea3f288ffaa1fe9956620cbd920f10b171f4.1920x1080.jpg?t=1783025238"
+                                                     },
+                                                     {
+                                                         "id":  1,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/3c98a7a4d4624f8799d553a58fdb31d33ce1e494/ss_3c98a7a4d4624f8799d553a58fdb31d33ce1e494.600x338.jpg?t=1783025238",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/3c98a7a4d4624f8799d553a58fdb31d33ce1e494/ss_3c98a7a4d4624f8799d553a58fdb31d33ce1e494.1920x1080.jpg?t=1783025238"
+                                                     },
+                                                     {
+                                                         "id":  2,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/fdbad71e14ed79de392e8d4b3915d2bec2895dbb/ss_fdbad71e14ed79de392e8d4b3915d2bec2895dbb.600x338.jpg?t=1783025238",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/fdbad71e14ed79de392e8d4b3915d2bec2895dbb/ss_fdbad71e14ed79de392e8d4b3915d2bec2895dbb.1920x1080.jpg?t=1783025238"
+                                                     },
+                                                     {
+                                                         "id":  3,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/ce6fbdc2574a3c8119d4b6200a9728f0b0d10573/ss_ce6fbdc2574a3c8119d4b6200a9728f0b0d10573.600x338.jpg?t=1783025238",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/ce6fbdc2574a3c8119d4b6200a9728f0b0d10573/ss_ce6fbdc2574a3c8119d4b6200a9728f0b0d10573.1920x1080.jpg?t=1783025238"
+                                                     },
+                                                     {
+                                                         "id":  4,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/d8a37aef421cac8d67dbdf76f103b332d6040e4a/ss_d8a37aef421cac8d67dbdf76f103b332d6040e4a.600x338.jpg?t=1783025238",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/d8a37aef421cac8d67dbdf76f103b332d6040e4a/ss_d8a37aef421cac8d67dbdf76f103b332d6040e4a.1920x1080.jpg?t=1783025238"
+                                                     },
+                                                     {
+                                                         "id":  5,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/5f100b6c92ce7a0b860dea928bcdc9bc5b1676b4/ss_5f100b6c92ce7a0b860dea928bcdc9bc5b1676b4.600x338.jpg?t=1783025238",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/5f100b6c92ce7a0b860dea928bcdc9bc5b1676b4/ss_5f100b6c92ce7a0b860dea928bcdc9bc5b1676b4.1920x1080.jpg?t=1783025238"
+                                                     },
+                                                     {
+                                                         "id":  6,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/976fe59f0cb0b31d6f1fddd488c1a05742245bac/ss_976fe59f0cb0b31d6f1fddd488c1a05742245bac.600x338.jpg?t=1783025238",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/976fe59f0cb0b31d6f1fddd488c1a05742245bac/ss_976fe59f0cb0b31d6f1fddd488c1a05742245bac.1920x1080.jpg?t=1783025238"
+                                                     },
+                                                     {
+                                                         "id":  7,
+                                                         "path_thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/261056fb830839878fb4fcb8af6f5804e4bc6899/ss_261056fb830839878fb4fcb8af6f5804e4bc6899.600x338.jpg?t=1783025238",
+                                                         "path_full":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/261056fb830839878fb4fcb8af6f5804e4bc6899/ss_261056fb830839878fb4fcb8af6f5804e4bc6899.1920x1080.jpg?t=1783025238"
+                                                     }
+                                                 ],
+                                 "movies":  [
+                                                {
+                                                    "id":  257332595,
+                                                    "name":  "Launch Trailer ESRB",
+                                                    "thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257332595/0000daa059c2245d313df4d2cbc428f186b1d4bb/movie_600x337.jpg?t=1779469292",
+                                                    "dash_av1":  "https://video.akamai.steamstatic.com/store_trailers/2215200/2065567447/ede2da92d21e772c7b442d2c14a80ce8b2897abe/1779385649/dash_av1.mpd?t=1779469292",
+                                                    "dash_h264":  "https://video.akamai.steamstatic.com/store_trailers/2215200/2065567447/ede2da92d21e772c7b442d2c14a80ce8b2897abe/1779385649/dash_h264.mpd?t=1779469292",
+                                                    "hls_h264":  "https://video.akamai.steamstatic.com/store_trailers/2215200/2065567447/ede2da92d21e772c7b442d2c14a80ce8b2897abe/1779385649/hls_264_master.m3u8?t=1779469292",
+                                                    "highlight":  true
+                                                },
+                                                {
+                                                    "id":  257341796,
+                                                    "name":  "Accolades Trailer ESRB",
+                                                    "thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257341796/f7649bbb2661308bb59684a0a22c830649ac1396/movie_600x337.jpg?t=1779499105",
+                                                    "dash_av1":  "https://video.akamai.steamstatic.com/store_trailers/2215200/994484613/1e7536c233faa620aeca11b7bf9f142c003b3189/1779498841/dash_av1.mpd?t=1779499105",
+                                                    "dash_h264":  "https://video.akamai.steamstatic.com/store_trailers/2215200/994484613/1e7536c233faa620aeca11b7bf9f142c003b3189/1779498841/dash_h264.mpd?t=1779499105",
+                                                    "hls_h264":  "https://video.akamai.steamstatic.com/store_trailers/2215200/994484613/1e7536c233faa620aeca11b7bf9f142c003b3189/1779498841/hls_264_master.m3u8?t=1779499105",
+                                                    "highlight":  true
+                                                },
+                                                {
+                                                    "id":  257335484,
+                                                    "name":  "Deluxe Edition Trailer ESRB",
+                                                    "thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257335484/c4df5fb1dbc7095efea8fd606d15a59d4f13c374/movie_600x337.jpg?t=1779469296",
+                                                    "dash_av1":  "https://video.akamai.steamstatic.com/store_trailers/2215200/487452793/2f6bcf29cb01880cd0c361f1ebcff45ee01b4cfb/1779385559/dash_av1.mpd?t=1779469296",
+                                                    "dash_h264":  "https://video.akamai.steamstatic.com/store_trailers/2215200/487452793/2f6bcf29cb01880cd0c361f1ebcff45ee01b4cfb/1779385559/dash_h264.mpd?t=1779469296",
+                                                    "hls_h264":  "https://video.akamai.steamstatic.com/store_trailers/2215200/487452793/2f6bcf29cb01880cd0c361f1ebcff45ee01b4cfb/1779385559/hls_264_master.m3u8?t=1779469296",
+                                                    "highlight":  true
+                                                },
+                                                {
+                                                    "id":  257245341,
+                                                    "name":  "Heroes \u0026 Villains Trailer ESRB",
+                                                    "thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257245341/aed3677ce0fa35d0ab357bcfcd93ea333848d0d1/movie_600x337.jpg?t=1779469298",
+                                                    "dash_av1":  "https://video.akamai.steamstatic.com/store_trailers/2215200/1581074056/ac9700c298f76515300f144d68b6ba2166eedbc1/1779384269/dash_av1.mpd?t=1779469298",
+                                                    "dash_h264":  "https://video.akamai.steamstatic.com/store_trailers/2215200/1581074056/ac9700c298f76515300f144d68b6ba2166eedbc1/1779384269/dash_h264.mpd?t=1779469298",
+                                                    "hls_h264":  "https://video.akamai.steamstatic.com/store_trailers/2215200/1581074056/ac9700c298f76515300f144d68b6ba2166eedbc1/1779384269/hls_264_master.m3u8?t=1779469298",
+                                                    "highlight":  true
+                                                },
+                                                {
+                                                    "id":  257312235,
+                                                    "name":  "The Joker Cinematic Trailer ESRB",
+                                                    "thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257312235/f5cd7f6a7f46c7ae4ebcc9f7cf5e3c9b0786b5f5/movie_600x337.jpg?t=1779469300",
+                                                    "dash_av1":  "https://video.akamai.steamstatic.com/store_trailers/2215200/1013681407/9228aa67c94b38fa6d22b8eac2c40f31303799e5/1779383729/dash_av1.mpd?t=1779469300",
+                                                    "dash_h264":  "https://video.akamai.steamstatic.com/store_trailers/2215200/1013681407/9228aa67c94b38fa6d22b8eac2c40f31303799e5/1779383729/dash_h264.mpd?t=1779469300",
+                                                    "hls_h264":  "https://video.akamai.steamstatic.com/store_trailers/2215200/1013681407/9228aa67c94b38fa6d22b8eac2c40f31303799e5/1779383729/hls_264_master.m3u8?t=1779469300",
+                                                    "highlight":  true
+                                                },
+                                                {
+                                                    "id":  257312293,
+                                                    "name":  "Building the Legacy ESRB",
+                                                    "thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257312293/00e3e0854dc6b3015c7777b1b150bcd3a5f289f2/movie_600x337.jpg?t=1779469303",
+                                                    "dash_av1":  "https://video.akamai.steamstatic.com/store_trailers/2215200/904580400/f64660fc7a8f7f18ec0c32ef5c2971379db4a1ef/1779381689/dash_av1.mpd?t=1779469303",
+                                                    "dash_h264":  "https://video.akamai.steamstatic.com/store_trailers/2215200/904580400/f64660fc7a8f7f18ec0c32ef5c2971379db4a1ef/1779381689/dash_h264.mpd?t=1779469303",
+                                                    "hls_h264":  "https://video.akamai.steamstatic.com/store_trailers/2215200/904580400/f64660fc7a8f7f18ec0c32ef5c2971379db4a1ef/1779381689/hls_264_master.m3u8?t=1779469303",
+                                                    "highlight":  true
+                                                },
+                                                {
+                                                    "id":  257312209,
+                                                    "name":  "Reveal Trailer ESRB",
+                                                    "thumbnail":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257312209/804ad940842907106cfca91802c4bf4d1926d984/movie_600x337.jpg?t=1779469305",
+                                                    "dash_av1":  "https://video.akamai.steamstatic.com/store_trailers/2215200/450685655/1ce33296802f5f051d2bd78d27993f7de1f97a5a/1779380849/dash_av1.mpd?t=1779469305",
+                                                    "dash_h264":  "https://video.akamai.steamstatic.com/store_trailers/2215200/450685655/1ce33296802f5f051d2bd78d27993f7de1f97a5a/1779380849/dash_h264.mpd?t=1779469305",
+                                                    "hls_h264":  "https://video.akamai.steamstatic.com/store_trailers/2215200/450685655/1ce33296802f5f051d2bd78d27993f7de1f97a5a/1779380849/hls_264_master.m3u8?t=1779469305",
+                                                    "highlight":  true
+                                                }
+                                            ],
+                                 "recommendations":  {
+                                                         "total":  8078
+                                                     },
+                                 "achievements":  {
+                                                      "total":  52,
+                                                      "highlighted":  [
+                                                                          {
+                                                                              "icon":  "9ff6cdbaa992e49a42ec337d6839c16d6fe9311c.jpg",
+                                                                              "localized_name":  "\"I am Batman.\"",
+                                                                              "name":  "\"I am Batman.\"",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2215200/9ff6cdbaa992e49a42ec337d6839c16d6fe9311c.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "f3c01cf6de6862e724db2156061ae3857bc51361.jpg",
+                                                                              "localized_name":  "\"A hero can be anyone.\"",
+                                                                              "name":  "\"A hero can be anyone.\"",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2215200/f3c01cf6de6862e724db2156061ae3857bc51361.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "9dfc631959de8c977f1de406677f1fcd9f66cabb.jpg",
+                                                                              "localized_name":  "\"Hopefully, because he\u0027s busy.\"",
+                                                                              "name":  "\"Hopefully, because he\u0027s busy.\"",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2215200/9dfc631959de8c977f1de406677f1fcd9f66cabb.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "b395ebd80d34fd7e2d38d85d66ce7e3286fc91ea.jpg",
+                                                                              "localized_name":  "A Watchful Collector",
+                                                                              "name":  "A Watchful Collector",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2215200/b395ebd80d34fd7e2d38d85d66ce7e3286fc91ea.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "2bcb44d29f99b4f69ae1df5d57a050adbaba5793.jpg",
+                                                                              "localized_name":  "\"I\u0027m not wearing hockey pads.\"",
+                                                                              "name":  "\"I\u0027m not wearing hockey pads.\"",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2215200/2bcb44d29f99b4f69ae1df5d57a050adbaba5793.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "371ce218d248a5cd22fd5e0489b03a93950af3d3.jpg",
+                                                                              "localized_name":  "\"Wanna know how I got these cars?\"",
+                                                                              "name":  "\"Wanna know how I got these cars?\"",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2215200/371ce218d248a5cd22fd5e0489b03a93950af3d3.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "417fa37103d49e692de5a1d3bba1c384c207a86b.jpg",
+                                                                              "localized_name":  "\"Holy Skill Upgrades, Batman!\"",
+                                                                              "name":  "\"Holy Skill Upgrades, Batman!\"",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2215200/417fa37103d49e692de5a1d3bba1c384c207a86b.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "c9915d8d4aef6f1fab8e3ab7c84d4fe76f179ddf.jpg",
+                                                                              "localized_name":  "\"This is too much power for one person.\"",
+                                                                              "name":  "\"This is too much power for one person.\"",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2215200/c9915d8d4aef6f1fab8e3ab7c84d4fe76f179ddf.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "4deee2ecd2f4e79c468d1c4604d9a864c4bd748a.jpg",
+                                                                              "localized_name":  "Up for the Challenge",
+                                                                              "name":  "Up for the Challenge",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2215200/4deee2ecd2f4e79c468d1c4604d9a864c4bd748a.jpg"
+                                                                          },
+                                                                          {
+                                                                              "icon":  "87a9d9dcdea83413a3724dba7129757077cfc045.jpg",
+                                                                              "localized_name":  "\"It\u0027s a big city. I can\u0027t be everywhere.\"",
+                                                                              "name":  "\"It\u0027s a big city. I can\u0027t be everywhere.\"",
+                                                                              "path":  "https://shared.akamai.steamstatic.com/community_assets/images/apps/2215200/87a9d9dcdea83413a3724dba7129757077cfc045.jpg"
+                                                                          }
+                                                                      ]
+                                                  },
+                                 "release_date":  {
+                                                      "coming_soon":  false,
+                                                      "date":  "May 22, 2026"
+                                                  },
+                                 "support_info":  {
+                                                      "url":  "http://support.wbgames.com",
+                                                      "email":  ""
+                                                  },
+                                 "background":  "https://store.akamai.steamstatic.com/images/storepagebackground/app/2215200?t=1783025238",
+                                 "background_raw":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/6e38f7f240a53b5d1bcfe89d50fb161d4d28d433/page_bg_raw.jpg?t=1783025238",
+                                 "content_descriptors":  {
+                                                             "ids":  [
+
+                                                                     ],
+                                                             "notes":  null
+                                                         },
+                                 "ratings":  {
+                                                 "esrb":  {
+                                                              "rating":  "e10",
+                                                              "descriptors":  "Fantasy Violence\r\nCrude Humor\r\n",
+                                                              "interactive_elements":  "In-Game Purchases\r\n"
+                                                          },
+                                                 "pegi":  {
+                                                              "rating":  "7",
+                                                              "descriptors":  "Violence\r\nIn-Game Purchases"
+                                                          },
+                                                 "usk":  {
+                                                             "rating":  "12",
+                                                             "rating_id":  "58395/26",
+                                                             "descriptors":  "Comic-Gewalt\r\nDüstere Atmosphäre\r\nIn-Game-Käufe"
+                                                         },
+                                                 "oflc":  {
+                                                              "rating":  "pg",
+                                                              "descriptors":  "Mild Violence"
+                                                          },
+                                                 "cero":  {
+                                                              "rating":  "b",
+                                                              "descriptors":  "Crime\r\nViolence"
+                                                          },
+                                                 "kgrb":  {
+                                                              "rating":  "12",
+                                                              "descriptors":  "Violence"
+                                                          },
+                                                 "gmedia":  {
+                                                                "rating":  "7"
+                                                            },
+                                                 "dejus":  {
+                                                               "rating":  "10",
+                                                               "descriptors":  "Violência\r\n"
+                                                           },
+                                                 "fpb":  {
+                                                             "rating":  "7-9PG",
+                                                             "descriptors":  "LV\r\nPPS\r\nCI"
+                                                         },
+                                                 "csrr":  {
+                                                              "rating":  "P6",
+                                                              "descriptors":  "Violence"
+                                                          },
+                                                 "steam_germany":  {
+                                                                       "rating_generated":  "1",
+                                                                       "rating":  "6",
+                                                                       "required_age":  "6",
+                                                                       "banned":  "0",
+                                                                       "use_age_gate":  "0",
+                                                                       "descriptors":  "Fantasy-Gewalt"
+                                                                   },
+                                                 "igrs":  {
+                                                              "rating_generated":  "1",
+                                                              "rating":  "13",
+                                                              "required_age":  "13",
+                                                              "banned":  "0",
+                                                              "use_age_gate":  "0",
+                                                              "descriptors":  "Kekerasan"
+                                                          }
+                                             }
+                             }
+                }
+}

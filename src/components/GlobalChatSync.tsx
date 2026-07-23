@@ -2,12 +2,13 @@ import { useEffect } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { collection, onSnapshot, query, limit, orderBy, doc, runTransaction } from 'firebase/firestore'
 import { db } from '../firebase'
+import { isTauriRuntime } from '../lib/gameMeta'
 import type { GameCatalog } from '../types'
 import type { ChatMessage } from './GameChat'
 
 export function GlobalChatSync({ catalog }: { catalog: GameCatalog | null }) {
   useEffect(() => {
-    if (!catalog || catalog.games.length === 0) return
+    if (!isTauriRuntime() || !catalog || catalog.games.length === 0) return
 
     const unsubscribes = catalog.games.map((game) => {
       const q = query(
@@ -74,6 +75,7 @@ export function GlobalChatSync({ catalog }: { catalog: GameCatalog | null }) {
       window.clearInterval(hfSyncInterval)
     }
   }, [catalog])
+
 
   return null
 }

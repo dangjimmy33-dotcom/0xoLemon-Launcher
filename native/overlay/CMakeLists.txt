@@ -21,6 +21,7 @@ add_library(overlay SHARED
     src/ipc/named_pipe.cpp
     src/hooks/dxgi_hook.cpp
     src/hooks/input_hook.cpp
+    src/hooks/steam_hook.cpp
     src/renderer/dx11_renderer.cpp
 )
 

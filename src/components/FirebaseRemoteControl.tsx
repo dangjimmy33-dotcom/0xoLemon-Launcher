@@ -102,9 +102,9 @@ export function FirebaseRemoteControl({
 
     const stateRef = doc(db, 'users', user.id, 'pc_state', 'current')
     setDoc(stateRef, {
-      catalog,
-      installStates,
-      runtimeStates,
+      catalog: JSON.parse(JSON.stringify(catalog)),
+      installStates: JSON.parse(JSON.stringify(installStates)),
+      runtimeStates: JSON.parse(JSON.stringify(runtimeStates)),
       // Do not sync assets (base64 images) as they exceed Firestore 1MB limit
       updatedAt: serverTimestamp()
     }, { merge: true }).catch(console.error)

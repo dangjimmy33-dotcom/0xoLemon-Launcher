@@ -9,6 +9,7 @@
 #include "ipc/shared_memory.h"
 #include "ipc/pipe_client.h"
 #include "input/input_hook.h"
+#include "hooks/steam_hook.h"
 
 #include <MinHook.h>
 #include <string>
@@ -71,6 +72,9 @@ void Initialise()
 
     // 5. Install the input (WndProc) hook.
     InputHook::Install();
+    
+    // 6. Install Steam achievement hook
+    SteamHook::Initialize();
 
     OutputDebugStringW(L"[007Overlay] Initialisation complete\n");
 }
@@ -83,6 +87,7 @@ void Shutdown()
     g_shutdown = true;
     g_active   = false;
 
+    SteamHook::Uninitialize();
     InputHook::Remove();
     DxgiHook::Remove();
     SharedMemory::Close();

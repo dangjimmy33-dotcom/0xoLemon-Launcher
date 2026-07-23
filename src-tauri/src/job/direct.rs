@@ -649,6 +649,7 @@ impl DepotSource {
         staged_chunks_root: &Path,
         stage: &DirectStagePlan,
         chunks: &[ChunkRef],
+        target_version: Option<&str>,
         control: Arc<JobControl>,
         mut on_progress: F,
     ) -> Result<(), JobError>
@@ -677,6 +678,7 @@ impl DepotSource {
                 let abort = Arc::clone(&abort);
                 let tx = tx.clone();
                 let source = self.clone();
+                let target_version = target_version.map(String::from);
                 let control = Arc::clone(&control);
                 let staged_chunks_root = staged_chunks_root.to_path_buf();
                 let stage = stage.clone();
@@ -705,6 +707,7 @@ impl DepotSource {
                             &stage,
                             &task,
                             &task_id,
+                            target_version.as_deref(),
                             &control,
                             &tx,
                         );
@@ -785,10 +788,19 @@ impl DepotSource {
         stage: &DirectStagePlan,
         task: &PackDownloadTask,
         task_id: &str,
+        target_version: Option<&str>,
         control: &JobControl,
         progress_tx: &mpsc::Sender<Result<DownloadProgress, String>>,
     ) -> Result<(), JobError> {
-        let relative_path = format!("packs/{}.bin", task.pack_id);
+        let relative_path = if task.pack_id.starts_with("patch-") {
+            if let Some(version) = target_version {
+                format!("patches/{}/packs/{}.bin", version, task.pack_id)
+            } else {
+                format!("packs/{}.bin", task.pack_id)
+            }
+        } else {
+            format!("packs/{}.bin", task.pack_id)
+        };
         let partial_path = partial_range_path(staged_chunks_root, task);
         let range = self.fetch_pack_span_with_progress(
             &task.pack_id,

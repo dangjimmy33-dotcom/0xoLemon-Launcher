@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Archive, CheckCircle2, CircleAlert, Download, Loader2, Pause, Play, ShieldCheck, TerminalSquare, X } from 'lucide-react'
+import { Archive, CheckCircle2, CircleAlert, Download, Loader2, Pause, Play, ShieldCheck, TerminalSquare, Wrench, X } from 'lucide-react'
 import { enUS as t } from '../i18n/en-US'
 import type { JobJournal, JobLog, JobStep, PhaseProgress } from '../types'
 import { formatBytes, formatDuration } from '../lib/format'
@@ -68,7 +68,7 @@ export function DownloadQueuePanel({
     )
   }
 
-  const queuedLabel = `${job.kind === 'install' ? 'Install' : 'Update'} ${job.toVersion}`
+  const queuedLabel = job.kind === 'install' ? `Install ${job.toVersion}` : job.kind === 'patch' ? `Patch fix ${job.toVersion}` : `Update ${job.toVersion}`
   const failed = job.status === 'failed'
   const canceled = job.status === 'canceled'
 
@@ -80,7 +80,7 @@ export function DownloadQueuePanel({
       </header>
       <article className={failed ? 'queue-row failed' : 'queue-row active'}>
         <div className="queue-art">
-          {failed ? <CircleAlert size={19} /> : <Download size={19} />}
+          {failed ? <CircleAlert size={19} /> : job.kind === 'patch' ? <Wrench size={19} /> : <Download size={19} />}
         </div>
         <div className="queue-copy">
           <strong>{gameTitle}</strong>
@@ -171,7 +171,7 @@ export function JobCenter({
   const displayProgress = useSmoothNumber(progress)
   const displayOverall = useSmoothNumber(phaseProgress.overallPercent)
   const canControl = hasJob && ['running', 'downloading', 'assembling', 'paused'].includes(job.status)
-  const jobTitle = job.kind === 'install' ? `INSTALL JOB: ${job.toVersion}` : `UPDATE JOB: ${job.fromVersion} -> ${job.toVersion}`
+  const jobTitle = job.kind === 'install' ? `INSTALL JOB: ${job.toVersion}` : job.kind === 'patch' ? `PATCH JOB: ${job.toVersion}` : `UPDATE JOB: ${job.fromVersion} -> ${job.toVersion}`
 
   return (
     <section className="panel job-panel">

@@ -1637,6 +1637,7 @@ fn detect_versions() -> Vec<GameVersionInfo> {
                             size_bytes: size,
                             latest: Some(entry.version.clone())
                                 == catalog.effective_latest_version().map(str::to_string),
+                            tags: None,
                         }
                     })
                     .collect::<Vec<_>>()
@@ -1654,6 +1655,7 @@ fn detect_versions() -> Vec<GameVersionInfo> {
                 build_id: "2338871".to_string(),
                 size_bytes: 49_690_000_000,
                 latest: false,
+                tags: None,
             },
             GameVersionInfo {
                 version: "v1.1".to_string(),
@@ -1661,6 +1663,7 @@ fn detect_versions() -> Vec<GameVersionInfo> {
                 build_id: "23531465".to_string(),
                 size_bytes: 49_690_000_000,
                 latest: false,
+                tags: None,
             },
             GameVersionInfo {
                 version: "v1.2".to_string(),
@@ -1668,6 +1671,7 @@ fn detect_versions() -> Vec<GameVersionInfo> {
                 build_id: "23600000".to_string(),
                 size_bytes: 49_690_000_000,
                 latest: true,
+                tags: None,
             },
         ];
     }
@@ -1708,6 +1712,7 @@ fn load_depot_versions_for_game(game_id: &str) -> Option<(String, Vec<GameVersio
             build_id: version_build_id(&entry.version),
             size_bytes: entry.total_size,
             latest: entry.version == latest,
+            tags: None,
         })
         .collect::<Vec<_>>();
     if versions.is_empty() {

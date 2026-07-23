@@ -1369,9 +1369,6 @@ export function StoreLibraryView({
               </button>
             )}
 
-            {effectiveMode === 'hybrid' && (!isJobRunning && !isPlaying && selectedGameId) && (
-              <div style={{ display: 'flex', alignItems: 'center', margin: '0 4px', color: '#888', fontWeight: 600, fontSize: '13px' }}>or</div>
-            )}
 
             {(showSteamButton && !isJobRunning && !isPlaying && selectedGameId) && (
               <SteamIntegrationButton gameId={selectedGameId} gameTitle={detail.title} storeMode={effectiveMode} />
@@ -1941,7 +1938,7 @@ export function StoreLibraryView({
           ) : null}
           <OSTPlayer bgImage={hero || logo || undefined} gameId={selectedGame.id} />
           <GameTagsPreview game={selectedGame} />
-          <AchievementPreview achievements={detail.achievements} assets={assets} />
+          <AchievementPreview gameId={selectedGame.id} achievements={detail?.achievements || []} assets={assets} />
         </aside>
       )}
       {tutorialVisible && selectedGame ? (
@@ -2536,17 +2533,55 @@ function GameTagsPreview({ game }: { game: GameSummary }) {
 }
 
 export function AchievementPreview({
+  gameId,
   achievements,
   assets,
 }: {
+  gameId: string
   achievements: GameAchievement[]
   assets: Record<string, string>
 }) {
   const { t } = useLocale()
   const [showAll, setShowAll] = useState(false)
+  const [unlockedIds, setUnlockedIds] = useState<Set<string>>(new Set())
   const safeAchievements = Array.isArray(achievements) ? achievements : []
   const available = safeAchievements.filter((achievement) => assetUrlForId(achievement.iconAssetId, assets))
   const preview = available.slice(0, 10)
+
+  useEffect(() => {
+    if (!isTauriRuntime()) return
+    // Fetch initial unlocked achievements from backend
+    invoke<{ achievements?: { id: string, unlocked: boolean }[] }>('get_game_platform_state', { gameId })
+      .then((state) => {
+        if (state && state.achievements) {
+          const unlocked = new Set(state.achievements.filter((a) => a.unlocked).map((a) => a.id))
+          setUnlockedIds(unlocked)
+        }
+      })
+      .catch((err) => console.error('Failed to get platform state for achievements:', err))
+  }, [gameId])
+
+  useEffect(() => {
+    if (!isTauriRuntime()) return
+    let unlistenFn: (() => void) | undefined
+    listen<{ gameId: string, id: string }>('launcher://achievement-unlocked', (event) => {
+      if (event.payload.gameId === gameId) {
+        setUnlockedIds((prev) => {
+          const next = new Set(prev)
+          next.add(event.payload.id)
+          return next
+        })
+      }
+    })
+      .then((fn) => {
+        unlistenFn = fn
+      })
+      .catch((err) => console.error('Failed to listen for achievement events:', err))
+
+    return () => {
+      if (unlistenFn) unlistenFn()
+    }
+  }, [gameId])
 
   // KHẮC PHỤC CẢNH BÁO LỖI 'any': Định nghĩa kiểu dữ liệu chuẩn cho Lenis
   useEffect(() => {
@@ -2588,15 +2623,27 @@ export function AchievementPreview({
 
       {/* SỬA LỖI ĐÈ/CHỒNG CHÉO: Thêm gridAutoRows: 'max-content' */}
       <div className="achievement-grid" style={{ gridAutoRows: 'max-content' }}>
-        {preview.map((achievement) => (
-          <article key={achievement.id}>
-            <img src={assetUrlForId(achievement.iconAssetId, assets)} alt="" loading="lazy" />
-            <div>
-              <strong>{achievement.name}</strong>
-              <small>{achievement.hidden ? 'Hidden' : achievement.description}</small>
-            </div>
-          </article>
-        ))}
+        {preview.map((achievement) => {
+          const isUnlocked = unlockedIds.has(achievement.id)
+          return (
+            <article key={achievement.id} style={{ opacity: isUnlocked ? 1 : 0.6 }}>
+              <img 
+                src={assetUrlForId(achievement.iconAssetId, assets)} 
+                alt="" 
+                loading="lazy" 
+                style={{ 
+                  filter: isUnlocked ? 'none' : 'grayscale(100%)',
+                  boxShadow: isUnlocked ? '0 0 10px rgba(255, 215, 0, 0.5)' : 'none',
+                  transition: 'all 0.3s ease'
+                }} 
+              />
+              <div>
+                <strong style={{ color: isUnlocked ? 'inherit' : 'rgba(255, 255, 255, 0.5)' }}>{achievement.name}</strong>
+                <small>{achievement.hidden && !isUnlocked ? 'Hidden' : achievement.description}</small>
+              </div>
+            </article>
+          )
+        })}
       </div>
 
       {/* Dùng createPortal đẩy popup ra ngoài cùng <body> */}
@@ -2616,15 +2663,27 @@ export function AchievementPreview({
 
             {/* SỬA LỖI ĐÈ/CHỒNG CHÉO: Thêm style={{ gridAutoRows: 'max-content' }} */}
             <div className="achievement-all-grid" data-lenis-prevent="true" style={{ gridAutoRows: 'max-content' }}>
-              {available.map((achievement) => (
-                <article key={achievement.id}>
-                  <img src={assetUrlForId(achievement.iconAssetId, assets)} alt="" loading="lazy" />
-                  <div>
-                    <strong>{achievement.name}</strong>
-                    <small>{achievement.hidden ? 'Hidden' : achievement.description}</small>
-                  </div>
-                </article>
-              ))}
+              {available.map((achievement) => {
+                const isUnlocked = unlockedIds.has(achievement.id)
+                return (
+                  <article key={achievement.id} style={{ opacity: isUnlocked ? 1 : 0.6 }}>
+                    <img 
+                      src={assetUrlForId(achievement.iconAssetId, assets)} 
+                      alt="" 
+                      loading="lazy" 
+                      style={{ 
+                        filter: isUnlocked ? 'none' : 'grayscale(100%)',
+                        boxShadow: isUnlocked ? '0 0 10px rgba(255, 215, 0, 0.5)' : 'none',
+                        transition: 'all 0.3s ease'
+                      }} 
+                    />
+                    <div>
+                      <strong style={{ color: isUnlocked ? 'inherit' : 'rgba(255, 255, 255, 0.5)' }}>{achievement.name}</strong>
+                      <small>{achievement.hidden && !isUnlocked ? 'Hidden' : achievement.description}</small>
+                    </div>
+                  </article>
+                )
+              })}
             </div>
           </section>
         </div>,

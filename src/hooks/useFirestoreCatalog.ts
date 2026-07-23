@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { doc, onSnapshot } from 'firebase/firestore'
 import { db } from '../firebase'
 import type { GameCatalog, GameSummary, GameInstallMetadata, CloudSaveMetadata } from '../types'
-import { globalAssetsOverride } from './useRealtimeAssets'
+import { globalAssetsOverride, globalVersionTags } from './useRealtimeAssets'
 
 const DEFAULT_CLOUD_SAVE: CloudSaveMetadata = {
   enabled: false,
@@ -29,6 +29,10 @@ function normalizeSummary(raw: Record<string, unknown>): GameSummary {
   const title = (raw.title as string) || gameId
   // Merge asset URLs from assets_override (SteamGridDB fixed links) 
   const assetOverride = globalAssetsOverride[gameId] ?? {}
+  const versionTags = globalVersionTags[gameId] ?? {}
+  
+  const rawAvailableVersions = (raw.availableVersions as GameSummary['availableVersions']) || []
+  
   return {
     id: gameId,
     title,
@@ -36,7 +40,17 @@ function normalizeSummary(raw: Record<string, unknown>): GameSummary {
     developer: (raw.developer as string) || '',
     publisher: (raw.publisher as string) || '',
     latestVersion: (raw.latestVersion as string) || '',
-    availableVersions: (raw.availableVersions as GameSummary['availableVersions']) || [],
+    availableVersions: Array.isArray(rawAvailableVersions) ? rawAvailableVersions.map(v => {
+      if (!v) return v as any
+      let normalized = v
+      if (typeof v === 'string') {
+        normalized = { version: v, label: v, buildId: v, sizeBytes: 0, latest: false }
+      }
+      return {
+        ...normalized,
+        tags: versionTags[normalized.version] || versionTags[normalized.label] || versionTags[normalized.buildId] || normalized.tags
+      } as any
+    }).filter(Boolean) : [],
     // Prefer assets_override CDN links (fixed SteamGridDB URLs) over catalog values
     gridAssetId: assetOverride.grid || (raw.gridAssetId as string) || '',
     heroAssetId: assetOverride.hero || (raw.heroAssetId as string) || '',

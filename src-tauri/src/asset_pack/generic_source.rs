@@ -498,6 +498,7 @@ fn detect_generic_versions(game_id: &str, app_id: u64) -> Vec<GameVersionInfo> {
                         size_bytes: size,
                         latest: Some(entry.version.clone())
                             == catalog.effective_latest_version().map(str::to_string),
+                        tags: None,
                     }
                 })
                 .collect::<Vec<_>>()
@@ -515,6 +516,7 @@ fn detect_generic_versions(game_id: &str, app_id: u64) -> Vec<GameVersionInfo> {
             },
             size_bytes: 0,
             latest: true,
+            tags: None,
         });
     }
 

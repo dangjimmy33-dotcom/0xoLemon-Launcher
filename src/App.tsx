@@ -80,6 +80,7 @@ import {
   ChangelogModal,
   BigPictureView,
   DefenderExclusionDialog,
+  AchievementToastOverlay,
 } from './components'
 import { useLocale } from './context/LocaleContext'
 
@@ -178,6 +179,7 @@ export default function App() {
   const assetRequestRef = useRef<Set<string>>(new Set())
   const assetDelaySlotRef = useRef(0)
   const [installStates, setInstallStates] = useState<Record<string, GameInstallState>>({})
+  const [pendingPatches, setPendingPatches] = useState<Record<string, string>>({})
   const latestJobRef = useRef<JobJournal | null>(job)
   const preferencesRef = useRef<LauncherPreferences>(preferences)
   const installCompleteAudioRef = useRef<HTMLAudioElement | null>(null)
@@ -1012,6 +1014,43 @@ export default function App() {
     return () => window.clearTimeout(updateTimer)
   }, [preferences.autoCheckLauncherUpdates, publishNotification])
 
+  async function refreshPatchAvailability(gameId: string, state: GameInstallState) {
+    if (
+      !state.installed ||
+      !state.currentVersion ||
+      state.currentVersion === 'unknown' ||
+      state.currentVersion === 'not installed' ||
+      !state.installPath
+    ) {
+      setPendingPatches((current) => {
+        if (!(gameId in current)) return current
+        const next = { ...current }
+        delete next[gameId]
+        return next
+      })
+      return
+    }
+
+    try {
+      const patchId = await invoke<string | null>('check_patch_available', {
+        gameId,
+        version: state.currentVersion,
+      })
+      setPendingPatches((current) => {
+        if (!patchId || patchId === state.appliedPatchId) {
+          if (!(gameId in current)) return current
+          const next = { ...current }
+          delete next[gameId]
+          return next
+        }
+        return { ...current, [gameId]: patchId }
+      })
+    } catch (error) {
+      // Preserve a previously detected patch while the backend retries a transient manifest error.
+      console.error(`check_patch_available failed for ${gameId}:`, error)
+    }
+  }
+
   async function refreshInstallState(gameId: string, committedInstallPath?: string) {
     if (!isTauriRuntime()) {
       return
@@ -1029,6 +1068,7 @@ export default function App() {
       }
       return { ...current, [gameId]: state }
     })
+    void refreshPatchAvailability(gameId, state)
   }
 
   useEffect(() => {
@@ -1046,6 +1086,11 @@ export default function App() {
           next[state.gameId] = state
         }
         setInstallStates(next)
+        states.forEach((state, index) => {
+          window.setTimeout(() => {
+            if (!disposed) void refreshPatchAvailability(state.gameId, state)
+          }, index * 120)
+        })
       })
       .catch(() => {
         // Compatibility fallback for older backends: stagger single calls so the
@@ -1069,20 +1114,28 @@ export default function App() {
         if (!state?.installed || state.currentVersion === 'unknown' || state.currentVersion === 'not installed') {
           return false
         }
-        const latest = 
+
+        const latest =
           game.availableVersions.find((version) => version.latest)?.version ||
           (game.availableVersions.length === 1 ? game.availableVersions[0].version : '') ||
           game.latestVersion
-        
+
         // If the local state is 'installed' (unknown version string), and the game only has 1 version, assume it's up-to-date
         if (state.currentVersion === 'installed' && game.availableVersions.length <= 1) {
           return false
         }
 
-        return Boolean(latest && latest !== 'unknown' && state.currentVersion !== latest)
+        const isVersionMismatch = Boolean(latest && latest !== 'unknown' && state.currentVersion !== latest)
+
+        // Check if there is a pending patch (meaning a patch is available and it hasn't been applied yet)
+        const remotePatchId = pendingPatches[game.id]
+        const localPatchId = state.appliedPatchId
+        const hasPendingPatch = Boolean(remotePatchId && remotePatchId !== localPatchId)
+
+        return isVersionMismatch || hasPendingPatch
       })
       .map((game) => game.id)
-  }, [catalog.games, installStates])
+  }, [catalog.games, installStates, pendingPatches])
   const updatesCatalog = useMemo(
     () => ({ ...catalog, games: catalog.games.filter((game) => updateReadyGameIds.includes(game.id)) }),
     [catalog, updateReadyGameIds],
@@ -1386,6 +1439,9 @@ export default function App() {
           if (disposed) return
           setSnapshot(next)
           setJob(next.lastJob)
+          if (next.lastJob?.kind === 'patch') {
+            setActiveTab('Downloads')
+          }
           if (next.detectedInstallPath) {
             setInstallPath(next.detectedInstallPath)
             setInstallRoot(next.detectedInstallPath)
@@ -1409,6 +1465,9 @@ export default function App() {
         canceledJobIdRef.current = null
       }
       setJob(nextJob)
+      if (nextJob.kind === 'patch' && nextJob.status !== 'canceled') {
+        setActiveTab('Downloads')
+      }
       // Clear the resume loading state as soon as backend confirms the job is running
       if (nextJob.status === 'running' || nextJob.status === 'downloading' || nextJob.status === 'assembling') {
         setIsResuming(false)
@@ -1425,6 +1484,7 @@ export default function App() {
       }
       if (nextJob.status === 'committed') {
         playInstallCompleteSound(nextJob)
+        const isPatchJob = nextJob.kind === 'patch'
         const gameTitle =
           catalogRef.current.games.find((game) => game.id === nextJob.gameId)?.title ??
           nextJob.gameId
@@ -1436,8 +1496,12 @@ export default function App() {
               ? `${gameTitle} installed`
               : nextJob.kind === 'repair'
                 ? `${gameTitle} repaired`
+                : isPatchJob
+                  ? `${gameTitle} patch applied`
                 : `${gameTitle} updated`,
-          message: `Version ${nextJob.toVersion} committed successfully.`,
+          message: isPatchJob
+            ? `Hotfix for ${nextJob.toVersion} applied successfully.`
+            : `Version ${nextJob.toVersion} committed successfully.`,
           dedupeKey: `job:${nextJob.id}:committed`,
           entity: { kind: 'game', id: nextJob.gameId },
           action: { kind: 'open-game', tab: 'Library', gameId: nextJob.gameId },
@@ -1445,21 +1509,38 @@ export default function App() {
         setInstallPath(nextJob.installPath)
         setInstallRoot(nextJob.installPath)
         setHasScanned(true)
-        setScanStatus(`${nextJob.kind === 'install' ? 'Installed' : 'Updated'} ${nextJob.toVersion}`)
+        setScanStatus(
+          isPatchJob
+            ? `Patch applied to ${nextJob.toVersion}`
+            : `${nextJob.kind === 'install' ? 'Installed' : 'Updated'} ${nextJob.toVersion}`,
+        )
         setShowInstallOptions(false)
         setInstallStates((current) => ({
           ...current,
           [nextJob.gameId]: {
+            ...current[nextJob.gameId],
             gameId: nextJob.gameId,
             installed: true,
             currentVersion: nextJob.toVersion,
             installPath: nextJob.installPath,
             launchExecutable: current[nextJob.gameId]?.launchExecutable ?? '',
+            // For patch jobs, immediately clear the pending-patch indicator so
+            // the UI doesn't keep showing a "patch available" badge after apply.
+            ...(isPatchJob && nextJob.appliedPatchId
+              ? { appliedPatchId: nextJob.appliedPatchId }
+              : {}),
           },
         }))
         window.setTimeout(() => {
           void refreshInstallState(nextJob.gameId, nextJob.installPath).catch(() => undefined)
         }, 350)
+        // Auto-dismiss patch jobs after a display period long enough for the
+        // user to see the completed card (Download + Apply steps visible).
+        if (isPatchJob) {
+          window.setTimeout(() => {
+            invoke('clear_job_journal').catch(() => undefined)
+          }, 5000)
+        }
         // Auto-cache the 4 key image assets for offline use (only remote URLs)
         window.setTimeout(() => {
           const installedGame = catalogRef.current.games.find((g) => g.id === nextJob.gameId)
@@ -1548,11 +1629,17 @@ export default function App() {
 
     const canAutoResume = (current: JobJournal | null) => {
       if (!current) return false
-      if (current.kind !== 'install' && current.kind !== 'update' && current.kind !== 'repair') {
+      if (
+        current.kind !== 'install' &&
+        current.kind !== 'update' &&
+        current.kind !== 'repair' &&
+        current.kind !== 'patch'
+      ) {
         return false
       }
       if (current.status === 'paused') return true
       if (current.status !== 'failed') return false
+      if (current.kind === 'patch') return true
       const stepPhase = current.steps.map((step) => `${step.name} ${step.detail}`).join(' ')
       const phase = `${current.phase ?? ''} ${stepPhase}`.toLowerCase()
       return phase.includes('download') || phase.includes('assembling') || phase.includes('verify')
@@ -1654,7 +1741,11 @@ export default function App() {
   latestJobRef.current = activeJob
 
   useEffect(() => {
-    if (activeJob.status !== 'downloading') {
+    // Track download rate for both regular downloads and patch downloads
+    const isActiveDownload =
+      activeJob.status === 'downloading' ||
+      (activeJob.kind === 'patch' && activeJob.status === 'running' && activeJob.bytesTotal > 0)
+    if (!isActiveDownload) {
       downloadRateWindowRef.current = null
       return
     }
@@ -1662,7 +1753,10 @@ export default function App() {
     const sampleWindowMs = 10_000
     const tick = () => {
       const current = latestJobRef.current
-      if (!current || current.status !== 'downloading' || current.id !== activeJob.id) {
+      const isCurrentDownloading =
+        current?.status === 'downloading' ||
+        (current?.kind === 'patch' && current?.status === 'running' && (current?.bytesTotal ?? 0) > 0)
+      if (!current || !isCurrentDownloading || current.id !== activeJob.id) {
         return
       }
 
@@ -1694,9 +1788,17 @@ export default function App() {
     return () => window.clearInterval(timer)
   }, [activeJob.id, activeJob.status])
 
-  const phaseProgress = getPhaseProgress(activeJob, activeJob.status === 'downloading' ? downloadRate : 0)
+  const isPatchDownloading =
+    activeJob.kind === 'patch' &&
+    activeJob.status === 'running' &&
+    activeJob.bytesTotal > 0
+  const phaseProgress = getPhaseProgress(
+    activeJob,
+    (activeJob.status === 'downloading' || isPatchDownloading) ? downloadRate : 0,
+  )
   const progress = phaseProgress.percent
-  const hasVisibleJob = job !== null && activeJob.status !== 'committed'
+  const hasVisibleJob =
+    job !== null && (activeJob.status !== 'committed' || activeJob.kind === 'patch')
   const isDefaultGame = selectedGame?.id === DEFAULT_GAME_ID
   const selectedInstallState = selectedGame ? installStates[selectedGame.id] : undefined
   const selectedInstalled = Boolean(selectedInstallState?.installed)
@@ -2450,17 +2552,35 @@ export default function App() {
 
       const versionToApply = targetVersion
       setSelectedVersion(versionToApply)
-      const next = installMode
-        ? await invoke<JobJournal>('start_install_job', {
+
+      let next: JobJournal
+      if (installMode) {
+        next = await invoke<JobJournal>('start_install_job', {
           gameId: selectedGame.id,
           targetVersion: versionToApply,
           installPath: installRoot,
         })
-        : await invoke<JobJournal>('start_update_job', {
-          gameId: selectedGame.id,
-          installPath: selectedInstallPath,
-          targetVersion: versionToApply,
-        })
+      } else {
+        const state = installStates[selectedGame.id]
+        const remotePatchId = pendingPatches[selectedGame.id]
+        const localPatchId = state?.appliedPatchId
+        const hasPendingPatch = Boolean(remotePatchId && remotePatchId !== localPatchId)
+
+        // If versions match but there's a pending patch, run patch job instead of full update
+        if (state && versionToApply === state.currentVersion && hasPendingPatch) {
+          next = await invoke<JobJournal>('start_patch_job', {
+            gameId: selectedGame.id,
+            installPath: selectedInstallPath,
+            targetVersion: versionToApply,
+          })
+        } else {
+          next = await invoke<JobJournal>('start_update_job', {
+            gameId: selectedGame.id,
+            installPath: selectedInstallPath,
+            targetVersion: versionToApply,
+          })
+        }
+      }
       setJob(next)
       if (installMode) {
         audibleInstallJobIdsRef.current.add(next.id)
@@ -3509,6 +3629,7 @@ export default function App() {
             onStart={() => void applyLauncherUpdate()}
             onRetry={() => void applyLauncherUpdate()}
           />
+          <AchievementToastOverlay />
           <NotificationToasts
             notifications={toastNotifications}
             onOpen={openNotificationRecord}

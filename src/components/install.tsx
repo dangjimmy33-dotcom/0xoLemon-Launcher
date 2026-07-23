@@ -49,6 +49,43 @@ export function InstallBar({
   )
 }
 
+function VersionTags({ tags }: { tags?: string[] }) {
+  if (!tags || !Array.isArray(tags) || tags.length === 0) return null
+  return (
+    <div className="version-tags" style={{ display: 'flex', gap: '6px', alignItems: 'center', marginLeft: 'auto', marginRight: '8px' }}>
+      {tags.map((tag) => {
+        if (typeof tag !== 'string') return null
+        let color = '#a3a3a3'
+        let label = tag
+        const lowerTag = tag.toLowerCase()
+
+        if (lowerTag.includes('clean')) {
+          color = '#ffffff'
+          label = 'clean file game'
+        } else if (lowerTag.includes('crack')) {
+          color = '#4ade80'
+          label = 'cracked'
+        } else if (lowerTag.includes('viet') || lowerTag.includes('việt')) {
+          color = '#fbbf24'
+          label = 'việt hóa'
+        } else if (lowerTag.includes('bypass')) {
+          color = '#ef4444'
+          label = 'bypass hypervisor'
+        }
+
+        return (
+          <div key={tag} style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: 'rgba(255,255,255,0.05)', padding: '2px 6px', borderRadius: '4px', fontSize: '11px', color: '#e5e5e5', border: '1px solid rgba(255,255,255,0.1)' }}>
+             <div className="tag-dot-wrapper">
+               <span className="tag-dot" style={{ backgroundColor: color }}></span>
+             </div>
+             {label}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 export function InstallOptionsDialog({
   detail,
   mode,
@@ -138,15 +175,24 @@ export function InstallOptionsDialog({
   // Check if we're waiting for disk space result
   const diskCheckPending = Boolean(installRoot) && diskCheck === null
 
+  // versionInfos might be undefined or might contain legacy strings.
+  // We must normalize it to an array of objects.
+  const safeVersionInfos = (versionInfos || []).map(v => 
+    typeof v === 'string' 
+      ? { version: v, label: v, buildId: v, sizeBytes: downloadSize, latest: false, tags: undefined } 
+      : v
+  )
+
   const infos =
-    versionInfos.length > 0
-      ? versionInfos
-      : availableVersions.map((version) => ({
+    safeVersionInfos.length > 0
+      ? safeVersionInfos
+      : (availableVersions || []).map((version) => ({
         version,
         label: version,
         buildId: version,
         sizeBytes: downloadSize,
-        latest: version === availableVersions[availableVersions.length - 1],
+        latest: version === (availableVersions && availableVersions.length > 0 ? availableVersions[availableVersions.length - 1] : ''),
+        tags: undefined,
       }))
   const selectedInfo = infos.find((info) => info.version === selectedVersion) ?? infos[0]
 
@@ -183,15 +229,18 @@ export function InstallOptionsDialog({
                 <strong>{selectedVersionLabel}</strong>
                 <small>{selectedBuildId ? `Build ${selectedBuildId}` : selectedVersion}</small>
               </span>
-              {selectedInfo?.latest ? <em>{t.install.latest}</em> : null}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <VersionTags tags={selectedInfo?.tags} />
+                {selectedInfo?.latest ? <em>{t.install.latest}</em> : null}
+              </div>
               <ChevronDown size={17} />
             </button>
             {versionMenuOpen ? (
               <div className="version-dropdown-menu" role="listbox" aria-label="Choose install version">
-                {infos.map((info) => (
+                {infos.map((info, idx) => (
                   <button
+                    key={`${info.version}-${idx}`}
                     className={info.version === selectedVersion ? 'version-dropdown-option active' : 'version-dropdown-option'}
-                    key={info.version}
                     type="button"
                     role="option"
                     aria-selected={info.version === selectedVersion}
@@ -205,7 +254,10 @@ export function InstallOptionsDialog({
                       <strong>{info.label || info.version}</strong>
                       <small>{info.buildId ? `Build ${info.buildId}` : info.version}</small>
                     </span>
-                    {info.latest ? <em>{t.install.latest}</em> : null}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <VersionTags tags={info.tags} />
+                      {info.latest ? <em>{t.install.latest}</em> : null}
+                    </div>
                   </button>
                 ))}
               </div>

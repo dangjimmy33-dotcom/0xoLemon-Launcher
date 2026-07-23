@@ -1,0 +1,20 @@
+const results = await Promise.all([
+  tools.shell_command({"command":"rg -n -C 4 \"current-job\\.json|current_journal|load_current_journal|resume.*job|JobStatus::(Committed|Failed)|start_patch_job|spawn_patch_job|start_update_job|run_real_patch_job|patchId|appliedPatchId|pendingPatches\" src-tauri/src/job.rs src-tauri/src/lib.rs src/App.tsx src -g '!node_modules'","workdir":"E:\\007Launcher","timeout_ms":20000}),
+  tools.shell_command({"command":"Get-Content -LiteralPath 'E:\\007Launcher\\manifest.json' -Raw","workdir":"E:\\007Launcher","timeout_ms":10000}),
+  tools.shell_command({"command":"Get-ChildItem -LiteralPath 'C:\\Users\\conte\\AppData\\Roaming\\com.oxolemon.launcher' -Force | Select-Object Name,FullName,Length,LastWriteTime; Get-ChildItem -LiteralPath 'C:\\Users\\conte\\AppData\\Roaming\\com.oxolemon.launcher\\journals' -Force | Select-Object Name,FullName,Length,LastWriteTime","workdir":"E:\\007Launcher","timeout_ms":10000}),
+  tools.shell_command({"command":"Get-ChildItem -LiteralPath 'E:\\0xoLemon store\\common\\Assassin''s Creed Black Flag Resynced' -Force | Select-Object Name,Length,LastWriteTime","workdir":"E:\\007Launcher","timeout_ms":10000})
+]);
+text(results.map((r, i) => `--- result ${i + 1} ---\n${typeof r === 'string' ? r : JSON.stringify(r)}`).join('\n'));
+
+---
+
+const results = await Promise.all([
+  tools.shell_command({"command":"rg -n -C 4 \"current-job\\.json|current_journal|load_current_journal|resume.*job|JobStatus::(Committed|Failed)|start_patch_job|spawn_patch_job|start_update_job|run_real_patch_job|patchId|appliedPatchId|pendingPatches\" src-tauri/src/job.rs src-tauri/src/lib.rs src/App.tsx src -g '!node_modules'","workdir":"E:\\007Launcher","timeout_ms":20000}),
+  tools.shell_command({"command":"Get-Content -LiteralPath 'E:\\007Launcher\\manifest.json' -Raw","workdir":"E:\\007Launcher","timeout_ms":10000}),
+  tools.shell_command({"command":"Get-ChildItem -LiteralPath 'C:\\Users\\conte\\AppData\\Roaming\\com.oxolemon.launcher' -Force | Select-Object Name,FullName,Length,LastWriteTime; Get-ChildItem -LiteralPath 'C:\\Users\\conte\\AppData\\Roaming\\com.oxolemon.launcher\\journals' -Force | Select-Object Name,FullName,Length,LastWriteTime","workdir":"E:\\007Launcher","timeout_ms":10000}),
+  tools.shell_command({"command":"Get-ChildItem -LiteralPath 'E:\\' -Force | Select-Object Name,FullName,Attributes","workdir":"E:\\007Launcher","timeout_ms":10000})
+]);
+text(results.map((r, i) => `--- result ${i + 1} ---\n${typeof r === 'string' ? r : JSON.stringify(r)}`).join('\n'));
+
+---
+

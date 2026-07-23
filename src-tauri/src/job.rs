@@ -52,7 +52,7 @@ fn long_path(path: &Path) -> PathBuf {
     #[cfg(target_os = "windows")]
     {
         let s = path.to_string_lossy();
-        // Already has a UNC or extended prefix — leave as-is.
+        // Already has a UNC or extended prefix â€” leave as-is.
         if s.starts_with("\\\\") {
             return path.to_path_buf();
         }
@@ -93,6 +93,7 @@ const INSTALL_MARKER_DIR: &str = ".0xolemon";
 const INSTALL_MARKER_FILE: &str = "state.0xo";
 const LEGACY_INSTALL_MARKER_FILE: &str = "install.json";
 const INSTALLED_MANIFEST_FILE: &str = "manifest.0xo";
+const APPLIED_PATCH_MANIFEST_FILE: &str = "patch-manifest.0xo";
 const DOWNLOAD_SESSION_FILE: &str = "depot-session.json";
 const STATE_MAGIC: &[u8] = b"0XOSTATE1\n";
 const STATE_KEY: &[u8] = b"0xoLemon-local-install-state-v1";
@@ -251,7 +252,40 @@ struct AutoUpdateEvent {
     game_id: Option<String>,
 }
 
+#[derive(Debug, Clone)]
+struct ReconciledInstall {
+    game_id: String,
+    install_path: PathBuf,
+    marker: InstallMarker,
+}
+
+const AUTO_PATCH_POLL_INTERVAL: Duration = Duration::from_secs(60);
+const AUTO_PATCH_RETRY_BACKOFF: Duration = Duration::from_secs(5 * 60);
+const AUTO_PATCH_STARTUP_DELAY: Duration = Duration::from_secs(2);
+
 pub fn start_auto_update_scheduler(app: AppHandle, control: Arc<JobControl>) {
+    let patch_app = app.clone();
+    let patch_control = control.clone();
+    thread::spawn(move || {
+        let mut last_attempts = HashMap::<String, (String, Instant)>::new();
+        // Give the WebView time to subscribe to launcher://job before a small
+        // hotfix can complete, otherwise the user never sees its progress.
+        thread::sleep(AUTO_PATCH_STARTUP_DELAY);
+        loop {
+            if let Err(error) = auto_patch_tick(&patch_app, &patch_control, &mut last_attempts) {
+                let _ = patch_app.emit(
+                    "launcher://auto-update",
+                    AutoUpdateEvent {
+                        state: "error".to_string(),
+                        message: error,
+                        game_id: None,
+                    },
+                );
+            }
+            thread::sleep(AUTO_PATCH_POLL_INTERVAL);
+        }
+    });
+
     thread::spawn(move || {
         let mut last_attempts = HashMap::<String, Instant>::new();
         thread::sleep(Duration::from_secs(20));
@@ -271,11 +305,127 @@ pub fn start_auto_update_scheduler(app: AppHandle, control: Arc<JobControl>) {
     });
 }
 
+fn automatic_job_can_start(app: &AppHandle, control: &Arc<JobControl>) -> Result<bool, String> {
+    if control.is_running() {
+        return Ok(false);
+    }
+    if crate::platform::get_runtime_states(app)?
+        .iter()
+        .any(|runtime| runtime.running)
+    {
+        return Ok(false);
+    }
+    if read_latest_journal(app)
+        .map_err(|error| error.to_string())?
+        .is_some_and(|journal| {
+            matches!(
+                journal.status,
+                JobStatus::Planned
+                    | JobStatus::Running
+                    | JobStatus::Paused
+                    | JobStatus::Downloading
+                    | JobStatus::Assembling
+                    | JobStatus::Verified
+            )
+        })
+    {
+        return Ok(false);
+    }
+    Ok(true)
+}
+
+fn patch_attempt_is_throttled(
+    last_attempts: &HashMap<String, (String, Instant)>,
+    game_id: &str,
+    patch_id: &str,
+) -> bool {
+    last_attempts.get(game_id).is_some_and(|(last_patch_id, attempted_at)| {
+        last_patch_id == patch_id && attempted_at.elapsed() < AUTO_PATCH_RETRY_BACKOFF
+    })
+}
+
+fn auto_patch_tick(
+    app: &AppHandle,
+    control: &Arc<JobControl>,
+    last_attempts: &mut HashMap<String, (String, Instant)>,
+) -> Result<(), String> {
+    let installs = reconciled_installs(app)?;
+    if !automatic_job_can_start(app, control)? {
+        return Ok(());
+    }
+
+    for install in installs {
+        let Some(version) = usable_installed_version(&install.marker.version) else {
+            continue;
+        };
+        let source = DepotSource::for_game(&install.game_id);
+        let patch_manifest = match load_patch_manifest(&source, &version) {
+            Ok(Some(manifest)) => manifest,
+            Ok(None) => continue,
+            Err(error) => {
+                if !patch_attempt_is_throttled(
+                    last_attempts,
+                    &install.game_id,
+                    "manifest-unavailable",
+                ) {
+                    last_attempts.insert(
+                        install.game_id.clone(),
+                        ("manifest-unavailable".to_string(), Instant::now()),
+                    );
+                    let _ = app.emit(
+                        "launcher://auto-update",
+                        AutoUpdateEvent {
+                            state: "error".to_string(),
+                            message: format!(
+                                "Could not check hotfixes for {}: {}",
+                                install.game_id, error
+                            ),
+                            game_id: Some(install.game_id.clone()),
+                        },
+                    );
+                }
+                continue;
+            }
+        };
+        let patch_id = patch_manifest.created_at.trim();
+        if patch_id.is_empty()
+            || install.marker.applied_patch_id.as_deref() == Some(patch_id)
+            || patch_attempt_is_throttled(last_attempts, &install.game_id, patch_id)
+        {
+            continue;
+        }
+
+        last_attempts.insert(
+            install.game_id.clone(),
+            (patch_id.to_string(), Instant::now()),
+        );
+        let _ = app.emit(
+            "launcher://auto-update",
+            AutoUpdateEvent {
+                state: "patching".to_string(),
+                message: format!("Applying hotfix for {} ({})", install.game_id, version),
+                game_id: Some(install.game_id.clone()),
+            },
+        );
+        spawn_patch_job(
+            app.clone(),
+            control.clone(),
+            install.install_path.display().to_string(),
+            Some(version),
+            Some(install.game_id),
+        )
+        .map_err(|error| error.to_string())?;
+        break;
+    }
+    Ok(())
+}
+
 fn auto_update_tick(
     app: &AppHandle,
     control: &Arc<JobControl>,
     last_attempts: &mut HashMap<String, Instant>,
 ) -> Result<(), String> {
+    let installs = reconciled_installs(app)?;
     let settings = crate::platform::current_settings();
     if settings.game_update_mode == crate::platform::GameUpdateMode::Manual {
         return Ok(());
@@ -289,33 +439,10 @@ fn auto_update_tick(
     {
         return Ok(());
     }
-    if control.is_running() {
-        return Ok(());
-    }
-    if crate::platform::get_runtime_states(app)?
-        .iter()
-        .any(|runtime| runtime.running)
-    {
-        return Ok(());
-    }
-    if read_latest_journal(app)
-        .map_err(|error| error.to_string())?
-        .is_some_and(|journal| {
-            matches!(
-                journal.status,
-                JobStatus::Planned
-                    | JobStatus::Running
-                    | JobStatus::Paused
-                    | JobStatus::Downloading
-                    | JobStatus::Assembling
-            )
-        })
-    {
+    if !automatic_job_can_start(app, control)? {
         return Ok(());
     }
 
-    let mut installs = crate::platform::install_records(app)?;
-    installs.sort_by(|left, right| left.game_id.cmp(&right.game_id));
     for install in installs {
         if last_attempts
             .get(&install.game_id)
@@ -324,6 +451,9 @@ fn auto_update_tick(
             continue;
         }
         let source = DepotSource::for_game(&install.game_id);
+        let Some(installed_version) = usable_installed_version(&install.marker.version) else {
+            continue;
+        };
         let catalog = match source.load_catalog() {
             Ok(catalog) => catalog,
             Err(_) => continue,
@@ -331,7 +461,7 @@ fn auto_update_tick(
         let Some(latest) = catalog.effective_latest_version().map(str::to_string) else {
             continue;
         };
-        if latest == install.version {
+        if latest == installed_version {
             continue;
         }
         last_attempts.insert(install.game_id.clone(), Instant::now());
@@ -340,8 +470,8 @@ fn auto_update_tick(
             AutoUpdateEvent {
                 state: "starting".to_string(),
                 message: format!(
-                    "Starting automatic update for {}: {} → {}",
-                    install.game_id, install.version, latest
+                    "Starting automatic update for {}: {} â†’ {}",
+                    install.game_id, installed_version, latest
                 ),
                 game_id: Some(install.game_id.clone()),
             },
@@ -349,7 +479,7 @@ fn auto_update_tick(
         spawn_update_job(
             app.clone(),
             control.clone(),
-            install.install_path,
+            install.install_path.display().to_string(),
             Some(latest),
             Some(install.game_id),
         )
@@ -408,6 +538,7 @@ pub struct GameInstallState {
     pub current_version: String,
     pub install_path: String,
     pub launch_executable: String,
+    pub applied_patch_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -480,6 +611,10 @@ pub struct JobJournal {
     pub logs: Vec<JobLog>,
     #[serde(default)]
     pub metrics: DownloadMetrics,
+    /// Set when a patch job commits – lets the frontend immediately clear the
+    /// pending-patch indicator without waiting for a GameInstallState refresh.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub applied_patch_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -941,20 +1076,44 @@ pub fn spawn_repair_job(
 ) -> Result<JobJournal, JobError> {
     let source = DepotSource::for_game(game_id);
     let install_root = PathBuf::from(install_path);
-    let marker =
-        read_install_marker(&install_root)?.filter(|marker| marker.game_id == source.game_id);
-    let catalog = source.load_catalog()?;
-    let version = target_version
-        .filter(|value| !value.trim().is_empty() && value != "not installed")
-        .or_else(|| marker.as_ref().map(|marker| marker.version.clone()))
-        .unwrap_or_else(|| {
-            catalog
+    let marker = read_install_marker(&install_root)?;
+    if let Some(marker) = marker.as_ref() {
+        if !install_marker_matches_source(marker, &source) {
+            return Err(JobError::Depot(format!(
+                "install metadata belongs to '{}', not '{}'",
+                marker.game_id, source.game_id
+            )));
+        }
+    }
+    let requested_version = target_version
+        .filter(|value| !value.trim().is_empty() && value != "not installed");
+    let version = match (marker.as_ref(), requested_version) {
+        (Some(marker), None) => marker.version.clone(),
+        (Some(marker), Some(requested))
+            if usable_installed_version(&marker.version)
+                == usable_installed_version(&requested) =>
+        {
+            marker.version.clone()
+        }
+        (_, Some(requested)) => {
+            let catalog = source.load_catalog()?;
+            resolve_target_version(&catalog, Some(requested))?
+        }
+        (None, None) => {
+            let catalog = source.load_catalog()?;
+            let latest = catalog
                 .effective_latest_version()
                 .unwrap_or("unknown")
-                .to_string()
-        });
-    let version = resolve_target_version(&catalog, Some(version))?;
-    let target_manifest = source.load_manifest(&catalog, &version)?;
+                .to_string();
+            resolve_target_version(&catalog, Some(latest))?
+        }
+    };
+    let target_manifest = installed_manifest_for_version(
+        &source,
+        &install_root,
+        marker.as_ref(),
+        &version,
+    )?;
     let requested = file_paths
         .into_iter()
         .map(|path| path.to_ascii_lowercase())
@@ -1150,6 +1309,77 @@ fn locate_registered_install(
     None
 }
 
+fn clear_orphaned_terminal_journal(app: &AppHandle, game_id: &str) {
+    let Ok(Some(journal)) = read_latest_journal(app) else {
+        return;
+    };
+    if sanitize_game_id(&journal.game_id) == sanitize_game_id(game_id)
+        && matches!(journal.status, JobStatus::Committed | JobStatus::Failed)
+    {
+        let _ = clear_current_journal_if_matches(app, &journal.id);
+    }
+}
+
+fn reconcile_registered_install(
+    app: &AppHandle,
+    source: &DepotSource,
+) -> Result<Option<(PathBuf, InstallMarker)>, JobError> {
+    let record = crate::platform::install_record(app, &source.game_id).map_err(JobError::Depot)?;
+
+    if let Some((install_root, marker)) = locate_registered_install(app, source) {
+        let launch_executable = marker
+            .launch_executable
+            .clone()
+            .unwrap_or_else(|| default_launch_executable(&source.game_id));
+        let version = usable_installed_version(&marker.version)
+            .unwrap_or_else(|| "installed".to_string());
+        let install_path = install_root.display().to_string();
+        let should_register = record.as_ref().is_none_or(|stored| {
+            stored.install_path != install_path
+                || stored.version != version
+                || stored.launch_executable != launch_executable
+        });
+        if should_register {
+            crate::platform::register_install(
+                app,
+                &source.game_id,
+                &install_root,
+                &version,
+                &launch_executable,
+            )
+            .map_err(JobError::Depot)?;
+        }
+        return Ok(Some((install_root, marker)));
+    }
+
+    if record.is_some() {
+        crate::platform::unregister_install(app, &source.game_id).map_err(JobError::Depot)?;
+        clear_orphaned_terminal_journal(app, &source.game_id);
+    }
+    Ok(None)
+}
+
+fn reconciled_installs(app: &AppHandle) -> Result<Vec<ReconciledInstall>, String> {
+    let mut records = crate::platform::install_records(app)?;
+    records.sort_by(|left, right| left.game_id.cmp(&right.game_id));
+
+    let mut installs = Vec::with_capacity(records.len());
+    for record in records {
+        let source = DepotSource::for_game(&record.game_id);
+        let Some((install_path, marker)) =
+            reconcile_registered_install(app, &source).map_err(|error| error.to_string())?
+        else {
+            continue;
+        };
+        installs.push(ReconciledInstall {
+            game_id: source.game_id,
+            install_path,
+            marker,
+        });
+    }
+    Ok(installs)
+}
+
 fn job_is_active_for_game(app: &AppHandle, game_id: &str) -> bool {
     read_latest_journal(app)
         .ok()
@@ -1224,6 +1454,7 @@ fn clear_completed_journal_for_game(app: &AppHandle, game_id: &str) {
         return;
     };
     if journal.status == JobStatus::Committed
+        && journal.kind != "patch"
         && sanitize_game_id(&journal.game_id) == sanitize_game_id(game_id)
     {
         let _ = clear_current_journal_if_matches(app, &journal.id);
@@ -1244,7 +1475,7 @@ fn cleanup_completed_download_data_if_idle(
 
 pub fn game_install_state(app: &AppHandle, game_id: &str) -> Result<GameInstallState, JobError> {
     let source = DepotSource::for_game(game_id);
-    let resolved = locate_registered_install(app, &source);
+    let resolved = reconcile_registered_install(app, &source)?;
 
     if let Some((install_root, marker)) = resolved {
         let launch_executable = marker
@@ -1286,6 +1517,7 @@ pub fn game_install_state(app: &AppHandle, game_id: &str) -> Result<GameInstallS
             current_version,
             install_path: install_root.display().to_string(),
             launch_executable,
+            applied_patch_id: marker.applied_patch_id.clone(),
         });
     }
 
@@ -1296,6 +1528,7 @@ pub fn game_install_state(app: &AppHandle, game_id: &str) -> Result<GameInstallS
         current_version: "not installed".to_string(),
         install_path: install_root.display().to_string(),
         launch_executable: default_launch_executable(&source.game_id),
+        applied_patch_id: None,
     })
 }
 
@@ -1580,6 +1813,33 @@ pub fn launch_game(
         )));
     }
 
+    // --- Steam Emulator DLL injection ---
+    // executable is now fully resolved; copy our emu DLL next to it.
+    {
+        let game_dir = executable.parent().unwrap_or(install_path);
+        let exe_is_64 = crate::process_manager::is_pe64(&executable);
+        let (arch_dir, dll_name) = if exe_is_64 {
+            ("x64", "steam_api64.dll")
+        } else {
+            ("x86", "steam_api.dll")
+        };
+        let emu_dll = if let Ok(res_dir) = app.path().resource_dir() {
+            res_dir.join("emu").join(arch_dir).join(dll_name)
+        } else {
+            std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                .join("resources").join("emu").join(arch_dir).join(dll_name)
+        };
+        if emu_dll.exists() {
+            let dest = game_dir.join(dll_name);
+            match std::fs::copy(&emu_dll, &dest) {
+                Ok(_) => eprintln!("[steam_emu] Injected {} -> {}", emu_dll.display(), dest.display()),
+                Err(e) => eprintln!("[steam_emu] Failed to inject DLL: {}", e),
+            }
+        } else {
+            eprintln!("[steam_emu] DLL not found at: {}", emu_dll.display());
+        }
+    }
+
     if !skip_cloud_sync {
         crate::cloud_save::sync_before_launch(app, &source.game_id).map_err(JobError::Depot)?;
     }
@@ -1671,17 +1931,12 @@ pub fn verify_install_integrity(
                 .and_then(|catalog| catalog.effective_latest_version().map(str::to_string))
                 .unwrap_or_else(|| "unknown".to_string())
         });
-    let manifest = if marker
-        .as_ref()
-        .is_some_and(|marker| marker.version == version)
-    {
-        match read_installed_manifest(install_path)? {
-            Some(manifest) => manifest,
-            None => load_manifest_for_version(&source, &version)?,
-        }
-    } else {
-        load_manifest_for_version(&source, &version)?
-    };
+    let manifest = installed_manifest_for_version(
+        &source,
+        install_path,
+        marker.as_ref(),
+        &version,
+    )?;
     let mut missing_files = Vec::new();
     let mut mismatched_files = Vec::new();
     let mut checked_files = 0_usize;
@@ -2046,6 +2301,7 @@ fn run_real_update_job(
             &staged_chunks_root,
             stage,
             &missing_chunks,
+            Some(&target_version),
             Arc::clone(&control),
             &mut progress_callback,
         )?;
@@ -2053,6 +2309,7 @@ fn run_real_update_job(
         source.download_chunks_to_store_parallel(
             &staged_chunks_root,
             &missing_chunks,
+            Some(&target_version),
             Arc::clone(&control),
             &mut progress_callback,
         )?;
@@ -2186,6 +2443,19 @@ fn run_real_update_job(
     }
     append_log(&mut journal, "info", "Real update committed");
     persist_and_emit(app, &journal)?;
+
+    // After step 4 finishes, we do step 5 (Patch fix)
+    let to_version = journal.to_version.clone();
+    try_apply_patch_fix(
+        app,
+        &mut journal,
+        &source,
+        &install_root,
+        &to_version,
+        &control,
+        false,
+    )?;
+
     Ok(journal)
 }
 
@@ -2296,6 +2566,7 @@ fn run_real_install_job(
             &staged_chunks_root,
             stage,
             &missing_chunks,
+            Some(&target_version),
             Arc::clone(&control),
             &mut progress_callback,
         )?;
@@ -2303,6 +2574,7 @@ fn run_real_install_job(
         source.download_chunks_to_store_parallel(
             &staged_chunks_root,
             &missing_chunks,
+            Some(&target_version),
             Arc::clone(&control),
             &mut progress_callback,
         )?;
@@ -2439,6 +2711,19 @@ fn run_real_install_job(
     }
     append_log(&mut journal, "info", "Real install committed");
     persist_and_emit(app, &journal)?;
+
+    // After step 4 finishes, we do step 5 (Patch fix)
+    let to_version = journal.to_version.clone();
+    try_apply_patch_fix(
+        app,
+        &mut journal,
+        &source,
+        &install_root,
+        &to_version,
+        &control,
+        false,
+    )?;
+
     Ok(journal)
 }
 
@@ -2517,6 +2802,7 @@ fn run_real_repair_job(
     )?;
     let mut downloaded = 0_u64;
     let mut in_flight = resumed_in_flight;
+    let target_version = journal.to_version.clone();
     let mut progress_callback = |progress: DownloadProgress| {
         if progress.clear_in_flight {
             in_flight.remove(&progress.task_id);
@@ -2539,6 +2825,7 @@ fn run_real_repair_job(
             &staged_chunks_root,
             stage,
             &missing_chunks,
+            Some(&target_version),
             Arc::clone(&control),
             &mut progress_callback,
         )?;
@@ -2546,6 +2833,7 @@ fn run_real_repair_job(
         source.download_chunks_to_store_parallel(
             &staged_chunks_root,
             &missing_chunks,
+            Some(&target_version),
             Arc::clone(&control),
             &mut progress_callback,
         )?;
@@ -2609,13 +2897,22 @@ fn run_real_repair_job(
     complete_step(app, &mut journal, 3)?;
 
     set_step_running(app, &mut journal, 4, JobStatus::Running, "Finalize repair")?;
-    write_install_marker(
-        app,
-        &install_root,
-        &target_manifest,
-        &source,
-        &journal.to_version,
-    )?;
+    let existing_marker = read_install_marker(&install_root)?;
+    if existing_marker.as_ref().is_some_and(|marker| {
+        install_marker_matches_source(marker, &source) && marker.version == journal.to_version
+    }) {
+        // Repair does not change the installed version. Preserve the patch id
+        // and its cached manifest so a repaired hotfix remains verified later.
+        write_install_marker_file(&install_root, existing_marker.as_ref().unwrap())?;
+    } else {
+        write_install_marker(
+            app,
+            &install_root,
+            &target_manifest,
+            &source,
+            &journal.to_version,
+        )?;
+    }
     journal.status = JobStatus::Committed;
     journal.phase = "Repair committed".to_string();
     journal.overall_progress = 1.0;
@@ -2747,6 +3044,8 @@ struct InstallMarker {
     installed_at: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     launch_executable: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    applied_patch_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -2783,14 +3082,14 @@ fn load_steam_appid_mapping() -> HashMap<String, u32> {
     for mapping_path in &paths {
         if let Ok(content) = fs::read_to_string(mapping_path) {
             if let Ok(mapping) = serde_json::from_str::<HashMap<String, u32>>(&content) {
-                eprintln!("✓ Loaded {} AppID mappings from {:?}", mapping.len(), mapping_path);
+                eprintln!("âœ“ Loaded {} AppID mappings from {:?}", mapping.len(), mapping_path);
                 return mapping;
             }
         }
     }
     
     // Fallback: return empty map if file not found or invalid
-    eprintln!("⚠ Warning: steam_appids_mapping.json not found - download paths will use long game IDs");
+    eprintln!("â  Warning: steam_appids_mapping.json not found - download paths will use long game IDs");
     HashMap::new()
 }
 
@@ -2857,9 +3156,9 @@ impl DepotSource {
         
         // Debug log
         if let Some(appid) = app_id {
-            eprintln!("✓ Found AppID {} for game '{}'", appid, game_id);
+            eprintln!("âœ“ Found AppID {} for game '{}'", appid, game_id);
         } else {
-            eprintln!("⚠ No AppID found for game '{}' (will use long game ID)", game_id);
+            eprintln!("â  No AppID found for game '{}' (will use long game ID)", game_id);
         }
 
         Self {
@@ -3296,6 +3595,7 @@ impl DepotSource {
         &self,
         staged_chunks_root: &Path,
         chunks: &[ChunkRef],
+        target_version: Option<&str>,
         control: Arc<JobControl>,
         mut on_progress: F,
     ) -> Result<(), JobError>
@@ -3325,6 +3625,7 @@ impl DepotSource {
                 let abort = Arc::clone(&abort);
                 let tx = tx.clone();
                 let source = self.clone();
+                let target_version = target_version.map(String::from);
                 let control = Arc::clone(&control);
                 let staged_chunks_root = staged_chunks_root.to_path_buf();
                 scope.spawn(move || loop {
@@ -3360,6 +3661,7 @@ impl DepotSource {
                             &staged_chunks_root,
                             &task,
                             &task_id,
+                            target_version.as_deref(),
                             &control,
                             &tx,
                         ) {
@@ -3444,10 +3746,19 @@ impl DepotSource {
         staged_chunks_root: &Path,
         task: &PackDownloadTask,
         task_id: &str,
+        target_version: Option<&str>,
         control: &JobControl,
         progress_tx: &mpsc::Sender<Result<DownloadProgress, String>>,
     ) -> Result<(), JobError> {
-        let relative_path = format!("packs/{}.bin", task.pack_id);
+        let relative_path = if task.pack_id.starts_with("patch-") {
+            if let Some(version) = target_version {
+                format!("patches/{}/packs/{}.bin", version, task.pack_id)
+            } else {
+                format!("packs/{}.bin", task.pack_id)
+            }
+        } else {
+            format!("packs/{}.bin", task.pack_id)
+        };
         let partial_path = partial_range_path(staged_chunks_root, task);
         let range = self.fetch_pack_span_with_progress(
             &task.pack_id,
@@ -4929,10 +5240,10 @@ fn read_chunk_bytes(
                         }
                     }
                 }
-                // File exists but seek/read/verify failed — fall through to staged chunk
+                // File exists but seek/read/verify failed â€” fall through to staged chunk
             }
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
-                // Local source was removed by a previous assemble step — fall through
+                // Local source was removed by a previous assemble step â€” fall through
             }
             Err(e) => return Err(e.into()),
         }
@@ -5111,8 +5422,10 @@ fn write_install_marker(
         version: installed_version.to_string(),
         installed_at: Utc::now().to_rfc3339(),
         launch_executable: Some(launch_executable.clone()),
+        applied_patch_id: None,
     };
     write_install_marker_file(install_root, &marker)?;
+    clear_applied_patch_manifest(install_root);
     if manifest.version == installed_version {
         write_installed_manifest(install_root, manifest)?;
     } else {
@@ -5197,7 +5510,7 @@ fn write_install_marker(
         if executable.exists() {
             // For multi-exe games, don't pass --launch-executable so the picker appears.
             let shortcut_relative = if manifest.launch_options.len() >= 2 {
-                // Create shortcut without pinning to a specific exe — picker will show.
+                // Create shortcut without pinning to a specific exe â€” picker will show.
                 let _ = create_game_shortcut_no_exe(app, source, install_root, &executable);
             } else {
                 let _ = create_game_shortcut(app, source, install_root, &executable, &shortcut_exe_relative);
@@ -5256,6 +5569,7 @@ fn write_sanitized_install_marker(
             marker.installed_at.clone()
         },
         launch_executable: Some(launch_executable.to_string()),
+        applied_patch_id: marker.applied_patch_id.clone(),
     };
     write_install_marker_file(install_root, &sanitized)?;
     Ok(())
@@ -5292,6 +5606,146 @@ fn read_installed_manifest(install_root: &Path) -> Result<Option<VersionManifest
         return Ok(None);
     }
     Ok(Some(read_state_file(&path)?))
+}
+
+fn applied_patch_manifest_path(install_root: &Path) -> PathBuf {
+    install_root
+        .join(INSTALL_MARKER_DIR)
+        .join(APPLIED_PATCH_MANIFEST_FILE)
+}
+
+fn write_applied_patch_manifest(
+    install_root: &Path,
+    manifest: &VersionManifest,
+) -> Result<(), JobError> {
+    let path = applied_patch_manifest_path(install_root);
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent)?;
+    }
+    write_state_file(&path, manifest)
+}
+
+fn read_applied_patch_manifest(
+    install_root: &Path,
+) -> Result<Option<VersionManifest>, JobError> {
+    let path = applied_patch_manifest_path(install_root);
+    if !path.exists() {
+        return Ok(None);
+    }
+    Ok(Some(read_state_file(&path)?))
+}
+
+fn clear_applied_patch_manifest(install_root: &Path) {
+    let path = applied_patch_manifest_path(install_root);
+    if path.exists() {
+        let _ = fs::remove_file(path);
+    }
+}
+
+fn manifest_file_key(path: &str) -> String {
+    path.replace('\\', "/").to_ascii_lowercase()
+}
+
+fn overlay_patch_manifest(
+    mut base_manifest: VersionManifest,
+    patch_manifest: &VersionManifest,
+) -> Result<VersionManifest, JobError> {
+    let mut patch_by_path = HashMap::<String, &FileEntry>::new();
+    for file in &patch_manifest.files {
+        let key = manifest_file_key(&file.path);
+        if key.is_empty() || patch_by_path.insert(key.clone(), file).is_some() {
+            return Err(JobError::Depot(format!(
+                "patch manifest contains a duplicate or empty file path: {}",
+                file.path
+            )));
+        }
+    }
+
+    let mut base_paths = HashSet::new();
+    let mut merged_files = Vec::with_capacity(base_manifest.files.len() + patch_manifest.files.len());
+    for file in base_manifest.files {
+        let key = manifest_file_key(&file.path);
+        base_paths.insert(key.clone());
+        merged_files.push(
+            patch_by_path
+                .get(&key)
+                .copied()
+                .cloned()
+                .unwrap_or(file),
+        );
+    }
+    for file in &patch_manifest.files {
+        if !base_paths.contains(&manifest_file_key(&file.path)) {
+            merged_files.push(file.clone());
+        }
+    }
+
+    base_manifest.total_size = merged_files.iter().map(|file| file.size).sum();
+    base_manifest.files = merged_files;
+    // The combined local manifest is intentionally not represented as a
+    // depot-signed manifest. Each replacement still has its own SHA-256.
+    base_manifest.signature = None;
+    Ok(base_manifest)
+}
+
+fn applied_patch_manifest_for_marker(
+    source: &DepotSource,
+    install_root: &Path,
+    marker: &InstallMarker,
+) -> Result<Option<VersionManifest>, JobError> {
+    let Some(applied_patch_id) = marker.applied_patch_id.as_deref() else {
+        return Ok(None);
+    };
+    let version = usable_installed_version(&marker.version).ok_or_else(|| {
+        JobError::Depot("cannot verify a patch for an unknown installed version".to_string())
+    })?;
+    let manifest = match read_applied_patch_manifest(install_root)? {
+        Some(manifest) => {
+            validate_patch_manifest(source, &version, &manifest)?;
+            manifest
+        }
+        None => load_patch_manifest(source, &version)?.ok_or_else(|| {
+            JobError::Depot(format!(
+                "the applied patch '{}' no longer has a manifest to verify",
+                applied_patch_id
+            ))
+        })?,
+    };
+    if manifest.created_at != applied_patch_id {
+        return Err(JobError::Depot(format!(
+            "applied patch marker '{}' does not match manifest '{}'",
+            applied_patch_id, manifest.created_at
+        )));
+    }
+    Ok(Some(manifest))
+}
+
+fn installed_manifest_for_version(
+    source: &DepotSource,
+    install_root: &Path,
+    marker: Option<&InstallMarker>,
+    version: &str,
+) -> Result<VersionManifest, JobError> {
+    let marker_matches_version = marker.is_some_and(|marker| {
+        usable_installed_version(&marker.version) == usable_installed_version(version)
+    });
+    let base_manifest = if marker_matches_version {
+        match read_installed_manifest(install_root)? {
+            Some(manifest) => manifest,
+            None => load_manifest_for_version(source, version)?,
+        }
+    } else {
+        load_manifest_for_version(source, version)?
+    };
+
+    if marker_matches_version {
+        if let Some(marker) = marker {
+            if let Some(patch_manifest) = applied_patch_manifest_for_marker(source, install_root, marker)? {
+                return overlay_patch_manifest(base_manifest, &patch_manifest);
+            }
+        }
+    }
+    Ok(base_manifest)
 }
 
 fn write_state_file<T: Serialize>(path: &Path, value: &T) -> Result<(), JobError> {
@@ -5409,7 +5863,7 @@ fn wait_for_control(
             }
         }
 
-        // Resumed — restore step to running and emit immediately so UI updates
+        // Resumed â€” restore step to running and emit immediately so UI updates
         journal.status = JobStatus::Downloading;
         journal.steps[step_index].status = StepStatus::Running;
         touch(journal);
@@ -5527,8 +5981,8 @@ fn is_active_real_journal(journal: &JobJournal) -> bool {
             | JobStatus::Assembling
             | JobStatus::Verified
             | JobStatus::Failed
-    );
-    let is_real = journal.kind == "install" || journal.kind == "update" || journal.kind == "repair";
+    ) || (journal.kind == "patch" && journal.status == JobStatus::Committed);
+    let is_real = matches!(journal.kind.as_str(), "install" | "update" | "repair" | "patch");
     is_active && is_real
 }
 
@@ -5562,6 +6016,7 @@ fn default_journal(
             step("Download packs", "Resume missing byte ranges from proxy"),
             step("Assemble files", "Rebuild files into verified temp outputs"),
             step("Finalize", "Replace only after full-file hash match"),
+            step("Patch fix", "Apply hotfixes and delta patches"),
         ],
         logs: vec![JobLog {
             at: now,
@@ -5569,6 +6024,7 @@ fn default_journal(
             message: "Ready to start resumable update".to_string(),
         }],
         metrics: DownloadMetrics::default(),
+        applied_patch_id: None,
     }
 }
 
@@ -5782,6 +6238,77 @@ mod downloader_v2_tests {
     }
 
     #[test]
+    fn patch_retry_backoff_is_scoped_to_the_patch_identity() {
+        let mut attempts = HashMap::new();
+        attempts.insert(
+            "geometry-dash".to_string(),
+            ("patch-1".to_string(), Instant::now()),
+        );
+
+        assert!(patch_attempt_is_throttled(&attempts, "geometry-dash", "patch-1"));
+        assert!(!patch_attempt_is_throttled(&attempts, "geometry-dash", "patch-2"));
+        assert!(!patch_attempt_is_throttled(&attempts, "another-game", "patch-1"));
+    }
+
+    #[test]
+    fn patch_job_uses_the_committed_marker_version_without_catalog_lookup() {
+        let source = DepotSource::for_game("geometry-dash");
+        let marker = InstallMarker {
+            game_id: "geometry-dash".to_string(),
+            version: "2.2081-hotfixable".to_string(),
+            installed_at: String::new(),
+            launch_executable: None,
+            applied_patch_id: None,
+        };
+
+        assert_eq!(
+            patch_target_version_from_marker(&source, &marker, None).unwrap(),
+            "2.2081-hotfixable"
+        );
+        assert_eq!(
+            patch_target_version_from_marker(
+                &source,
+                &marker,
+                Some("2.2081-hotfixable".to_string()),
+            )
+            .unwrap(),
+            "2.2081-hotfixable"
+        );
+    }
+
+    #[test]
+    fn patch_job_rejects_a_version_that_does_not_match_the_marker() {
+        let source = DepotSource::for_game("geometry-dash");
+        let marker = InstallMarker {
+            game_id: "geometry-dash".to_string(),
+            version: "2.2081".to_string(),
+            installed_at: String::new(),
+            launch_executable: None,
+            applied_patch_id: None,
+        };
+
+        assert!(patch_target_version_from_marker(
+            &source,
+            &marker,
+            Some("2.2082".to_string()),
+        )
+        .is_err());
+    }
+
+    #[test]
+    fn active_patch_journals_are_restored_with_other_real_jobs() {
+        let journal = default_journal(
+            "geometry-dash",
+            "patch",
+            r"E:\0xoLemon store\common\Geometry Dash".to_string(),
+            "2.2081",
+            "2.2081",
+            0,
+        );
+        assert!(is_active_real_journal(&journal));
+    }
+
+    #[test]
     fn catalog_version_lookup_accepts_unique_legacy_suffix_alias() {
         let catalog = test_catalog(&["v17.4I"]);
         let entry = find_catalog_version_entry(&catalog, "v17.4")
@@ -5823,4 +6350,589 @@ mod downloader_v2_tests {
             signature: None,
         }
     }
+}
+fn load_patch_manifest(
+    source: &DepotSource,
+    version: &str,
+) -> Result<Option<VersionManifest>, JobError> {
+    let version = usable_installed_version(version).ok_or_else(|| {
+        JobError::Depot("cannot check a patch for an unknown installed version".to_string())
+    })?;
+    let patch_path = format!("patches/{version}/manifest.json");
+    match source.load_json::<VersionManifest>(&patch_path) {
+        Ok(manifest) => {
+            validate_patch_manifest(source, &version, &manifest)?;
+            Ok(Some(manifest))
+        }
+        Err(JobError::NotFound(_)) => Ok(None),
+        Err(error) => Err(error),
+    }
+}
+
+fn validate_patch_manifest(
+    source: &DepotSource,
+    version: &str,
+    manifest: &VersionManifest,
+) -> Result<(), JobError> {
+    let manifest_game_matches = sanitize_game_id(&manifest.game_id) == source.game_id
+        || compact_game_id(&manifest.game_id) == compact_game_id(&source.game_dir_name);
+    if !manifest_game_matches {
+        return Err(JobError::Depot(format!(
+            "patch manifest belongs to '{}', not '{}'",
+            manifest.game_id, source.game_id
+        )));
+    }
+    let manifest_version = usable_installed_version(&manifest.version)
+        .ok_or_else(|| JobError::Depot("patch manifest is missing a usable version".to_string()))?;
+    if manifest_version != version {
+        return Err(JobError::Depot(format!(
+            "patch manifest version '{}' does not match '{}'",
+            manifest_version, version
+        )));
+    }
+    if manifest.created_at.trim().is_empty() {
+        return Err(JobError::Depot(
+            "patch manifest is missing createdAt".to_string(),
+        ));
+    }
+    Ok(())
+}
+
+pub fn check_patch_available(game_id: &str, version: &str) -> Result<Option<String>, String> {
+    let source = DepotSource::for_game(game_id);
+    load_patch_manifest(&source, version)
+        .map(|manifest| manifest.map(|manifest| manifest.created_at))
+        .map_err(|error| error.to_string())
+}
+
+fn patch_target_version_from_marker(
+    source: &DepotSource,
+    marker: &InstallMarker,
+    requested_version: Option<String>,
+) -> Result<String, JobError> {
+    if !install_marker_matches_source(&marker, source) {
+        return Err(JobError::Depot(format!(
+            "install metadata belongs to '{}', not '{}'",
+            marker.game_id, source.game_id
+        )));
+    }
+
+    let installed_version = usable_installed_version(&marker.version).ok_or_else(|| {
+        JobError::Depot("cannot apply a patch to an install with an unknown version".to_string())
+    })?;
+    if let Some(requested_version) = requested_version {
+        let requested_version = usable_installed_version(&requested_version).ok_or_else(|| {
+            JobError::Depot("cannot apply a patch for an unknown target version".to_string())
+        })?;
+        if requested_version != installed_version {
+            return Err(JobError::Depot(format!(
+                "patch target '{}' does not match installed version '{}'",
+                requested_version, installed_version
+            )));
+        }
+    }
+
+    Ok(installed_version)
+}
+
+fn resolve_patch_target_version(
+    source: &DepotSource,
+    install_root: &Path,
+    requested_version: Option<String>,
+) -> Result<String, JobError> {
+    if !install_root.is_dir() {
+        return Err(JobError::Depot(format!(
+            "{} is not installed at '{}'",
+            source.game_dir_name,
+            install_root.display()
+        )));
+    }
+
+    let marker = read_install_marker(install_root)?.ok_or_else(|| {
+        JobError::Depot(format!(
+            "{} is missing .0xolemon/state.0xo",
+            source.game_dir_name
+        ))
+    })?;
+    patch_target_version_from_marker(source, &marker, requested_version)
+}
+
+fn default_patch_journal(
+    source: &DepotSource,
+    install_path: String,
+    target_version: &str,
+) -> JobJournal {
+    let mut journal = default_journal(
+        &source.game_id,
+        "patch",
+        install_path,
+        "patching",
+        target_version,
+        0,
+    );
+    journal.steps = vec![
+        step("Check patch", "Confirm the installed version before patching"),
+        step("Download patch", "Download version-specific patch files"),
+        step("Verify patch", "Validate downloaded patch files"),
+        step("Apply patch", "Replace patched game files after validation"),
+        step("Record patch", "Persist the applied patch metadata"),
+        step("Patch complete", "Waiting for patch completion"),
+    ];
+    if let Some(log) = journal.logs.first_mut() {
+        log.message = "Ready to download and apply a resumable patch".to_string();
+    }
+    journal
+}
+
+pub fn spawn_patch_job(
+    app: AppHandle,
+    control: Arc<JobControl>,
+    install_path: String,
+    target_version: Option<String>,
+    game_id: Option<String>,
+) -> Result<JobJournal, JobError> {
+    let source = DepotSource::for_game(game_id.as_deref().unwrap_or(DEFAULT_GAME_ID));
+    let install_root = PathBuf::from(&install_path);
+    let target_version = resolve_patch_target_version(&source, &install_root, target_version)?;
+
+    let journal = default_patch_journal(&source, install_path, &target_version);
+
+    persist_and_emit(&app, &journal)?;
+    let app_for_thread = app.clone();
+    let initial = journal.clone();
+    let return_journal = journal.clone();
+
+    control.set_running(true);
+    let control_for_thread = control.clone();
+    thread::spawn(move || {
+        let canceled_job_id = initial.id.clone();
+        // Small startup delay: give the WebView time to mount and subscribe to
+        // `launcher://job` before the first status event fires. Without this,
+        // very fast patch jobs can complete before the Downloads tab is ready
+        // to display them.
+        thread::sleep(Duration::from_millis(300));
+        let result = run_real_patch_job(&app_for_thread, control_for_thread.clone(), initial.clone());
+        let canceled = control_for_thread.is_canceled();
+        control_for_thread.set_running(false);
+        if canceled {
+            let _ = clear_current_journal_if_matches(&app_for_thread, &canceled_job_id);
+            return;
+        }
+        match result {
+            Ok(_) => {
+                // Keep the terminal patch journal so the frontend can observe
+                // `committed`, refresh GameInstallState, and read applied_patch_id.
+            }
+            Err(e) => {
+                let mut errored = read_latest_journal(&app_for_thread)
+                    .ok()
+                    .flatten()
+                    .unwrap_or_else(|| initial.clone());
+                errored.status = JobStatus::Failed;
+                errored.phase = "Failed".to_string();
+                mark_running_step_failed(&mut errored);
+                append_log(&mut errored, "error", &format!("Job failed: {}", e));
+                let _ = persist_and_emit(&app_for_thread, &errored);
+            }
+        }
+    });
+
+    Ok(return_journal)
+}
+
+fn run_real_patch_job(
+    app: &AppHandle,
+    control: Arc<JobControl>,
+    mut journal: JobJournal,
+) -> Result<JobJournal, JobError> {
+    let source = DepotSource::for_game(&journal.game_id);
+    let install_root = PathBuf::from(&journal.install_path);
+    set_step_running(app, &mut journal, 0, JobStatus::Running, "Check patch")?;
+    resolve_patch_target_version(&source, &install_root, Some(journal.to_version.clone()))?;
+    complete_step(app, &mut journal, 0)?;
+
+    let to_version = journal.to_version.clone();
+    try_apply_patch_fix(
+        app,
+        &mut journal,
+        &source,
+        &install_root,
+        &to_version,
+        &control,
+        true,
+    )?;
+    Ok(journal)
+}
+
+fn patch_transfer_bytes(manifest: &VersionManifest) -> u64 {
+    manifest
+        .files
+        .iter()
+        .flat_map(|file| file.chunks.iter())
+        .map(|chunk| chunk.compressed_size)
+        .sum()
+}
+
+fn try_apply_patch_fix(
+    app: &AppHandle,
+    journal: &mut JobJournal,
+    source: &DepotSource,
+    install_root: &Path,
+    version: &str,
+    control: &Arc<JobControl>,
+    manifest_errors_are_fatal: bool,
+) -> Result<(), JobError> {
+    let standalone_patch = journal.kind == "patch";
+    let patch_step_index = if standalone_patch { 1 } else { 5 };
+    let patch_manifest: VersionManifest = match load_patch_manifest(source, version) {
+        Ok(Some(manifest)) => manifest,
+        Ok(None) => {
+            append_log(journal, "info", &format!("[Patch fix] No patch for {} - skipping", version));
+            if standalone_patch {
+                for step in journal.steps.iter_mut().skip(patch_step_index) {
+                    step.status = StepStatus::Completed;
+                    step.detail = "No patch required for this version".to_string();
+                    step.progress = 1.0;
+                }
+            } else if let Some(step) = journal.steps.get_mut(patch_step_index) {
+                step.status = StepStatus::Completed;
+                step.detail = "No patch required for this version".to_string();
+                step.progress = 1.0;
+            }
+            journal.overall_progress = 1.0;
+            journal.phase = if standalone_patch {
+                "No patch required".to_string()
+            } else {
+                "Committed".to_string()
+            };
+            journal.status = JobStatus::Committed;
+            persist_and_emit(app, journal)?;
+            return Ok(());
+        }
+        Err(err) => {
+            if manifest_errors_are_fatal {
+                append_log(journal, "error", &format!("[Patch fix] Could not load patch manifest: {err}"));
+                if let Some(step) = journal.steps.get_mut(patch_step_index) {
+                    step.status = StepStatus::Failed;
+                    step.detail = "Patch manifest unavailable".to_string();
+                }
+                journal.phase = "Failed".to_string();
+                journal.status = JobStatus::Failed;
+                persist_and_emit(app, journal)?;
+                return Err(err);
+            }
+
+            append_log(journal, "warning", &format!("[Patch fix] Could not load patch manifest: {err} - skipping"));
+            if let Some(step) = journal.steps.get_mut(patch_step_index) {
+                step.status = StepStatus::Completed;
+                step.detail = "Skipped (patch manifest unavailable)".to_string();
+                step.progress = 1.0;
+            }
+            journal.overall_progress = 1.0;
+            journal.phase = "Committed".to_string();
+            journal.status = JobStatus::Committed;
+            persist_and_emit(app, journal)?;
+            return Ok(());
+        }
+    };
+
+    let file_count = patch_manifest.files.len();
+    append_log(
+        journal,
+        "info",
+        &format!("[Patch fix] Found patch for {} ({} file(s))", version, file_count),
+    );
+
+    let patch_chunks = patch_manifest
+        .files
+        .iter()
+        .flat_map(|file| file.chunks.iter().cloned())
+        .collect::<Vec<_>>();
+    if standalone_patch {
+        journal.bytes_total = patch_transfer_bytes(&patch_manifest);
+        journal.bytes_done = 0;
+        configure_download_metrics(journal, &patch_chunks, true);
+        journal.metrics.pipeline = "patch-direct-v1".to_string();
+        set_step_running(app, journal, patch_step_index, JobStatus::Downloading, "Download patch")?;
+        if let Some(step) = journal.steps.get_mut(patch_step_index) {
+            step.detail = format!("Downloading {} patch file(s)...", file_count);
+        }
+        persist_and_emit(app, journal)?;
+    } else {
+        journal.status = JobStatus::Running;
+        journal.phase = "Patch fix".to_string();
+        if let Some(step) = journal.steps.get_mut(patch_step_index) {
+            step.status = StepStatus::Running;
+            step.progress = 0.0;
+            step.detail = format!("Applying {} fix file(s)...", file_count);
+        }
+        journal.overall_progress = overall_progress(patch_step_index, 0.0);
+        persist_and_emit(app, journal)?;
+    }
+
+    let patch_stage = install_root.join(INSTALL_MARKER_DIR).join("patch_stage");
+    fs::create_dir_all(&patch_stage)?;
+    let (fallback_progress_tx, _fallback_progress_rx) =
+        mpsc::channel::<Result<DownloadProgress, String>>();
+    let mut downloaded = 0_u64;
+    let mut in_flight = HashMap::<String, u64>::new();
+
+    for (idx, file) in patch_manifest.files.iter().enumerate() {
+        if standalone_patch {
+            wait_for_control(app, control, journal, patch_step_index)?;
+        } else if control.is_canceled() {
+            return Err(JobError::Canceled);
+        }
+        let target_path = safe_join(install_root, &file.path)
+            .ok_or_else(|| JobError::Depot(format!("unsafe patch path: {}", file.path)))?;
+        append_log(
+            journal,
+            "info",
+            &format!("[Patch fix] ({}/{}) {}", idx + 1, file_count, file.path),
+        );
+        let mut assembled = Vec::with_capacity(file.size as usize);
+        for chunk in &file.chunks {
+            let pack_relative = format!("patches/{}/packs/{}.bin", version, chunk.pack_id);
+            let task_id = format!("patch-{}-{}", version, chunk.hash);
+            let partial_path = patch_stage.join(format!("{}.partial", chunk.hash));
+            let transport = if standalone_patch {
+                fetch_patch_pack_span_with_journal_progress(
+                    app,
+                    journal,
+                    source,
+                    chunk,
+                    pack_relative,
+                    task_id,
+                    partial_path,
+                    control,
+                    patch_step_index,
+                    &mut downloaded,
+                    &mut in_flight,
+                )?
+            } else {
+                source.fetch_pack_span_with_progress(
+                    &chunk.pack_id,
+                    chunk.pack_offset,
+                    chunk.pack_offset + chunk.compressed_size,
+                    &pack_relative,
+                    &task_id,
+                    &partial_path,
+                    control,
+                    &fallback_progress_tx,
+                )?
+            };
+            verify_compressed_chunk_bytes(chunk, &transport)?;
+            let compressed = decode_transport_chunk(chunk, &transport)?;
+            let plain = decode_chunk_payload(chunk, &compressed)?;
+            verify_chunk_bytes(chunk, &plain)?;
+            assembled.extend_from_slice(&plain);
+        }
+        if !sha256_bytes(&assembled).eq_ignore_ascii_case(&file.sha256) {
+            return Err(JobError::Depot(format!(
+                "patch file hash mismatch: {}",
+                file.path
+            )));
+        }
+        if let Some(parent) = target_path.parent() {
+            fs::create_dir_all(parent)?;
+        }
+        let target_path = long_path(&target_path);
+        let tmp_path = target_path.with_extension("patch_tmp");
+        fs::write(&tmp_path, &assembled)?;
+        fs::rename(&tmp_path, &target_path)?;
+        if !standalone_patch {
+            let step_progress = progress_fraction(idx + 1, file_count);
+            if let Some(step) = journal.steps.get_mut(patch_step_index) {
+                step.progress = step_progress;
+            }
+            journal.overall_progress = overall_progress(patch_step_index, step_progress);
+            persist_and_emit(app, journal)?;
+        }
+    }
+    for file in &patch_manifest.files {
+        for chunk in &file.chunks {
+            let partial_path = patch_stage.join(format!("{}.partial", chunk.hash));
+            let _ = fs::remove_file(&partial_path);
+        }
+    }
+    let _ = fs::remove_dir(&patch_stage);
+
+    if standalone_patch {
+        complete_step(app, journal, 1)?;
+        set_step_running(app, journal, 2, JobStatus::Running, "Verify patch")?;
+        if let Some(step) = journal.steps.get_mut(2) {
+            step.detail = format!("Validated {} patch file(s)", file_count);
+        }
+        complete_step(app, journal, 2)?;
+        set_step_running(app, journal, 3, JobStatus::Running, "Apply patch")?;
+        if let Some(step) = journal.steps.get_mut(3) {
+            step.detail = format!("Applied {} patch file(s)", file_count);
+        }
+        complete_step(app, journal, 3)?;
+        set_step_running(app, journal, 4, JobStatus::Running, "Record patch")?;
+    }
+
+    write_applied_patch_manifest(install_root, &patch_manifest)?;
+    let mut marker = read_install_marker(install_root)?.ok_or_else(|| {
+        JobError::Depot(format!(
+            "{} is missing .0xolemon/state.0xo after patching",
+            source.game_dir_name
+        ))
+    })?;
+    patch_target_version_from_marker(source, &marker, Some(version.to_string()))?;
+    marker.applied_patch_id = Some(patch_manifest.created_at.clone());
+    write_install_marker_file(install_root, &marker)?;
+
+    append_log(journal, "info", &format!("[Patch fix] Applied {} file(s)", file_count));
+    if standalone_patch {
+        complete_step(app, journal, 4)?;
+        set_step_running(app, journal, 5, JobStatus::Running, "Finalize patch")?;
+        if let Some(step) = journal.steps.get_mut(5) {
+            step.detail = format!("Patch applied to {}", version);
+        }
+        complete_step(app, journal, 5)?;
+        journal.bytes_done = journal.bytes_total;
+        // Surface the applied patch ID on the journal so the frontend can
+        // immediately clear the pending-patch badge without a round-trip.
+        journal.applied_patch_id = Some(patch_manifest.created_at.clone());
+    } else if let Some(step) = journal.steps.get_mut(patch_step_index) {
+        step.status = StepStatus::Completed;
+        step.progress = 1.0;
+        step.detail = format!("Applied {} fix file(s)", file_count);
+    }
+    journal.overall_progress = 1.0;
+    journal.phase = if standalone_patch {
+        "Patch applied".to_string()
+    } else {
+        "Committed".to_string()
+    };
+    journal.status = JobStatus::Committed;
+    persist_and_emit(app, journal)?;
+    Ok(())
+}
+
+fn record_patch_download_progress(
+    app: &AppHandle,
+    journal: &mut JobJournal,
+    control: &JobControl,
+    step_index: usize,
+    downloaded: &mut u64,
+    in_flight: &mut HashMap<String, u64>,
+    progress: DownloadProgress,
+) -> Result<(), JobError> {
+    wait_for_control(app, control, journal, step_index)?;
+    if progress.clear_in_flight {
+        in_flight.remove(&progress.task_id);
+    } else {
+        in_flight.insert(progress.task_id.clone(), progress.in_flight_bytes);
+    }
+    *downloaded = downloaded.saturating_add(progress.committed_bytes);
+    let in_flight_bytes = in_flight.values().copied().sum::<u64>();
+    observe_download_progress(journal, &progress, in_flight_bytes);
+    journal.bytes_done = downloaded
+        .saturating_add(in_flight_bytes)
+        .min(journal.bytes_total);
+    journal.steps[step_index].progress = byte_progress(journal.bytes_done, journal.bytes_total);
+    journal.steps[step_index].retry_count = journal.steps[step_index]
+        .retry_count
+        .max(progress.retry_count);
+    journal.steps[step_index].detail = format!(
+        "Downloading patch files ({} / {})",
+        human_bytes(journal.bytes_done),
+        human_bytes(journal.bytes_total)
+    );
+    journal.overall_progress = overall_progress(step_index, journal.steps[step_index].progress);
+    touch(journal);
+    persist_and_emit(app, journal)
+}
+
+#[allow(clippy::too_many_arguments)]
+fn fetch_patch_pack_span_with_journal_progress(
+    app: &AppHandle,
+    journal: &mut JobJournal,
+    source: &DepotSource,
+    chunk: &ChunkRef,
+    pack_relative: String,
+    task_id: String,
+    partial_path: PathBuf,
+    control: &Arc<JobControl>,
+    step_index: usize,
+    downloaded: &mut u64,
+    in_flight: &mut HashMap<String, u64>,
+) -> Result<Vec<u8>, JobError> {
+    let (progress_tx, progress_rx) = mpsc::channel::<Result<DownloadProgress, String>>();
+    let source = source.clone();
+    let pack_id = chunk.pack_id.clone();
+    let start = chunk.pack_offset;
+    let end_exclusive = chunk.pack_offset + chunk.compressed_size;
+    let expected_size = chunk.compressed_size;
+    let worker_task_id = task_id.clone();
+    let worker_control = Arc::clone(control);
+    let worker = thread::spawn(move || {
+        source.fetch_pack_span_with_progress(
+            &pack_id,
+            start,
+            end_exclusive,
+            &pack_relative,
+            &worker_task_id,
+            &partial_path,
+            &worker_control,
+            &progress_tx,
+        )
+    });
+
+    let mut interruption = None;
+    loop {
+        match progress_rx.recv_timeout(Duration::from_millis(100)) {
+            Ok(Ok(progress)) => record_patch_download_progress(
+                app,
+                journal,
+                control,
+                step_index,
+                downloaded,
+                in_flight,
+                progress,
+            )?,
+            Ok(Err(message)) => {
+                control.cancel();
+                interruption = Some(JobError::Depot(message));
+                break;
+            }
+            Err(mpsc::RecvTimeoutError::Timeout) => {
+                if let Err(error) = wait_for_control(app, control, journal, step_index) {
+                    interruption = Some(error);
+                    break;
+                }
+            }
+            Err(mpsc::RecvTimeoutError::Disconnected) => break,
+        }
+    }
+
+    let worker_result = worker
+        .join()
+        .map_err(|_| JobError::Depot("patch download worker panicked".to_string()))?;
+    if let Some(error) = interruption {
+        let _ = worker_result;
+        return Err(error);
+    }
+    let transport = worker_result?;
+    record_patch_download_progress(
+        app,
+        journal,
+        control,
+        step_index,
+        downloaded,
+        in_flight,
+        DownloadProgress {
+            task_id,
+            committed_bytes: expected_size,
+            in_flight_bytes: 0,
+            clear_in_flight: true,
+            retry_count: 0,
+            rate_bytes_per_second: 0,
+            retry_wait_ms: 0,
+            rate_limit_wait_ms: 0,
+        },
+    )?;
+    Ok(transport)
 }

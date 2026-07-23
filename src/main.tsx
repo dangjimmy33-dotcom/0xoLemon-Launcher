@@ -45,6 +45,7 @@ async function clearLegacyPwaStateInTauri() {
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
 
 async function bootstrap() {
+
   if (await clearLegacyPwaStateInTauri()) return
 
   let isOverlay = false;

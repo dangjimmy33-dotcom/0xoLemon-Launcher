@@ -4,6 +4,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>0xoLemon Launcher</title>
+    <script>
+      window.onerror = function(message, source, lineno, colno, error) {
+        fetch('http://localhost:14200/log-error', { method: 'POST', body: JSON.stringify({type: 'onerror', message, source, lineno, colno, stack: error?.stack}) }).catch(()=>{});
+      };
+      window.addEventListener('unhandledrejection', function(event) {
+        fetch('http://localhost:14200/log-error', { method: 'POST', body: JSON.stringify({type: 'unhandledrejection', reason: event.reason?.stack || event.reason}) }).catch(()=>{});
+      });
+      const originalError = console.error;
+      console.error = function(...args) {
+        fetch('http://localhost:14200/log-error', { method: 'POST', body: JSON.stringify({type: 'console.error', args: args.map(a => a?.stack || a?.toString() || a)}) }).catch(()=>{});
+        originalError.apply(console, args);
+      };
+    </script>
   </head>
   <body>
     <div id="root"></div>

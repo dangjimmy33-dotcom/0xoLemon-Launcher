@@ -1,0 +1,664 @@
+﻿{
+    "appId":  2215200,
+    "title":  "LEGO Batman Legacy of the Dark Knight",
+    "steamMetadataCountry":  "us",
+    "steamMetadataLanguage":  "english",
+    "type":  "game",
+    "requiredAge":  0,
+    "isFree":  false,
+    "shortDescription":  "Rise as the Dark Knight and experience the essential Batman story in a bold, action-packed adventure with hard-hitting combat, an open-world Gotham City, and the signature LEGO charm that fans know and love.",
+    "detailedDescriptionHtml":  "\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/16806c89c9d4b53a8f7aaedd2b48857e.poster.avif?t=1783025238\" width=820 height=256 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/16806c89c9d4b53a8f7aaedd2b48857e.webm?t=1783025238\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/16806c89c9d4b53a8f7aaedd2b48857e.mp4?t=1783025238\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eLEGO® Batman™: Legacy of the Dark Knight is a narrative led action-adventure from TT Games, creators of LEGO® Star Wars™: The Skywalker Saga. Step into Bruce Wayne’s journey to become Batman, forging bonds with trusted allies while facing Gotham City’s most dangerous and iconic DC Super-Villains.  \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/74e03c680f8c5031de655d94c22b6d35.poster.avif?t=1783025238\" width=1170 height=292 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/74e03c680f8c5031de655d94c22b6d35.webm?t=1783025238\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/74e03c680f8c5031de655d94c22b6d35.mp4?t=1783025238\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eEmbark on a journey that begins with the origins of Batman as a young Bruce Wayne trains with The League of Shadows, becomes the hero of Gotham City, and forge a new family of allies with Jim Gordon, Catwoman, Robin, Nightwing, and Batgirl. Confront an ever-growing threat from across Batman’s Rogue’s Gallery as you face The Joker, The Penguin, Mr. Freeze, Poison Ivy, Bane, and more.   \u003cbr\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/5f55693c4a96e1d791b741b259ddf2f5.poster.avif?t=1783025238\" width=1170 height=292 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/5f55693c4a96e1d791b741b259ddf2f5.webm?t=1783025238\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/5f55693c4a96e1d791b741b259ddf2f5.mp4?t=1783025238\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003ePlay as Batman with an exhilarating new combat system, combining fluid combos, stealth techniques, and detective skills to take on crime across the streets and rooftops of Gotham City. Command a full range of Batmobiles and Batcycles, including the legendary Tumbler, as you navigate an open and immersive Gotham City. Grapple, glide, or drive through the open world with agility and speed, while discovering crimes, challenges, rewards, secrets, and iconic landmarks such as Arkham Asylum, Ace Chemicals, and Wayne Tower.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/f96deff2d4247ef753f2dab33355ff1c.poster.avif?t=1783025238\" width=1170 height=390 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/f96deff2d4247ef753f2dab33355ff1c.webm?t=1783025238\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/f96deff2d4247ef753f2dab33355ff1c.mp4?t=1783025238\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e  \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eAre you ready to build the legacy of the Dark Knight and protect Gotham City? \u003c/p\u003e",
+    "aboutTheGameHtml":  "\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/16806c89c9d4b53a8f7aaedd2b48857e.poster.avif?t=1783025238\" width=820 height=256 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/16806c89c9d4b53a8f7aaedd2b48857e.webm?t=1783025238\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/16806c89c9d4b53a8f7aaedd2b48857e.mp4?t=1783025238\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eLEGO® Batman™: Legacy of the Dark Knight is a narrative led action-adventure from TT Games, creators of LEGO® Star Wars™: The Skywalker Saga. Step into Bruce Wayne’s journey to become Batman, forging bonds with trusted allies while facing Gotham City’s most dangerous and iconic DC Super-Villains.  \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/74e03c680f8c5031de655d94c22b6d35.poster.avif?t=1783025238\" width=1170 height=292 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/74e03c680f8c5031de655d94c22b6d35.webm?t=1783025238\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/74e03c680f8c5031de655d94c22b6d35.mp4?t=1783025238\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eEmbark on a journey that begins with the origins of Batman as a young Bruce Wayne trains with The League of Shadows, becomes the hero of Gotham City, and forge a new family of allies with Jim Gordon, Catwoman, Robin, Nightwing, and Batgirl. Confront an ever-growing threat from across Batman’s Rogue’s Gallery as you face The Joker, The Penguin, Mr. Freeze, Poison Ivy, Bane, and more.   \u003cbr\u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/5f55693c4a96e1d791b741b259ddf2f5.poster.avif?t=1783025238\" width=1170 height=292 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/5f55693c4a96e1d791b741b259ddf2f5.webm?t=1783025238\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/5f55693c4a96e1d791b741b259ddf2f5.mp4?t=1783025238\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003ePlay as Batman with an exhilarating new combat system, combining fluid combos, stealth techniques, and detective skills to take on crime across the streets and rooftops of Gotham City. Command a full range of Batmobiles and Batcycles, including the legendary Tumbler, as you navigate an open and immersive Gotham City. Grapple, glide, or drive through the open world with agility and speed, while discovering crimes, challenges, rewards, secrets, and iconic landmarks such as Arkham Asylum, Ace Chemicals, and Wayne Tower.\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e\u003cspan class=\"bb_img_ctn\"\u003e\u003cvideo class=\"bb_img\" autoplay muted loop playsinline poster=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/f96deff2d4247ef753f2dab33355ff1c.poster.avif?t=1783025238\" width=1170 height=390 \u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/f96deff2d4247ef753f2dab33355ff1c.webm?t=1783025238\" type=\"video/webm; codecs=vp9\"\u003e\u003csource src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2215200/extras/f96deff2d4247ef753f2dab33355ff1c.mp4?t=1783025238\" type=\"video/mp4\"\u003e\u003c/video\u003e\u003c/span\u003e\u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003e  \u003c/p\u003e\u003cp class=\"bb_paragraph\" \u003eAre you ready to build the legacy of the Dark Knight and protect Gotham City? \u003c/p\u003e",
+    "supportedLanguagesHtml":  "English\u003cstrong\u003e*\u003c/strong\u003e, French\u003cstrong\u003e*\u003c/strong\u003e, Italian\u003cstrong\u003e*\u003c/strong\u003e, German\u003cstrong\u003e*\u003c/strong\u003e, Spanish - Spain\u003cstrong\u003e*\u003c/strong\u003e, Arabic, Danish, Dutch, Japanese\u003cstrong\u003e*\u003c/strong\u003e, Korean, Polish\u003cstrong\u003e*\u003c/strong\u003e, Portuguese - Brazil\u003cstrong\u003e*\u003c/strong\u003e, Russian, Simplified Chinese, Spanish - Latin America\u003cstrong\u003e*\u003c/strong\u003e, Traditional Chinese\u003cbr\u003e\u003cstrong\u003e*\u003c/strong\u003elanguages with full audio support",
+    "pcRequirements":  {
+                           "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003eRequires a 64-bit processor and operating system\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows 11\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e Intel Core i5-10600K or AMD Ryzen 5 1600\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 16 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e NVIDIA GeForce GTX 960, 4 GB or AMD Radeon RX 6400, 4 GB or Intel Arc A580, 8 GB\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 50 GB available space\u003c/li\u003e\u003c/ul\u003e",
+                           "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003eRequires a 64-bit processor and operating system\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows 11\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e Intel Core i7-12700 or AMD Ryzen 7 5800X\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 16 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e NVIDIA GeForce RTX 2070 SUPER, 8 GB or AMD Radeon RX 6650 XT, 8 GB or Intel Arc B580, 12 GB\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 50 GB available space\u003c/li\u003e\u003c/ul\u003e"
+                       },
+    "macRequirements":  {
+                            "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e",
+                            "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e"
+                        },
+    "linuxRequirements":  {
+                              "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e",
+                              "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e"
+                          },
+    "dlc":  [
+                4468750
+            ],
+    "website":  "https://legobatmangame.com/",
+    "developers":  "TT Games",
+    "publishers":  [
+                       "Warner Bros. Games",
+                       "Warner Bros. Interactive Entertainment"
+                   ],
+    "releaseDate":  {
+                        "coming_soon":  false,
+                        "date":  "May 22, 2026"
+                    },
+    "genres":  "Action, Adventure",
+    "categories":  [
+                       "Single-player",
+                       "Multi-player",
+                       "Co-op",
+                       "Shared/Split Screen Co-op",
+                       "Shared/Split Screen",
+                       "Steam Achievements",
+                       "Full controller support",
+                       "Steam Trading Cards",
+                       "Gamepad Recommended",
+                       "DualShock Controller Support",
+                       "DualShock Controller Support",
+                       "DualSense Controller Support",
+                       "DualSense Controller Support",
+                       "Steam Cloud",
+                       "Remote Play on TV",
+                       "Remote Play Together",
+                       "HDR available",
+                       "Family Sharing"
+                   ],
+    "platforms":  {
+                      "windows":  true,
+                      "mac":  false,
+                      "linux":  false
+                  },
+    "metacritic":  {
+                       "score":  84,
+                       "url":  "https://www.metacritic.com/game/pc/lego-batman-legacy-of-the-dark-knight?ftag=MCD-06-10aaa1f"
+                   },
+    "recommendations":  {
+                            "total":  8078
+                        },
+    "reviewsSummary":  null,
+    "newsItems":  [
+                      {
+                          "gid":  "1834602721201390",
+                          "title":  "There\u0027s a wildly obscure easter egg in Lego Batman, I\u0027m surprised anyone found it: it\u0027s hidden in BASIC code for the Commodore 64",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/PC Gamer/1834602721201390",
+                          "is_external_url":  true,
+                          "author":  "James Bentley",
+                          "contents":  "\u003cimg src=\"https://cdn.mos.cms.futurecdn.net/mZnZz6HU4cqQfbdL4okmdb-1280-80.jpg\"/\u003e\u003cbr\u003e\u003cbr\u003e\n                Lego Batman, like all Lego games, is absolutely loaded with references and easter eggs. As well as recreating \u003ca href=\"https://www.pcgamer.com/games/action/the-next-lego-batman-recreates-a-memorable-scene-from-the-1989-movie-complete-with-prince-soundtrack/\" target=\"_blank\"\u003ememorable scenes from the Dark Knight\u0027s storied history\u003c/a\u003e, it is packed with geeky, niche in-jokes. One such easter egg requires a Commodore 64 to actually make sense of...\n                \u003ca href=\"https://www.pcgamer.com/hardware/theres-a-wildly-obscure-easter-egg-in-lego-batman-im-surprised-anyone-found-it-its-hidden-in-basic-code-for-the-commodore-64/?utm_source=steam\u0026utm_medium=referral\" target=\"_blank\"\u003eRead more.\u003c/a\u003e",
+                          "feedlabel":  "PC Gamer",
+                          "date":  1781001180,
+                          "feedname":  "PC Gamer",
+                          "feed_type":  0,
+                          "appid":  2215200
+                      },
+                      {
+                          "gid":  "1834602721191581",
+                          "title":  "Mayhem Collection DLC launches on September 18!",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1834602721191581",
+                          "is_external_url":  true,
+                          "author":  "jordan.archer",
+                          "contents":  "[p][img src=\"{STEAM_CLAN_IMAGE}/45746841/851781464876b2c67bca4dcc2b2bbb5c6d4198f6.png\"][/img][/p][p]Who doesn\u0027t love a little bit of chaos? [/p][p][img src=\"https://a.slack-edge.com/production-standard-emoji-assets/16.0/google-medium/1f0cf@2x.png\"][/img][img src=\"https://a.slack-edge.com/production-standard-emoji-assets/16.0/google-medium/2666-fe0f@2x.png\"][/img] [/p][p][/p][p]The Joker and Harley Quinn invade LEGO® Batman™: Legacy of the Dark Knight Mayhem Collection on September 18! [/p][p][/p][p]Pick up your Deluxe copy of #LEGOBatmanGame now![/p][p][dynamiclink href=\"https://store.steampowered.com/app/2215200/LEGO_Batman_Legacy_of_the_Dark_Knight/\"][/dynamiclink][/p]",
+                          "feedlabel":  "Community Announcements",
+                          "date":  1780680896,
+                          "feedname":  "steam_community_announcements",
+                          "feed_type":  1,
+                          "appid":  2215200
+                      },
+                      {
+                          "gid":  "1833968530900517",
+                          "title":  "Steam Global Top Sellers for week of 26 May — 2 June 2026",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/SteamDB/1833968530900517",
+                          "is_external_url":  true,
+                          "author":  "SteamDB",
+                          "contents":  "\u003ca href=\"https://steamdb.info/topsellers/2026W23/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003e\u003cimg src=\"https://steamdb.info/topsellers/2026W23.png\"\u003e\u003c/a\u003e\u003col\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/3768760/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003e007 First Light\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/2483190/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eForza Horizon 6\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/1675200/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eSteam Deck\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/1118520/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eParalives\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/2694490/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003ePath of Exile 2\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/1962700/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eSubnautica 2\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/2215200/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eLEGO® Batman™: Legacy of the Dark Knight\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/1875580/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eMina the Hollower\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/3240220/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eGrand Theft Auto V Enhanced\u003c/a\u003e\u003c/li\u003e\u003cli\u003e\u003ca href=\"https://steamdb.info/app/2183900/charts/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eWarhammer 40,000: Space Marine 2\u003c/a\u003e\u003c/li\u003e\u003c/ol\u003e\u003cbr\u003e\u003ci\u003e* excluding free to play games\u003c/i\u003e\u003cbr\u003e\u003ca href=\"https://steamdb.info/topsellers/2026W23/?utm_source=Steam\u0026utm_medium=Steam\u0026utm_campaign=SteamRSS\"\u003eView top 100 on SteamDB\u003c/a\u003e",
+                          "feedlabel":  "SteamDB",
+                          "date":  1780390800,
+                          "feedname":  "SteamDB",
+                          "feed_type":  0,
+                          "appid":  1118520
+                      },
+                      {
+                          "gid":  "1833968530892927",
+                          "title":  "Рыцари Готэма в кубе: Обзор LEGO Batman: Legacy of the Dark Knight",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/Gamemag.ru/1833968530892927",
+                          "is_external_url":  true,
+                          "author":  "Вадим Съедин",
+                          "contents":  "\u003cimg src=\"https://gamemag.ru/images/cache/Reviews/Reviews2695/d74b13f7ff-2_1390x600.jpg\" alt=\"\"\u003e\u003cp\u003eВ начале года я поставил перед собой откровенно бредовую цель – пройти на 100% ремастер дилогии \u003cstrong\u003eLEGO Harry Potter\u003c/strong\u003e. Позднее я всё проклял из-за устаревшего геймдизайна, откровенно кривых решений разработчиков и паршивого качества самого переиздания, в котором никто не правил серьёзные баги. Впрочем, данный опыт заставил ещё больше ценить тот прогресс, которого достигла \u003cstrong\u003eTT Games\u003c/strong\u003e в\u003cstrong\u003e \u003ca href=\"https://gamemag.ru/reviews/lego-star-wars-the-skywalker-saga-review\"\u003eLEGO Star Wars: The Skywalker Saga\u003c/a\u003e\u003c/strong\u003e. Несмотря на производственный ад и ряд просчётов, в плане геймплея игра была на голову выше всех предыдущих работ команды.\u003c/p\u003e",
+                          "feedlabel":  "Gamemag.ru",
+                          "date":  1780106400,
+                          "feedname":  "Gamemag.ru",
+                          "feed_type":  0,
+                          "appid":  2215200
+                      },
+                      {
+                          "gid":  "1833968530889079",
+                          "title":  "Аналитика: LEGO Batman: Legacy of the Dark Knight разошлась тиражом более 1,2 миллиона копий",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/Gamemag.ru/1833968530889079",
+                          "is_external_url":  true,
+                          "author":  "Rakot",
+                          "contents":  "\u003cimg src=\"https://gamemag.ru/images/cache/News/News199445/a0398fbb73-2_1390x600.jpg\" alt=\"\"\u003e\u003cp\u003eСогласно \u003cstrong\u003eAlinea Analytics\u003c/strong\u003e, продажи \u003cstrong\u003eLEGO Batman: Legacy of the Dark Knight \u003c/strong\u003eпревысили \u003cstrong\u003e1,2 миллиона копий\u003c/strong\u003e. Стоит учесть, что компания занимается данными игрового рынка, используя собственные алгоритмы подсчёта. По словам \u003cstrong\u003eДжеффа Грабба\u003c/strong\u003e, её оценочные тиражи недавно выпущенных проектов довольно хороши, но не идеальны.\u003c/p\u003e",
+                          "feedlabel":  "Gamemag.ru",
+                          "date":  1779989280,
+                          "feedname":  "Gamemag.ru",
+                          "feed_type":  0,
+                          "appid":  2215200
+                      }
+                  ],
+    "achievements":  {
+                         "total":  52,
+                         "items":  [
+                                       {
+                                           "apiName":  "Achievement_0_Id",
+                                           "displayName":  "\"I am Batman.\"",
+                                           "description":  "Collect all Achievements",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/9ff6cdbaa992e49a42ec337d6839c16d6fe9311c.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/bf66e2292b2acaf4e0144437cbac8c7cfb665608.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_1_Id",
+                                           "displayName":  "\"A hero can be anyone.\"",
+                                           "description":  "Complete Story Mode",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/f3c01cf6de6862e724db2156061ae3857bc51361.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/84857601110972016baf5c5dc38276e7c2409fff.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_2_Id",
+                                           "displayName":  "\"Hopefully, because he\u0027s busy.\"",
+                                           "description":  "Complete every side activity in Gotham",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/9dfc631959de8c977f1de406677f1fcd9f66cabb.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/2437f3a2de1912115c781d62c8bd9444041d10c3.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_3_Id",
+                                           "displayName":  "A Watchful Collector",
+                                           "description":  "Collect all Collectibles",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/b395ebd80d34fd7e2d38d85d66ce7e3286fc91ea.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/b8ab6ace74493185d1d49e425106bdeb7f42e957.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_4_Id",
+                                           "displayName":  "\"I\u0027m not wearing hockey pads.\"",
+                                           "description":  "Unlock All Suits",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/2bcb44d29f99b4f69ae1df5d57a050adbaba5793.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/6fb54b6bd7ddc3dc59c9d5d466c0166669228f5a.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_5_Id",
+                                           "displayName":  "\"Wanna know how I got these cars?\"",
+                                           "description":  "Unlock All Vehicles",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/371ce218d248a5cd22fd5e0489b03a93950af3d3.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/4299386f2a8a7176b81e4af05356ec314566a773.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_6_Id",
+                                           "displayName":  "\"Holy Skill Upgrades, Batman!\"",
+                                           "description":  "Unlock All Skill Upgrades",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/417fa37103d49e692de5a1d3bba1c384c207a86b.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/bcf1e2a57f701863b12313824b765d64c9d4f7dd.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_7_Id",
+                                           "displayName":  "\"This is too much power for one person.\"",
+                                           "description":  "Collect all Red Bricks",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/c9915d8d4aef6f1fab8e3ab7c84d4fe76f179ddf.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/b38997727834261530e9d069016d8b385d6d02b6.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_8_Id",
+                                           "displayName":  "Up for the Challenge",
+                                           "description":  "Complete 20 Challenges",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/4deee2ecd2f4e79c468d1c4604d9a864c4bd748a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/46c1ed42434f0624cbb7799aed3f2e91e6fb0220.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_9_Id",
+                                           "displayName":  "\"It\u0027s a big city. I can\u0027t be everywhere.\"",
+                                           "description":  "Unlock all fast travel points",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/87a9d9dcdea83413a3724dba7129757077cfc045.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/73033f4e3e6c2cc2556a0e0ed13d310e29cef83a.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_10_Id",
+                                           "displayName":  "A Friend",
+                                           "description":  "Unlock Jim Gordon",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/26b1e0a074e14c81a4a9e6e0534027a6b2f5715b.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/1ca1435ddb28b7d4856a8e2455d005e375294aa2.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_11_Id",
+                                           "displayName":  "\"Hear me roar.\"",
+                                           "description":  "Unlock Catwoman",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/aa28829bfdb5a004e259d002a07e2a7c0fc61e97.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/85d84d842c0210be9b73b6203dc784589ea6e8cf.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_12_Id",
+                                           "displayName":  "The Boy Wonder",
+                                           "description":  "Unlock Robin",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/55c2afa7ae298ad0c58c1465ba97bde1b7b48478.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/784ea66c129201b1bfe4b7dc9a181c86f998be16.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_13_Id",
+                                           "displayName":  "\"Let\u0027s see what Batgirl can do!\"",
+                                           "description":  "Unlock Batgirl",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/286ac2291a1e406ccf95154470c1311f70eb8b45.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/e362ef9fdae806a198a05edca33d6fa2bea7629b.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_14_Id",
+                                           "displayName":  "A Grayson Graduation",
+                                           "description":  "Unlock Nightwing",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/523958200f01ee4bc4f5b875a28ce66e936e8f95.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/46cfbaee0afaf9e5b27c8b5b6fdca75ffa1a592a.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_15_Id",
+                                           "displayName":  "Out of the Shadows",
+                                           "description":  "Unlock Talia",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/f7c8c8d2ec5948152f9ae02950d39e970794d7e7.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/2fbb0081d8a073930dc05f0a3e24fdbab81b3ba4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_16_Id",
+                                           "displayName":  "\"It\u0027s not exactly a normal world.\"",
+                                           "description":  "Visit every District",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/7a6d8b5e578d06fc7a6fe3b951fb80fe49fcc8d3.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/e0a7fe625ee4c9afa71b45d9ef5aeefa6f500ef0.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_17_Id",
+                                           "displayName":  "Wonderful Toys",
+                                           "description":  "Purchase all Gadget Upgrades for any single character",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/50249fe5acfdd265850875488d08cce68f68fa93.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/f77900f996c40de94fa8be6b4d9631d7d955113c.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_18_Id",
+                                           "displayName":  "Beware the Gray Ghost!",
+                                           "description":  "Complete Bruce\u0027s Gray Ghost costume",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/b6a8f180731b537ae450b79dccd1df9784dff01b.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/0b5f5abc52aaec0c19c801a299767e970f304dd1.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_19_Id",
+                                           "displayName":  "\"A legend, Mr. Wayne.\"",
+                                           "description":  "Complete the Prologue",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/3365dc03e4ad5be09c133fe563d824309a104703.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/88fe23b4294b28bf1853539c12f1c091ddc2865c.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_20_Id",
+                                           "displayName":  "One Bad Day",
+                                           "description":  "Complete Chapter One",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/09d36fb610e28b05647c7b26e40a196a0066f8ab.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/39f08056f997ff7dc5788bf2ae0fe239ea564c4e.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_21_Id",
+                                           "displayName":  "\"Do I look like I\u0027m joking?\"",
+                                           "description":  "Complete Chapter Two",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/55c633a12f189636c035ff7827f642019e95fc22.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/27ff731fb704efe30386dd0de0296a9752fbfcec.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_22_Id",
+                                           "displayName":  "The Dynamic Duo",
+                                           "description":  "Complete Chapter Three",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/cdb55314ec94aa6275ade4e9bfac70237d419dd2.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/ab432477dab975489ec8e5d16b60994b1d11cb73.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_23_Id",
+                                           "displayName":  "An Endless Winter",
+                                           "description":  "Complete Chapter Four",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/0dd2880adb5da0e6707a40981238479998d934f8.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/17ca716868450ae9b571da1dcf2e11357d3be3e8.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_24_Id",
+                                           "displayName":  "Knightfall",
+                                           "description":  "Complete Chapter Five",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/cf69b4332d734f88046d7c58ed675ee81d4ecd0a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/07f771b6f654a605111c9cad048786ed501344de.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_25_Id",
+                                           "displayName":  "\"You have a name to maintain.\"",
+                                           "description":  "Open every WayneTech Cache",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/e41d1f3d8e96a7d5de0f9e827331754f4c9c92d9.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/b9df128345e66d74d7774193b5adeba4b45d5e4a.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_26_Id",
+                                           "displayName":  "\"The idea was to be a symbol.\"",
+                                           "description":  "Collect 25 Bat-Symbols",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/603d0c210a4a78d78b7111c9e06f1f603fb86dbe.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/c073ed28b4a662df519756d61fdcb306dd549214.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_27_Id",
+                                           "displayName":  "\"Quite the collection, Master Bruce.\"",
+                                           "description":  "Collect all Batcave Trophies",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/a2b5e20eda3d95448fe3ffcb07308f130d5f5cf2.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/464b93b6caf7c4d8be88d272c40bdd6a394e42d9.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_28_Id",
+                                           "displayName":  "Too Many Questions",
+                                           "description":  "Complete every Puzzle Room",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/198861f862eb334bf998461af3db79faeb95f2b5.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/3a51d50e06f2d7a13b13c685526f0911422c9988.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_29_Id",
+                                           "displayName":  "\"Lighter, faster, more agile.\"",
+                                           "description":  "Purchase a Skill Upgrade from each category",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/aee4d4da0767ed0a50eb446f55418dad88ff3966.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/6570a99159ef6b1cf798b19fd37b94e8b1919689.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_30_Id",
+                                           "displayName":  "Theatricality and Deception",
+                                           "description":  "Purchase 3 Gadget Upgrades",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/1292a0012d70c255aff371b5d286418ca1fd59a3.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/d610a76e80ee71197eb5502146b3328569733380.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_31_Id",
+                                           "displayName":  "\"I own the place.\"",
+                                           "description":  "Purchase all Batcave Expansions",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/a4d9d6597a8b90ae6da77dcb4e6ac6c81ae4a1d1.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/5fb3bf71da7ff0dcbf75c317750104b70060e7a6.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_32_Id",
+                                           "displayName":  "Not Just a Cave",
+                                           "description":  "Place 5 Props or Trophies in the Batcave",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/4ef5a52baecb765e4e8418151a270bf3dbc900f6.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/555d393d34cb1d68edf16907bd03c1fe456b79d3.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_33_Id",
+                                           "displayName":  "\"No, sir. The OTHER car.\"",
+                                           "description":  "Purchase 3 Vehicles from the Batcave",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/ab19463ac7c85d088ce915044400674f0ff6e348.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/190c7e0d7bff2b232638f35d01f1bc38b4aaed04.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_34_Id",
+                                           "displayName":  "\"You either buy a hero…\"",
+                                           "description":  "Purchase 5 Items from Shops",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/0257cff63191c59b7cd21302aba3de4781b23d9d.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/bd2fb3b7ce7d1d7ae2cd96587ec70aa1a9b67c59.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_35_Id",
+                                           "displayName":  "\"Does it come in black?\"",
+                                           "description":  "Equip a Red Brick",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/68fec05beb1f4da2a9d3ae79496b570911b5445c.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/1253f454c1d7a49819ab0a5c6e012a658cc76e10.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_36_Id",
+                                           "displayName":  "\"Wouldn\u0027t wanna make things too easy.\"",
+                                           "description":  "Get 5 Gold Medals in AR Trials",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/bcd0d213e83d1c99379b9a729b0bdc4829108601.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/24175c70e73650de0759d9ae88d9a870cd1f1512.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_37_Id",
+                                           "displayName":  "Rebuilding Gotham",
+                                           "description":  "Cash in a Challenge in the Batcave",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/b464760a6c663d63b786b0b5a0dcd3f89820a2fa.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/12eb48547c5d9e9072a8b75c3ee6b94b9775ee07.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_38_Id",
+                                           "displayName":  "Collecting Evidence",
+                                           "description":  "Roll the camera over 20 degrees in Photo Mode",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/d42c7cdd131784d90054ae12716382b8d2ea4dbf.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/2075ef916aab290b9cc2be401f53e4b41056447b.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_39_Id",
+                                           "displayName":  "Computer Privileges",
+                                           "description":  "Change the screensaver on the Batcomputer",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/037f4ee00a185eb9cadd078c637769bfb917f34a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/9db544a577070c65808fffb8fa4c75e3c4b1189c.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_40_Id",
+                                           "displayName":  "\"Life\u0027s been good to me.\"",
+                                           "description":  "Collect 1,000,000 Studs",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/71c23bb1c9f3fb27d140dbeb898bb1e15fdd1c23.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/2afc3a6547a1b5e7f71a018d5f38ae7204704bdf.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_41_Id",
+                                           "displayName":  "Caped Defender",
+                                           "description":  "Perform 100 Successful Counters",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/a58c9db08eb34db3dac2cd9d2047645bbe5880e9.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/2828313b5e7542970846aca96b5ed44e792a6313.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_42_Id",
+                                           "displayName":  "\"Never do it for free.\"",
+                                           "description":  "Collect 30,000 Studs within a single stud combo",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/63a2b11776bacf376bdb4881dc6d2e388226fc28.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/e8724313049a8dd98d53886ccb42cf1db55d4c0f.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_43_Id",
+                                           "displayName":  "\"I\u0027m good with calculation.\"",
+                                           "description":  "Maintain Max Stud Combo for 60 Seconds",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/2cf3335c3bc829cf0d5e9f31a3dbc0cfe1cee82e.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/9d93fa3edf967f5055c7dd737e180d4550a1ce84.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_44_Id",
+                                           "displayName":  "The Strength to Fight",
+                                           "description":  "Reach Combat Combo of 99 hits",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/9b9dffa73cb6ce32c064021eeb1d8f59e7ecd50b.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/95a636bde3bf01d6ea83ea4a0cb590dc6627ba28.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_45_Id",
+                                           "displayName":  "\"I am the shadows.\"",
+                                           "description":  "Perform 100 Stealth Takedowns",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/7c0e38f5070028fc328c5fe385d8d8064d726d85.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/0f39aca399d260cf461e6aab827fe04b3e5c5ec5.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_46_Id",
+                                           "displayName":  "\"This is my city.\"",
+                                           "description":  "Place a Pin on the Map",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/4fd89d43a8c7a8016583963ebd39f0e9bbf19f90.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/4f671fa8ffe9bf6a5b4f286f73dfd40f147bcfd4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_47_Id",
+                                           "displayName":  "\"You\u0027re becoming quite a celebrity.\"",
+                                           "description":  "Discover 100 open world events",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/b36b6334821fd3437b92ece28a67dfd3d0257f55.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/ccf91121d9bfcc4fccedd12f197c22e4e48b26f5.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_48_Id",
+                                           "displayName":  "Cowardly and Superstitious Lot",
+                                           "description":  "Defeat every type of enemy once",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/ed416e8779caba680991d51758f07cff995d5328.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/5ecb560e0a4010b2b93304bcf33f00444d6883d2.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_49_Id",
+                                           "displayName":  "\"Gotham can feel a little safer.\"",
+                                           "description":  "Prevent 30 Crimes",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/00d37607778594ebb941462b3ccea589835423ff.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/7717ebe7d5d541a86dabae3b500173d013312e6e.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_50_Id",
+                                           "displayName":  "\"Things have improved.\"",
+                                           "description":  "Prevent each type of Crime in Gotham once",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/0973d10bb9d25948e4ce41c9c09d1943a5fe1e98.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/6e9d7c9e6b2a5efc4a692154dec11b722d282c05.jpg"
+                                       },
+                                       {
+                                           "apiName":  "Achievement_51_Id",
+                                           "displayName":  "\"Is that like parachuting?\"",
+                                           "description":  "Glide in 10 different wind tunnels",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/46ba55ad5f233e37901f9c0e8a23516e94f35f55.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/2215200/78d945ea2ce7fe28aefa55125a99c5fc0105d533.jpg"
+                                       }
+                                   ]
+                     }
+}

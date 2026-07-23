@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Depot Patch Fix Builder</title>
+  <style>
+    :root {
+      --bg:#0b0f19;--panel:#111827;--panel2:#0f172a;--panel3:#172033;
+      --border:#243047;--border2:#33415f;
+      --text:#f8fafc;--muted:#94a3b8;--muted2:#64748b;
+      --blue:#3b82f6;--green:#10b981;--red:#ef4444;--yellow:#f59e0b;
+      --radius:14px;--radiusSm:8px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+    header{height:62px;background:var(--panel);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 28px;gap:14px;position:sticky;top:0;z-index:20;}
+    .logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#3b82f6,#a855f7);display:grid;place-items:center;}
+    .brand{font-weight:800;font-size:17px;}
+    .brand-sub{font-size:12px;color:var(--muted2);margin-top:2px;}
+    main{display:grid;grid-template-columns:420px 1fr;min-height:calc(100vh - 62px);overflow:hidden;}
+    .left{background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:auto;padding:20px;gap:16px;}
+    .right{display:flex;flex-direction:column;min-height:0;}
+    .card{background:rgba(15,23,42,.72);border:1px solid var(--border);border-radius:var(--radius);padding:16px;}
+    .section-title{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted2);font-weight:800;margin-bottom:13px;}
+    .group{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;}
+    .group:last-child{margin-bottom:0;}
+    .group>label{font-size:13px;color:#cbd5e1;font-weight:600;}
+    .hint{font-size:11px;color:var(--muted2);line-height:1.4;}
+    input,select{width:100%;background:var(--panel2);border:1px solid var(--border2);color:var(--text);padding:8px 11px;border-radius:var(--radiusSm);font:13px 'Consolas',monospace;outline:none;}
+    input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,130,246,.15);}
+    input[type=password]{letter-spacing:2px;}
+    .path-row{display:flex;gap:8px;}
+    .path-row input{flex:1;}
+    .browse-btn{background:var(--panel3);border:1px solid var(--border2);color:var(--muted);border-radius:var(--radiusSm);padding:0 14px;cursor:pointer;font-size:12px;white-space:nowrap;transition:.15s;}
+    .browse-btn:hover{border-color:var(--blue);color:var(--text);}
+    .tag{display:inline-block;font-size:10px;padding:1px 7px;border-radius:99px;font-weight:700;margin-left:6px;vertical-align:middle;}
+    .tag-req{background:rgba(239,68,68,.15);color:var(--red);}
+    .tag-opt{background:rgba(100,116,139,.2);color:var(--muted);}
+    .check{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:#cbd5e1;cursor:pointer;margin-bottom:8px;}
+    .check input[type=checkbox]{width:auto;margin-top:2px;}
+    .actions{padding:14px 20px;background:var(--panel);border-top:1px solid var(--border);}
+    .btn{border:none;border-radius:var(--radiusSm);padding:12px 20px;font-weight:800;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:.15s;width:100%;justify-content:center;}
+    .btn:hover:not(:disabled){opacity:.9;transform:translateY(-1px);}
+    .btn:disabled{opacity:.45;cursor:not-allowed;transform:none;}
+    .btn-green{background:var(--green);color:#001f0f;}
+    .btn-red{background:var(--red);color:#fff;}
+    /* Log area */
+    .top-bar{padding:12px 22px;border-bottom:1px solid var(--border);background:var(--panel);display:flex;align-items:center;gap:12px;}
+    .top-bar-title{font-size:13px;color:var(--muted2);font-weight:700;}
+    .badge{font-size:11px;padding:2px 9px;border-radius:99px;font-weight:700;}
+    .badge-idle{background:rgba(100,116,139,.18);color:var(--muted);}
+    .badge-ok{background:rgba(16,185,129,.15);color:var(--green);}
+    .badge-err{background:rgba(239,68,68,.15);color:var(--red);}
+    .badge-run{background:rgba(59,130,246,.15);color:var(--blue);}
+    .log-area{flex:1;overflow:auto;padding:16px 22px;font-family:'Consolas',monospace;font-size:12.5px;display:flex;flex-direction:column;gap:1px;}
+    .log-line{display:flex;gap:10px;align-items:baseline;line-height:1.7;}
+    .log-ts{color:var(--muted2);font-size:11px;flex-shrink:0;}
+    .log-ok, .log-success{color:var(--green);}
+    .log-warn{color:var(--yellow);}
+    .log-err, .log-error{color:var(--red);}
+    .log-dim, .log-info{color:var(--muted);}
+    .log-step{color:var(--blue);}
+    .bottom-bar{padding:10px 22px;border-top:1px solid var(--border);background:var(--panel);display:flex;gap:8px;}
+    .small-btn{background:var(--panel2);border:1px solid var(--border2);color:var(--muted);border-radius:var(--radiusSm);padding:6px 12px;cursor:pointer;font-size:12px;transition:.15s;}
+    .small-btn:hover{border-color:var(--blue);color:var(--text);}
+    .bar{height:3px;background:var(--border);}
+    .bar-fill{height:3px;background:var(--blue);width:0%;transition:width .3s;}
+    .not-connected{padding:24px;text-align:center;color:var(--muted2);}
+    .not-connected a{color:var(--blue);}
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+    </svg>
+  </div>
+  <div>
+    <div class="brand">Depot Patch Fix Builder</div>
+    <div class="brand-sub">Đóng gói file fix → <code>patches/{version}/</code> — launcher tự apply khi cài/update</div>
+  </div>
+</header>
+
+<main>
+  <!-- LEFT PANEL -->
+  <div class="left">
+
+    <!-- Step 1: Fix files -->
+    <div class="card">
+      <div class="section-title">Step 1 — Thư mục chứa file fix</div>
+      <div class="group">
+        <label>Fix Files Directory <span class="tag tag-req">required</span></label>
+        <div class="path-row">
+          <input type="text" id="fixDir" placeholder="E:\MyFixFiles\v1.0"/>
+          <button class="browse-btn" onclick="browse('fixDir','directory','Chọn thư mục chứa file fix')">Browse</button>
+        </div>
+        <div class="hint">Thư mục chứa đúng các file cần fix (DLL, exe…). Giữ nguyên cấu trúc thư mục giống bản gốc — ví dụ <code>GameData\Plugins\fix.dll</code>.</div>
+      </div>
+    </div>
+
+    <!-- Step 2: Repo root -->
+    <div class="card">
+      <div class="section-title">Step 2 — Repo root (nơi chứa catalog.json gốc)</div>
+      <div class="group">
+        <label>Repo Root Directory <span class="tag tag-req">required</span></label>
+        <div class="path-row">
+          <input type="text" id="repoRoot" placeholder="E:\MyDepot\game-id"/>
+          <button class="browse-btn" onclick="browse('repoRoot','directory','Chọn thư mục repo root')">Browse</button>
+        </div>
+        <div class="hint">Thư mục gốc của depot (nơi có <code>catalog.json</code>, <code>manifests/</code>, <code>packs/</code>). Tool sẽ tự tạo <code>patches/{version}/</code> bên trong.</div>
+      </div>
+    </div>
+
+    <!-- Step 3: Config -->
+    <div class="card">
+      <div class="section-title">Step 3 — Cấu hình</div>
+      <div class="group">
+        <label>Game ID <span class="tag tag-req">required</span></label>
+        <input type="text" id="gameId" placeholder="octopath-traveler-0"/>
+        <div class="hint">Phải giống Game ID trong <code>catalog.json</code> gốc.</div>
+      </div>
+      <div class="group">
+        <label>Patch Version <span class="tag tag-req">required</span></label>
+        <input type="text" id="patchVersion" placeholder="v1.0"/>
+        <div class="hint">Tên version của patch này — dùng làm tên thư mục <code>patches/<b>v1.0</b>/</code>. Phải trùng với version trong main manifest.</div>
+      </div>
+      <div class="group">
+        <label>Pack Size (MiB)</label>
+        <input type="number" id="packTargetMb" value="64" min="4" max="512" step="1"/>
+        <div class="hint">Patch nhỏ nên để 64 MiB là vừa.</div>
+      </div>
+    </div>
+
+    <!-- Step 4: Build options -->
+    <div class="card">
+      <div class="section-title">Step 4 — Cargo / Build</div>
+      <div class="group">
+        <label>Cargo.toml <span class="tag tag-req">required</span></label>
+        <div class="path-row">
+          <input type="text" id="cargoManifest" value="E:\007Launcher\src-tauri\Cargo.toml"/>
+          <button class="browse-btn" onclick="browse('cargoManifest','file','Chọn Cargo.toml','cargo')">Browse</button>
+        </div>
+      </div>
+      <label class="check"><input type="checkbox" id="forceRebuild"><span>Force rebuild <code>depot_builder</code> release</span></label>
+      <label class="check"><input type="checkbox" id="encryptPacks" checked><span>🔐 Mã hóa chunks (cùng key với depot gốc)</span></label>
+      <div class="group" id="keyGroup">
+        <label>Depot Key <span class="tag tag-opt">optional</span></label>
+        <input type="password" id="depotKey" placeholder="OXO_DEPOT_KEY — để trống nếu dùng key built-in"/>
+        <div class="hint">Key chỉ truyền qua env, không ghi vào file.</div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-green" id="buildBtn" onclick="runBuild()">⚡ Build Patch Fix</button>
+    </div>
+
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right">
+    <div class="top-bar">
+      <span class="top-bar-title">Output Log</span>
+      <span class="badge badge-idle" id="statusBadge">Idle</span>
+      <span id="elapsed" style="font-size:12px;color:var(--muted2);margin-left:auto;"></span>
+    </div>
+    <div class="bar"><div class="bar-fill" id="barFill"></div></div>
+
+    <div class="log-area" id="logArea">
+      <div id="notConnected" class="not-connected">
+        Tool này cần backend local Python.<br>
+        Mở <a href="#" onclick="openLocalServer()">run-local-tool.bat</a> hoặc chạy:<br>
+        <code style="color:var(--blue);margin-top:8px;display:block;">python 0xo_depot_uploader_server.py</code>
+        <br>Sau đó mở tool tại <a href="http://127.0.0.1:8776" target="_blank">http://127.0.0.1:8776</a> thay vì mở file trực tiếp.
+      </div>
+    </div>
+
+    <div class="bottom-bar">
+      <button class="small-btn" onclick="stopTask()">⛔ Dừng</button>
+      <button class="small-btn" onclick="copyLog()">📋 Copy log</button>
+      <button class="small-btn" onclick="clearLog()">🧹 Xóa</button>
+    </div>
+  </div>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+
+/* ── Detect if running via local backend ── */
+const IS_LOCAL = location.hostname === '127.0.0.1' || location.hostname === 'localhost';
+
+let _pollTimer = null;
+let _nextLog   = 0;
+let _startedAt = null;
+let _spin      = 5;
+
+function openLocalServer() {
+  alert('Hãy chạy file run-local-tool.bat hoặc:\n\n  python 0xo_depot_uploader_server.py\n\nSau đó vào http://127.0.0.1:8776 trong trình duyệt.');
+}
+
+/* ── Browse (only works in local mode) ── */
+async function browse(targetId, kind = 'directory', title = '', fileKind = '') {
+  if (!IS_LOCAL) { alert('Chức năng Browse chỉ hoạt động khi dùng local backend.\nChạy run-local-tool.bat rồi mở http://127.0.0.1:8776'); return; }
+  try {
+    const r = await fetch('/api/browse', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ kind, initial: $(targetId).value || '', title, fileKind }) });
+    const j = await r.json();
+    if (!j.ok || j.cancelled || !j.path) return;
+    $(targetId).value = j.path;
+  } catch(e) { addLine('[BROWSE] Lỗi: ' + e, 'error'); }
+}
+
+/* ── Logging ── */
+function ts() { return new Date().toTimeString().slice(0,8); }
+
+function addLine(text, level = 'info') {
+  const notConn = $('notConnected');
+  if (notConn) notConn.remove();
+  const line = document.createElement('div');
+  line.className = 'log-line';
+  line.innerHTML = `<span class="log-ts">${ts()}</span><span class="log-${level}">${escHtml(text)}</span>`;
+  $('logArea').appendChild(line);
+  $('logArea').scrollTop = 9999;
+}
+
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function clearLog() { $('logArea').innerHTML = ''; _nextLog = 0; }
+function copyLog()  { navigator.clipboard.writeText($('logArea').innerText); addLine('Log copied.','success'); }
+
+/* ── Status ── */
+function setRunning(running, exitCode = null) {
+  $('buildBtn').disabled = running;
+  const b = $('statusBadge');
+  if (running) { b.textContent = 'Running'; b.className = 'badge badge-run'; }
+  else if (exitCode === 0) { b.textContent = 'Done ✓'; b.className = 'badge badge-ok'; }
+  else if (exitCode != null) { b.textContent = 'Error'; b.className = 'badge badge-err'; }
+  else { b.textContent = 'Idle'; b.className = 'badge badge-idle'; }
+}
+
+/* ── Poll logs ── */
+function startPoll() {
+  if (_pollTimer) clearInterval(_pollTimer);
+  _pollTimer = setInterval(fetchLogs, 400);
+  fetchLogs();
+}
+
+async function fetchLogs() {
+  try {
+    const r = await fetch('/api/logs?since=' + _nextLog);
+    const j = await r.json();
+    (j.lines||[]).forEach(x => { addLine(x.text, x.level); _nextLog = Math.max(_nextLog, x.i + 1); });
+    setRunning(j.running, j.exitCode);
+    if (j.running) {
+      _spin = (_spin + 2) % 85;
+      $('barFill').style.width = (8 + _spin) + '%';
+      if (j.startedAt) _startedAt = j.startedAt * 1000;
+    } else {
+      $('barFill').style.width = j.exitCode === 0 ? '100%' : '100%';
+      if (_pollTimer) { clearInterval(_pollTimer); _pollTimer = null; }
+    }
+    if (_startedAt) {
+      const s = Math.floor((Date.now() - _startedAt)/1000);
+      $('elapsed').textContent = `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')} elapsed`;
+    }
+  } catch(e) {
+    addLine('Poll lỗi: ' + e, 'error');
+    if (_pollTimer) { clearInterval(_pollTimer); _pollTimer = null; }
+    setRunning(false, 1);
+  }
+}
+
+/* ── Run ── */
+async function runBuild() {
+  if (!IS_LOCAL) {
+    alert('Tool này cần backend local Python.\n\nChạy run-local-tool.bat rồi mở http://127.0.0.1:8776');
+    return;
+  }
+
+  const fixDir        = $('fixDir').value.trim();
+  const repoRoot      = $('repoRoot').value.trim();
+  const gameId        = $('gameId').value.trim();
+  const patchVersion  = $('patchVersion').value.trim();
+  const cargoManifest = $('cargoManifest').value.trim();
+
+  if (!fixDir || !repoRoot || !gameId || !patchVersion || !cargoManifest) {
+    alert('Vui lòng điền đủ: Fix Files Directory, Repo Root, Game ID, Patch Version, Cargo.toml.');
+    return;
+  }
+
+  clearLog(); _nextLog = 0; _startedAt = Date.now(); _spin = 5;
+  $('barFill').style.width = '5%';
+  setRunning(true);
+
+  const payload = {
+    action:        'build-patch',
+    title:         `Build patch fix ${patchVersion} — ${gameId}`,
+    fixDir,
+    repoRoot,
+    gameId,
+    patchVersion,
+    packTargetMb:  $('packTargetMb').value || '64',
+    cargoManifest,
+    forceRebuild:  $('forceRebuild').checked,
+    encryptPacks:  $('encryptPacks').checked,
+    depotKey:      $('depotKey').value,
+  };
+
+  try {
+    const r = await fetch('/api/run', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    const j = await r.json();
+    if (!j.ok) { addLine(j.error || 'Không chạy được task.', 'error'); setRunning(false, 1); return; }
+    startPoll();
+  } catch(e) {
+    addLine('Không gửi được request tới backend: ' + e, 'error');
+    setRunning(false, 1);
+  }
+}
+
+async function stopTask() {
+  if (!IS_LOCAL) return;
+  try { await fetch('/api/stop', { method:'POST' }); } catch(e) {}
+}
+
+/* ── Init ── */
+if (IS_LOCAL) {
+  fetch('/api/health').then(r=>r.json()).then(h => {
+    addLine(`Backend OK | Python: ${h.python||'?'} | Cargo: ${h.cargo||'missing'}`, 'success');
+    addLine('Sẵn sàng. Điền thông tin bên trái rồi bấm Build Patch Fix.', 'info');
+  }).catch(() => {
+    addLine('Không kết nối được backend. Chạy lại run-local-tool.bat.', 'error');
+  });
+}
+</script>
+</body>
+</html>

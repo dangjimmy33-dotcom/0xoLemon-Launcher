@@ -22,6 +22,7 @@ export function LuaInstaller() {
   const [installedLuas, setInstalledLuas] = useState<string[]>([])
   const [luaSearch, setLuaSearch] = useState('')
   const [resolvedNames, setResolvedNames] = useState<Record<string, string>>({})
+  const [visibleCount, setVisibleCount] = useState(20)
 
   const filteredLuas = useMemo(() => {
     const q = luaSearch.trim().toLowerCase()
@@ -33,6 +34,18 @@ export function LuaInstaller() {
       return false
     })
   }, [installedLuas, luaSearch, resolvedNames])
+
+  // Reset visible count when search or list changes
+  useEffect(() => {
+    setVisibleCount(20)
+  }, [filteredLuas])
+
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    const target = e.currentTarget
+    if (target.scrollHeight - target.scrollTop - target.clientHeight < 100) {
+      setVisibleCount(prev => Math.min(prev + 20, filteredLuas.length))
+    }
+  }, [filteredLuas.length])
 
   const fetchInstalled = useCallback(async () => {
     try {
@@ -352,13 +365,16 @@ export function LuaInstaller() {
         </div>
 
         {/* List */}
-        <div style={{ maxHeight: '420px', overflowY: 'auto', padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <div 
+          style={{ maxHeight: '420px', overflowY: 'auto', padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: '6px' }}
+          onScroll={handleScroll}
+        >
           {installedLuas.length === 0 ? (
             <p style={{ color: '#555', fontSize: '13px', margin: '8px 0', textAlign: 'center' }}>No Lua manifests installed.</p>
           ) : filteredLuas.length === 0 ? (
             <p style={{ color: '#555', fontSize: '13px', margin: '8px 0', textAlign: 'center' }}>No results for "{luaSearch}"</p>
           ) : (
-            filteredLuas.map(appid => (
+            filteredLuas.slice(0, visibleCount).map(appid => (
               <LuaGameItem 
                 key={appid} 
                 appid={appid} 

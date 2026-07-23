@@ -30,7 +30,7 @@ pub(super) fn byte_progress(done: u64, total: u64) -> f32 {
 }
 
 pub(super) fn overall_progress(step_index: usize, step_progress: f32) -> f32 {
-    (step_index as f32 + step_progress) / 5.0
+    (step_index as f32 + step_progress) / 6.0
 }
 
 pub(super) fn human_bytes(value: u64) -> String {

@@ -554,7 +554,7 @@ fn build_game_platform_state(state: &PlatformStateFile, game_id: &str) -> GamePl
         .cloned()
         .unwrap_or_else(|| GameRuntimeState::new(game_id));
     let stored = state.achievements.get(game_id);
-    let achievements = ACHIEVEMENT_DEFINITIONS
+    let mut achievements: Vec<PlatformAchievement> = ACHIEVEMENT_DEFINITIONS
         .iter()
         .map(|definition| {
             let unlocked_at = stored
@@ -576,6 +576,23 @@ fn build_game_platform_state(state: &PlatformStateFile, game_id: &str) -> GamePl
             }
         })
         .collect();
+
+    if let Some(stored_achievements) = stored {
+        for (ach_id, ach_state) in stored_achievements {
+            if !ACHIEVEMENT_DEFINITIONS.iter().any(|d| d.id == ach_id) {
+                achievements.push(PlatformAchievement {
+                    id: ach_id.clone(),
+                    name: ach_id.clone(),
+                    description: "".to_string(),
+                    unlocked: ach_state.unlocked_at.is_some(),
+                    unlocked_at: ach_state.unlocked_at.clone(),
+                    progress: if ach_state.unlocked_at.is_some() { 1 } else { 0 },
+                    target: 1,
+                });
+            }
+        }
+    }
+
     GamePlatformState {
         game_id: game_id.to_string(),
         runtime,
@@ -590,7 +607,7 @@ fn unlock_in_state(
 ) -> Option<AchievementUnlockedEvent> {
     let definition = ACHIEVEMENT_DEFINITIONS
         .iter()
-        .find(|definition| definition.id == achievement_id)?;
+        .find(|definition| definition.id == achievement_id);
     let achievements = state.achievements.entry(game_id.to_string()).or_default();
     let stored = achievements.entry(achievement_id.to_string()).or_default();
     if stored.unlocked_at.is_some() {
@@ -600,9 +617,9 @@ fn unlock_in_state(
     stored.unlocked_at = Some(unlocked_at.clone());
     Some(AchievementUnlockedEvent {
         game_id: game_id.to_string(),
-        id: definition.id.to_string(),
-        name: definition.name.to_string(),
-        description: definition.description.to_string(),
+        id: achievement_id.to_string(),
+        name: definition.map(|d| d.name.to_string()).unwrap_or_else(|| achievement_id.to_string()),
+        description: definition.map(|d| d.description.to_string()).unwrap_or_else(|| "".to_string()),
         unlocked_at,
     })
 }
