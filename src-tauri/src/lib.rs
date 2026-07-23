@@ -1260,7 +1260,16 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_opener::init())
-        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin({
+            let mut builder = tauri_plugin_updater::Builder::new();
+            if let Ok(exe_path) = std::env::current_exe() {
+                if let Some(parent) = exe_path.parent() {
+                    let dir_str = parent.to_string_lossy().to_string();
+                    builder = builder.installer_args(vec![format!("/D={}", dir_str)]);
+                }
+            }
+            builder.build()
+        })
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
                 .with_shortcut("Shift+F1")

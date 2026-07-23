@@ -197,3 +197,19 @@ pub(super) fn remote_repo_base_urls(game_id: &str) -> Vec<(String, Option<String
 pub(super) fn encode_hf_relative_path(relative_path: &str) -> String {
     remote_paths::encode_hf_relative_path(relative_path)
 }
+
+pub(super) fn state_backup_dir(backup_root: &Path, install_root: &Path) -> PathBuf {
+    let path_str = install_root.to_string_lossy().to_string();
+    let safe_name: String = path_str.chars().map(|c| {
+        if c.is_alphanumeric() || c == ' ' || c == '-' {
+            c
+        } else {
+            '_'
+        }
+    }).collect();
+    backup_root.join(safe_name)
+}
+
+pub(super) fn get_launcher_backup_root() -> Option<PathBuf> {
+    std::env::current_exe().ok().and_then(|p| p.parent().map(|parent| parent.join("0xo_Backups")))
+}

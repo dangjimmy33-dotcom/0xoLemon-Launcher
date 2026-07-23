@@ -5379,6 +5379,27 @@ fn write_chunk_file(path: &Path, data: &[u8]) -> Result<(), JobError> {
 
 fn read_install_marker(install_root: &Path) -> Result<Option<InstallMarker>, JobError> {
     let path = install_marker_path(install_root);
+    
+    // Auto-restore backup if missing
+    if !path.exists() {
+        if let Some(backup_root) = crate::job::paths::get_launcher_backup_root() {
+            let backup_dir = crate::job::paths::state_backup_dir(&backup_root, install_root);
+            if backup_dir.exists() && backup_dir.join(INSTALL_MARKER_FILE).exists() {
+                let marker_dir = install_root.join(INSTALL_MARKER_DIR);
+                let _ = fs::create_dir_all(&marker_dir);
+                if let Ok(data) = fs::read(backup_dir.join(INSTALL_MARKER_FILE)) {
+                    let _ = fs::write(marker_dir.join(INSTALL_MARKER_FILE), data);
+                }
+                if let Ok(data) = fs::read(backup_dir.join(INSTALLED_MANIFEST_FILE)) {
+                    let _ = fs::write(marker_dir.join(INSTALLED_MANIFEST_FILE), data);
+                }
+                if let Ok(data) = fs::read(backup_dir.join(APPLIED_PATCH_MANIFEST_FILE)) {
+                    let _ = fs::write(marker_dir.join(APPLIED_PATCH_MANIFEST_FILE), data);
+                }
+            }
+        }
+    }
+
     if path.exists() {
         return Ok(Some(read_state_file(&path)?));
     }
@@ -5526,7 +5547,33 @@ fn write_install_marker(
             );
         }
     }
+    backup_install_state(app, install_root);
     Ok(())
+}
+
+fn backup_install_state(app: &AppHandle, install_root: &Path) {
+    use crate::job::paths::{state_backup_dir, get_launcher_backup_root};
+    
+    if let Some(backup_root) = get_launcher_backup_root() {
+        let backup_dir = state_backup_dir(&backup_root, install_root);
+        let marker_dir = install_root.join(INSTALL_MARKER_DIR);
+        
+        if marker_dir.exists() {
+            let _ = fs::create_dir_all(&backup_dir);
+            
+            if let Ok(data) = fs::read(marker_dir.join(INSTALL_MARKER_FILE)) {
+                let _ = fs::write(backup_dir.join(INSTALL_MARKER_FILE), data);
+            }
+            
+            if let Ok(data) = fs::read(marker_dir.join(INSTALLED_MANIFEST_FILE)) {
+                let _ = fs::write(backup_dir.join(INSTALLED_MANIFEST_FILE), data);
+            }
+            
+            if let Ok(data) = fs::read(marker_dir.join(APPLIED_PATCH_MANIFEST_FILE)) {
+                let _ = fs::write(backup_dir.join(APPLIED_PATCH_MANIFEST_FILE), data);
+            }
+        }
+    }
 }
 
 fn compact_game_id(value: &str) -> String {
