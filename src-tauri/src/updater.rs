@@ -109,17 +109,9 @@ pub async fn download_and_apply(app: &AppHandle) -> Result<(), String> {
     
     let mut cmd = std::process::Command::new(&installer_path);
     
-    // We must pass /D as the absolute last argument without quotes, even with spaces.
-    // Rust's default .arg() adds quotes if there are spaces, which breaks NSIS.
-    use std::os::windows::process::CommandExt;
-    
-    if let Ok(exe_path) = std::env::current_exe() {
-        if let Some(parent) = exe_path.parent() {
-            let dir_str = parent.to_string_lossy().to_string();
-            cmd.arg("/P"); // Passive mode (progress bar only)
-            cmd.raw_arg(format!("/D={}", dir_str));
-        }
-    }
+    // We intentionally pass no arguments here. The user explicitly requested
+    // that the installer run in fully interactive mode so they can manually
+    // choose the installation path and settings.
 
     if let Err(e) = cmd.spawn() {
         let msg = format!("Failed to launch installer: {}", e);
