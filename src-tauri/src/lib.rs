@@ -1264,8 +1264,12 @@ pub fn run() {
             let mut builder = tauri_plugin_updater::Builder::new();
             if let Ok(exe_path) = std::env::current_exe() {
                 if let Some(parent) = exe_path.parent() {
-                    let dir_str = parent.to_string_lossy().to_string();
-                    builder = builder.installer_args(vec![format!("/D={}", dir_str)]);
+                    if let Some(short_path) = get_short_path(parent) {
+                        builder = builder.installer_args(vec![format!("/D={}", short_path)]);
+                    } else {
+                        let dir_str = parent.to_string_lossy().to_string();
+                        builder = builder.installer_args(vec![format!("/D={}", dir_str)]);
+                    }
                 }
             }
             builder.build()
@@ -1316,4 +1320,27 @@ fn flag_value(args: &[String], flag: &str) -> Option<String> {
         .find(|pair| pair[0] == flag)
         .map(|pair| pair[1].clone())
         .filter(|value| !value.trim().is_empty())
+}
+
+fn get_short_path(path: &std::path::Path) -> Option<String> {
+    use std::os::windows::ffi::OsStrExt;
+    let mut wide_path: Vec<u16> = path.as_os_str().encode_wide().collect();
+    wide_path.push(0);
+    
+    let mut buffer: Vec<u16> = vec![0; winapi::shared::minwindef::MAX_PATH];
+    let len = unsafe {
+        winapi::um::fileapi::GetShortPathNameW(
+            wide_path.as_ptr(),
+            buffer.as_mut_ptr(),
+            buffer.len() as u32,
+        )
+    };
+    
+    if len > 0 && (len as usize) < buffer.len() {
+        use std::os::windows::ffi::OsStringExt;
+        let short_path = std::ffi::OsString::from_wide(&buffer[..len as usize]);
+        Some(short_path.to_string_lossy().to_string())
+    } else {
+        None
+    }
 }
