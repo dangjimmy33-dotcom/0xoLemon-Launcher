@@ -1,1 +1,1 @@
-find_game_folder returned None
+HF API Step 2 response: [{"type":"directory","oid":"64cc57e6bc9d77158b4fc3299f5a3427b484775a","size":0,"path":"Depotdownloader/007 First Light (3768760)/3768760/BuildID_23388681"},{"type":"directory","oid":"1e23ec305a9002680c6392a43902d36266108f9d","size":0,"path":"Depotdownloader/007 First Light (3768760)/3768760/BuildID_24298527"},{"type":"file","oid":"f87141b7c2cb4fa2e0167c3b3bcb1562cb0051da","size":146,"path":"Depotdownloader/007 First Light (3768760)/3768760/3768760.key"}]
