@@ -107,13 +107,11 @@ pub async fn download_and_apply(app: &AppHandle) -> Result<(), String> {
         return Err(msg);
     }
     
-    let mut cmd = std::process::Command::new(&installer_path);
-    
-    // We intentionally pass no arguments here. The user explicitly requested
-    // that the installer run in fully interactive mode so they can manually
-    // choose the installation path and settings.
-
-    if let Err(e) = cmd.spawn() {
+    // Use ShellExecuteW with "runas" verb to trigger UAC elevation prompt.
+    // Plain Command::spawn() fails with os error 740 (ERROR_ELEVATION_REQUIRED)
+    // because NSIS installers require admin rights.
+    let launch_result = launch_elevated(&installer_path);
+    if let Err(e) = launch_result {
         let msg = format!("Failed to launch installer: {}", e);
         emit_progress(app, &version, "failed", total, Some(total), Some(msg.clone()));
         return Err(msg);
@@ -143,4 +141,54 @@ fn emit_progress(
             error,
         },
     );
+}
+
+/// Launch a file with UAC elevation using ShellExecuteW + "runas" verb.
+/// This is needed because NSIS installers require admin rights and
+/// Command::spawn() returns os error 740 (ERROR_ELEVATION_REQUIRED).
+#[cfg(target_os = "windows")]
+fn launch_elevated(path: &std::path::Path) -> Result<(), String> {
+    use std::ffi::OsStr;
+    use std::os::windows::ffi::OsStrExt;
+    use std::ptr;
+    use winapi::um::shellapi::ShellExecuteW;
+    use winapi::um::winuser::SW_SHOWNORMAL;
+
+    fn to_wide(s: &OsStr) -> Vec<u16> {
+        s.encode_wide().chain(std::iter::once(0)).collect()
+    }
+
+    let verb = to_wide(OsStr::new("runas"));
+    let file = to_wide(path.as_os_str());
+
+    // SAFETY: ShellExecuteW is a standard Windows API.
+    let result = unsafe {
+        ShellExecuteW(
+            ptr::null_mut(),
+            verb.as_ptr(),
+            file.as_ptr(),
+            ptr::null(),
+            ptr::null(),
+            SW_SHOWNORMAL,
+        )
+    };
+
+    // ShellExecuteW returns > 32 on success
+    if result as usize > 32 {
+        Ok(())
+    } else {
+        Err(format!(
+            "ShellExecuteW failed with code {} (os error {})",
+            result as usize,
+            std::io::Error::last_os_error()
+        ))
+    }
+}
+
+#[cfg(not(target_os = "windows"))]
+fn launch_elevated(path: &std::path::Path) -> Result<(), String> {
+    std::process::Command::new(path)
+        .spawn()
+        .map(|_| ())
+        .map_err(|e| e.to_string())
 }
