@@ -2071,16 +2071,6 @@ function SteamIntegrationButton({ gameId, gameTitle, storeMode }: { gameId: stri
 
   const appid = mapping[gameId]
 
-  // Hide in "local" mode
-  if (storeMode === 'local') {
-    return null
-  }
-
-  useEffect(() => {
-    if (!appid) return
-    checkStatus()
-  }, [appid])
-
   const checkStatus = async () => {
     try {
       const isAdded = await invoke<boolean>('check_steam_status', { appid })
@@ -2088,6 +2078,17 @@ function SteamIntegrationButton({ gameId, gameTitle, storeMode }: { gameId: stri
     } catch (e) {
       console.error('Failed to check steam status', e)
     }
+  }
+
+  // MUST be before any conditional return (React hooks rule)
+  useEffect(() => {
+    if (!appid) return
+    checkStatus()
+  }, [appid])
+
+  // Hide in "local" mode
+  if (storeMode === 'local') {
+    return null
   }
 
   const showToast = (title: string, msg: string, severity: 'success' | 'error' | 'info' = 'info') => {
@@ -2161,12 +2162,8 @@ function SteamIntegrationButton({ gameId, gameTitle, storeMode }: { gameId: stri
         detail: { gameId, added: true }
       }))
 
-      // Show restart prompt
-      if (localStorage.getItem('steamSkipRestartConfirm') === 'true') {
-        performRestart();
-      } else {
-        setShowRestartConfirm(true);
-      }
+      // Show restart prompt (no auto-restart/kill)
+      setShowRestartConfirm(true)
     } catch (e) {
       console.error(e)
       showToast(t.library.addToSteam, t.library.addToSteamError + ': ' + String(e), 'error')
