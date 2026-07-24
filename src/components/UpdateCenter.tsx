@@ -1,7 +1,9 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { Check, ChevronRight, Download, RefreshCcw, ShieldCheck, X } from 'lucide-react'
+import { Check, ChevronRight, Download, RefreshCcw, ShieldCheck, X, SkipForward } from 'lucide-react'
+import { useState } from 'react'
 import { formatBytes, formatDuration } from '../lib/format'
 import { MOTION } from '../lib/motion'
+import { useLocale } from '../context/LocaleContext'
 import type { LauncherUpdateInfo, LauncherUpdateProgress } from '../types'
 
 const phases = ['downloading', 'verifying', 'installing', 'restarting'] as const
@@ -11,12 +13,16 @@ export function UpdateBanner({
   progress,
   onOpen,
   onStart,
+  onSkip,
 }: {
   update: LauncherUpdateInfo
   progress: LauncherUpdateProgress | null
   onOpen: () => void
   onStart: () => void
+  onSkip: () => void
 }) {
+  const { t } = useLocale()
+  const uc = (t as any).updateCenter ?? {}
   const active = progress && progress.phase !== 'checking' && progress.phase !== 'failed'
   const percent = downloadPercent(progress)
   return (
@@ -34,7 +40,14 @@ export function UpdateBanner({
       <button type="button" className="premium-update-details" onClick={onOpen}>
         Details <ChevronRight size={15} />
       </button>
-      {!active ? <button type="button" className="premium-update-now" onClick={onStart}>Update now</button> : null}
+      {!active ? (
+        <>
+          <button type="button" className="premium-update-now" onClick={onStart}>Update now</button>
+          <button type="button" className="premium-update-skip" onClick={onSkip} title={uc.skipUpdate ?? 'Skip for now'}>
+            <SkipForward size={14} />
+          </button>
+        </>
+      ) : null}
     </div>
   )
 }
@@ -48,6 +61,7 @@ export function UpdateCenter({
   onClose,
   onStart,
   onRetry,
+  onSkip,
 }: {
   open: boolean
   update: LauncherUpdateInfo | null
@@ -57,10 +71,14 @@ export function UpdateCenter({
   onClose: () => void
   onStart: () => void
   onRetry: () => void
+  onSkip: () => void
 }) {
+  const { t } = useLocale()
+  const uc = (t as any).updateCenter ?? {}
   const phase = progress?.phase ?? 'available'
   const active = ['downloading', 'verifying', 'installing', 'restarting'].includes(phase)
   const percent = downloadPercent(progress)
+  const [showSkipConfirm, setShowSkipConfirm] = useState(false)
 
   return (
     <AnimatePresence>
@@ -147,7 +165,7 @@ export function UpdateCenter({
             </ol>
 
             <section className="update-center-notes">
-              <h3>What’s new</h3>
+              <h3>What's new</h3>
               <div>{update.notes?.trim() || 'Maintenance, stability and launcher experience improvements.'}</div>
               {update.publishedAt ? <small>Published {new Date(update.publishedAt).toLocaleString()}</small> : null}
             </section>
@@ -157,8 +175,26 @@ export function UpdateCenter({
                 <button type="button" className="update-center-primary" onClick={onRetry}>Retry update</button>
               ) : active ? (
                 <button type="button" className="update-center-primary" onClick={onClose}>Hide</button>
+              ) : showSkipConfirm ? (
+                <div className="update-center-skip-confirm">
+                  <p className="update-center-skip-confirm-msg">
+                    {uc.skipUpdateConfirmMessage ?? 'The update banner will appear again next time you open the launcher.'}
+                  </p>
+                  <div className="update-center-skip-confirm-actions">
+                    <button type="button" className="update-center-secondary" onClick={() => setShowSkipConfirm(false)}>
+                      {uc.skipUpdateNo ?? 'No, keep it'}
+                    </button>
+                    <button type="button" className="update-center-primary" onClick={() => { setShowSkipConfirm(false); onSkip() }}>
+                      {uc.skipUpdateYes ?? 'Yes, skip'}
+                    </button>
+                  </div>
+                </div>
               ) : (
                 <>
+                  <button type="button" className="update-center-skip-btn" onClick={() => setShowSkipConfirm(true)}>
+                    <SkipForward size={14} />
+                    {uc.skipUpdate ?? 'Skip for now'}
+                  </button>
                   <button type="button" className="update-center-secondary" onClick={onClose}>Update later</button>
                   <button type="button" className="update-center-primary" onClick={onStart}>Download and install</button>
                 </>
@@ -203,4 +239,3 @@ function sanitizeError(error: string): string {
   }
   return error.replace(/https?:\/\/[^\s)]+/g, '[URL REDACTED]')
 }
-

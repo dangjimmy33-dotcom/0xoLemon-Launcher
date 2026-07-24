@@ -88,6 +88,13 @@ export const viVN = {
     noSteamGamesDesc: 'Dùng Lua Installer để thêm game vào thư viện Steam của bạn.',
     app: 'Ứng dụng',
   },
+  updateCenter: {
+    skipUpdate: 'Bỏ qua lần này',
+    skipUpdateConfirmTitle: 'Bỏ qua bản cập nhật?',
+    skipUpdateConfirmMessage: 'Thông báo cập nhật sẽ hiện lại vào lần sau khi bạn mở launcher.',
+    skipUpdateYes: 'Có, bỏ qua',
+    skipUpdateNo: 'Không, giữ lại',
+  },
   install: {
     title: 'Chọn phiên bản',
     subtitle: 'Chưa có gì được tải cho đến khi bạn xác nhận bước này.',

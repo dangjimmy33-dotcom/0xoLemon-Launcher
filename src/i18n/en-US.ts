@@ -87,6 +87,13 @@ export const enUS = {
     noSteamGames: 'No Steam games found',
     noSteamGamesDesc: 'Use Lua Installer to add games to your Steam library.',
   },
+  updateCenter: {
+    skipUpdate: 'Skip for now',
+    skipUpdateConfirmTitle: 'Skip this update?',
+    skipUpdateConfirmMessage: 'The update banner will appear again next time you open the launcher.',
+    skipUpdateYes: 'Yes, skip',
+    skipUpdateNo: 'No, keep it',
+  },
   install: {
     title: 'Choose a version',
     subtitle: 'Nothing downloads until you confirm this step.',

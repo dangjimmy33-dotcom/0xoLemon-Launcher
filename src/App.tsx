@@ -204,6 +204,7 @@ export default function App() {
   const [launcherUpdateSpeed, setLauncherUpdateSpeed] = useState(0)
   const [launcherUpdateEta, setLauncherUpdateEta] = useState<number | null>(null)
   const [showUpdateCenter, setShowUpdateCenter] = useState(false)
+  const [updateSkipped, setUpdateSkipped] = useState(false)
   const [settingsUpdateStatus, setSettingsUpdateStatus] = useState<string | null>(null)
   const [showDrivePicker, setShowDrivePicker] = useState(false)
   const [showUninstallConfirm, setShowUninstallConfirm] = useState(false)
@@ -3227,12 +3228,13 @@ export default function App() {
             onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
             isSidebarCollapsed={isSidebarCollapsed}
           />
-          {launcherUpdate ? (
+          {launcherUpdate && !updateSkipped ? (
             <UpdateBanner
               update={launcherUpdate}
               progress={launcherUpdateProgress}
               onOpen={() => setShowUpdateCenter(true)}
               onStart={() => void applyLauncherUpdate()}
+              onSkip={() => { setUpdateSkipped(true); setShowUpdateCenter(false) }}
             />
           ) : null}
         <main className={`launcher-shell premium-shell ${isSidebarCollapsed ? 'sidebar-collapsed-shell' : ''}`}>
@@ -3628,6 +3630,7 @@ export default function App() {
             onClose={() => setShowUpdateCenter(false)}
             onStart={() => void applyLauncherUpdate()}
             onRetry={() => void applyLauncherUpdate()}
+            onSkip={() => { setUpdateSkipped(true); setShowUpdateCenter(false) }}
           />
           <AchievementToastOverlay />
           <NotificationToasts

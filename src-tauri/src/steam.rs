@@ -289,8 +289,8 @@ fn parse_hf_date(text: &str) -> Option<DateTime<Utc>> {
     None
 }
 
-#[command]
-pub fn check_steam_update(appid: u32) -> Result<UpdateCheckResult, String> {
+#[allow(dead_code)]
+fn check_steam_update_blocking(appid: u32) -> Result<UpdateCheckResult, String> {
     let client = Client::new();
     let mut hf_date = None;
     let mut hubcap_date = None;
@@ -341,7 +341,14 @@ pub fn check_steam_update(appid: u32) -> Result<UpdateCheckResult, String> {
 }
 
 #[command]
-pub fn add_to_steam(appid: u32, force_update: bool) -> Result<(), String> {
+pub async fn check_steam_update(appid: u32) -> Result<UpdateCheckResult, String> {
+    tauri::async_runtime::spawn_blocking(move || check_steam_update_blocking(appid))
+        .await
+        .map_err(|e| e.to_string())?
+}
+
+#[command]
+pub async fn add_to_steam(appid: u32, force_update: bool) -> Result<(), String> {
     {
         let mut apps = DOWNLOADING_APPS.lock().unwrap();
         if !apps.insert(appid) {
@@ -349,7 +356,9 @@ pub fn add_to_steam(appid: u32, force_update: bool) -> Result<(), String> {
         }
     }
 
-    let result = add_to_steam_internal(appid, force_update);
+    let result = tauri::async_runtime::spawn_blocking(move || add_to_steam_internal(appid, force_update))
+        .await
+        .map_err(|e| e.to_string())?;
 
     {
         let mut apps = DOWNLOADING_APPS.lock().unwrap();
