@@ -1,0 +1,902 @@
+﻿{
+    "appId":  271590,
+    "title":  "Grand Theft Auto V Legacy",
+    "steamMetadataCountry":  "us",
+    "steamMetadataLanguage":  "english",
+    "type":  "game",
+    "requiredAge":  "17",
+    "isFree":  false,
+    "shortDescription":  "Grand Theft Auto V for PC offers players the option to explore the award-winning world of Los Santos and Blaine County in resolutions of up to 4k and beyond, as well as the chance to experience the game running at 60 frames per second.",
+    "detailedDescriptionHtml":  "When a young street hustler, a retired bank robber and a terrifying psychopath find themselves entangled with some of the most frightening and deranged elements of the criminal underworld, the U.S. government and the entertainment industry, they must pull off a series of dangerous heists to survive in a ruthless city in which they can trust nobody, least of all each other.\u003cbr /\u003e\r\n \u003cbr /\u003e\r\nGrand Theft Auto V for PC offers players the option to explore the award-winning world of Los Santos and Blaine County in resolutions of up to 4k and beyond, as well as the chance to experience the game running at 60 frames per second. \u003cbr /\u003e\r\n \u003cbr /\u003e\r\nThe game offers players a huge range of PC-specific customization options, including over 25 separate configurable settings for texture quality, shaders, tessellation, anti-aliasing and more, as well as support and extensive customization for mouse and keyboard controls. Additional options include a population density slider to control car and pedestrian traffic, as well as dual and triple monitor support, 3D compatibility, and plug-and-play controller support.  \u003cbr /\u003e\r\n \u003cbr /\u003e\r\nGrand Theft Auto V for PC also includes Grand Theft Auto Online, with support for 30 players and two spectators. Grand Theft Auto Online for PC will include all existing gameplay upgrades and Rockstar-created content released since the launch of Grand Theft Auto Online, including Heists and Adversary modes.\u003cbr /\u003e\r\n \u003cbr /\u003e\r\nThe PC version of Grand Theft Auto V and Grand Theft Auto Online features First Person Mode, giving players the chance to explore the incredibly detailed world of Los Santos and Blaine County in an entirely new way.\u003cbr /\u003e\r\n \u003cbr /\u003e\r\nGrand Theft Auto V for PC also brings the debut of the Rockstar Editor, a powerful suite of creative tools to quickly and easily capture, edit and share game footage from within Grand Theft Auto V and Grand Theft Auto Online. The Rockstar Editor’s Director Mode allows players the ability to stage their own scenes using prominent story characters, pedestrians, and even animals to bring their vision to life. Along with advanced camera manipulation and editing effects including fast and slow motion, and an array of camera filters, players can add their own music using songs from GTAV radio stations, or dynamically control the intensity of the game’s score. Completed videos can be uploaded directly from the Rockstar Editor to YouTube and the Rockstar Games Social Club for easy sharing.  \u003cbr /\u003e\r\n \u003cbr /\u003e\r\nSoundtrack artists The Alchemist and Oh No return as hosts of the new radio station, The Lab FM. The station features new and exclusive music from the production duo based on and inspired by the game’s original soundtrack. Collaborating guest artists include Earl Sweatshirt, Freddie Gibbs, Little Dragon, Killer Mike, Sam Herring from Future Islands, and more. Players can also discover Los Santos and Blaine County while enjoying their own music through Self Radio, a new radio station that will host player-created custom soundtracks.",
+    "aboutTheGameHtml":  "When a young street hustler, a retired bank robber and a terrifying psychopath find themselves entangled with some of the most frightening and deranged elements of the criminal underworld, the U.S. government and the entertainment industry, they must pull off a series of dangerous heists to survive in a ruthless city in which they can trust nobody, least of all each other.\u003cbr /\u003e\r\n \u003cbr /\u003e\r\nGrand Theft Auto V for PC offers players the option to explore the award-winning world of Los Santos and Blaine County in resolutions of up to 4k and beyond, as well as the chance to experience the game running at 60 frames per second. \u003cbr /\u003e\r\n \u003cbr /\u003e\r\nThe game offers players a huge range of PC-specific customization options, including over 25 separate configurable settings for texture quality, shaders, tessellation, anti-aliasing and more, as well as support and extensive customization for mouse and keyboard controls. Additional options include a population density slider to control car and pedestrian traffic, as well as dual and triple monitor support, 3D compatibility, and plug-and-play controller support.  \u003cbr /\u003e\r\n \u003cbr /\u003e\r\nGrand Theft Auto V for PC also includes Grand Theft Auto Online, with support for 30 players and two spectators. Grand Theft Auto Online for PC will include all existing gameplay upgrades and Rockstar-created content released since the launch of Grand Theft Auto Online, including Heists and Adversary modes.\u003cbr /\u003e\r\n \u003cbr /\u003e\r\nThe PC version of Grand Theft Auto V and Grand Theft Auto Online features First Person Mode, giving players the chance to explore the incredibly detailed world of Los Santos and Blaine County in an entirely new way.\u003cbr /\u003e\r\n \u003cbr /\u003e\r\nGrand Theft Auto V for PC also brings the debut of the Rockstar Editor, a powerful suite of creative tools to quickly and easily capture, edit and share game footage from within Grand Theft Auto V and Grand Theft Auto Online. The Rockstar Editor’s Director Mode allows players the ability to stage their own scenes using prominent story characters, pedestrians, and even animals to bring their vision to life. Along with advanced camera manipulation and editing effects including fast and slow motion, and an array of camera filters, players can add their own music using songs from GTAV radio stations, or dynamically control the intensity of the game’s score. Completed videos can be uploaded directly from the Rockstar Editor to YouTube and the Rockstar Games Social Club for easy sharing.  \u003cbr /\u003e\r\n \u003cbr /\u003e\r\nSoundtrack artists The Alchemist and Oh No return as hosts of the new radio station, The Lab FM. The station features new and exclusive music from the production duo based on and inspired by the game’s original soundtrack. Collaborating guest artists include Earl Sweatshirt, Freddie Gibbs, Little Dragon, Killer Mike, Sam Herring from Future Islands, and more. Players can also discover Los Santos and Blaine County while enjoying their own music through Self Radio, a new radio station that will host player-created custom soundtracks.",
+    "supportedLanguagesHtml":  "English\u003cstrong\u003e*\u003c/strong\u003e, French, Italian, German, Spanish - Spain, Korean, Polish, Portuguese - Brazil, Russian, Traditional Chinese, Japanese, Simplified Chinese, Spanish - Latin America\u003cbr\u003e\u003cstrong\u003e*\u003c/strong\u003elanguages with full audio support",
+    "pcRequirements":  {
+                           "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003eRequires a 64-bit processor and operating system\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows 10 64 Bit\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e Intel Core 2 Quad CPU Q6600 @ 2.40GHz (4 CPUs) / AMD Phenom 9850 Quad-Core Processor (4 CPUs) @ 2.5GHz\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 4 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e NVIDIA 9800 GT 1GB / AMD HD 4870 1GB (DX 10, 10.1, 11)\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 125 GB available space\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eSound Card:\u003c/strong\u003e 100% DirectX 10 compatible\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eAdditional Notes:\u003c/strong\u003e Over time downloadable content and programming changes will change the system requirements for this game.  Please refer to your hardware manufacturer and  for current compatibility information. Some system components such as mobile chipsets, integrated, and AGP graphics cards may be incompatible. Unlisted specifications may not be supported by publisher.     Other requirements:  Installation and online play requires log-in to Rockstar Games Social Club (13+) network; internet connection required for activation, online play, and periodic entitlement verification; software installations required including Rockstar Games Social Club platform, DirectX , Chromium, and Microsoft Visual C++ 2008 sp1 Redistributable Package, and authentication software that recognizes certain hardware attributes for entitlement, digital rights management, system, and other support purposes.     SINGLE USE SERIAL CODE REGISTRATION VIA INTERNET REQUIRED; REGISTRATION IS LIMITED TO ONE ROCKSTAR GAMES SOCIAL CLUB ACCOUNT (13+) PER SERIAL CODE; ONLY ONE PC LOG-IN ALLOWED PER SOCIAL CLUB ACCOUNT AT ANY TIME; SERIAL CODE(S) ARE NON-TRANSFERABLE ONCE USED; SOCIAL CLUB ACCOUNTS ARE NON-TRANSFERABLE.  Partner Requirements:  Please check the terms of service of this site before purchasing this software.\u003c/li\u003e\u003c/ul\u003e",
+                           "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003cli\u003eRequires a 64-bit processor and operating system\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eOS:\u003c/strong\u003e Windows 10 64 Bit\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eProcessor:\u003c/strong\u003e Intel Core i5 3470 @ 3.2GHz (4 CPUs) / AMD X8 FX-8350 @ 4GHz (8 CPUs)\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eMemory:\u003c/strong\u003e 8 GB RAM\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eGraphics:\u003c/strong\u003e NVIDIA GTX 660 2GB / AMD HD 7870 2GB\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eStorage:\u003c/strong\u003e 125 GB available space\u003cbr\u003e\u003c/li\u003e\u003cli\u003e\u003cstrong\u003eSound Card:\u003c/strong\u003e 100% DirectX 10 compatible\u003c/li\u003e\u003c/ul\u003e"
+                       },
+    "macRequirements":  {
+                            "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e",
+                            "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e"
+                        },
+    "linuxRequirements":  {
+                              "minimum":  "\u003cstrong\u003eMinimum:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e",
+                              "recommended":  "\u003cstrong\u003eRecommended:\u003c/strong\u003e\u003cbr\u003e\u003cul class=\"bb_ul\"\u003e\u003c/ul\u003e"
+                          },
+    "dlc":  null,
+    "website":  "https://www.rockstargames.com/V/",
+    "developers":  "Rockstar North",
+    "publishers":  "Rockstar Games",
+    "releaseDate":  {
+                        "coming_soon":  false,
+                        "date":  "Apr 13, 2015"
+                    },
+    "genres":  "Action, Adventure",
+    "categories":  [
+                       "Single-player",
+                       "Multi-player",
+                       "PvP",
+                       "Online PvP",
+                       "Co-op",
+                       "Online Co-op",
+                       "Steam Achievements",
+                       "Full controller support",
+                       "Remote Play on Phone",
+                       "Remote Play on Tablet",
+                       "Remote Play on TV"
+                   ],
+    "platforms":  {
+                      "windows":  true,
+                      "mac":  false,
+                      "linux":  false
+                  },
+    "metacritic":  {
+                       "score":  96,
+                       "url":  "https://www.metacritic.com/game/pc/grand-theft-auto-v?ftag=MCD-06-10aaa1f"
+                   },
+    "recommendations":  {
+                            "total":  1888654
+                        },
+    "reviewsSummary":  null,
+    "newsItems":  [
+                      {
+                          "gid":  "1838407329263464",
+                          "title":  "\u0027GTA 6 needs this\u0027: This GTA 5 prison mod turns one of roleplay\u0027s most enduring staples into a game within a game",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/PC Gamer/1838407329263464",
+                          "is_external_url":  true,
+                          "author":  "Joe Donnelly",
+                          "contents":  "\u003cimg src=\"https://cdn.mos.cms.futurecdn.net/ruiSvPtYyNtTHT7GHJhhdh-1280-80.jpg\"/\u003e\u003cbr\u003e\u003cbr\u003e\n                I still remember cursing aloud when I was first sent to prison in GTA 5 roleplay...\n                \u003ca href=\"https://www.pcgamer.com/games/grand-theft-auto/gta-6-needs-this-this-gta-5-prison-mod-turns-one-of-roleplays-most-enduring-staples-into-a-game-within-a-game/?utm_source=steam\u0026utm_medium=referral\" target=\"_blank\"\u003eRead more.\u003c/a\u003e",
+                          "feedlabel":  "PC Gamer",
+                          "date":  1784458800,
+                          "feedname":  "PC Gamer",
+                          "feed_type":  0,
+                          "appid":  271590
+                      },
+                      {
+                          "gid":  "1838407329258954",
+                          "title":  "GTA Online mimics reality by nerfing payouts after making everything cost more: \u0027Prices go up, paychecks go down\u0027",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/PC Gamer/1838407329258954",
+                          "is_external_url":  true,
+                          "author":  "Rory Norris",
+                          "contents":  "\u003cimg src=\"https://cdn.mos.cms.futurecdn.net/2pJjZvWpQUqwCMgyYHAc7n-1280-80.jpg\"/\u003e\u003cbr\u003e\u003cbr\u003e\n                Making money in \u003ca href=\"https://www.pcgamer.com/gta-online/\" target=\"_blank\"\u003eGTA Online\u003c/a\u003e has basically always been a game of whack-a-mole, with players finding the latest and greatest trick, and Rockstar promptly shutting the loophole down. With \u003ca href=\"https://www.pcgamer.com/grand-theft-auto-6/\" target=\"_blank\"\u003eGrand Theft Auto 6\u003c/a\u003e on the horizon, Rockstar has decided to nerf heists, which were one of the most popular ways to make a good buck in Los Santos...\n                \u003ca href=\"https://www.pcgamer.com/games/grand-theft-auto/gta-online-mimics-reality-by-nerfing-payouts-after-making-everything-cost-more-prices-go-up-paychecks-go-down/?utm_source=steam\u0026utm_medium=referral\" target=\"_blank\"\u003eRead more.\u003c/a\u003e",
+                          "feedlabel":  "PC Gamer",
+                          "date":  1784280045,
+                          "feedname":  "PC Gamer",
+                          "feed_type":  0,
+                          "appid":  271590
+                      },
+                      {
+                          "gid":  "1838407329256462",
+                          "title":  "GTA RP gets a massive upgrade next week, as FiveM Enhanced sets early access launch date",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/PCGamesN/1838407329256462",
+                          "is_external_url":  true,
+                          "author":  "editor@pcgamesn.com",
+                          "contents":  "\u003cimg width=\"900\" height=\"507\" src=\"https://www.pcgamesn.com/wp-content/sites/pcgamesn/2026/07/gta-rp-fivem-enhanced-early-access-release-date-grand-theft-auto-5-rockstar-games-modded-servers-online-multiplayer.jpg\"/\u003e\u003cp\u003eThe FiveM team confirms that its support for GTA 5 Enhanced Edition will go live in July, marking a significant leap forward for GTA RP.\u003c/p\u003e\n\u003cp\u003eRead the full story on PCGamesN: \u003ca href=\"https://www.pcgamesn.com/grand-theft-auto-v/gta-rp-enhanced-early-access\"\u003eGTA RP gets a massive upgrade next week, as FiveM Enhanced sets early access launch date\u003c/a\u003e\u003c/p\u003e",
+                          "feedlabel":  "PCGamesN",
+                          "date":  1784201624,
+                          "feedname":  "PCGamesN",
+                          "feed_type":  0,
+                          "appid":  271590
+                      },
+                      {
+                          "gid":  "1838407329254561",
+                          "title":  "As GTA 6\u0027s PC portless launch looms, ex-Rockstar producer says prioritising consoles first is primarily about being \"better off starting with the constraints\"",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/Rock, Paper, Shotgun/1838407329254561",
+                          "is_external_url":  true,
+                          "author":  "",
+                          "contents":  "\u003cimg src=\"https://assetsio.gnwcdn.com/gta-6-pc-port-ex-rockstar-producer-perspective-01.jpg?width=690\u0026quality=85\u0026format=jpg\u0026auto=webp\" /\u003e \u003cp\u003eThe wait for \u003ca href=\"https://www.rockpapershotgun.com/games/grand-theft-auto-vi\"\u003eGTA 6\u003c/a\u003e on PC lasting past this November\u0027s been a foregone conclusion for a while now, but if you\u0027re interested in a bit of developer perspective as to why Rockstar opt to do things that way, a former producer at the company\u0027s offered some. Essentially, it\u0027s a matter of it being less of a headache to scale up after initially getting a game working on hardware with stricter limitations than it would be to strip back an all-singing, all-dancing PC port for consoles.\u003c/p\u003e\n \u003cp\u003e\u003ca href=\"https://www.rockpapershotgun.com/as-gta-6s-pc-portless-launch-looms-ex-rockstar-producer-says-prioritising-consoles-first-is-primarily-about-being-better-off-starting-with-the-constraints\"\u003eRead more\u003c/a\u003e\u003c/p\u003e",
+                          "feedlabel":  "Rock, Paper, Shotgun",
+                          "date":  1784126084,
+                          "feedname":  "Rock, Paper, Shotgun",
+                          "feed_type":  0,
+                          "appid":  271590
+                      },
+                      {
+                          "gid":  "1838407329254306",
+                          "title":  "The Kortz Center Heist Now Available in GTA Online",
+                          "url":  "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1838407329254306",
+                          "is_external_url":  true,
+                          "author":  "rockstarintl_steam",
+                          "contents":  "The Kortz Center, venue for the most dazzling soirees in Los Santos and repository of the world’s most provocatively expensive and expensively provocative artwork. And now, the target of your classiest Heist.  \n\nBreak into the art world by knocking over high society\u0027s cultural epicenter and making off with lucrative treasures from its latest exhibition in GTA Online: The Kortz Center Heist.\n\n[img]{STEAM_CLAN_IMAGE}/6144970/8a6a409402e08f61f4810a3b56739366a2ac2b21.jpg[/img]\n\nTAKE DOWN THE KORTZ CENTER\n\nThe Bell Building inside the Kortz Center houses the Albert Crisp Collection: a curated selection of fine art ranging from antiquities of exotic provenance to works from contemporary masters. Mr. Faber’s clientele are interested in a rotating selection of Primary Targets stored inside the Center’s vault, too rare and prized to display to the public.\n\nAccessing these vaulted treasures will require bypassing state-of-the-art defenses including first-rate security teams, watchful CCTV cameras, and intersecting laser tripwires. Scoping out these measures and preparing the ideal approach is left to your discretion. Whatever you decide, professional hustler Raf De Angelis will be in your ear to help as you prepare to execute an art theft par excellence. \n\nWhile the Primary Target is the main attraction, the vault and displays in the Bell Building also contain discretionary Secondary Targets that can be swiped to fatten up your final take. Stealing these will require you to infiltrate the Center’s security even further, and some will require additional hands along with ample bag space to depart with your haul intact. \n\nUltimately, you can decide if you want to sell the Primary Target or keep it for yourself to display inside your Mansion.\n\nADDITIONS \u0026 RENOVATIONS\n\nUpgrade your Mansion with the Art Studio, a versatile new space that serves as your base of operations for this Heist. Once acquired, expert counterfeiter Yong-Rae will begin creating convincing replicas to replace your Primary Targets so that Kortz Center staff will be none the wiser.  \n\nSet yourself up for further success by fully upgrading the grounds of your Mansion. An Armory will add a powerful Mk II weapon to each of your Heist loadouts, while the Vehicle Workshop will improve performance for certain getaway vehicles. Your personal Security staff will aid in distracting police during your escape, reducing your Wanted level. \n\nPlus, many existing properties and resources can provide helpful benefits while you\u0027re in the heat of the Finale. Owning a Bunker adds Special Ammo and Upgrades to the Mk II weapon included with the Mansion Armory, while owning an Agency, the Darnell Bros. Garment Factory, or a Terrorbyte grants additional time to steal the Primary Target Painting in the Vault. Having an Arcade Drone Station will make its Nano Drones available to assist during the Finale. \n\nYou’ll need the Art Studio to host and launch The Kortz Center Heist, but you can join up as a member of a Heist crew without owning a Mansion. Assembling a team is entirely optional, although teaming up will allow you to access a Secondary Target room beyond the reach of solo thieves, while more duffels will increase your maximum take. \n\nGear will accumulate in the Art Studio as you complete prep and planning, and team members can select their own loadouts for the Finale.\n\n[url=https://www.rockstargames.com/newswire/article/2525o93834o413/the-kortz-center-heist-now-available-in-gta-online?utm_source=steam-news-gtavl\u0026utm_medium=o_promos\u0026utm_campaign=2026-ts26]See full event details at the Rockstar Newswire.[/url]",
+                          "feedlabel":  "Community Announcements",
+                          "date":  1784124016,
+                          "feedname":  "steam_community_announcements",
+                          "feed_type":  1,
+                          "appid":  271590
+                      }
+                  ],
+    "achievements":  {
+                         "total":  77,
+                         "items":  [
+                                       {
+                                           "apiName":  "ACH00",
+                                           "displayName":  "Welcome to Los Santos",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/348a8015272416e2587965c493877b822fb2bcd1.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/dd1d4a04865ddb8772d97f308fcc5ad843c32c8e.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH01",
+                                           "displayName":  "A Friendship Resurrected",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/7424038d40678f398eab78553f71d9832d778ff6.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/5bed6fa24359447671962ffa09b748ba146c9d91.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH02",
+                                           "displayName":  "A Fair Day\u0027s Pay",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/4ba73dc8669d5e7090c3efa5b677f34f262049d9.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/247fb92fe3915ef7b23e85e34478a6608e438bf0.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH03",
+                                           "displayName":  "The Moment of Truth",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/3e96f06594bde75643c502a8f3c82907b07ac594.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/b466bb2c244eaf28060dfde315e5e9a2a0c169bc.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH04",
+                                           "displayName":  "To Live or Die in Los Santos",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/b785bc5590edfb7a40292702b1f96e5c4ec8d7fa.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/b9d0dea437fedf77ea4599b63bccda94b6c42508.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH05",
+                                           "displayName":  "Diamond Hard",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/f3bbb0111add48a93dc0ba03b3fe863ecae5dfc6.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/e7271f7c0561fd90e5dfe6e81326791d345d191f.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH06",
+                                           "displayName":  "Subversive",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/a9e0377d0560512f8b51bfd496b6b166c7527c4d.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/e16d6d2628f2eb496963618b92c6f9b895c2224e.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH42",
+                                           "displayName":  "Blitzed",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/d64b576aadce4af019a652caf950a5d36f548e3e.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/8628adef1ddc165b82b79831b1df89fff841c638.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH07",
+                                           "displayName":  "Small Town, Big Job",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/7e3f09a716dcd0aa4b6f811a6d748cad37dfd738.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/9dae4e2234aa7cc4d9aa00307ab9b13140b53b0a.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH08",
+                                           "displayName":  "The Government Gimps",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/45de6fb89cc1a8c009bccdec10744c33380b481c.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/43ef33d7afe049066b79b926d0b164cb44090a0a.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH09",
+                                           "displayName":  "The Big One!",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/7590f7261b3e7ab12d61f1438a0236606f9735df.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/a5daefa7c1a4f68d3899272d688372d500aa4d76.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH10",
+                                           "displayName":  "Solid Gold, Baby!",
+                                           "description":  "Earn 70 Gold Medals on Missions and Strangers and Freaks.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/2eac4e774d1b6f0cbd46393be4ce008f4559688b.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/ace92ecb731ba31cab0c89520a50a8d733250af8.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH11",
+                                           "displayName":  "Career Criminal",
+                                           "description":  "Attain 100% Game Completion.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/1a0eef51e98dd1709a52d051bb22eadc8e881eb7.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/eb55b0c4becd9d805fc0f012ec432854f104bfcd.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH50",
+                                           "displayName":  "San Andreas Sightseer",
+                                           "description":  "Explore all of Los Santos and Blaine County.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/d1046370faa06ba5267bb9535155a26c4c907119.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/532c56191f1d8ec2d41e292fe0d9a1f005d29b46.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH12",
+                                           "displayName":  "All\u0027s Fare in Love and War",
+                                           "description":  "Purchase Downtown Cab Co. and complete a private fare.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/10c8e333d937fd6053b08a31fa08ff662908d50a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/8e4704d769e13e154ab15f100c8c3120d7a132aa.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH13",
+                                           "displayName":  "TP Industries Arms Race",
+                                           "description":  "Purchase McKenzie Field Hangar and win the arms race.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/e7bc238eaa5feeeaf2a608e92bcbe1cc903aae52.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/0fc3205e9e96c2e2f9a26305957d59031507a0c5.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH14",
+                                           "displayName":  "Multi-Disciplined",
+                                           "description":  "Attain a gold medal in all applicable hobbies and pastimes.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/01bff94c98380e158d0175075127b03e0c9bf7ac.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/96575aaa59f577f09023ba772a1859840dcd70fe.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH15",
+                                           "displayName":  "From Beyond the Stars",
+                                           "description":  "Collect and return all spaceship parts.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/261162b00823538d895dabf9ae5f90d7129fdb67.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/5f2b6b4172fab40806f41ba0a7b62357643a06e9.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH16",
+                                           "displayName":  "A Mystery, Solved",
+                                           "description":  "Solve the mystery of Leonora Johnson.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/ecab7eb6da462803fd6e85d40b78c6907fc76cda.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/47f618743023052cac6d43b63243f037a7de7338.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH17",
+                                           "displayName":  "Waste Management ",
+                                           "description":  "Purchase the old dock and collect all nuclear waste.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/3898b2c3a2d1561fecf3f675179fc0135a45af5e.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/abb2544237827a1b4556a6bb57a33e3d4567dd29.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH18",
+                                           "displayName":  "Red Mist",
+                                           "description":  "Complete all Rampages.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/81a8d4d47335b034b36878e347483985b183d4a6.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/09a878e88ee9a22d0f6426d6a894e3e283b6e1e6.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH19",
+                                           "displayName":  "Show Off",
+                                           "description":  "Complete all Stunt Jumps. ",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/60e66c0469fb410358c88980c5ceabf00c5aa223.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/6a05ccfe53aca19e288d36ac963be63f872039d4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH20",
+                                           "displayName":  "Kifflom!",
+                                           "description":  "You completed the Epsilon program and achieved inner peace.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/1c2b806e21c1e1468e50f13dde87aa54fa135cf3.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/e44567371761436a127ca1b3c9356c712deb08ba.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH21",
+                                           "displayName":  "Three Man Army",
+                                           "description":  "Survive 3 minutes on at least a 3 star Wanted Level with all three characters together off mission.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/6e5a3b8580136eba15f88b462a2d27bccabe15ab.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/4777f94f52f3eff5ec1db8a798eddb330b898fa8.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH22",
+                                           "displayName":  "Out of Your Depth",
+                                           "description":  "You\u0027re gonna need a bigger boat...",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/c9e52c1880484795d5fa7516776b62fc2800bf57.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/dffb1cf68c9a540405991885c5df03687a2caa25.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH23",
+                                           "displayName":  "Altruist Acolyte",
+                                           "description":  "Deliver an unsuspecting victim to the Altruist Cult.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/2e647e85d798e768635b2b102ababf72fa235b71.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/92792109ffcb7d373d0a5182d005fd467663f2e5.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH24",
+                                           "displayName":  "A Lot of Cheddar",
+                                           "description":  "Spend a total of $200 million across all three characters.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/6a87dfec720e77e7b67ce8b9c34da38a99080c33.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/02472e0a3aeb137b25d81638e9da6deb2e40f895.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH25",
+                                           "displayName":  "Trading Pure Alpha",
+                                           "description":  "Make a profit over your total investments in the stock market.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/4cab465a551c379e512479df48a78f0b1dc40d58.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/f7f49d9e6376aa48379db5fba35a7a1e5cd3da1b.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH26",
+                                           "displayName":  "Pimp My Sidearm",
+                                           "description":  "Fully mod a weapon.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/1ae6d3bd27ba653fd047642bcc46815e8acc5434.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/c59db01ade48464efabe0ed81a21c7b78af08f03.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH27",
+                                           "displayName":  "Wanted: Alive Or Alive",
+                                           "description":  "Deliver a bail bond target alive.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/a79e74e49be2b8ff5531d75fba31effd952ccac1.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/89380b8ddf29d7d2e6973836e3d0db00ce28b260.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH28",
+                                           "displayName":  "Los Santos Customs",
+                                           "description":  "Fully mod a vehicle.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/319c366846d3317b08c0175bd71c2a947981e08c.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/fcee579ea9811271e919bb34d04989a88539f7ed.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH29",
+                                           "displayName":  "Close Shave",
+                                           "description":  "Complete all Under the Bridge and Knife Flight challenges.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/586302c5c6efcc72fa661e57790e706b1acd0ac1.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/94749c3cbde4f35601da7eeae81f131eca33594f.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH30",
+                                           "displayName":  "Off the Plane",
+                                           "description":  "GTA Online: Complete the Introduction.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/595c85f8093df03700277fc9a4688e7a8cfa581a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/23a3b6e4325861e2e91d88e9d6306f78aad5fe1d.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH31",
+                                           "displayName":  "Three-Bit Gangster",
+                                           "description":  "GTA Online: Reach Rank 25.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/b95faa54005a9d9d80362d060880fe65fb85d28c.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/46fc111eb25eec6caf114888cb4fd2217f39fecb.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH32",
+                                           "displayName":  "Making Moves",
+                                           "description":  "GTA Online: Reach Rank 50.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/3b90539d5efee60897391b7a758b8be8a601c24b.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/7a0306266658557b07c9290fc9b7cd449abba9e2.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH33",
+                                           "displayName":  "Above the Law",
+                                           "description":  "GTA Online: Reach Rank 100.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/2a147eaabdf907c7382262438d01c1fc28e27ac6.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/2258f6eed9f08f3a5532c67f412b7802ec8bc696.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH34",
+                                           "displayName":  "Numero Uno",
+                                           "description":  "GTA Online: Obtain first place in all competitive game types.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/eb7f4ab85952cfce4dfc42b7e487c2c2a5aaf2f0.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/fb8b89b768b0087ce7aa6a5581284fc726cbd0cc.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH35",
+                                           "displayName":  "The Midnight Club",
+                                           "description":  "GTA Online: Use custom vehicles to win 5 Races.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/7c17840a2fa85ad4f08441be23424f0ee923f118.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/42808e2b04f0d8be90a3888c891071b2e1b0ee26.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH36",
+                                           "displayName":  "Unnatural Selection",
+                                           "description":  "GTA Online: Complete all 10 waves of a Survival.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/79da3c99c3c4d7b27d761163e89cf632b93f8574.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/99bc9817d770cf6aef193d041759907e3094e8a7.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH38",
+                                           "displayName":  "Backseat Driver",
+                                           "description":  "GTA Online: Direct a driver to 1st place as co-driver in Rally Mode.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/b02d313b56418fe7ce76997feef9aab3a8cd3654.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/ef9ab190fbf9f43b2bb29d4053299a95dac334f3.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH39",
+                                           "displayName":  "Run Like The Wind",
+                                           "description":  "GTA Online: Survive for a day with a Bounty on your head.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/8c52075ab6e8b962d7c1f5840cd8ed1cefdd1e6f.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/186d2b0f372df7257df926be1d3b9f59eeb76839.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH40",
+                                           "displayName":  "Clean Sweep",
+                                           "description":  "GTA Online: Finish a Gang Attack without dying and kill at least 10 enemies.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/af1a52bee118614c3397df5105763f11388f1738.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/57f9ded6d2116c7582f68afdf5defd8d77f14254.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH41",
+                                           "displayName":  "Decorated",
+                                           "description":  "GTA Online: Earn 30 Platinum Awards.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/f0740e0f7bce7c8e69f8e1aadb039cfba33361da.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/3629ffd1e201f2d5b79b36fc86c01744ac066f33.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH43",
+                                           "displayName":  "Stick Up Kid",
+                                           "description":  "GTA Online: Hold up all 20 Stores.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/b29dcae389bceec382778acd0d9c390ccab958c0.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/e0b8b3bd7c4bee54b6ff527c38be5cf47ff58cae.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH45",
+                                           "displayName":  "Enjoy Your Stay",
+                                           "description":  "GTA Online: Participate in everything Los Santos has to offer.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/5e7ba01afcc348fe212d5dd19cfa98821094741e.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/4fe5369a2ca0d59aa38bb1b62f0ccb2a5e97eccd.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH46",
+                                           "displayName":  "Crew Cut",
+                                           "description":  "GTA Online: Complete a Job as a member of a Crew.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/85d425dd52b6a7fdd9cbd50dc31ccd081f96e51f.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/db8f970a2ce9ca7e53d6c102ea402cd44b46b131.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH47",
+                                           "displayName":  "Full Refund",
+                                           "description":  "GTA Online: Kill the thief that mugged you.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/d801e9d82548e8f7688b734be74e4fb312e85d6e.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/35c654175350b50607c7e13a7033e675cefcf23f.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH48",
+                                           "displayName":  "Dialling Digits",
+                                           "description":  "GTA Online: Call for a Backup Helicopter for the first time.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/67b9c2b69c84a31c7859f63f713351c32870fc94.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/fa012a9b76b9ed46a2a3868f7d04cc76b2e43916.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH49",
+                                           "displayName":  "American Dream",
+                                           "description":  "GTA Online: Own an Apartment, Garage and an Insured Vehicle.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/8e98bdaab6e81470b263b2a7cf3a50fede8b090f.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/b2bcb3c0edb7b6e654c4be0da043eca68b53d198.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACH51",
+                                           "displayName":  "A New Perspective",
+                                           "description":  "Play GTA V for 15 hours in first person mode.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/1451e338312b4560ee10299c4c1bee82acedfdae.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/9f79320fa5e38e952e3d601ef1219d4e50d5969b.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACHH1",
+                                           "displayName":  "Be Prepared",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/3cbdd1df8fa8e0d6722dc7d169ab1d5226e1b06a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/9cc798f8cef4ac82617ea931288ce9f88650cfcc.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACHH2",
+                                           "displayName":  "In the Name of Science",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/b4f299906c51ac23f4435fd79a0838f5a8da2de9.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/1b526f32c97488da455eccb753a5fd3ee1028e5a.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACHH3",
+                                           "displayName":  "Dead Presidents",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/86563b454d24b90b8ad90d504600e2b380b41fb3.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/f7eff2888e3c7043216d0e431def8b7908f43549.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACHH4",
+                                           "displayName":  "Parole Day",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/08cecf54a1e7b0083f5ac85f3191319de848eb94.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/7316d93dae6f8c6edeffba29464409d4dd076970.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACHH5",
+                                           "displayName":  "Shot Caller",
+                                           "description":  "GTA Online: Invest your hard earned cash to set up a Heist.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/236084e0509e5e4405354f483e1766be81496164.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/d685a5d5adf09b949de0be30012294df3dea206b.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACHH6",
+                                           "displayName":  "Four Way",
+                                           "description":  "GTA Online: As Heist Leader set the Finale cut as 25% across all players.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/7c3cbf94732270cb2416720b431f997d45321f52.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/cd02d52318c79d538fc6fa90fc91d3cf0484730b.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACHH7",
+                                           "displayName":  "Live a Little",
+                                           "description":  "GTA Online: Spend a total of $8,000,000 purchasing vehicles included as part of The Heists Update.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/1a8291d1d857e0b02156ecad663005bc317c5b74.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/694d3b57d21340c400d8fdd7ba79857d9d8a6d2f.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACHH8",
+                                           "displayName":  "Can\u0027t Touch This",
+                                           "description":  "GTA Online: Complete a Heist Finale without taking any damage.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/fe1fb0fe8c53250e1f65ee807a4018d8206ce994.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/2964bd81a021c7227a2c56a3cd41ed043e4f26c0.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACHH10",
+                                           "displayName":  "Mastermind",
+                                           "description":  "GTA Online: Earn 25 platinum medals across Heist Setups and Finales.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/149b53d6bbae5c052ef39f770269e1b8b6a1b307.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/6782a63728ecc2ca9baced8e1cc8ac60ba7072be.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACHH11",
+                                           "displayName":  "Vinewood Visionary",
+                                           "description":  "Create and export a video using the Rockstar Editor or enter Director Mode 5 times.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/10ae315b115e68ff2d536cb2e168379d3af62088.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/1c5f245855d6f5ae2e83fde22a9287c41ec791fa.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACHR2",
+                                           "displayName":  "Majestic",
+                                           "description":  "Create and export 10 videos using the Rockstar Editor or enter Director Mode 10 times.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/61caf984c785f973ce7355150196ddac960eeeec.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/165383ef81b94c2c7504e575f3269efd008d6322.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACHR3",
+                                           "displayName":  "Humans of Los Santos",
+                                           "description":  "Unlock all Special Characters and entered Director Mode as an actor from this category.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/f2458dc04c2ad09fe3074aa103e7ad522a7d4da0.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/42bb58a43f2ebdb0852c55cde430a5d1841fb9e9.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACHR4",
+                                           "displayName":  "First Time Director",
+                                           "description":  "Enter Director Mode for the first time as an unlocked actor.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/6b77a60c0ad267e01c50e3dd3cb6a1780b96aab1.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/5b60c8eef2738e9c7829cf4eef00d9748b68ddbe.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACHR5",
+                                           "displayName":  "Animal Lover",
+                                           "description":  "Enter Director Mode as an unlocked animal actor for the first time.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/8dd7f3a1eed921a7a6c45aaf976ec1c2b937fc8a.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/fc7a27e55dfaa177fbcf2e8d791d96bf9f361c60.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACHR6",
+                                           "displayName":  "Ensemble Piece",
+                                           "description":  "Unlock all Story Characters and enter Director Mode as an actor from this category.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/219d31e229a227b50e6988a40e488da5293f4066.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/e8a31a783d8d978699300872f340cbf7e8eac132.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACHR7",
+                                           "displayName":  "Cult Movie",
+                                           "description":  "Enter Director Mode as Cris Formage.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/e27a0ebc1c9147ad8530c554fb3e83ac41c0bea4.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/4e72ef5c3d7ac8fcd6be074235942d4635b0d540.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACHR8",
+                                           "displayName":  "Location Scout",
+                                           "description":  "Visit all Locations in Director Mode.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/178d5b522a94e4f6d412cb62f061ff9cabcb17e7.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/79b3f7f770d3b41e8a18de85c32e69a967f59889.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACHR9",
+                                           "displayName":  "Method Actor",
+                                           "description":  "Enter Director Mode using any of your own GTA Online characters.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/b6cc0d91927c66b9e5cfcd77256762165fdede5d.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/e0cee5b0a1d7208c53c132543d59554a2dd48da6.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACHR10",
+                                           "displayName":  "Cryptozoologist",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/30b05e2201bdb0b071d6aac757931250159be78e.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/03cfa9767edcd5db249666f35994dbf48a9653ac.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACHGO1",
+                                           "displayName":  "Getting Started",
+                                           "description":  "GTA Online: You set up the Doomsday Heist.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/731452f85ffef7611afc1e4d315a303e972719ed.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/731452f85ffef7611afc1e4d315a303e972719ed.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACHGO2",
+                                           "displayName":  "The Data Breaches",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/cf78bbf1b2fe0336f80a1194eca6265fdffc8b3d.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/cf78bbf1b2fe0336f80a1194eca6265fdffc8b3d.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACHGO3",
+                                           "displayName":  "The Bogdan Problem",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/f9fdfdc7fb3a70085028eb0ba69307f505825997.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/f9fdfdc7fb3a70085028eb0ba69307f505825997.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACHGO4",
+                                           "displayName":  "The Doomsday Scenario",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/303adf2e59a679077939db56e48e3c987f8480c4.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/303adf2e59a679077939db56e48e3c987f8480c4.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACHGO5",
+                                           "displayName":  "A World Worth Saving",
+                                           "description":  "",
+                                           "hidden":  true,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/11253835d87882171207aac013fcf183e02d3a34.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/11253835d87882171207aac013fcf183e02d3a34.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACHGO6",
+                                           "displayName":  "Orbital Obliteration",
+                                           "description":  "GTA Online: You killed another player with the Orbital Cannon.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/6bffdfe83f02e8862cc116958a943adeeaf247aa.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/6bffdfe83f02e8862cc116958a943adeeaf247aa.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACHGO7",
+                                           "displayName":  "Elitist",
+                                           "description":  "GTA Online: You completed all 3 Elite Challenges in The Doomsday Heist.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/383db594e55add24639eceaab4df49e376dc5636.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/383db594e55add24639eceaab4df49e376dc5636.jpg"
+                                       },
+                                       {
+                                           "apiName":  "ACHGO8",
+                                           "displayName":  "Masterminds",
+                                           "description":  "GTA Online: You completed all 3 Criminal Mastermind Challenges in The Doomsday Heist.",
+                                           "hidden":  false,
+                                           "iconFile":  "",
+                                           "iconGrayFile":  "",
+                                           "steamIcon":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/153df09e41c6c2b9ddf86028f79f7eaee1ea76c2.jpg",
+                                           "steamIconGray":  "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/271590/153df09e41c6c2b9ddf86028f79f7eaee1ea76c2.jpg"
+                                       }
+                                   ]
+                     }
+}

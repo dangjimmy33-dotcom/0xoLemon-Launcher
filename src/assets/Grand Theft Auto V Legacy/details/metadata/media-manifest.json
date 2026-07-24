@@ -1,0 +1,552 @@
+﻿[
+    {
+        "role":  "header",
+        "title":  "Steam header",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/271590/header.jpg?t=1765387725",
+        "file":  "store_art/header.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.251Z"
+    },
+    {
+        "role":  "capsule",
+        "title":  "Steam capsule",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/271590/capsule_231x87.jpg?t=1765387725",
+        "file":  "store_art/capsule.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.258Z"
+    },
+    {
+        "role":  "capsule-v5",
+        "title":  "Steam capsule v5",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/271590/capsule_184x69.jpg?t=1765387725",
+        "file":  "store_art/capsule-v5.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.259Z"
+    },
+    {
+        "role":  "background",
+        "title":  "Steam background",
+        "sourceUrl":  "https://store.akamai.steamstatic.com/images/storepagebackground/app/271590?t=1765387725",
+        "file":  "store_art/background.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.260Z"
+    },
+    {
+        "role":  "background-raw",
+        "title":  "Steam background raw",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/271590/page_bg_raw.jpg?t=1765387725",
+        "file":  "store_art/background-raw.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.261Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 1",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/271590/ss_32aa18ab3175e3002217862dd5917646d298ab6b.1920x1080.jpg?t=1765387725",
+        "file":  "screenshots/001_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.273Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 2",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/271590/ss_2744f112fa060320d191a50e8b3a92441a648a56.1920x1080.jpg?t=1765387725",
+        "file":  "screenshots/002_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.274Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 3",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/271590/ss_da39c16db175f6973770bae6b91d411251763152.1920x1080.jpg?t=1765387725",
+        "file":  "screenshots/003_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.276Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 4",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/271590/ss_bd5db78286be0a7c6b2c62519099a9e27e6b06f3.1920x1080.jpg?t=1765387725",
+        "file":  "screenshots/004_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.276Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 5",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/271590/ss_b1a1cb7959d6a0e6fcb2d06ebf97a66c9055cef3.1920x1080.jpg?t=1765387725",
+        "file":  "screenshots/005_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.277Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 6",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/271590/ss_bc5fc79d3366c837372327717249a4887aa46d63.1920x1080.jpg?t=1765387725",
+        "file":  "screenshots/006_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.278Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 7",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/271590/ss_d2eb9d3e50f9e4cb8db37d2976990b3795da8187.1920x1080.jpg?t=1765387725",
+        "file":  "screenshots/007_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.278Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 8",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/271590/ss_bd944debbec9936769f6dfb39ee456ca605615e3.1920x1080.jpg?t=1765387725",
+        "file":  "screenshots/008_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.279Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 9",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/271590/ss_66daaa8e0416b805ffb9a853235e21468d6b85bc.1920x1080.jpg?t=1765387725",
+        "file":  "screenshots/009_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.280Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 10",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/271590/ss_3820844756ae43340809e247fea327025dca1e39.1920x1080.jpg?t=1765387725",
+        "file":  "screenshots/010_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.280Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 11",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/271590/ss_5eafc9316db476e74c1b38b25f15c1326f4d574a.1920x1080.jpg?t=1765387725",
+        "file":  "screenshots/011_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.281Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 12",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/271590/ss_fbb16a4376f0205178de722aa14b9d243c2a47ea.1920x1080.jpg?t=1765387725",
+        "file":  "screenshots/012_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.281Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 13",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/271590/ss_bab596ea9a6924055cd8c097bba75f052c18025d.1920x1080.jpg?t=1765387725",
+        "file":  "screenshots/013_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.282Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 14",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/271590/ss_c5df068273a036bf224c89d3fcd534811790a808.1920x1080.jpg?t=1765387725",
+        "file":  "screenshots/014_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.283Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 15",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/271590/ss_1487c2c7ddd9a1ae6b55f7e50d5d63ada6915921.1920x1080.jpg?t=1765387725",
+        "file":  "screenshots/015_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.283Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 16",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/271590/ss_ef2be2226f012c4c1bc6f04ab8ed35ca3ffc8342.1920x1080.jpg?t=1765387725",
+        "file":  "screenshots/016_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.284Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 17",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/271590/ss_3b7d6905185d1fd12eeaba603a55c0a246985f02.1920x1080.jpg?t=1765387725",
+        "file":  "screenshots/017_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.284Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 18",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/271590/ss_a3d4e239735052cd2c81722aa2930b6fcefa9bec.1920x1080.jpg?t=1765387725",
+        "file":  "screenshots/018_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.285Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 19",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/271590/ss_e8cd9901cec9bc5e7c6b8a9dc3e746fa77988a26.1920x1080.jpg?t=1765387725",
+        "file":  "screenshots/019_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.286Z"
+    },
+    {
+        "role":  "screenshot",
+        "title":  "Screenshot 20",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/271590/ss_549709ca54069eb849986204adb0fe438853e48d.1920x1080.jpg?t=1765387725",
+        "file":  "screenshots/020_screenshot.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.287Z"
+    },
+    {
+        "role":  "video",
+        "title":  "GTA Online: Oscar Guzman Flies Again EN ESRB",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/271590/844218/973b531959db4e15682893543d6a27a70e7e1eb3/1751269402/hls_264_master.m3u8?t=1741098095",
+        "file":  "videos/001_gta-online-oscar-guzman-flies-again-en-esrb.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.308Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "GTA Online: Oscar Guzman Flies Again EN ESRB",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257109739/50c6c9fd9b9e3bcac594b3b46d019076faf2dc78/movie_600x337.jpg?t=1741098095",
+        "file":  "video_thumbnails/001_gta-online-oscar-guzman-flies-again-en-esrb_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.308Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "GTA Online: Oscar Guzman Flies Again EN ESRB",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257109739/50c6c9fd9b9e3bcac594b3b46d019076faf2dc78/movie_600x337.jpg?t=1741098095",
+        "file":  "video_thumbnails/001_gta-online-oscar-guzman-flies-again-en-esrb_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.308Z"
+    },
+    {
+        "role":  "video",
+        "title":  "GTA Online: Agents of Sabotage - ESRB EN",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/271590/802958/9ea9451587fe7884999afbe7c1972de252e4005d/1751269376/hls_264_master.m3u8?t=1734717979",
+        "file":  "videos/002_gta-online-agents-of-sabotage-esrb-en.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.309Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "GTA Online: Agents of Sabotage - ESRB EN",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257083890/af4a4abfc36b956bd2fa2fd2ee5bade9be41c99a/movie_600x337.jpg?t=1734717979",
+        "file":  "video_thumbnails/002_gta-online-agents-of-sabotage-esrb-en_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.309Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "GTA Online: Agents of Sabotage - ESRB EN",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257083890/af4a4abfc36b956bd2fa2fd2ee5bade9be41c99a/movie_600x337.jpg?t=1734717979",
+        "file":  "video_thumbnails/002_gta-online-agents-of-sabotage-esrb-en_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.309Z"
+    },
+    {
+        "role":  "video",
+        "title":  "GTA Online: Bottom Dollar Bounties (US)",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/271590/723587/f7b6862685ea33185b1caf90157a1746ef5809fa/1751269347/hls_264_master.m3u8?t=1720472955",
+        "file":  "videos/003_gta-online-bottom-dollar-bounties-us.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.310Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "GTA Online: Bottom Dollar Bounties (US)",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257036514/movie.293x165.jpg?t=1720472955",
+        "file":  "video_thumbnails/003_gta-online-bottom-dollar-bounties-us_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.310Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "GTA Online: Bottom Dollar Bounties (US)",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257036514/movie_600x337.jpg?t=1720472955",
+        "file":  "video_thumbnails/003_gta-online-bottom-dollar-bounties-us_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.310Z"
+    },
+    {
+        "role":  "video",
+        "title":  "GTA Online: Cluckin\u0027 Bell Farm Raid Missions (US)",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/271590/678045/432d3b72480a444decb3ddb6eb01467abfd1c30b/1751269342/hls_264_master.m3u8?t=1711059355",
+        "file":  "videos/004_gta-online-cluckin-bell-farm-raid-missions-us.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.310Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "GTA Online: Cluckin\u0027 Bell Farm Raid Missions (US)",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257010278/movie.293x165.jpg?t=1711059355",
+        "file":  "video_thumbnails/004_gta-online-cluckin-bell-farm-raid-missions-us_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.310Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "GTA Online: Cluckin\u0027 Bell Farm Raid Missions (US)",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257010278/movie_600x337.jpg?t=1711059355",
+        "file":  "video_thumbnails/004_gta-online-cluckin-bell-farm-raid-missions-us_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.310Z"
+    },
+    {
+        "role":  "video",
+        "title":  "GTA Online: Los Santos Drug War (US)",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/271590/522641/a84048f07c7d2e11546efee2f70386d6cab18048/1751269323/hls_264_master.m3u8?t=1671116319",
+        "file":  "videos/005_gta-online-los-santos-drug-war-us.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.312Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "GTA Online: Los Santos Drug War (US)",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256921445/movie.293x165.jpg?t=1671116319",
+        "file":  "video_thumbnails/005_gta-online-los-santos-drug-war-us_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.312Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "GTA Online: Los Santos Drug War (US)",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256921445/movie_600x337.jpg?t=1671116319",
+        "file":  "video_thumbnails/005_gta-online-los-santos-drug-war-us_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.312Z"
+    },
+    {
+        "role":  "video",
+        "title":  "GTA Online: Criminal Enterprises (US)",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/271590/499963/9dbbb44f7703c6c8e2bb8e6825f40d3e6e4d46bf/1751269236/hls_264_master.m3u8?t=1664305047",
+        "file":  "videos/006_gta-online-criminal-enterprises-us.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.313Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "GTA Online: Criminal Enterprises (US)",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256907993/movie.293x165.jpg?t=1664305047",
+        "file":  "video_thumbnails/006_gta-online-criminal-enterprises-us_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.313Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "GTA Online: Criminal Enterprises (US)",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256907993/movie_600x337.jpg?t=1664305047",
+        "file":  "video_thumbnails/006_gta-online-criminal-enterprises-us_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.313Z"
+    },
+    {
+        "role":  "video",
+        "title":  "GTA Online: The Contract (US)",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/271590/508908/c29374bdad1ac338825b748e5a5c743f50948f57/1751269242/hls_264_master.m3u8?t=1666907116",
+        "file":  "videos/007_gta-online-the-contract-us.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.314Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "GTA Online: The Contract (US)",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256913300/movie.293x165.jpg?t=1666907116",
+        "file":  "video_thumbnails/007_gta-online-the-contract-us_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.314Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "GTA Online: The Contract (US)",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256913300/movie_600x337.jpg?t=1666907116",
+        "file":  "video_thumbnails/007_gta-online-the-contract-us_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.314Z"
+    },
+    {
+        "role":  "video",
+        "title":  "GTA Online: Los Santos Tuners (US)",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/271590/508909/7d08f4f5a4dece4a24dc3c371b06cae46e2ce494/1751269249/hls_264_master.m3u8?t=1666907123",
+        "file":  "videos/008_gta-online-los-santos-tuners-us.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.315Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "GTA Online: Los Santos Tuners (US)",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256913301/movie.293x165.jpg?t=1666907123",
+        "file":  "video_thumbnails/008_gta-online-los-santos-tuners-us_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.315Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "GTA Online: Los Santos Tuners (US)",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256913301/movie_600x337.jpg?t=1666907123",
+        "file":  "video_thumbnails/008_gta-online-los-santos-tuners-us_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.315Z"
+    },
+    {
+        "role":  "video",
+        "title":  "GTA Online: The Cayo Perico Heist (US)",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/271590/508911/46d77f70c3d7323d14e9eb6559301fe13e3565f3/1751269252/hls_264_master.m3u8?t=1666908558",
+        "file":  "videos/009_gta-online-the-cayo-perico-heist-us.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.315Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "GTA Online: The Cayo Perico Heist (US)",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256913303/movie.293x165.jpg?t=1666908558",
+        "file":  "video_thumbnails/009_gta-online-the-cayo-perico-heist-us_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.315Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "GTA Online: The Cayo Perico Heist (US)",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256913303/movie_600x337.jpg?t=1666908558",
+        "file":  "video_thumbnails/009_gta-online-the-cayo-perico-heist-us_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.316Z"
+    },
+    {
+        "role":  "video",
+        "title":  "GTA Online: Los Santos Summer Special (US)",
+        "sourceUrl":  "https://video.akamai.steamstatic.com/store_trailers/271590/508914/3d40e77c9d94d2c8c5c998594e6192ed1639a943/1751269253/hls_264_master.m3u8?t=1666907134",
+        "file":  "videos/010_gta-online-los-santos-summer-special-us.mp4",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.317Z"
+    },
+    {
+        "role":  "video-thumbnail",
+        "title":  "GTA Online: Los Santos Summer Special (US)",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256913305/movie.293x165.jpg?t=1666907134",
+        "file":  "video_thumbnails/010_gta-online-los-santos-summer-special-us_thumb.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.317Z"
+    },
+    {
+        "role":  "video-poster",
+        "title":  "GTA Online: Los Santos Summer Special (US)",
+        "sourceUrl":  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/256913305/movie_600x337.jpg?t=1666907134",
+        "file":  "video_thumbnails/010_gta-online-los-santos-summer-special-us_poster.webp",
+        "remoteOnly":  true,
+        "sizeBytes":  0,
+        "sha256":  "",
+        "lastWriteTimeUtc":  "2026-07-24T13:32:33.317Z"
+    }
+]
