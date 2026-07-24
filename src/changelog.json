@@ -1,5 +1,12 @@
 ﻿[
     {
+        "version":  "2.0.10",
+        "date":  "2026-07-25",
+        "changes":  [
+                        "-thêm chế độ skip update version, giờ đây thích thì update, không thì thôi, chế độ chuyển đổi version của steam lua hiện vẫn đang trong giai đoạn thử nghiệm, chưa khuyến khích dùng"
+                    ]
+    },
+    {
         "version":  "2.0.9",
         "date":  "2026-07-24",
         "changes":  [
