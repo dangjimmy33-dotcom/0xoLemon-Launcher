@@ -1,5 +1,12 @@
 ﻿[
     {
+        "version":  "2.0.9",
+        "date":  "2026-07-24",
+        "changes":  [
+                        "phát triển tính năng chuyển đổi version khi tải thông qua lua (đang thử nghiệm, có thể gây lỗi)"
+                    ]
+    },
+    {
         "version":  "2.0.3",
         "date":  "2026-07-24",
         "changes":  [
