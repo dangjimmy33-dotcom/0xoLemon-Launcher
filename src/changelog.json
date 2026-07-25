@@ -1,5 +1,12 @@
 ﻿[
     {
+        "version":  "2.0.12",
+        "date":  "2026-07-26",
+        "changes":  [
+                        "sửa lỗi không hiển thị lua shop"
+                    ]
+    },
+    {
         "version":  "2.0.11",
         "date":  "2026-07-25",
         "changes":  [
