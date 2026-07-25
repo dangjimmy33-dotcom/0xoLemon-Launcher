@@ -1,5 +1,12 @@
 ﻿[
     {
+        "version":  "2.0.11",
+        "date":  "2026-07-25",
+        "changes":  [
+                        "thêm lua shop, sửa 1 số bug"
+                    ]
+    },
+    {
         "version":  "2.0.10",
         "date":  "2026-07-25",
         "changes":  [
