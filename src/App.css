@@ -6878,3 +6878,56 @@ button:disabled {
 }
 
 
+
+/* Store Game Card Animations - from LuaShop */
+@keyframes store-card-fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes store-skeleton-pulse {
+  0% { background-color: rgba(60, 60, 70, 0.4); }
+  50% { background-color: rgba(90, 90, 105, 0.7); }
+  100% { background-color: rgba(60, 60, 70, 0.4); }
+}
+
+.store-game-card {
+  animation: store-card-fade-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.store-card-image-wrapper {
+  width: 100%;
+  height: 100%;
+  background: rgba(60, 60, 70, 1);
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.store-card-image-wrapper.is-loading {
+  animation: store-skeleton-pulse 1.5s infinite ease-in-out;
+}
+
+.store-card-image-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: opacity 0.4s ease, filter 0.4s ease;
+}
+
+.store-card-image-wrapper img.loading {
+  opacity: 0;
+  filter: blur(10px);
+}
+
+.store-card-image-wrapper img.loaded {
+  opacity: 1;
+  filter: blur(0);
+}

@@ -10,6 +10,7 @@ import { TranslationsView } from './TranslationsView'
 import { WhatsNewView } from './WhatsNewView'
 import { OfflineActivation } from './OfflineActivation'
 import { LuaInstaller } from './LuaInstaller'
+import { LuaShop } from './LuaShop'
 
 export function ActiveView({
   activeTab,
@@ -266,6 +267,10 @@ export function ActiveView({
 
   if (activeTab === 'Lua Installer') {
     return <LuaInstaller />
+  }
+
+  if (activeTab === 'Lua Shop') {
+    return <LuaShop />
   }
 
   if (activeTab === 'Downloads' || activeTab === 'Updates') {

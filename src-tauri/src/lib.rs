@@ -1079,6 +1079,7 @@ pub fn run() {
             steam::list_depot_versions,
             steam::run_depot_patch,
             steam::list_installed_luas,
+            steam::list_available_manifests,
         ]);
 
     builder.setup(move |app| {

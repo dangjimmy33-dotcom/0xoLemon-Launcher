@@ -292,49 +292,25 @@ fn parse_hf_date(text: &str) -> Option<DateTime<Utc>> {
 #[allow(dead_code)]
 fn check_steam_update_blocking(appid: u32) -> Result<UpdateCheckResult, String> {
     let client = Client::new();
-    let mut hf_date = None;
-    let mut hubcap_date = None;
     
-    // Check HF
+    // Only check HuggingFace - no more Hubcap
     let url = format!("https://huggingface.co/datasets/Immaking/Luas/resolve/main/lua/{}.lua", appid);
-    if let Ok(resp) = client.get(&url).header("Range", "bytes=0-1024").send() {
-        if resp.status().is_success() {
-            if let Ok(text) = resp.text() {
-                hf_date = parse_hf_date(&text);
-            }
-        }
-    }
-    
-    // Check Hubcap using rotation
-    let status_endpoint = format!("/api/v1/status/{}", appid);
-    if let Ok(resp) = hubcap_api_call(&client, &status_endpoint) {
-        if let Ok(status) = resp.json::<HubcapStatus>() {
-            if let Some(fm) = status.file_modified {
-                if let Ok(dt) = chrono::DateTime::parse_from_rfc3339(&fm) {
-                    hubcap_date = Some(dt.with_timezone(&Utc));
-                }
-            }
-        }
-    }
+    let resp = client.get(&url).header("Range", "bytes=0-1024").send();
     
     let mut needs_update = false;
-    let mut reason = String::new();
     let mut is_missing = false;
+    let reason: String;
     
-    if hf_date.is_none() {
-        needs_update = true;
-        is_missing = true;
-        reason = "Không tìm thấy file trên HF hoặc không đọc được ngày giờ.".to_string();
-    } else if let Some(hc) = hubcap_date {
-        let hf = hf_date.unwrap();
-        if hc > hf {
-            needs_update = true;
-            reason = format!("Bản trên Hubcap mới hơn HF (Hubcap: {} > HF: {})", hc.format("%Y-%m-%d %H:%M"), hf.format("%Y-%m-%d %H:%M"));
-        } else {
-            reason = "Bản trên HF đã là mới nhất.".to_string();
+    match resp {
+        Ok(response) if response.status().is_success() => {
+            reason = "File lua tồn tại trên HuggingFace".to_string();
+            // File exists, no update needed unless user forces
         }
-    } else {
-        reason = "Không lấy được thông tin từ Hubcap (API lỗi), dùng bản hiện có.".to_string();
+        _ => {
+            needs_update = true;
+            is_missing = true;
+            reason = "Không tìm thấy file lua trên HuggingFace".to_string();
+        }
     }
     
     Ok(UpdateCheckResult { needs_update, reason, is_missing })
@@ -372,51 +348,40 @@ fn add_to_steam_internal(appid: u32, force_update: bool) -> Result<(), String> {
     let steam_path = get_steam_path().ok_or("Steam not found")?;
     let client = Client::builder().timeout(std::time::Duration::from_secs(120)).build().map_err(|e| e.to_string())?;
     
-    let mut zip_bytes = Vec::new();
-    let token = get_hf_token().unwrap_or_default();
-    
-    if force_update {
-        // Step 1: Download manifest ZIP from Hubcap (force update from Steam)
-        let manifest_endpoint = format!("/api/v1/manifest/{}?force_update=true", appid);
-        println!("Fetching manifest from Hubcap: {}", manifest_endpoint);
-        let mut manifest_resp = hubcap_api_call(&client, &manifest_endpoint)?;
-        
-        manifest_resp.read_to_end(&mut zip_bytes).map_err(|e| format!("Failed to read Hubcap manifest: {}", e))?;
-    } else {
-        // Step 1: Download from HF manifests/ folder first
-        let url = format!("https://huggingface.co/datasets/Immaking/Luas/resolve/main/manifests/{}.zip", appid);
-        println!("Downloading from HF manifests/: {}", url);
-        let mut req = client.get(&url).timeout(std::time::Duration::from_secs(120));
-        if !token.is_empty() {
-            req = req.header("Authorization", format!("Bearer {}", token));
-        }
-        let mut response = req.send().map_err(|e| format!("Request failed: {}", e))?;
-
-        if !response.status().is_success() {
-            // Fallback to lua-manifest games/ folder
-            let fallback_url = format!("https://huggingface.co/datasets/Immaking/Luas/resolve/main/lua-manifest%20games/{}.zip", appid);
-            println!("Downloading from HF lua-manifest games/: {}", fallback_url);
-            let mut fallback_req = client.get(&fallback_url).timeout(std::time::Duration::from_secs(120));
-            if !token.is_empty() {
-                fallback_req = fallback_req.header("Authorization", format!("Bearer {}", token));
-            }
-            response = fallback_req.send().map_err(|e| format!("Request failed: {}", e))?;
-            
-            if !response.status().is_success() {
-                return Err(format!("HF download failed: {}", response.status()));
-            }
-        }
-        zip_bytes = response.bytes().map_err(|e| e.to_string())?.to_vec();
-    }
-    
-    let reader = Cursor::new(zip_bytes);
-    let mut archive = ZipArchive::new(reader).map_err(|e| format!("Invalid zip: {}", e))?;
-    
     let stplug_in_dir = steam_path.join("config").join("stplug-in");
     let depotcache_dir = steam_path.join("depotcache");
     
-    fs::create_dir_all(&stplug_in_dir).map_err(|e| e.to_string())?;
-    fs::create_dir_all(&depotcache_dir).map_err(|e| e.to_string())?;
+    fs::create_dir_all(&stplug_in_dir).map_err(|e| format!("Failed to create stplug-in directory: {}", e))?;
+    fs::create_dir_all(&depotcache_dir).map_err(|e| format!("Failed to create depotcache directory: {}", e))?;
+    
+    let token = get_hf_token().unwrap_or_default();
+    
+    // ALWAYS use HuggingFace directly - no more Hubcap API
+    let url = format!("https://huggingface.co/datasets/Immaking/Luas/resolve/main/manifests/{}.zip", appid);
+    let mut req = client.get(&url).timeout(std::time::Duration::from_secs(120));
+    if !token.is_empty() {
+        req = req.header("Authorization", format!("Bearer {}", token));
+    }
+    let mut response = req.send().map_err(|e| format!("Lỗi tải dữ liệu: {}", e))?;
+
+    if !response.status().is_success() {
+        // Fallback to lua-manifest games/ folder
+        let fallback_url = format!("https://huggingface.co/datasets/Immaking/Luas/resolve/main/lua-manifest%20games/{}.zip", appid);
+        let mut fallback_req = client.get(&fallback_url).timeout(std::time::Duration::from_secs(120));
+        if !token.is_empty() {
+            fallback_req = fallback_req.header("Authorization", format!("Bearer {}", token));
+        }
+        response = fallback_req.send().map_err(|e| format!("Lỗi tải dữ liệu: {}", e))?;
+        
+        if !response.status().is_success() {
+            return Err(format!("Tải dữ liệu thất bại: {}", response.status()));
+        }
+    }
+    
+    let zip_bytes = response.bytes().map_err(|e| e.to_string())?.to_vec();
+    
+    let reader = Cursor::new(zip_bytes);
+    let mut archive = ZipArchive::new(reader).map_err(|e| format!("Invalid zip: {}", e))?;
     
     for i in 0..archive.len() {
         let mut file = archive.by_index(i).map_err(|e| e.to_string())?;
@@ -425,59 +390,47 @@ fn add_to_steam_internal(appid: u32, force_update: bool) -> Result<(), String> {
             None => continue,
         };
 
-        if let Some(p) = outpath.parent() {
-            if !p.exists() {
-                let _ = fs::create_dir_all(p);
-            }
-        }
-
         let file_name = outpath.file_name().and_then(|n| n.to_str()).unwrap_or("");
+        
         if file.is_file() {
             if file_name.ends_with(".lua") {
                 let dest = stplug_in_dir.join(file_name);
-                let mut outfile = fs::File::create(&dest).map_err(|e| e.to_string())?;
-                std::io::copy(&mut file, &mut outfile).map_err(|e| e.to_string())?;
-                println!("Extracted: {:?}", dest);
+                let mut outfile = fs::File::create(&dest).map_err(|e| format!("Failed to create lua file: {}", e))?;
+                std::io::copy(&mut file, &mut outfile).map_err(|e| format!("Failed to write lua file: {}", e))?;
             } else if file_name.ends_with(".manifest") {
                 let dest = depotcache_dir.join(file_name);
-                let mut outfile = fs::File::create(&dest).map_err(|e| e.to_string())?;
-                std::io::copy(&mut file, &mut outfile).map_err(|e| e.to_string())?;
-                println!("Extracted: {:?}", dest);
+                let mut outfile = fs::File::create(&dest).map_err(|e| format!("Failed to create manifest file: {}", e))?;
+                std::io::copy(&mut file, &mut outfile).map_err(|e| format!("Failed to write manifest file: {}", e))?;
             }
         }
     }
     
-    // Download lua file manually if not already extracted (e.g. from Hubcap or HF manifests/ which lacks lua)
+    // Always download lua file separately from HuggingFace to ensure it exists
     let expected_lua = stplug_in_dir.join(format!("{}.lua", appid));
+    
     if !expected_lua.exists() {
-        let mut lua_bytes = Vec::new();
-        if force_update {
-            let lua_endpoint = format!("/api/v1/lua/{}", appid);
-            if let Ok(mut resp) = hubcap_api_call(&client, &lua_endpoint) {
-                let _ = resp.read_to_end(&mut lua_bytes);
-            }
-        } else {
-            let lua_url = format!("https://huggingface.co/datasets/Immaking/Luas/resolve/main/lua/{}.lua", appid);
-            let mut req = client.get(&lua_url).timeout(std::time::Duration::from_secs(120));
-            if !token.is_empty() {
-                req = req.header("Authorization", format!("Bearer {}", token));
-            }
-            if let Ok(mut resp) = req.send() {
-                if resp.status().is_success() {
-                    let _ = resp.read_to_end(&mut lua_bytes);
-                }
-            }
+        let lua_url = format!("https://huggingface.co/datasets/Immaking/Luas/resolve/main/lua/{}.lua", appid);
+        let mut req = client.get(&lua_url).timeout(std::time::Duration::from_secs(120));
+        if !token.is_empty() {
+            req = req.header("Authorization", format!("Bearer {}", token));
         }
         
-        if !lua_bytes.is_empty() {
-            let _ = fs::write(&expected_lua, &lua_bytes);
-            println!("Downloaded separate lua to {:?}", expected_lua);
+        let resp = req.send().map_err(|e| format!("Failed to download lua file: {}", e))?;
+        
+        if !resp.status().is_success() {
+            return Err(format!("Không thể tải file lua cho AppID {} (HTTP {})", appid, resp.status()));
         }
+        
+        let lua_bytes = resp.bytes().map_err(|e| e.to_string())?.to_vec();
+        
+        if lua_bytes.is_empty() {
+            return Err(format!("File lua cho AppID {} rỗng", appid));
+        }
+        
+        fs::write(&expected_lua, &lua_bytes).map_err(|e| format!("Failed to write lua file: {}", e))?;
     }
     
-    // Update .sync_state file to notify Steam about new lua files
     update_sync_state(&stplug_in_dir)?;
-    
     Ok(())
 }
 
@@ -825,31 +778,31 @@ pub fn list_depot_versions(
     let resp = match req.send() {
         Ok(r) => r,
         Err(e) => {
-            let _ = std::fs::write("E:\\007Launcher\\hf_debug.txt", format!("HF API Step 2 request failed: {}", e));
-            return Err(format!("HF API: {}", e));
+            let _ = std::fs::write("E:\\007Launcher\\hf_debug.txt", format!("API Step 2 request failed: {}", e));
+            return Err(format!("Lỗi kết nối máy chủ: {}", e).replace("huggingface", "máy chủ").replace("HuggingFace", "máy chủ").replace("github", "máy chủ"));
         }
     };
     if !resp.status().is_success() {
         let status = resp.status();
-        let _ = std::fs::write("E:\\007Launcher\\hf_debug.txt", format!("HF API Step 2 returned non-success: {}", status));
+        let _ = std::fs::write("E:\\007Launcher\\hf_debug.txt", format!("API Step 2 returned non-success: {}", status));
         return if status.as_u16() == 404 { Ok(vec![]) }
-               else { Err(format!("HF API error: {}", status)) };
+               else { Err(format!("Lỗi máy chủ: {}", status)) };
     }
     
     let text = match resp.text() {
         Ok(t) => t,
         Err(e) => {
-            let _ = std::fs::write("E:\\007Launcher\\hf_debug.txt", format!("HF API Step 2 get text failed: {}", e));
-            return Err(format!("HF API parse: {}", e));
+            let _ = std::fs::write("E:\\007Launcher\\hf_debug.txt", format!("API Step 2 get text failed: {}", e));
+            return Err(format!("Lỗi xử lý dữ liệu: {}", e).replace("huggingface", "máy chủ").replace("HuggingFace", "máy chủ").replace("github", "máy chủ"));
         }
     };
-    let _ = std::fs::write("E:\\007Launcher\\hf_debug.txt", format!("HF API Step 2 response: {}", text));
+    let _ = std::fs::write("E:\\007Launcher\\hf_debug.txt", format!("API Step 2 response: {}", text));
     
     let build_entries: Vec<HfTreeItem> = match serde_json::from_str(&text) {
         Ok(v) => v,
         Err(e) => {
-            let _ = std::fs::write("E:\\007Launcher\\hf_debug.txt", format!("HF API Step 2 json parse failed: {}", e));
-            return Err(format!("HF API parse: {}", e));
+            let _ = std::fs::write("E:\\007Launcher\\hf_debug.txt", format!("API Step 2 json parse failed: {}", e));
+            return Err(format!("Lỗi phân tích dữ liệu: {}", e).replace("huggingface", "máy chủ").replace("HuggingFace", "máy chủ").replace("github", "máy chủ"));
         }
     };
 
@@ -916,15 +869,19 @@ fn hf_download_file(
     if !hf_token.is_empty() {
         req = req.bearer_auth(hf_token);
     }
-    let resp = req.send().map_err(|e| format!("Download failed {}: {}", url, e))?;
+    let resp = req.send().map_err(|e| format!("Lỗi tải dữ liệu từ máy chủ: {}", e).replace("huggingface", "máy chủ").replace("HuggingFace", "máy chủ").replace("github", "máy chủ"))?;
     if !resp.status().is_success() {
-        return Err(format!("HF download {} → HTTP {}", hf_path, resp.status()));
+        return Err(if resp.status().as_u16() == 404 {
+            "Không tìm thấy dữ liệu trên máy chủ.".to_string()
+        } else {
+            format!("Máy chủ trả về mã lỗi HTTP {}", resp.status())
+        });
     }
-    let bytes = resp.bytes().map_err(|e| format!("Read body error: {}", e))?;
+    let bytes = resp.bytes().map_err(|e| format!("Lỗi đọc dữ liệu: {}", e))?;
     if let Some(parent) = dest.parent() {
         fs::create_dir_all(parent).ok();
     }
-    fs::write(dest, &bytes).map_err(|e| format!("Write {} failed: {}", dest.display(), e))
+    fs::write(dest, &bytes).map_err(|e| format!("Lỗi ghi dữ liệu: {}", e))
 }
 
 /// Resolve path to the bundled DepotDownloaderMod sidecar.
@@ -997,7 +954,7 @@ pub fn run_depot_patch(
     });
 
     let game_folder = find_game_folder(&client, &hf_repo_id, appid, &hf_token)
-        .ok_or_else(|| format!("Game with AppID {} not found in HF repo {}. Upload depot files first.", appid, hf_repo_id))?;
+        .ok_or_else(|| format!("Game với AppID {} không tìm thấy trên máy chủ. Vui lòng tải dữ liệu lên trước.", appid))?;
 
     // Full HF base path for this game's appid subfolder:
     // Depotdownloader/{game} ({appid})/{appid}/
@@ -1033,9 +990,9 @@ pub fn run_depot_patch(
     let mut req = client.get(&api_url);
     if !hf_token.is_empty() { req = req.bearer_auth(&hf_token); }
     let items: Vec<HfTreeItem> = req.send()
-        .map_err(|e| format!("HF manifest list failed: {}", e))?
+        .map_err(|e| format!("Lỗi kết nối máy chủ dữ liệu: {}", e).replace("huggingface", "máy chủ").replace("HuggingFace", "máy chủ").replace("github", "máy chủ"))?
         .json()
-        .map_err(|e| format!("HF manifest list parse: {}", e))?;
+        .map_err(|e| format!("Lỗi phân tích dữ liệu máy chủ: {}", e).replace("huggingface", "máy chủ").replace("HuggingFace", "máy chủ").replace("github", "máy chủ"))?;
 
     let mut manifests: Vec<DepotManifestEntry> = vec![];
     for item in &items {
@@ -1054,7 +1011,7 @@ pub fn run_depot_patch(
     manifests.sort_by(|a, b| a.depot_id.cmp(&b.depot_id));
 
     if manifests.is_empty() {
-        return Err(format!("No manifests found for BuildID {} in HF repo", build_id));
+        return Err(format!("Không tìm thấy manifests cho BuildID {} trên máy chủ", build_id));
     }
 
 
@@ -1081,7 +1038,7 @@ pub fn run_depot_patch(
                 event_type: "error".to_string(),
                 build_id: build_id.clone(),
                 depot_id: Some(entry.depot_id.clone()),
-                message: Some(format!("Failed to download manifest: {}", e)),
+                message: Some(format!("Lỗi tải manifest: {}", e).replace("huggingface", "máy chủ").replace("HuggingFace", "máy chủ").replace("github", "máy chủ")),
                 index: Some(i + 1), total: Some(total), success: Some(false),
             });
             any_failed = true;
@@ -1278,3 +1235,54 @@ pub fn fetch_steam_game_name(appid: u32) -> Result<SteamGameInfo, String> {
     Err(format!("Could not fetch info for {}: {}", appid, last_error))
 }
 
+
+
+#[command]
+pub async fn list_available_manifests() -> Result<Vec<String>, String> {
+    tauri::async_runtime::spawn_blocking(|| list_available_manifests_blocking())
+        .await
+        .map_err(|e| e.to_string())?
+}
+
+fn list_available_manifests_blocking() -> Result<Vec<String>, String> {
+    let client = Client::builder()
+        .timeout(std::time::Duration::from_secs(30))
+        .build()
+        .map_err(|e| e.to_string())?;
+    
+    let token = get_hf_token().unwrap_or_default();
+    
+    let url = "https://huggingface.co/api/datasets/Immaking/Luas/tree/main/manifests";
+    let mut req = client.get(url);
+    if !token.is_empty() {
+        req = req.header("Authorization", format!("Bearer {}", token));
+    }
+    
+    let response = req.send().map_err(|e| e.to_string())?;
+    
+    if !response.status().is_success() {
+        return Err(format!("Failed to fetch manifests: {}", response.status()));
+    }
+    
+    // HuggingFace API returns a different format - object with "value" array
+    let json: serde_json::Value = response.json().map_err(|e| e.to_string())?;
+    
+    // Extract files array from response
+    let files = json.as_array()
+        .or_else(|| json.get("value").and_then(|v| v.as_array()))
+        .ok_or("Invalid response format")?;
+    
+    let mut appids = Vec::new();
+    for file in files {
+        if let Some(path) = file.get("path").and_then(|p| p.as_str()) {
+            if path.ends_with(".zip") {
+                let file_name = path.split('/').last().unwrap_or("");
+                if let Some(appid_str) = file_name.strip_suffix(".zip") {
+                    appids.push(appid_str.to_string());
+                }
+            }
+        }
+    }
+    
+    Ok(appids)
+}

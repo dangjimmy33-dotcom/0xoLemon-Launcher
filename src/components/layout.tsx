@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import type { ReactNode } from 'react'
-import { Cloud, Database, Download, Home, Image as ImageIcon, Library, RefreshCcw, Settings, ShoppingBag, Wifi, WifiOff, Languages, Sparkles, FileCode, Search } from 'lucide-react'
+import { Cloud, Database, Download, Home, Image as ImageIcon, Library, RefreshCcw, Settings, ShoppingBag, ShoppingCart, Wifi, WifiOff, Languages, Sparkles, FileCode, Search } from 'lucide-react'
 import { useLocale } from '../context/LocaleContext'
 import type { GameCatalog, TabId } from '../types'
 import { assetUrlForId } from '../lib/gameMeta'
@@ -38,6 +38,7 @@ export function Sidebar({
     ['What\'s New!', t.nav.whatsNew, Sparkles],
     ['Home', t.nav.home, Home],
     ['Store', t.nav.store, ShoppingBag],
+    ...(luaModeEnabled ? [['Lua Shop', t.nav.luaShop, ShoppingCart] as [TabId, string, typeof Home]] : []),
     ...(luaModeEnabled ? [['Lua Installer', t.nav.luaInstaller, FileCode] as [TabId, string, typeof Home]] : []),
     ['Library', t.nav.library, Library],
     ['Offline Activation', t.nav.offlineActivation, WifiOff],

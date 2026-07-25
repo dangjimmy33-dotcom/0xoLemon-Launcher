@@ -35,6 +35,7 @@ function LazyGameCardImage({
   onRequestAsset: (game: GameSummary, assetId: string | undefined, urgent?: boolean) => void
 }) {
   const ref = useRef<HTMLDivElement>(null)
+  const [imageLoaded, setImageLoaded] = useState(false)
 
   useEffect(() => {
     if (url || !assetId) return
@@ -53,8 +54,26 @@ function LazyGameCardImage({
     return () => observer.disconnect()
   }, [assetId, game, onRequestAsset, url])
 
+  // Reset imageLoaded when URL changes
+  useEffect(() => {
+    if (url) {
+      setImageLoaded(false)
+    }
+  }, [url])
+
   if (url) {
-    return <img src={url} alt="" loading="lazy" decoding="async" />
+    return (
+      <div className={`store-card-image-wrapper ${!imageLoaded ? 'is-loading' : ''}`}>
+        <img
+          src={url}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          className={imageLoaded ? 'loaded' : 'loading'}
+          onLoad={() => setImageLoaded(true)}
+        />
+      </div>
+    )
   }
 
   return (
@@ -1050,7 +1069,7 @@ export function StoreLibraryView({
                 </GameHoverCard>
               ))}
             </div>
-            
+
             {totalPages > 1 && (
               <div className="library-pagination">
                 <button type="button" disabled={currentPage <= 1} onClick={() => {
@@ -1066,42 +1085,42 @@ export function StoreLibraryView({
             )}
           </>
         ) : null}
-          {visibleGames.length > 0 && viewMode === 'store' ? (
-            <div className="store-more-coming-banner">
-              <span className="store-more-coming-title">{t.library.storeMoreComingTitle}</span>
-              <span className="store-more-coming-body">{t.library.storeMoreComingBody}</span>
-            </div>
-          ) : null}
-          {visibleGames.length === 0 && viewMode === 'library' ? (
-            <div className="library-empty-inline library-empty-installed">
-              {libraryMode === 'steam' ? (
-                <>
-                  <Library size={28} />
-                  <strong>{t.library.noSteamGames}</strong>
-                  <span>{t.library.noSteamGamesDesc}</span>
-                  <button type="button" onClick={onOpenStore}>
-                    <ShoppingBag size={15} />
-                    Open Store
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Library size={28} />
-                  <strong>No installed games</strong>
-                  <span>Games installed from Store will appear here.</span>
-                  <button type="button" onClick={onOpenStore}>
-                    <ShoppingBag size={15} />
-                    Open Store
-                  </button>
-                </>
-              )}
-            </div>
-          ) : visibleGames.length === 0 ? (
-            <div className="library-empty-inline">
-              <Search size={24} />
-              <strong>No matching games</strong>
-            </div>
-          ) : null}
+        {visibleGames.length > 0 && viewMode === 'store' ? (
+          <div className="store-more-coming-banner">
+            <span className="store-more-coming-title">{t.library.storeMoreComingTitle}</span>
+            <span className="store-more-coming-body">{t.library.storeMoreComingBody}</span>
+          </div>
+        ) : null}
+        {visibleGames.length === 0 && viewMode === 'library' ? (
+          <div className="library-empty-inline library-empty-installed">
+            {libraryMode === 'steam' ? (
+              <>
+                <Library size={28} />
+                <strong>{t.library.noSteamGames}</strong>
+                <span>{t.library.noSteamGamesDesc}</span>
+                <button type="button" onClick={onOpenStore}>
+                  <ShoppingBag size={15} />
+                  Open Store
+                </button>
+              </>
+            ) : (
+              <>
+                <Library size={28} />
+                <strong>No installed games</strong>
+                <span>Games installed from Store will appear here.</span>
+                <button type="button" onClick={onOpenStore}>
+                  <ShoppingBag size={15} />
+                  Open Store
+                </button>
+              </>
+            )}
+          </div>
+        ) : visibleGames.length === 0 ? (
+          <div className="library-empty-inline">
+            <Search size={24} />
+            <strong>No matching games</strong>
+          </div>
+        ) : null}
       </section>
     )
   }
@@ -1299,7 +1318,7 @@ export function StoreLibraryView({
                 </svg>
                 <span>{wishlist.has(selectedGame.id) ? t.library.removeFromWishlist : t.library.addToWishlist}</span>
               </button>
-              
+
               <div className="detail-action-icon-btn" style={{ cursor: 'default' }} title={`${(gameStats.downloads[selectedGame.id] || 0).toLocaleString()} ${t.library.totalDownloads}`}>
                 <Download size={15} />
                 {(() => {
@@ -1307,7 +1326,7 @@ export function StoreLibraryView({
                   return dls > 1000 ? `${(dls / 1000).toFixed(1)}k` : dls
                 })()}
               </div>
-              
+
               <button
                 type="button"
                 className={`detail-action-icon-btn${likedGames.has(selectedGame.id) ? ' active-like' : ''}`}
@@ -2624,15 +2643,15 @@ export function AchievementPreview({
           const isUnlocked = unlockedIds.has(achievement.id)
           return (
             <article key={achievement.id} style={{ opacity: isUnlocked ? 1 : 0.6 }}>
-              <img 
-                src={assetUrlForId(achievement.iconAssetId, assets)} 
-                alt="" 
-                loading="lazy" 
-                style={{ 
+              <img
+                src={assetUrlForId(achievement.iconAssetId, assets)}
+                alt=""
+                loading="lazy"
+                style={{
                   filter: isUnlocked ? 'none' : 'grayscale(100%)',
                   boxShadow: isUnlocked ? '0 0 10px rgba(255, 215, 0, 0.5)' : 'none',
                   transition: 'all 0.3s ease'
-                }} 
+                }}
               />
               <div>
                 <strong style={{ color: isUnlocked ? 'inherit' : 'rgba(255, 255, 255, 0.5)' }}>{achievement.name}</strong>
@@ -2664,15 +2683,15 @@ export function AchievementPreview({
                 const isUnlocked = unlockedIds.has(achievement.id)
                 return (
                   <article key={achievement.id} style={{ opacity: isUnlocked ? 1 : 0.6 }}>
-                    <img 
-                      src={assetUrlForId(achievement.iconAssetId, assets)} 
-                      alt="" 
-                      loading="lazy" 
-                      style={{ 
+                    <img
+                      src={assetUrlForId(achievement.iconAssetId, assets)}
+                      alt=""
+                      loading="lazy"
+                      style={{
                         filter: isUnlocked ? 'none' : 'grayscale(100%)',
                         boxShadow: isUnlocked ? '0 0 10px rgba(255, 215, 0, 0.5)' : 'none',
                         transition: 'all 0.3s ease'
-                      }} 
+                      }}
                     />
                     <div>
                       <strong style={{ color: isUnlocked ? 'inherit' : 'rgba(255, 255, 255, 0.5)' }}>{achievement.name}</strong>

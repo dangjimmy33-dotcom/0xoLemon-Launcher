@@ -4,6 +4,7 @@ export { IntroScreen } from './IntroScreen'
 export { ActiveView } from './ActiveView'
 export { Sidebar } from './layout'
 export { LuaInstaller } from './LuaInstaller'
+export { LuaShop } from './LuaShop'
 
 export * from './BigPictureView'
 export { StoreLibraryView, OperationHero } from './library'

@@ -516,6 +516,7 @@ export type TabId =
   | 'Downloads'
   | 'CloudRedirect'
   | 'Lua Installer'
+  | 'Lua Shop'
   | 'Translations'
   | 'Cache'
   | 'Settings'

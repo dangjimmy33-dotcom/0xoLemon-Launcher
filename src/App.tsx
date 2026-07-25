@@ -159,7 +159,16 @@ export default function App() {
   const [, setHasScanned] = useState(false)
   const [preferences, setPreferences] = useState<LauncherPreferences>(initialLauncherPreferences)
   const [launcherSettings, setLauncherSettings] = useState<LauncherSettings>(defaultLauncherSettings)
-  const [activeTab, setActiveTab] = useState<TabId>(initialLauncherPreferences.startupPage)
+  const [activeTab, setActiveTab] = useState<TabId>(() => {
+    // Restore from localStorage on mount (persist across app restarts)
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('0xo_activeTab') as TabId | null
+      if (saved && ['Home', 'Store', 'Library', 'Downloads', 'Updates', 'CloudRedirect', 'Settings', 'Cache', "What's New!", 'Translations'].includes(saved)) {
+        return saved
+      }
+    }
+    return initialLauncherPreferences.startupPage
+  })
   const [isOnline, setIsOnline] = useState(navigator.onLine)
   const [offlineModeEnabled, setOfflineModeEnabled] = useState(false)
   const [selectedVersion, setSelectedVersion] = useState('')
@@ -170,7 +179,14 @@ export default function App() {
   const [catalogLoadState, setCatalogLoadState] = useState<CatalogLoadState>(
     isTauriRuntime() ? 'loading' : 'ready',
   )
-  const [selectedGameId, setSelectedGameId] = useState<string | null>(null)
+  const [selectedGameId, setSelectedGameId] = useState<string | null>(() => {
+    // Restore from localStorage on mount (persist across app restarts)
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('0xo_selectedGameId')
+      return saved || null
+    }
+    return null
+  })
   const [detail, setDetail] = useState<GameDetail | null>(null)
   const [isBigPictureMode, setIsBigPictureMode] = useState(false)
   const [assetUrls, setAssetUrls] = useState<Record<string, string>>({})
@@ -271,7 +287,22 @@ export default function App() {
 
   useEffect(() => {
     selectedGameIdRef.current = selectedGameId
+    // Persist to localStorage whenever selectedGameId changes (persist across app restarts)
+    if (typeof window !== 'undefined') {
+      if (selectedGameId) {
+        localStorage.setItem('0xo_selectedGameId', selectedGameId)
+      } else {
+        localStorage.removeItem('0xo_selectedGameId')
+      }
+    }
   }, [selectedGameId])
+
+  // Persist activeTab to localStorage (persist across app restarts)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('0xo_activeTab', activeTab)
+    }
+  }, [activeTab])
 
   useEffect(() => {
     preferencesRef.current = preferences
@@ -868,7 +899,7 @@ export default function App() {
     if (firestoreCatalog && firestoreCatalog.games.length > 0) {
       setCatalog(firestoreCatalog)
       setCatalogLoadState('ready')
-      
+
       const newestGame = firestoreCatalog.games[firestoreCatalog.games.length - 1]
       if (newestGame) {
         const lastNewGameId = localStorage.getItem('lastNotifiedNewGameId')
@@ -1499,7 +1530,7 @@ export default function App() {
                 ? `${gameTitle} repaired`
                 : isPatchJob
                   ? `${gameTitle} patch applied`
-                : `${gameTitle} updated`,
+                  : `${gameTitle} updated`,
           message: isPatchJob
             ? `Hotfix for ${nextJob.toVersion} applied successfully.`
             : `Version ${nextJob.toVersion} committed successfully.`,
@@ -1835,7 +1866,7 @@ export default function App() {
     selectedGame?.availableVersions.find((version) => version.version === targetVersion) ??
     activeDetail?.versions.find((version) => version.version === targetVersion)
   const installMode = !selectedInstalled
-  const isInstalledUnknownWithSingleVersion = 
+  const isInstalledUnknownWithSingleVersion =
     selectedCurrentVersion === 'installed' && availableVersions.length <= 1
 
   const updateReady =
@@ -2593,7 +2624,7 @@ export default function App() {
       if (installMode) {
         setInstallPath(installRoot)
         setScanStatus(`Installing ${versionToApply}`)
-        
+
         // Increment download count in Firebase
         setDoc(doc(db, 'config', 'gameStats'), {
           downloads: { [selectedGame.id]: increment(1) }
@@ -3237,7 +3268,7 @@ export default function App() {
               onSkip={() => { setUpdateSkipped(true); setShowUpdateCenter(false) }}
             />
           ) : null}
-        <main className={`launcher-shell premium-shell ${isSidebarCollapsed ? 'sidebar-collapsed-shell' : ''}`}>
+          <main className={`launcher-shell premium-shell ${isSidebarCollapsed ? 'sidebar-collapsed-shell' : ''}`}>
             <Sidebar
               serviceStatus={contentServiceLabel(snapshot.proxyStatus)}
               activeTab={activeTab}
