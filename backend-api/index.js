@@ -17,22 +17,41 @@ const cache = new NodeCache({ stdTTL: 3600 });
 // ============================================================
 // FIREBASE ADMIN INIT
 // ============================================================
-const serviceAccount = {
-  type: "service_account",
-  project_id: process.env.FIREBASE_PROJECT_ID || "xolemon-b360e",
-  private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
-  private_key: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-  client_email: process.env.FIREBASE_CLIENT_EMAIL,
-  client_id: process.env.FIREBASE_CLIENT_ID,
-  auth_uri: "https://accounts.google.com/o/oauth2/auth",
-  token_uri: "https://oauth2.googleapis.com/token",
-  auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs",
-  client_x509_cert_url: process.env.FIREBASE_CERT_URL
-};
+let serviceAccount;
 
-// Fallback: Nếu không có service account, dùng Application Default Credentials
+// Method 1: Parse from GOOGLE_APPLICATION_CREDENTIALS_JSON env var (Render deployment)
+if (process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON) {
+  try {
+    serviceAccount = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);
+    console.log('✅ Using GOOGLE_APPLICATION_CREDENTIALS_JSON');
+  } catch (error) {
+    console.error('❌ Failed to parse GOOGLE_APPLICATION_CREDENTIALS_JSON:', error.message);
+    process.exit(1);
+  }
+}
+// Method 2: Individual env vars (legacy support)
+else if (process.env.FIREBASE_PRIVATE_KEY) {
+  serviceAccount = {
+    type: "service_account",
+    project_id: process.env.FIREBASE_PROJECT_ID || "xolemon-b360e",
+    private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
+    private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+    client_email: process.env.FIREBASE_CLIENT_EMAIL,
+    client_id: process.env.FIREBASE_CLIENT_ID,
+    auth_uri: "https://accounts.google.com/o/oauth2/auth",
+    token_uri: "https://oauth2.googleapis.com/token",
+    auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs",
+    client_x509_cert_url: process.env.FIREBASE_CERT_URL
+  };
+  console.log('✅ Using individual Firebase env vars');
+}
+// Method 3: Fallback to Application Default Credentials
+else {
+  console.log('⚠️  No Firebase credentials found, using Application Default Credentials');
+}
+
 try {
-  if (process.env.FIREBASE_PRIVATE_KEY) {
+  if (serviceAccount) {
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount)
     });
@@ -224,7 +243,7 @@ app.get('/api/game-tags', async (req, res) => {
  */
 app.post('/api/cache/clear', (req, res) => {
   const { key } = req.body;
-  
+
   if (key) {
     cache.del(key);
     console.log(`🗑️  Cleared cache key: ${key}`);
