@@ -165,7 +165,7 @@ app.get('/api/assets', async (req, res) => {
 
 /**
  * GET /api/tags
- * Returns version tags (cached 1 hour)
+ * Returns version tags from version_tags COLLECTION (cached 1 hour)
  */
 app.get('/api/tags', async (req, res) => {
   try {
@@ -173,17 +173,26 @@ app.get('/api/tags', async (req, res) => {
     let data = cache.get(cacheKey);
 
     if (!data) {
-      console.log('📡 Fetching version tags from Firestore...');
-      const docRef = db.collection('config').doc('version_tags');
-      const doc = await docRef.get();
+      console.log('📡 Fetching version tags from Firestore collection...');
+      const snapshot = await db.collection('version_tags').get();
 
-      if (!doc.exists) {
+      if (snapshot.empty) {
         return res.status(404).json({ error: 'Version tags not found' });
       }
 
-      data = doc.data();
+      // Convert collection to flat object: { "gameId-version": ["tag1", "tag2"], ... }
+      data = {};
+      snapshot.forEach(doc => {
+        // doc.id = "007-first-light-v1.0.0"
+        // doc.data() = { 0: ["cracked"] }
+        const tags = doc.data()[0];
+        if (Array.isArray(tags)) {
+          data[doc.id] = tags;
+        }
+      });
+
       cache.set(cacheKey, data);
-      console.log('✅ Version tags cached');
+      console.log('✅ Version tags cached from collection');
     } else {
       console.log('💾 Serving version tags from cache');
     }
