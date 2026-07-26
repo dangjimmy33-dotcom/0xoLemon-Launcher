@@ -151,6 +151,7 @@ export default function App() {
   useBackendGameTags()
   const assetOverrideVersion = useBackendAssets()
   const firestoreCatalog = useBackendCatalog(assetOverrideVersion)
+  useSteamAppIds() // Keep original Firestore hook as fallback
   const defenderExclusion = useDefenderExclusion()
   const [snapshot, setSnapshot] = useState<Snapshot>(fallbackSnapshot)
   const [job, setJob] = useState<JobJournal | null>(fallbackSnapshot.lastJob)

@@ -1,10 +1,11 @@
 import { useEffect } from 'react'
+import { updateGameTagTable, type GameTagTable } from '../lib/gameTags'
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://zeroxolemon-launcher.onrender.com'
 
 /**
  * Fetches game filter tags from backend API.
- * Stores globally for use in catalog/filter logic.
+ * Updates game tag table for use in catalog/filter logic.
  */
 export function useBackendGameTags(): void {
   useEffect(() => {
@@ -24,8 +25,8 @@ export function useBackendGameTags(): void {
 
         if (!mounted) return
 
-          // Store globally for catalog usage
-          ; (window as any).globalVersionTags = data
+        // Update game tag table (same as useRealtimeGameTags)
+        updateGameTagTable(data as Partial<GameTagTable>)
       } catch (error) {
         console.error('[useBackendGameTags] Failed to fetch:', error)
       }
