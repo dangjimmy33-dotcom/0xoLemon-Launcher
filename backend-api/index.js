@@ -122,9 +122,8 @@ app.get('/api/catalog', async (req, res) => {
     }
 
     res.json({
-      default_locale: data.defaultLocale || 'en-US',
-      games: data.games || [],
-      cached_at: Math.floor(Date.now() / 1000)
+      defaultLocale: data.defaultLocale || 'en-US',
+      games: data.games || []
     });
   } catch (error) {
     console.error('❌ Error fetching catalog:', error);
@@ -157,10 +156,7 @@ app.get('/api/assets', async (req, res) => {
       console.log('💾 Serving assets from cache');
     }
 
-    res.json({
-      assets: data,
-      cached_at: Math.floor(Date.now() / 1000)
-    });
+    res.json(data);
   } catch (error) {
     console.error('❌ Error fetching assets:', error);
     res.status(500).json({ error: error.message });
@@ -192,10 +188,7 @@ app.get('/api/tags', async (req, res) => {
       console.log('💾 Serving tags from cache');
     }
 
-    res.json({
-      tags: data,
-      cached_at: Math.floor(Date.now() / 1000)
-    });
+    res.json(data);
   } catch (error) {
     console.error('❌ Error fetching tags:', error);
     res.status(500).json({ error: error.message });
@@ -227,10 +220,7 @@ app.get('/api/game-tags', async (req, res) => {
       console.log('💾 Serving game tags from cache');
     }
 
-    res.json({
-      tags: data,
-      cached_at: Math.floor(Date.now() / 1000)
-    });
+    res.json(data);
   } catch (error) {
     console.error('❌ Error fetching game tags:', error);
     res.status(500).json({ error: error.message });
