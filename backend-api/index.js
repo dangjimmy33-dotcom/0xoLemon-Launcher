@@ -228,6 +228,103 @@ app.get('/api/game-tags', async (req, res) => {
 });
 
 /**
+ * GET /api/game-stats
+ * Returns game stats (cached 1 hour)
+ */
+app.get('/api/game-stats', async (req, res) => {
+  try {
+    const cacheKey = 'game-stats';
+    let data = cache.get(cacheKey);
+
+    if (!data) {
+      console.log('📡 Fetching game stats from Firestore...');
+      const docRef = db.collection('config').doc('gameStats');
+      const doc = await docRef.get();
+
+      if (!doc.exists) {
+        return res.status(404).json({ error: 'Game stats not found' });
+      }
+
+      data = doc.data();
+      cache.set(cacheKey, data);
+      console.log('✅ Game stats cached');
+    } else {
+      console.log('💾 Serving game stats from cache');
+    }
+
+    res.json(data);
+  } catch (error) {
+    console.error('❌ Error fetching game stats:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * GET /api/steam-appids
+ * Returns Steam AppIDs mapping (cached 1 hour)
+ */
+app.get('/api/steam-appids', async (req, res) => {
+  try {
+    const cacheKey = 'steam-appids';
+    let data = cache.get(cacheKey);
+
+    if (!data) {
+      console.log('📡 Fetching Steam AppIDs from Firestore...');
+      const docRef = db.collection('config').doc('steam_appids');
+      const doc = await docRef.get();
+
+      if (!doc.exists) {
+        return res.status(404).json({ error: 'Steam AppIDs not found' });
+      }
+
+      data = doc.data();
+      cache.set(cacheKey, data);
+      console.log('✅ Steam AppIDs cached');
+    } else {
+      console.log('💾 Serving Steam AppIDs from cache');
+    }
+
+    res.json(data);
+  } catch (error) {
+    console.error('❌ Error fetching Steam AppIDs:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * GET /api/game-details/:gameId
+ * Returns detailed game metadata (cached 1 hour)
+ */
+app.get('/api/game-details/:gameId', async (req, res) => {
+  try {
+    const { gameId } = req.params;
+    const cacheKey = `game-details-${gameId}`;
+    let data = cache.get(cacheKey);
+
+    if (!data) {
+      console.log(`📡 Fetching game details for ${gameId} from Firestore...`);
+      const docRef = db.collection('gameDetails').doc(gameId);
+      const doc = await docRef.get();
+
+      if (!doc.exists) {
+        return res.status(404).json({ error: 'Game details not found' });
+      }
+
+      data = doc.data();
+      cache.set(cacheKey, data);
+      console.log(`✅ Game details for ${gameId} cached`);
+    } else {
+      console.log(`💾 Serving game details for ${gameId} from cache`);
+    }
+
+    res.json(data);
+  } catch (error) {
+    console.error(`❌ Error fetching game details for ${req.params.gameId}:`, error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
  * POST /api/cache/clear
  * Clear cache manually (admin endpoint)
  */
