@@ -173,24 +173,24 @@ app.get('/api/tags', async (req, res) => {
     let data = cache.get(cacheKey);
 
     if (!data) {
-      console.log('📡 Fetching tags from Firestore...');
+      console.log('📡 Fetching version tags from Firestore...');
       const docRef = db.collection('config').doc('version_tags');
       const doc = await docRef.get();
 
       if (!doc.exists) {
-        return res.status(404).json({ error: 'Tags not found' });
+        return res.status(404).json({ error: 'Version tags not found' });
       }
 
       data = doc.data();
       cache.set(cacheKey, data);
-      console.log('✅ Tags cached');
+      console.log('✅ Version tags cached');
     } else {
-      console.log('💾 Serving tags from cache');
+      console.log('💾 Serving version tags from cache');
     }
 
     res.json(data);
   } catch (error) {
-    console.error('❌ Error fetching tags:', error);
+    console.error('❌ Error fetching version tags:', error);
     res.status(500).json({ error: error.message });
   }
 });
