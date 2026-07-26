@@ -118,6 +118,7 @@ const defaultLauncherSettings: LauncherSettings = {
 }
 
 import { useBackendGameTags } from './hooks/useBackendGameTags'
+import { useBackendVersionTags } from './hooks/useBackendVersionTags'
 import { useBackendCatalog } from './hooks/useBackendCatalog'
 import { useSteamAppIds } from './hooks/useSteamAppIds'
 import { useFirestoreDetail } from './hooks/useFirestoreDetail'
@@ -155,8 +156,9 @@ export default function App() {
 
   // Backend hooks (primary, cached 1h on Render)
   useBackendGameTags()
+  const backendVersionTagVersion = useBackendVersionTags()
   const backendAssetVersion = useBackendAssets()
-  const backendCatalog = useBackendCatalog(backendAssetVersion)
+  const backendCatalog = useBackendCatalog(backendAssetVersion + backendVersionTagVersion)
 
   // Firestore hooks (fallback, realtime)
   useRealtimeGameTags()
