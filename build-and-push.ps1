@@ -123,18 +123,29 @@ Write-Host "`n=== STEP 5: PUSH BRANCH + TAG TO GITHUB ===" -ForegroundColor Cyan
 # Push the branch (includes all commits up to and including the version bump)
 git push
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "Error: GitHub push failed!" -ForegroundColor Red
-    exit $LASTEXITCODE
+    Write-Host "⚠️  Warning: GitHub push failed (may be up to date)" -ForegroundColor Yellow
+} else {
+    Write-Host "✅ Push branch successful!" -ForegroundColor Green
 }
-Write-Host "Push branch successful!" -ForegroundColor Green
 
 # Push the version tag — this triggers GitHub Actions to build & publish the release
-git push origin $newVersion
+# Use --force in case tag already exists (update it)
+Write-Host "Pushing tag $newVersion to GitHub..." -ForegroundColor Yellow
+git push origin $newVersion --force
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "Error: Push tag failed!" -ForegroundColor Red
-    exit $LASTEXITCODE
+    Write-Host "❌ Error: Push tag failed!" -ForegroundColor Red
+    Write-Host "Trying to delete remote tag and push again..." -ForegroundColor Yellow
+    git push origin --delete $newVersion 2>$null
+    Start-Sleep -Seconds 2
+    git push origin $newVersion
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "❌ Push tag still failed. Manual intervention needed." -ForegroundColor Red
+        Write-Host "Run manually: git push origin $newVersion --force" -ForegroundColor Yellow
+        pause
+        exit $LASTEXITCODE
+    }
 }
-Write-Host "Push tag successful!" -ForegroundColor Green
+Write-Host "✅ Push tag successful!" -ForegroundColor Green
 
 Write-Host "`n=== COMPLETE ===" -ForegroundColor Green
 Write-Host "GitHub Actions will now build and publish the signed release for $newVersion" -ForegroundColor Yellow

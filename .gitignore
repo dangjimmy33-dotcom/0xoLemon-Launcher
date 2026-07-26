@@ -33,6 +33,22 @@ native/steam_hook_backup_*/
 # Secrets — never commit tokens (keep local only)
 src-tauri/huggingface-repos.json
 
+# 🔒 SECURITY: License system private keys (NEVER COMMIT!)
+src-tauri/private.key
+src-tauri/public.key
+src-tauri/license_*.json
+src-tauri/encrypted_config.bin
+src-tauri/test_license.json
+
+# 🔥 Backend Middleware: Environment configs
+backend-middleware/.env
+backend-middleware/target/
+backend-api/.env
+backend-api/node_modules/
+.env
+
+# Kiro history (may contain API tokens)
+history chat/
 
 # Editor directories and files
 .vscode/*
