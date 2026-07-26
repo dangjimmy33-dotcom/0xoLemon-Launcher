@@ -50,6 +50,10 @@ backend-api/node_modules/
 # Kiro history (may contain API tokens)
 history chat/
 
+# Firebase credentials (NEVER commit!)
+backend-api/render.env
+backend-api/render-env-*.txt
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
