@@ -70,10 +70,10 @@ function normalizeSummary(raw: Record<string, unknown>): GameSummary {
       } as any
     }).filter(Boolean) : [],
     // Prefer assets_override CDN links over catalog values
-    gridAssetId: assetOverride.grid || (raw.gridAssetId as string) || '',
-    heroAssetId: assetOverride.hero || (raw.heroAssetId as string) || '',
-    logoAssetId: assetOverride.logo || (raw.logoAssetId as string) || '',
-    iconAssetId: assetOverride.icon || (raw.iconAssetId as string) || '',
+    gridAssetId: (assetOverride.grid as string) || (raw.gridAssetId as string) || '',
+    heroAssetId: (assetOverride.hero as string) || (raw.heroAssetId as string) || '',
+    logoAssetId: (assetOverride.logo as string) || (raw.logoAssetId as string) || '',
+    iconAssetId: (assetOverride.icon as string) || (raw.iconAssetId as string) || '',
     install: buildInstall(gameId, title, raw.install as Record<string, unknown>),
     cloudSave: (raw.cloudSave as CloudSaveMetadata) || DEFAULT_CLOUD_SAVE,
     assetPackPath: (raw.assetPackPath as string) || `assets/games/${gameId}/core.0xo`,
