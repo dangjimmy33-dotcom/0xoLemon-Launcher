@@ -117,11 +117,11 @@ const defaultLauncherSettings: LauncherSettings = {
   depotHfRepoId: '',
 }
 
-import { useRealtimeGameTags } from './hooks/useRealtimeGameTags'
-import { useFirestoreCatalog } from './hooks/useFirestoreCatalog'
+import { useBackendGameTags } from './hooks/useBackendGameTags'
+import { useBackendCatalog } from './hooks/useBackendCatalog'
 import { useSteamAppIds } from './hooks/useSteamAppIds'
 import { useFirestoreDetail } from './hooks/useFirestoreDetail'
-import { useRealtimeAssets } from './hooks/useRealtimeAssets'
+import { useBackendAssets } from './hooks/useBackendAssets'
 import { useScrollReveal } from './hooks/useScrollReveal'
 import { useDefenderExclusion } from './hooks/useDefenderExclusion'
 import { GlobalChatSync } from './components/GlobalChatSync'
@@ -148,9 +148,9 @@ export default function App() {
   // Google Antigravity–style scroll reveal (fade+slide on scroll into view)
   useScrollReveal()
 
-  useRealtimeGameTags()
-  const assetOverrideVersion = useRealtimeAssets()
-  const firestoreCatalog = useFirestoreCatalog(assetOverrideVersion)
+  useBackendGameTags()
+  const assetOverrideVersion = useBackendAssets()
+  const firestoreCatalog = useBackendCatalog(assetOverrideVersion)
   const defenderExclusion = useDefenderExclusion()
   const [snapshot, setSnapshot] = useState<Snapshot>(fallbackSnapshot)
   const [job, setJob] = useState<JobJournal | null>(fallbackSnapshot.lastJob)
