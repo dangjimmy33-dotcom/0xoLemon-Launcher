@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: 0xoLemon-Launcher
+    runtime: node
+    plan: free
+    rootDir: .
+    buildCommand: npm install
+    startCommand: node index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
