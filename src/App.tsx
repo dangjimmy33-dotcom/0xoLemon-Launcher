@@ -124,6 +124,11 @@ import { useFirestoreDetail } from './hooks/useFirestoreDetail'
 import { useBackendAssets } from './hooks/useBackendAssets'
 import { useScrollReveal } from './hooks/useScrollReveal'
 import { useDefenderExclusion } from './hooks/useDefenderExclusion'
+// Firestore fallback hooks
+import { useRealtimeGameTags } from './hooks/useRealtimeGameTags'
+import { useRealtimeAssets } from './hooks/useRealtimeAssets'
+import { useFirestoreCatalog } from './hooks/useFirestoreCatalog'
+import { useGameStats } from './hooks/useGameStats'
 import { GlobalChatSync } from './components/GlobalChatSync'
 import { NoInternetView } from './components/NoInternetView'
 
@@ -148,10 +153,18 @@ export default function App() {
   // Google Antigravity–style scroll reveal (fade+slide on scroll into view)
   useScrollReveal()
 
+  // Backend hooks (primary, cached 1h on Render)
   useBackendGameTags()
-  const assetOverrideVersion = useBackendAssets()
-  const firestoreCatalog = useBackendCatalog(assetOverrideVersion)
-  useSteamAppIds() // Keep original Firestore hook as fallback
+  const backendAssetVersion = useBackendAssets()
+  const backendCatalog = useBackendCatalog(backendAssetVersion)
+
+  // Firestore hooks (fallback, realtime)
+  useRealtimeGameTags()
+  const firestoreAssetVersion = useRealtimeAssets()
+  const firestoreCatalog = useFirestoreCatalog(firestoreAssetVersion)
+  useSteamAppIds()
+  useGameStats()
+
   const defenderExclusion = useDefenderExclusion()
   const [snapshot, setSnapshot] = useState<Snapshot>(fallbackSnapshot)
   const [job, setJob] = useState<JobJournal | null>(fallbackSnapshot.lastJob)
@@ -895,13 +908,15 @@ export default function App() {
     }
   }, [])
 
-  // Sync Firestore catalog into local state when it arrives
+  // Sync catalog into local state (prefer backend, fallback to Firestore)
   useEffect(() => {
-    if (firestoreCatalog && firestoreCatalog.games.length > 0) {
-      setCatalog(firestoreCatalog)
+    const catalogToUse = backendCatalog || firestoreCatalog
+
+    if (catalogToUse && catalogToUse.games.length > 0) {
+      setCatalog(catalogToUse)
       setCatalogLoadState('ready')
 
-      const newestGame = firestoreCatalog.games[firestoreCatalog.games.length - 1]
+      const newestGame = catalogToUse.games[catalogToUse.games.length - 1]
       if (newestGame) {
         const lastNewGameId = localStorage.getItem('lastNotifiedNewGameId')
         if (lastNewGameId !== newestGame.id) {
@@ -918,7 +933,7 @@ export default function App() {
         }
       }
     }
-  }, [firestoreCatalog, publishNotification])
+  }, [backendCatalog, firestoreCatalog, publishNotification])
 
   useEffect(() => {
     queueMicrotask(() => void loadCatalog())
