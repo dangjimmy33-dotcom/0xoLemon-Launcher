@@ -15,17 +15,17 @@ export function useBackendGameTags(): void {
         const response = await fetch(`${BACKEND_URL}/api/game-tags`, {
           headers: { 'Accept': 'application/json' }
         })
-        
+
         if (!response.ok) {
           throw new Error(`Backend error: ${response.status}`)
         }
 
         const data = await response.json()
-        
+
         if (!mounted) return
-        
-        // Store globally (same pattern as useRealtimeGameTags)
-        ;(window as any).globalGameTags = data
+
+          // Store globally for catalog usage
+          ; (window as any).globalVersionTags = data
       } catch (error) {
         console.error('[useBackendGameTags] Failed to fetch:', error)
       }

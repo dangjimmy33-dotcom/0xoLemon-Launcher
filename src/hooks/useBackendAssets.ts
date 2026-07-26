@@ -18,18 +18,19 @@ export function useBackendAssets(): number {
         const response = await fetch(`${BACKEND_URL}/api/assets`, {
           headers: { 'Accept': 'application/json' }
         })
-        
+
         if (!response.ok) {
           throw new Error(`Backend error: ${response.status}`)
         }
 
         const data = await response.json()
-        
+
         if (!mounted) return
-        
-        // Store globally for catalog normalization (same pattern as useRealtimeAssets)
-        ;(window as any).globalAssetsOverride = data
-        
+
+          // Store globally for catalog normalization
+          // Backend returns: { "gameId-grid": "url", "gameId-hero": "url", ... }
+          ; (window as any).globalAssetsOverride = data
+
         // Bump version to trigger catalog re-render
         setVersion(v => v + 1)
       } catch (error) {
