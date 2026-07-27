@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from 'react'
 import type { GameCatalog, GameSummary, GameInstallMetadata, CloudSaveMetadata } from '../types'
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://zeroxolemon-launcher.onrender.com'
-const TENANT_ID = import.meta.env.VITE_TENANT_ID || '0xolemon'
+// 0xolemon1 = overflow/secondary project (FIFA 23, future games not in 0xolemon)
+// App.tsx merges this with firestoreCatalog (0xolemon) to get full game list
+const TENANT_ID = import.meta.env.VITE_TENANT_ID || '0xolemon1'
 
 // Access global assets override (set by useBackendAssets)
 declare global {

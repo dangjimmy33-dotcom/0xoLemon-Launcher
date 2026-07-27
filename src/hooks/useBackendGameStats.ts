@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://zeroxolemon-launcher.onrender.com'
-const TENANT_ID = import.meta.env.VITE_TENANT_ID || '0xolemon'
+const TENANT_ID = import.meta.env.VITE_TENANT_ID || '0xolemon1'
 
 /**
  * Fetches game stats from backend API.

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://zeroxolemon-launcher.onrender.com'
-const TENANT_ID = import.meta.env.VITE_TENANT_ID || '0xolemon'
+const TENANT_ID = import.meta.env.VITE_TENANT_ID || '0xolemon1'
 
 /**
  * Parses flat version tags from backend into nested structure.
