@@ -1,5 +1,12 @@
 ﻿[
     {
+        "version":  "2.0.25",
+        "date":  "2026-07-27",
+        "changes":  [
+                        "sửa lỗi cache sound track"
+                    ]
+    },
+    {
         "version":  "2.0.24",
         "date":  "2026-07-27",
         "changes":  [
