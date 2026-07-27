@@ -69,3 +69,11 @@ backend-api/.env.0xolemon.txt
 backend-api/.env.0xolemon1.txt
 backend-api/*.env.*.txt
 *.json
+
+# Exception cho các file json quan trọng để Github Actions (tauri-action dùng globby) có thể đọc được
+!package.json
+!package-lock.json
+!tsconfig.json
+!tsconfig.*.json
+!src-tauri/tauri.conf.json
+!latest.json
