@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://zeroxolemon-launcher.onrender.com'
+const TENANT_ID = import.meta.env.VITE_TENANT_ID || '0xolemon1'
 
 /**
  * Fetches game stats from backend API.
@@ -12,7 +13,7 @@ export function useBackendGameStats(): void {
 
     async function fetchStats() {
       try {
-        const response = await fetch(`${BACKEND_URL}/api/game-stats`, {
+        const response = await fetch(`${BACKEND_URL}/api/${TENANT_ID}/game-stats`, {
           headers: { 'Accept': 'application/json' }
         })
         
@@ -25,7 +26,7 @@ export function useBackendGameStats(): void {
         if (!mounted) return
         
         // Store globally
-        ;(window as any).globalGameStats = data
+        ;(window as any).globalGameStats = { ...((window as any).globalGameStats || {}), ...data }
       } catch (error) {
         console.error('[useBackendGameStats] Failed to fetch:', error)
       }
@@ -33,8 +34,8 @@ export function useBackendGameStats(): void {
 
     fetchStats()
 
-    // Poll every 5 minutes
-    const interval = setInterval(fetchStats, 5 * 60 * 1000)
+    // Poll every 1 hour
+    const interval = setInterval(fetchStats, 60 * 60 * 1000)
 
     return () => {
       mounted = false

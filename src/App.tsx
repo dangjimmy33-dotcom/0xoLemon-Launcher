@@ -910,15 +910,37 @@ export default function App() {
     }
   }, [])
 
-  // Sync catalog into local state (prefer backend, fallback to Firestore)
+  // Sync catalog into local state (merge backend and Firestore catalogs)
   useEffect(() => {
-    const catalogToUse = backendCatalog || firestoreCatalog
+    const backendGames = backendCatalog?.games || []
+    const firestoreGames = firestoreCatalog?.games || []
 
-    if (catalogToUse && catalogToUse.games.length > 0) {
-      setCatalog(catalogToUse)
+    const mergedGamesMap = new Map()
+
+    // Add Firestore games first (default / 0xolemon)
+    firestoreGames.forEach(game => {
+      mergedGamesMap.set(game.id, game)
+    })
+
+    // Add Backend games (0xolemon1) - will overwrite if same ID
+    backendGames.forEach(game => {
+      mergedGamesMap.set(game.id, game)
+    })
+
+    const mergedGames = Array.from(mergedGamesMap.values())
+
+    if (mergedGames.length > 0) {
+      setCatalog({
+        defaultLocale: backendCatalog?.defaultLocale || firestoreCatalog?.defaultLocale || 'en-US',
+        games: mergedGames
+      })
       setCatalogLoadState('ready')
 
-      const newestGame = catalogToUse.games[catalogToUse.games.length - 1]
+      // Use the newest game from backend if available, otherwise firestore
+      const newestGame = backendGames.length > 0 
+        ? backendGames[backendGames.length - 1] 
+        : firestoreGames[firestoreGames.length - 1]
+
       if (newestGame) {
         const lastNewGameId = localStorage.getItem('lastNotifiedNewGameId')
         if (lastNewGameId !== newestGame.id) {

@@ -33,14 +33,14 @@ rebuildIndex()
 
 export function updateGameTagTable(newTable: Partial<GameTagTable>) {
   table = {
-    ...gameTagTableDefault,
+    ...table,
     ...newTable,
     definitions: {
-      ...gameTagTableDefault.definitions,
+      ...table.definitions,
       ...(newTable.definitions || {})
     },
     games: {
-      ...gameTagTableDefault.games,
+      ...table.games,
       ...(newTable.games || {})
     }
   } as GameTagTable
