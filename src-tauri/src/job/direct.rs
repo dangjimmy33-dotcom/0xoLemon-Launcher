@@ -935,8 +935,13 @@ mod tests {
         fs::write(&new_target, b"new-only").unwrap();
 
         rollback_direct_commits(&[
-            (replaced_target.clone(), replaced_backup.clone(), true),
-            (new_target.clone(), new_backup, false),
+            (
+                replaced_target.clone(),
+                replaced_backup.clone(),
+                replaced_target.clone(),
+                true,
+            ),
+            (new_target.clone(), new_backup, new_target.clone(), false),
         ]);
 
         assert_eq!(fs::read(&replaced_target).unwrap(), b"old");

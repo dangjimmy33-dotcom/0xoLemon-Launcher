@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { updateGameTagTable, type GameTagTable } from '../lib/gameTags'
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://zeroxolemon-launcher.onrender.com'
+const TENANT_ID = import.meta.env.VITE_TENANT_ID || '0xolemon1'
 
 /**
  * Fetches game filter tags from backend API.
@@ -13,7 +14,7 @@ export function useBackendGameTags(): void {
 
     async function fetchTags() {
       try {
-        const response = await fetch(`${BACKEND_URL}/api/game-tags`, {
+        const response = await fetch(`${BACKEND_URL}/api/${TENANT_ID}/game-tags`, {
           headers: { 'Accept': 'application/json' }
         })
 
@@ -34,8 +35,8 @@ export function useBackendGameTags(): void {
 
     fetchTags()
 
-    // Poll every 5 minutes
-    const interval = setInterval(fetchTags, 5 * 60 * 1000)
+    // Poll every 1 hour to get updates, avoiding Render free tier rate limits
+    const interval = setInterval(fetchTags, 60 * 60 * 1000)
 
     return () => {
       mounted = false

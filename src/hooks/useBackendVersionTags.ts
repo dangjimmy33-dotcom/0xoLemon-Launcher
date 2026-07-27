@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://zeroxolemon-launcher.onrender.com'
+const TENANT_ID = import.meta.env.VITE_TENANT_ID || '0xolemon1'
 
 /**
  * Parses flat version tags from backend into nested structure.
@@ -67,7 +68,7 @@ export function useBackendVersionTags(): number {
 
     async function fetchTags() {
       try {
-        const response = await fetch(`${BACKEND_URL}/api/tags`, {
+        const response = await fetch(`${BACKEND_URL}/api/${TENANT_ID}/tags`, {
           headers: { 'Accept': 'application/json' }
         })
 
@@ -98,8 +99,8 @@ export function useBackendVersionTags(): number {
 
     fetchTags()
 
-    // Poll every 5 minutes (version tags don't change often)
-    const interval = setInterval(fetchTags, 5 * 60 * 1000)
+    // Poll every 1 hour to get updates, avoiding Render free tier rate limits
+    const interval = setInterval(fetchTags, 60 * 60 * 1000)
 
     return () => {
       mounted = false

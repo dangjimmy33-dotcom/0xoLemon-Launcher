@@ -45,6 +45,6 @@ export const socialDb = initializeFirestore(socialApp, {
   localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
 })
 
-// Backward compat: các hooks cũ import `{ db }` vẫn trỏ đến contentDb
-export const app = contentApp
-export const db = contentDb
+// Backward compat: các hooks cũ import `{ db }` vẫn trỏ đến socialDb (0xoLemon-1)
+export const app = socialApp
+export const db = socialDb

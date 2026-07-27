@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://zeroxolemon-launcher.onrender.com'
+const TENANT_ID = import.meta.env.VITE_TENANT_ID || '0xolemon1'
 
 /**
  * Fetches asset URLs (SteamGridDB fixed links) from backend API.
@@ -15,7 +16,7 @@ export function useBackendAssets(): number {
 
     async function fetchAssets() {
       try {
-        const response = await fetch(`${BACKEND_URL}/api/assets`, {
+        const response = await fetch(`${BACKEND_URL}/api/${TENANT_ID}/assets`, {
           headers: { 'Accept': 'application/json' }
         })
 
@@ -40,8 +41,8 @@ export function useBackendAssets(): number {
 
     fetchAssets()
 
-    // Poll every 5 minutes
-    const interval = setInterval(fetchAssets, 5 * 60 * 1000)
+    // Poll every 1 hour to get updates, avoiding Render free tier rate limits
+    const interval = setInterval(fetchAssets, 60 * 60 * 1000)
 
     return () => {
       mounted = false

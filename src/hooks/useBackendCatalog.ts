@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { GameCatalog, GameSummary, GameInstallMetadata, CloudSaveMetadata } from '../types'
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://zeroxolemon-launcher.onrender.com'
+const TENANT_ID = import.meta.env.VITE_TENANT_ID || '0xolemon1'
 
 // Access global assets override (set by useBackendAssets)
 declare global {
@@ -94,7 +95,7 @@ export function useBackendCatalog(assetOverrideVersion?: number): GameCatalog | 
 
     async function fetchCatalog() {
       try {
-        const response = await fetch(`${BACKEND_URL}/api/catalog`, {
+        const response = await fetch(`${BACKEND_URL}/api/${TENANT_ID}/catalog`, {
           headers: { 'Accept': 'application/json' }
         })
 
@@ -118,8 +119,8 @@ export function useBackendCatalog(assetOverrideVersion?: number): GameCatalog | 
 
     fetchCatalog()
 
-    // Poll every 5 minutes to get updates
-    const interval = setInterval(fetchCatalog, 5 * 60 * 1000)
+    // Poll every 1 hour to get updates, avoiding Render free tier rate limits
+    const interval = setInterval(fetchCatalog, 60 * 60 * 1000)
 
     return () => {
       mounted = false
