@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { doc, onSnapshot } from 'firebase/firestore'
-import { db } from '../firebase'
+import { contentDb as db } from '../firebase'
 import type { GameCatalog, GameSummary, GameInstallMetadata, CloudSaveMetadata } from '../types'
 import { globalAssetsOverride, globalVersionTags } from './useRealtimeAssets'
 

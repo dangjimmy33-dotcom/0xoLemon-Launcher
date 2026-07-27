@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { doc, onSnapshot } from 'firebase/firestore'
-import { db } from '../firebase'
+import { contentDb as db } from '../firebase'
 import { invoke } from '@tauri-apps/api/core'
 
 /**
