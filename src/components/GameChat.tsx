@@ -5,7 +5,7 @@ import {
   collection, onSnapshot, query, limit, orderBy,
   addDoc, serverTimestamp, doc, deleteDoc, updateDoc
 } from 'firebase/firestore'
-import { db } from '../firebase'
+import { socialDb as db } from '../firebase'
 import { open } from '@tauri-apps/plugin-dialog'
 import { Send, Paperclip, X, Edit2, Trash2, Hash, FileIcon, DownloadIcon } from 'lucide-react'
 import type { DiscordAuthUser } from '../types'

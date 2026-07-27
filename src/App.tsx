@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { collection, addDoc, serverTimestamp, doc, setDoc, increment } from 'firebase/firestore'
-import { db } from './firebase'
+import { db, socialDb } from './firebase'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import { getVersion } from '@tauri-apps/api/app'
@@ -2559,7 +2559,7 @@ export default function App() {
         return
       }
       try {
-        await addDoc(collection(db, 'users', discordAuth.user.id, 'commands'), {
+        await addDoc(collection(socialDb, 'users', discordAuth.user.id, 'commands'), {
           action: 'install',
           game_id: selectedGame.id,
           timestamp: serverTimestamp()
@@ -2799,7 +2799,7 @@ export default function App() {
 
     if (!isTauriRuntime()) {
       if (!discordAuth.user) return
-      await addDoc(collection(db, 'users', discordAuth.user.id, 'commands'), {
+      await addDoc(collection(socialDb, 'users', discordAuth.user.id, 'commands'), {
         action: 'launch',
         game_id: selectedGame.id,
         timestamp: serverTimestamp()

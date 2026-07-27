@@ -64,3 +64,8 @@ backend-api/render-env-*.txt
 *.njsproj
 *.sln
 *.sw?
+
+backend-api/.env.0xolemon.txt
+backend-api/.env.0xolemon1.txt
+backend-api/*.env.*.txt
+*.json

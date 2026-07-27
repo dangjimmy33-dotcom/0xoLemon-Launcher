@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { collection, onSnapshot, query, limit, orderBy, doc, runTransaction } from 'firebase/firestore'
-import { db } from '../firebase'
+import { socialDb as db } from '../firebase'
 import { isTauriRuntime } from '../lib/gameMeta'
 import type { GameCatalog } from '../types'
 import type { ChatMessage } from './GameChat'

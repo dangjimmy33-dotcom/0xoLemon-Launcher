@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { collection, doc, onSnapshot, deleteDoc, setDoc, serverTimestamp, increment } from 'firebase/firestore'
-import { db } from '../firebase'
+import { db, socialDb } from '../firebase'
 import { isTauriRuntime } from '../lib/gameMeta'
 import { invoke } from '@tauri-apps/api/core'
 import type { DiscordAuthUser, GameCatalog, GameInstallState, GameRuntimeState } from '../types'
@@ -29,8 +29,8 @@ export function FirebaseRemoteControl({
     const userId = user.id
     if (!userId) return
 
-    // 1. Publish PC Online State
-    const statusRef = doc(db, 'users', userId, 'pc_status', 'current')
+    // 1. Publish PC Online State → socialDb (users/)
+    const statusRef = doc(socialDb, 'users', userId, 'pc_status', 'current')
     setDoc(statusRef, {
       online: true,
       lastSeen: serverTimestamp(),
@@ -45,8 +45,8 @@ export function FirebaseRemoteControl({
       }, { merge: true }).catch(console.error)
     }, 5 * 60 * 1000)
 
-    // 2. Listen for incoming commands
-    const commandsRef = collection(db, 'users', userId, 'commands')
+    // 2. Listen for incoming commands → socialDb (users/)
+    const commandsRef = collection(socialDb, 'users', userId, 'commands')
     const unsubscribe = onSnapshot(commandsRef, (snapshot) => {
       snapshot.docChanges().forEach(async (change) => {
         if (change.type === 'added') {
@@ -62,7 +62,7 @@ export function FirebaseRemoteControl({
                 installPath: null,
               })
 
-              // Increment download count in Firebase
+              // Increment download count → contentDb (config/)
               setDoc(doc(db, 'config', 'gameStats'), {
                 downloads: { [commandData.game_id]: increment(1) }
               }, { merge: true }).catch(console.error)
@@ -82,8 +82,8 @@ export function FirebaseRemoteControl({
           } catch (err) {
             console.error('Remote command failed:', err)
           } finally {
-            // Delete the command so it doesn't run again
-            await deleteDoc(doc(db, 'users', userId, 'commands', commandId))
+            // Delete the command so it doesn't run again → socialDb
+            await deleteDoc(doc(socialDb, 'users', userId, 'commands', commandId))
           }
         }
       })
@@ -92,7 +92,7 @@ export function FirebaseRemoteControl({
     return () => {
       clearInterval(interval)
       unsubscribe()
-      // Mark offline on unmount
+      // Mark offline on unmount → socialDb
       setDoc(statusRef, { online: false, lastSeen: serverTimestamp() }, { merge: true }).catch(console.error)
     }
   }, [user.id])
@@ -100,7 +100,8 @@ export function FirebaseRemoteControl({
   useEffect(() => {
     if (!isTauriRuntime() || !user.id || catalog.games.length === 0) return
 
-    const stateRef = doc(db, 'users', user.id, 'pc_state', 'current')
+    // Sync PC state → socialDb (users/)
+    const stateRef = doc(socialDb, 'users', user.id, 'pc_state', 'current')
     setDoc(stateRef, {
       catalog: JSON.parse(JSON.stringify(catalog)),
       installStates: JSON.parse(JSON.stringify(installStates)),
@@ -113,7 +114,8 @@ export function FirebaseRemoteControl({
   useEffect(() => {
     if (isTauriRuntime() || !user.id) return
 
-    const stateRef = doc(db, 'users', user.id, 'pc_state', 'current')
+    // Web app listens to PC state → socialDb (users/)
+    const stateRef = doc(socialDb, 'users', user.id, 'pc_state', 'current')
     const unsubscribe = onSnapshot(stateRef, (snap) => {
       const data = snap.data()
       if (!data) return
