@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react'
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://zeroxolemon-launcher.onrender.com'
-const TENANT_ID = import.meta.env.VITE_TENANT_ID || '0xolemon1'
+// Primary tenant (0xoLemon) has all game assets.
+// Secondary tenant (0xoLemon-1) may have additional/newer assets that override primary.
+const TENANT_PRIMARY = import.meta.env.VITE_TENANT_ID || '0xolemon'
+const TENANT_SECONDARY = '0xolemon1'
 
 /**
  * Fetches asset URLs (SteamGridDB fixed links) from backend API.
@@ -16,24 +19,38 @@ export function useBackendAssets(): number {
 
     async function fetchAssets() {
       try {
-        const response = await fetch(`${BACKEND_URL}/api/${TENANT_ID}/assets`, {
+        // Fetch primary (0xolemon) — has all games' assets
+        const primaryRes = await fetch(`${BACKEND_URL}/api/${TENANT_PRIMARY}/assets`, {
           headers: { 'Accept': 'application/json' }
         })
 
-        if (!response.ok) {
-          throw new Error(`Backend error: ${response.status}`)
+        let merged: Record<string, string> = {}
+
+        if (primaryRes.ok) {
+          const primaryData = await primaryRes.json()
+          merged = { ...primaryData }
         }
 
-        const data = await response.json()
+        // Fetch secondary (0xolemon1) — may override with newer data
+        try {
+          const secondaryRes = await fetch(`${BACKEND_URL}/api/${TENANT_SECONDARY}/assets`, {
+            headers: { 'Accept': 'application/json' }
+          })
+          if (secondaryRes.ok) {
+            const secondaryData = await secondaryRes.json()
+            merged = { ...merged, ...secondaryData }  // secondary overrides primary
+          }
+        } catch {
+          // secondary failure is non-fatal
+        }
 
         if (!mounted) return
 
+        if (Object.keys(merged).length > 0) {
           // Store globally for catalog normalization
-          // Backend returns: { "gameId-grid": "url", "gameId-hero": "url", ... }
-          ; (window as any).globalAssetsOverride = data
-
-        // Bump version to trigger catalog re-render
-        setVersion(v => v + 1)
+          ;(window as any).globalAssetsOverride = merged
+          setVersion(v => v + 1)
+        }
       } catch (error) {
         console.error('[useBackendAssets] Failed to fetch:', error)
       }

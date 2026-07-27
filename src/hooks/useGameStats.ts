@@ -3,7 +3,7 @@ import { doc, onSnapshot } from 'firebase/firestore'
 import { contentDb as db } from '../firebase'
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://zeroxolemon-launcher.onrender.com'
-const TENANT_ID = import.meta.env.VITE_TENANT_ID || '0xolemon1'
+const TENANT_ID = import.meta.env.VITE_TENANT_ID || '0xolemon'
 
 export interface GameStats {
   downloads: Record<string, number>

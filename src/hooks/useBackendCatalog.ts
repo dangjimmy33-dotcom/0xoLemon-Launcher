@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { GameCatalog, GameSummary, GameInstallMetadata, CloudSaveMetadata } from '../types'
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://zeroxolemon-launcher.onrender.com'
-const TENANT_ID = import.meta.env.VITE_TENANT_ID || '0xolemon1'
+const TENANT_ID = import.meta.env.VITE_TENANT_ID || '0xolemon'
 
 // Access global assets override (set by useBackendAssets)
 declare global {

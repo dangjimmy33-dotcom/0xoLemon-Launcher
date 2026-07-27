@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { updateGameTagTable, type GameTagTable } from '../lib/gameTags'
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://zeroxolemon-launcher.onrender.com'
-const TENANT_ID = import.meta.env.VITE_TENANT_ID || '0xolemon1'
+const TENANT_ID = import.meta.env.VITE_TENANT_ID || '0xolemon'
 
 /**
  * Fetches game filter tags from backend API.
