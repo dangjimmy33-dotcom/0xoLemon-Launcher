@@ -48,17 +48,14 @@ export function useOSTData(gameId: string | null) {
       return
     }
 
-    // Already have tracks from localStorage — skip fetch entirely
-    const cached = loadTracksFromStorage(gameId)
-    if (cached && cached.length > 0) {
-      setTracks(cached)
-      return
-    }
-
     const fetchTracks = async () => {
       setLoading(true)
       setError(null)
       const loadedTracks: OSTTrack[] = []
+
+      // Load existing cache to skip re-fetching metadata for known tracks
+      const cachedTracks = loadTracksFromStorage(gameId) || []
+      const cachedTrackMap = new Map(cachedTracks.map(t => [t.url, t]))
 
       try {
         const repoInfos: [string, string, string | null][] = await invoke('get_game_ost_repo_info', { gameId })
@@ -66,7 +63,7 @@ export function useOSTData(gameId: string | null) {
           throw new Error('No repository configured for this game')
         }
 
-        let mp3Files: { type: string, path: string, size?: number, lfs?: { size: number } }[] = []
+        let audioFiles: { type: string, path: string, size?: number, lfs?: { size: number } }[] = []
         let activeResolveBaseUrl = ''
         let activeHeaders: Record<string, string> = {}
 
@@ -79,9 +76,9 @@ export function useOSTData(gameId: string | null) {
             const res = await fetch(`${cached.treeUrl}?t=${Date.now()}`, { headers, cache: 'no-store' })
             if (res.ok) {
               const files = await res.json()
-              const mp3s = files.filter((f: any) => f.type === 'file' && (f.path.toLowerCase().endsWith('.mp3') || f.path.toLowerCase().endsWith('.flac')))
-              if (mp3s.length > 0) {
-                mp3Files = mp3s
+              const audios = files.filter((f: any) => f.type === 'file' && (f.path.toLowerCase().endsWith('.mp3') || f.path.toLowerCase().endsWith('.flac')))
+              if (audios.length > 0) {
+                audioFiles = audios
                 activeResolveBaseUrl = cached.resolveBaseUrl
                 activeHeaders = headers
               }
@@ -92,7 +89,7 @@ export function useOSTData(gameId: string | null) {
         }
 
         // 2. If no results from cache, scan all configured repos
-        if (mp3Files.length === 0) {
+        if (audioFiles.length === 0) {
           for (const [treeUrl, resolveBaseUrl, token] of repoInfos) {
             const headers: Record<string, string> = {}
             if (token) headers['Authorization'] = `Bearer ${token}`
@@ -100,12 +97,12 @@ export function useOSTData(gameId: string | null) {
               const res = await fetch(`${treeUrl}?t=${Date.now()}`, { headers, cache: 'no-store' })
               if (res.ok) {
                 const files = await res.json()
-                const mp3s = files.filter((f: any) => f.type === 'file' && (f.path.toLowerCase().endsWith('.mp3') || f.path.toLowerCase().endsWith('.flac')))
-                if (mp3s.length > 0) {
-                  mp3Files = mp3s
+                const audios = files.filter((f: any) => f.type === 'file' && (f.path.toLowerCase().endsWith('.mp3') || f.path.toLowerCase().endsWith('.flac')))
+                if (audios.length > 0) {
+                  audioFiles = audios
                   activeResolveBaseUrl = resolveBaseUrl
                   activeHeaders = headers
-                  console.log(`[OST] Found ${mp3s.length} tracks at ${treeUrl}`)
+                  console.log(`[OST] Found ${audios.length} tracks at ${treeUrl}`)
                   // Cache which repo had the music
                   ostRepoCache[gameId] = { treeUrl, resolveBaseUrl, token }
                   break
@@ -117,18 +114,24 @@ export function useOSTData(gameId: string | null) {
           }
         }
 
-        if (mp3Files.length === 0) {
+        if (audioFiles.length === 0) {
           console.log('[OST] No soundtracks found in any configured repo.')
           if (mounted) setTracks([])
           return
         }
 
-        // Process each mp3 file and fetch ID3 metadata
-        for (const file of mp3Files) {
+        // Process each audio file and fetch ID3 metadata
+        for (const file of audioFiles) {
           if (!mounted) return
           const fileName = (file.path as string).split('/').pop() || ''
           const encodedFileName = encodeURIComponent(fileName)
           const url = `${activeResolveBaseUrl}/${encodedFileName}`
+
+          // If we already have this track in cache, reuse it
+          if (cachedTrackMap.has(url)) {
+            loadedTracks.push(cachedTrackMap.get(url)!)
+            continue
+          }
 
           let title = fileName.replace(/\.(mp3|flac)$/i, '')
           let artist = 'Original Soundtrack'
@@ -168,6 +171,11 @@ export function useOSTData(gameId: string | null) {
 
           // Show tracks progressively as they load
           if (mounted) setTracks([...loadedTracks])
+        }
+
+        // Final update to ensure we show everything (especially if all were cached)
+        if (mounted) {
+          setTracks([...loadedTracks])
         }
       } catch (err: any) {
         if (mounted) setError(err.message)
