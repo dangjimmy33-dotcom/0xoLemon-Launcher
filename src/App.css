@@ -1261,6 +1261,12 @@
   content-visibility: auto;
 }
 
+/* Allow hovered cards to float above siblings */
+.game-card-grid > * {
+  position: relative;
+  z-index: 0;
+}
+
 .store-game-card {
   position: relative;
   min-width: 0;
@@ -1273,7 +1279,13 @@
   border-radius: 8px;
   background: transparent;
   text-align: left;
-  transition: filter 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
+  transform-origin: center bottom;
+  transition:
+    transform 0.38s cubic-bezier(0.34, 1.42, 0.64, 1),
+    box-shadow 0.35s ease,
+    filter 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.4s ease;
+  will-change: transform, box-shadow;
 }
 
 .store-game-card.coming-soon {
@@ -1312,6 +1324,52 @@
   outline: 0;
 }
 
+/* ── Focus / Hover lift animation (normal cards only) ── */
+.store-game-card:not(.coming-soon):hover,
+.store-game-card:not(.coming-soon):focus-visible {
+  transform: translateY(-7px) scale(1.028);
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.72),
+    0 8px 20px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.11);
+  z-index: 10;
+}
+
+/* Image zoom inside card (needs overflow clip on the image itself) */
+.store-game-card:not(.coming-soon):hover img {
+  transform: scale(1.06);
+}
+
+/* Shimmer sweep across the image on hover */
+.store-game-card:not(.coming-soon)::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -75%;
+  width: 50%;
+  height: 146px; /* covers only the image area */
+  border-radius: 8px 8px 0 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.13) 50%,
+    transparent 60%
+  );
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0;
+  transition: none;
+}
+
+.store-game-card:not(.coming-soon):hover::before {
+  animation: card-shimmer 0.55s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes card-shimmer {
+  0%   { left: -75%; opacity: 1; }
+  100% { left: 125%;  opacity: 1; }
+}
+
 .store-game-card img,
 .asset-placeholder {
   width: 100%;
@@ -1319,6 +1377,9 @@
   border-radius: 8px;
   object-fit: cover;
   background: #070a0c;
+  overflow: hidden;
+  /* Zoom on hover — clipped by border-radius */
+  transition: transform 0.38s cubic-bezier(0.34, 1.42, 0.64, 1);
   will-change: transform;
 }
 
