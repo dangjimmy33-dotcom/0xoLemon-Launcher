@@ -33,7 +33,7 @@ const TENANTS = {
   },
   '0xolemon1': {
     name: '0xoLemon-1',
-    projectId: 'oxolemon1-d5da8',
+    projectId: 'xolemon-1',
     credentialsEnv: 'FIREBASE_0XOLEMON1_CREDENTIALS_JSON',
     app: null,
     db: null
