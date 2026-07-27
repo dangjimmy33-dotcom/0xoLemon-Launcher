@@ -1258,7 +1258,9 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
   gap: 12px;
-  content-visibility: auto;
+  /* padding gives scaled cards visual room; negative margin compensates layout */
+  padding: 10px 8px;
+  margin: -10px -8px;
 }
 
 /* Allow hovered cards to float above siblings */
@@ -1326,7 +1328,7 @@
 /* ── Focus / Hover lift animation (normal cards only) ── */
 .store-game-card:not(.coming-soon):hover,
 .store-game-card:not(.coming-soon):focus-visible {
-  transform: translateY(-7px) scale(1.05);
+  transform: translateY(-8px) scale(1.08);
   box-shadow:
     0 20px 50px rgba(0, 0, 0, 0.72),
     0 8px 20px rgba(0, 0, 0, 0.45),
