@@ -1,7 +1,8 @@
 // ============================================================
-// 🔥 0xoLemon Backend Middleware - Firebase Optimizer
+// 🔥 0xoLemon Multi-Tenant Backend - Firebase Optimizer
 // ============================================================
-// Giải quyết: 807 listeners → 0, 49k reads/day → 100 reads/day
+// Supports multiple Firebase projects (0xoLemon, 0xoLemon-1)
+// Giải quyết: 807 listeners → 0, 49k reads/day → 100 reads/day per tenant
 
 const express = require('express');
 const cors = require('cors');
@@ -11,61 +12,100 @@ const admin = require('firebase-admin');
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// Cache: 1 giờ TTL
+// Cache: 1 giờ TTL per tenant
 const cache = new NodeCache({ stdTTL: 3600 });
 
 // ============================================================
-// FIREBASE ADMIN INIT
+// MULTI-TENANT FIREBASE ADMIN INIT
 // ============================================================
-let serviceAccount;
 
-// Method 1: Parse from GOOGLE_APPLICATION_CREDENTIALS_JSON env var (Render deployment)
-if (process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON) {
+/**
+ * Tenant configuration
+ * Each tenant has its own Firebase project and service account
+ */
+const TENANTS = {
+  '0xolemon': {
+    name: '0xoLemon',
+    projectId: 'xolemon-b360e',
+    credentialsEnv: 'FIREBASE_0XOLEMON_CREDENTIALS_JSON',
+    app: null,
+    db: null
+  },
+  '0xolemon1': {
+    name: '0xoLemon-1',
+    projectId: 'oxolemon1-d5da8',
+    credentialsEnv: 'FIREBASE_0XOLEMON1_CREDENTIALS_JSON',
+    app: null,
+    db: null
+  }
+};
+
+/**
+ * Initialize Firebase Admin SDK for a specific tenant
+ */
+function initializeTenant(tenantId, config) {
   try {
-    serviceAccount = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);
-    console.log('✅ Using GOOGLE_APPLICATION_CREDENTIALS_JSON');
+    let serviceAccount;
+
+    // Try to load credentials from env var
+    const credentialsJson = process.env[config.credentialsEnv];
+    if (credentialsJson) {
+      serviceAccount = JSON.parse(credentialsJson);
+      console.log(`✅ [${config.name}] Loaded credentials from ${config.credentialsEnv}`);
+    } else {
+      console.error(`❌ [${config.name}] Missing credentials: ${config.credentialsEnv}`);
+      return false;
+    }
+
+    // Validate project ID matches
+    if (serviceAccount.project_id !== config.projectId) {
+      console.error(`❌ [${config.name}] Project ID mismatch! Expected: ${config.projectId}, Got: ${serviceAccount.project_id}`);
+      return false;
+    }
+
+    // Initialize Firebase app with unique name
+    config.app = admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+      projectId: config.projectId
+    }, tenantId); // Use tenantId as app name
+
+    config.db = config.app.firestore();
+
+    console.log(`✅ [${config.name}] Firebase Admin initialized (Project: ${config.projectId})`);
+    return true;
   } catch (error) {
-    console.error('❌ Failed to parse GOOGLE_APPLICATION_CREDENTIALS_JSON:', error.message);
-    process.exit(1);
+    console.error(`❌ [${config.name}] Firebase init error:`, error.message);
+    return false;
   }
-}
-// Method 2: Individual env vars (legacy support)
-else if (process.env.FIREBASE_PRIVATE_KEY) {
-  serviceAccount = {
-    type: "service_account",
-    project_id: process.env.FIREBASE_PROJECT_ID || "xolemon-b360e",
-    private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
-    private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-    client_email: process.env.FIREBASE_CLIENT_EMAIL,
-    client_id: process.env.FIREBASE_CLIENT_ID,
-    auth_uri: "https://accounts.google.com/o/oauth2/auth",
-    token_uri: "https://oauth2.googleapis.com/token",
-    auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs",
-    client_x509_cert_url: process.env.FIREBASE_CERT_URL
-  };
-  console.log('✅ Using individual Firebase env vars');
-}
-// Method 3: Fallback to Application Default Credentials
-else {
-  console.log('⚠️  No Firebase credentials found, using Application Default Credentials');
 }
 
-try {
-  if (serviceAccount) {
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount)
-    });
-    console.log('✅ Firebase Admin initialized with service account');
-  } else {
-    admin.initializeApp();
-    console.log('✅ Firebase Admin initialized with default credentials');
+// Initialize all tenants
+console.log('🔥 Initializing multi-tenant Firebase...');
+let initializedCount = 0;
+
+for (const [tenantId, config] of Object.entries(TENANTS)) {
+  if (initializeTenant(tenantId, config)) {
+    initializedCount++;
   }
-} catch (error) {
-  console.error('❌ Firebase init error:', error.message);
+}
+
+if (initializedCount === 0) {
+  console.error('❌ No tenants initialized! Exiting...');
   process.exit(1);
 }
 
-const db = admin.firestore();
+console.log(`✅ Initialized ${initializedCount}/${Object.keys(TENANTS).length} tenants`);
+
+/**
+ * Get Firestore DB instance for a tenant
+ */
+function getTenantDb(tenantId) {
+  const config = TENANTS[tenantId];
+  if (!config || !config.db) {
+    throw new Error(`Tenant '${tenantId}' not found or not initialized`);
+  }
+  return config.db;
+}
 
 // ============================================================
 // MIDDLEWARE
@@ -73,9 +113,35 @@ const db = admin.firestore();
 app.use(cors());
 app.use(express.json());
 
-// Request logging
+// Tenant validator middleware
+function validateTenant(req, res, next) {
+  const tenantId = req.params.tenant;
+
+  if (!tenantId) {
+    return res.status(400).json({ error: 'Tenant ID required' });
+  }
+
+  if (!TENANTS[tenantId]) {
+    return res.status(404).json({
+      error: `Tenant '${tenantId}' not found`,
+      availableTenants: Object.keys(TENANTS)
+    });
+  }
+
+  if (!TENANTS[tenantId].db) {
+    return res.status(503).json({
+      error: `Tenant '${tenantId}' not initialized`,
+      tenantName: TENANTS[tenantId].name
+    });
+  }
+
+  next();
+}
+
+// Request logging with tenant info
 app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  const tenantId = req.params.tenant || 'N/A';
+  console.log(`${new Date().toISOString()} - [${tenantId}] ${req.method} ${req.path}`);
   next();
 });
 
@@ -83,30 +149,42 @@ app.use((req, res, next) => {
 // HEALTH CHECK
 // ============================================================
 app.get('/health', (req, res) => {
+  const tenantsStatus = {};
+  for (const [id, config] of Object.entries(TENANTS)) {
+    tenantsStatus[id] = {
+      name: config.name,
+      projectId: config.projectId,
+      initialized: !!config.db
+    };
+  }
+
   res.json({
     status: 'ok',
-    service: '0xoLemon Backend Middleware',
-    version: '1.0.0',
+    service: '0xoLemon Multi-Tenant Backend',
+    version: '2.0.0',
     uptime: process.uptime(),
-    cache_keys: cache.keys().length
+    cache_keys: cache.keys().length,
+    tenants: tenantsStatus
   });
 });
 
 // ============================================================
-// API ENDPOINTS
+// MULTI-TENANT API ENDPOINTS
 // ============================================================
 
 /**
- * GET /api/catalog
- * Returns game catalog (cached 1 hour)
+ * GET /api/:tenant/catalog
+ * Returns game catalog for specified tenant (cached 1 hour)
  */
-app.get('/api/catalog', async (req, res) => {
+app.get('/api/:tenant/catalog', validateTenant, async (req, res) => {
   try {
-    const cacheKey = 'catalog';
+    const tenantId = req.params.tenant;
+    const cacheKey = `${tenantId}:catalog`;
     let data = cache.get(cacheKey);
 
     if (!data) {
-      console.log('📡 Fetching catalog from Firestore...');
+      console.log(`📡 [${tenantId}] Fetching catalog from Firestore...`);
+      const db = getTenantDb(tenantId);
       const docRef = db.collection('config').doc('gameCatalog');
       const doc = await docRef.get();
 
@@ -116,9 +194,9 @@ app.get('/api/catalog', async (req, res) => {
 
       data = doc.data();
       cache.set(cacheKey, data);
-      console.log('✅ Catalog cached');
+      console.log(`✅ [${tenantId}] Catalog cached`);
     } else {
-      console.log('💾 Serving catalog from cache');
+      console.log(`💾 [${tenantId}] Serving catalog from cache`);
     }
 
     res.json({
@@ -126,22 +204,24 @@ app.get('/api/catalog', async (req, res) => {
       games: data.games || []
     });
   } catch (error) {
-    console.error('❌ Error fetching catalog:', error);
+    console.error(`❌ [${req.params.tenant}] Error fetching catalog:`, error);
     res.status(500).json({ error: error.message });
   }
 });
 
 /**
- * GET /api/assets
- * Returns assets override (SteamGridDB URLs, cached 1 hour)
+ * GET /api/:tenant/assets
+ * Returns assets override for specified tenant (cached 1 hour)
  */
-app.get('/api/assets', async (req, res) => {
+app.get('/api/:tenant/assets', validateTenant, async (req, res) => {
   try {
-    const cacheKey = 'assets';
+    const tenantId = req.params.tenant;
+    const cacheKey = `${tenantId}:assets`;
     let data = cache.get(cacheKey);
 
     if (!data) {
-      console.log('📡 Fetching assets from Firestore...');
+      console.log(`📡 [${tenantId}] Fetching assets from Firestore...`);
+      const db = getTenantDb(tenantId);
       const docRef = db.collection('config').doc('assets_override');
       const doc = await docRef.get();
 
@@ -151,30 +231,31 @@ app.get('/api/assets', async (req, res) => {
 
       data = doc.data();
       cache.set(cacheKey, data);
-      console.log('✅ Assets cached');
+      console.log(`✅ [${tenantId}] Assets cached`);
     } else {
-      console.log('💾 Serving assets from cache');
+      console.log(`💾 [${tenantId}] Serving assets from cache`);
     }
 
     res.json(data);
   } catch (error) {
-    console.error('❌ Error fetching assets:', error);
+    console.error(`❌ [${req.params.tenant}] Error fetching assets:`, error);
     res.status(500).json({ error: error.message });
   }
 });
 
 /**
- * GET /api/tags
- * Returns version tags from config/version_tags DOCUMENT (cached 1 hour)
- * Format: { "gameId-versionId": ["tag1", "tag2"], ... }
+ * GET /api/:tenant/tags
+ * Returns version tags for specified tenant (cached 1 hour)
  */
-app.get('/api/tags', async (req, res) => {
+app.get('/api/:tenant/tags', validateTenant, async (req, res) => {
   try {
-    const cacheKey = 'tags';
+    const tenantId = req.params.tenant;
+    const cacheKey = `${tenantId}:tags`;
     let data = cache.get(cacheKey);
 
     if (!data) {
-      console.log('📡 Fetching version tags from Firestore document...');
+      console.log(`📡 [${tenantId}] Fetching version tags from Firestore...`);
+      const db = getTenantDb(tenantId);
       const docRef = db.collection('config').doc('version_tags');
       const doc = await docRef.get();
 
@@ -182,32 +263,33 @@ app.get('/api/tags', async (req, res) => {
         return res.status(404).json({ error: 'Version tags not found' });
       }
 
-      // Document data is already flat: { "007-first-light-v1.0.0": ["cracked"], ... }
       data = doc.data();
       cache.set(cacheKey, data);
-      console.log('✅ Version tags cached from document');
+      console.log(`✅ [${tenantId}] Version tags cached`);
     } else {
-      console.log('💾 Serving version tags from cache');
+      console.log(`💾 [${tenantId}] Serving version tags from cache`);
     }
 
     res.json(data);
   } catch (error) {
-    console.error('❌ Error fetching version tags:', error);
+    console.error(`❌ [${req.params.tenant}] Error fetching version tags:`, error);
     res.status(500).json({ error: error.message });
   }
 });
 
 /**
- * GET /api/game-tags
- * Returns game tags for filtering
+ * GET /api/:tenant/game-tags
+ * Returns game tags for specified tenant
  */
-app.get('/api/game-tags', async (req, res) => {
+app.get('/api/:tenant/game-tags', validateTenant, async (req, res) => {
   try {
-    const cacheKey = 'game-tags';
+    const tenantId = req.params.tenant;
+    const cacheKey = `${tenantId}:game-tags`;
     let data = cache.get(cacheKey);
 
     if (!data) {
-      console.log('📡 Fetching game tags from Firestore...');
+      console.log(`📡 [${tenantId}] Fetching game tags from Firestore...`);
+      const db = getTenantDb(tenantId);
       const docRef = db.collection('config').doc('gameTags');
       const doc = await docRef.get();
 
@@ -217,29 +299,31 @@ app.get('/api/game-tags', async (req, res) => {
 
       data = doc.data();
       cache.set(cacheKey, data);
-      console.log('✅ Game tags cached');
+      console.log(`✅ [${tenantId}] Game tags cached`);
     } else {
-      console.log('💾 Serving game tags from cache');
+      console.log(`💾 [${tenantId}] Serving game tags from cache`);
     }
 
     res.json(data);
   } catch (error) {
-    console.error('❌ Error fetching game tags:', error);
+    console.error(`❌ [${req.params.tenant}] Error fetching game tags:`, error);
     res.status(500).json({ error: error.message });
   }
 });
 
 /**
- * GET /api/game-stats
- * Returns game stats (cached 1 hour)
+ * GET /api/:tenant/game-stats
+ * Returns game stats for specified tenant
  */
-app.get('/api/game-stats', async (req, res) => {
+app.get('/api/:tenant/game-stats', validateTenant, async (req, res) => {
   try {
-    const cacheKey = 'game-stats';
+    const tenantId = req.params.tenant;
+    const cacheKey = `${tenantId}:game-stats`;
     let data = cache.get(cacheKey);
 
     if (!data) {
-      console.log('📡 Fetching game stats from Firestore...');
+      console.log(`📡 [${tenantId}] Fetching game stats from Firestore...`);
+      const db = getTenantDb(tenantId);
       const docRef = db.collection('config').doc('gameStats');
       const doc = await docRef.get();
 
@@ -249,29 +333,31 @@ app.get('/api/game-stats', async (req, res) => {
 
       data = doc.data();
       cache.set(cacheKey, data);
-      console.log('✅ Game stats cached');
+      console.log(`✅ [${tenantId}] Game stats cached`);
     } else {
-      console.log('💾 Serving game stats from cache');
+      console.log(`💾 [${tenantId}] Serving game stats from cache`);
     }
 
     res.json(data);
   } catch (error) {
-    console.error('❌ Error fetching game stats:', error);
+    console.error(`❌ [${req.params.tenant}] Error fetching game stats:`, error);
     res.status(500).json({ error: error.message });
   }
 });
 
 /**
- * GET /api/steam-appids
- * Returns Steam AppIDs mapping (cached 1 hour)
+ * GET /api/:tenant/steam-appids
+ * Returns Steam AppIDs mapping for specified tenant
  */
-app.get('/api/steam-appids', async (req, res) => {
+app.get('/api/:tenant/steam-appids', validateTenant, async (req, res) => {
   try {
-    const cacheKey = 'steam-appids';
+    const tenantId = req.params.tenant;
+    const cacheKey = `${tenantId}:steam-appids`;
     let data = cache.get(cacheKey);
 
     if (!data) {
-      console.log('📡 Fetching Steam AppIDs from Firestore...');
+      console.log(`📡 [${tenantId}] Fetching Steam AppIDs from Firestore...`);
+      const db = getTenantDb(tenantId);
       const docRef = db.collection('config').doc('steam_appids');
       const doc = await docRef.get();
 
@@ -281,30 +367,32 @@ app.get('/api/steam-appids', async (req, res) => {
 
       data = doc.data();
       cache.set(cacheKey, data);
-      console.log('✅ Steam AppIDs cached');
+      console.log(`✅ [${tenantId}] Steam AppIDs cached`);
     } else {
-      console.log('💾 Serving Steam AppIDs from cache');
+      console.log(`💾 [${tenantId}] Serving Steam AppIDs from cache`);
     }
 
     res.json(data);
   } catch (error) {
-    console.error('❌ Error fetching Steam AppIDs:', error);
+    console.error(`❌ [${req.params.tenant}] Error fetching Steam AppIDs:`, error);
     res.status(500).json({ error: error.message });
   }
 });
 
 /**
- * GET /api/game-details/:gameId
- * Returns detailed game metadata (cached 1 hour)
+ * GET /api/:tenant/game-details/:gameId
+ * Returns detailed game metadata for specified tenant
  */
-app.get('/api/game-details/:gameId', async (req, res) => {
+app.get('/api/:tenant/game-details/:gameId', validateTenant, async (req, res) => {
   try {
+    const tenantId = req.params.tenant;
     const { gameId } = req.params;
-    const cacheKey = `game-details-${gameId}`;
+    const cacheKey = `${tenantId}:game-details-${gameId}`;
     let data = cache.get(cacheKey);
 
     if (!data) {
-      console.log(`📡 Fetching game details for ${gameId} from Firestore...`);
+      console.log(`📡 [${tenantId}] Fetching game details for ${gameId} from Firestore...`);
+      const db = getTenantDb(tenantId);
       const docRef = db.collection('gameDetails').doc(gameId);
       const doc = await docRef.get();
 
@@ -314,33 +402,38 @@ app.get('/api/game-details/:gameId', async (req, res) => {
 
       data = doc.data();
       cache.set(cacheKey, data);
-      console.log(`✅ Game details for ${gameId} cached`);
+      console.log(`✅ [${tenantId}] Game details for ${gameId} cached`);
     } else {
-      console.log(`💾 Serving game details for ${gameId} from cache`);
+      console.log(`💾 [${tenantId}] Serving game details for ${gameId} from cache`);
     }
 
     res.json(data);
   } catch (error) {
-    console.error(`❌ Error fetching game details for ${req.params.gameId}:`, error);
+    console.error(`❌ [${req.params.tenant}] Error fetching game details for ${req.params.gameId}:`, error);
     res.status(500).json({ error: error.message });
   }
 });
 
 /**
- * POST /api/cache/clear
- * Clear cache manually (admin endpoint)
+ * POST /api/:tenant/cache/clear
+ * Clear cache for specified tenant (admin endpoint)
  */
-app.post('/api/cache/clear', (req, res) => {
+app.post('/api/:tenant/cache/clear', validateTenant, (req, res) => {
+  const tenantId = req.params.tenant;
   const { key } = req.body;
 
   if (key) {
-    cache.del(key);
-    console.log(`🗑️  Cleared cache key: ${key}`);
-    res.json({ message: `Cache cleared for: ${key}` });
+    const tenantKey = `${tenantId}:${key}`;
+    cache.del(tenantKey);
+    console.log(`🗑️  [${tenantId}] Cleared cache key: ${key}`);
+    res.json({ message: `Cache cleared for ${tenantId}:${key}` });
   } else {
-    cache.flushAll();
-    console.log('🗑️  Cleared all cache');
-    res.json({ message: 'All cache cleared' });
+    // Clear all keys for this tenant
+    const allKeys = cache.keys();
+    const tenantKeys = allKeys.filter(k => k.startsWith(`${tenantId}:`));
+    tenantKeys.forEach(k => cache.del(k));
+    console.log(`🗑️  [${tenantId}] Cleared ${tenantKeys.length} cache keys`);
+    res.json({ message: `All cache cleared for tenant: ${tenantId}`, cleared: tenantKeys.length });
   }
 });
 
@@ -362,11 +455,20 @@ app.use((err, req, res, next) => {
 app.listen(PORT, '0.0.0.0', () => {
   console.log('');
   console.log('========================================');
-  console.log('🚀 0xoLemon Backend Middleware');
+  console.log('🚀 0xoLemon Multi-Tenant Backend');
   console.log('========================================');
   console.log(`🌐 Server: http://0.0.0.0:${PORT}`);
   console.log(`📊 Health: http://0.0.0.0:${PORT}/health`);
-  console.log(`🔥 Firebase: ${process.env.FIREBASE_PROJECT_ID || 'xolemon-b360e'}`);
+  console.log('');
+  console.log('🔥 Active Tenants:');
+  for (const [id, config] of Object.entries(TENANTS)) {
+    if (config.db) {
+      console.log(`   ✅ ${config.name} (${id}) → ${config.projectId}`);
+      console.log(`      API: /api/${id}/catalog, /api/${id}/assets, etc.`);
+    } else {
+      console.log(`   ❌ ${config.name} (${id}) → Not initialized`);
+    }
+  }
   console.log('========================================');
   console.log('');
 });
