@@ -6,6 +6,14 @@ use first_light_launcher::builder::{
 };
 use first_light_launcher::manifest::LaunchOption;
 
+/// Collect all values for a repeatable flag, e.g. `--skip-file-pattern foo --skip-file-pattern bar`.
+fn take_all_args(args: &[String], name: &str) -> Vec<String> {
+    args.windows(2)
+        .filter(|pair| pair[0] == name)
+        .map(|pair| pair[1].clone())
+        .collect()
+}
+
 fn main() {
     if let Err(err) = run() {
         eprintln!("depot_builder error: {err}");
@@ -105,16 +113,19 @@ fn build_pair(args: &[String]) -> Result<(), String> {
     let launch_options = parse_launch_options(&args);
     let delete_source_after_pack = has_flag(&args, "--delete-source-after-pack");
     let upload_packs_incrementally = has_flag(&args, "--upload-packs-incrementally");
+    let skip_file_patterns = take_all_args(&args, "--skip-file-pattern");
 
     if delete_source_after_pack {
         eprintln!("[DEPOT] WARNING: --delete-source-after-pack is enabled. Source files will be deleted as they are packed!");
     }
-
     if upload_packs_incrementally {
         eprintln!("[DEPOT] INCREMENTAL MODE: Each pack will be uploaded and deleted immediately after creation to save disk space.");
         if upload_repo.is_none() {
             return Err("--upload-packs-incrementally requires --upload-repo to be set".to_string());
         }
+    }
+    if !skip_file_patterns.is_empty() {
+        eprintln!("[DEPOT] skip-file-pattern(s): {}", skip_file_patterns.join(", "));
     }
 
     let report = build_depot(BuildDepotInput {
@@ -149,6 +160,7 @@ fn build_pair(args: &[String]) -> Result<(), String> {
         format_version: depot_format_version(args),
         delete_source_after_pack,
         upload_packs_incrementally,
+        skip_file_patterns,
     })
     .map_err(|err| err.to_string())?;
 
@@ -173,16 +185,19 @@ fn build_version(args: &[String]) -> Result<(), String> {
     let launch_options = parse_launch_options(&args);
     let delete_source_after_pack = has_flag(&args, "--delete-source-after-pack");
     let upload_packs_incrementally = has_flag(&args, "--upload-packs-incrementally");
+    let skip_file_patterns = take_all_args(&args, "--skip-file-pattern");
 
     if delete_source_after_pack {
         eprintln!("[DEPOT] WARNING: --delete-source-after-pack is enabled. Source files will be deleted as they are packed!");
     }
-
     if upload_packs_incrementally {
         eprintln!("[DEPOT] INCREMENTAL MODE: Each pack will be uploaded and deleted immediately after creation to save disk space.");
         if upload_repo.is_none() {
             return Err("--upload-packs-incrementally requires --upload-repo to be set".to_string());
         }
+    }
+    if !skip_file_patterns.is_empty() {
+        eprintln!("[DEPOT] skip-file-pattern(s): {}", skip_file_patterns.join(", "));
     }
 
     let report = build_depot(BuildDepotInput {
@@ -209,6 +224,7 @@ fn build_version(args: &[String]) -> Result<(), String> {
         format_version: depot_format_version(args),
         delete_source_after_pack,
         upload_packs_incrementally,
+        skip_file_patterns,
     })
     .map_err(|err| err.to_string())?;
 
@@ -232,6 +248,6 @@ fn take_arg(args: &[String], name: &str) -> Result<String, String> {
 
 fn print_usage() {
     eprintln!(
-        "usage:\n  depot_builder build-pair --old-input <path> --new-input <path> --out <path> [--old-version v1.0] [--new-version v1.1] [--game-id 007-first-light] [--format-version 1|2] [--launch-executable <relative-exe>] [--upload-repo owner/repo --repo-type dataset --repo-prefix 007-first-light] [--keep-local-packs] [--extend-existing] [--pack-target-mb 128] [--pack-id-prefix pack-] [--pack-start-index 0] [--encrypt-packs|--encryption-key <key>|--no-encrypt-packs]\n  depot_builder build-version --input <path> --version <version> --out <path> --game-id <game-id> [--format-version 1|2] [--launch-executable <relative-exe>] [--upload-repo owner/repo --repo-type dataset --repo-prefix <prefix>] [--keep-local-packs] [--extend-existing] [--pack-target-mb 128] [--pack-id-prefix pack-] [--pack-start-index 0] [--encrypt-packs|--encryption-key <key>|--no-encrypt-packs]"
+        "usage:\n  depot_builder build-pair --old-input <path> --new-input <path> --out <path> [--old-version v1.0] [--new-version v1.1] [--game-id 007-first-light] [--format-version 1|2] [--launch-executable <relative-exe>] [--upload-repo owner/repo --repo-type dataset --repo-prefix 007-first-light] [--keep-local-packs] [--extend-existing] [--pack-target-mb 128] [--pack-id-prefix pack-] [--pack-start-index 0] [--encrypt-packs|--encryption-key <key>|--no-encrypt-packs] [--skip-file-pattern <glob>] ...\n  depot_builder build-version --input <path> --version <version> --out <path> --game-id <game-id> [--format-version 1|2] [--launch-executable <relative-exe>] [--upload-repo owner/repo --repo-type dataset --repo-prefix <prefix>] [--keep-local-packs] [--extend-existing] [--pack-target-mb 128] [--pack-id-prefix pack-] [--pack-start-index 0] [--encrypt-packs|--encryption-key <key>|--no-encrypt-packs] [--skip-file-pattern <glob>] ...\n\n  --skip-file-pattern  Repeatable. Files whose depot-relative path matches the glob are NOT\n                       re-chunked; their entry is inherited verbatim from the latest existing\n                       manifest. Use for large opaque archives (e.g. Runtime/chunk0.rpkg) that\n                       are internally repacked every release.  Supports * (within segment) and\n                       ** (across segments). Example:\n                         --skip-file-pattern 'Runtime/chunk0.rpkg' --skip-file-pattern 'Runtime/chunk1.rpkg'"
     );
 }

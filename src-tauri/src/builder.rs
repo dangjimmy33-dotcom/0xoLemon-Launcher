@@ -84,6 +84,13 @@ pub struct BuildDepotInput {
     /// Requires publish target. Saves disk space by keeping only 1 pack at a time.
     /// Useful when building very large depots (50GB+) with limited disk space.
     pub upload_packs_incrementally: bool,
+    /// Glob patterns (using `/` separators, `*` matches within a segment, `**`
+    /// matches across segments). Files whose depot-relative path matches ANY
+    /// pattern are NOT re-chunked.  Instead their FileEntry is inherited verbatim
+    /// from the most-recent existing manifest that contains that path.
+    /// Useful for large opaque files (e.g. RPKG archives) that are internally
+    /// repacked every release and would otherwise force a full re-upload.
+    pub skip_file_patterns: Vec<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -195,6 +202,7 @@ pub fn build_depot(input: BuildDepotInput) -> Result<BuildReport, BuildError> {
         .as_ref()
         .map(|catalog| catalog.packs.clone())
         .unwrap_or_default();
+    // Seed chunk dedup locations from all existing manifests.
     if let Some(catalog) = existing_catalog.as_ref() {
         seed_chunk_locations_from_existing_manifests(
             &input.output_dir,
@@ -202,6 +210,18 @@ pub fn build_depot(input: BuildDepotInput) -> Result<BuildReport, BuildError> {
             &mut chunk_locations,
         )?;
     }
+    // Build a lookup of inherited FileEntry values for any path that matches a
+    // skip pattern.  We use the LATEST manifest in the catalog that contains
+    // the file so that callers always get the most-recent known good entry.
+    let inherited_entries: HashMap<String, FileEntry> = if !input.skip_file_patterns.is_empty() {
+        if let Some(catalog) = existing_catalog.as_ref() {
+            seed_inherited_file_entries(&input.output_dir, catalog, &input.skip_file_patterns)?
+        } else {
+            HashMap::new()
+        }
+    } else {
+        HashMap::new()
+    };
     let pack_target_size = effective_pack_target_size(input.pack_target_size);
     let pack_id_prefix = normalize_pack_id_prefix(&input.pack_id_prefix);
     let requested_start_index = input.start_pack_index.unwrap_or(0);
@@ -250,27 +270,71 @@ pub fn build_depot(input: BuildDepotInput) -> Result<BuildReport, BuildError> {
         file_paths.sort();
 
         for file_path in file_paths {
-            let file_entry = build_file_entry(
-                &version_input.root,
-                &file_path,
-                &pack_dir,
-                &input.output_dir,
-                &mut current_pack,
-                &mut next_pack_index,
-                &mut pack_records,
-                &mut chunk_locations,
-                input.publish.as_ref(),
-                &input.encryption,
-                input.format_version,
-                pack_target_size,
-                &pack_id_prefix,
-                input.upload_packs_incrementally,
-            )?;
+            // Check whether this file should be skipped and inherited from a
+            // previous manifest instead of re-chunked.
+            let rel_path = file_path
+                .strip_prefix(&version_input.root)
+                .unwrap_or(&file_path)
+                .components()
+                .map(|c| c.as_os_str().to_string_lossy())
+                .collect::<Vec<_>>()
+                .join("/");
+
+            let inherited = (!input.skip_file_patterns.is_empty())
+                .then(|| {
+                    input
+                        .skip_file_patterns
+                        .iter()
+                        .any(|pat| glob_matches(pat, &rel_path))
+                })
+                .unwrap_or(false);
+
+            let file_entry = if inherited {
+                if let Some(entry) = inherited_entries.get(&rel_path) {
+                    eprintln!("[DEPOT] Inheriting from previous manifest: {rel_path}");
+                    entry.clone()
+                } else {
+                    eprintln!("[DEPOT] WARNING: skip pattern matched '{rel_path}' but no previous manifest entry found — building normally");
+                    build_file_entry(
+                        &version_input.root,
+                        &file_path,
+                        &pack_dir,
+                        &input.output_dir,
+                        &mut current_pack,
+                        &mut next_pack_index,
+                        &mut pack_records,
+                        &mut chunk_locations,
+                        input.publish.as_ref(),
+                        &input.encryption,
+                        input.format_version,
+                        pack_target_size,
+                        &pack_id_prefix,
+                        input.upload_packs_incrementally,
+                    )?
+                }
+            } else {
+                build_file_entry(
+                    &version_input.root,
+                    &file_path,
+                    &pack_dir,
+                    &input.output_dir,
+                    &mut current_pack,
+                    &mut next_pack_index,
+                    &mut pack_records,
+                    &mut chunk_locations,
+                    input.publish.as_ref(),
+                    &input.encryption,
+                    input.format_version,
+                    pack_target_size,
+                    &pack_id_prefix,
+                    input.upload_packs_incrementally,
+                )?
+            };
             total_size += file_entry.size;
             files.push(file_entry);
 
             // Delete source file immediately after packing to save disk space
-            if input.delete_source_after_pack {
+            if input.delete_source_after_pack && !inherited {
                 if let Err(err) = fs::remove_file(&file_path) {
                     eprintln!("[DEPOT] Warning: failed to delete source file {}: {}", file_path.display(), err);
                 } else {
@@ -659,6 +723,115 @@ fn seed_chunk_locations_from_existing_manifests(
         }
     }
     Ok(())
+}
+
+/// Build a path→FileEntry map from the LATEST manifest that contains each path,
+/// but only for paths matching at least one of `patterns`.
+/// Iterates versions in order so later entries overwrite earlier ones, giving
+/// callers the most-recent known-good manifest entry for each file.
+fn seed_inherited_file_entries(
+    output_dir: &Path,
+    catalog: &Catalog,
+    patterns: &[String],
+) -> Result<HashMap<String, FileEntry>, BuildError> {
+    let mut map: HashMap<String, FileEntry> = HashMap::new();
+    for version in &catalog.versions {
+        let manifest_path = output_dir.join(relative_to_path(&version.manifest_path));
+        if !manifest_path.exists() {
+            continue;
+        }
+        let bytes = fs::read(&manifest_path)?;
+        let manifest: VersionManifest = serde_json::from_slice(&bytes)?;
+        for file in manifest.files {
+            if patterns.iter().any(|pat| glob_matches(pat, &file.path)) {
+                map.insert(file.path.clone(), file);
+            }
+        }
+    }
+    eprintln!(
+        "[DEPOT] Inherited {} file entries from previous manifests (skip patterns: {})",
+        map.len(),
+        patterns.join(", ")
+    );
+    Ok(map)
+}
+
+/// Simple glob matcher supporting `*` (any chars within a path segment) and
+/// `**` (any chars across multiple segments, i.e. zero or more path components).
+/// Matching is case-insensitive on Windows, case-sensitive elsewhere.
+/// Path separators are normalised to `/` before comparison.
+fn glob_matches(pattern: &str, path: &str) -> bool {
+    let pat = pattern.replace('\\', "/");
+    let p = path.replace('\\', "/");
+    #[cfg(windows)]
+    let (pat, p) = (pat.to_lowercase(), p.to_lowercase());
+    glob_match_inner(&pat, &p)
+}
+
+fn glob_match_inner(pat: &str, path: &str) -> bool {
+    let mut pi = pat.chars().peekable();
+    let mut si = path.chars().peekable();
+    loop {
+        match pi.peek() {
+            None => return si.peek().is_none(),
+            Some(&'*') => {
+                pi.next();
+                if pi.peek() == Some(&'*') {
+                    // `**` — consume all remaining path chars (greedy, try each suffix)
+                    pi.next();
+                    // skip optional separator after **
+                    if pi.peek() == Some(&'/') { pi.next(); }
+                    let rest_pat: String = pi.collect();
+                    // try matching rest_pat against every suffix of the remaining path
+                    let remaining: String = si.collect();
+                    if rest_pat.is_empty() { return true; }
+                    // try at each `/` boundary and at start
+                    let mut start = 0usize;
+                    loop {
+                        if glob_match_inner(&rest_pat, &remaining[start..]) { return true; }
+                        match remaining[start..].find('/') {
+                            Some(pos) => start += pos + 1,
+                            None => return false,
+                        }
+                    }
+                } else {
+                    // single `*` — matches anything within current segment (no `/`)
+                    let rest_pat: String = pi.collect();
+                    let remaining: String = si.collect();
+                    // try matching rest_pat against every non-slash suffix
+                    let mut start = 0usize;
+                    loop {
+                        if remaining[start..].contains('/') {
+                            // don't let single * cross path separators
+                            let seg_end = remaining[start..].find('/').unwrap() + start;
+                            for end in start..=seg_end {
+                                if glob_match_inner(&rest_pat, &remaining[end..]) { return true; }
+                            }
+                            return false;
+                        } else {
+                            if glob_match_inner(&rest_pat, &remaining[start..]) { return true; }
+                            if start >= remaining.len() { return false; }
+                            start += remaining[start..].chars().next().map(|c| c.len_utf8()).unwrap_or(1);
+                        }
+                    }
+                }
+            }
+            Some(&'?') => {
+                pi.next();
+                // `?` matches any single non-separator char
+                match si.next() {
+                    Some('/') | None => return false,
+                    Some(_) => {}
+                }
+            }
+            Some(&pc) => {
+                match si.next() {
+                    Some(sc) if sc == pc => { pi.next(); }
+                    _ => return false,
+                }
+            }
+        }
+    }
 }
 
 fn next_pack_index(packs: &[PackRecord], id_prefix: &str) -> usize {

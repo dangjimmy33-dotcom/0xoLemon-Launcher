@@ -3508,7 +3508,7 @@ export default function App() {
                   currentVersion={selectedCurrentVersion}
                   selectedVersion={targetVersion}
                   availableVersions={availableVersions}
-                  versionInfos={selectedGame.availableVersions.length > 0 ? selectedGame.availableVersions : activeDetail.versions}
+                  versionInfos={isDefaultGame ? [] : (selectedGame.availableVersions.length > 0 ? selectedGame.availableVersions : activeDetail.versions)}
                   downloadSize={effectiveDownloadSize}
                   installRoot={installMode ? installRoot : selectedInstallPath}
                   downloadingRoot={downloadPathForInstallRoot(installMode ? installRoot : selectedInstallPath, gameInstall)}
