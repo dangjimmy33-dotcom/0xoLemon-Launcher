@@ -11,6 +11,7 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 use chrono::{Local, Timelike, Utc};
+use fastcdc::v2020::StreamCDC;
 use reqwest::blocking::Client;
 use reqwest::header::{HeaderMap, AUTHORIZATION, CONTENT_RANGE, RANGE, RETRY_AFTER, USER_AGENT};
 use reqwest::StatusCode;
@@ -1873,6 +1874,8 @@ pub fn launch_game(
 
         let app_for_exit = app.clone();
         let game_id_for_exit = source.game_id.clone();
+        // Capture the installed version so the backup module can pick the right save path
+        let installed_version_for_exit = marker.version.clone();
         thread::spawn(move || {
             let exit_status = child.wait();
             running_games().lock().unwrap().remove(&game_id_for_exit);
@@ -1882,9 +1885,16 @@ pub fn launch_game(
                 "exitCode": exit_code,
                 "sessionSeconds": 0
             }));
+            // Trigger local save backup (snapshot + Google Drive) before cloud-save sync
+            crate::local_save_backup::backup_after_exit_async(
+                app_for_exit.clone(),
+                game_id_for_exit.clone(),
+                installed_version_for_exit,
+            );
             crate::cloud_save::sync_after_exit_async(app_for_exit, game_id_for_exit);
         });
     }
+
     Ok(LaunchReport {
         game_id: source.game_id,
         executable: executable.display().to_string(),
@@ -2172,6 +2182,16 @@ pub fn uninstall_game(
     let downloading_root = downloading_dir_for_install(install_path, &source);
     let _ = remove_dir_all_with_retry(&downloading_root, 24);
 
+    // Remove the launcher-side manifest backup for this install path.
+    // This backup is only a safety copy of .0xolemon state (not save data)
+    // and should be cleaned up when the game is uninstalled.
+    if let Some(backup_root) = crate::job::paths::get_launcher_backup_root() {
+        let backup_dir = crate::job::paths::state_backup_dir(&backup_root, install_path);
+        if backup_dir.exists() {
+            let _ = fs::remove_dir_all(&backup_dir);
+        }
+    }
+
     Ok(UninstallReport {
         game_id: source.game_id,
         removed_files,
@@ -2232,15 +2252,27 @@ fn run_real_update_job(
     let target_manifest = source.load_manifest(&catalog, &target_version)?;
     let mut changed = changed_target_files(&from_manifest, &target_manifest);
     changed = filter_already_assembled(app, &mut journal, &install_root, changed, &control)?;
-    let (local_sources, reused_chunks, rejected_chunks) =
+    let (mut local_sources, reused_chunks, rejected_chunks) =
         build_verified_local_chunk_sources(&install_root, &from_manifest, &changed, &control)?;
     append_log(
         &mut journal,
         "info",
         &format!(
-            "Validated {reused_chunks} reusable local chunks; {rejected_chunks} invalid or unavailable chunks will be downloaded"
+            "Validated {reused_chunks} reusable local chunks; {rejected_chunks} chunks not strictly valid at original offset"
         ),
     );
+    
+    // Attempt to discover remaining chunks in changed files
+    let (discovered_sources, discovered_count) = discover_local_chunks(&install_root, &changed, &control)?;
+    local_sources.extend(discovered_sources);
+    if discovered_count > 0 {
+        append_log(
+            &mut journal,
+            "info",
+            &format!("Discovered {discovered_count} matching chunks shifted in existing files")
+        );
+    }
+    
     fs::create_dir_all(&staged_chunks_root)?;
     let direct_stage = prepare_direct_stage(
         &downloading_root,
@@ -2329,6 +2361,67 @@ fn run_real_update_job(
         JobStatus::Assembling,
         "Assemble changed files",
     )?;
+
+    // ==========================================
+    // CLEANUP OBSOLETE FILES (BASE & PATCH)
+    // ==========================================
+    append_log(
+        &mut journal,
+        "info",
+        "Cleaning up obsolete files from previous version",
+    );
+    
+    // 1. Cleanup obsolete base game files
+    let mut deleted_obsolete = 0;
+    let target_map: HashSet<String> = target_manifest
+        .files
+        .iter()
+        .map(|f| f.path.to_ascii_lowercase())
+        .collect();
+        
+    for old_file in &from_manifest.files {
+        if !target_map.contains(&old_file.path.to_ascii_lowercase()) {
+            if let Some(path) = safe_join(&install_root, &old_file.path) {
+                let lp = long_path(&path);
+                if lp.exists() {
+                    if let Err(e) = fs::remove_file(&lp) {
+                        append_log(&mut journal, "warning", &format!("Failed to delete obsolete base file {}: {}", old_file.path, e));
+                    } else {
+                        deleted_obsolete += 1;
+                    }
+                }
+            }
+        }
+    }
+    
+    // 2. Cleanup obsolete patch files
+    if let Ok(Some(old_patch_manifest)) = read_applied_patch_manifest(&install_root) {
+        let target_patch_manifest = load_patch_manifest(&source, &target_version).unwrap_or(None);
+        let target_patch_map: HashSet<String> = target_patch_manifest
+            .as_ref()
+            .map(|m| m.files.iter().map(|f| f.path.to_ascii_lowercase()).collect())
+            .unwrap_or_default();
+            
+        for old_patch_file in &old_patch_manifest.files {
+            if !target_patch_map.contains(&old_patch_file.path.to_ascii_lowercase()) {
+                if let Some(path) = safe_join(&install_root, &old_patch_file.path) {
+                    let lp = long_path(&path);
+                    if lp.exists() {
+                        if let Err(e) = fs::remove_file(&lp) {
+                            append_log(&mut journal, "warning", &format!("Failed to delete obsolete patch file {}: {}", old_patch_file.path, e));
+                        } else {
+                            deleted_obsolete += 1;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    if deleted_obsolete > 0 {
+        append_log(&mut journal, "info", &format!("Successfully deleted {} obsolete file(s)", deleted_obsolete));
+    }
+
     if let Some(stage) = direct_stage.as_ref() {
         wait_for_control(app, &control, &mut journal, 3)?;
         append_log(
@@ -2507,7 +2600,18 @@ fn run_real_install_job(
     
     let mut changed = target_manifest.files.clone();
     changed = filter_already_assembled(app, &mut journal, &install_root, changed, &control)?;
-    let local_sources = HashMap::new();
+    let mut local_sources = HashMap::new();
+    
+    // Attempt to discover chunks in existing files in the install directory (if any)
+    let (discovered_sources, discovered_count) = discover_local_chunks(&install_root, &changed, &control)?;
+    local_sources.extend(discovered_sources);
+    if discovered_count > 0 {
+        append_log(
+            &mut journal,
+            "info",
+            &format!("Discovered {discovered_count} matching chunks in existing files for install recovery")
+        );
+    }
     
     // We assemble directly to install folder now, no staging needed
     let direct_stage = None;
@@ -4546,6 +4650,57 @@ fn build_verified_local_chunk_sources(
     }
 
     Ok((out, reused, rejected))
+}
+
+fn discover_local_chunks(
+    install_root: &Path,
+    changed: &[FileEntry],
+    control: &JobControl,
+) -> Result<(HashMap<String, LocalChunkSource>, usize), JobError> {
+    let required_hashes = changed
+        .iter()
+        .flat_map(|file| file.chunks.iter().map(|chunk| chunk.hash.clone()))
+        .collect::<HashSet<_>>();
+    let mut out = HashMap::new();
+    let mut discovered = 0_usize;
+
+    for file in changed {
+        let path = safe_join(install_root, &file.path)
+            .ok_or_else(|| JobError::Depot(format!("unsafe manifest path: {}", file.path)))?;
+            
+        let Ok(local_file) = File::open(&path) else {
+            continue;
+        };
+
+        let chunker = StreamCDC::new(local_file, crate::manifest::CHUNK_MIN_SIZE, crate::manifest::CHUNK_TARGET_SIZE, crate::manifest::CHUNK_MAX_SIZE);
+        let mut offset = 0_u64;
+        
+        for result in chunker {
+            if control.is_canceled() {
+                return Err(JobError::Canceled);
+            }
+            
+            let chunk = match result {
+                Ok(c) => c,
+                Err(_) => break,
+            };
+            
+            let hash = blake3::hash(&chunk.data).to_hex().to_string();
+            if required_hashes.contains(&hash) {
+                if out.insert(hash, LocalChunkSource {
+                    path: path.clone(),
+                    offset,
+                    size: chunk.length as u64,
+                }).is_none() {
+                    discovered = discovered.saturating_add(1);
+                }
+            }
+            
+            offset += chunk.length as u64;
+        }
+    }
+
+    Ok((out, discovered))
 }
 
 fn plan_missing_chunks(
