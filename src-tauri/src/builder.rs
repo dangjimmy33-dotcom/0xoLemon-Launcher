@@ -13,7 +13,7 @@ use walkdir::WalkDir;
 
 use crate::depot_crypto::{self, key_id_from_material, DEPOT_ENCRYPTION_ALGORITHM, DEPOT_KEY_ENV};
 use crate::manifest::{
-    Catalog, CatalogVersion, ChunkCodec, ChunkEncryption, ChunkRef, FileEntry, PackRecord,
+    Catalog, CatalogVersion, ChunkCodec, ChunkEncryption, ChunkRef, DeltaPatch, FileEntry, PackRecord,
     VersionManifest, CHUNK_MAX_SIZE, CHUNK_MIN_SIZE, CHUNK_TARGET_SIZE, FORMAT_VERSION,
     LEGACY_FORMAT_VERSION, PACK_TARGET_SIZE as DEFAULT_PACK_TARGET_SIZE,
 };
@@ -43,6 +43,7 @@ pub struct BuildVersionInput {
     pub root: PathBuf,
     pub launch_executable: Option<String>,
     pub launch_options: Vec<crate::manifest::LaunchOption>,
+    pub dependencies: Option<Vec<String>>,
 }
 
 #[derive(Debug, Clone)]
@@ -88,9 +89,10 @@ pub struct BuildDepotInput {
     /// matches across segments). Files whose depot-relative path matches ANY
     /// pattern are NOT re-chunked.  Instead their FileEntry is inherited verbatim
     /// from the most-recent existing manifest that contains that path.
-    /// Useful for large opaque files (e.g. RPKG archives) that are internally
-    /// repacked every release and would otherwise force a full re-upload.
+    /// Set of glob patterns. Files whose path matches any of these patterns will NOT be re-chunked
+    /// if they exist in the previous version's manifest.
     pub skip_file_patterns: Vec<String>,
+    pub preserve_patterns: Vec<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -255,6 +257,9 @@ pub fn build_depot(input: BuildDepotInput) -> Result<BuildReport, BuildError> {
         .unwrap_or_default();
     let mut metadata_uploads = Vec::<(PathBuf, String)>::new();
 
+    let mut previous_version_root: Option<PathBuf> = None;
+    let mut previous_version_name: Option<String> = None;
+
     for version_input in &input.versions {
         let created_at = Utc::now().to_rfc3339();
         let mut files = Vec::new();
@@ -280,6 +285,15 @@ pub fn build_depot(input: BuildDepotInput) -> Result<BuildReport, BuildError> {
                 .collect::<Vec<_>>()
                 .join("/");
 
+            let preserve = (!input.preserve_patterns.is_empty())
+                .then(|| {
+                    input
+                        .preserve_patterns
+                        .iter()
+                        .any(|pat| glob_matches(pat, &rel_path))
+                })
+                .unwrap_or(false);
+
             let inherited = (!input.skip_file_patterns.is_empty())
                 .then(|| {
                     input
@@ -298,6 +312,8 @@ pub fn build_depot(input: BuildDepotInput) -> Result<BuildReport, BuildError> {
                     build_file_entry(
                         &version_input.root,
                         &file_path,
+                        previous_version_root.as_deref(),
+                        previous_version_name.as_deref(),
                         &pack_dir,
                         &input.output_dir,
                         &mut current_pack,
@@ -310,12 +326,15 @@ pub fn build_depot(input: BuildDepotInput) -> Result<BuildReport, BuildError> {
                         pack_target_size,
                         &pack_id_prefix,
                         input.upload_packs_incrementally,
+                        preserve,
                     )?
                 }
             } else {
                 build_file_entry(
                     &version_input.root,
                     &file_path,
+                    previous_version_root.as_deref(),
+                    previous_version_name.as_deref(),
                     &pack_dir,
                     &input.output_dir,
                     &mut current_pack,
@@ -328,6 +347,7 @@ pub fn build_depot(input: BuildDepotInput) -> Result<BuildReport, BuildError> {
                     pack_target_size,
                     &pack_id_prefix,
                     input.upload_packs_incrementally,
+                    preserve,
                 )?
             };
             total_size += file_entry.size;
@@ -352,6 +372,7 @@ pub fn build_depot(input: BuildDepotInput) -> Result<BuildReport, BuildError> {
             root_label: format!("{} {}", input.game_id, version_input.version),
             launch_executable: version_input.launch_executable.clone(),
             launch_options: version_input.launch_options.clone(),
+            dependencies: version_input.dependencies.clone(),
             total_size,
             files,
             signature: None,
@@ -372,6 +393,7 @@ pub fn build_depot(input: BuildDepotInput) -> Result<BuildReport, BuildError> {
                 "sourceLabel": format!("{} {}", input.game_id, version_input.version),
                 "launchExecutable": version_input.launch_executable.clone(),
                 "launchOptions": version_input.launch_options.clone(),
+                "dependencies": version_input.dependencies.clone(),
                 "totalSize": total_size,
                 "fileCount": manifest.files.len(),
                 "chunkCount": chunk_count,
@@ -405,6 +427,9 @@ pub fn build_depot(input: BuildDepotInput) -> Result<BuildReport, BuildError> {
             chunk_count,
             created_at,
         });
+
+        previous_version_root = Some(version_input.root.clone());
+        previous_version_name = Some(version_input.version.clone());
     }
 
     if let Some(pack) = current_pack.take() {
@@ -450,6 +475,8 @@ pub fn build_depot(input: BuildDepotInput) -> Result<BuildReport, BuildError> {
 fn build_file_entry(
     root: &Path,
     file_path: &Path,
+    previous_version_root: Option<&Path>,
+    previous_version_name: Option<&str>,
     pack_dir: &Path,
     output_dir: &Path,
     current_pack: &mut Option<PackWriter>,
@@ -462,6 +489,7 @@ fn build_file_entry(
     pack_target_size: u64,
     pack_id_prefix: &str,
     upload_incrementally: bool,
+    preserve: bool,
 ) -> Result<FileEntry, BuildError> {
     let metadata = fs::metadata(file_path)?;
     let source = File::open(file_path)?;
@@ -564,12 +592,124 @@ fn build_file_entry(
     }
 
     let path = normalize_relative(root, file_path);
+    let new_file_hash = hex::encode(file_hasher.finalize());
+    let mut delta_patches = None;
+
+    if let Some(prev_root) = previous_version_root {
+        let old_file_path = prev_root.join(crate::scanner::normalize_relative(root, file_path));
+        if old_file_path.exists() {
+            let mut generate_delta = true;
+            let mut old_hash_str = String::new();
+            if let Ok(mut old_file) = File::open(&old_file_path) {
+                let mut old_hasher = Sha256::new();
+                if let Ok(_) = std::io::copy(&mut old_file, &mut old_hasher) {
+                    old_hash_str = hex::encode(old_hasher.finalize());
+                    if old_hash_str == new_file_hash {
+                        generate_delta = false;
+                    }
+                }
+            }
+
+            if generate_delta && !old_hash_str.is_empty() {
+                let delta_tmp_path = pack_dir.join(format!("{}.delta.tmp", new_file_hash));
+                
+                match oxidelta::io::encode_file(
+                    &old_file_path,
+                    file_path,
+                    &delta_tmp_path,
+                    oxidelta::compress::encoder::CompressOptions::default(),
+                ) {
+                    Ok(_) => {
+                        if let Ok(delta_bytes) = fs::read(&delta_tmp_path) {
+                            let delta_hash = blake3::hash(&delta_bytes).to_hex().to_string();
+                            
+                            let (codec, encoded) = encode_chunk_payload(&delta_bytes, format_version).unwrap_or((ChunkCodec::Raw, delta_bytes.clone()));
+                            
+                            let plaintext_compressed_sha256 = sha256_bytes(&encoded);
+                            let plaintext_compressed_size = encoded.len() as u64;
+                            let uncompressed_size = delta_bytes.len() as u64;
+
+                            let (transport_bytes, encryption_meta) = if encryption.enabled {
+                                let key_material = depot_crypto::resolve_key_material(encryption.key_material.as_deref());
+                                let key_id = encryption
+                                    .key_id
+                                    .clone()
+                                    .filter(|value| !value.trim().is_empty())
+                                    .unwrap_or_else(|| depot_crypto::key_id_from_material(&key_material));
+                                
+                                if let Ok((encrypted, nonce)) = depot_crypto::encrypt_compressed_chunk(
+                                    &encoded,
+                                    &delta_hash,
+                                    &plaintext_compressed_sha256,
+                                    &key_material,
+                                ) {
+                                    (
+                                        encrypted,
+                                        Some(ChunkEncryption {
+                                            algorithm: DEPOT_ENCRYPTION_ALGORITHM.to_string(),
+                                            key_id,
+                                            nonce,
+                                            plaintext_compressed_size,
+                                            plaintext_compressed_sha256: plaintext_compressed_sha256.clone(),
+                                        }),
+                                    )
+                                } else {
+                                    (encoded, None)
+                                }
+                            } else {
+                                (encoded, None)
+                            };
+
+                            let compressed_sha256 = sha256_bytes(&transport_bytes);
+                            
+                            if current_pack
+                                .as_ref()
+                                .map(|pack| pack.size + (transport_bytes.len() as u64) > pack_target_size && pack.size > 0)
+                                .unwrap_or(true)
+                            {
+                                if let Some(pack) = current_pack.take() {
+                                    if pack.size > 0 {
+                                        finalize_pack(pack, output_dir, publish, pack_records, encryption.enabled, upload_incrementally)?;
+                                    }
+                                }
+                                let pack = PackWriter::create(pack_dir, pack_id_prefix, *next_pack_index)?;
+                                *next_pack_index += 1;
+                                *current_pack = Some(pack);
+                            }
+
+                            let pack = current_pack.as_mut().expect("pack writer must exist");
+                            if let Ok(pack_offset) = pack.write_chunk(&transport_bytes) {
+                                let patch = DeltaPatch {
+                                    from_sha256: old_hash_str,
+                                    pack_id: pack.id.clone(),
+                                    pack_offset,
+                                    uncompressed_size,
+                                    compressed_size: transport_bytes.len() as u64,
+                                    compressed_sha256,
+                                    codec,
+                                    encryption: encryption_meta,
+                                };
+                                delta_patches = Some(vec![patch]);
+                            }
+                        }
+                        let _ = fs::remove_file(&delta_tmp_path);
+                    }
+                    Err(e) => {
+                        eprintln!("[DEPOT] warning: oxidelta failed for {}: {}", path, e);
+                    }
+                }
+            }
+        }
+    }
+
     Ok(FileEntry {
         path: path.clone(),
         size: metadata.len(),
-        sha256: hex::encode(file_hasher.finalize()),
+        sha256: new_file_hash,
         chunks,
+        delta_patches,
         executable: path.to_ascii_lowercase().ends_with(".exe"),
+        preserve,
     })
 }
 

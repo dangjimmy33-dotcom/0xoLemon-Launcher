@@ -28,7 +28,8 @@ param(
   [switch]$UploadPacksIncrementally,
   [int]$PackTargetMb = 256,
   [int]$PackStartIndex = 0,
-  [string]$PackIdPrefix = "pack-"
+  [string]$PackIdPrefix = "pack-",
+  [string[]]$Dependency = @()
 )
 
 Set-StrictMode -Version Latest
@@ -188,6 +189,12 @@ if (-not $UploadOnly) {
       }
     } elseif (-not [string]::IsNullOrWhiteSpace($LaunchExecutable)) {
       $builderArgs += @("--launch-executable", $LaunchExecutable)
+    }
+
+    foreach ($dep in $Dependency) {
+      if (-not [string]::IsNullOrWhiteSpace($dep)) {
+        $builderArgs += @("--dependency", $dep.Trim())
+      }
     }
 
     if ($KeepLocalPacks -or (-not $UseBuilderUpload)) {

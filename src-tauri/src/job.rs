@@ -978,7 +978,7 @@ pub fn spawn_install_job(
     let staged_chunks_root = staged_chunk_dir(&downloading_root);
     fs::create_dir_all(&staged_chunks_root)?;
     let initial_missing =
-        plan_missing_chunks(&HashMap::new(), &staged_chunks_root, &manifest.files)?;
+        plan_missing_chunks(&HashMap::new(), &staged_chunks_root, &manifest.files, None)?;
     let initial_bytes = download_transfer_bytes(&initial_missing);
     let initial_in_flight = existing_partial_task_progress(&staged_chunks_root, &initial_missing);
     let mut journal = default_journal(
@@ -1138,7 +1138,7 @@ pub fn spawn_repair_job(
     let staged_chunks_root = staged_chunk_dir(&downloading_root);
     fs::create_dir_all(&install_root)?;
     fs::create_dir_all(&staged_chunks_root)?;
-    let missing_chunks = plan_missing_chunks(&HashMap::new(), &staged_chunks_root, &repair_files)?;
+    let missing_chunks = plan_missing_chunks(&HashMap::new(), &staged_chunks_root, &repair_files, Some(&install_root))?;
     let bytes_total = download_transfer_bytes(&missing_chunks);
     let mut journal = default_journal(
         &source.game_id,
@@ -1851,7 +1851,7 @@ pub fn launch_game(
         crate::cloud_save::sync_before_launch(app, &source.game_id).map_err(JobError::Depot)?;
     }
 
-    let dependencies_installed = ensure_game_dependencies(app, &source)?;
+    let dependencies_installed = ensure_game_dependencies(app, &source, install_path)?;
     let shortcut_path = create_game_shortcut(app, &source, install_path, &executable, &main.path)
         .ok()
         .flatten()
@@ -2285,7 +2285,7 @@ fn run_real_update_job(
     let missing_chunks = if let Some(stage) = direct_stage.as_ref() {
         stage.filter_missing_chunks(&local_sources, &changed)
     } else {
-        plan_missing_chunks(&local_sources, &staged_chunks_root, &changed)?
+        plan_missing_chunks(&local_sources, &staged_chunks_root, &changed, Some(&install_root))?
     };
     journal.bytes_total = download_transfer_bytes(&missing_chunks);
     configure_download_metrics(&mut journal, &missing_chunks, direct_stage.is_some());
@@ -2616,7 +2616,7 @@ fn run_real_install_job(
     // We assemble directly to install folder now, no staging needed
     let direct_stage = None;
     
-    let missing_chunks = plan_missing_chunks(&local_sources, &staged_chunks_root, &changed)?;
+    let missing_chunks = plan_missing_chunks(&local_sources, &staged_chunks_root, &changed, Some(&install_root))?;
     journal.bytes_total = download_transfer_bytes(&missing_chunks);
     configure_download_metrics(&mut journal, &missing_chunks, direct_stage.is_some());
     let resumed_in_flight = existing_partial_task_progress(&staged_chunks_root, &missing_chunks);
@@ -2875,7 +2875,7 @@ fn run_real_repair_job(
     let missing_chunks = if let Some(stage) = direct_stage.as_ref() {
         stage.filter_missing_chunks(&local_sources, &repair_files)
     } else {
-        plan_missing_chunks(&local_sources, &staged_chunks_root, &repair_files)?
+        plan_missing_chunks(&local_sources, &staged_chunks_root, &repair_files, Some(&install_root))?
     };
     journal.bytes_total = download_transfer_bytes(&missing_chunks);
     configure_download_metrics(&mut journal, &missing_chunks, direct_stage.is_some());
@@ -4703,15 +4703,55 @@ fn discover_local_chunks(
     Ok((out, discovered))
 }
 
+fn get_applicable_delta_patch(file: &FileEntry, install_root: &Path) -> Option<ChunkRef> {
+    let patches = file.delta_patches.as_ref()?;
+    if patches.is_empty() {
+        return None;
+    }
+    
+    let target = install_root.join(&file.path);
+    if !target.exists() {
+        return None;
+    }
+    
+    if let Ok(hash) = sha256_file(&target) {
+        if let Some(patch) = patches.iter().find(|p| p.from_sha256 == hash) {
+            return Some(ChunkRef {
+                hash: format!("delta-{}", patch.compressed_sha256),
+                file_offset: 0,
+                uncompressed_size: patch.uncompressed_size,
+                pack_id: patch.pack_id.clone(),
+                pack_offset: patch.pack_offset,
+                compressed_size: patch.compressed_size,
+                compressed_sha256: patch.compressed_sha256.clone(),
+                codec: patch.codec,
+                encryption: patch.encryption.clone(),
+            });
+        }
+    }
+    None
+}
+
 fn plan_missing_chunks(
     local_sources: &HashMap<String, LocalChunkSource>,
     staged_chunks_root: &Path,
     changed: &[FileEntry],
+    install_root: Option<&Path>,
 ) -> Result<Vec<ChunkRef>, JobError> {
     let mut seen = HashSet::new();
     let mut missing = Vec::new();
     for file in changed {
-        for chunk in &file.chunks {
+        let mut chunks_to_check = Vec::new();
+        if let Some(root) = install_root {
+            if let Some(delta_chunk) = get_applicable_delta_patch(file, root) {
+                chunks_to_check.push(delta_chunk);
+            }
+        }
+        if chunks_to_check.is_empty() {
+            chunks_to_check.extend(file.chunks.iter().cloned());
+        }
+
+        for chunk in &chunks_to_check {
             if !seen.insert(chunk.hash.clone()) {
                 continue;
             }
@@ -5129,24 +5169,53 @@ fn assemble_target_file(
     // Assemble directly in install folder (no staging)
     let temp = sibling_path(&target, "007launcher.tmp")?;
     let backup = sibling_path(&target, "007launcher.bak")?;
-    let mut output = File::create(&temp)?;
-    let mut hasher = Sha256::new();
-
-    for chunk in &file.chunks {
-        let data = read_chunk_bytes(chunk, local_sources, staged_chunks_root)?;
-        hasher.update(&data);
-        output.write_all(&data)?;
+    
+    let mut using_delta = false;
+    
+    if let Some(delta_chunk) = get_applicable_delta_patch(file, install_root) {
+        using_delta = true;
+        
+        let delta_payload = read_chunk_bytes(&delta_chunk, local_sources, staged_chunks_root)?;
+        
+        let delta_tmp_path = sibling_path(&target, "007launcher.delta")?;
+        fs::write(&delta_tmp_path, &delta_payload)?;
+        
+        let stats = oxidelta::io::decode_file(&target, &delta_tmp_path, &temp)
+            .map_err(|e| JobError::Depot(format!("Delta patch decode failed: {:?}", e)))?;
+            
+        let _ = fs::remove_file(&delta_tmp_path);
+        
+        let actual = hex::encode(stats.output_sha256.unwrap_or([0; 32]));
+        
+        if actual != file.sha256 {
+            let _ = fs::remove_file(&temp);
+            return Err(JobError::Depot(format!(
+                "assembled file (delta) hash mismatch: {}",
+                file.path
+            )));
+        }
     }
-    output.flush()?;
-    drop(output);
+    
+    if !using_delta {
+        let mut output = File::create(&temp)?;
+        let mut hasher = Sha256::new();
 
-    let actual = hex::encode(hasher.finalize());
-    if actual != file.sha256 {
-        let _ = fs::remove_file(&temp);
-        return Err(JobError::Depot(format!(
-            "assembled file hash mismatch: {}",
-            file.path
-        )));
+        for chunk in &file.chunks {
+            let data = read_chunk_bytes(chunk, local_sources, staged_chunks_root)?;
+            hasher.update(&data);
+            output.write_all(&data)?;
+        }
+        output.flush()?;
+        drop(output);
+
+        let actual = hex::encode(hasher.finalize());
+        if actual != file.sha256 {
+            let _ = fs::remove_file(&temp);
+            return Err(JobError::Depot(format!(
+                "assembled file hash mismatch: {}",
+                file.path
+            )));
+        }
     }
 
     if backup.exists() {
@@ -5197,7 +5266,9 @@ fn filter_already_assembled(
         // Fast path: only if file exists and size matches, we check hash
         let mut is_valid = false;
         if target.exists() {
-            if let Ok(metadata) = fs::metadata(&target) {
+            if file.preserve {
+                is_valid = true;
+            } else if let Ok(metadata) = fs::metadata(&target) {
                 if metadata.len() == file.size {
                     // Only hash files that match the exact size
                     if let Ok(true) = target_file_valid(&target, &file) {

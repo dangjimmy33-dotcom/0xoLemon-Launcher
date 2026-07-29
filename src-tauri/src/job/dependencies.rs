@@ -216,6 +216,21 @@ const EA_APP: DependencySpec = DependencySpec {
 //  Game → dependency mapping
 // ══════════════════════════════════════════════════════════════
 
+fn dependency_spec_by_id(id: &str) -> Option<DependencySpec> {
+    match id {
+        "vc-redist-x64-2022" => Some(VC_REDIST_X64.clone()),
+        "vc-redist-x86-2022" => Some(VC_REDIST_X86.clone()),
+        "vc-redist-x64-2019" => Some(VC_REDIST_X64_2019.clone()),
+        "vc-redist-x86-2019" => Some(VC_REDIST_X86_2019.clone()),
+        "vc-redist-x64-2010" => Some(VC_REDIST_X64_2010.clone()),
+        "vc-redist-x86-2010" => Some(VC_REDIST_X86_2010.clone()),
+        "directx-jun2010" => Some(DIRECTX_JUN2010.clone()),
+        "dotnet-47" => Some(DOTNET_47.clone()),
+        "ea-app" => Some(EA_APP.clone()),
+        _ => None,
+    }
+}
+
 fn dependency_specs_for_game(game_id: &str) -> Vec<DependencySpec> {
     // Helper to deduplicate by id so games listing both 2019+2022 don't double-install.
     fn dedup(mut v: Vec<DependencySpec>) -> Vec<DependencySpec> {
@@ -392,9 +407,28 @@ fn dependency_installed(spec: &DependencySpec) -> bool {
 pub(super) fn ensure_game_dependencies(
     app: &AppHandle,
     source: &DepotSource,
+    install_path: &Path,
 ) -> Result<Vec<String>, JobError> {
     let mut installed = Vec::new();
-    for spec in dependency_specs_for_game(&source.game_id) {
+    
+    // First, try to load the dependencies dynamically from the installed manifest
+    let mut specs = Vec::new();
+    if let Ok(Some(manifest)) = super::read_installed_manifest(install_path) {
+        if let Some(deps) = manifest.dependencies {
+            for dep_id in deps {
+                if let Some(spec) = dependency_spec_by_id(&dep_id) {
+                    specs.push(spec);
+                }
+            }
+        }
+    }
+    
+    // Fallback to hardcoded list if the manifest didn't provide any dependencies
+    if specs.is_empty() {
+        specs = dependency_specs_for_game(&source.game_id);
+    }
+    
+    for spec in specs {
         if dependency_installed(&spec) {
             continue;
         }

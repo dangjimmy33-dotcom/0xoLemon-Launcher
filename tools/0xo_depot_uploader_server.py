@@ -362,7 +362,7 @@ def final_version(payload: Dict[str, Any]) -> str:
     out = base
     if build_id:
         out += f" (Build {build_id})"
-    if bool_value(payload.get("appendUploadDate", True)):
+    if bool_value(payload.get("appendUploadDate", False)):
         out += f" - Uploaded {date}"
     return out
 
@@ -444,16 +444,49 @@ def build_direct_args(payload: Dict[str, Any]) -> List[str]:
 
     args += ["--out", out_path, "--game-id", game_id, "--pack-target-mb", str(pack_mb), "--pack-start-index", str(pack_start), "--pack-id-prefix", pack_prefix]
     raw_opts = payload.get("launchOptionsJson")
-    launch_opts_json = (json.dumps(raw_opts, ensure_ascii=False) if isinstance(raw_opts, (list, dict)) else safe_str(raw_opts)).strip()
-    if launch_opts_json and launch_opts_json not in ('[]', '{}', 'null'):
-        args += ["--launch-options-json", launch_opts_json]
+    # Normalize to list of valid options (must have executable set)
+    parsed_opts = []
+    if isinstance(raw_opts, list):
+        parsed_opts = [o for o in raw_opts if isinstance(o, dict) and o.get("executable", "").strip()]
+    elif isinstance(raw_opts, str) and raw_opts.strip() not in ('', '[]', '{}', 'null'):
+        try:
+            parsed = json.loads(raw_opts)
+            parsed_opts = [o for o in parsed if isinstance(o, dict) and o.get("executable", "").strip()]
+        except Exception:
+            pass
+
+    if len(parsed_opts) > 1:
+        # 2+ options → Steam-style picker → use --launch-options-json (writes launchOptions array)
+        args += ["--launch-options-json", json.dumps(parsed_opts, ensure_ascii=False)]
+    elif len(parsed_opts) == 1:
+        # Exactly 1 option → use --launch-executable (writes launchExecutable string, backward-compatible)
+        args += ["--launch-executable", parsed_opts[0]["executable"].strip()]
     elif exe_name:
         args += ["--launch-executable", exe_name]
     
-    # If incremental mode, pass --upload-repo to builder so it can upload each pack immediately
     if upload_incrementally and repo_id:
         args += ["--upload-repo", repo_id, "--repo-type", repo_type, "--repo-prefix", repo_prefix]
     
+    dependencies = payload.get("dependencies", [])
+    if isinstance(dependencies, list):
+        for dep in dependencies:
+            if str(dep).strip():
+                args += ["--dependency", str(dep).strip()]
+    elif isinstance(dependencies, str) and dependencies.strip():
+        for dep in dependencies.split(","):
+            if dep.strip():
+                args += ["--dependency", dep.strip()]
+
+    preserve_patterns = payload.get("preservePatterns", [])
+    if isinstance(preserve_patterns, list):
+        for pat in preserve_patterns:
+            if str(pat).strip():
+                args += ["--preserve-pattern", str(pat).strip()]
+    elif isinstance(preserve_patterns, str) and preserve_patterns.strip():
+        for pat in preserve_patterns.split("\n"):
+            if pat.strip():
+                args += ["--preserve-pattern", pat.strip()]
+
     if keep and not upload_incrementally:
         args += ["--keep-local-packs"]
     if not encrypt_packs:
@@ -519,12 +552,34 @@ def run_publish_script(payload: Dict[str, Any], env: Dict[str, str]) -> int:
         args.append("-UploadOnly")
     
     raw_opts = payload.get("launchOptionsJson")
-    launch_opts_json = (json.dumps(raw_opts, ensure_ascii=False) if isinstance(raw_opts, (list, dict)) else safe_str(raw_opts)).strip()
-    if launch_opts_json and launch_opts_json not in ('[]', '{}', 'null'):
-        env["LAUNCH_OPTIONS_JSON"] = launch_opts_json
+    parsed_opts_ps = []
+    if isinstance(raw_opts, list):
+        parsed_opts_ps = [o for o in raw_opts if isinstance(o, dict) and o.get("executable", "").strip()]
+    elif isinstance(raw_opts, str) and raw_opts.strip() not in ('', '[]', '{}', 'null'):
+        try:
+            parsed = json.loads(raw_opts)
+            parsed_opts_ps = [o for o in parsed if isinstance(o, dict) and o.get("executable", "").strip()]
+        except Exception:
+            pass
+
+    if len(parsed_opts_ps) > 1:
+        ps_launch_json = json.dumps(parsed_opts_ps, ensure_ascii=False)
+        env["LAUNCH_OPTIONS_JSON"] = ps_launch_json
         args += ["-LaunchOptionsJson", "ENV"]
+    elif len(parsed_opts_ps) == 1:
+        args += ["-LaunchExecutable", parsed_opts_ps[0]["executable"].strip()]
     elif exe_name:
         args += ["-LaunchExecutable", exe_name]
+
+    # Pass dependencies
+    dependencies = payload.get("dependencies", [])
+    dep_list = []
+    if isinstance(dependencies, list):
+        dep_list = [str(d).strip() for d in dependencies if str(d).strip()]
+    elif isinstance(dependencies, str) and dependencies.strip():
+        dep_list = [d.strip() for d in dependencies.split(",") if d.strip()]
+    for dep in dep_list:
+        args += ["-Dependency", dep]
     if bool_value(payload.get("keepLocalPacks", False)):
         args += ["-KeepLocalPacks"]
     if not bool_value(payload.get("encryptPacks", True)):

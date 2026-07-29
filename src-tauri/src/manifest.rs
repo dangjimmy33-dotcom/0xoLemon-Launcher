@@ -62,6 +62,8 @@ pub struct VersionManifest {
     pub launch_executable: Option<String>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub launch_options: Vec<LaunchOption>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub dependencies: Option<Vec<String>>,
     pub total_size: u64,
     pub files: Vec<FileEntry>,
     pub signature: Option<SignatureEnvelope>,
@@ -74,7 +76,26 @@ pub struct FileEntry {
     pub size: u64,
     pub sha256: String,
     pub chunks: Vec<ChunkRef>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub delta_patches: Option<Vec<DeltaPatch>>,
     pub executable: bool,
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub preserve: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DeltaPatch {
+    pub from_sha256: String,
+    pub pack_id: String,
+    pub pack_offset: u64,
+    pub uncompressed_size: u64,
+    pub compressed_size: u64,
+    pub compressed_sha256: String,
+    #[serde(default)]
+    pub codec: ChunkCodec,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub encryption: Option<ChunkEncryption>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

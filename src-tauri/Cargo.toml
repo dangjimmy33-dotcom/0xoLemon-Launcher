@@ -71,6 +71,8 @@ lazy_static = "1.5"
 tauri-plugin-localhost = "2.3.2"
 tauri-plugin-fs = "2.5.1"
 tauri-plugin-deep-link = "2.4.9"
+qbsdiff = "1.4.4"
+oxidelta = "0.1.4"
 
 [features]
 default = ["custom-protocol"]

@@ -43,29 +43,48 @@ function parseFlatVersionTags(data: Record<string, string[]>): Record<string, Re
   if (!data) return parsed
   for (const [key, tags] of Object.entries(data)) {
     if (!Array.isArray(tags)) continue
-    // Key format: "{gameId}-{versionId}"
-    // Assuming versionId doesn't contain '-' or we split by the last dash?
-    // Actually, gameId can contain dashes (e.g. 007-first-light).
-    // Let's find the known gameIds? Or we can just require the key to be exactly gameId-versionId.
-    // To safely parse, if we assume version starts with 'v' or build id:
-    // A better approach is to store it as a nested map in Firestore if possible, but Firestore UI doesn't support nested maps easily.
-    let gameId = ''
-    let versionId = ''
+
     if (key.includes('::')) {
-      const parts = key.split('::')
-      gameId = parts[0]
-      versionId = parts.slice(1).join('::')
-    } else {
-      const lastDash = key.lastIndexOf('-')
-      if (lastDash > 0) {
-        gameId = key.substring(0, lastDash)
-        versionId = key.substring(lastDash + 1)
+      // Format mới: "007-first-light::1.1.0 (Build 24298527) - Uploaded 2026-07-29"
+      const sep = key.indexOf('::')
+      const gameId = key.substring(0, sep)
+      const versionId = key.substring(sep + 2)
+      if (gameId && versionId) {
+        if (!parsed[gameId]) parsed[gameId] = {}
+        parsed[gameId][versionId] = tags
       }
-    }
-    
-    if (gameId && versionId) {
-      if (!parsed[gameId]) parsed[gameId] = {}
-      parsed[gameId][versionId] = tags
+    } else {
+      // Format cũ: "007-first-light-1.1.0"
+      // gameId có thể chứa dấu '-' nên thử tất cả vị trí split
+      // Lưu tags cho MỌI cách split để lookup không bị miss
+      let found = false
+      // Ưu tiên: versionId bắt đầu bằng số (semver), hoặc 'v', hoặc 'V'
+      // Tìm từ trái sang phải, lấy split đầu tiên mà versionId hợp lệ
+      for (let i = 0; i < key.length; i++) {
+        if (key[i] === '-' && i > 0 && i < key.length - 1) {
+          const possibleGameId = key.substring(0, i)
+          const possibleVersionId = key.substring(i + 1)
+          // versionId hợp lệ: bắt đầu bằng số hoặc 'v'/'V'
+          const firstChar = possibleVersionId[0]
+          if (firstChar >= '0' && firstChar <= '9' || firstChar === 'v' || firstChar === 'V') {
+            if (!parsed[possibleGameId]) parsed[possibleGameId] = {}
+            parsed[possibleGameId][possibleVersionId] = tags
+            found = true
+          }
+        }
+      }
+      // Fallback: nếu không tìm được split hợp lệ, dùng lastIndexOf('-')
+      if (!found) {
+        const lastDash = key.lastIndexOf('-')
+        if (lastDash > 0) {
+          const gameId = key.substring(0, lastDash)
+          const versionId = key.substring(lastDash + 1)
+          if (gameId && versionId) {
+            if (!parsed[gameId]) parsed[gameId] = {}
+            parsed[gameId][versionId] = tags
+          }
+        }
+      }
     }
   }
   return parsed

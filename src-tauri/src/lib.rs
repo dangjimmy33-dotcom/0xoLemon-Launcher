@@ -29,6 +29,9 @@ pub mod defender_exclusion;
 pub mod debug_log;
 pub mod process_manager;
 pub mod achievement_watcher;
+pub mod save_paths;
+pub mod local_save_backup;
+
 use std::path::PathBuf;
 use std::sync::Arc;
 
@@ -555,6 +558,21 @@ async fn restore_missing_save_files(
 }
 
 #[tauri::command]
+fn get_local_save_backups(
+    game_id: String,
+) -> Result<Vec<local_save_backup::SaveBackupSnapshot>, String> {
+    local_save_backup::list_snapshots(&game_id)
+}
+
+#[tauri::command]
+fn restore_local_save_backup(
+    game_id: String,
+    snapshot_id: String,
+) -> Result<(), String> {
+    local_save_backup::restore_snapshot(&game_id, &snapshot_id)
+}
+
+#[tauri::command]
 fn plan_install_update(
     app: AppHandle,
     path: String,
@@ -992,7 +1010,10 @@ pub fn run() {
             global_is_google_drive_connected,
             backup_save_game_to_google_drive,
             restore_missing_save_files,
+            get_local_save_backups,
+            restore_local_save_backup,
             plan_install_update,
+
             plan_fresh_install,
             scan_install,
             read_job_journal,
@@ -1189,8 +1210,18 @@ pub fn run() {
                 let window_clone = window.clone();
                 window.on_window_event(move |event| match event {
                     tauri::WindowEvent::CloseRequested { api, .. } => {
-                        window_clone.hide().unwrap();
-                        api.prevent_close();
+                        if crate::local_save_backup::is_backup_in_progress() {
+                            // Backup running: notify frontend to show close-guard modal
+                            let _ = window_clone.emit(
+                                "launcher://close-requested-while-backup",
+                                serde_json::json!({}),
+                            );
+                            api.prevent_close();
+                        } else {
+                            // Normal behavior: hide to tray
+                            window_clone.hide().unwrap();
+                            api.prevent_close();
+                        }
                     }
                     _ => {}
                 });

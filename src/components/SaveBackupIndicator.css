@@ -1,0 +1,70 @@
+.save-backup-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #ccc;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: all 0.3s ease;
+  pointer-events: none;
+  position: relative;
+}
+
+.save-backup-indicator.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.save-backup-running {
+  color: #64b5f6;
+  background: rgba(100, 181, 246, 0.1);
+}
+
+.save-backup-success {
+  color: #81c784;
+  background: rgba(129, 199, 132, 0.1);
+}
+
+.save-backup-error {
+  color: #e57373;
+  background: rgba(229, 115, 115, 0.1);
+  cursor: help;
+}
+
+.save-backup-spinner {
+  animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.save-backup-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-8px);
+  background: rgba(0, 0, 0, 0.9);
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 100;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.save-backup-error:hover .save-backup-tooltip {
+  opacity: 1;
+}

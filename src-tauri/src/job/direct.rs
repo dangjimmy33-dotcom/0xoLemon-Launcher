@@ -206,11 +206,18 @@ impl DirectStagePlan {
             let Some(source) = local_sources.get(&chunk.hash) else {
                 continue;
             };
-            let mut input = File::open(&source.path)?;
-            input.seek(SeekFrom::Start(source.offset))?;
             let mut data = vec![0_u8; source.size as usize];
-            input.read_exact(&mut data)?;
-            verify_chunk_bytes(&chunk, &data)?;
+            let read_ok = File::open(&source.path)
+                .and_then(|mut input| {
+                    input.seek(SeekFrom::Start(source.offset))?;
+                    input.read_exact(&mut data)?;
+                    Ok(())
+                })
+                .is_ok();
+
+            if !read_ok || verify_chunk_bytes(&chunk, &data).is_err() {
+                continue;
+            }
             for path in self.write_decoded_chunk(&chunk, &data)? {
                 pending_paths.insert(path);
             }
@@ -538,17 +545,24 @@ impl DirectStagePlan {
     }
 
     fn persist_state(&self) -> Result<(), JobError> {
-        let (data, completed_count) = {
-            let state = self
-                .state
-                .lock()
-                .map_err(|_| JobError::Depot("direct stage state lock poisoned".to_string()))?;
-            let data = serde_json::to_vec_pretty(&*state)?;
-            (data, state.completed_hashes.len())
-        };
+        // Hold the lock for the entire duration of the state persistence
+        // to prevent multiple threads from racing on the same temp file
+        // and racing on fs::remove_file.
+        let state = self
+            .state
+            .lock()
+            .map_err(|_| JobError::Depot("direct stage state lock poisoned".to_string()))?;
+        
+        let data = serde_json::to_vec_pretty(&*state)?;
+        let completed_count = state.completed_hashes.len();
         
         dlog!("[PERSIST_STATE] Writing {} bytes ({} completed chunks) to {:?}", 
             data.len(), completed_count, self.state_path);
+        
+        // Ensure parent directory exists (just in case)
+        if let Some(parent) = self.state_path.parent() {
+            let _ = fs::create_dir_all(parent);
+        }
         
         let temporary = self.state_path.with_extension("json.tmp");
         {
@@ -571,7 +585,11 @@ impl DirectStagePlan {
         
         if self.state_path.exists() {
             dlog!("[PERSIST_STATE] Removing old state file");
-            fs::remove_file(&self.state_path)?;
+            if let Err(e) = fs::remove_file(&self.state_path) {
+                if e.kind() != std::io::ErrorKind::NotFound {
+                    return Err(JobError::Io(e));
+                }
+            }
         }
         
         dlog!("[PERSIST_STATE] Renaming temp file to final state");

@@ -20,6 +20,7 @@ import { GameChat } from './GameChat'
 import { ConfirmDialog } from './ConfirmDialog'
 import { useRealtimeConfig } from '../hooks/useRealtimeConfig'
 import { useFirestoreDetail } from '../hooks/useFirestoreDetail'
+import { SaveBackupIndicator } from './SaveBackupIndicator'
 
 function LazyGameCardImage({
   game,
@@ -313,7 +314,7 @@ function GameHoverCard({
 import type { DiscordAuthUser } from '../types'
 
 // StoreModeSwitch Component
-function StoreModeSwitch({ value, onChange }: { value: 'local' | 'hybrid' | 'steam'; onChange: (mode: 'local' | 'hybrid' | 'steam') => void }) {
+function StoreModeSwitch({ value, onChange }: { value: 'local' | 'steam'; onChange: (mode: 'local' | 'steam') => void }) {
   const { t } = useLocale()
 
   return (
@@ -325,14 +326,6 @@ function StoreModeSwitch({ value, onChange }: { value: 'local' | 'hybrid' | 'ste
       >
         <HardDrive size={14} />
         {t.library?.storeModeLocal || 'Local'}
-      </button>
-      <button
-        type="button"
-        className={`mode-option ${value === 'hybrid' ? 'active' : ''}`}
-        onClick={() => onChange('hybrid')}
-      >
-        <Sparkles size={14} />
-        {t.library?.storeModeHybrid || 'Hybrid'}
       </button>
       <button
         type="button"
@@ -472,9 +465,10 @@ export function StoreLibraryView({
   const { t } = useLocale()
   const [query, setQuery] = useState('')
   const [tutorialVisible, setTutorialVisible] = useState(false)
-  const [storeMode, setStoreMode] = useState<'local' | 'hybrid' | 'steam'>(() =>
-    (localStorage.getItem('libraryStoreMode') as 'local' | 'hybrid' | 'steam') || 'hybrid'
-  )
+  const [storeMode, setStoreMode] = useState<'local' | 'steam'>(() => {
+    const saved = localStorage.getItem('libraryStoreMode')
+    return (saved === 'local' || saved === 'steam') ? saved : 'local'
+  })
   const [libraryMode, setLibraryMode] = useState<'local' | 'steam'>(() =>
     (localStorage.getItem('libraryMode') as 'local' | 'steam') || 'local'
   )
@@ -1203,10 +1197,10 @@ export function StoreLibraryView({
   const livePlayers = realtimeConfig.livePlayerCount?.[selectedGame.id]
 
   // local: show all buttons (play/install), hide steam
-  // hybrid (store only): show all buttons (play/install) + add to steam
+  // local: show play/install buttons
   // steam: hide install/play buttons completely, show only "Add to Steam"
-  const showInstallButton = effectiveMode === 'local' || effectiveMode === 'hybrid'
-  const showSteamButton = effectiveMode === 'steam' || effectiveMode === 'hybrid'
+  const showInstallButton = effectiveMode === 'local'
+  const showSteamButton = effectiveMode === 'steam'
 
   return (
     <section className="game-detail-view">
@@ -1265,7 +1259,7 @@ export function StoreLibraryView({
             </button>
           )}
           {/* Steam Versions button — shown in steam OR hybrid mode */}
-          {(effectiveMode === 'steam' || effectiveMode === 'hybrid') && isInstalledOnSteam && showLuaGameTab && (
+          {(effectiveMode === 'steam') && isInstalledOnSteam && showLuaGameTab && (
             <button className="update-control" type="button" onClick={() => setActiveDetailTab('lua-game')}>
               <Download size={15} />
               Steam Versions
@@ -1388,13 +1382,16 @@ export function StoreLibraryView({
               </button>
             )}
 
+            {selectedGameId && (
+              <SaveBackupIndicator gameId={selectedGameId} />
+            )}
 
             {(showSteamButton && !isJobRunning && !isPlaying && selectedGameId) && (
               <SteamIntegrationButton gameId={selectedGameId} gameTitle={detail.title} storeMode={effectiveMode} />
             )}
 
             {/* Steam Versions button — shown in steam OR hybrid mode */}
-            {(effectiveMode === 'steam' || effectiveMode === 'hybrid') && isInstalledOnSteam && showLuaGameTab && (
+            {(effectiveMode === 'steam') && isInstalledOnSteam && showLuaGameTab && (
               <button className="update-control" type="button" onClick={() => setActiveDetailTab('lua-game')}>
                 <Download size={17} />
                 Steam Versions
@@ -1986,7 +1983,7 @@ export function OperationHero({
   canUpdate,
   installMode,
   selectedVersion,
-  storeMode = 'hybrid',
+  storeMode = 'local',
 }: {
   game: GameSummary
   detail: GameDetail
@@ -2004,7 +2001,7 @@ export function OperationHero({
   canUpdate: boolean
   installMode: boolean
   selectedVersion: string
-  storeMode?: 'local' | 'hybrid' | 'steam'
+  storeMode?: 'local' | 'steam'
 }) {
   const { t } = useLocale()
   const hero = assetUrlForId(game.heroAssetId, assets) || firstMediaUrl(detail, assets)
@@ -2077,7 +2074,7 @@ export function OperationHero({
   )
 }
 
-function SteamIntegrationButton({ gameId, gameTitle, storeMode }: { gameId: string, gameTitle: string, storeMode: 'local' | 'hybrid' | 'steam' }) {
+function SteamIntegrationButton({ gameId, gameTitle, storeMode }: { gameId: string, gameTitle: string, storeMode: 'local' | 'steam' }) {
   const [status, setStatus] = useState<boolean>(false)
   const [loading, setLoading] = useState(false)
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(false)
@@ -2245,7 +2242,7 @@ function SteamIntegrationButton({ gameId, gameTitle, storeMode }: { gameId: stri
   return (
     <>
       <div className="steam-integration-wrapper" style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '10px' }}>
-        {storeMode === 'hybrid' && <span style={{ fontSize: '14px', color: '#888', fontWeight: 500, marginRight: '4px' }}>{(t as any).common?.or || 'or'}</span>}
+
         {status ? (
           <>
             <button

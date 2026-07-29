@@ -70,7 +70,7 @@ export const enUS = {
     skipRestartConfirmSetting: 'Skip Restart Confirmation',
     skipRestartConfirmSettingDesc: 'Do not show the confirmation popup when clicking Restart Steam from library.',
     storeModeLocal: 'Local',
-    storeModeHybrid: 'Hybrid',
+
     storeModeSteam: 'Steam',
     sortAZ: 'A → Z',
     sortZA: 'Z → A',

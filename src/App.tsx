@@ -132,6 +132,7 @@ import { useFirestoreCatalog } from './hooks/useFirestoreCatalog'
 import { useGameStats } from './hooks/useGameStats'
 import { GlobalChatSync } from './components/GlobalChatSync'
 import { NoInternetView } from './components/NoInternetView'
+import { SaveCloseGuardModal } from './components/SaveCloseGuardModal'
 
 export default function App() {
   const { t } = useLocale()
@@ -3772,6 +3773,8 @@ export default function App() {
             onClose={defenderExclusion.handleClose}
             onAccept={defenderExclusion.handleAccept}
           />
+
+          <SaveCloseGuardModal />
         </div>
       )}
     </MotionConfig>

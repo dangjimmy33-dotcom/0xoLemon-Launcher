@@ -42,13 +42,44 @@ function normalizeSummary(raw: Record<string, unknown>): GameSummary {
     latestVersion: (raw.latestVersion as string) || '',
     availableVersions: Array.isArray(rawAvailableVersions) ? rawAvailableVersions.map(v => {
       if (!v) return v as any
-      let normalized = v
-      if (typeof v === 'string') {
-        normalized = { version: v, label: v, buildId: v, sizeBytes: 0, latest: false }
+      const entry = v as any
+      let normalized: any
+      if (typeof entry === 'string') {
+        // Trích buildId từ pattern "X.X.X (Build 24298527)" nếu có
+        const buildMatch = (entry as string).match(/\(Build ([^)]+)\)/)
+        const extractedBuildId = buildMatch ? buildMatch[1].trim() : entry
+        // Label sạch: bỏ phần "- Uploaded ..." nếu có
+        const cleanLabel = (entry as string).replace(/\s*-\s*Uploaded\s+\d{4}-\d{2}-\d{2}.*$/, '').trim()
+        normalized = { version: entry, label: cleanLabel, buildId: extractedBuildId, sizeBytes: 0, latest: false }
+      } else {
+        // Object từ catalog: extract buildId nếu chưa có hoặc giống version string
+        if (!entry.buildId || entry.buildId === entry.version) {
+          const buildMatch = (entry.version || '').match(/\(Build ([^)]+)\)/)
+          if (buildMatch) entry.buildId = buildMatch[1].trim()
+        }
+        // Clean label: bỏ "- Uploaded ..." suffix
+        if (entry.label && entry.label.includes('- Uploaded')) {
+          entry.label = entry.label.replace(/\s*-\s*Uploaded\s+\d{4}-\d{2}-\d{2}.*$/, '').trim()
+        }
+        normalized = entry
       }
+      // Lookup tags: thử full version string trước, sau đó thử semver prefix (phần trước space/ngoặc)
+      // Vd: "1.1.0 (Build 24298527) - Uploaded 2026-07-29" → thử "1.1.0" nếu full không match
+      function semverPrefix(s: string): string { return s ? s.split(/[ (]/)[0].trim() : s }
+      const ver = normalized.version || ''
+      const lbl = normalized.label || ''
+      const bid = normalized.buildId || ''
+      const foundTags =
+        versionTags[ver] ||
+        versionTags[lbl] ||
+        versionTags[bid] ||
+        versionTags[semverPrefix(ver)] ||
+        versionTags[semverPrefix(lbl)] ||
+        versionTags[semverPrefix(bid)] ||
+        normalized.tags
       return {
         ...normalized,
-        tags: versionTags[normalized.version] || versionTags[normalized.label] || versionTags[normalized.buildId] || normalized.tags
+        tags: foundTags
       } as any
     }).filter(Boolean) : [],
     // Prefer assets_override CDN links (fixed SteamGridDB URLs) over catalog values

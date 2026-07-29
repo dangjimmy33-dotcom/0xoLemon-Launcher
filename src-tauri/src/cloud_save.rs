@@ -310,6 +310,64 @@ pub fn backup_to_google_drive(app: &AppHandle, game_id: &str) -> Result<CloudSav
     Ok(build_status(app, game_id, state.games.get(game_id)))
 }
 
+/// Non-interactive GDrive backup — does NOT open a browser.
+/// Used for automatic post-game-exit backup from `local_save_backup`.
+pub fn backup_to_google_drive_silent(app: &AppHandle, game_id: &str) -> Result<(), String> {
+    let record = {
+        let _guard = state_lock()
+            .lock()
+            .map_err(|_| "cloud save state lock poisoned".to_string())?;
+        let mut state = load_state_unlocked(app)?;
+        if seed_metadata_defaults(app, game_id, &mut state) {
+            let _ = write_state_unlocked(app, &state);
+        }
+        state.games.get(game_id).cloned()
+    };
+    let record = record.ok_or_else(|| {
+        "cloud save metadata unavailable — cannot upload to Google Drive".to_string()
+    })?;
+    if !google_drive::connected(app) {
+        return Err("Google Drive is not connected".to_string());
+    }
+    google_drive::backup(app, game_id, &record)?;
+    let _guard = state_lock()
+        .lock()
+        .map_err(|_| "cloud save state lock poisoned".to_string())?;
+    let mut state = load_state_unlocked(app)?;
+    let rec = state.games.entry(game_id.to_string()).or_default();
+    rec.google_drive_last_backup_at = Some(Utc::now().to_rfc3339());
+    rec.google_drive_message = "Save files backed up to Google Drive (auto).".to_string();
+    let _ = write_state_unlocked(app, &state);
+    Ok(())
+}
+
+/// Seeds cloud-save `save_roots` from a concrete list of resolved paths.
+/// Ensures locally-installed games can upload to GDrive without manual setup.
+pub fn seed_save_roots_for_local_backup(
+    app: &AppHandle,
+    game_id: &str,
+    source_paths: &[std::path::PathBuf],
+) -> Result<(), String> {
+    if source_paths.is_empty() {
+        return Ok(());
+    }
+    let _guard = state_lock()
+        .lock()
+        .map_err(|_| "cloud save state lock poisoned".to_string())?;
+    let mut state = load_state_unlocked(app)?;
+    let record = state.games.entry(game_id.to_string()).or_default();
+    for path in source_paths {
+        let path_str = path.to_string_lossy().to_string();
+        if !record.save_roots.iter().any(|r| r.path == path_str) {
+            record.save_roots.push(CloudSaveRoot {
+                path: path_str,
+                label: "Auto-detected save folder".to_string(),
+            });
+        }
+    }
+    write_state_unlocked(app, &state)
+}
+
 pub fn restore_missing_from_google_drive(
     app: &AppHandle,
     game_id: &str,

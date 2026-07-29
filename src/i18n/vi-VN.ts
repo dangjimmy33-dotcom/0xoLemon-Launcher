@@ -70,7 +70,7 @@ export const viVN = {
     skipRestartConfirmSetting: 'Bỏ qua xác nhận khởi động lại',
     skipRestartConfirmSettingDesc: 'Không hiển thị hộp thoại xác nhận khi bạn ấn nút Khởi động lại Steam trong thư viện.',
     storeModeLocal: 'Nội bộ',
-    storeModeHybrid: 'Lai',
+
     storeModeSteam: 'Steam',
     sortAZ: 'A → Z',
     sortZA: 'Z → A',

@@ -488,7 +488,7 @@
 
 /* Store Mode Pill Switch */
 .store-mode-switch {
-  --options-count: 3;
+  --options-count: 2;
   display: inline-flex;
   align-items: center;
   background: rgba(0, 0, 0, 0.3);
@@ -498,10 +498,6 @@
   gap: 2px;
   backdrop-filter: blur(8px);
   position: relative;
-}
-
-.store-mode-switch.two-options {
-  --options-count: 2;
 }
 
 /* Sliding background indicator */
@@ -529,10 +525,6 @@
 
 .store-mode-switch:has(.mode-option:nth-child(2).active)::before {
   transform: translateX(calc(100% + 2px));
-}
-
-.store-mode-switch:has(.mode-option:nth-child(3).active)::before {
-  transform: translateX(calc(200% + 4px));
 }
 
 .store-mode-switch .mode-option {

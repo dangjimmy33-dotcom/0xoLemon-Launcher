@@ -114,6 +114,8 @@ fn build_pair(args: &[String]) -> Result<(), String> {
     let delete_source_after_pack = has_flag(&args, "--delete-source-after-pack");
     let upload_packs_incrementally = has_flag(&args, "--upload-packs-incrementally");
     let skip_file_patterns = take_all_args(&args, "--skip-file-pattern");
+    let preserve_patterns = take_all_args(&args, "--preserve-pattern");
+    let dependencies = take_all_args(&args, "--dependency");
 
     if delete_source_after_pack {
         eprintln!("[DEPOT] WARNING: --delete-source-after-pack is enabled. Source files will be deleted as they are packed!");
@@ -138,12 +140,14 @@ fn build_pair(args: &[String]) -> Result<(), String> {
                 root: PathBuf::from(old_input),
                 launch_executable: launch_executable.clone(),
                 launch_options: launch_options.clone(),
+                dependencies: if dependencies.is_empty() { None } else { Some(dependencies.clone()) },
             },
             BuildVersionInput {
                 version: new_version,
                 root: PathBuf::from(new_input),
                 launch_executable,
                 launch_options,
+                dependencies: if dependencies.is_empty() { None } else { Some(dependencies) },
             },
         ],
         publish: upload_repo.map(|repo_id| PublishTarget {
@@ -161,6 +165,7 @@ fn build_pair(args: &[String]) -> Result<(), String> {
         delete_source_after_pack,
         upload_packs_incrementally,
         skip_file_patterns,
+        preserve_patterns,
     })
     .map_err(|err| err.to_string())?;
 
@@ -186,6 +191,8 @@ fn build_version(args: &[String]) -> Result<(), String> {
     let delete_source_after_pack = has_flag(&args, "--delete-source-after-pack");
     let upload_packs_incrementally = has_flag(&args, "--upload-packs-incrementally");
     let skip_file_patterns = take_all_args(&args, "--skip-file-pattern");
+    let preserve_patterns = take_all_args(&args, "--preserve-pattern");
+    let dependencies = take_all_args(&args, "--dependency");
 
     if delete_source_after_pack {
         eprintln!("[DEPOT] WARNING: --delete-source-after-pack is enabled. Source files will be deleted as they are packed!");
@@ -209,6 +216,7 @@ fn build_version(args: &[String]) -> Result<(), String> {
             root: PathBuf::from(input),
             launch_executable,
             launch_options,
+            dependencies: if dependencies.is_empty() { None } else { Some(dependencies) },
         }],
         publish: upload_repo.map(|repo_id| PublishTarget {
             repo_id,
@@ -225,6 +233,7 @@ fn build_version(args: &[String]) -> Result<(), String> {
         delete_source_after_pack,
         upload_packs_incrementally,
         skip_file_patterns,
+        preserve_patterns,
     })
     .map_err(|err| err.to_string())?;
 
