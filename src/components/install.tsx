@@ -175,25 +175,40 @@ export function InstallOptionsDialog({
   // Check if we're waiting for disk space result
   const diskCheckPending = Boolean(installRoot) && diskCheck === null
 
-  // versionInfos might be undefined or might contain legacy strings.
-  // We must normalize it to an array of objects.
-  const safeVersionInfos = (versionInfos || []).map(v => 
-    typeof v === 'string' 
-      ? { version: v, label: v, buildId: v, sizeBytes: downloadSize, latest: false, tags: undefined } 
-      : v
-  )
+  // versionInfos might be undefined or might contain legacy strings (e.g. from activeDetail).
+  // We must normalize it to an array of objects, extracting buildId and cleaning labels.
+  const normalizeVersion = (v: any, fallbackLatest: boolean) => {
+    let obj: any
+    if (typeof v === 'string') {
+      const buildMatch = v.match(/\(Build ([^)]+)\)/)
+      const extractedBuildId = buildMatch ? buildMatch[1].trim() : ''
+      let cleanLabel = v.replace(/\s*-\s*Uploaded\s+\d{4}-\d{2}-\d{2}.*$/, '').trim()
+      cleanLabel = cleanLabel.replace(/\s*\(Build [^)]+\)\s*/i, '').trim()
+      obj = { version: v, label: cleanLabel, buildId: extractedBuildId, sizeBytes: downloadSize, latest: fallbackLatest, tags: undefined }
+    } else {
+      obj = { ...v, sizeBytes: v.sizeBytes || downloadSize }
+      if (!obj.buildId || obj.buildId === obj.version) {
+        const match = (obj.version || '').match(/\(Build ([^)]+)\)/)
+        obj.buildId = match ? match[1].trim() : ''
+      }
+      if (!obj.label || typeof obj.label !== 'string') {
+        obj.label = obj.version || ''
+      }
+      let cleaned = obj.label.replace(/\s*-\s*Uploaded\s+\d{4}-\d{2}-\d{2}.*$/, '').trim()
+      cleaned = cleaned.replace(/\s*\(Build [^)]+\)\s*/i, '').trim()
+      obj.label = cleaned
+    }
+    return obj
+  }
+
+  const safeVersionInfos = (versionInfos || []).map((v) => normalizeVersion(v, false))
 
   const infos =
     safeVersionInfos.length > 0
       ? safeVersionInfos
-      : (availableVersions || []).map((version) => ({
-        version,
-        label: version,
-        buildId: version,
-        sizeBytes: downloadSize,
-        latest: version === (availableVersions && availableVersions.length > 0 ? availableVersions[availableVersions.length - 1] : ''),
-        tags: undefined,
-      }))
+      : (availableVersions || []).map((version, _i, arr) => 
+          normalizeVersion(version, version === arr[arr.length - 1])
+        )
   const selectedInfo = infos.find((info) => info.version === selectedVersion) ?? infos[0]
 
   const isVersionChange = mode === 'version'
@@ -227,7 +242,11 @@ export function InstallOptionsDialog({
             >
               <span>
                 <strong>{selectedVersionLabel}</strong>
-                <small>{selectedBuildId ? `Build ${selectedBuildId}` : selectedVersion}</small>
+                {selectedBuildId ? (
+                  <small>Build {selectedBuildId}</small>
+                ) : selectedVersionLabel !== selectedVersion ? (
+                  <small>{selectedVersion}</small>
+                ) : null}
               </span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <VersionTags tags={selectedInfo?.tags} />
@@ -252,7 +271,11 @@ export function InstallOptionsDialog({
                     <CheckCircle2 size={17} />
                     <span>
                       <strong>{info.label || info.version}</strong>
-                      <small>{info.buildId ? `Build ${info.buildId}` : info.version}</small>
+                      {info.buildId ? (
+                        <small>Build {info.buildId}</small>
+                      ) : info.label && info.label !== info.version ? (
+                        <small>{info.version}</small>
+                      ) : null}
                     </span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <VersionTags tags={info.tags} />

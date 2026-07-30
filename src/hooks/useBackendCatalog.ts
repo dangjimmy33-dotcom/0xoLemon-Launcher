@@ -68,18 +68,22 @@ function normalizeSummary(raw: Record<string, unknown>): GameSummary {
       let normalized: any
       if (typeof entry === 'string') {
         const buildMatch = (entry as string).match(/\(Build ([^)]+)\)/)
-        const extractedBuildId = buildMatch ? buildMatch[1].trim() : entry
-        const cleanLabel = (entry as string).replace(/\s*-\s*Uploaded\s+\d{4}-\d{2}-\d{2}.*$/, '').trim()
+        const extractedBuildId = buildMatch ? buildMatch[1].trim() : ''
+        let cleanLabel = (entry as string).replace(/\s*-\s*Uploaded\s+\d{4}-\d{2}-\d{2}.*$/, '').trim()
+        cleanLabel = cleanLabel.replace(/\s*\(Build [^)]+\)\s*/i, '').trim()
         normalized = { version: entry, label: cleanLabel, buildId: extractedBuildId, sizeBytes: 0, latest: false }
       } else {
         // Object: extract buildId từ version string nếu chưa có
         if (!entry.buildId || entry.buildId === entry.version) {
           const buildMatch = (entry.version || '').match(/\(Build ([^)]+)\)/)
           if (buildMatch) entry.buildId = buildMatch[1].trim()
+          else entry.buildId = ''
         }
-        // Clean label: bỏ "- Uploaded ..." suffix
-        if (entry.label && entry.label.includes('- Uploaded')) {
-          entry.label = entry.label.replace(/\s*-\s*Uploaded\s+\d{4}-\d{2}-\d{2}.*$/, '').trim()
+        // Clean label: bỏ "- Uploaded ..." và "(Build ...)" suffix
+        if (entry.label && typeof entry.label === 'string') {
+          let cleaned = entry.label.replace(/\s*-\s*Uploaded\s+\d{4}-\d{2}-\d{2}.*$/, '').trim()
+          cleaned = cleaned.replace(/\s*\(Build [^)]+\)\s*/i, '').trim()
+          entry.label = cleaned
         }
         normalized = entry
       }

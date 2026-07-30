@@ -85,7 +85,8 @@ export function useBackendVersionTags(): number {
 
         // Store in global variable (same as useRealtimeAssets)
         if (typeof window !== 'undefined') {
-          window.globalVersionTags = parsed
+          if (!window.globalVersionTags) window.globalVersionTags = {}
+          Object.assign(window.globalVersionTags, parsed)
         }
 
         // Trigger re-render (same as useRealtimeAssets)

@@ -923,8 +923,27 @@ export default function App() {
       mergedGamesMap.set(game.id, game)
     })
 
-    // Add Backend games (0xolemon1) - will overwrite if same ID
+    // Add Backend games (0xolemon1) - overwrite if same ID, but preserve version tags from Firestore
     backendGames.forEach(game => {
+      const firestoreGame = mergedGamesMap.get(game.id)
+      if (firestoreGame && firestoreGame.availableVersions?.length > 0) {
+        // Merge tags from Firestore into backend game's versions
+        const firestoreVersionMap = new Map<string, string[]>()
+        firestoreGame.availableVersions.forEach((v: any) => {
+          if (v && v.tags && Array.isArray(v.tags) && v.tags.length > 0) {
+            firestoreVersionMap.set(v.version || v.label || '', v.tags)
+          }
+        })
+        if (firestoreVersionMap.size > 0) {
+          const mergedVersions = (game.availableVersions || []).map((v: any) => {
+            if (!v || (v.tags && v.tags.length > 0)) return v
+            const tags = firestoreVersionMap.get(v.version) || firestoreVersionMap.get(v.label) || firestoreVersionMap.get(v.buildId)
+            return tags ? { ...v, tags } : v
+          })
+          mergedGamesMap.set(game.id, { ...game, availableVersions: mergedVersions })
+          return
+        }
+      }
       mergedGamesMap.set(game.id, game)
     })
 
@@ -1189,8 +1208,8 @@ export default function App() {
         }
 
         const latest =
-          game.availableVersions.find((version) => version.latest)?.version ||
-          (game.availableVersions.length === 1 ? game.availableVersions[0].version : '') ||
+          game.availableVersions.find((version: any) => version.latest)?.version ||
+          (game.availableVersions.length === 1 ? (game.availableVersions[0] as any).version : '') ||
           game.latestVersion
 
         // If the local state is 'installed' (unknown version string), and the game only has 1 version, assume it's up-to-date
@@ -1885,10 +1904,100 @@ export default function App() {
   const selectedCurrentVersion = selectedInstalled ? selectedInstallState?.currentVersion ?? 'installed' : 'not installed'
   const selectedVerifyStatus = selectedGame && verifyStatus?.gameId === selectedGame.id ? verifyStatus : null
   const availableVersions = selectedGame ? versionOptions(snapshot, selectedGame, isDefaultGame) : []
+  const mergedVersionInfos = useMemo(() => {
+    const tagMap = new Map<string, string[]>()
+    const winTags = (typeof window !== 'undefined' && (window as any).globalVersionTags) || {}
+    if (selectedGame?.id && winTags[selectedGame.id]) {
+      Object.entries(winTags[selectedGame.id]).forEach(([ver, tags]) => {
+        tagMap.set(ver, tags as string[])
+        
+        // Helper to get clean version
+        const getCleanInline = (verStr: string) => {
+          if (!verStr) return ''
+          let c = verStr.replace(/\s*-\s*Uploaded.*$/, '').trim()
+          return c.replace(/\s*\(Build [^)]+\)\s*/i, '').trim()
+        }
+        tagMap.set(getCleanInline(ver), tags as string[])
+      })
+    }
+
+    if (selectedGame?.availableVersions) {
+      selectedGame.availableVersions.forEach((v: any) => {
+        if (v && v.tags) {
+          if (v.version) tagMap.set(v.version, v.tags)
+          if (v.label) tagMap.set(v.label, v.tags)
+          if (v.buildId) tagMap.set(v.buildId, v.tags)
+        }
+      })
+    }
+
+    // Helper to get clean version
+    const getClean = (verStr: string) => {
+      if (!verStr) return ''
+      let c = verStr.replace(/\s*-\s*Uploaded.*$/, '').trim()
+      return c.replace(/\s*\(Build [^)]+\)\s*/i, '').trim()
+    }
+
+    const detailVersions = activeDetail?.versions || []
+    const hfVersions: any[] = snapshot?.availableVersions || []
+    
+    // If the catalog explicitly lists versions, ONLY show those versions
+    if (selectedGame?.availableVersions && selectedGame.availableVersions.length > 0) {
+      return selectedGame.availableVersions.map((catalogVer: any) => {
+        const catStr = typeof catalogVer === 'string' ? catalogVer : (catalogVer.version || '')
+        const catClean = getClean(catStr)
+        
+        // Find matching rich string in detailVersions (usually provides sizeBytes)
+        const richMatch = detailVersions.find((dv: any) => {
+          const dvStr = typeof dv === 'string' ? dv : (dv.version || '')
+          return getClean(dvStr) === catClean
+        })
+
+        // Find matching string in snapshot versions (provides original buildId string)
+        const hfMatch = hfVersions.find((hv: any) => {
+          const hvStr = typeof hv === 'string' ? hv : (hv.version || '')
+          return getClean(hvStr) === catClean
+        })
+
+        let baseVer = catalogVer
+        if (hfMatch) {
+          baseVer = typeof catalogVer === 'object' 
+            ? { ...catalogVer, version: typeof hfMatch === 'string' ? hfMatch : hfMatch.version }
+            : hfMatch
+        }
+        if (richMatch) {
+          baseVer = typeof baseVer === 'object' ? { ...baseVer, ...richMatch } : richMatch
+        }
+
+        const baseStr = typeof baseVer === 'string' ? baseVer : (baseVer.version || '')
+        const tags = tagMap.get(baseStr) || tagMap.get(getClean(baseStr)) || tagMap.get(baseVer.buildId || '') || tagMap.get(baseVer.label || '')
+        
+        if (typeof baseVer === 'string') {
+          return tags ? { version: baseVer, tags } : baseVer
+        }
+        return tags ? { ...baseVer, tags } : baseVer
+      })
+    }
+
+    // Fallback: if catalog has no explicitly listed versions, show everything from depot
+    const merged = [...detailVersions]
+
+    return merged.map((v: any) => {
+      const v_any = v as any
+      const strVer = typeof v === 'string' ? v : (v_any.version || '')
+      const cleanVer = getClean(strVer)
+      const tags = tagMap.get(strVer) || tagMap.get(v_any.label) || tagMap.get(v_any.buildId) || tagMap.get(cleanVer)
+      
+      if (typeof v === 'string') {
+        return tags ? { version: v, tags } : v
+      }
+      return tags ? { ...v, tags } : v
+    })
+  }, [isDefaultGame, selectedGame?.availableVersions, activeDetail, snapshot, firestoreAssetVersion, selectedGame?.id])
   const latestCatalogVersion =
-    selectedGame?.availableVersions.find((version) => version.latest)?.version ||
+    selectedGame?.availableVersions.find((version: any) => version.latest)?.version ||
     activeDetail?.versions.find((version) => version.latest)?.version ||
-    (selectedGame?.availableVersions.length === 1 ? selectedGame.availableVersions[0].version : '') ||
+    (selectedGame?.availableVersions.length === 1 ? (selectedGame.availableVersions[0] as any).version : '') ||
     (activeDetail?.versions.length === 1 ? activeDetail.versions[0].version : '') ||
     selectedGame?.latestVersion ||
     availableVersions[availableVersions.length - 1] ||
@@ -1904,8 +2013,8 @@ export default function App() {
   // allows the same version picker to perform upgrades, reinstalls and downgrades.
   const targetVersion = requestedTargetVersion
   const selectedVersionInfo =
-    selectedGame?.availableVersions.find((version) => version.version === targetVersion) ??
-    activeDetail?.versions.find((version) => version.version === targetVersion)
+    selectedGame?.availableVersions.find((version: any) => (version.version || version) === targetVersion) ??
+    activeDetail?.versions.find((version: any) => (version.version || version) === targetVersion)
   const installMode = !selectedInstalled
   const isInstalledUnknownWithSingleVersion =
     selectedCurrentVersion === 'installed' && availableVersions.length <= 1
@@ -3509,7 +3618,7 @@ export default function App() {
                   currentVersion={selectedCurrentVersion}
                   selectedVersion={targetVersion}
                   availableVersions={availableVersions}
-                  versionInfos={isDefaultGame ? [] : (selectedGame.availableVersions.length > 0 ? selectedGame.availableVersions : activeDetail.versions)}
+                  versionInfos={mergedVersionInfos}
                   downloadSize={effectiveDownloadSize}
                   installRoot={installMode ? installRoot : selectedInstallPath}
                   downloadingRoot={downloadPathForInstallRoot(installMode ? installRoot : selectedInstallPath, gameInstall)}

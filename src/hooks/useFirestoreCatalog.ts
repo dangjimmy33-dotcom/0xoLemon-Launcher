@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { doc, onSnapshot } from 'firebase/firestore'
 import { contentDb as db } from '../firebase'
 import type { GameCatalog, GameSummary, GameInstallMetadata, CloudSaveMetadata } from '../types'
-import { globalAssetsOverride, globalVersionTags } from './useRealtimeAssets'
+import { globalAssetsOverride } from './useRealtimeAssets'
 
 const DEFAULT_CLOUD_SAVE: CloudSaveMetadata = {
   enabled: false,
@@ -29,9 +29,16 @@ function normalizeSummary(raw: Record<string, unknown>): GameSummary {
   const title = (raw.title as string) || gameId
   // Merge asset URLs from assets_override (SteamGridDB fixed links) 
   const assetOverride = globalAssetsOverride[gameId] ?? {}
-  const versionTags = globalVersionTags[gameId] ?? {}
+
   
   const rawAvailableVersions = (raw.availableVersions as GameSummary['availableVersions']) || []
+  const rawLatestVersion = (raw.latestVersion as string) || ''
+  // Clean latestVersion: remove "- Uploaded YYYY-MM-DD" suffix that uploader may have appended
+  const cleanedLatestVersion = rawLatestVersion.replace(/\s*-\s*Uploaded\s+\d{4}-\d{2}-\d{2}.*$/, '').trim()
+  // Read version tags from window.globalVersionTags (same reliable pattern as useBackendCatalog.ts)
+  // This avoids ES module live binding issues in Vite production bundles.
+  const allVersionTags = (typeof window !== 'undefined' && window.globalVersionTags) || {}
+  const versionTags = allVersionTags[gameId] ?? {}
   
   return {
     id: gameId,
@@ -39,7 +46,7 @@ function normalizeSummary(raw: Record<string, unknown>): GameSummary {
     subtitle: (raw.subtitle as string) || '',
     developer: (raw.developer as string) || '',
     publisher: (raw.publisher as string) || '',
-    latestVersion: (raw.latestVersion as string) || '',
+    latestVersion: cleanedLatestVersion,
     availableVersions: Array.isArray(rawAvailableVersions) ? rawAvailableVersions.map(v => {
       if (!v) return v as any
       const entry = v as any
@@ -47,21 +54,26 @@ function normalizeSummary(raw: Record<string, unknown>): GameSummary {
       if (typeof entry === 'string') {
         // Trích buildId từ pattern "X.X.X (Build 24298527)" nếu có
         const buildMatch = (entry as string).match(/\(Build ([^)]+)\)/)
-        const extractedBuildId = buildMatch ? buildMatch[1].trim() : entry
-        // Label sạch: bỏ phần "- Uploaded ..." nếu có
-        const cleanLabel = (entry as string).replace(/\s*-\s*Uploaded\s+\d{4}-\d{2}-\d{2}.*$/, '').trim()
+        const extractedBuildId = buildMatch ? buildMatch[1].trim() : ''
+        // Label sạch: bỏ phần "- Uploaded ..." và phần "(Build ...)"
+        let cleanLabel = (entry as string).replace(/\s*-\s*Uploaded\s+\d{4}-\d{2}-\d{2}.*$/, '').trim()
+        cleanLabel = cleanLabel.replace(/\s*\(Build [^)]+\)\s*/i, '').trim()
         normalized = { version: entry, label: cleanLabel, buildId: extractedBuildId, sizeBytes: 0, latest: false }
       } else {
-        // Object từ catalog: extract buildId nếu chưa có hoặc giống version string
-        if (!entry.buildId || entry.buildId === entry.version) {
-          const buildMatch = (entry.version || '').match(/\(Build ([^)]+)\)/)
-          if (buildMatch) entry.buildId = buildMatch[1].trim()
+        // Object từ catalog: extract buildId nếu chưa có
+        const obj = { ...entry }
+        if (!obj.buildId || obj.buildId === obj.version) {
+          const match = (obj.version || '').match(/\(Build ([^)]+)\)/)
+          if (match) obj.buildId = match[1].trim()
+          else obj.buildId = ''
         }
-        // Clean label: bỏ "- Uploaded ..." suffix
-        if (entry.label && entry.label.includes('- Uploaded')) {
-          entry.label = entry.label.replace(/\s*-\s*Uploaded\s+\d{4}-\d{2}-\d{2}.*$/, '').trim()
+        // Clean label: bỏ "- Uploaded ..." và "(Build ...)"
+        if (obj.label && typeof obj.label === 'string') {
+          let cleaned = obj.label.replace(/\s*-\s*Uploaded\s+\d{4}-\d{2}-\d{2}.*$/, '').trim()
+          cleaned = cleaned.replace(/\s*\(Build [^)]+\)\s*/i, '').trim()
+          obj.label = cleaned
         }
-        normalized = entry
+        normalized = obj
       }
       // Lookup tags: thử full version string trước, sau đó thử semver prefix (phần trước space/ngoặc)
       // Vd: "1.1.0 (Build 24298527) - Uploaded 2026-07-29" → thử "1.1.0" nếu full không match

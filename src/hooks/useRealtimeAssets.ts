@@ -133,7 +133,11 @@ export function useRealtimeAssets() {
         if (!mounted) return
         if (snap.exists()) {
           globalVersionTags = parseFlatVersionTags(snap.data() as Record<string, string[]>)
-          setAssetVersion((v) => v + 1) // Trigger re-render of catalog
+          if (typeof window !== 'undefined') {
+            if (!window.globalVersionTags) window.globalVersionTags = {}
+            Object.assign(window.globalVersionTags, globalVersionTags)
+          }
+          setAssetVersion((v) => v + 1)
         }
       },
       (error) => {

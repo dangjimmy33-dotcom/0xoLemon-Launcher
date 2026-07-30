@@ -578,8 +578,8 @@ def run_publish_script(payload: Dict[str, Any], env: Dict[str, str]) -> int:
         dep_list = [str(d).strip() for d in dependencies if str(d).strip()]
     elif isinstance(dependencies, str) and dependencies.strip():
         dep_list = [d.strip() for d in dependencies.split(",") if d.strip()]
-    for dep in dep_list:
-        args += ["-Dependency", dep]
+    if dep_list:
+        args += ["-Dependency", ",".join(dep_list)]
     if bool_value(payload.get("keepLocalPacks", False)):
         args += ["-KeepLocalPacks"]
     if not bool_value(payload.get("encryptPacks", True)):
