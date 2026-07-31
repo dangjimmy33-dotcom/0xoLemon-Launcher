@@ -16,6 +16,14 @@
     "offline": {
       "label": "Offline",
       "tone": "offline"
+    },
+    "ubisoft": {
+      "label": "Ubisoft Connect",
+      "tone": "ubisoft"
+    },
+    "ubisoft game": {
+      "label": "Ubisoft Connect",
+      "tone": "ubisoft game"
     }
   },
   "games": {
@@ -32,6 +40,7 @@
     "solo-leveling-arise-overdrive": ["coming soon"],
     "persona-5-royal": ["coming soon"],
     "persona-3-reload": ["coming soon"],
-    "pragmata": ["coming soon"]
+    "pragmata": ["coming soon"],
+    "assassins-creed-black-flag-resynced": ["ubisoft", "offline"]
   }
 }

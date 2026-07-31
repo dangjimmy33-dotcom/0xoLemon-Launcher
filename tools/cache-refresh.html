@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🔄 Cache Refresh — 0xoLemon Backend</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0f14;
+      --surface: #161a22;
+      --surface2: #1e2330;
+      --border: #2a3040;
+      --accent: #4f8ef7;
+      --accent-glow: rgba(79,142,247,0.18);
+      --success: #22c55e;
+      --success-glow: rgba(34,197,94,0.15);
+      --error: #f87171;
+      --error-glow: rgba(248,113,113,0.15);
+      --warn: #f59e0b;
+      --text: #e2e8f0;
+      --text-muted: #64748b;
+      --text-dim: #94a3b8;
+      --radius: 12px;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 640px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* ── Header ── */
+    .header {
+      text-align: center;
+    }
+    .header .icon {
+      font-size: 40px;
+      display: block;
+      margin-bottom: 10px;
+      filter: drop-shadow(0 0 18px var(--accent));
+    }
+    .header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      background: linear-gradient(135deg, #e2e8f0 0%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .header p {
+      margin-top: 6px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .card-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    /* ── Config row ── */
+    .config-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .field label {
+      font-size: 12px;
+      color: var(--text-dim);
+      font-weight: 500;
+    }
+    .field input {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'Inter', monospace;
+      font-size: 13px;
+      padding: 9px 12px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .field input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    .field input:read-only {
+      opacity: 0.7;
+      cursor: default;
+    }
+
+    /* ── Buttons ── */
+    .btn-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .btn {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 11px 16px;
+      border-radius: 9px;
+      border: none;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s;
+      overflow: hidden;
+    }
+    .btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.15s;
+      background: rgba(255,255,255,0.06);
+    }
+    .btn:hover::after { opacity: 1; }
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      color: #fff;
+      box-shadow: 0 2px 12px rgba(59,130,246,0.35);
+    }
+    .btn-primary:hover:not(:disabled) {
+      box-shadow: 0 4px 20px rgba(59,130,246,0.5);
+    }
+
+    .btn-warn {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      color: #fff;
+      box-shadow: 0 2px 12px rgba(245,158,11,0.3);
+    }
+    .btn-warn:hover:not(:disabled) {
+      box-shadow: 0 4px 20px rgba(245,158,11,0.5);
+    }
+
+    .btn-ghost {
+      background: var(--surface2);
+      color: var(--text-dim);
+      border: 1px solid var(--border);
+    }
+
+    .btn-full { grid-column: 1 / -1; }
+
+    /* Spinner */
+    .spinner {
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+    .btn.loading .spinner { display: block; }
+    .btn.loading .btn-icon { display: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Status ── */
+    .status-area {
+      min-height: 54px;
+      border-radius: 9px;
+      padding: 13px 16px;
+      font-size: 13px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      border: 1px solid transparent;
+      transition: all 0.25s;
+      background: var(--surface2);
+    }
+    .status-icon { flex-shrink: 0; font-size: 16px; margin-top: 1px; }
+    .status-text { line-height: 1.55; color: var(--text-dim); }
+    .status-text b { color: var(--text); }
+
+    .status-area.success {
+      background: var(--success-glow);
+      border-color: rgba(34,197,94,0.3);
+    }
+    .status-area.success .status-text { color: #86efac; }
+    .status-area.success .status-text b { color: #bbf7d0; }
+
+    .status-area.error {
+      background: var(--error-glow);
+      border-color: rgba(248,113,113,0.3);
+    }
+    .status-area.error .status-text { color: #fca5a5; }
+    .status-area.error .status-text b { color: #fecaca; }
+
+    .status-area.loading {
+      background: rgba(79,142,247,0.08);
+      border-color: rgba(79,142,247,0.2);
+    }
+    .status-area.loading .status-text { color: #93c5fd; }
+
+    /* ── Log ── */
+    .log-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 12px 14px;
+      max-height: 200px;
+      overflow-y: auto;
+      font-family: 'Cascadia Code', 'Fira Code', monospace;
+      font-size: 11.5px;
+      line-height: 1.7;
+      color: var(--text-muted);
+    }
+    .log-box:empty::before {
+      content: 'Nhật ký sẽ hiện ở đây...';
+      color: #334155;
+      font-style: italic;
+    }
+    .log-line { animation: fadein 0.2s ease; }
+    .log-ok  { color: var(--success); }
+    .log-err { color: var(--error); }
+    .log-info { color: #60a5fa; }
+    .log-dim { color: #475569; }
+    @keyframes fadein { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+    .log-box::-webkit-scrollbar { width: 4px; }
+    .log-box::-webkit-scrollbar-track { background: transparent; }
+    .log-box::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    /* ── Divider ── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 2px 0;
+    }
+
+    /* ── Health chips ── */
+    .health-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .chip {
+      font-size: 11.5px;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 100px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .chip.ok  { background: var(--success-glow); border-color: rgba(34,197,94,0.3); color: #86efac; }
+    .chip.err { background: var(--error-glow);   border-color: rgba(248,113,113,0.3); color: #fca5a5; }
+    .chip .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <span class="icon">🔄</span>
+    <h1>Render Cache Refresh Tool</h1>
+    <p>0xoLemon Launcher Backend · Clear &amp; tái tải dữ liệu từ Firestore</p>
+  </div>
+
+  <!-- Config card -->
+  <div class="card">
+    <span class="card-label">⚙️ Cấu hình</span>
+    <div class="config-row">
+      <div class="field">
+        <label>Backend URL</label>
+        <input id="backendUrl" value="https://zeroxolemon-launcher.onrender.com" />
+      </div>
+      <div class="field">
+        <label>Tenant ID</label>
+        <input id="tenantId" value="0xolemon1" />
+      </div>
+    </div>
+
+    <!-- Status display -->
+    <div class="status-area" id="statusBox">
+      <span class="status-icon">💤</span>
+      <span class="status-text">Chưa làm gì. Bấm nút bên dưới để refresh.</span>
+    </div>
+
+    <!-- Health chips -->
+    <div class="health-chips" id="healthChips"></div>
+
+    <hr class="divider" />
+
+    <!-- Action buttons -->
+    <div class="btn-row">
+      <button class="btn btn-primary" id="btnHealth" onclick="checkHealth()">
+        <span class="btn-icon">🩺</span>
+        <div class="spinner"></div>
+        Kiểm tra kết nối
+      </button>
+      <button class="btn btn-warn" id="btnClear" onclick="clearCache()">
+        <span class="btn-icon">🗑️</span>
+        <div class="spinner"></div>
+        Clear toàn bộ cache
+      </button>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="clearSingle('catalog')">📋 Catalog</button>
+      <button class="btn btn-ghost" onclick="clearSingle('assets')">🖼️ Assets</button>
+      <button class="btn btn-ghost" onclick="clearSingle('tags')">🏷️ Tags</button>
+      <button class="btn btn-ghost" onclick="clearSingle('game-tags')">🎮 Game Tags</button>
+    </div>
+    <button class="btn btn-primary btn-full" id="btnRefreshAll" onclick="refreshAll()">
+      <span class="btn-icon">⚡</span>
+      <div class="spinner"></div>
+      Clear cache + Tải lại tất cả (Recommended)
+    </button>
+  </div>
+
+  <!-- Log card -->
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <span class="card-label">📜 Nhật ký</span>
+      <button class="btn btn-ghost" style="padding:4px 12px;font-size:11px" onclick="clearLog()">Xóa log</button>
+    </div>
+    <div class="log-box" id="logBox"></div>
+  </div>
+
+</div>
+
+<script>
+  const CACHE_KEYS = ['catalog', 'assets', 'tags', 'game-tags', 'game-stats', 'steam-appids'];
+
+  function getUrl() { return document.getElementById('backendUrl').value.replace(/\/$/, ''); }
+  function getTenant() { return document.getElementById('tenantId').value.trim(); }
+
+  // ── Logging ──
+  function log(msg, type = '') {
+    const box = document.getElementById('logBox');
+    const line = document.createElement('div');
+    line.className = `log-line ${type ? 'log-' + type : ''}`;
+    const time = new Date().toLocaleTimeString('vi-VN', { hour12: false });
+    line.textContent = `[${time}] ${msg}`;
+    box.appendChild(line);
+    box.scrollTop = box.scrollHeight;
+  }
+  function clearLog() { document.getElementById('logBox').innerHTML = ''; }
+
+  // ── Status box ──
+  function setStatus(icon, html, type = '') {
+    const box = document.getElementById('statusBox');
+    box.className = 'status-area' + (type ? ' ' + type : '');
+    box.innerHTML = `<span class="status-icon">${icon}</span><span class="status-text">${html}</span>`;
+  }
+
+  // ── Health chips ──
+  function renderChips(data) {
+    const chips = document.getElementById('healthChips');
+    chips.innerHTML = '';
+    if (!data) return;
+
+    const addChip = (label, ok) => {
+      const c = document.createElement('div');
+      c.className = `chip ${ok ? 'ok' : 'err'}`;
+      c.innerHTML = `<span class="dot"></span>${label}`;
+      chips.appendChild(c);
+    };
+
+    addChip(`Server: ${data.status || '?'}`, data.status === 'ok');
+    addChip(`Cache keys: ${data.cache_keys ?? '?'}`, true);
+    if (data.tenants) {
+      for (const [id, t] of Object.entries(data.tenants)) {
+        addChip(`${t.name} (${id})`, t.initialized);
+      }
+    }
+    if (data.uptime != null) {
+      const mins = Math.floor(data.uptime / 60);
+      addChip(`Uptime: ${mins}m`, true);
+    }
+  }
+
+  // ── setLoading ──
+  function setLoading(btnId, loading) {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    btn.classList.toggle('loading', loading);
+    btn.disabled = loading;
+  }
+
+  // ── Check health ──
+  async function checkHealth() {
+    setLoading('btnHealth', true);
+    setStatus('🔍', 'Đang kiểm tra kết nối...', 'loading');
+    log('Checking health endpoint...', 'info');
+    try {
+      const r = await fetch(`${getUrl()}/health`);
+      const data = await r.json();
+      renderChips(data);
+      setStatus('✅', `<b>Backend đang chạy tốt!</b><br>Uptime: ${Math.floor((data.uptime||0)/60)}m · ${data.cache_keys ?? 0} cache key đang giữ`, 'success');
+      log(`OK — ${data.cache_keys} cache keys, uptime ${Math.floor((data.uptime||0)/60)}m`, 'ok');
+    } catch (e) {
+      setStatus('❌', `<b>Không kết nối được!</b><br>${e.message}`, 'error');
+      log(`ERROR — ${e.message}`, 'err');
+    }
+    setLoading('btnHealth', false);
+  }
+
+  // ── Clear all cache ──
+  async function clearCache() {
+    setLoading('btnClear', true);
+    const tenant = getTenant();
+    setStatus('🗑️', `Đang xóa toàn bộ cache của tenant <b>${tenant}</b>...`, 'loading');
+    log(`Clearing all cache for tenant: ${tenant}`, 'info');
+    try {
+      const r = await fetch(`${getUrl()}/api/${tenant}/cache/clear`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+      const data = await r.json();
+      setStatus('✅', `<b>Cache đã xóa!</b><br>${data.message}`, 'success');
+      log(`Cleared — ${data.message}`, 'ok');
+    } catch (e) {
+      setStatus('❌', `<b>Lỗi khi xóa cache!</b><br>${e.message}`, 'error');
+      log(`ERROR — ${e.message}`, 'err');
+    }
+    setLoading('btnClear', false);
+  }
+
+  // ── Clear single key ──
+  async function clearSingle(key) {
+    const tenant = getTenant();
+    log(`Clearing cache key: ${key} for ${tenant}...`, 'info');
+    try {
+      const r = await fetch(`${getUrl()}/api/${tenant}/cache/clear`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key })
+      });
+      const data = await r.json();
+      log(`OK [${key}] — ${data.message}`, 'ok');
+    } catch (e) {
+      log(`ERROR [${key}] — ${e.message}`, 'err');
+    }
+  }
+
+  // ── Warm up (fetch all endpoints to repopulate cache) ──
+  async function warmUp(tenant) {
+    const url = getUrl();
+    const endpoints = [
+      { path: `/api/${tenant}/catalog`, label: 'catalog' },
+      { path: `/api/${tenant}/assets`,  label: 'assets' },
+      { path: `/api/${tenant}/tags`,    label: 'tags' },
+      { path: `/api/${tenant}/game-tags`, label: 'game-tags' },
+      { path: `/api/${tenant}/game-stats`, label: 'game-stats' },
+      { path: `/api/${tenant}/steam-appids`, label: 'steam-appids' },
+    ];
+
+    let ok = 0, fail = 0;
+    for (const ep of endpoints) {
+      try {
+        await fetch(`${url}${ep.path}`);
+        log(`  ✓ Warmed up: ${ep.label}`, 'ok');
+        ok++;
+      } catch (e) {
+        log(`  ✗ Failed warm-up: ${ep.label} — ${e.message}`, 'err');
+        fail++;
+      }
+    }
+    return { ok, fail };
+  }
+
+  // ── Refresh All (clear + warm up) ──
+  async function refreshAll() {
+    setLoading('btnRefreshAll', true);
+    const tenant = getTenant();
+    setStatus('⚡', `Đang clear cache + tải lại dữ liệu mới từ Firestore...`, 'loading');
+    log('─── BEGIN REFRESH ALL ───', 'dim');
+
+    try {
+      // Step 1: Clear
+      log(`[1/2] Clearing all cache for ${tenant}...`, 'info');
+      const clearRes = await fetch(`${getUrl()}/api/${tenant}/cache/clear`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+      const clearData = await clearRes.json();
+      log(`  ✓ ${clearData.message}`, 'ok');
+
+      // Step 2: Warm up
+      log('[2/2] Warming up all endpoints (refetch từ Firestore)...', 'info');
+      const { ok, fail } = await warmUp(tenant);
+
+      if (fail === 0) {
+        setStatus('🎉', `<b>Xong! Cache đã refresh thành công.</b><br>Tải lại ${ok} endpoints · Launcher sẽ tự nhận dữ liệu mới ngay.`, 'success');
+        log(`─── DONE: ${ok} ok, ${fail} failed ───`, 'ok');
+      } else {
+        setStatus('⚠️', `<b>Hoàn thành nhưng có lỗi.</b><br>${ok} thành công · ${fail} thất bại — kiểm tra log bên dưới.`, 'error');
+        log(`─── DONE WITH ERRORS: ${ok} ok, ${fail} failed ───`, 'err');
+      }
+    } catch (e) {
+      setStatus('❌', `<b>Lỗi nghiêm trọng!</b><br>${e.message}`, 'error');
+      log(`FATAL ERROR — ${e.message}`, 'err');
+    }
+    setLoading('btnRefreshAll', false);
+  }
+
+  // Auto-check health on load
+  window.addEventListener('load', checkHealth);
+</script>
+</body>
+</html>

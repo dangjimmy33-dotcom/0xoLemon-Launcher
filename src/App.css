@@ -4716,6 +4716,25 @@ button:disabled {
   text-align: center;
 }
 
+.game-card-ubisoft-sash {
+  position: absolute;
+  top: 12px;
+  left: -32px;
+  background-color: #e0112b;
+  color: #fff;
+  font-size: 9.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 4px 36px;
+  transform: rotate(-45deg);
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  pointer-events: none;
+  text-align: center;
+  white-space: nowrap;
+}
+
 .game-card-new-sash {
   position: absolute;
   top: 12px;
@@ -4815,6 +4834,12 @@ button:disabled {
   background: rgba(255, 179, 64, 0.15);
   color: #ffb340;
   border: 1px solid rgba(255, 179, 64, 0.3);
+}
+
+.game-detail-tag.tone-ubisoft {
+  background: rgba(224, 17, 43, 0.15);
+  color: #ff4060;
+  border: 1px solid rgba(224, 17, 43, 0.35);
 }
 
 /* Ă¢â€ â‚¬Ă¢â€ â‚¬ Global launcher settings Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬Ă¢â€ â‚¬ */

@@ -928,6 +928,8 @@ export function StoreLibraryView({
             <div className="game-card-new-sash">NEW!</div>
           ) : tags.some(t => t.id === 'demo bypass' || t.tone === 'demo') ? (
             <div className="game-card-demo-sash">DEMO</div>
+          ) : tags.some(t => t.tone === 'ubisoft' || t.tone === 'ubisoft game' || t.id === 'ubisoft' || t.id === 'ubisoft game') ? (
+            <div className="game-card-ubisoft-sash">Ubisoft</div>
           ) : null}
           {/* Wishlist btn inside media (grid mode) */}
           {viewLayout !== 'list' && (

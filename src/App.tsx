@@ -164,7 +164,7 @@ export default function App() {
   // Firestore hooks (fallback, realtime)
   useRealtimeGameTags()
   const firestoreAssetVersion = useRealtimeAssets()
-  const firestoreCatalog = useFirestoreCatalog(firestoreAssetVersion)
+  const firestoreCatalog = useFirestoreCatalog(firestoreAssetVersion + backendVersionTagVersion)
   useSteamAppIds()
   useGameStats()
 
