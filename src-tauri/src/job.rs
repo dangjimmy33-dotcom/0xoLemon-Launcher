@@ -731,12 +731,28 @@ pub fn snapshot_for_fresh_install(
     target_version: Option<String>,
     game_id: Option<String>,
 ) -> Result<LauncherSnapshot, JobError> {
+    snapshot_for_fresh_install_cancellable(app, target_version, game_id, None)
+}
+
+pub fn snapshot_for_fresh_install_cancellable(
+    app: &AppHandle,
+    target_version: Option<String>,
+    game_id: Option<String>,
+    canceled: Option<&AtomicBool>,
+) -> Result<LauncherSnapshot, JobError> {
+    ensure_plan_not_canceled(canceled)?;
     let source = DepotSource::for_game(game_id.as_deref().unwrap_or(DEFAULT_GAME_ID));
     let catalog = source.load_catalog()?;
+    ensure_plan_not_canceled(canceled)?;
     let selected_version = resolve_target_version(&catalog, target_version)?;
     let manifest = source.load_manifest(&catalog, &selected_version)?;
+    ensure_plan_not_canceled(canceled)?;
     let default_install = source.default_common_game_dir();
-    let cache_size = downloading_chunk_cache_size(&default_install, &source).unwrap_or(0);
+    let cache_size = match downloading_chunk_cache_size_cancellable(&default_install, &source, canceled) {
+        Ok(size) => size,
+        Err(JobError::Canceled) => return Err(JobError::Canceled),
+        Err(_) => 0,
+    };
     let cache_path = downloading_chunk_cache_path(&default_install, &source)
         .display()
         .to_string();
@@ -746,6 +762,7 @@ pub fn snapshot_for_fresh_install(
         Some(&downloading_chunk_cache_path(&default_install, &source)),
         &manifest,
     );
+    ensure_plan_not_canceled(canceled)?;
     let temporary_space = planned_temporary_space(&manifest.files, update_size);
     Ok(LauncherSnapshot {
         current_version: "not installed".to_string(),
@@ -779,14 +796,27 @@ pub fn snapshot_for_install(
     target_version: Option<String>,
     game_id: Option<String>,
 ) -> Result<LauncherSnapshot, JobError> {
+    snapshot_for_install_cancellable(app, install_path, target_version, game_id, None)
+}
+
+pub fn snapshot_for_install_cancellable(
+    app: &AppHandle,
+    install_path: &Path,
+    target_version: Option<String>,
+    game_id: Option<String>,
+    canceled: Option<&AtomicBool>,
+) -> Result<LauncherSnapshot, JobError> {
+    ensure_plan_not_canceled(canceled)?;
     let source = DepotSource::for_game(game_id.as_deref().unwrap_or(DEFAULT_GAME_ID));
     let catalog = source.load_catalog()?;
+    ensure_plan_not_canceled(canceled)?;
     let selected_version = resolve_target_version(&catalog, target_version)?;
     let latest_version = catalog
         .effective_latest_version()
         .unwrap_or("unknown")
         .to_string();
     let installed_base = load_installed_update_base(install_path, &source, &catalog)?;
+    ensure_plan_not_canceled(canceled)?;
     let current_version = installed_base
         .as_ref()
         .map(|base| base.version.clone())
@@ -799,19 +829,27 @@ pub fn snapshot_for_install(
         }
         Some(base) => {
             let to = source.load_manifest(&catalog, &selected_version)?;
+            ensure_plan_not_canceled(canceled)?;
             let changed_targets = changed_target_files(&base.manifest, &to);
+            let update_size = estimate_missing_download_bytes(
+                Some(&staged_chunks_root),
+                &base.manifest,
+                &to,
+            );
             (
                 changed_files_between(&base.manifest, &to),
-                estimate_missing_download_bytes(Some(&staged_chunks_root), &base.manifest, &to),
+                update_size,
                 to.total_size,
-                planned_temporary_space(
-                    &changed_targets,
-                    estimate_missing_download_bytes(Some(&staged_chunks_root), &base.manifest, &to),
-                ),
+                planned_temporary_space(&changed_targets, update_size),
             )
         }
     };
-    let cache_size = downloading_chunk_cache_size(install_path, &source).unwrap_or(0);
+    ensure_plan_not_canceled(canceled)?;
+    let cache_size = match downloading_chunk_cache_size_cancellable(install_path, &source, canceled) {
+        Ok(size) => size,
+        Err(JobError::Canceled) => return Err(JobError::Canceled),
+        Err(_) => 0,
+    };
     let cache_path = downloading_chunk_cache_path(install_path, &source)
         .display()
         .to_string();
@@ -838,6 +876,13 @@ pub fn snapshot_for_install(
         changed_files,
         last_job: read_latest_journal(app)?.filter(is_active_real_journal),
     })
+}
+
+fn ensure_plan_not_canceled(canceled: Option<&AtomicBool>) -> Result<(), JobError> {
+    if canceled.is_some_and(|flag| flag.load(Ordering::Acquire)) {
+        return Err(JobError::Canceled);
+    }
+    Ok(())
 }
 
 pub fn spawn_update_job(
@@ -1922,6 +1967,37 @@ pub fn kill_game(game_id: &str) -> Result<(), JobError> {
             return Err(JobError::Depot(format!("taskkill failed: {}", status)));
         }
         running_games().lock().unwrap().remove(game_id);
+    }
+    Ok(())
+}
+
+#[tauri::command]
+pub fn set_process_priority(game_id: String, high: bool) -> Result<(), String> {
+    let pid = {
+        let running = running_games().lock().unwrap();
+        running.get(&game_id).copied()
+    };
+    if let Some(pid) = pid {
+    #[cfg(target_os = "windows")]
+    {
+        // 128 = HIGH_PRIORITY_CLASS, 32 = NORMAL_PRIORITY_CLASS
+        let priority_class = if high { 128 } else { 32 };
+        let mut cmd = hidden_command("wmic");
+        cmd.args([
+            "process",
+            "where",
+            &format!("ProcessId={pid}"),
+            "CALL",
+            "setpriority",
+            &priority_class.to_string(),
+        ]);
+        let status = cmd
+            .status()
+            .map_err(|e| format!("Failed to wmic setpriority: {}", e))?;
+        if !status.success() {
+            eprintln!("wmic setpriority failed with status: {}", status);
+        }
+    }
     }
     Ok(())
 }

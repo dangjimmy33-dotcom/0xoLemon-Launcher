@@ -6,7 +6,7 @@
 #include "core/entry.h"
 #include "core/Orchestrator.h"
 #include "hooks/capture/RuntimeCapture.h"
-#include "hooks/client/PackagePatch.h"
+#include "hooks/client/PackageInject.h"
 #include "hooks/client/IpcMethodLoader.h"
 #include "hooks/client/IpcDispatch.h"
 #include "hooks/client/IpcHooks.h"
@@ -260,7 +260,7 @@ namespace CoreInit {
                        pcResult.ok ? 1 : 0);
 
             HookStatus::SetStartupPhase("installing_critical_hooks");
-            PackagePatch::Install();
+            PackageInject::Install();
             SteamCapture::Install();
 
             // ── Steamui leg ──────────────────────────────────────────
@@ -312,8 +312,6 @@ namespace CoreInit {
             watchDirs.push_back(std::string(LuaDir));
             for (const auto& dir : watchDirs)
                 LuaLoader::ParseDirectory(dir);
-
-            SteamCapture::TryStartupPackageInjection("lua-loaded");
 
             DirWatch::Start(watchDirs);
 

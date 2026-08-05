@@ -312,7 +312,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\NetPacket_FamilySharing.cpp" />
     <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\NetPacket_OnlineFix.cpp" />
     <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\NetPacket_SteamStub.cpp" />
-    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\PackagePatch.cpp" />
+    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\PackageInject.cpp" />
     <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\RichPresence.cpp" />
     <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\LicenseHooks.cpp" />
     <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\StringFind.cpp" />

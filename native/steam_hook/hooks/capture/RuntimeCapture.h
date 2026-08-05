@@ -73,17 +73,4 @@ namespace SteamCapture {
 
     // Get localized game name via GetAppDataFromAppInfo (cached).
     std::string GetGameNameByAppID(AppId_t appId);
-
-    // Mark package 0 as changed and trigger CClientAppManager_ProcessPendingLicenseUpdates
-    // Requires pCUser to have been captured (happens on first natural call to
-    // MarkLicenseAsChanged, which Steam makes during license load on startup).
-    void NotifyLicenseChanged();
-
-    // Returns true when all captures needed by NotifyLicenseChanged are ready.
-    // Used by the startup injection thread to know when it's safe to call NotifyLicenseChanged.
-    bool IsReadyForNotify();
-
-    // Safe late retry for Package 0 capture misses. It only mutates package 0
-    // when Steam already exposed the same pointers the startup path uses.
-    void TryStartupPackageInjection(const char* reason);
 }

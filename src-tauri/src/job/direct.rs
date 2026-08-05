@@ -918,6 +918,8 @@ mod tests {
             sha256: sha256_bytes(data),
             chunks: vec![chunk.clone()],
             executable: false,
+            delta_patches: None,
+            preserve: false,
         };
         let stage =
             DirectStagePlan::prepare(&downloading, &staging, std::slice::from_ref(&file), "v2")

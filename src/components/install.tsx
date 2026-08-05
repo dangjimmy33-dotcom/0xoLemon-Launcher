@@ -5,6 +5,8 @@ import { enUS as t } from '../i18n/en-US'
 import type { GameDetail, GameVersionInfo } from '../types'
 import { formatBytes } from '../lib/format'
 
+type VersionInfoInput = GameVersionInfo | string
+
 export function InstallBar({
   installPath,
   installTarget,
@@ -109,7 +111,7 @@ export function InstallOptionsDialog({
   currentVersion: string
   selectedVersion: string
   availableVersions: string[]
-  versionInfos: GameVersionInfo[]
+  versionInfos: VersionInfoInput[]
   downloadSize: number
   installRoot: string
   downloadingRoot: string
@@ -128,77 +130,96 @@ export function InstallOptionsDialog({
     required_space: number
     reason: string | null
   } | null>(null)
+  const [diskCheckPending, setDiskCheckPending] = useState(false)
 
   // Check disk space when dialog opens, game changes, or install path changes
   useEffect(() => {
     if (!installRoot) {
-      setDiskCheck(null)
-      return
+      const resetTimer = window.setTimeout(() => {
+        setDiskCheck(null)
+        setDiskCheckPending(false)
+      }, 0)
+      return () => window.clearTimeout(resetTimer)
     }
-
-    // Reset immediately to prevent showing stale data from previous drive
-    setDiskCheck(null)
 
     const bufferBytes = 2 * 1024 * 1024 * 1024  // 2GB
     const requiredBytes = downloadSize + bufferBytes
 
     let cancelled = false
+    const pendingTimer = window.setTimeout(() => {
+      if (!cancelled) setDiskCheckPending(true)
+    }, 0)
 
-    invoke<{
-      has_space: boolean
-      free_space: number
-      required_space: number
-      reason: string | null
-    }>('check_install_disk_space', {
-      installPath: installRoot,  // camelCase for Tauri
-      requiredSizeBytes: requiredBytes
-    })
-      .then((result) => {
-        if (!cancelled) setDiskCheck(result)
+    const timer = window.setTimeout(() => {
+      void invoke<{
+        has_space: boolean
+        free_space: number
+        required_space: number
+        reason: string | null
+      }>('check_install_disk_space', {
+        installPath: installRoot,
+        requiredSizeBytes: requiredBytes,
       })
-      .catch((err) => {
-        if (!cancelled) {
-          setDiskCheck({
-            has_space: false,
-            free_space: 0,
-            required_space: requiredBytes,
-            reason: 'Failed to check disk space: ' + err
-          })
-        }
-      })
+        .then((result) => {
+          if (!cancelled) setDiskCheck(result)
+        })
+        .catch((err) => {
+          if (!cancelled) {
+            setDiskCheck({
+              has_space: false,
+              free_space: 0,
+              required_space: requiredBytes,
+              reason: 'Failed to check disk space: ' + err,
+            })
+          }
+        })
+        .finally(() => {
+          if (!cancelled) setDiskCheckPending(false)
+        })
+    }, 250)
 
     return () => {
       cancelled = true
+      window.clearTimeout(pendingTimer)
+      window.clearTimeout(timer)
     }
   }, [detail.gameId, installRoot, downloadSize])
 
-  // Check if we're waiting for disk space result
-  const diskCheckPending = Boolean(installRoot) && diskCheck === null
-
   // versionInfos might be undefined or might contain legacy strings (e.g. from activeDetail).
   // We must normalize it to an array of objects, extracting buildId and cleaning labels.
-  const normalizeVersion = (v: any, fallbackLatest: boolean) => {
-    let obj: any
+  const normalizeVersion = (v: VersionInfoInput, fallbackLatest: boolean): GameVersionInfo => {
     if (typeof v === 'string') {
       const buildMatch = v.match(/\(Build ([^)]+)\)/)
       const extractedBuildId = buildMatch ? buildMatch[1].trim() : ''
       let cleanLabel = v.replace(/\s*-\s*Uploaded\s+\d{4}-\d{2}-\d{2}.*$/, '').trim()
       cleanLabel = cleanLabel.replace(/\s*\(Build [^)]+\)\s*/i, '').trim()
-      obj = { version: v, label: cleanLabel, buildId: extractedBuildId, sizeBytes: downloadSize, latest: fallbackLatest, tags: undefined }
-    } else {
-      obj = { ...v, sizeBytes: v.sizeBytes || downloadSize }
-      if (!obj.buildId || obj.buildId === obj.version) {
-        const match = (obj.version || '').match(/\(Build ([^)]+)\)/)
-        obj.buildId = match ? match[1].trim() : ''
+      return {
+        version: v,
+        label: cleanLabel,
+        buildId: extractedBuildId,
+        sizeBytes: downloadSize,
+        latest: fallbackLatest,
       }
-      if (!obj.label || typeof obj.label !== 'string') {
-        obj.label = obj.version || ''
-      }
-      let cleaned = obj.label.replace(/\s*-\s*Uploaded\s+\d{4}-\d{2}-\d{2}.*$/, '').trim()
-      cleaned = cleaned.replace(/\s*\(Build [^)]+\)\s*/i, '').trim()
-      obj.label = cleaned
     }
-    return obj
+
+    const version = typeof v.version === 'string' ? v.version : ''
+    const label = typeof v.label === 'string' ? v.label : version
+    const inferredBuild = version.match(/\(Build ([^)]+)\)/)?.[1]?.trim() ?? ''
+    const buildId =
+      typeof v.buildId === 'string' && v.buildId && v.buildId !== version
+        ? v.buildId
+        : inferredBuild
+    let cleanedLabel = label.replace(/\s*-\s*Uploaded\s+\d{4}-\d{2}-\d{2}.*$/, '').trim()
+    cleanedLabel = cleanedLabel.replace(/\s*\(Build [^)]+\)\s*/i, '').trim()
+
+    return {
+      version,
+      label: cleanedLabel,
+      buildId,
+      sizeBytes: Number.isFinite(v.sizeBytes) && v.sizeBytes > 0 ? v.sizeBytes : downloadSize,
+      latest: typeof v.latest === 'boolean' ? v.latest : fallbackLatest,
+      tags: Array.isArray(v.tags) ? v.tags.filter((tag): tag is string => typeof tag === 'string') : undefined,
+    }
   }
 
   const safeVersionInfos = (versionInfos || []).map((v) => normalizeVersion(v, false))
@@ -412,8 +433,7 @@ export function DriveLibraryPickerModal({
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    setLoading(true)
-    invoke<DriveInfo[]>('list_system_drives')
+    void invoke<DriveInfo[]>('list_system_drives')
       .then((drives) => {
         const map: Record<string, DriveInfo> = {}
         // Normalize: backend returns "E:", but libraries might be "E:\" or "E:"

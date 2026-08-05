@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { fetchWithRetry } from '../lib/fetchWithRetry'
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://zeroxolemon-launcher.onrender.com'
 const TENANT_ID = import.meta.env.VITE_TENANT_ID || '0xolemon1'
@@ -68,9 +69,16 @@ export function useBackendVersionTags(): number {
 
     async function fetchTags() {
       try {
-        const response = await fetch(`${BACKEND_URL}/api/${TENANT_ID}/tags`, {
-          headers: { 'Accept': 'application/json' }
-        })
+        const response = await fetchWithRetry(
+          `${BACKEND_URL}/api/${TENANT_ID}/tags`,
+          { headers: { 'Accept': 'application/json' } },
+          {
+            maxRetries: 4,
+            baseDelay: 2000,
+            onRetry: (attempt, err) =>
+              console.warn(`[useBackendVersionTags] Retry ${attempt}: ${err.message}`),
+          },
+        )
 
         if (!response.ok) {
           throw new Error(`Backend error: ${response.status}`)

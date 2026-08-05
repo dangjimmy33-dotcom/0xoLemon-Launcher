@@ -148,6 +148,7 @@ export function CustomTitleBar({
   onToggleBigPicture,
   onToggleSidebar,
   isSidebarCollapsed,
+  onlineCount = 0,
 }: {
   closeBehavior?: CloseBehavior
   job: JobJournal | null
@@ -167,6 +168,8 @@ export function CustomTitleBar({
   onToggleBigPicture: () => void
   onToggleSidebar?: () => void
   isSidebarCollapsed?: boolean
+  /** Số người dùng đang online launcher */
+  onlineCount?: number
 }) {
   const win = isTauriRuntime() ? getCurrentWindow() : null
   const [now, setNow] = useState(() => new Date())
@@ -220,7 +223,7 @@ export function CustomTitleBar({
       className={`custom-titlebar premium-titlebar${statusPreferences.glassEffects ? ' use-glass' : ''}`}
     >
       {/* Toggle outside drag area for independent sizing */}
-      {onToggleSidebar && (
+      {onToggleSidebar && !isBlockedState && (
         <button
           className={`titlebar-sidebar-toggle${isSidebarCollapsed ? ' is-collapsed' : ''}`}
           onClick={onToggleSidebar}
@@ -245,10 +248,19 @@ export function CustomTitleBar({
         </button>
       )}
       <div className="titlebar-drag-area" data-tauri-drag-region>
-        <span className="titlebar-label">
-          <span className="titlebar-label-primary">0xoLemon</span>
-          <span className="titlebar-label-secondary">Launcher</span>
-        </span>
+        {!isBlockedState && (
+          <span
+            className="titlebar-label titlebar-label--clickable"
+            role="button"
+            tabIndex={0}
+            title="Click để tải lại launcher"
+            onClick={() => location.reload()}
+            onKeyDown={(e) => e.key === 'Enter' && location.reload()}
+          >
+            <span className="titlebar-label-primary">0xoLemon</span>
+            <span className="titlebar-label-secondary">Launcher</span>
+          </span>
+        )}
         {taskPercent !== null ? (
           <div className="titlebar-mini-progress" aria-label={`${taskPercent}% complete`}>
             <i style={{ width: `${Math.max(2, taskPercent)}%` }} />
@@ -279,6 +291,16 @@ export function CustomTitleBar({
           >
             <Download size={14} />
             {taskPercent !== null ? <small>{taskPercent}%</small> : null}
+          </span>
+        ) : null}
+        {/* Online users chip */}
+        {onlineCount > 0 ? (
+          <span
+            className="titlebar-online-chip"
+            title={`${onlineCount} người dùng đang online`}
+          >
+            <span className="titlebar-online-dot" />
+            {onlineCount}
           </span>
         ) : null}
         {statusPreferences.showClock ? (

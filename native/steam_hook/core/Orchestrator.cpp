@@ -13,7 +13,7 @@
 #include "hooks/capture/SteamCapture.h"
 #include "hooks/ui/SteamUI.h"
 #include "hooks/client/PacketRouter.h"
-#include "hooks/client/PackagePatch.h"
+#include "hooks/client/PackageInject.h"
 #include "hooks/client/LicenseHooks.h"
 #include "hooks/client/OnlineFixInject.h"
 #include "runtime/Diagnostics.h"
@@ -42,7 +42,7 @@ namespace LumaCore {
         SteamUI::CoreUnhook,
         PacketRouter::Uninstall,
         OnlineFixInject::Uninstall,
-        PackagePatch::Uninstall,
+        PackageInject::Uninstall,
         LicenseHooks::Uninstall,
     };
 

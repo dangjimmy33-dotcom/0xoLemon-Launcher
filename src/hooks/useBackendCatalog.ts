@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { GameCatalog, GameSummary, GameInstallMetadata, CloudSaveMetadata } from '../types'
+import { fetchWithRetry } from '../lib/fetchWithRetry'
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://zeroxolemon-launcher.onrender.com'
 // 0xolemon1 = overflow/secondary project (FIFA 23, future games not in 0xolemon)
@@ -131,9 +132,16 @@ export function useBackendCatalog(assetOverrideVersion?: number): GameCatalog | 
 
     async function fetchCatalog() {
       try {
-        const response = await fetch(`${BACKEND_URL}/api/${TENANT_ID}/catalog`, {
-          headers: { 'Accept': 'application/json' }
-        })
+        const response = await fetchWithRetry(
+          `${BACKEND_URL}/api/${TENANT_ID}/catalog`,
+          { headers: { 'Accept': 'application/json' } },
+          {
+            maxRetries: 4,
+            baseDelay: 2000,
+            onRetry: (attempt, err) =>
+              console.warn(`[useBackendCatalog] Retry ${attempt}: ${err.message}`),
+          },
+        )
 
         if (!response.ok) {
           throw new Error(`Backend error: ${response.status}`)

@@ -8,8 +8,25 @@ import { LocaleProvider } from './context/LocaleContext'
 
 const LEGACY_PWA_RELOAD_KEY = '0xolemon-legacy-pwa-cleared-v1'
 
+function isTauriRuntime() {
+  if (typeof window === 'undefined') return false
+
+  const tauriWindow = window as Window & {
+    __TAURI__?: unknown
+    __TAURI_INTERNALS__?: unknown
+  }
+
+  return Boolean(
+    tauriWindow.__TAURI__ ||
+    tauriWindow.__TAURI_INTERNALS__ ||
+    window.location.protocol === 'tauri:' ||
+    window.location.protocol === 'asset:' ||
+    window.location.hostname === 'tauri.localhost'
+  )
+}
+
 async function clearLegacyPwaStateInTauri() {
-  if (typeof window === 'undefined' || !window.__TAURI_INTERNALS__) return false
+  if (!isTauriRuntime()) return false
 
   let hadController = false
 

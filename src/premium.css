@@ -262,7 +262,7 @@
 .premium-shell .nav-item {
   min-height: 47px;
   border: 1px solid transparent;
-  border-radius: 9px;
+  border-radius: 6px;
   color: rgba(190, 202, 214, 0.73);
   position: relative;
   transition:
@@ -280,8 +280,8 @@
 
 .premium-shell .nav-item.active {
   color: #fff;
-  border-color: rgba(227, 181, 95, 0.12);
-  background: linear-gradient(90deg, rgba(227, 181, 95, 0.17), rgba(227, 181, 95, 0.045));
+  border-color: rgba(120, 168, 200, 0.2);
+  background: rgba(109, 151, 185, 0.15);
 }
 
 .premium-shell .nav-item.active::before {
@@ -291,16 +291,16 @@
   bottom: -1px;
   left: -1px;
   width: 3px;
-  background-color: var(--premium-gold);
-  border-top-left-radius: 9px;
-  border-bottom-left-radius: 9px;
+  background-color: #78a8c8;
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
 }
 
-/* Remove inset gold left-edge shadow when sidebar is collapsed */
+/* Collapsed navigation keeps the same muted blue active state. */
 .premium-shell.sidebar-collapsed-shell .nav-item.active {
   border-color: transparent;
-  background: rgba(227, 181, 95, 0.12) !important;
-  /* gradient must be overridden for centering to work cleanly */
+  background: rgba(109, 151, 185, 0.15) !important;
+  /* The normal left indicator is hidden in the compact icon-only rail. */
   background-image: none !important;
 }
 
@@ -2792,12 +2792,11 @@ html, body, #root {
 .nav-item {
   transition:
     background 180ms ease,
-    color 180ms ease,
-    transform 200ms var(--ease-out-back, cubic-bezier(.34, 1.85, .64, 1));
+    color 180ms ease;
 }
 
 .nav-item:hover {
-  transform: translateX(2px);
+  transform: none;
 }
 
 .nav-item.active {

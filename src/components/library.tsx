@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, cloneElement } from 'react'
+import { useEffect, useMemo, useRef, useState, cloneElement, memo } from 'react'
 import { doc, setDoc, increment } from 'firebase/firestore'
 import { db } from '../firebase'
 import { createPortal } from 'react-dom'
@@ -10,8 +10,8 @@ import { TutorialModal } from './TutorialModal'
 import { useLocale } from '../context/LocaleContext'
 import { useSteamAppIds } from '../hooks/useSteamAppIds'
 import { useLuaUpdateCheck } from '../hooks/useLuaUpdateCheck'
-import type { CloudSaveStatus, GameAchievement, GameCatalog, GameDetail, GameSummary, GameInstallState, GameVersionInfo, VerifyUiStatus } from '../types'
-import { assetUrlForId, firstMediaUrl, isCarouselMedia, mediaPriority, processDescriptionHtml, isTauriRuntime } from '../lib/gameMeta'
+import type { CloudSaveStatus, GameAchievement, GameCatalog, GameDetail, GameMedia, GameSummary, GameInstallState, GameVersionInfo, VerifyUiStatus } from '../types'
+import { assetUrlForId, firstMediaUrl, isCarouselMedia, mediaPriority, processDescriptionHtml, thumbnailUrlForMedia, isTauriRuntime } from '../lib/gameMeta'
 import { formatBytes } from '../lib/format'
 import { getGameTags, gameHasTag } from '../lib/gameTags'
 import { GameDetailsPanel, InstallSummaryPanel, OSTPlayer } from './panels'
@@ -22,7 +22,7 @@ import { useRealtimeConfig } from '../hooks/useRealtimeConfig'
 import { useFirestoreDetail } from '../hooks/useFirestoreDetail'
 import { SaveBackupIndicator } from './SaveBackupIndicator'
 
-function LazyGameCardImage({
+function LazyGameCardImageBase({
   game,
   assetId,
   url,
@@ -36,7 +36,8 @@ function LazyGameCardImage({
   onRequestAsset: (game: GameSummary, assetId: string | undefined, urgent?: boolean) => void
 }) {
   const ref = useRef<HTMLDivElement>(null)
-  const [imageLoaded, setImageLoaded] = useState(false)
+  const [loadedUrl, setLoadedUrl] = useState<string | undefined>()
+  const imageLoaded = loadedUrl === url
 
   useEffect(() => {
     if (url || !assetId) return
@@ -55,13 +56,6 @@ function LazyGameCardImage({
     return () => observer.disconnect()
   }, [assetId, game, onRequestAsset, url])
 
-  // Reset imageLoaded when URL changes
-  useEffect(() => {
-    if (url) {
-      setImageLoaded(false)
-    }
-  }, [url])
-
   if (url) {
     return (
       <div className={`store-card-image-wrapper ${!imageLoaded ? 'is-loading' : ''}`}>
@@ -71,7 +65,7 @@ function LazyGameCardImage({
           loading="lazy"
           decoding="async"
           className={imageLoaded ? 'loaded' : 'loading'}
-          onLoad={() => setImageLoaded(true)}
+          onLoad={() => setLoadedUrl(url)}
         />
       </div>
     )
@@ -83,6 +77,9 @@ function LazyGameCardImage({
     </div>
   )
 }
+
+// Memo-ize để tránh re-render khi parent component update nhưng image props không đổi
+const LazyGameCardImage = memo(LazyGameCardImageBase)
 
 function CatalogLoadingView({ viewMode }: { viewMode: 'store' | 'library' }) {
   const { t } = useLocale()
@@ -2409,9 +2406,52 @@ export function VersionStat({ label, value, highlight = false }: { label: string
   )
 }
 
+function MediaThumbnail({
+  item,
+  url,
+  eager,
+}: {
+  item: GameMedia
+  url: string
+  eager: boolean
+}) {
+  const ref = useRef<HTMLSpanElement>(null)
+  const [shouldLoad, setShouldLoad] = useState(
+    () => typeof IntersectionObserver === 'undefined',
+  )
+
+  useEffect(() => {
+    if (eager || shouldLoad) return
+
+    const element = ref.current
+    if (!element || typeof IntersectionObserver === 'undefined') {
+      const timer = window.setTimeout(() => setShouldLoad(true), 0)
+      return () => window.clearTimeout(timer)
+    }
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setShouldLoad(true)
+        observer.disconnect()
+      }
+    }, { rootMargin: '96px 0px', threshold: 0.01 })
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [eager, shouldLoad])
+
+  return (
+    <span ref={ref} className="media-thumb-preview">
+      {eager || shouldLoad ? <img src={url} alt={item.title} loading="lazy" decoding="async" /> : null}
+    </span>
+  )
+}
+
 export function MediaRail({ detail, assets }: { detail: GameDetail; assets: Record<string, string> }) {
   const { t } = useLocale()
-  const safeMedia = Array.isArray(detail.media) ? detail.media : []
+  const safeMedia = useMemo(
+    () => Array.isArray(detail.media) ? detail.media : [],
+    [detail.media],
+  )
 
   // Build a thumb map: video item id -> thumbnail URL
   // e.g. "movie-00" -> URL from item with id "movie-thumb-00"
@@ -2439,10 +2479,10 @@ export function MediaRail({ detail, assets }: { detail: GameDetail; assets: Reco
   }, [safeMedia, assets])
 
 
-  const media = safeMedia
+  const media = useMemo(() => safeMedia
     .filter((item) => isCarouselMedia(item) && assetUrlForId(item.assetId, assets))
     .sort((left, right) => mediaPriority(left) - mediaPriority(right))
-    .map((item) => ({ ...item, url: assetUrlForId(item.assetId, assets)! }))
+    .map((item) => ({ ...item, url: assetUrlForId(item.assetId, assets)! })), [assets, safeMedia])
   const [activeIndex, setActiveIndex] = useState(0)
 
   if (media.length === 0) {
@@ -2469,7 +2509,7 @@ export function MediaRail({ detail, assets }: { detail: GameDetail; assets: Reco
             <video src={active.url} controls muted preload="metadata" poster={videoThumbMap[active.id]} />
           ) : (
             <>
-              <img src={active.url} alt="" loading="lazy" />
+              <img src={active.url} alt="" decoding="async" />
               {active.role === 'video-preview' ? (
                 <span className="media-play-badge" aria-hidden="true">
                   <Play size={22} />
@@ -2491,7 +2531,9 @@ export function MediaRail({ detail, assets }: { detail: GameDetail; assets: Reco
         <div className="media-thumb-rail">
           {media.map((item, index) => {
             const isVideo = item.mimeType.startsWith('video/') || item.role === 'video' || item.role === 'video-preview'
-            const thumbUrl = isVideo ? (videoThumbMap[item.id] ?? null) : null
+            const thumbUrl = isVideo
+              ? assetUrlForId(item.thumbnailAssetId, assets) ?? videoThumbMap[item.id] ?? null
+              : thumbnailUrlForMedia(item, assets) ?? null
 
             return (
               <button
@@ -2503,31 +2545,19 @@ export function MediaRail({ detail, assets }: { detail: GameDetail; assets: Reco
                 {isVideo ? (
                   <span className="image-video-thumb">
                     {thumbUrl ? (
-                      <img src={thumbUrl} alt="" loading="lazy" />
+                      <MediaThumbnail item={item} url={thumbUrl} eager={index === safeActiveIndex} />
                     ) : (
                       <span className="video-thumb-placeholder"><Play size={24} /></span>
                     )}
                     <Play size={16} className="video-thumb-overlay" />
                   </span>
                 ) : (
-                  <img src={item.url} alt="" loading="lazy" />
+                  thumbUrl ? <MediaThumbnail item={item} url={thumbUrl} eager={index === safeActiveIndex} /> : null
                 )}
               </button>
             )
           })}
         </div>
-      </div>
-      <div className="media-rail legacy-hidden">
-        {media.map((item) => (
-          <article key={item.id}>
-            {item.mimeType.startsWith('video/') ? (
-              <video src={item.url} muted controls />
-            ) : (
-              <img src={item.url} alt="" loading="lazy" />
-            )}
-            <span>{item.title}</span>
-          </article>
-        ))}
       </div>
     </section>
   )
@@ -2646,6 +2676,7 @@ export function AchievementPreview({
                 src={assetUrlForId(achievement.iconAssetId, assets)}
                 alt=""
                 loading="lazy"
+                decoding="async"
                 style={{
                   filter: isUnlocked ? 'none' : 'grayscale(100%)',
                   boxShadow: isUnlocked ? '0 0 10px rgba(255, 215, 0, 0.5)' : 'none',
@@ -2686,6 +2717,7 @@ export function AchievementPreview({
                       src={assetUrlForId(achievement.iconAssetId, assets)}
                       alt=""
                       loading="lazy"
+                      decoding="async"
                       style={{
                         filter: isUnlocked ? 'none' : 'grayscale(100%)',
                         boxShadow: isUnlocked ? '0 0 10px rgba(255, 215, 0, 0.5)' : 'none',

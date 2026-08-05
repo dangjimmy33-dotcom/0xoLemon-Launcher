@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from 'react'
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { stat } from '@tauri-apps/plugin-fs'
@@ -22,7 +22,8 @@ export function LuaInstaller() {
   const [installedLuas, setInstalledLuas] = useState<string[]>([])
   const [luaSearch, setLuaSearch] = useState('')
   const [resolvedNames, setResolvedNames] = useState<Record<string, string>>({})
-  const [visibleCount, setVisibleCount] = useState(20)
+  const [visibleState, setVisibleState] = useState({ key: '', count: 20 })
+  const installedListRef = useRef<HTMLDivElement>(null)
 
   const filteredLuas = useMemo(() => {
     const q = luaSearch.trim().toLowerCase()
@@ -35,17 +36,23 @@ export function LuaInstaller() {
     })
   }, [installedLuas, luaSearch, resolvedNames])
 
-  // Reset visible count when search or list changes
-  useEffect(() => {
-    setVisibleCount(20)
-  }, [filteredLuas])
+  const visibleListKey = useMemo(
+    () => luaSearch + '|' + filteredLuas.join('|'),
+    [filteredLuas, luaSearch],
+  )
+  const visibleCount = visibleState.key === visibleListKey ? visibleState.count : 20
 
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     const target = e.currentTarget
     if (target.scrollHeight - target.scrollTop - target.clientHeight < 100) {
-      setVisibleCount(prev => Math.min(prev + 20, filteredLuas.length))
+      setVisibleState((current) => {
+        const currentCount = current.key === visibleListKey ? current.count : 20
+        const nextCount = Math.min(currentCount + 20, filteredLuas.length)
+        if (current.key === visibleListKey && current.count === nextCount) return current
+        return { key: visibleListKey, count: nextCount }
+      })
     }
-  }, [filteredLuas.length])
+  }, [filteredLuas.length, visibleListKey])
 
   const fetchInstalled = useCallback(async () => {
     try {
@@ -56,8 +63,15 @@ export function LuaInstaller() {
     }
   }, [])
 
+  const handleNameLoaded = useCallback((appid: string, name: string) => {
+    setResolvedNames((current) => current[appid] === name ? current : { ...current, [appid]: name })
+  }, [])
+
   useEffect(() => {
-    fetchInstalled()
+    const timer = window.setTimeout(() => {
+      void fetchInstalled()
+    }, 0)
+    return () => window.clearTimeout(timer)
   }, [fetchInstalled])
 
   // Listen for Tauri file drop events
@@ -366,6 +380,7 @@ export function LuaInstaller() {
 
         {/* List */}
         <div 
+          ref={installedListRef}
           style={{ maxHeight: '420px', overflowY: 'auto', padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: '6px' }}
           onScroll={handleScroll}
         >
@@ -379,9 +394,8 @@ export function LuaInstaller() {
                 key={appid} 
                 appid={appid} 
                 onRemoved={fetchInstalled}
-                onNameLoaded={(name: string) => {
-                  setResolvedNames(prev => prev[appid] === name ? prev : { ...prev, [appid]: name })
-                }}
+                onNameLoaded={handleNameLoaded}
+                scrollRoot={installedListRef}
               />
             ))
           )}

@@ -96,12 +96,12 @@
   overflow: hidden;
 }
 
-/* Gold ambient glow via pseudo-element — fades when sidebar collapses */
+/* Keep the shell neutral so navigation does not read as a marketing panel. */
 .launcher-shell::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 80% 0%, rgba(207, 159, 70, 0.08), transparent 34%);
+  background: none;
   pointer-events: none;
   z-index: 0;
   opacity: 0; /* Temporarily disabled gold gradient */
@@ -129,12 +129,12 @@
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Gold radial glow via pseudo-element so it can fade with opacity */
+/* Sidebar stays graphite; active navigation supplies the only accent. */
 .sidebar::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 80% 0%, rgba(207, 159, 70, 0.08), transparent 34%);
+  background: none;
   pointer-events: none;
   opacity: 0; /* Temporarily disabled gold gradient */
   transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -159,7 +159,7 @@
   border: none;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   background: transparent;
-  color: rgba(219, 176, 91, 0.7);
+  color: rgba(190, 202, 214, 0.68);
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
@@ -171,8 +171,8 @@
 }
 
 .sidebar-collapse-btn:hover {
-  background: rgba(219, 176, 91, 0.15);
-  color: var(--gold);
+  background: rgba(120, 160, 192, 0.12);
+  color: #dbe7f1;
 }
 
 .sidebar nav {
@@ -263,26 +263,31 @@
   font-size: 10px;
 }
 
-.nav-item.active,
 .nav-item:hover {
   color: var(--text-strong);
-  background: linear-gradient(90deg, rgba(213, 166, 78, 0.22), rgba(213, 166, 78, 0.04));
-  border-left-color: var(--gold);
+  background: rgba(255, 255, 255, 0.045);
+  border-left-color: transparent;
   border-radius: 0;
-  /* flush with sidebar — no gap at right edge */
+}
+
+.nav-item.active {
+  color: #f3f7fa;
+  background: rgba(109, 151, 185, 0.14);
+  border-left-color: #78a8c8;
+  border-radius: 0;
 }
 
 .sidebar-collapsed .nav-item.active {
-  color: var(--gold);
-  background: rgba(213, 166, 78, 0.12) !important;
-  border-radius: 8px;
+  color: #dfeaf3;
+  background: rgba(109, 151, 185, 0.15) !important;
+  border-radius: 6px;
   border-left-color: transparent !important;
   border-left-width: 0 !important;
 }
 
 .sidebar-collapsed .nav-item:hover {
-  color: rgba(213, 166, 78, 0.85);
-  background: rgba(213, 166, 78, 0.08) !important;
+  color: #d7e4ed;
+  background: rgba(255, 255, 255, 0.06) !important;
 }
 
 .nav-badge {
@@ -290,9 +295,9 @@
   height: 21px;
   display: inline-grid;
   place-items: center;
-  border: 1px solid rgba(231, 185, 97, 0.58);
-  border-radius: 6px;
-  color: var(--gold);
+  border: 1px solid rgba(120, 168, 200, 0.42);
+  border-radius: 5px;
+  color: #a6c5db;
   font-size: 12px;
 }
 
@@ -1694,6 +1699,20 @@
 .image-video-thumb {
   width: 100%;
   height: 100%;
+}
+
+.media-thumb-preview {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.media-thumb-preview img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
 }
 
 .media-thumb img {
@@ -4149,8 +4168,8 @@ button:disabled {
 }
 
 .titlebar-sidebar-toggle:hover {
-  background: rgba(219, 176, 91, 0.12);
-  color: rgba(219, 176, 91, 1);
+  background: rgba(120, 160, 192, 0.12);
+  color: #dbe7f1;
 }
 
 
@@ -4165,6 +4184,24 @@ button:disabled {
   gap: 6px;
 }
 
+/* Clickable variant — khi click để reload */
+.titlebar-label--clickable {
+  pointer-events: all;
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 2px 5px;
+  transition: background 0.15s, opacity 0.15s;
+  -webkit-app-region: no-drag;
+}
+.titlebar-label--clickable:hover {
+  background: rgba(77, 164, 255, 0.12);
+  opacity: 0.85;
+}
+.titlebar-label--clickable:active {
+  background: rgba(77, 164, 255, 0.22);
+  opacity: 0.7;
+}
+
 .titlebar-label-primary {
   color: #4da4ff;
   opacity: 1;
@@ -4175,10 +4212,109 @@ button:disabled {
   opacity: 1;
 }
 
+/* ── Pull-to-refresh indicator ─────────────────────────── */
+.pull-to-refresh-indicator {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(-100%);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(20, 26, 38, 0.95);
+  border: 1px solid rgba(77, 164, 255, 0.3);
+  border-top: none;
+  border-radius: 0 0 14px 14px;
+  padding: 12px 24px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #4da4ff;
+  letter-spacing: 0.3px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease-out;
+  pointer-events: none;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+.pull-to-refresh-indicator.is-visible {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+.pull-to-refresh-indicator.is-refreshing {
+  background: rgba(77, 164, 255, 0.15);
+  border-color: rgba(77, 164, 255, 0.5);
+}
+.pull-to-refresh-indicator.is-refreshing .ptr-spinner {
+  animation: ptr-spin 0.7s linear infinite;
+  border-top-color: #4da4ff;
+  border-right-color: #4da4ff;
+}
+.ptr-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(77, 164, 255, 0.25);
+  border-top-color: #4da4ff;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+@keyframes ptr-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Smooth pull animation on workspace */
+.workspace {
+  transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.workspace.ptr-pulling {
+  /* Dynamic transform is applied inline via React style */
+}
+
 .titlebar-actions {
   display: flex;
   height: 100%;
   -webkit-app-region: no-drag;
+}
+
+/* ── Online presence chip ────────────────────────────────── */
+.titlebar-online-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #4dff9e;
+  background: rgba(77, 255, 158, 0.08);
+  border: 1px solid rgba(77, 255, 158, 0.2);
+  border-radius: 20px;
+  padding: 2px 8px 2px 6px;
+  margin-right: 4px;
+  cursor: default;
+  user-select: none;
+  letter-spacing: 0.3px;
+  transition: background 0.2s;
+}
+.titlebar-online-chip:hover {
+  background: rgba(77, 255, 158, 0.14);
+}
+.titlebar-online-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4dff9e;
+  box-shadow: 0 0 0 0 rgba(77, 255, 158, 0.6);
+  animation: online-pulse 2.2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+@keyframes online-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(77, 255, 158, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(77, 255, 158, 0);
+  }
 }
 
 .titlebar-btn {

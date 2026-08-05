@@ -136,7 +136,8 @@
           "run_depot_patch",
           "list_installed_luas",
           "list_available_manifests",
-          "fetch_steam_game_name"
+          "fetch_steam_game_name",
+          "search_steam_store"
         ],
         "deny": []
       }

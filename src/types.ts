@@ -106,6 +106,7 @@ export type Snapshot = {
 
 export type DownloadProfile = 'eco' | 'balanced' | 'turbo'
 export type GameUpdateMode = 'automatic' | 'scheduled' | 'manual'
+export type GameTurboPreference = 'always' | 'never' | 'ask'
 
 export type LauncherSettings = {
   defaultLibrary: string
@@ -124,6 +125,7 @@ export type LauncherSettings = {
   gameUpdateScheduleEnd: string
   /** HuggingFace dataset repo ID hosting depot manifests and keys. Format: "owner/repo-name" */
   depotHfRepoId: string
+  gameTurbo: GameTurboPreference
 }
 
 export type CloudSaveMetadata = {
@@ -275,6 +277,8 @@ export type GameMedia = {
   title: string
   mimeType: string
   assetId: string
+  /** Optional low-resolution asset for thumbnail rails. Existing media keeps assetId. */
+  thumbnailAssetId?: string
 }
 
 export type LauncherUpdateInfo = {

@@ -207,7 +207,6 @@ namespace {
         auto now = std::chrono::steady_clock::now();
         if (now - lastPackageRetry >= 1s) {
             lastPackageRetry = now;
-            SteamCapture::TryStartupPackageInjection("steamui-runframe-retry");
             ++runFrameRetryLogs;
             if (runFrameRetryLogs == 1 || runFrameRetryLogs % 30 == 0) {
                 LOG_STEAMUICH_DEBUG("RunFrame: startup package retry tick={}", runFrameRetryLogs);

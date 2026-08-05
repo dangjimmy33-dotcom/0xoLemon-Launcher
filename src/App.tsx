@@ -52,7 +52,7 @@ import type {
 import installCompleteSoundUrl from './assets/sounds/desktop_toast_default.wav?url'
 import donateImage from './assets/donate/donate.png'
 import { DEFAULT_GAME_ID, DEFAULT_STORE_ROOT, fallbackCatalog, fallbackInstall, fallbackSnapshot, gameFolderName, installMetadataForStoreRoot } from './lib/installPaths'
-import { collectAssetIds, contentServiceLabel, downloadPathForInstallRoot, fallbackDetailFromSummary, firstMediaUrl, isTauriRuntime, versionOptions } from './lib/gameMeta'
+import { assetUrlForId, collectAssetIds, contentServiceLabel, downloadPathForInstallRoot, fallbackDetailFromSummary, firstMediaUrl, isRemoteAssetId, isTauriRuntime, versionOptions } from './lib/gameMeta'
 import { createIdleJob, getPhaseProgress } from './lib/jobProgress'
 import { formatBytes } from './lib/format'
 import { gameHasTag } from './lib/gameTags'
@@ -115,6 +115,7 @@ const defaultLauncherSettings: LauncherSettings = {
   gameUpdateScheduleStart: '02:00',
   gameUpdateScheduleEnd: '06:00',
   depotHfRepoId: '',
+  gameTurbo: 'ask',
 }
 
 import { useBackendGameTags } from './hooks/useBackendGameTags'
@@ -124,12 +125,15 @@ import { useSteamAppIds } from './hooks/useSteamAppIds'
 import { useFirestoreDetail } from './hooks/useFirestoreDetail'
 import { useBackendAssets } from './hooks/useBackendAssets'
 import { useScrollReveal } from './hooks/useScrollReveal'
+import { usePullToRefresh } from './hooks/usePullToRefresh'
 import { useDefenderExclusion } from './hooks/useDefenderExclusion'
 // Firestore fallback hooks
 import { useRealtimeGameTags } from './hooks/useRealtimeGameTags'
 import { useRealtimeAssets } from './hooks/useRealtimeAssets'
 import { useFirestoreCatalog } from './hooks/useFirestoreCatalog'
 import { useGameStats } from './hooks/useGameStats'
+import { useOnlinePresence } from './hooks/useOnlinePresence'
+import { GameTurboModal } from './components/GameTurboModal'
 import { GlobalChatSync } from './components/GlobalChatSync'
 import { NoInternetView } from './components/NoInternetView'
 import { SaveCloseGuardModal } from './components/SaveCloseGuardModal'
@@ -154,6 +158,45 @@ export default function App() {
 
   // Google Antigravity–style scroll reveal (fade+slide on scroll into view)
   useScrollReveal()
+
+
+  // Pull-to-refresh: kéo xuống khi đang ở đầu trang để reload
+  const [ptrProgress, _setPtrProgress] = useState(0)
+  const [ptrRefreshing, _setPtrRefreshing] = useState(false)
+  const bodyRef = useRef<HTMLElement | null>(null)
+  useEffect(() => { bodyRef.current = document.body }, [])
+
+  // Disabled per user request
+  // const handleRefresh = useCallback(() => {
+  //   // Reset states before reload to prevent stuck loading
+  //   setPtrRefreshing(false)
+  //   setPtrProgress(0)
+  //
+  //   // Delay to ensure state reset and touch events completely finished, preventing STATUS_ACCESS_VIOLATION
+  //   setTimeout(() => {
+  //     if (isTauriRuntime()) {
+  //       // window.location.href is safer than location.reload() in Tauri WebView2 to prevent access violations
+  //       window.location.href = window.location.href.split('#')[0]
+  //     } else {
+  //       window.location.reload()
+  //     }
+  //   }, 400)
+  // }, [])
+
+  usePullToRefresh(bodyRef, {
+    threshold: 160,
+    onProgress: (_p) => {
+      // Disabled pull to refresh per user request
+      // setPtrProgress(p)
+      // if (p >= 1 && !ptrRefreshing) {
+      //   setPtrRefreshing(true)
+      // }
+    },
+    onRefresh: () => {
+      // Disabled
+      // handleRefresh()
+    },
+  })
 
   // Backend hooks (primary, cached 1h on Render)
   useBackendGameTags()
@@ -225,6 +268,7 @@ export default function App() {
   const autoResumeJobIdRef = useRef<string | null>(null)
   const selectedGameIdRef = useRef<string | null>(selectedGameId)
   const versionPlanSequenceRef = useRef(0)
+  const versionPlanTimerRef = useRef<number | null>(null)
   const [downloadRate, setDownloadRate] = useState(0)
   const [verifyStatus, setVerifyStatus] = useState<VerifyUiStatus | null>(null)
   const [launchSplash, setLaunchSplash] = useState<LaunchSplashState | null>(null)
@@ -261,11 +305,17 @@ export default function App() {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
   const [discordAuth, setDiscordAuth] = useState<DiscordAuthStatus>(initialDiscordAuthStatus)
   const [discordAuthBusy, setDiscordAuthBusy] = useState(false)
+
+  // Online presence counter (hiện số người dùng online trong title bar)
+  const { onlineCount } = useOnlinePresence(
+    discordAuth.state === 'authorized' ? discordAuth.user?.id : null
+  )
+  const [turboGameToAsk, setTurboGameToAsk] = useState<GameSummary | null>(null)
   const [luaModeEnabled, setLuaModeEnabled] = useState(false)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
 
-  // Block notifications & big picture during intro or Discord verification
-  const isBlockedState = showIntro || discordAuth.state === 'checking'
+  // Block notifications, big picture, sidebar toggle & branding during intro or Discord verification/gate
+  const isBlockedState = showIntro || discordAuth.state !== 'authorized'
   const [cacheBusy, setCacheBusy] = useState(false)
   const [appVersion, setAppVersion] = useState(packageMetadata.version)
   const [showWhatsNewModal, setShowWhatsNewModal] = useState(false)
@@ -289,6 +339,12 @@ export default function App() {
   useEffect(() => {
     assetUrlsRef.current = assetUrls
   }, [assetUrls])
+
+  useEffect(() => () => {
+    if (versionPlanTimerRef.current !== null) {
+      window.clearTimeout(versionPlanTimerRef.current)
+    }
+  }, [])
 
   // Show window (small, centered) as soon as app mounts — before auth check
   useEffect(() => {
@@ -800,6 +856,14 @@ export default function App() {
     if (!game || !assetId) {
       return
     }
+
+    // Firestore/Render assets already carry a URL. Rendering them directly
+    // avoids a global assets-state update and, more importantly, avoids a
+    // base64 copy of every CDN image in the WebView heap while online.
+    const directUrl = assetId.startsWith('http://') || assetId.startsWith('https://') || isRemoteAssetId(assetId)
+    if (directUrl && navigator.onLine) {
+      return
+    }
     if (assetUrlsRef.current[assetId] || assetRequestRef.current.has(assetId)) {
       return
     }
@@ -814,7 +878,7 @@ export default function App() {
               return { ...current, [assetId]: remoteUrl }
             })
           } else {
-            // Fallback to huggingface / web asset url
+            // Final fallback to the repository's raw web asset URL.
             import('./lib/gameMeta').then(({ fetchWebAssetUrl }) => {
               fetchWebAssetUrl(assetId).then((url) => {
                 if (url) {
@@ -832,8 +896,8 @@ export default function App() {
     }
     const delay = urgent ? 0 : Math.min(1200, assetDelaySlotRef.current++ * 90)
     window.setTimeout(async () => {
-      // If assetId is already a remote URL (e.g. from assets_override), use it directly
-      if (assetId.startsWith('http://') || assetId.startsWith('https://')) {
+      // Direct remote assets only use the local offline cache when disconnected.
+      if (directUrl) {
         // When offline: try reading from offline_cache first
         if (!navigator.onLine) {
           try {
@@ -849,10 +913,6 @@ export default function App() {
             return
           }
         }
-        setAssetUrls((current) => {
-          if (current[assetId]) return current
-          return { ...current, [assetId]: assetId }
-        })
         return
       }
 
@@ -957,8 +1017,8 @@ export default function App() {
       setCatalogLoadState('ready')
 
       // Use the newest game from backend if available, otherwise firestore
-      const newestGame = backendGames.length > 0 
-        ? backendGames[backendGames.length - 1] 
+      const newestGame = backendGames.length > 0
+        ? backendGames[backendGames.length - 1]
         : firestoreGames[firestoreGames.length - 1]
 
       if (newestGame) {
@@ -1418,8 +1478,8 @@ export default function App() {
       setScanStatus(`Starting ${game?.title ?? payload.gameId}`)
       setLaunchSplash({
         title: game?.title ?? payload.gameId,
-        heroUrl: game ? assetUrls[game.heroAssetId] : undefined,
-        iconUrl: game ? assetUrls[game.iconAssetId] || assetUrls[game.gridAssetId] : undefined,
+        heroUrl: game ? assetUrlForId(game.heroAssetId, assetUrls) : undefined,
+        iconUrl: game ? assetUrlForId(game.iconAssetId, assetUrls) || assetUrlForId(game.gridAssetId, assetUrls) : undefined,
       })
       window.setTimeout(() => setLaunchSplash(null), 4200)
     }).then((fn) => {
@@ -1910,7 +1970,7 @@ export default function App() {
     if (selectedGame?.id && winTags[selectedGame.id]) {
       Object.entries(winTags[selectedGame.id]).forEach(([ver, tags]) => {
         tagMap.set(ver, tags as string[])
-        
+
         // Helper to get clean version
         const getCleanInline = (verStr: string) => {
           if (!verStr) return ''
@@ -1940,13 +2000,13 @@ export default function App() {
 
     const detailVersions = activeDetail?.versions || []
     const hfVersions: any[] = snapshot?.availableVersions || []
-    
+
     // If the catalog explicitly lists versions, ONLY show those versions
     if (selectedGame?.availableVersions && selectedGame.availableVersions.length > 0) {
       return selectedGame.availableVersions.map((catalogVer: any) => {
         const catStr = typeof catalogVer === 'string' ? catalogVer : (catalogVer.version || '')
         const catClean = getClean(catStr)
-        
+
         // Find matching rich string in detailVersions (usually provides sizeBytes)
         const richMatch = detailVersions.find((dv: any) => {
           const dvStr = typeof dv === 'string' ? dv : (dv.version || '')
@@ -1960,18 +2020,22 @@ export default function App() {
         })
 
         let baseVer = catalogVer
+        let trueVersion = typeof catalogVer === 'string' ? catalogVer : catalogVer.version
         if (hfMatch) {
-          baseVer = typeof catalogVer === 'object' 
-            ? { ...catalogVer, version: typeof hfMatch === 'string' ? hfMatch : hfMatch.version }
+          trueVersion = typeof hfMatch === 'string' ? hfMatch : hfMatch.version
+          baseVer = typeof catalogVer === 'object'
+            ? { ...catalogVer, version: trueVersion }
             : hfMatch
         }
         if (richMatch) {
-          baseVer = typeof baseVer === 'object' ? { ...baseVer, ...richMatch } : richMatch
+          baseVer = typeof baseVer === 'object' 
+            ? { ...baseVer, ...richMatch, version: trueVersion } 
+            : { ...richMatch, version: trueVersion }
         }
 
         const baseStr = typeof baseVer === 'string' ? baseVer : (baseVer.version || '')
         const tags = tagMap.get(baseStr) || tagMap.get(getClean(baseStr)) || tagMap.get(baseVer.buildId || '') || tagMap.get(baseVer.label || '')
-        
+
         if (typeof baseVer === 'string') {
           return tags ? { version: baseVer, tags } : baseVer
         }
@@ -1987,7 +2051,7 @@ export default function App() {
       const strVer = typeof v === 'string' ? v : (v_any.version || '')
       const cleanVer = getClean(strVer)
       const tags = tagMap.get(strVer) || tagMap.get(v_any.label) || tagMap.get(v_any.buildId) || tagMap.get(cleanVer)
-      
+
       if (typeof v === 'string') {
         return tags ? { version: v, tags } : v
       }
@@ -2007,8 +2071,29 @@ export default function App() {
     : latestCatalogVersion !== 'unknown'
       ? latestCatalogVersion
       : availableVersions[availableVersions.length - 1] || 'select game'
-  const requestedTargetVersion =
-    selectedVersion && availableVersions.includes(selectedVersion) ? selectedVersion : fallbackTargetVersion
+  const versionNumericCore = (v: string) => {
+    let s = v.trim().toLowerCase().replace(/^v/, '')
+    let result = ''
+    let sawDigit = false
+    let lastWasSep = false
+    for (const ch of s) {
+      if (/\d/.test(ch)) { result += ch; sawDigit = true; lastWasSep = false }
+      else if (sawDigit && /[.\-_]/.test(ch)) { if (!lastWasSep) { result += ch; lastWasSep = true } }
+      else if (sawDigit) { break }
+      else if (!/\s/.test(ch)) { result = ''; break }
+    }
+    while (result.endsWith('.') || result.endsWith('-') || result.endsWith('_')) result = result.slice(0, -1)
+    return sawDigit ? result : ''
+  }
+  const findVersionInList = (list: string[], ver: string): string | undefined => {
+    if (list.includes(ver)) return ver
+    const core = versionNumericCore(ver)
+    if (!core) return undefined
+    const matches = list.filter(v => versionNumericCore(v) === core)
+    return matches.length === 1 ? matches[0] : undefined
+  }
+  const resolvedSelectedVersion = selectedVersion ? findVersionInList(availableVersions, selectedVersion) : undefined
+  const requestedTargetVersion = resolvedSelectedVersion ?? fallbackTargetVersion
   // Keep the selected target for both fresh installs and installed games. This
   // allows the same version picker to perform upgrades, reinstalls and downgrades.
   const targetVersion = requestedTargetVersion
@@ -2039,10 +2124,18 @@ export default function App() {
     targetVersion !== 'select game'
   const canApplySelectedVersion =
     canUpdate && (installMode || targetVersion !== selectedCurrentVersion)
-  const effectiveDownloadSize =
-    snapshot.updateSize > 0
-      ? snapshot.updateSize
-      : selectedVersionInfo?.sizeBytes ?? activeDetail?.versions[0]?.sizeBytes ?? 0
+  const effectiveDownloadSize = useMemo(() => {
+    // Only trust snapshot.updateSize if the active job belongs to the current game.
+    // When the user switches games the snapshot may still hold the previous game's size.
+    const activeJobGameId = snapshot.lastJob?.gameId
+    const snapshotBelongsToGame =
+      snapshot.updateSize > 0 &&
+      selectedGame?.id &&
+      (!activeJobGameId || activeJobGameId === selectedGame.id)
+    if (snapshotBelongsToGame) return snapshot.updateSize
+    return selectedVersionInfo?.sizeBytes ?? activeDetail?.versions?.[0]?.sizeBytes ?? 0
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [snapshot.updateSize, snapshot.lastJob?.gameId, selectedGame?.id, selectedVersionInfo?.sizeBytes, activeDetail?.versions])
   const displayedInstallTarget =
     selectedInstalled
       ? selectedInstallPath
@@ -2168,7 +2261,7 @@ export default function App() {
         invoke<{ fileCount: number; detectedVersion?: string | null; warnings: string[] }>('scan_install', {
           path,
         }),
-        invoke<Snapshot>('plan_install_update', { path, targetVersion, gameId }),
+        invoke<Snapshot>('plan_install_update', { path, targetVersion: null, gameId }),
       ])
       const plannedVersion =
         planned.currentVersion !== 'unknown' && planned.currentVersion !== 'not installed'
@@ -2185,7 +2278,7 @@ export default function App() {
     }
   }
 
-  async function changeTargetVersion(version: string) {
+  function changeTargetVersion(version: string) {
     if (!selectedGame) {
       setScanStatus('Select a game first')
       return
@@ -2197,27 +2290,43 @@ export default function App() {
       return
     }
 
-    try {
-      const planned = selectedInstalled
-        ? await invoke<Snapshot>('plan_install_update', {
-          path: selectedInstallPath,
-          targetVersion: version,
-          gameId,
-        })
-        : await invoke<Snapshot>('plan_fresh_install', { targetVersion: version, gameId })
-      if (
-        requestSequence !== versionPlanSequenceRef.current ||
-        selectedGameIdRef.current !== gameId
-      ) {
-        return
-      }
-      setSnapshot(planned)
-      setJob(planned.lastJob)
-    } catch (error) {
-      if (requestSequence === versionPlanSequenceRef.current) {
-        setScanStatus(String(error))
-      }
+    if (versionPlanTimerRef.current !== null) {
+      window.clearTimeout(versionPlanTimerRef.current)
     }
+
+    // Keep the previous plan visible while the user is still choosing. This
+    // prevents a version picker from triggering a new depot/staging scan for
+    // every intermediate selection.
+    versionPlanTimerRef.current = window.setTimeout(() => {
+      versionPlanTimerRef.current = null
+      void (async () => {
+        try {
+          const planned = selectedInstalled
+            ? await invoke<Snapshot>('plan_install_update', {
+              path: selectedInstallPath,
+              targetVersion: version,
+              gameId,
+            })
+            : await invoke<Snapshot>('plan_fresh_install', { targetVersion: version, gameId })
+          if (
+            requestSequence !== versionPlanSequenceRef.current ||
+            selectedGameIdRef.current !== gameId
+          ) {
+            return
+          }
+          setSnapshot(planned)
+          setJob(planned.lastJob)
+        } catch (error) {
+          const message = String(error)
+          if (message.toLowerCase().includes('job canceled')) {
+            return
+          }
+          if (requestSequence === versionPlanSequenceRef.current) {
+            setScanStatus(message)
+          }
+        }
+      })()
+    }, 250)
   }
 
   function chooseInstallTarget() {
@@ -2682,6 +2791,7 @@ export default function App() {
 
     // Show loading state immediately to prevent spam clicks
     setIsStartingDownload(true)
+    setScanStatus('')
 
     // Web app: send remote install command to PC launcher via Firebase
     if (!isTauriRuntime()) {
@@ -2985,6 +3095,15 @@ export default function App() {
       setScanStatus(`${dependencyText} ${selectedGame.title}${optionText}`)
 
       setPlayingGames((prev) => ({ ...prev, [selectedGame.id]: true }))
+
+      // Game Turbo Logic
+      if (launcherSettings.gameTurbo === 'always') {
+        window.setTimeout(() => {
+          void invoke('set_process_priority', { gameId: selectedGame.id, high: true }).catch(console.error)
+        }, 5000)
+      } else if (launcherSettings.gameTurbo === 'ask') {
+        setTurboGameToAsk(selectedGame)
+      }
 
       const remainingMs = Math.max(0, 4200 - (performance.now() - splashStartedAt))
       window.setTimeout(() => setLaunchSplash(null), remainingMs)
@@ -3371,6 +3490,22 @@ export default function App() {
               onDone={() => setShowIntro(false)}
             />
           )}
+
+          {turboGameToAsk && (
+            <GameTurboModal
+              gameName={turboGameToAsk.title}
+              turboEnabled={false}
+              onEnable={() => {
+                void invoke('set_process_priority', { gameId: turboGameToAsk.id, high: true }).catch(console.error)
+              }}
+              onDisable={() => { }}
+              onClose={() => setTurboGameToAsk(null)}
+              onDontAskAgain={(enabled) => {
+                void updateLauncherSetting('gameTurbo', enabled ? 'always' : 'never')
+              }}
+            />
+          )}
+
           <GlobalChatSync catalog={catalog} />
           <CustomTitleBar
             closeBehavior={preferences.closeBehavior}
@@ -3408,7 +3543,24 @@ export default function App() {
             onToggleBigPicture={enterBigPicture}
             onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
             isSidebarCollapsed={isSidebarCollapsed}
+            onlineCount={onlineCount}
           />
+          {/* Pull-to-refresh indicator */}
+          {ptrProgress > 0 && (
+            <div className={`pull-to-refresh-indicator${ptrProgress > 0.3 ? ' is-visible' : ''}${ptrRefreshing ? ' is-refreshing' : ''}`}>
+              <div className="ptr-spinner" style={{
+                transform: ptrRefreshing ? undefined : `rotate(${ptrProgress * 360}deg)`,
+                borderTopColor: ptrProgress >= 1 ? '#4da4ff' : `rgba(77, 164, 255, ${0.3 + ptrProgress * 0.7})`
+              }} />
+              <span>
+                {ptrRefreshing
+                  ? 'Đang tải lại...'
+                  : ptrProgress >= 1
+                    ? 'Thả ra để tải lại!'
+                    : 'Kéo xuống để tải lại'}
+              </span>
+            </div>
+          )}
           {launcherUpdate && !updateSkipped ? (
             <UpdateBanner
               update={launcherUpdate}
@@ -3429,7 +3581,10 @@ export default function App() {
               isSidebarCollapsed={isSidebarCollapsed}
               onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
             />
-            <section className="workspace premium-workspace">
+            <section
+              className={`workspace premium-workspace${ptrProgress > 0 ? ' ptr-pulling' : ''}${activeTab === 'Lua Shop' ? ' lua-shop-workspace' : ''}`}
+              style={ptrProgress > 0 ? { transform: `translateY(${Math.min(ptrProgress * 60, 60)}px)` } : undefined}
+            >
               {['Updates', 'Downloads', 'Cache'].includes(activeTab) && selectedGame && activeDetail ? (
                 <OperationHero
                   game={selectedGame}
@@ -3451,7 +3606,10 @@ export default function App() {
                 />
               ) : null}
 
-              <div key={activeTab} className={reducedMotion ? undefined : 'tab-enter'}>
+              <div
+                key={activeTab}
+                className={`${reducedMotion ? '' : 'tab-enter'}${activeTab === 'Lua Shop' ? ' lua-shop-tab-content' : ''}`}
+              >
                 {/* Offline gate: tabs requiring internet show NoInternetView when offline */}
                 {!isOnline && !['Library', 'Settings'].includes(activeTab) ? (
                   <NoInternetView tabName={activeTab === 'Home' ? 'Home' : activeTab === 'Store' ? 'Store' : activeTab === "What's New!" ? "What's New" : activeTab === 'Downloads' ? 'Downloads' : activeTab === 'Updates' ? 'Updates' : activeTab === 'CloudRedirect' ? 'CloudRedirect' : activeTab === 'Translations' ? 'Translations' : undefined} />
@@ -3524,6 +3682,10 @@ export default function App() {
                     selectedGame={selectedGame}
                     selectedGameId={selectedGameId}
                     onSelectGame={(gameId) => {
+                      if (versionPlanTimerRef.current !== null) {
+                        window.clearTimeout(versionPlanTimerRef.current)
+                        versionPlanTimerRef.current = null
+                      }
                       versionPlanSequenceRef.current += 1
                       setSelectedGameId(gameId)
                       setShowInstallOptions(false)
@@ -3624,6 +3786,7 @@ export default function App() {
                   downloadingRoot={downloadPathForInstallRoot(installMode ? installRoot : selectedInstallPath, gameInstall)}
                   canStart={canApplySelectedVersion}
                   isStarting={isStartingDownload}
+                  statusMessage={scanStatus}
                   onVersionChange={changeTargetVersion}
                   onChangeInstallRoot={chooseInstallTarget}
                   onStart={startUpdate}
@@ -3885,8 +4048,9 @@ export default function App() {
 
           <SaveCloseGuardModal />
         </div>
-      )}
-    </MotionConfig>
+      )
+      }
+    </MotionConfig >
   )
 }
 

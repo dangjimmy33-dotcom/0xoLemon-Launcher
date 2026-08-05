@@ -96,7 +96,7 @@ add_library(LumaCore SHARED
     hooks/client/NetPacket_FamilySharing.cpp
     hooks/client/NetPacket_OnlineFix.cpp
     hooks/client/NetPacket_SteamStub.cpp
-    hooks/client/PackagePatch.cpp
+    hooks/client/PackageInject.cpp
     hooks/client/RichPresence.cpp
     hooks/client/LicenseHooks.cpp
     hooks/client/StringFind.cpp

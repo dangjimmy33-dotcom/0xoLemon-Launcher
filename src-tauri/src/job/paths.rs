@@ -1,5 +1,9 @@
 use std::fs;
+use std::collections::HashMap;
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Mutex, OnceLock};
+use std::time::{Duration, Instant};
 
 use crate::remote_paths;
 
@@ -7,6 +11,20 @@ use super::{
     DepotSource, JobError, DEFAULT_GAME_DIR_NAME, DEFAULT_GAME_ID, DEFAULT_STORE_ROOT,
     INSTALLED_MANIFEST_FILE, INSTALL_MARKER_DIR, INSTALL_MARKER_FILE, LEGACY_INSTALL_MARKER_FILE,
 };
+
+const CHUNK_SIZE_CACHE_TTL: Duration = Duration::from_secs(2);
+
+#[derive(Clone, Copy)]
+struct CachedChunkSize {
+    measured_at: Instant,
+    bytes: u64,
+}
+
+static CHUNK_SIZE_CACHE: OnceLock<Mutex<HashMap<PathBuf, CachedChunkSize>>> = OnceLock::new();
+
+fn chunk_size_cache() -> &'static Mutex<HashMap<PathBuf, CachedChunkSize>> {
+    CHUNK_SIZE_CACHE.get_or_init(|| Mutex::new(HashMap::new()))
+}
 
 /// Returns the path to the shared chunks directory.
 /// 
@@ -39,11 +57,39 @@ pub(super) fn downloading_chunk_cache_path(install_root: &Path, source: &DepotSo
     staged_chunk_dir(&downloading_dir_for_install(install_root, source))
 }
 
-pub(super) fn downloading_chunk_cache_size(
+pub(super) fn downloading_chunk_cache_size_cancellable(
     install_root: &Path,
     source: &DepotSource,
+    canceled: Option<&AtomicBool>,
 ) -> Result<u64, JobError> {
-    directory_size(&downloading_chunk_cache_path(install_root, source))
+    check_canceled(canceled)?;
+    let root = downloading_chunk_cache_path(install_root, source);
+    let now = Instant::now();
+
+    {
+        let mut cache = chunk_size_cache()
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        cache.retain(|_, cached| now.duration_since(cached.measured_at) <= CHUNK_SIZE_CACHE_TTL);
+        if let Some(cached) = cache.get(&root) {
+            if now.duration_since(cached.measured_at) <= CHUNK_SIZE_CACHE_TTL {
+                return Ok(cached.bytes);
+            }
+        }
+    }
+
+    let bytes = directory_size_cancellable(&root, canceled)?;
+    let mut cache = chunk_size_cache()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    cache.insert(
+        root,
+        CachedChunkSize {
+            measured_at: now,
+            bytes,
+        },
+    );
+    Ok(bytes)
 }
 
 pub(super) fn downloading_cache_free_space(install_root: &Path, source: &DepotSource) -> u64 {
@@ -55,15 +101,31 @@ pub(super) fn downloading_cache_free_space(install_root: &Path, source: &DepotSo
     fs2::free_space(probe).unwrap_or(0)
 }
 
-fn directory_size(root: &Path) -> Result<u64, JobError> {
+fn check_canceled(canceled: Option<&AtomicBool>) -> Result<(), JobError> {
+    if canceled.is_some_and(|flag| flag.load(Ordering::Acquire)) {
+        return Err(JobError::Canceled);
+    }
+    Ok(())
+}
+
+fn directory_size_cancellable(
+    root: &Path,
+    canceled: Option<&AtomicBool>,
+) -> Result<u64, JobError> {
+    check_canceled(canceled)?;
     if !root.exists() {
         return Ok(0);
     }
 
     let mut total = 0_u64;
     let mut pending = vec![root.to_path_buf()];
+    let mut entries_seen = 0_u64;
     while let Some(directory) = pending.pop() {
         for entry in fs::read_dir(directory)? {
+            entries_seen = entries_seen.saturating_add(1);
+            if entries_seen % 128 == 0 {
+                check_canceled(canceled)?;
+            }
             let entry = entry?;
             let file_type = entry.file_type()?;
             if file_type.is_dir() {
@@ -75,6 +137,7 @@ fn directory_size(root: &Path) -> Result<u64, JobError> {
             }
         }
     }
+    check_canceled(canceled)?;
     Ok(total)
 }
 

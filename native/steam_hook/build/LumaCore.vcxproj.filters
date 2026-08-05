@@ -127,7 +127,7 @@
     <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\NetPacket_SteamStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\PackagePatch.cpp">
+    <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\PackageInject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="E:\007Launcher\native\steam_hook\hooks\client\RichPresence.cpp">

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { fetchWithRetry } from '../lib/fetchWithRetry'
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://zeroxolemon-launcher.onrender.com'
 // Primary tenant (0xoLemon) has all game assets.
@@ -20,9 +21,11 @@ export function useBackendAssets(): number {
     async function fetchAssets() {
       try {
         // Fetch primary (0xolemon) — has all games' assets
-        const primaryRes = await fetch(`${BACKEND_URL}/api/${TENANT_PRIMARY}/assets`, {
-          headers: { 'Accept': 'application/json' }
-        })
+        const primaryRes = await fetchWithRetry(
+          `${BACKEND_URL}/api/${TENANT_PRIMARY}/assets`,
+          { headers: { 'Accept': 'application/json' } },
+          { maxRetries: 3, baseDelay: 1500 },
+        )
 
         let merged: Record<string, string> = {}
 
@@ -33,9 +36,11 @@ export function useBackendAssets(): number {
 
         // Fetch secondary (0xolemon1) — may override with newer data
         try {
-          const secondaryRes = await fetch(`${BACKEND_URL}/api/${TENANT_SECONDARY}/assets`, {
-            headers: { 'Accept': 'application/json' }
-          })
+          const secondaryRes = await fetchWithRetry(
+            `${BACKEND_URL}/api/${TENANT_SECONDARY}/assets`,
+            { headers: { 'Accept': 'application/json' } },
+            { maxRetries: 2, baseDelay: 1000 },
+          )
           if (secondaryRes.ok) {
             const secondaryData = await secondaryRes.json()
             merged = { ...merged, ...secondaryData }  // secondary overrides primary

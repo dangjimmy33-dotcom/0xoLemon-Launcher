@@ -6,7 +6,6 @@
 #include "hooks/capture/RuntimeCapture.h"
 #include "hooks/Macros.h"
 #include "hooks/client/SteamStubAuto.h"
-#include "hooks/client/PackagePatch.h"
 #include "hooks/ui/SteamUI.h"
 #include "runtime/VehUtil.h"
 #include "runtime/HookStatus.h"
@@ -48,19 +47,11 @@ namespace {
     VEH_TRACK_LIST(VEH_DECL_RESOLVE)
 
     // ── Detours-captured pointers (set on first call, never cleared) ─────────
-    // These replace the old VEH int3 captures for MarkLicenseAsChanged and
-    // GetPackageInfo. Detours hooks fire on every call regardless of when they
-    // were installed, so we capture pCUser and pCPackageInfo on the first
+    // Detours hooks fire on every call regardless of when they
+    // were installed, so we capture on the first
     // natural Steam call after login — even if that happens after startup.
     void* g_pCUser        = nullptr;
     void* g_pCPackageInfo = nullptr;
-    std::atomic<bool> g_startupInjectionDone{false};
-    std::atomic<bool> g_startupRetryThreadStarted{false};
-    std::atomic<uint32> g_startupPackageMissLogs{0};
-
-    // Forward declaration
-    void TryStartupInjection(const char* reason);
-    void StartStartupInjectionRetry();
 
     // ── per-session state ─────────────────────────────────────────────────────
     void*                 g_steamEngine        = nullptr;
@@ -71,7 +62,7 @@ namespace {
     // Pipe-scoped fine gate that pairs with the thread-local depth counter
     // below. Stamped by EnterStatsScope on entry to an IClientUserStats IPC,
     // cleared by LeaveStatsScope on exit. The achievement-callback rewrite
-    // path in PackagePatch.cpp and CmdUtils.cpp reads this under acquire
+    // path reads this under acquire
     // ordering so cross-pipe bleed cannot land a rewrite on a pipe that did
     // not originate the user-stats call.
     std::atomic<HSteamPipe> g_StatsScopePipe{0};
@@ -196,121 +187,6 @@ namespace {
                                     pOverlayCGameID, a6, a7, a8, a9, a10, a11);
     }
 
-    // ── MarkLicenseAsChanged Detours hook ────────────────────────────────────
-    // Captures pCUser (RCX = this) on first call, then triggers startup injection.
-    // This replaces the old VEH int3 capture. Detours fires on every call
-    // regardless of when the hook was installed, so we always get pCUser.
-    LM_HOOK(MarkLicenseAsChanged, int64, void* pThis, uint32 packageId, bool bReloadAll) {
-        if (!g_pCUser) {
-            g_pCUser = pThis;
-            LOG_PACKAGE_INFO("MarkLicenseAsChanged: captured pCUser=0x{:X}",
-                             reinterpret_cast<uint64_t>(pThis));
-        }
-        TryStartupInjection("mark-license");
-        return oMarkLicenseAsChanged(pThis, packageId, bReloadAll);
-    }
-
-    // ── GetPackageInfo Detours hook ───────────────────────────────────────────
-    // Captures pCPackageInfo (RCX = this) on first call — kept for NotifyLicenseChanged.
-    LM_HOOK(GetPackageInfo, PackageInfo*, void* pThis, uint32 packageId, int64 p3) {
-        if (!g_pCPackageInfo) {
-            g_pCPackageInfo = pThis;
-            LOG_PACKAGE_INFO("GetPackageInfo: captured pCPackageInfo=0x{:X}",
-                             reinterpret_cast<uint64_t>(pThis));
-        }
-        PackageInfo* result = oGetPackageInfo(pThis, packageId, p3);
-        if (packageId == 0 && result && !g_startupInjectionDone.load(std::memory_order_acquire)) {
-            PackagePatch::InjectIntoPackage0(result, LuaLoader::GetAllDepotIds(), "getpackageinfo-capture");
-            TryStartupInjection("getpackageinfo-capture");
-        }
-        return result;
-    }
-
-    // ── Startup injection ─────────────────────────────────────────────────────
-    PackageInfo* ResolvePackage0ForMutation(const char* reason) {
-        PackageInfo* pPkg = nullptr;
-        if (g_pCPackageInfo && oGetPackageInfo) {
-            pPkg = oGetPackageInfo(g_pCPackageInfo, 0, 0);
-        }
-        if (!pPkg) pPkg = PackagePatch::GetPackage0();
-        if (!pPkg) {
-            const bool retry = reason && std::string_view(reason) == "post-hooks-retry";
-            uint32 misses = retry
-                ? g_startupPackageMissLogs.fetch_add(1, std::memory_order_acq_rel) + 1
-                : 0;
-            if (!retry || misses == 1 || misses % 20 == 0) {
-                if (retry) {
-                    LOG_PACKAGE_DEBUG("{}: package 0 not captured yet (misses={})",
-                                      reason ? reason : "package0", misses);
-                } else {
-                    LOG_PACKAGE_DEBUG("{}: package 0 not captured yet",
-                                      reason ? reason : "package0");
-                }
-            }
-        }
-        return pPkg;
-    }
-
-    void TryStartupInjection(const char* reason) {
-        if (g_startupInjectionDone.load(std::memory_order_acquire)) return;
-        const char* safeReason = reason ? reason : "startup";
-        HookStatus::RecordStartupPackageRetry(safeReason);
-
-        std::vector<AppId_t> additions = LuaLoader::GetAllDepotIds();
-        if (additions.empty()) {
-            LOG_PACKAGE_DEBUG("TryStartupInjection: no Lua app ids loaded (reason={})", safeReason);
-            HookStatus::SetStartupRefreshState(PackagePatch::GetPackage0()
-                ? "package0-captured-awaiting-lua"
-                : "startup-waiting-lua");
-            return;
-        }
-
-        PackageInfo* pPkg = ResolvePackage0ForMutation(safeReason);
-        if (!pPkg) {
-            HookStatus::SetStartupRefreshState("startup-waiting-packageinfo");
-            return;
-        }
-
-        if (!PackagePatch::InjectIntoPackage0(pPkg, additions, safeReason)) {
-            HookStatus::SetStartupRefreshState(
-                pPkg->Status == EPackageStatus::Available
-                    ? "startup-waiting-packageinfo"
-                    : "package0-not-available");
-            return;
-        }
-
-        g_startupInjectionDone.store(true, std::memory_order_release);
-        HookStatus::SetStartupRefreshState(
-            g_pCUser ? "startup-injected" : "startup-injected-local-only");
-        HookStatus::SetPackageState(false, false, true, false);
-        LOG_PACKAGE_INFO("TryStartupInjection: reason={} done, verified {} Lua ids in package 0{}",
-                         safeReason, additions.size(),
-                         g_pCUser ? "" : " (local-only)");
-    }
-
-    DWORD WINAPI StartupInjectionRetryThread(LPVOID) {
-        for (int i = 0; i < 150; ++i) {
-            if (g_startupInjectionDone.load(std::memory_order_acquire)) break;
-            TryStartupInjection("post-hooks-retry");
-            if (g_startupInjectionDone.load(std::memory_order_acquire)) break;
-            Sleep(i < 40 ? 250 : 1000);
-        }
-        if (!g_startupInjectionDone.load(std::memory_order_acquire)) {
-            HookStatus::SetStartupRefreshState("package0-not-seen-after-library-init");
-            LOG_PACKAGE_WARN("StartupInjectionRetryThread: package 0 still missing after retry window");
-        }
-        return 0;
-    }
-
-    void StartStartupInjectionRetry() {
-        if (g_startupRetryThreadStarted.exchange(true, std::memory_order_acq_rel)) return;
-        HANDLE h = CreateThread(nullptr, 0, StartupInjectionRetryThread, nullptr, 0, nullptr);
-        if (h) {
-            CloseHandle(h);
-        } else {
-            LOG_PACKAGE_WARN("StartStartupInjectionRetry: CreateThread failed err={}", GetLastError());
-        }
-    }
     // Prevents substring matches like "-onlinefixpatch" triggering the -onlinefix path.
     static bool HasExactFlag(const char* cmd, const char* flag) {
         const char* p = cmd;
@@ -510,20 +386,13 @@ namespace SteamCapture {
         if (!g_captures.empty() || g_spawnProcessTarget)
             g_vehHandle = AddVectoredExceptionHandler(1, VehHandler);
 
-        // Hook MarkLicenseAsChanged and GetPackageInfo with Detours to capture
-        // pCUser and pCPackageInfo on first call. This replaces the old VEH int3
-        // approach which missed the first call (happened before hooks were installed).
-        // GetAppIDForCurrentPipe is also detoured so it can apply the scoped
+        // GetAppIDForCurrentPipe is detoured so it can apply the scoped
         // real-appid override for IClientUserStats traffic and capture the
         // engine pointer inline on the first natural call.
         LM_TX_BEGIN();
         LM_INSTALL(GetAppIDForCurrentPipe);
-        LM_INSTALL(MarkLicenseAsChanged);
-        LM_INSTALL(GetPackageInfo);
         LM_INSTALL(BuildSpawnEnvBlock);
         LM_TX_COMMIT();
-
-        StartStartupInjectionRetry();
     }
 
     void Uninstall() {
@@ -540,8 +409,6 @@ namespace SteamCapture {
 
         LM_TX_BEGIN();
         LM_REMOVE(GetAppIDForCurrentPipe);
-        LM_REMOVE(MarkLicenseAsChanged);
-        LM_REMOVE(GetPackageInfo);
         LM_REMOVE(BuildSpawnEnvBlock);
         LM_TX_COMMIT();
 
@@ -554,8 +421,6 @@ namespace SteamCapture {
         g_GameNameCache.clear();
         g_pCUser        = nullptr;
         g_pCPackageInfo = nullptr;
-        g_startupInjectionDone.store(false);
-        g_startupRetryThreadStarted.store(false);
     }
 
     AppId_t GetAppIDForCurrentPipe() {
@@ -651,100 +516,5 @@ namespace SteamCapture {
 
         LOG_MISC_DEBUG("GetGameNameByAppID({}): {}", appId, entry);
         return entry;
-    }
-
-    // ── License refresh (no-restart) ────────────────────────────────
-    bool IsReadyForNotify() {
-        return (PackagePatch::GetPackage0() != nullptr || (g_pCPackageInfo && oGetPackageInfo))
-            && oCUtlMemoryGrow != nullptr;
-    }
-
-    void TryStartupPackageInjection(const char* reason) {
-        TryStartupInjection(reason);
-    }
-
-    void NotifyLicenseChanged() {
-        if (!oCUtlMemoryGrow) {
-            LOG_PACKAGE_WARN("NotifyLicenseChanged: CUtlMemoryGrow not resolved yet, skipping");
-            return;
-        }
-        PackageInfo* pPkg = ResolvePackage0ForMutation("hot-reload");
-        if (!pPkg) {
-            HookStatus::SetStartupRefreshState("startup-waiting-packageinfo");
-            LOG_PACKAGE_WARN("NotifyLicenseChanged: package 0 not captured yet, leaving Lua changes pending");
-            return;
-        }
-        if (pPkg->Status != EPackageStatus::Available) {
-            HookStatus::SetStartupRefreshState("package0-not-available");
-            LOG_PACKAGE_WARN("NotifyLicenseChanged: package 0 status={} not Available, leaving Lua changes pending",
-                             static_cast<int>(pPkg->Status));
-            return;
-        }
-
-        // Two-phase order.
-        //   1. Mutate the package vector (drop removals, append additions)
-        //   2. Trigger Steam's license refresh only if pCUser exists
-        //   3. Queue UI refresh on the SteamUI run-frame hook
-
-        // ── Phase 1a: drop removals from the package vector ──
-        std::vector<AppId_t> removals = LuaLoader::TakePendingRemovals();
-        uint32_t removedCount = 0;
-        for (AppId_t id : removals) {
-            if (pPkg->AppIdVec.FindAndFastRemove(id)) {
-                ++removedCount;
-                LOG_PACKAGE_DEBUG("NotifyLicenseChanged: removed AppId {} from vector", id);
-            } else {
-                LOG_PACKAGE_DEBUG("NotifyLicenseChanged: AppId {} not in vector (hot-reload)", id);
-            }
-        }
-
-        // ── Phase 1b: append additions to the package vector ──
-        std::vector<AppId_t> additions = LuaLoader::TakePendingAdditions();
-        if (!additions.empty())
-            PackagePatch::InjectIntoPackage0(pPkg, additions, "hot-reload");
-
-        if (additions.empty() && removals.empty()) {
-            LOG_PACKAGE_DEBUG("NotifyLicenseChanged: no changes");
-            return;
-        }
-
-        // ── Phase 2: license refresh (Steam re-evaluates package state) ──
-        bool refreshedLicense = false;
-        if (g_pCUser && oMarkLicenseAsChanged && oProcessPendingLicenseUpdates) {
-            oMarkLicenseAsChanged(g_pCUser, 0, true);
-            oProcessPendingLicenseUpdates(g_pCUser);
-            HookStatus::SetPackageState(false, false, false, true);
-            refreshedLicense = true;
-        } else {
-            HookStatus::SetStartupRefreshState("startup-waiting-cuser");
-            LOG_PACKAGE_WARN("NotifyLicenseChanged: pCUser not ready, package vector updated locally only");
-        }
-
-        std::unordered_set<AppId_t> libraryRoots;
-        for (AppId_t id : LuaLoader::GetLibraryAppIds()) {
-            libraryRoots.insert(id);
-        }
-        uint32_t queuedTouches = 0;
-        for (AppId_t id : additions) {
-            if (libraryRoots.count(id)) {
-                SteamUI::CancelLibraryRemoval(id);
-                SteamUI::QueueLibraryTouch(id);
-                ++queuedTouches;
-            }
-        }
-        uint32_t queuedRemovals = 0;
-        for (AppId_t id : removals) {
-            SteamUI::QueueLibraryRemoval(id);
-            ++queuedRemovals;
-        }
-        if (queuedTouches || queuedRemovals)
-            HookStatus::SetStartupRefreshState("library-refresh-queued");
-        HookStatus::RecordHotReload(static_cast<uint32_t>(additions.size()),
-                                    static_cast<uint32_t>(removals.size()),
-                                    queuedTouches, queuedRemovals,
-                                    refreshedLicense ? "license-refresh"
-                                                     : "local-package-only");
-        LOG_PACKAGE_INFO("NotifyLicenseChanged: {} added, {} removed ({} from vector)",
-                         additions.size(), removals.size(), removedCount);
     }
 }

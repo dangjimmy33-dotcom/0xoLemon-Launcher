@@ -32,8 +32,10 @@ pub mod achievement_watcher;
 pub mod save_paths;
 pub mod local_save_backup;
 
+use std::collections::HashMap;
 use std::path::PathBuf;
-use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Mutex};
 
 use asset_pack::{AssetBlob, GameCatalog, GameDetail};
 use job::{
@@ -43,6 +45,29 @@ use job::{
 use launch::ResolvedGameLaunchConfig;
 use scanner::ScanReport;
 use tauri::{AppHandle, Emitter, Manager, State};
+
+#[derive(Clone, Default)]
+struct InstallPlanCoordinator {
+    active: Arc<Mutex<HashMap<String, Arc<AtomicBool>>>>,
+}
+
+impl InstallPlanCoordinator {
+    fn begin(&self, key: String) -> Arc<AtomicBool> {
+        let token = Arc::new(AtomicBool::new(false));
+        let mut active = self.active.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
+        if let Some(previous) = active.insert(key, token.clone()) {
+            previous.store(true, Ordering::Release);
+        }
+        token
+    }
+
+    fn finish(&self, key: &str, token: &Arc<AtomicBool>) {
+        let mut active = self.active.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
+        if active.get(key).is_some_and(|current| Arc::ptr_eq(current, token)) {
+            active.remove(key);
+        }
+    }
+}
 
 #[tauri::command]
 fn exit_app(app: AppHandle) {
@@ -413,8 +438,12 @@ fn clear_chunk_cache(
 }
 
 #[tauri::command]
-fn get_launcher_snapshot(app: AppHandle) -> Result<LauncherSnapshot, String> {
-    job::snapshot(&app).map_err(|err| err.to_string())
+async fn get_launcher_snapshot(app: AppHandle) -> Result<LauncherSnapshot, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        job::snapshot(&app).map_err(|err| err.to_string())
+    })
+    .await
+    .map_err(|err| err.to_string())?
 }
 
 #[tauri::command]
@@ -573,81 +602,155 @@ fn restore_local_save_backup(
 }
 
 #[tauri::command]
-fn plan_install_update(
+async fn plan_install_update(
     app: AppHandle,
+    coordinator: State<'_, InstallPlanCoordinator>,
     path: String,
     target_version: Option<String>,
     game_id: Option<String>,
 ) -> Result<LauncherSnapshot, String> {
-    job::snapshot_for_install(&app, PathBuf::from(path).as_path(), target_version, game_id)
+    let key = format!(
+        "update:{}:{}",
+        game_id.as_deref().unwrap_or_default(),
+        path.to_lowercase(),
+    );
+    let token = coordinator.begin(key.clone());
+    let work_token = token.clone();
+    let result = match tauri::async_runtime::spawn_blocking(move || {
+        job::snapshot_for_install_cancellable(
+            &app,
+            PathBuf::from(path).as_path(),
+            target_version,
+            game_id,
+            Some(work_token.as_ref()),
+        )
         .map_err(|err| err.to_string())
+    })
+    .await
+    {
+        Ok(result) => result,
+        Err(error) => Err(error.to_string()),
+    };
+    coordinator.finish(&key, &token);
+    result
 }
 
 #[tauri::command]
-fn plan_fresh_install(
+async fn plan_fresh_install(
     app: AppHandle,
+    coordinator: State<'_, InstallPlanCoordinator>,
     target_version: Option<String>,
     game_id: Option<String>,
 ) -> Result<LauncherSnapshot, String> {
-    job::snapshot_for_fresh_install(&app, target_version, game_id).map_err(|err| err.to_string())
+    let key = format!("fresh:{}", game_id.as_deref().unwrap_or_default());
+    let token = coordinator.begin(key.clone());
+    let work_token = token.clone();
+    let result = match tauri::async_runtime::spawn_blocking(move || {
+        job::snapshot_for_fresh_install_cancellable(
+            &app,
+            target_version,
+            game_id,
+            Some(work_token.as_ref()),
+        )
+        .map_err(|err| err.to_string())
+    })
+    .await
+    {
+        Ok(result) => result,
+        Err(error) => Err(error.to_string()),
+    };
+    coordinator.finish(&key, &token);
+    result
 }
 
 #[tauri::command]
-fn scan_install(path: String) -> Result<ScanReport, String> {
-    scanner::scan_install(PathBuf::from(path).as_path()).map_err(|err| err.to_string())
+async fn scan_install(path: String) -> Result<ScanReport, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        scanner::scan_install(PathBuf::from(path).as_path()).map_err(|err| err.to_string())
+    })
+    .await
+    .map_err(|err| err.to_string())?
 }
 
 #[tauri::command]
-fn read_job_journal(app: AppHandle) -> Result<Option<JobJournal>, String> {
-    job::read_latest_journal(&app).map_err(|err| err.to_string())
+async fn read_job_journal(app: AppHandle) -> Result<Option<JobJournal>, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        job::read_latest_journal(&app).map_err(|err| err.to_string())
+    })
+    .await
+    .map_err(|err| err.to_string())?
 }
 
 #[tauri::command]
-fn get_game_catalog(app: AppHandle) -> Result<GameCatalog, String> {
-    asset_pack::get_game_catalog(&app).map_err(|err| err.to_string())
+async fn get_game_catalog(app: AppHandle) -> Result<GameCatalog, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        asset_pack::get_game_catalog(&app).map_err(|err| err.to_string())
+    })
+    .await
+    .map_err(|err| err.to_string())?
 }
 
 #[tauri::command]
-fn get_game_detail(
+async fn get_game_detail(
     app: AppHandle,
     game_id: String,
     locale: Option<String>,
 ) -> Result<GameDetail, String> {
-    asset_pack::get_game_detail(&app, &game_id, locale).map_err(|err| err.to_string())
+    tauri::async_runtime::spawn_blocking(move || {
+        asset_pack::get_game_detail(&app, &game_id, locale).map_err(|err| err.to_string())
+    })
+    .await
+    .map_err(|err| err.to_string())?
 }
 
 #[tauri::command]
-fn get_game_asset(app: AppHandle, game_id: String, asset_id: String) -> Result<AssetBlob, String> {
-    asset_pack::get_game_asset(&app, &game_id, &asset_id).map_err(|err| err.to_string())
+async fn get_game_asset(app: AppHandle, game_id: String, asset_id: String) -> Result<AssetBlob, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        asset_pack::get_game_asset(&app, &game_id, &asset_id).map_err(|err| err.to_string())
+    })
+    .await
+    .map_err(|err| err.to_string())?
 }
 
 #[tauri::command]
-fn get_game_install_state(app: AppHandle, game_id: String) -> Result<GameInstallState, String> {
-    job::game_install_state(&app, &game_id).map_err(|err| err.to_string())
+async fn get_game_install_state(app: AppHandle, game_id: String) -> Result<GameInstallState, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        job::game_install_state(&app, &game_id).map_err(|err| err.to_string())
+    })
+    .await
+    .map_err(|err| err.to_string())?
 }
 
 #[tauri::command]
-fn get_game_install_states(
+async fn get_game_install_states(
     app: AppHandle,
     game_ids: Vec<String>,
 ) -> Result<Vec<GameInstallState>, String> {
-    job::game_install_states_quick(&app, &game_ids).map_err(|err| err.to_string())
+    tauri::async_runtime::spawn_blocking(move || {
+        job::game_install_states_quick(&app, &game_ids).map_err(|err| err.to_string())
+    })
+    .await
+    .map_err(|err| err.to_string())?
 }
 
 #[tauri::command]
-fn get_game_launch_config(
+async fn get_game_launch_config(
     app: AppHandle,
     game_id: String,
     install_path: String,
     launch_executable: Option<String>,
 ) -> Result<ResolvedGameLaunchConfig, String> {
-    job::game_launch_config(
-        &app,
-        &game_id,
-        PathBuf::from(install_path).as_path(),
-        launch_executable,
-    )
-    .map_err(|err| err.to_string())
+    tauri::async_runtime::spawn_blocking(move || {
+        job::game_launch_config(
+            &app,
+            &game_id,
+            PathBuf::from(install_path).as_path(),
+            launch_executable,
+        )
+        .map_err(|err| err.to_string())
+    })
+    .await
+    .map_err(|err| err.to_string())?
 }
 
 #[tauri::command]
@@ -732,19 +835,23 @@ fn kill_process_by_name(executable: String) -> Result<(), String> {
 }
 
 #[tauri::command]
-fn verify_install_integrity(
+async fn verify_install_integrity(
     app: AppHandle,
     game_id: String,
     install_path: String,
     target_version: Option<String>,
 ) -> Result<VerifyInstallReport, String> {
-    job::verify_install_integrity(
-        Some(&app),
-        &game_id,
-        PathBuf::from(install_path).as_path(),
-        target_version,
-    )
-    .map_err(|err| err.to_string())
+    tauri::async_runtime::spawn_blocking(move || {
+        job::verify_install_integrity(
+            Some(&app),
+            &game_id,
+            PathBuf::from(install_path).as_path(),
+            target_version,
+        )
+        .map_err(|err| err.to_string())
+    })
+    .await
+    .map_err(|err| err.to_string())?
 }
 
 #[tauri::command]
@@ -938,6 +1045,36 @@ fn get_debug_log_path(app: AppHandle) -> Result<String, String> {
     Ok(log_path.to_string_lossy().to_string())
 }
 
+/// Detect AMD GPU by reading Windows registry display adapter keys.
+/// Returns true if any display adapter contains "AMD" or "Radeon" in its description.
+fn detect_amd_gpu() -> bool {
+    // Fast registry-based detection — no subprocess, no blocking
+    #[cfg(target_os = "windows")]
+    {
+        // Read HKLM\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\
+        // DriverDesc values for each display adapter
+        let hklm = winreg::RegKey::predef(winreg::enums::HKEY_LOCAL_MACHINE);
+        let class_key = hklm
+            .open_subkey("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}")
+            .or_else(|_| {
+                hklm.open_subkey("SYSTEM\\CurrentControlSet\\Control\\Video")
+            });
+
+        if let Ok(key) = class_key {
+            for sub in key.enum_keys().filter_map(|k| k.ok()) {
+                if let Ok(sub_key) = key.open_subkey(&sub) {
+                    let desc: String = sub_key.get_value("DriverDesc").unwrap_or_default();
+                    let desc_lower = desc.to_lowercase();
+                    if desc_lower.contains("amd") || desc_lower.contains("radeon") || desc_lower.contains("rx ") {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+    false
+}
+
 pub fn run() {
     #[allow(unused_variables)]
     let port: u16 = 14201;
@@ -955,6 +1092,7 @@ pub fn run() {
         .manage(LauncherState {
             job_control: Arc::new(JobControl::default()),
         })
+        .manage(InstallPlanCoordinator::default())
         .manage(asset_pack::AssetPackCache::default())
         .invoke_handler(tauri::generate_handler![
             steam::check_steam_status,
@@ -964,6 +1102,7 @@ pub fn run() {
             steam::add_to_steam,
             steam::get_installed_steam_apps,
             steam::fetch_steam_game_name,
+            steam::search_steam_store,
             chat::load_chat_history,
             chat::save_chat_message,
             chat::delete_chat_message,
@@ -995,6 +1134,7 @@ pub fn run() {
             clear_chunk_cache,
             get_launcher_snapshot,
             get_game_platform_state,
+            job::set_process_priority,
             get_launcher_settings,
             set_launcher_settings,
             get_game_ost_repo_info,
@@ -1119,17 +1259,33 @@ pub fn run() {
                 tauri::WebviewUrl::External(url)
             };
 
-            tauri::WebviewWindowBuilder::new(app, "main", main_url)
+            // Detect AMD GPU via fast registry read (non-blocking)
+            let is_amd_gpu = detect_amd_gpu();
+            if is_amd_gpu {
+                debug_log::debug_log("AMD GPU detected via registry");
+            }
+            debug_log::debug_log("Building main window...");
+
+            let mut window_builder = tauri::WebviewWindowBuilder::new(app, "main", main_url)
                 .title("0xoLemon")
                 .inner_size(1200.0, 800.0)
                 .min_inner_size(1120.0, 720.0)
                 .center()
                 .resizable(true)
                 .fullscreen(false)
-                .visible(false)
                 .decorations(false)
                 .transparent(true)
-                .build()?;
+                .visible(true);
+
+            // Only apply ANGLE workaround for AMD to avoid breaking non-AMD setups.
+            if is_amd_gpu {
+                debug_log::debug_log("AMD: applying --use-angle=gl workaround");
+                window_builder = window_builder.additional_browser_args("--use-angle=gl --disable-gpu-sandbox");
+            }
+
+            window_builder.build()?;
+            debug_log::debug_log("Main window built successfully.");
+
 
             // Check and update DLLs on startup if Lua-Game Mode is enabled
             std::thread::spawn(|| {
@@ -1162,6 +1318,7 @@ pub fn run() {
                 ],
             )?;
 
+            debug_log::debug_log("Creating tray icon...");
             let _tray = tauri::tray::TrayIconBuilder::new()
                 .icon(app.default_window_icon().unwrap().clone())
                 .menu(&tray_menu)
@@ -1185,7 +1342,7 @@ pub fn run() {
                     }
                 })
                 .on_tray_icon_event(|tray, event| {
-                    // Left-click: toggle main window
+                    // Left-click: show launcher (hide only if already focused + visible)
                     if let tauri::tray::TrayIconEvent::Click {
                         button: tauri::tray::MouseButton::Left,
                         button_state: tauri::tray::MouseButtonState::Up,
@@ -1195,16 +1352,23 @@ pub fn run() {
                         let app = tray.app_handle();
                         if let Some(win) = app.get_webview_window("main") {
                             let is_visible = win.is_visible().unwrap_or(false);
-                            if is_visible {
+                            let is_minimized = win.is_minimized().unwrap_or(false);
+                            let is_focused = win.is_focused().unwrap_or(false);
+
+                            if is_visible && !is_minimized && is_focused {
+                                // Already front and center — toggle off (hide to tray)
                                 let _ = win.hide();
                             } else {
+                                // Hidden, minimized, or just in background — bring it up
                                 let _ = win.show();
+                                let _ = win.unminimize();
                                 let _ = win.set_focus();
                             }
                         }
                     }
                 })
                 .build(app)?;
+            debug_log::debug_log("Tray icon created.");;
 
             if let Some(window) = app.get_webview_window("main") {
                 let window_clone = window.clone();
@@ -1229,8 +1393,10 @@ pub fn run() {
 
             let app_dir = app.path().app_data_dir()?;
             std::fs::create_dir_all(app_dir.join("journals"))?;
+            debug_log::debug_log("Calling platform::initialize...");
             platform::initialize(app.handle())
                 .map_err(|error| std::io::Error::new(std::io::ErrorKind::Other, error))?;
+            debug_log::debug_log("platform::initialize complete.");
             steam_integration::start_pending_worker(app.handle().clone());
             let job_control = app.state::<LauncherState>().job_control.clone();
             job::start_auto_update_scheduler(app.handle().clone(), job_control);

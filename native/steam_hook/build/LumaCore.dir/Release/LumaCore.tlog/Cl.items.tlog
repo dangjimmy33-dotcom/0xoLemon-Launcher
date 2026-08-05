@@ -40,7 +40,7 @@ E:\007Launcher\native\steam_hook\hooks\client\NetPacket_Manifest.cpp;E:\007Launc
 E:\007Launcher\native\steam_hook\hooks\client\NetPacket_FamilySharing.cpp;E:\007Launcher\native\steam_hook\build\LumaCore.dir\Release\NetPacket_FamilySharing.obj
 E:\007Launcher\native\steam_hook\hooks\client\NetPacket_OnlineFix.cpp;E:\007Launcher\native\steam_hook\build\LumaCore.dir\Release\NetPacket_OnlineFix.obj
 E:\007Launcher\native\steam_hook\hooks\client\NetPacket_SteamStub.cpp;E:\007Launcher\native\steam_hook\build\LumaCore.dir\Release\NetPacket_SteamStub.obj
-E:\007Launcher\native\steam_hook\hooks\client\PackagePatch.cpp;E:\007Launcher\native\steam_hook\build\LumaCore.dir\Release\PackagePatch.obj
+E:\007Launcher\native\steam_hook\hooks\client\PackageInject.cpp;E:\007Launcher\native\steam_hook\build\LumaCore.dir\Release\PackageInject.obj
 E:\007Launcher\native\steam_hook\hooks\client\RichPresence.cpp;E:\007Launcher\native\steam_hook\build\LumaCore.dir\Release\RichPresence.obj
 E:\007Launcher\native\steam_hook\hooks\client\LicenseHooks.cpp;E:\007Launcher\native\steam_hook\build\LumaCore.dir\Release\LicenseHooks.obj
 E:\007Launcher\native\steam_hook\hooks\client\StringFind.cpp;E:\007Launcher\native\steam_hook\build\LumaCore.dir\Release\StringFind.obj

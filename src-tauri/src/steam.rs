@@ -1157,6 +1157,87 @@ pub struct SteamGameInfo {
     pub header_image: String,
 }
 
+#[derive(Serialize)]
+pub struct SteamStoreSearchItem {
+    pub id: u32,
+    pub name: String,
+    pub header_image: String,
+}
+
+#[command]
+pub async fn search_steam_store(term: String) -> Result<Vec<SteamStoreSearchItem>, String> {
+    tauri::async_runtime::spawn_blocking(move || search_steam_store_blocking(&term))
+        .await
+        .map_err(|e| e.to_string())?
+}
+
+fn search_steam_store_blocking(term: &str) -> Result<Vec<SteamStoreSearchItem>, String> {
+    let query = term.trim();
+    if query.is_empty() {
+        return Ok(Vec::new());
+    }
+
+    let client = Client::builder()
+        .timeout(std::time::Duration::from_secs(8))
+        .user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) 0xoLauncher/1.0")
+        .default_headers({
+            let mut headers = reqwest::header::HeaderMap::new();
+            headers.insert(
+                reqwest::header::COOKIE,
+                reqwest::header::HeaderValue::from_static("birthtime=568022401; lastagecheckage=1-January-1988; mature_content=1")
+            );
+            headers
+        })
+        .build()
+        .map_err(|e| e.to_string())?;
+
+    let response = client
+        .get("https://store.steampowered.com/api/storesearch/")
+        .query(&[("term", query), ("cc", "us"), ("l", "english")])
+        .send()
+        .map_err(|e| e.to_string())?;
+
+    if !response.status().is_success() {
+        return Err(format!("Steam search failed: {}", response.status()));
+    }
+
+    let json: serde_json::Value = response.json().map_err(|e| e.to_string())?;
+    let items = json
+        .get("items")
+        .and_then(|value| value.as_array())
+        .ok_or_else(|| "Steam search response missing items".to_string())?;
+
+    let mut results = Vec::new();
+    for item in items.iter().take(25) {
+        if item.get("type").and_then(|value| value.as_str()) != Some("app") {
+            continue;
+        }
+        let Some(id) = item
+            .get("id")
+            .and_then(|value| value.as_u64())
+            .and_then(|value| u32::try_from(value).ok())
+        else {
+            continue;
+        };
+        let Some(name) = item.get("name").and_then(|value| value.as_str()) else {
+            continue;
+        };
+        if name.trim().is_empty() {
+            continue;
+        }
+        results.push(SteamStoreSearchItem {
+            id,
+            name: name.to_string(),
+            header_image: format!(
+                "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/{}/header.jpg",
+                id
+            ),
+        });
+    }
+
+    Ok(results)
+}
+
 #[command]
 pub fn fetch_steam_game_name(appid: u32) -> Result<SteamGameInfo, String> {
     let client = Client::builder()
@@ -1238,13 +1319,15 @@ pub fn fetch_steam_game_name(appid: u32) -> Result<SteamGameInfo, String> {
 
 
 #[command]
-pub async fn list_available_manifests() -> Result<Vec<String>, String> {
-    tauri::async_runtime::spawn_blocking(|| list_available_manifests_blocking())
+pub async fn list_available_manifests(force: Option<bool>) -> Result<Vec<String>, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        list_available_manifests_blocking(force.unwrap_or(false))
+    })
         .await
         .map_err(|e| e.to_string())?
 }
 
-fn list_available_manifests_blocking() -> Result<Vec<String>, String> {
+fn list_available_manifests_blocking(force: bool) -> Result<Vec<String>, String> {
     let client = Client::builder()
         .timeout(std::time::Duration::from_secs(30))
         .build()
@@ -1252,8 +1335,21 @@ fn list_available_manifests_blocking() -> Result<Vec<String>, String> {
     
     let token = get_hf_token().unwrap_or_default();
     
-    let url = "https://huggingface.co/api/datasets/Immaking/Luas/tree/main/manifests";
+    let cache_buster = if force {
+        format!("?refresh={}", Utc::now().timestamp_millis())
+    } else {
+        String::new()
+    };
+    let url = format!(
+        "https://huggingface.co/api/datasets/Immaking/Luas/tree/main/manifests{}",
+        cache_buster
+    );
     let mut req = client.get(url);
+    if force {
+        req = req
+            .header("Cache-Control", "no-cache")
+            .header("Pragma", "no-cache");
+    }
     if !token.is_empty() {
         req = req.header("Authorization", format!("Bearer {}", token));
     }

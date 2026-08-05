@@ -4,7 +4,13 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::sync::{OnceLock, RwLock};
 
+use aes_gcm::{
+    aead::{Aead, KeyInit},
+    Aes256Gcm, Nonce
+};
 use chrono::Utc;
+use keyring::Entry;
+use rand_core::{OsRng, RngCore};
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Emitter, Manager};
 
@@ -25,6 +31,20 @@ pub enum GameUpdateMode {
     Automatic,
     Scheduled,
     Manual,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum GameTurboPreference {
+    Always,
+    Never,
+    Ask,
+}
+
+impl Default for GameTurboPreference {
+    fn default() -> Self {
+        Self::Ask
+    }
 }
 
 impl Default for GameUpdateMode {
@@ -60,6 +80,8 @@ pub struct LauncherSettings {
     /// Format: "owner/repo-name"  e.g. "dangjimmy33-dotcom/depots"
     #[serde(default)]
     pub depot_hf_repo_id: String,
+    #[serde(default)]
+    pub game_turbo: GameTurboPreference,
 }
 
 impl Default for LauncherSettings {
@@ -80,6 +102,7 @@ impl Default for LauncherSettings {
             game_update_schedule_start: "02:00".to_string(),
             game_update_schedule_end: "06:00".to_string(),
             depot_hf_repo_id: String::new(),
+            game_turbo: GameTurboPreference::Ask,
         }
     }
 }
@@ -329,16 +352,21 @@ fn live_settings() -> &'static RwLock<LauncherSettings> {
 }
 
 pub fn initialize(app: &AppHandle) -> Result<(), String> {
+    eprintln!("[platform] initialize: loading state...");
     let mut state = load_state(app).unwrap_or_default();
+    eprintln!("[platform] initialize: resetting runtime flags...");
     for runtime in state.runtime.values_mut() {
         runtime.running = false;
         runtime.pid = None;
         runtime.current_session_started_at = None;
     }
+    eprintln!("[platform] initialize: writing state...");
     write_state_unlocked(app, &state)?;
+    eprintln!("[platform] initialize: updating live settings...");
     if let Ok(mut settings) = live_settings().write() {
         *settings = state.settings.clone().sanitized();
     }
+    eprintln!("[platform] initialize: done.");
     Ok(())
 }
 
@@ -647,6 +675,37 @@ fn state_path(app: &AppHandle) -> Result<PathBuf, String> {
     Ok(root.join(PLATFORM_STATE_FILE))
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct EncryptedStateWrapper {
+    nonce_hex: String,
+    ciphertext_hex: String,
+}
+
+/// Try to get or create the AES-256 encryption key from Windows Credential Manager.
+/// Returns None gracefully if the keyring is unavailable — caller will fall back to plaintext.
+fn try_get_encryption_key() -> Option<aes_gcm::Key<Aes256Gcm>> {
+    let entry = Entry::new("0x0lemon-launcher", "platform_state_key").ok()?;
+
+    // Try to load existing key
+    if let Ok(key_hex) = entry.get_password() {
+        if let Ok(key_bytes) = hex::decode(&key_hex) {
+            if key_bytes.len() == 32 {
+                return Some(*aes_gcm::Key::<Aes256Gcm>::from_slice(&key_bytes));
+            }
+        }
+    }
+
+    // Generate and persist a new key
+    let mut key_bytes = [0u8; 32];
+    OsRng.fill_bytes(&mut key_bytes);
+    let key = *aes_gcm::Key::<Aes256Gcm>::from_slice(&key_bytes);
+    let key_hex = hex::encode(key);
+    // If we can't persist the key, return None so caller uses plaintext
+    entry.set_password(&key_hex).ok()?;
+    Some(key)
+}
+
 fn load_state(app: &AppHandle) -> Result<PlatformStateFile, String> {
     let _guard = state_lock()
         .read()
@@ -660,6 +719,29 @@ fn load_state_unlocked(app: &AppHandle) -> Result<PlatformStateFile, String> {
         return Ok(PlatformStateFile::default());
     }
     let bytes = fs::read(&path).map_err(|error| error.to_string())?;
+
+    // Try encrypted read first (best-effort — falls back to plaintext if keyring unavailable)
+    if let Ok(wrapper) = serde_json::from_slice::<EncryptedStateWrapper>(&bytes) {
+        if let Some(key) = try_get_encryption_key() {
+            let cipher = Aes256Gcm::new(&key);
+            if let (Ok(nonce_bytes), Ok(ciphertext)) = (
+                hex::decode(&wrapper.nonce_hex),
+                hex::decode(&wrapper.ciphertext_hex),
+            ) {
+                if nonce_bytes.len() == 12 {
+                    let nonce = Nonce::from_slice(&nonce_bytes);
+                    if let Ok(plaintext) = cipher.decrypt(nonce, ciphertext.as_ref()) {
+                        if let Ok(mut state) = serde_json::from_slice::<PlatformStateFile>(&plaintext) {
+                            state.settings = state.settings.sanitized();
+                            return Ok(state);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Plaintext fallback (legacy files or keyring unavailable)
     match serde_json::from_slice::<PlatformStateFile>(&bytes) {
         Ok(mut state) => {
             state.settings = state.settings.sanitized();
@@ -668,9 +750,9 @@ fn load_state_unlocked(app: &AppHandle) -> Result<PlatformStateFile, String> {
         Err(error) => {
             let backup = path.with_extension(format!("corrupt-{}.json", Utc::now().timestamp()));
             let _ = fs::rename(&path, backup);
-            Err(format!(
-                "platform state was corrupt and has been reset: {error}"
-            ))
+            // Don't propagate — return defaults so launcher can still open
+            eprintln!("[platform] state was corrupt, reset to defaults: {error}");
+            Ok(PlatformStateFile::default())
         }
     }
 }
@@ -692,7 +774,32 @@ fn write_state_unlocked(app: &AppHandle, state: &PlatformStateFile) -> Result<()
     let path = state_path(app)?;
     let temporary = path.with_extension("tmp");
     let backup = path.with_extension("bak");
-    let bytes = serde_json::to_vec_pretty(state).map_err(|error| error.to_string())?;
+
+    let raw_bytes = serde_json::to_vec(state).map_err(|error| error.to_string())?;
+
+    // Try to encrypt (best-effort — fall back to plaintext if keyring unavailable)
+    let bytes = if let Some(key) = try_get_encryption_key() {
+        let cipher = Aes256Gcm::new(&key);
+        let mut nonce_bytes = [0u8; 12];
+        OsRng.fill_bytes(&mut nonce_bytes);
+        let nonce = Nonce::from_slice(&nonce_bytes);
+        match cipher.encrypt(nonce, raw_bytes.as_ref()) {
+            Ok(ciphertext) => {
+                let wrapper = EncryptedStateWrapper {
+                    nonce_hex: hex::encode(nonce_bytes),
+                    ciphertext_hex: hex::encode(ciphertext),
+                };
+                serde_json::to_vec_pretty(&wrapper).unwrap_or(raw_bytes.clone())
+            }
+            Err(e) => {
+                eprintln!("[platform] encryption failed, saving plaintext: {e}");
+                serde_json::to_vec_pretty(state).unwrap_or(raw_bytes.clone())
+            }
+        }
+    } else {
+        eprintln!("[platform] keyring unavailable, saving plaintext");
+        serde_json::to_vec_pretty(state).map_err(|e| e.to_string())?
+    };
     {
         let mut file = fs::File::create(&temporary).map_err(|error| error.to_string())?;
         file.write_all(&bytes).map_err(|error| error.to_string())?;

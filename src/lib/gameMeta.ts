@@ -80,6 +80,35 @@ export function assetUrlForId(assetId: string | null | undefined, assets: Record
   return undefined
 }
 
+/**
+ * Steam publishes compact screenshot variants beside its full-resolution images.
+ * Use them only for thumbnail rails; cards and main media continue to use the
+ * original URL so high-density grids retain their source quality.
+ */
+export function steamScreenshotPreviewUrl(url: string) {
+  try {
+    const parsed = new URL(url)
+    if (!parsed.hostname.endsWith('steamstatic.com') || !parsed.pathname.includes('/screenshots/')) {
+      return url
+    }
+
+    const nextPath = parsed.pathname.replace(/\.(?:1920x1080|3840x2160)\.jpg$/i, '.600x338.jpg')
+    if (nextPath === parsed.pathname) return url
+    parsed.pathname = nextPath
+    return parsed.toString()
+  } catch {
+    return url
+  }
+}
+
+export function thumbnailUrlForMedia(item: GameMedia, assets: Record<string, string>) {
+  const explicitThumbnail = assetUrlForId(item.thumbnailAssetId, assets)
+  if (explicitThumbnail) return explicitThumbnail
+
+  const sourceUrl = assetUrlForId(item.assetId, assets)
+  return sourceUrl ? steamScreenshotPreviewUrl(sourceUrl) : undefined
+}
+
 export function isCarouselMedia(item: GameMedia) {
   return item.role === 'video' || item.role === 'video-preview' || item.role === 'screenshot' || item.role === 'gif'
 }
@@ -104,7 +133,16 @@ export function versionOptions(snapshot: Snapshot, game: GameSummary, useSnapsho
     return snapshot.availableVersions
   }
   if (game.availableVersions.length > 0) {
-    return game.availableVersions.map((version) => typeof version === 'string' ? version : version.version)
+    return game.availableVersions.map((version) => {
+      const verStr = typeof version === 'string' ? version : version.version
+      const getClean = (v: string) => v.replace(/\s*-\s*Uploaded.*$/, '').replace(/\s*\(Build [^)]+\)\s*/i, '').trim().toLowerCase()
+      const catClean = getClean(verStr)
+      const hfMatch = snapshot.availableVersions.find(hf => getClean(hf) === catClean)
+      return hfMatch || verStr
+    })
+  }
+  if (snapshot.availableVersions.length > 0) {
+    return snapshot.availableVersions
   }
   return snapshot.latestVersion === 'unknown' ? [] : [snapshot.latestVersion]
 }
@@ -144,8 +182,8 @@ export function fallbackDetailFromSummary(game: GameSummary): GameDetail {
   }
 }
 
-export function firstMediaUrl(detail: GameDetail, assets: Record<string, string>) {
-  const safeMedia = Array.isArray(detail.media) ? detail.media : []
+export function firstMediaUrl(detail: GameDetail | null | undefined, assets: Record<string, string>) {
+  const safeMedia = Array.isArray(detail?.media) ? detail.media : []
   const first = safeMedia.find((item) => isCarouselMedia(item) && item.mimeType?.startsWith('image/') && assetUrlForId(item.assetId, assets))
   return first ? assetUrlForId(first.assetId, assets) : undefined
 }

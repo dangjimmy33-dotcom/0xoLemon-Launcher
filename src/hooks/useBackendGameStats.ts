@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { fetchWithRetry } from '../lib/fetchWithRetry'
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://zeroxolemon-launcher.onrender.com'
 const TENANT_ID = import.meta.env.VITE_TENANT_ID || '0xolemon1'
@@ -13,9 +14,11 @@ export function useBackendGameStats(): void {
 
     async function fetchStats() {
       try {
-        const response = await fetch(`${BACKEND_URL}/api/${TENANT_ID}/game-stats`, {
-          headers: { 'Accept': 'application/json' }
-        })
+        const response = await fetchWithRetry(
+          `${BACKEND_URL}/api/${TENANT_ID}/game-stats`,
+          { headers: { 'Accept': 'application/json' } },
+          { maxRetries: 3, baseDelay: 1500 },
+        )
         
         if (!response.ok) {
           throw new Error(`Backend error: ${response.status}`)

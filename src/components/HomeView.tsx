@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { gameHasTag } from '../lib/gameTags'
-import { firstMediaUrl } from '../lib/gameMeta'
+import { assetUrlForId, firstMediaUrl } from '../lib/gameMeta'
 import { DiscordWidget } from './DiscordWidget'
 import '../home-view.css'
 import type {
@@ -24,6 +24,15 @@ type HomePreferences = {
   showDiscordCard: boolean
   showDonateCard: boolean
   carouselAutoplay: boolean
+}
+
+function stableGameRank(game: GameSummary) {
+  let hash = 2166136261
+  for (let index = 0; index < game.id.length; index += 1) {
+    hash ^= game.id.charCodeAt(index)
+    hash = Math.imul(hash, 16777619)
+  }
+  return hash >>> 0
 }
 
 export function HomeView({
@@ -97,8 +106,11 @@ export function HomeView({
       if (seen.size >= 3) break
       mix.push(g); seen.add(g.id)
     }
-    const random = [...catalog.games].sort(() => 0.5 - Math.random())
-    for (const g of random) {
+    const fallbackGames = [...catalog.games].sort((a, b) => {
+      const rankDifference = stableGameRank(a) - stableGameRank(b)
+      return rankDifference || a.id.localeCompare(b.id)
+    })
+    for (const g of fallbackGames) {
       if (gameHasTag(g, 'coming soon')) continue
       if (mix.length >= 6) break
       if (!seen.has(g.id)) { mix.push(g); seen.add(g.id) }
@@ -111,45 +123,81 @@ export function HomeView({
   const resolvedIdx = heroGames.length > 0 ? heroIndex % heroGames.length : 0
   const heroGame = heroGames[resolvedIdx] ?? null
   const [heroDetail, setHeroDetail] = useState<GameDetail | null>(null)
+  const [leavingHeroId, setLeavingHeroId] = useState<string | null>(null)
+  const heroTransitionTimerRef = useRef<number | null>(null)
 
-  const isComingSoon = heroGame ? gameHasTag(heroGame, 'coming soon') : false
-  const fallbackHeroUrl = heroDetail ? firstMediaUrl(heroDetail, assets) : null
+  const fallbackHeroUrl =
+    heroDetail !== null && heroGame !== null && heroDetail.gameId === heroGame.id
+      ? firstMediaUrl(heroDetail, assets)
+      : null
 
   // pause on hover
   const [paused, setPaused] = useState(false)
 
+  const selectHero = useCallback((index: number) => {
+    if (heroGames.length === 0) return
+    const nextIndex = ((index % heroGames.length) + heroGames.length) % heroGames.length
+    if (nextIndex === resolvedIdx) return
+
+    if (heroTransitionTimerRef.current !== null) {
+      window.clearTimeout(heroTransitionTimerRef.current)
+    }
+    setLeavingHeroId(heroGame?.id ?? null)
+    setHeroIndex(nextIndex)
+    heroTransitionTimerRef.current = window.setTimeout(() => {
+      setLeavingHeroId(null)
+      heroTransitionTimerRef.current = null
+    }, 900)
+  }, [heroGame?.id, heroGames.length, resolvedIdx])
+
+  useEffect(() => () => {
+    if (heroTransitionTimerRef.current !== null) {
+      window.clearTimeout(heroTransitionTimerRef.current)
+    }
+  }, [])
+
   // ── asset loading ─────────────────────────────────────────────
   useEffect(() => {
-    if (!heroGame) { setHeroDetail(null); return }
+    if (!heroGame) return
     onRequestAsset(heroGame.id, heroGame.heroAssetId, true)
     onRequestAsset(heroGame.id, heroGame.logoAssetId, true)
-    onRequestAsset(heroGame.id, heroGame.gridAssetId, true)
-    if (!heroGame.heroAssetId || !assets[heroGame.heroAssetId]) {
-      invoke<GameDetail>('get_game_detail', { gameId: heroGame.id, locale: 'en-US' })
-        .then((d) => { setHeroDetail(d); d.media?.forEach((m) => onRequestAsset(heroGame.id, m.assetId)) })
-        .catch(() => setHeroDetail(null))
-    } else {
-      setHeroDetail(null)
+    if (assetUrlForId(heroGame.heroAssetId, assets)) return
+
+    let cancelled = false
+    void invoke<GameDetail>('get_game_detail', { gameId: heroGame.id, locale: 'en-US' })
+      .then((detail) => {
+        if (!cancelled) setHeroDetail(detail)
+      })
+      .catch(() => {
+        // The hero continues to use its CSS fallback when detail media is unavailable.
+      })
+
+    return () => {
+      cancelled = true
     }
-  }, [heroGame?.id]) // eslint-disable-line
+  }, [assets, heroGame, onRequestAsset])
 
   useEffect(() => {
-    for (const g of heroGames) {
-      onRequestAsset(g.id, g.iconAssetId, true)
-      onRequestAsset(g.id, g.gridAssetId, true)
-      onRequestAsset(g.id, g.heroAssetId)
-      onRequestAsset(g.id, g.logoAssetId)
+    if (heroGames.length < 2) return
+    const nextGame = heroGames[(resolvedIdx + 1) % heroGames.length]
+    const nextUrl = assetUrlForId(nextGame.heroAssetId, assets)
+    if (!nextUrl) {
+      onRequestAsset(nextGame.id, nextGame.heroAssetId)
+      return
     }
-  }, [heroGames]) // eslint-disable-line
+
+    const preload = new Image()
+    preload.src = nextUrl
+  }, [assets, heroGames, onRequestAsset, resolvedIdx])
 
   // ── autoplay ──────────────────────────────────────────────────
   useEffect(() => {
     if (reducedMotion || !preferences.carouselAutoplay || heroGames.length < 2 || paused) return
     const t = window.setInterval(() => {
-      if (document.hasFocus()) setHeroIndex((i) => (i + 1) % heroGames.length)
+      if (document.hasFocus()) selectHero(resolvedIdx + 1)
     }, 6000)
     return () => window.clearInterval(t)
-  }, [heroGames.length, preferences.carouselAutoplay, reducedMotion, paused])
+  }, [heroGames.length, preferences.carouselAutoplay, reducedMotion, paused, resolvedIdx, selectHero])
 
   // ── scroll reveal for rec/news cards ─────────────────────────
   const mainRef = useRef<HTMLElement>(null)
@@ -179,6 +227,12 @@ export function HomeView({
 
   // ── poster gradient fallback ──────────────────────────────────
   const POSTERS = ['hv-poster-1','hv-poster-2','hv-poster-3','hv-poster-4','hv-poster-5','hv-poster-6','hv-poster-7','hv-poster-8']
+  const visibleHeroGames = useMemo(() => {
+    const active = heroGame ? [heroGame] : []
+    if (!leavingHeroId || leavingHeroId === heroGame?.id) return active
+    const leaving = heroGames.find((game) => game.id === leavingHeroId)
+    return leaving ? [leaving, ...active] : active
+  }, [heroGame, heroGames, leavingHeroId])
 
   // ── render ────────────────────────────────────────────────────
   return (
@@ -190,12 +244,13 @@ export function HomeView({
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
-        {heroGames.length > 0 ? heroGames.map((game, i) => {
-          const isActive = i === resolvedIdx
-          const bgUrl = assets[game.heroAssetId] || (isActive ? fallbackHeroUrl : null)
-          const logoUrl = assets[game.logoAssetId]
+        {heroGames.length > 0 ? visibleHeroGames.map((game) => {
+          const isActive = game.id === heroGame?.id
+          const bgUrl = assetUrlForId(game.heroAssetId, assets) || (isActive ? fallbackHeroUrl : null)
+          const logoUrl = assetUrlForId(game.logoAssetId, assets)
           const runtime = runtimeByGame.get(game.id)
           const installed = installStates[game.id]?.installed
+          const gameIsComingSoon = gameHasTag(game, 'coming soon')
           const tag = runtime?.lastPlayedAt
             ? '▶ CONTINUE PLAYING'
             : installed
@@ -211,13 +266,13 @@ export function HomeView({
                 className="hv-hero-bg"
                 style={!bgUrl ? { background: getGradientFromTitle(game.title) } : undefined}
               >
-                {bgUrl && <img src={bgUrl} alt="" />}
+                {bgUrl && <img src={bgUrl} alt="" decoding="async" fetchPriority={isActive ? 'high' : 'auto'} />}
               </div>
               <div className="hv-hero-shade" />
               <div className="hv-hero-content">
                 <span className="hv-hero-tag">{tag}</span>
                 {logoUrl ? (
-                  <img className="hv-hero-logo" src={logoUrl} alt={game.title} />
+                  <img className="hv-hero-logo" src={logoUrl} alt={game.title} decoding="async" />
                 ) : (
                   <h1 className="hv-hero-title">{game.title}</h1>
                 )}
@@ -232,7 +287,7 @@ export function HomeView({
                   )}
                 </div>
                 <div className="hv-hero-actions">
-                  {!isComingSoon ? (
+                  {!gameIsComingSoon ? (
                     <>
                       <button className="hv-btn hv-btn-primary" onClick={() => onPlayGame(currentGameId)}>
                         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
@@ -278,7 +333,7 @@ export function HomeView({
                 key={g.id}
                 role="button"
                 className={`hv-hero-tick${i === resolvedIdx ? ' active' : ''}`}
-                onClick={() => { setHeroIndex(i); setPaused(true) }}
+                onClick={() => { selectHero(i); setPaused(true) }}
                 aria-label={`Slide ${i + 1}`}
               />
             ))}
@@ -295,7 +350,7 @@ export function HomeView({
           </div>
           <div className="hv-row-scroll">
             {recentGames.slice(0, 8).map((game, idx) => {
-              const art = assets[game.gridAssetId] || assets[game.heroAssetId]
+              const art = assetUrlForId(game.gridAssetId, assets) || assetUrlForId(game.heroAssetId, assets)
               const runtime = runtimeByGame.get(game.id)
               const state = installStates[game.id]
               // determine chip from active job
@@ -315,7 +370,7 @@ export function HomeView({
                   onDoubleClick={() => onPlayGame(game.id)}
                 >
                   <div className={`hv-cp-art ${art ? '' : POSTERS[idx % POSTERS.length]}`}>
-                    {art && <img src={art} alt={game.title} />}
+                    {art && <img src={art} alt={game.title} loading="lazy" decoding="async" />}
                     <span className={`hv-cp-chip ${chipClass}`}>{chipLabel}</span>
                   </div>
                   <div className="hv-cp-body">
@@ -399,13 +454,13 @@ export function HomeView({
           </div>
           <div className="hv-grid-rec">
             {heroGames.slice(0, 8).map((game, idx) => {
-              const art = assets[game.heroAssetId] || assets[game.gridAssetId]
+              const art = assetUrlForId(game.heroAssetId, assets) || assetUrlForId(game.gridAssetId, assets)
               const tags = [game.developer].filter(Boolean).join(' · ')
               const currentGameId = game.id; // Capture game ID to avoid closure stale issue
               return (
                 <div key={game.id} className="hv-rec-card" onClick={() => onOpenGame(currentGameId)}>
                   <div className={`hv-rec-art ${art ? '' : POSTERS[idx % POSTERS.length]}`}>
-                    {art && <img src={art} alt={game.title} />}
+                    {art && <img src={art} alt={game.title} loading="lazy" decoding="async" />}
                     <span className="hv-rec-rating">
                       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 6 6 .9-4.5 4.3 1 6L12 16l-5.5 3.2 1-6L3 9.9 9 9z"/></svg>
                       {installStates[game.id]?.installed ? 'Installed' : 'Available'}
