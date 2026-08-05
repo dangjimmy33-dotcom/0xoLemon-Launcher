@@ -1,5 +1,12 @@
 ﻿[
     {
+        "version":  "2.0.32",
+        "date":  "2026-08-05",
+        "changes":  [
+                        "cải thiện launcher, sửa 1 số lỗi"
+                    ]
+    },
+    {
         "version":  "2.0.30",
         "date":  "2026-07-31",
         "changes":  [
