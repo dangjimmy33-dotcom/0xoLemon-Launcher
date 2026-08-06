@@ -1,5 +1,14 @@
 ﻿[
     {
+        "version":  "2.0.36",
+        "date":  "2026-08-06",
+        "changes":  [
+                        "sửa lỗi không có shortcut",
+                        "sửa lỗi không hiện tùy chỉnh trước khi chơi đối với 1 số game",
+                        "sửa 1 số lỗi nhỏ khác"
+                    ]
+    },
+    {
         "version":  "2.0.34",
         "date":  "2026-08-06",
         "changes":  [
