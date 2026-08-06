@@ -1,5 +1,12 @@
 ﻿[
     {
+        "version":  "2.0.33",
+        "date":  "2026-08-06",
+        "changes":  [
+                        "cải tiến 1 số tính năng, sửa 1 ố lỗi nhỏ"
+                    ]
+    },
+    {
         "version":  "2.0.32",
         "date":  "2026-08-05",
         "changes":  [
