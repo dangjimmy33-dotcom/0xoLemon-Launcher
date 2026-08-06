@@ -3,20 +3,12 @@ use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Manager};
 
-const HF_TOKEN_PT1: &str = "hf_wDAEZzjs";
-const HF_TOKEN_PT2: &str = "ZSJkdDBWdZ";
-const HF_TOKEN_PT3: &str = "WtzpQyevQoQHBplM";
 const HF_REPO: &str = "Chat-stories/Chat-stories";
 const HF_MEDIA_PATH_PREFIX: &str = "chats/media";
 
-fn hf_media_token() -> String {
-    // Attempt to load token from huggingface-repos.json config, fallback to hardcoded token parts if not found
-    if let Some(token) = crate::remote_paths::token_for_repo(HF_REPO) {
-        if !token.is_empty() {
-            return token;
-        }
-    }
-    format!("{}{}{}", HF_TOKEN_PT1, HF_TOKEN_PT2, HF_TOKEN_PT3)
+fn required_hf_media_token() -> Result<String, String> {
+    crate::remote_paths::token_for_repo(HF_REPO)
+        .ok_or_else(|| "HF_TOKEN is required for Hugging Face write operations".to_string())
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -133,13 +125,14 @@ pub fn clear_chat_history(app: AppHandle, game_id: String) -> Result<(), String>
 pub fn download_from_huggingface(app: AppHandle, game_id: String) -> Result<(), String> {
     let file_path = get_chat_file_path(&app, &game_id);
     let url = format!("https://huggingface.co/datasets/{}/resolve/main/chats/{}.json", HF_REPO, game_id);
-    let hf_token = hf_media_token();
+    let hf_token = crate::remote_paths::token_for_repo(HF_REPO);
     
     let client = reqwest::blocking::Client::builder().timeout(std::time::Duration::from_secs(10)).build().map_err(|e| e.to_string())?;
-    let resp = client
-        .get(&url)
-        .header("Authorization", format!("Bearer {}", hf_token))
-        .send();
+    let mut request = client.get(&url);
+    if let Some(token) = hf_token.as_deref() {
+        request = request.header("Authorization", format!("Bearer {token}"));
+    }
+    let resp = request.send();
     if let Ok(resp) = resp {
         if resp.status().is_success() {
             if let Ok(text) = resp.text() {
@@ -201,7 +194,7 @@ pub fn sync_to_huggingface(app: AppHandle, game_id: String) -> Result<(), String
     let url = format!("https://huggingface.co/api/datasets/{}/commit/main", HF_REPO);
     let client = reqwest::blocking::Client::builder().timeout(std::time::Duration::from_secs(30)).build().map_err(|e| e.to_string())?;
     
-    let hf_token = format!("{}{}{}", HF_TOKEN_PT1, HF_TOKEN_PT2, HF_TOKEN_PT3);
+    let hf_token = required_hf_media_token()?;
 
     let res = client.post(&url)
         .header("Authorization", format!("Bearer {}", hf_token))
@@ -220,9 +213,9 @@ pub fn sync_to_huggingface(app: AppHandle, game_id: String) -> Result<(), String
 
 #[tauri::command]
 pub async fn upload_chat_media(filename: String, data: Vec<u8>) -> Result<String, String> {
-    let token = hf_media_token();
+    let token = required_hf_media_token()?;
 
-    // Keep media on Hugging Face, but avoid leaking a single full token literal in source.
+    // Keep credentials process-scoped; only the remote object path is persisted.
     let safe_name: String = filename
         .chars()
         .map(|c| {
@@ -378,7 +371,7 @@ pub async fn delete_chat_media(url: String) -> Result<(), String> {
     }
     let filename = url.split('/').last().unwrap_or_default();
     if filename.is_empty() { return Ok(()); }
-    let token = hf_media_token();
+    let token = required_hf_media_token()?;
     let delete_path = format!("{}/{}", HF_MEDIA_PATH_PREFIX, filename);
     let ndjson = format!(
         "{{\"key\": \"header\", \"value\": {{\"summary\": \"Delete media {}\"}}}}\n{{\"key\": \"deletedFile\", \"value\": {{\"path\": \"{}\"}}}}\n",
@@ -433,7 +426,7 @@ pub fn read_file_base64(filepath: String) -> Result<String, String> {
 
 #[tauri::command]
 pub async fn get_chat_media_base64(url: String) -> Result<String, String> {
-    let hf_token = hf_media_token();
+    let hf_token = crate::remote_paths::token_for_repo(HF_REPO);
     let client = reqwest::Client::builder()
         .user_agent("Mozilla/5.0")
         .timeout(std::time::Duration::from_secs(60))
@@ -442,7 +435,9 @@ pub async fn get_chat_media_base64(url: String) -> Result<String, String> {
 
     let mut req = client.get(&url);
     if url.contains("huggingface.co") {
-        req = req.header("Authorization", format!("Bearer {}", hf_token));
+        if let Some(token) = hf_token.as_deref() {
+            req = req.header("Authorization", format!("Bearer {token}"));
+        }
     }
 
     let res = req.send().await.map_err(|e| e.to_string())?;

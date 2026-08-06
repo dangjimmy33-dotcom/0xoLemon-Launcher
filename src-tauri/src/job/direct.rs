@@ -18,7 +18,6 @@ pub(super) struct DirectStageState {
 struct ChunkDestination {
     path: PathBuf,
     offset: u64,
-    file_size: u64, // Add this to track expected file size
 }
 
 #[derive(Debug, Clone)]
@@ -42,17 +41,17 @@ impl DirectStagePlan {
         dlog!("[PREPARE] Staging root: {:?}", staging_root);
         dlog!("[PREPARE] Target version: {}", target_version);
         dlog!("[PREPARE] Files to stage: {}", files.len());
-        
+
         fs::create_dir_all(staging_root)?;
         let plan_id = direct_plan_id(files);
-        
+
         // Steam-like layout: state files go to dl/ root, not dl/{appid}/
         let dl_root = downloading_root.parent().unwrap_or(downloading_root);
         let state_path = dl_root.join("direct-stage-state.json");
-        
+
         dlog!("[PREPARE] State file path: {:?}", state_path);
         dlog!("[PREPARE] Plan ID: {}", plan_id);
-        
+
         let mut state = load_direct_state(&state_path).unwrap_or_else(|| {
             dlog!("[PREPARE] No existing state found - creating fresh state");
             DirectStageState {
@@ -62,24 +61,33 @@ impl DirectStagePlan {
                 completed_hashes: HashSet::new(),
             }
         });
-        
+
         if let Some(loaded) = load_direct_state(&state_path) {
             dlog!("[PREPARE] Loaded existing state:");
             dlog!("[PREPARE]   - Schema version: {}", loaded.schema_version);
             dlog!("[PREPARE]   - Plan ID: {}", loaded.plan_id);
             dlog!("[PREPARE]   - Target version: {}", loaded.target_version);
-            dlog!("[PREPARE]   - Completed chunks: {}", loaded.completed_hashes.len());
+            dlog!(
+                "[PREPARE]   - Completed chunks: {}",
+                loaded.completed_hashes.len()
+            );
         }
-        
+
         if state.schema_version != DIRECT_STAGE_SCHEMA
             || state.plan_id != plan_id
             || state.target_version != target_version
         {
             dlog!("[PREPARE] ⚠️  State mismatch detected - resetting state");
-            dlog!("[PREPARE]   Schema match: {}", state.schema_version == DIRECT_STAGE_SCHEMA);
+            dlog!(
+                "[PREPARE]   Schema match: {}",
+                state.schema_version == DIRECT_STAGE_SCHEMA
+            );
             dlog!("[PREPARE]   Plan ID match: {}", state.plan_id == plan_id);
-            dlog!("[PREPARE]   Version match: {}", state.target_version == target_version);
-            
+            dlog!(
+                "[PREPARE]   Version match: {}",
+                state.target_version == target_version
+            );
+
             state = DirectStageState {
                 schema_version: DIRECT_STAGE_SCHEMA,
                 plan_id,
@@ -87,16 +95,24 @@ impl DirectStagePlan {
                 completed_hashes: HashSet::new(),
             };
         } else {
-            dlog!("[PREPARE] ✅ Existing state is valid - will resume from {} completed chunks", 
-                state.completed_hashes.len());
+            dlog!(
+                "[PREPARE] ✅ Existing state is valid - will resume from {} completed chunks",
+                state.completed_hashes.len()
+            );
         }
 
         let mut destinations: HashMap<String, Vec<ChunkDestination>> = HashMap::new();
         dlog!("[PREPARE] Creating staging files...");
         for (idx, file) in files.iter().enumerate() {
-            dlog!("[PREPARE] File {}/{}: {} ({} bytes, {} chunks)", 
-                idx + 1, files.len(), file.path, file.size, file.chunks.len());
-            
+            dlog!(
+                "[PREPARE] File {}/{}: {} ({} bytes, {} chunks)",
+                idx + 1,
+                files.len(),
+                file.path,
+                file.size,
+                file.chunks.len()
+            );
+
             let stage_path = direct_stage_path(staging_root, file)?;
             let lp_stage = long_path(&stage_path);
             if let Some(parent) = lp_stage.parent() {
@@ -107,15 +123,27 @@ impl DirectStagePlan {
                 .read(true)
                 .write(true)
                 .open(&lp_stage)
-                .map_err(|e| JobError::Depot(format!("failed to open staging file '{}': {e}", stage_path.display())))?;
-            
+                .map_err(|e| {
+                    JobError::Depot(format!(
+                        "failed to open staging file '{}': {e}",
+                        stage_path.display()
+                    ))
+                })?;
+
             let current_size = stage.metadata()?.len();
-            if current_size != file.size {
-                dlog!("[PREPARE]   Adjusting file size: {} -> {}", current_size, file.size);
+            if current_size > file.size {
+                dlog!(
+                    "[PREPARE]   Truncating oversized file: {} -> {}",
+                    current_size,
+                    file.size
+                );
                 stage.set_len(file.size)?;
                 stage.sync_all()?;
             } else {
-                dlog!("[PREPARE]   File size correct: {}", file.size);
+                dlog!(
+                    "[PREPARE]   Keeping physical staging size: {}",
+                    current_size
+                );
             }
             for chunk in &file.chunks {
                 destinations
@@ -124,7 +152,6 @@ impl DirectStagePlan {
                     .push(ChunkDestination {
                         path: stage_path.clone(),
                         offset: chunk.file_offset,
-                        file_size: file.size, // Store file size for recovery
                     });
             }
         }
@@ -135,13 +162,13 @@ impl DirectStagePlan {
             state: Arc::new(Mutex::new(state)),
             destinations: Arc::new(destinations),
         };
-        
+
         dlog!("[PREPARE] Revalidating completed chunks...");
         plan.revalidate_completed(files)?;
-        
+
         dlog!("[PREPARE] Persisting initial state...");
         plan.persist_state()?;
-        
+
         dlog!("[PREPARE] ========================================");
         dlog!("[PREPARE] ✅ DirectStagePlan ready!");
         Ok(plan)
@@ -157,12 +184,18 @@ impl DirectStagePlan {
             .lock()
             .map(|state| state.completed_hashes.clone())
             .unwrap_or_default();
-        
+
         let total_chunks = files.iter().map(|f| f.chunks.len()).sum::<usize>();
-        dlog!("[FILTER_MISSING] Total chunks in manifest: {}", total_chunks);
+        dlog!(
+            "[FILTER_MISSING] Total chunks in manifest: {}",
+            total_chunks
+        );
         dlog!("[FILTER_MISSING] Already completed: {}", completed.len());
-        dlog!("[FILTER_MISSING] Available locally: {}", local_sources.len());
-        
+        dlog!(
+            "[FILTER_MISSING] Available locally: {}",
+            local_sources.len()
+        );
+
         let mut seen = HashSet::new();
         let missing: Vec<ChunkRef> = files
             .iter()
@@ -172,11 +205,13 @@ impl DirectStagePlan {
             .filter(|chunk| !local_sources.contains_key(&chunk.hash))
             .cloned()
             .collect();
-        
+
         dlog!("[FILTER_MISSING] Chunks to download: {}", missing.len());
-        dlog!("[FILTER_MISSING] Resume progress: {:.1}%", 
-            100.0 * (total_chunks - missing.len()) as f64 / total_chunks.max(1) as f64);
-        
+        dlog!(
+            "[FILTER_MISSING] Resume progress: {:.1}%",
+            100.0 * (total_chunks - missing.len()) as f64 / total_chunks.max(1) as f64
+        );
+
         missing
     }
 
@@ -311,7 +346,8 @@ impl DirectStagePlan {
             transactions.push((stage, lp_stage, target, lp_target, backup, lp_backup));
         }
 
-        let mut committed: Vec<(PathBuf, PathBuf, PathBuf, bool)> = Vec::with_capacity(transactions.len());
+        let mut committed: Vec<(PathBuf, PathBuf, PathBuf, bool)> =
+            Vec::with_capacity(transactions.len());
         for (stage, lp_stage, target, lp_target, _backup, lp_backup) in transactions {
             if lp_backup.exists() {
                 fs::remove_file(&lp_backup)?;
@@ -351,75 +387,50 @@ impl DirectStagePlan {
         let mut touched = Vec::with_capacity(destinations.len());
         for destination in destinations {
             let lp = long_path(&destination.path);
-            
-            // Log to file for debugging OS Error 2
-            let log_msg = format!(
-                "[DEBUG] write_decoded_chunk:\n  staging_file: {}\n  long_path: {}\n  file_offset: {}\n  chunk_size: {}\n  file_exists: {}\n  parent_exists: {}\n",
-                destination.path.display(),
-                lp.display(),
-                destination.offset,
-                data.len(),
-                lp.exists(),
-                lp.parent().map(|p| p.exists()).unwrap_or(false)
+
+            dlog!(
+                "[DEBUG] write_decoded_chunk: attempting to open staging file: {}",
+                destination.path.display()
             );
-            let _ = std::fs::write("E:\\007Launcher\\download_debug.log", log_msg);
-            
-            dlog!("[DEBUG] write_decoded_chunk: attempting to open staging file: {}", destination.path.display());
             dlog!("[DEBUG]   long_path: {}", lp.display());
-            dlog!("[DEBUG]   file_offset: {}, chunk_size: {}", destination.offset, data.len());
+            dlog!(
+                "[DEBUG]   file_offset: {}, chunk_size: {}",
+                destination.offset,
+                data.len()
+            );
             dlog!("[DEBUG]   file exists: {}", lp.exists());
             if let Some(parent) = lp.parent() {
                 dlog!("[DEBUG]   parent exists: {}", parent.exists());
                 dlog!("[DEBUG]   parent path: {}", parent.display());
             }
-            
+
             // Retry logic with delay for transient errors (antivirus locks, etc.)
             let max_retries = 3;
             let mut output = None;
-            
+
             for attempt in 0..max_retries {
                 if attempt > 0 {
                     dlog!("[DEBUG] Retry attempt {} after error", attempt);
                     thread::sleep(Duration::from_millis(100 * (1 << attempt))); // 100ms, 200ms, 400ms
                 }
-                
+
                 // Try to open existing staging file
-                let mut result = OpenOptions::new()
-                    .create(false)  // Don't create yet - check if exists first
+                let result = OpenOptions::new()
+                    .create(false) // Don't create yet - check if exists first
                     .read(true)
                     .write(true)
                     .open(&lp);
-                
-                // If file doesn't exist (deleted or corrupted), recreate it
+
                 if let Err(ref e) = result {
-                    dlog!("[DEBUG] Failed to open staging file: {} (error kind: {:?})", e, e.kind());
+                    dlog!(
+                        "[DEBUG] Failed to open staging file: {} (error kind: {:?})",
+                        e,
+                        e.kind()
+                    );
                     if e.kind() == std::io::ErrorKind::NotFound {
-                        dlog!("[DEBUG] File not found - attempting to recreate with size {} bytes", destination.file_size);
-                        // Ensure parent directory exists
-                        if let Some(parent) = lp.parent() {
-                            dlog!("[DEBUG]   Creating parent directory: {}", parent.display());
-                            let _ = fs::create_dir_all(parent);
-                        }
-                        
-                        // Recreate staging file with proper size from manifest
-                        result = OpenOptions::new()
-                            .create(true)
-                            .read(true)
-                            .write(true)
-                            .open(&lp)
-                            .and_then(|file| {
-                                dlog!("[DEBUG]   Setting file length to {}", destination.file_size);
-                                file.set_len(destination.file_size)?;
-                                file.sync_all()?;
-                                dlog!("[DEBUG]   File length set successfully");
-                                Ok(file)
-                            });
-                        
-                        if result.is_ok() {
-                            dlog!("[DEBUG] Successfully recreated staging file with size {}", destination.file_size);
-                        } else {
-                            dlog!("[DEBUG] Failed to recreate staging file: {:?}", result.as_ref().err());
-                        }
+                        return Err(JobError::StageMissing(
+                            destination.path.display().to_string(),
+                        ));
                     } else if e.kind() == std::io::ErrorKind::PermissionDenied {
                         dlog!("[DEBUG] PermissionDenied - file may be locked by antivirus");
                         if attempt < max_retries - 1 {
@@ -429,9 +440,9 @@ impl DirectStagePlan {
                 } else {
                     dlog!("[DEBUG] Successfully opened staging file");
                 }
-                
+
                 output = Some(result);
-                
+
                 // If successful or not a retryable error, break
                 if let Some(Ok(_)) = output {
                     break;
@@ -442,37 +453,52 @@ impl DirectStagePlan {
                     }
                 }
             }
-            
-            let mut output = output.unwrap()
-                .map_err(|e| {
-                    let err_msg = format!("failed to write chunk to staging '{}': {e} (error kind: {:?})", destination.path.display(), e.kind());
-                    dlog!("[ERROR] {}", err_msg);
-                    
-                    // Return Transient for PermissionDenied to allow job-level retry
-                    if e.kind() == std::io::ErrorKind::PermissionDenied {
-                        JobError::Transient(format!("staging file '{}' is locked - will retry", destination.path.display()))
-                    } else {
-                        JobError::Depot(err_msg)
-                    }
-                })?;
-            
+
+            let mut output = output.unwrap().map_err(|e| {
+                let err_msg = format!(
+                    "failed to write chunk to staging '{}': {e} (error kind: {:?})",
+                    destination.path.display(),
+                    e.kind()
+                );
+                dlog!("[ERROR] {}", err_msg);
+
+                // Return Transient for PermissionDenied to allow job-level retry
+                if e.kind() == std::io::ErrorKind::PermissionDenied {
+                    JobError::Transient(format!(
+                        "staging file '{}' is locked - will retry",
+                        destination.path.display()
+                    ))
+                } else {
+                    JobError::Depot(err_msg)
+                }
+            })?;
+
             dlog!("[DEBUG] Seeking to offset {}", destination.offset);
-            output.seek(SeekFrom::Start(destination.offset))
+            output
+                .seek(SeekFrom::Start(destination.offset))
                 .map_err(|e| {
-                    let err_msg = format!("failed to seek in staging '{}': {e}", destination.path.display());
+                    let err_msg = format!(
+                        "failed to seek in staging '{}': {e}",
+                        destination.path.display()
+                    );
                     dlog!("[ERROR] {}", err_msg);
                     JobError::Depot(err_msg)
                 })?;
-            
+
             dlog!("[DEBUG] Writing {} bytes", data.len());
-            output.write_all(data)
-                .map_err(|e| {
-                    let err_msg = format!("failed to write data to staging '{}': {e}", destination.path.display());
-                    dlog!("[ERROR] {}", err_msg);
-                    JobError::Depot(err_msg)
-                })?;
-            
-            dlog!("[DEBUG] Successfully wrote chunk to {}", destination.path.display());
+            output.write_all(data).map_err(|e| {
+                let err_msg = format!(
+                    "failed to write data to staging '{}': {e}",
+                    destination.path.display()
+                );
+                dlog!("[ERROR] {}", err_msg);
+                JobError::Depot(err_msg)
+            })?;
+
+            dlog!(
+                "[DEBUG] Successfully wrote chunk to {}",
+                destination.path.display()
+            );
             touched.push(destination.path.clone());
         }
         Ok(touched)
@@ -482,42 +508,59 @@ impl DirectStagePlan {
         if hashes.is_empty() {
             return Ok(());
         }
-        
-        dlog!("[CHECKPOINT] Starting checkpoint for {} chunks across {} files", hashes.len(), paths.len());
-        
+
+        dlog!(
+            "[CHECKPOINT] Starting checkpoint for {} chunks across {} files",
+            hashes.len(),
+            paths.len()
+        );
+
         for path in paths {
             let lp = long_path(path);
             dlog!("[CHECKPOINT] Syncing file: {}", path.display());
-            let file_res = OpenOptions::new()
-                .read(true)
-                .write(true)
-                .open(&lp);
-            
+            let file_res = OpenOptions::new().read(true).write(true).open(&lp);
+
             match file_res {
                 Ok(file) => {
-                    file.sync_all()
-                        .map_err(|e| {
-                            dlog!("[CHECKPOINT] ERROR: Failed to sync {}: {}", path.display(), e);
-                            JobError::Depot(format!("failed to sync staging file '{}': {e}", path.display()))
-                        })?;
+                    file.sync_all().map_err(|e| {
+                        dlog!(
+                            "[CHECKPOINT] ERROR: Failed to sync {}: {}",
+                            path.display(),
+                            e
+                        );
+                        JobError::Depot(format!(
+                            "failed to sync staging file '{}': {e}",
+                            path.display()
+                        ))
+                    })?;
                     dlog!("[CHECKPOINT] Successfully synced: {}", path.display());
                 }
                 Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
-                    dlog!("[CHECKPOINT] ERROR: File not found during checkpoint: {}", path.display());
+                    dlog!(
+                        "[CHECKPOINT] ERROR: File not found during checkpoint: {}",
+                        path.display()
+                    );
                     return Err(JobError::Transient(format!(
                         "staging file '{}' not found during checkpoint (I/O error 2) - will retry",
                         path.display()
                     )));
                 }
                 Err(e) if e.kind() == std::io::ErrorKind::PermissionDenied => {
-                    dlog!("[CHECKPOINT] ERROR: Permission denied for: {}", path.display());
+                    dlog!(
+                        "[CHECKPOINT] ERROR: Permission denied for: {}",
+                        path.display()
+                    );
                     return Err(JobError::Transient(format!(
                         "staging file '{}' is locked (permission denied) - will retry",
                         path.display()
                     )));
                 }
                 Err(e) => {
-                    dlog!("[CHECKPOINT] ERROR: Failed to open {}: {}", path.display(), e);
+                    dlog!(
+                        "[CHECKPOINT] ERROR: Failed to open {}: {}",
+                        path.display(),
+                        e
+                    );
                     return Err(JobError::Depot(format!(
                         "failed to open staging file '{}' for checkpoint: {e}",
                         path.display()
@@ -525,7 +568,7 @@ impl DirectStagePlan {
                 }
             }
         }
-        
+
         let completed_count = {
             let mut state = self
                 .state
@@ -534,12 +577,15 @@ impl DirectStagePlan {
             state.completed_hashes.extend(hashes.iter().cloned());
             state.completed_hashes.len()
         };
-        
-        dlog!("[CHECKPOINT] Total completed chunks now: {}", completed_count);
+
+        dlog!(
+            "[CHECKPOINT] Total completed chunks now: {}",
+            completed_count
+        );
         dlog!("[CHECKPOINT] Persisting state to disk...");
-        
+
         self.persist_state()?;
-        
+
         dlog!("[CHECKPOINT] State persisted successfully!");
         Ok(())
     }
@@ -552,37 +598,42 @@ impl DirectStagePlan {
             .state
             .lock()
             .map_err(|_| JobError::Depot("direct stage state lock poisoned".to_string()))?;
-        
+
         let data = serde_json::to_vec_pretty(&*state)?;
         let completed_count = state.completed_hashes.len();
-        
-        dlog!("[PERSIST_STATE] Writing {} bytes ({} completed chunks) to {:?}", 
-            data.len(), completed_count, self.state_path);
-        
+
+        dlog!(
+            "[PERSIST_STATE] Writing {} bytes ({} completed chunks) to {:?}",
+            data.len(),
+            completed_count,
+            self.state_path
+        );
+
         // Ensure parent directory exists (just in case)
         if let Some(parent) = self.state_path.parent() {
             let _ = fs::create_dir_all(parent);
         }
-        
+
         let temporary = self.state_path.with_extension("json.tmp");
         {
-            let mut file = File::create(&temporary)
-                .map_err(|e| {
-                    dlog!("[PERSIST_STATE] ERROR: Failed to create temp file {:?}: {}", temporary, e);
+            let mut file = File::create(&temporary).map_err(|e| {
+                dlog!(
+                    "[PERSIST_STATE] ERROR: Failed to create temp file {:?}: {}",
+                    temporary,
                     e
-                })?;
-            file.write_all(&data)
-                .map_err(|e| {
-                    dlog!("[PERSIST_STATE] ERROR: Failed to write data: {}", e);
-                    e
-                })?;
-            file.sync_all()
-                .map_err(|e| {
-                    dlog!("[PERSIST_STATE] ERROR: Failed to sync temp file: {}", e);
-                    e
-                })?;
+                );
+                e
+            })?;
+            file.write_all(&data).map_err(|e| {
+                dlog!("[PERSIST_STATE] ERROR: Failed to write data: {}", e);
+                e
+            })?;
+            file.sync_all().map_err(|e| {
+                dlog!("[PERSIST_STATE] ERROR: Failed to sync temp file: {}", e);
+                e
+            })?;
         }
-        
+
         if self.state_path.exists() {
             dlog!("[PERSIST_STATE] Removing old state file");
             if let Err(e) = fs::remove_file(&self.state_path) {
@@ -591,16 +642,22 @@ impl DirectStagePlan {
                 }
             }
         }
-        
+
         dlog!("[PERSIST_STATE] Renaming temp file to final state");
-        fs::rename(&temporary, &self.state_path)
-            .map_err(|e| {
-                dlog!("[PERSIST_STATE] ERROR: Failed to rename {:?} -> {:?}: {}", 
-                    temporary, self.state_path, e);
+        fs::rename(&temporary, &self.state_path).map_err(|e| {
+            dlog!(
+                "[PERSIST_STATE] ERROR: Failed to rename {:?} -> {:?}: {}",
+                temporary,
+                self.state_path,
                 e
-            })?;
-        
-        dlog!("[PERSIST_STATE] ✅ State file saved successfully at {:?}", self.state_path);
+            );
+            e
+        })?;
+
+        dlog!(
+            "[PERSIST_STATE] ✅ State file saved successfully at {:?}",
+            self.state_path
+        );
         Ok(())
     }
 
@@ -628,7 +685,10 @@ impl DirectStagePlan {
             let lp = long_path(&destination.path);
             let mut file = match File::open(&lp) {
                 Ok(f) => f,
-                Err(_) => { invalid.push(hash); continue; }
+                Err(_) => {
+                    invalid.push(hash);
+                    continue;
+                }
             };
             file.seek(SeekFrom::Start(destination.offset))?;
             let mut bytes = vec![0_u8; chunk.uncompressed_size as usize];
@@ -680,15 +740,17 @@ impl DepotSource {
         let tasks = build_pack_download_tasks(chunks, self.effective_pack_range_task_bytes());
         let settings = crate::platform::current_settings();
         let queue_budget = settings.download_queue_mb.saturating_mul(1024 * 1024);
-        let workers_by_budget = (queue_budget / self.effective_pack_range_task_bytes()).max(1) as usize;
-        let worker_count = self.effective_worker_count()
+        let workers_by_budget =
+            (queue_budget / self.effective_pack_range_task_bytes()).max(1) as usize;
+        let worker_count = self
+            .effective_worker_count()
             .min(workers_by_budget)
             .min(tasks.len())
             .max(1);
         let tasks = Arc::new(Mutex::new(VecDeque::from(tasks)));
         let abort = Arc::new(AtomicBool::new(false));
-        let (tx, rx) = mpsc::channel::<Result<DownloadProgress, String>>();
-        let mut first_error = None;
+        let (tx, rx) = mpsc::channel::<Result<DownloadProgress, JobError>>();
+        let mut first_error: Option<JobError> = None;
 
         thread::scope(|scope| {
             for _ in 0..worker_count {
@@ -735,7 +797,7 @@ impl DepotSource {
                                 let next_retry = retry_count.saturating_add(1);
                                 let Some(delay) = err.retry_delay(next_retry) else {
                                     abort.store(true, Ordering::SeqCst);
-                                    let _ = tx.send(Err(err.to_string()));
+                                    let _ = tx.send(Err(err));
                                     break;
                                 };
                                 retry_count = next_retry;
@@ -760,13 +822,13 @@ impl DepotSource {
                                 }));
                                 if let Err(error) = sleep_with_control(delay, &control) {
                                     abort.store(true, Ordering::SeqCst);
-                                    let _ = tx.send(Err(error.to_string()));
+                                    let _ = tx.send(Err(error));
                                     break;
                                 }
                             }
                             Err(error) => {
                                 abort.store(true, Ordering::SeqCst);
-                                let _ = tx.send(Err(error.to_string()));
+                                let _ = tx.send(Err(error));
                                 break;
                             }
                         }
@@ -779,7 +841,7 @@ impl DepotSource {
                     Ok(progress) => {
                         if let Err(error) = on_progress(progress) {
                             abort.store(true, Ordering::SeqCst);
-                            first_error = Some(error.to_string());
+                            first_error = Some(error);
                             break;
                         }
                     }
@@ -792,10 +854,7 @@ impl DepotSource {
             }
         });
         if let Some(error) = first_error {
-            if error.eq_ignore_ascii_case("job canceled") {
-                return Err(JobError::Canceled);
-            }
-            return Err(JobError::Depot(error));
+            return Err(error);
         }
         Ok(())
     }
@@ -808,7 +867,7 @@ impl DepotSource {
         task_id: &str,
         target_version: Option<&str>,
         control: &JobControl,
-        progress_tx: &mpsc::Sender<Result<DownloadProgress, String>>,
+        progress_tx: &mpsc::Sender<Result<DownloadProgress, JobError>>,
     ) -> Result<(), JobError> {
         let relative_path = if task.pack_id.starts_with("patch-") {
             if let Some(version) = target_version {
@@ -849,7 +908,7 @@ impl DepotSource {
                 retry_wait_ms: 0,
                 rate_limit_wait_ms: 0,
             }))
-            .map_err(|error| JobError::Depot(error.to_string()))
+            .map_err(|_| JobError::Canceled)
     }
 }
 

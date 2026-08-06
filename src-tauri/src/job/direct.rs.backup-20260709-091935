@@ -345,18 +345,6 @@ impl DirectStagePlan {
         for destination in destinations {
             let lp = long_path(&destination.path);
             
-            // Log to file for debugging OS Error 2
-            let log_msg = format!(
-                "[DEBUG] write_decoded_chunk:\n  staging_file: {}\n  long_path: {}\n  file_offset: {}\n  chunk_size: {}\n  file_exists: {}\n  parent_exists: {}\n",
-                destination.path.display(),
-                lp.display(),
-                destination.offset,
-                data.len(),
-                lp.exists(),
-                lp.parent().map(|p| p.exists()).unwrap_or(false)
-            );
-            let _ = std::fs::write("E:\\007Launcher\\download_debug.log", log_msg);
-            
             dlog!("[DEBUG] write_decoded_chunk: attempting to open staging file: {}", destination.path.display());
             dlog!("[DEBUG]   long_path: {}", lp.display());
             dlog!("[DEBUG]   file_offset: {}, chunk_size: {}", destination.offset, data.len());

@@ -77,19 +77,19 @@ pub const GAME_PATH_MAPPINGS: &[GamePathMapping] = &[
         hf_dir_name: "ea-sports-fc-26",
         launch_executable: "FC26.exe",
     },
-     GamePathMapping {
+    GamePathMapping {
         game_id: "persona-3-reload",
         install_dir_name: "Persona 3 Reload",
         hf_dir_name: "persona-3-reload",
         launch_executable: "P3R.exe",
     },
-     GamePathMapping {
+    GamePathMapping {
         game_id: "persona-5-royal",
         install_dir_name: "Persona 5 Royal",
         hf_dir_name: "persona-5-royal",
         launch_executable: "P5R.exe",
     },
-     GamePathMapping {
+    GamePathMapping {
         game_id: "pragmata",
         install_dir_name: "Pragmata",
         hf_dir_name: "PRAGMATA",
@@ -114,7 +114,8 @@ struct HuggingFaceRepoEntry {
     revision: String,
     #[serde(default = "default_enabled")]
     enabled: bool,
-    token: Option<String>,
+    #[serde(default, rename = "token")]
+    _legacy_token: Option<String>,
 }
 
 fn default_repo_type() -> String {
@@ -220,16 +221,13 @@ pub fn depot_repo_base_urls() -> Vec<(String, Option<String>)> {
     )
 }
 
-/// Returns the HuggingFace Bearer token configured for a specific repo, if any.
-/// Matches by repo_id (case-insensitive).
-pub fn token_for_repo(repo_id: &str) -> Option<String> {
-    let config: HuggingFaceRepoConfig =
-        serde_json::from_str(include_str!("../huggingface-repos.json")).ok()?;
-    config
-        .repositories
-        .into_iter()
-        .find(|entry| entry.repo_id.eq_ignore_ascii_case(repo_id))
-        .and_then(|entry| entry.token)
+/// Returns the process-scoped Hugging Face token. Repository configuration is
+/// intentionally never treated as a credential store.
+pub fn token_for_repo(_repo_id: &str) -> Option<String> {
+    env::var("HF_TOKEN")
+        .ok()
+        .map(|value| value.trim().to_string())
+        .filter(|value| !value.is_empty())
 }
 
 /// Returns game-specific depot roots for every configured repository.
@@ -285,7 +283,7 @@ fn repo_entry_to_base_url(entry: &HuggingFaceRepoEntry) -> Option<(String, Optio
             "https://huggingface.co/{prefix}{repo_id}/resolve/{}",
             encode_hf_relative_path(revision)
         ),
-        entry.token.clone(),
+        token_for_repo(repo_id),
     ))
 }
 

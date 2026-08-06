@@ -2,7 +2,8 @@ use std::env;
 use std::path::PathBuf;
 
 use first_light_launcher::builder::{
-    build_depot, BuildDepotInput, BuildVersionInput, DepotEncryptionConfig, PublishTarget,
+    build_depot, validate_depot_output, verify_remote_chunk, BuildDepotInput, BuildVersionInput,
+    DepotEncryptionConfig, PublishTarget,
 };
 use first_light_launcher::manifest::LaunchOption;
 
@@ -26,11 +27,43 @@ fn run() -> Result<(), String> {
     match args.first().map(String::as_str) {
         Some("build-pair") => build_pair(&args),
         Some("build-version") => build_version(&args),
+        Some("validate-output") => validate_output(&args),
+        Some("verify-remote-chunk") => verify_chunk(&args),
         _ => {
             print_usage();
-            Err("expected build-pair or build-version command".to_string())
+            Err(
+                "expected build-pair, build-version, validate-output, or verify-remote-chunk command"
+                    .to_string(),
+            )
         }
     }
+}
+
+fn verify_chunk(args: &[String]) -> Result<(), String> {
+    let output = PathBuf::from(take_arg(args, "--out")?);
+    let remote_base = take_arg(args, "--remote-base")?;
+    let version = take_arg(args, "--version")?;
+    let file = take_arg(args, "--file")?;
+    let chunk_index = take_arg(args, "--chunk-index")?
+        .parse::<usize>()
+        .map_err(|_| "--chunk-index must be a non-negative integer".to_string())?;
+    let report = verify_remote_chunk(&output, &remote_base, &version, &file, chunk_index)
+        .map_err(|error| error.to_string())?;
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&report).map_err(|error| error.to_string())?
+    );
+    Ok(())
+}
+
+fn validate_output(args: &[String]) -> Result<(), String> {
+    let output = PathBuf::from(take_arg(args, "--out")?);
+    let report = validate_depot_output(&output).map_err(|error| error.to_string())?;
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&report).map_err(|error| error.to_string())?
+    );
+    Ok(())
 }
 
 fn encryption_config(args: &[String]) -> DepotEncryptionConfig {
@@ -88,11 +121,10 @@ fn depot_format_version(args: &[String]) -> u32 {
 /// [{"name":"Vanilla","executable":"game.exe","arguments":""},{"name":"Modded","executable":"modded.exe","arguments":""}]
 fn parse_launch_options(args: &[String]) -> Vec<LaunchOption> {
     match take_arg(args, "--launch-options-json") {
-        Ok(json_str) => serde_json::from_str::<Vec<LaunchOption>>(&json_str)
-            .unwrap_or_else(|e| {
-                eprintln!("[DEPOT] Warning: failed to parse --launch-options-json: {e}");
-                vec![]
-            }),
+        Ok(json_str) => serde_json::from_str::<Vec<LaunchOption>>(&json_str).unwrap_or_else(|e| {
+            eprintln!("[DEPOT] Warning: failed to parse --launch-options-json: {e}");
+            vec![]
+        }),
         Err(_) => vec![],
     }
 }
@@ -123,11 +155,16 @@ fn build_pair(args: &[String]) -> Result<(), String> {
     if upload_packs_incrementally {
         eprintln!("[DEPOT] INCREMENTAL MODE: Each pack will be uploaded and deleted immediately after creation to save disk space.");
         if upload_repo.is_none() {
-            return Err("--upload-packs-incrementally requires --upload-repo to be set".to_string());
+            return Err(
+                "--upload-packs-incrementally requires --upload-repo to be set".to_string(),
+            );
         }
     }
     if !skip_file_patterns.is_empty() {
-        eprintln!("[DEPOT] skip-file-pattern(s): {}", skip_file_patterns.join(", "));
+        eprintln!(
+            "[DEPOT] skip-file-pattern(s): {}",
+            skip_file_patterns.join(", ")
+        );
     }
 
     let report = build_depot(BuildDepotInput {
@@ -140,14 +177,22 @@ fn build_pair(args: &[String]) -> Result<(), String> {
                 root: PathBuf::from(old_input),
                 launch_executable: launch_executable.clone(),
                 launch_options: launch_options.clone(),
-                dependencies: if dependencies.is_empty() { None } else { Some(dependencies.clone()) },
+                dependencies: if dependencies.is_empty() {
+                    None
+                } else {
+                    Some(dependencies.clone())
+                },
             },
             BuildVersionInput {
                 version: new_version,
                 root: PathBuf::from(new_input),
                 launch_executable,
                 launch_options,
-                dependencies: if dependencies.is_empty() { None } else { Some(dependencies) },
+                dependencies: if dependencies.is_empty() {
+                    None
+                } else {
+                    Some(dependencies)
+                },
             },
         ],
         publish: upload_repo.map(|repo_id| PublishTarget {
@@ -200,11 +245,16 @@ fn build_version(args: &[String]) -> Result<(), String> {
     if upload_packs_incrementally {
         eprintln!("[DEPOT] INCREMENTAL MODE: Each pack will be uploaded and deleted immediately after creation to save disk space.");
         if upload_repo.is_none() {
-            return Err("--upload-packs-incrementally requires --upload-repo to be set".to_string());
+            return Err(
+                "--upload-packs-incrementally requires --upload-repo to be set".to_string(),
+            );
         }
     }
     if !skip_file_patterns.is_empty() {
-        eprintln!("[DEPOT] skip-file-pattern(s): {}", skip_file_patterns.join(", "));
+        eprintln!(
+            "[DEPOT] skip-file-pattern(s): {}",
+            skip_file_patterns.join(", ")
+        );
     }
 
     let report = build_depot(BuildDepotInput {
@@ -216,7 +266,11 @@ fn build_version(args: &[String]) -> Result<(), String> {
             root: PathBuf::from(input),
             launch_executable,
             launch_options,
-            dependencies: if dependencies.is_empty() { None } else { Some(dependencies) },
+            dependencies: if dependencies.is_empty() {
+                None
+            } else {
+                Some(dependencies)
+            },
         }],
         publish: upload_repo.map(|repo_id| PublishTarget {
             repo_id,
@@ -257,6 +311,6 @@ fn take_arg(args: &[String], name: &str) -> Result<String, String> {
 
 fn print_usage() {
     eprintln!(
-        "usage:\n  depot_builder build-pair --old-input <path> --new-input <path> --out <path> [--old-version v1.0] [--new-version v1.1] [--game-id 007-first-light] [--format-version 1|2] [--launch-executable <relative-exe>] [--upload-repo owner/repo --repo-type dataset --repo-prefix 007-first-light] [--keep-local-packs] [--extend-existing] [--pack-target-mb 128] [--pack-id-prefix pack-] [--pack-start-index 0] [--encrypt-packs|--encryption-key <key>|--no-encrypt-packs] [--skip-file-pattern <glob>] ...\n  depot_builder build-version --input <path> --version <version> --out <path> --game-id <game-id> [--format-version 1|2] [--launch-executable <relative-exe>] [--upload-repo owner/repo --repo-type dataset --repo-prefix <prefix>] [--keep-local-packs] [--extend-existing] [--pack-target-mb 128] [--pack-id-prefix pack-] [--pack-start-index 0] [--encrypt-packs|--encryption-key <key>|--no-encrypt-packs] [--skip-file-pattern <glob>] ...\n\n  --skip-file-pattern  Repeatable. Files whose depot-relative path matches the glob are NOT\n                       re-chunked; their entry is inherited verbatim from the latest existing\n                       manifest. Use for large opaque archives (e.g. Runtime/chunk0.rpkg) that\n                       are internally repacked every release.  Supports * (within segment) and\n                       ** (across segments). Example:\n                         --skip-file-pattern 'Runtime/chunk0.rpkg' --skip-file-pattern 'Runtime/chunk1.rpkg'"
+        "usage:\n  depot_builder validate-output --out <depot-metadata-root>\n  depot_builder verify-remote-chunk --out <depot-metadata-root> --remote-base <resolve-url> --version <version> --file <relative-path> --chunk-index <index>\n  depot_builder build-pair --old-input <path> --new-input <path> --out <path> [--old-version v1.0] [--new-version v1.1] [--game-id 007-first-light] [--format-version 1|2] [--launch-executable <relative-exe>] [--upload-repo owner/repo --repo-type dataset --repo-prefix 007-first-light] [--keep-local-packs] [--extend-existing] [--pack-target-mb 128] [--pack-id-prefix pack-] [--pack-start-index 0] [--encrypt-packs|--encryption-key <key>|--no-encrypt-packs] [--skip-file-pattern <glob>] ...\n  depot_builder build-version --input <path> --version <version> --out <path> --game-id <game-id> [--format-version 1|2] [--launch-executable <relative-exe>] [--upload-repo owner/repo --repo-type dataset --repo-prefix <prefix>] [--keep-local-packs] [--extend-existing] [--pack-target-mb 128] [--pack-id-prefix pack-] [--pack-start-index 0] [--encrypt-packs|--encryption-key <key>|--no-encrypt-packs] [--skip-file-pattern <glob>] ...\n\n  --skip-file-pattern  Repeatable. Files whose depot-relative path matches the glob are NOT\n                       re-chunked; their entry is inherited verbatim from the latest existing\n                       manifest. Use for large opaque archives (e.g. Runtime/chunk0.rpkg) that\n                       are internally repacked every release. Supports * (within segment) and\n                       ** (across segments). Example:\n                         --skip-file-pattern 'Runtime/chunk0.rpkg' --skip-file-pattern 'Runtime/chunk1.rpkg'"
     );
 }

@@ -53,11 +53,11 @@ fn long_path(path: &Path) -> PathBuf {
     #[cfg(target_os = "windows")]
     {
         let s = path.to_string_lossy();
-        // Already has a UNC or extended prefix â€” leave as-is.
-        if s.starts_with("\\\\") {
+        // An existing extended prefix is already normalized.
+        if s.starts_with("\\\\?\\") {
             return path.to_path_buf();
         }
-        
+
         // Ensure the path is absolute
         let abs = if path.is_absolute() {
             path.to_path_buf()
@@ -67,6 +67,10 @@ fn long_path(path: &Path) -> PathBuf {
 
         // We must remove all forward slashes, as the \\?\ prefix disables Windows' automatic conversion
         let abs_s = abs.to_string_lossy().replace('/', "\\");
+
+        if let Some(unc) = abs_s.strip_prefix("\\\\") {
+            return PathBuf::from(format!("\\\\?\\UNC\\{unc}"));
+        }
 
         // The \\?\ prefix also disables parsing of . and ..
         // We do a simple string replacement for \.\ and \..\
@@ -80,7 +84,7 @@ fn long_path(path: &Path) -> PathBuf {
             }
         }
 
-        return PathBuf::from(format!("\\\\?\\{}", abs_s));
+        PathBuf::from(format!("\\\\?\\{abs_s}"))
     }
     #[cfg(not(target_os = "windows"))]
     path.to_path_buf()
@@ -99,7 +103,7 @@ const DOWNLOAD_SESSION_FILE: &str = "depot-session.json";
 const STATE_MAGIC: &[u8] = b"0XOSTATE1\n";
 const STATE_KEY: &[u8] = b"0xoLemon-local-install-state-v1";
 const MAX_DOWNLOAD_WORKERS: usize = 64;
-const MAX_DOWNLOAD_RETRIES: u32 = 12;
+const MAX_DOWNLOAD_RETRIES: u32 = 5;
 const PACK_RANGE_MERGE_GAP: u64 = 4 * 1024 * 1024;
 const MIN_PACK_RANGE_TASK_BYTES: u64 = 8 * 1024 * 1024;
 const MAX_PACK_RANGE_TASK_BYTES: u64 = 64 * 1024 * 1024;
@@ -118,13 +122,16 @@ mod dependencies;
 mod direct;
 mod paths;
 mod progress;
+mod sequential;
 
 use dependencies::{
-    create_game_shortcut, create_game_shortcut_no_exe, ensure_game_dependencies, launch_option_processes, remove_game_shortcut,
+    create_game_shortcut, create_game_shortcut_no_exe, ensure_game_dependencies,
+    launch_option_processes, remove_game_shortcut,
 };
 use direct::DirectStagePlan;
 use paths::*;
 use progress::*;
+use sequential::{RecoveryOutcome, SequentialUpdateSession};
 
 #[derive(Debug)]
 struct AdaptiveRangeState {
@@ -212,6 +219,16 @@ pub enum JobError {
     NotFound(String),
     #[error("transient download failure: {0}")]
     Transient(String),
+    #[error("staging data is missing: {0}")]
+    StageMissing(String),
+    #[error("staging session is missing: {0}")]
+    SessionMissing(String),
+    #[error("staging session does not match the active job: {0}")]
+    SessionMismatch(String),
+    #[error("file is locked by another process: {0}")]
+    FileLocked(String),
+    #[error("not enough free disk space while writing: {0}")]
+    DiskFull(String),
     #[error("job canceled")]
     Canceled,
 }
@@ -223,6 +240,7 @@ impl JobError {
                 Some(Duration::from_millis((*retry_after_ms).max(250)))
             }
             Self::Transient(_) => Some(download_retry_delay(retry_count)),
+            Self::FileLocked(_) => Some(download_retry_delay(retry_count)),
             _ => None,
         }
     }
@@ -340,9 +358,11 @@ fn patch_attempt_is_throttled(
     game_id: &str,
     patch_id: &str,
 ) -> bool {
-    last_attempts.get(game_id).is_some_and(|(last_patch_id, attempted_at)| {
-        last_patch_id == patch_id && attempted_at.elapsed() < AUTO_PATCH_RETRY_BACKOFF
-    })
+    last_attempts
+        .get(game_id)
+        .is_some_and(|(last_patch_id, attempted_at)| {
+            last_patch_id == patch_id && attempted_at.elapsed() < AUTO_PATCH_RETRY_BACKOFF
+        })
 }
 
 fn auto_patch_tick(
@@ -734,6 +754,85 @@ pub fn snapshot_for_fresh_install(
     snapshot_for_fresh_install_cancellable(app, target_version, game_id, None)
 }
 
+pub fn start_pending_update_recovery(app: AppHandle, control: Arc<JobControl>) {
+    let Ok(Some(mut journal)) = read_latest_journal(&app) else {
+        return;
+    };
+    if journal.kind != "update" {
+        return;
+    }
+    let install_root = PathBuf::from(&journal.install_path);
+    let source = DepotSource::for_game(&journal.game_id);
+    let downloading_root = downloading_dir_for_install(&install_root, &source);
+    if !SequentialUpdateSession::has_pending_transaction(&downloading_root, &journal.id)
+        .unwrap_or(true)
+    {
+        return;
+    }
+
+    control.set_running(true);
+    thread::spawn(move || {
+        let result = (|| -> Result<(), JobError> {
+            let Some(mut session) = SequentialUpdateSession::open_owned_for_recovery(
+                &downloading_root,
+                &journal,
+                &install_root,
+            )?
+            else {
+                return Err(JobError::SessionMissing(
+                    "owned update transaction metadata is unavailable".to_string(),
+                ));
+            };
+            match session.recover(&install_root, &journal.to_version)? {
+                RecoveryOutcome::AlreadyCommitted => {
+                    journal.status = JobStatus::Committed;
+                    journal.phase = "Committed".to_string();
+                    journal.overall_progress = 1.0;
+                    for step in &mut journal.steps {
+                        step.status = StepStatus::Completed;
+                        step.progress = 1.0;
+                    }
+                    append_log(
+                        &mut journal,
+                        "info",
+                        "Startup recovery completed the committed update cleanup",
+                    );
+                    if let Err(error) = session.cleanup_session_files() {
+                        append_log(
+                            &mut journal,
+                            "warning",
+                            &format!("Committed session cleanup remains pending: {error}"),
+                        );
+                    }
+                }
+                RecoveryOutcome::Ready => {
+                    journal.status = JobStatus::Failed;
+                    journal.phase = "Ready to resume".to_string();
+                    mark_running_step_failed(&mut journal);
+                    append_log(
+                        &mut journal,
+                        "warning",
+                        "Startup recovery restored the complete base install; Resume can continue the update",
+                    );
+                }
+            }
+            persist_and_emit(&app, &journal)
+        })();
+        if let Err(error) = result {
+            journal.status = JobStatus::Failed;
+            journal.phase = "Recovery failed".to_string();
+            mark_running_step_failed(&mut journal);
+            append_log(
+                &mut journal,
+                "error",
+                &format!("Startup recovery failed: {error}"),
+            );
+            let _ = persist_and_emit(&app, &journal);
+        }
+        control.set_running(false);
+    });
+}
+
 pub fn snapshot_for_fresh_install_cancellable(
     app: &AppHandle,
     target_version: Option<String>,
@@ -748,11 +847,12 @@ pub fn snapshot_for_fresh_install_cancellable(
     let manifest = source.load_manifest(&catalog, &selected_version)?;
     ensure_plan_not_canceled(canceled)?;
     let default_install = source.default_common_game_dir();
-    let cache_size = match downloading_chunk_cache_size_cancellable(&default_install, &source, canceled) {
-        Ok(size) => size,
-        Err(JobError::Canceled) => return Err(JobError::Canceled),
-        Err(_) => 0,
-    };
+    let cache_size =
+        match downloading_chunk_cache_size_cancellable(&default_install, &source, canceled) {
+            Ok(size) => size,
+            Err(JobError::Canceled) => return Err(JobError::Canceled),
+            Err(_) => 0,
+        };
     let cache_path = downloading_chunk_cache_path(&default_install, &source)
         .display()
         .to_string();
@@ -831,21 +931,19 @@ pub fn snapshot_for_install_cancellable(
             let to = source.load_manifest(&catalog, &selected_version)?;
             ensure_plan_not_canceled(canceled)?;
             let changed_targets = changed_target_files(&base.manifest, &to);
-            let update_size = estimate_missing_download_bytes(
-                Some(&staged_chunks_root),
-                &base.manifest,
-                &to,
-            );
+            let update_size =
+                estimate_missing_download_bytes(Some(&staged_chunks_root), &base.manifest, &to);
             (
                 changed_files_between(&base.manifest, &to),
                 update_size,
                 to.total_size,
-                planned_temporary_space(&changed_targets, update_size),
+                planned_update_temporary_space(&changed_targets, update_size),
             )
         }
     };
     ensure_plan_not_canceled(canceled)?;
-    let cache_size = match downloading_chunk_cache_size_cancellable(install_path, &source, canceled) {
+    let cache_size = match downloading_chunk_cache_size_cancellable(install_path, &source, canceled)
+    {
         Ok(size) => size,
         Err(JobError::Canceled) => return Err(JobError::Canceled),
         Err(_) => 0,
@@ -895,16 +993,16 @@ pub fn spawn_update_job(
     let source = DepotSource::for_game(game_id.as_deref().unwrap_or(DEFAULT_GAME_ID));
     let catalog = source.load_catalog()?;
     let target_version = resolve_target_version(&catalog, target_version)?;
-    
+
     let install_root = PathBuf::from(&install_path);
-    
+
     // Try to add Windows Defender exclusion to avoid I/O errors during update
     if let Some(parent) = install_root.parent() {
         if let Err(e) = crate::defender_exclusion::add_defender_exclusion(parent) {
             eprintln!("[DEFENDER] Could not add exclusion for install: {}", e);
         }
     }
-    
+
     // Also add exclusion for download folder (dl/)
     let downloading_root = downloading_dir_for_install(&install_root, &source);
     if let Some(dl_parent) = downloading_root.parent() {
@@ -912,7 +1010,7 @@ pub fn spawn_update_job(
             eprintln!("[DEFENDER] Could not add exclusion for downloads: {}", e);
         }
     }
-    
+
     let mut journal = default_journal(
         &source.game_id,
         "update",
@@ -929,6 +1027,49 @@ pub fn spawn_update_job(
         "Plan update",
         "Compare manifests and validate reusable local chunks",
     );
+    spawn_update_journal(app, control, journal)
+}
+
+pub fn resume_update_job(
+    app: AppHandle,
+    control: Arc<JobControl>,
+    mut journal: JobJournal,
+) -> Result<JobJournal, JobError> {
+    if journal.kind != "update" {
+        return Err(JobError::Depot("journal is not an update job".to_string()));
+    }
+    if journal.install_path.trim().is_empty() {
+        return Err(JobError::Depot(
+            "update journal has no install path".to_string(),
+        ));
+    }
+    let source = DepotSource::for_game(&journal.game_id);
+    let catalog = source.load_catalog()?;
+    journal.to_version = resolve_target_version(&catalog, Some(journal.to_version.clone()))?;
+    journal.status = JobStatus::Planned;
+    journal.phase = "Resuming".to_string();
+    for step in &mut journal.steps {
+        if matches!(
+            step.status,
+            StepStatus::Running | StepStatus::Paused | StepStatus::Failed
+        ) {
+            step.status = StepStatus::Waiting;
+        }
+    }
+    append_log(
+        &mut journal,
+        "info",
+        "Resuming the existing owned update session",
+    );
+    control.reset();
+    spawn_update_journal(app, control, journal)
+}
+
+fn spawn_update_journal(
+    app: AppHandle,
+    control: Arc<JobControl>,
+    journal: JobJournal,
+) -> Result<JobJournal, JobError> {
     persist_and_emit(&app, &journal)?;
     let app_for_thread = app.clone();
     let initial = journal.clone();
@@ -938,52 +1079,28 @@ pub fn spawn_update_job(
     let control_for_thread = control.clone();
     thread::spawn(move || {
         let canceled_job_id = initial.id.clone();
-        let result = run_real_update_job(&app_for_thread, control_for_thread.clone(), initial.clone());
+        let result =
+            run_real_update_job(&app_for_thread, control_for_thread.clone(), initial.clone());
         let canceled = control_for_thread.is_canceled();
-        control_for_thread.set_running(false);
-        if canceled {
-            // Cleanup temporary download files (.part, .checkpoint, .chunk, JSON) on cancel
+        if canceled || matches!(&result, Err(JobError::Canceled)) {
             let install_root = PathBuf::from(&initial.install_path);
             let source = DepotSource::for_game(&initial.game_id);
             let downloading_root = downloading_dir_for_install(&install_root, &source);
-            if let Some(dl_root) = downloading_root.parent() {
-                cleanup_download_temp_files(dl_root);
-            }
+            let _ =
+                SequentialUpdateSession::cleanup_owned_session(&downloading_root, &canceled_job_id);
             let _ = clear_current_journal_if_matches(&app_for_thread, &canceled_job_id);
+            control_for_thread.set_running(false);
             return;
         }
         match result {
             Ok(_) => {
                 let _ = clear_current_journal_if_matches(&app_for_thread, &canceled_job_id);
             }
-            Err(JobError::Canceled) => {
-                // Also cleanup on Canceled error (in case cancel happened during download)
-                let install_root = PathBuf::from(&initial.install_path);
-                let source = DepotSource::for_game(&initial.game_id);
-                let downloading_root = downloading_dir_for_install(&install_root, &source);
-                if let Some(dl_root) = downloading_root.parent() {
-                    cleanup_download_temp_files(dl_root);
-                }
-                // Also remove empty game folder if exists
-                if downloading_root.exists() {
-                    let _ = fs::remove_dir(&downloading_root); // Only succeeds if empty
-                }
-                let _ = clear_current_journal_if_matches(&app_for_thread, &canceled_job_id);
-            }
             Err(err) => {
                 let mut failed = read_latest_journal(&app_for_thread)
                     .ok()
                     .flatten()
-                    .unwrap_or_else(|| {
-                        default_journal(
-                            DEFAULT_GAME_ID,
-                            "update",
-                            String::new(),
-                            "detecting",
-                            "unknown",
-                            0,
-                        )
-                    });
+                    .unwrap_or_else(|| initial.clone());
                 failed.status = JobStatus::Failed;
                 failed.phase = "Failed".to_string();
                 mark_running_step_failed(&mut failed);
@@ -991,6 +1108,7 @@ pub fn spawn_update_job(
                 let _ = persist_and_emit(&app_for_thread, &failed);
             }
         }
+        control_for_thread.set_running(false);
     });
 
     Ok(return_journal)
@@ -1010,7 +1128,7 @@ pub fn spawn_install_job(
     let downloading_root = downloading_dir_for_install(&install_root, &source);
     fs::create_dir_all(&install_root)?;
     fs::create_dir_all(&downloading_root)?;
-    
+
     // Try to add Windows Defender exclusion to avoid I/O errors
     if let Some(parent) = install_root.parent() {
         if let Err(e) = crate::defender_exclusion::add_defender_exclusion(parent) {
@@ -1055,7 +1173,8 @@ pub fn spawn_install_job(
     let control_for_thread = control.clone();
     thread::spawn(move || {
         let canceled_job_id = initial.id.clone();
-        let result = run_real_install_job(&app_for_thread, control_for_thread.clone(), initial.clone());
+        let result =
+            run_real_install_job(&app_for_thread, control_for_thread.clone(), initial.clone());
         let canceled = control_for_thread.is_canceled();
         control_for_thread.set_running(false);
         if canceled {
@@ -1131,8 +1250,8 @@ pub fn spawn_repair_job(
             )));
         }
     }
-    let requested_version = target_version
-        .filter(|value| !value.trim().is_empty() && value != "not installed");
+    let requested_version =
+        target_version.filter(|value| !value.trim().is_empty() && value != "not installed");
     let version = match (marker.as_ref(), requested_version) {
         (Some(marker), None) => marker.version.clone(),
         (Some(marker), Some(requested))
@@ -1154,12 +1273,8 @@ pub fn spawn_repair_job(
             resolve_target_version(&catalog, Some(latest))?
         }
     };
-    let target_manifest = installed_manifest_for_version(
-        &source,
-        &install_root,
-        marker.as_ref(),
-        &version,
-    )?;
+    let target_manifest =
+        installed_manifest_for_version(&source, &install_root, marker.as_ref(), &version)?;
     let requested = file_paths
         .into_iter()
         .map(|path| path.to_ascii_lowercase())
@@ -1183,7 +1298,12 @@ pub fn spawn_repair_job(
     let staged_chunks_root = staged_chunk_dir(&downloading_root);
     fs::create_dir_all(&install_root)?;
     fs::create_dir_all(&staged_chunks_root)?;
-    let missing_chunks = plan_missing_chunks(&HashMap::new(), &staged_chunks_root, &repair_files, Some(&install_root))?;
+    let missing_chunks = plan_missing_chunks(
+        &HashMap::new(),
+        &staged_chunks_root,
+        &repair_files,
+        Some(&install_root),
+    )?;
     let bytes_total = download_transfer_bytes(&missing_chunks);
     let mut journal = default_journal(
         &source.game_id,
@@ -1383,8 +1503,8 @@ fn reconcile_registered_install(
             .launch_executable
             .clone()
             .unwrap_or_else(|| default_launch_executable(&source.game_id));
-        let version = usable_installed_version(&marker.version)
-            .unwrap_or_else(|| "installed".to_string());
+        let version =
+            usable_installed_version(&marker.version).unwrap_or_else(|| "installed".to_string());
         let install_path = install_root.display().to_string();
         let should_register = record.as_ref().is_none_or(|stored| {
             stored.install_path != install_path
@@ -1607,19 +1727,19 @@ pub fn get_game_install_size(game_id: &str) -> Result<u64, JobError> {
     if catalog.versions.is_empty() {
         return Err(JobError::Depot("No versions available".to_string()));
     }
-    
+
     let latest_version = &catalog.versions[0].version;
     let manifest = source.load_manifest(&catalog, latest_version)?;
-    
+
     // Calculate total install size (uncompressed files)
     let install_size: u64 = manifest.files.iter().map(|f| f.size).sum();
-    
+
     // Calculate total compressed chunks size (network transfer + temporary storage)
     // Chunks are stored until commit completes, so we need space for both
     use std::collections::HashSet;
     let mut unique_chunks = HashSet::new();
     let mut chunks_compressed_size: u64 = 0;
-    
+
     for file in &manifest.files {
         for chunk in &file.chunks {
             if unique_chunks.insert(&chunk.hash) {
@@ -1627,7 +1747,7 @@ pub fn get_game_install_size(game_id: &str) -> Result<u64, JobError> {
             }
         }
     }
-    
+
     // Worst-case space = install files + compressed chunks + buffer
     // During download: chunks accumulate, staging files grow
     // After commit: chunks deleted, only install files remain
@@ -1693,7 +1813,8 @@ fn effective_launch_config(
                         .iter()
                         .enumerate()
                         .map(|(idx, opt)| {
-                            let id = opt.name
+                            let id = opt
+                                .name
                                 .to_ascii_lowercase()
                                 .chars()
                                 .map(|c| if c.is_alphanumeric() { c } else { '-' })
@@ -1820,6 +1941,35 @@ pub fn launch_game(
     skip_cloud_sync: bool,
 ) -> Result<LaunchReport, JobError> {
     let source = DepotSource::for_game(game_id);
+    if let Some(active) = read_latest_journal(app)? {
+        let same_install = same_filesystem_path(Path::new(&active.install_path), install_path);
+        let same_game = sanitize_game_id(&active.game_id) == source.game_id;
+        if same_game && same_install {
+            let mutating = matches!(
+                active.kind.as_str(),
+                "install" | "update" | "repair" | "patch"
+            ) && matches!(
+                active.status,
+                JobStatus::Planned
+                    | JobStatus::Running
+                    | JobStatus::Paused
+                    | JobStatus::Downloading
+                    | JobStatus::Assembling
+                    | JobStatus::Verified
+            );
+            let pending_update_transaction = active.kind == "update"
+                && SequentialUpdateSession::has_pending_transaction(
+                    &downloading_dir_for_install(install_path, &source),
+                    &active.id,
+                )?;
+            if mutating || pending_update_transaction {
+                return Err(JobError::Depot(
+                    "The game cannot be launched while its install transaction is active or recovering"
+                        .to_string(),
+                ));
+            }
+        }
+    }
     let marker = read_install_marker(install_path)?
         .ok_or_else(|| JobError::Depot(format!("{} is not installed", source.game_dir_name)))?;
     if !install_marker_matches_source(&marker, &source) {
@@ -1879,12 +2029,19 @@ pub fn launch_game(
             res_dir.join("emu").join(arch_dir).join(dll_name)
         } else {
             std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-                .join("resources").join("emu").join(arch_dir).join(dll_name)
+                .join("resources")
+                .join("emu")
+                .join(arch_dir)
+                .join(dll_name)
         };
         if emu_dll.exists() {
             let dest = game_dir.join(dll_name);
             match std::fs::copy(&emu_dll, &dest) {
-                Ok(_) => eprintln!("[steam_emu] Injected {} -> {}", emu_dll.display(), dest.display()),
+                Ok(_) => eprintln!(
+                    "[steam_emu] Injected {} -> {}",
+                    emu_dll.display(),
+                    dest.display()
+                ),
                 Err(e) => eprintln!("[steam_emu] Failed to inject DLL: {}", e),
             }
         } else {
@@ -1914,8 +2071,14 @@ pub fn launch_game(
     if let Some(mut child) = launched.main_child.take() {
         crate::cloud_save::mark_game_running(&source.game_id, true);
         let pid = child.id();
-        running_games().lock().unwrap().insert(source.game_id.clone(), pid);
-        let _ = app.emit("launcher://game-started", serde_json::json!({ "gameId": &source.game_id }));
+        running_games()
+            .lock()
+            .unwrap()
+            .insert(source.game_id.clone(), pid);
+        let _ = app.emit(
+            "launcher://game-started",
+            serde_json::json!({ "gameId": &source.game_id }),
+        );
 
         let app_for_exit = app.clone();
         let game_id_for_exit = source.game_id.clone();
@@ -1925,11 +2088,14 @@ pub fn launch_game(
             let exit_status = child.wait();
             running_games().lock().unwrap().remove(&game_id_for_exit);
             let exit_code = exit_status.ok().and_then(|s| s.code());
-            let _ = app_for_exit.emit("launcher://game-exited", serde_json::json!({
-                "gameId": &game_id_for_exit,
-                "exitCode": exit_code,
-                "sessionSeconds": 0
-            }));
+            let _ = app_for_exit.emit(
+                "launcher://game-exited",
+                serde_json::json!({
+                    "gameId": &game_id_for_exit,
+                    "exitCode": exit_code,
+                    "sessionSeconds": 0
+                }),
+            );
             // Trigger local save backup (snapshot + Google Drive) before cloud-save sync
             crate::local_save_backup::backup_after_exit_async(
                 app_for_exit.clone(),
@@ -1978,26 +2144,26 @@ pub fn set_process_priority(game_id: String, high: bool) -> Result<(), String> {
         running.get(&game_id).copied()
     };
     if let Some(pid) = pid {
-    #[cfg(target_os = "windows")]
-    {
-        // 128 = HIGH_PRIORITY_CLASS, 32 = NORMAL_PRIORITY_CLASS
-        let priority_class = if high { 128 } else { 32 };
-        let mut cmd = hidden_command("wmic");
-        cmd.args([
-            "process",
-            "where",
-            &format!("ProcessId={pid}"),
-            "CALL",
-            "setpriority",
-            &priority_class.to_string(),
-        ]);
-        let status = cmd
-            .status()
-            .map_err(|e| format!("Failed to wmic setpriority: {}", e))?;
-        if !status.success() {
-            eprintln!("wmic setpriority failed with status: {}", status);
+        #[cfg(target_os = "windows")]
+        {
+            // 128 = HIGH_PRIORITY_CLASS, 32 = NORMAL_PRIORITY_CLASS
+            let priority_class = if high { 128 } else { 32 };
+            let mut cmd = hidden_command("wmic");
+            cmd.args([
+                "process",
+                "where",
+                &format!("ProcessId={pid}"),
+                "CALL",
+                "setpriority",
+                &priority_class.to_string(),
+            ]);
+            let status = cmd
+                .status()
+                .map_err(|e| format!("Failed to wmic setpriority: {}", e))?;
+            if !status.success() {
+                eprintln!("wmic setpriority failed with status: {}", status);
+            }
         }
-    }
     }
     Ok(())
 }
@@ -2023,12 +2189,8 @@ pub fn verify_install_integrity(
                 .and_then(|catalog| catalog.effective_latest_version().map(str::to_string))
                 .unwrap_or_else(|| "unknown".to_string())
         });
-    let manifest = installed_manifest_for_version(
-        &source,
-        install_path,
-        marker.as_ref(),
-        &version,
-    )?;
+    let manifest =
+        installed_manifest_for_version(&source, install_path, marker.as_ref(), &version)?;
     let mut missing_files = Vec::new();
     let mut mismatched_files = Vec::new();
     let mut checked_files = 0_usize;
@@ -2283,6 +2445,523 @@ fn run_real_update_job(
     control: Arc<JobControl>,
     mut journal: JobJournal,
 ) -> Result<JobJournal, JobError> {
+    for recovery_cycle in 0..=2_u32 {
+        match run_real_update_job_once(app, Arc::clone(&control), journal.clone()) {
+            Ok(final_journal) => return Ok(final_journal),
+            Err(error @ (JobError::StageMissing(_) | JobError::SessionMissing(_)))
+                if recovery_cycle < 2 =>
+            {
+                if control.is_canceled() {
+                    return Err(JobError::Canceled);
+                }
+                append_log(
+                    &mut journal,
+                    "warning",
+                    &format!(
+                        "Staging recovery cycle {} of 2: {error}",
+                        recovery_cycle + 1
+                    ),
+                );
+                persist_and_emit(app, &journal)?;
+                thread::sleep(Duration::from_millis(250_u64 << recovery_cycle));
+            }
+            Err(error) => return Err(error),
+        }
+    }
+    unreachable!()
+}
+
+fn run_real_update_job_once(
+    app: &AppHandle,
+    control: Arc<JobControl>,
+    mut journal: JobJournal,
+) -> Result<JobJournal, JobError> {
+    let install_root = PathBuf::from(&journal.install_path);
+    let source = DepotSource::for_game(&journal.game_id);
+    let downloading_root = downloading_dir_for_install(&install_root, &source);
+    append_log(&mut journal, "info", "Sequential update job started");
+
+    set_step_running(
+        app,
+        &mut journal,
+        0,
+        JobStatus::Running,
+        "Read install state",
+    )?;
+    let catalog = source.load_catalog()?;
+    let target_version = resolve_target_version(&catalog, Some(journal.to_version.clone()))?;
+    journal.to_version = target_version.clone();
+
+    // A resumed job must keep its original base manifest even if the marker was
+    // committed just before the process exited. The full session ownership data
+    // will decide whether to finish cleanup or roll back.
+    let journal_base = usable_installed_version(&journal.from_version)
+        .filter(|version| catalog_has_version(&catalog, version));
+    let installed_base = if let Some(version) = journal_base {
+        InstalledUpdateBase {
+            manifest: source.load_manifest(&catalog, &version)?,
+            version,
+            source_label: "resumable update journal".to_string(),
+        }
+    } else {
+        load_installed_update_base(&install_root, &source, &catalog)?.ok_or_else(|| {
+            JobError::Depot(
+                "Cannot determine the installed version: .0xolemon/state.0xo and manifest.0xo are missing or invalid"
+                    .to_string(),
+            )
+        })?
+    };
+    let InstalledUpdateBase {
+        version: from_version,
+        manifest: from_manifest,
+        source_label,
+    } = installed_base;
+    journal.from_version = from_version.clone();
+    append_log(
+        &mut journal,
+        "info",
+        &format!(
+            "Installed version {from_version} resolved from {source_label} ({} manifest files)",
+            from_manifest.files.len()
+        ),
+    );
+    complete_step(app, &mut journal, 0)?;
+
+    set_step_running(app, &mut journal, 1, JobStatus::Running, "Verify manifests")?;
+    let target_manifest = source.load_manifest(&catalog, &target_version)?;
+    let planned_changed = changed_target_files(&from_manifest, &target_manifest);
+    let mut session = SequentialUpdateSession::prepare(
+        &downloading_root,
+        &journal,
+        &from_version,
+        &target_version,
+        &install_root,
+        &planned_changed,
+    )?;
+
+    if session.recover(&install_root, &target_version)? == RecoveryOutcome::AlreadyCommitted {
+        append_log(
+            &mut journal,
+            "info",
+            "Recovered a committed update and completed pending transaction cleanup",
+        );
+        for step in journal.steps.iter_mut().take(5) {
+            step.status = StepStatus::Completed;
+            step.progress = 1.0;
+        }
+        journal.status = JobStatus::Committed;
+        journal.phase = "Committed".to_string();
+        journal.overall_progress = 1.0;
+        journal.bytes_done = journal.bytes_total;
+        if let Err(error) = session.cleanup_session_files() {
+            append_log(
+                &mut journal,
+                "warning",
+                &format!("Committed session cleanup remains pending: {error}"),
+            );
+        }
+        persist_and_emit(app, &journal)?;
+        let to_version = journal.to_version.clone();
+        try_apply_patch_fix(
+            app,
+            &mut journal,
+            &source,
+            &install_root,
+            &to_version,
+            &control,
+            false,
+        )?;
+        return Ok(journal);
+    }
+
+    let changed =
+        filter_already_assembled(app, &mut journal, &install_root, planned_changed, &control)?;
+    let (mut local_sources, reused_chunks, rejected_chunks) =
+        build_verified_local_chunk_sources(&install_root, &from_manifest, &changed, &control)?;
+    append_log(
+        &mut journal,
+        "info",
+        &format!(
+            "Validated {reused_chunks} reusable local chunks; {rejected_chunks} chunks were rejected"
+        ),
+    );
+    let (discovered_sources, discovered_count) =
+        discover_local_chunks(&install_root, &changed, &control)?;
+    local_sources.extend(discovered_sources);
+    if discovered_count > 0 {
+        append_log(
+            &mut journal,
+            "info",
+            &format!("Discovered {discovered_count} reusable chunks at shifted offsets"),
+        );
+    }
+
+    // Opening every stage once repairs an interrupted checkpoint before network
+    // planning, including truncating bytes written after the last sync_data.
+    for file in &changed {
+        drop(session.open_writer(file)?);
+    }
+    session.reconcile_chunk_references(&changed)?;
+    let remaining_files = changed
+        .iter()
+        .map(|file| {
+            let mut remaining = file.clone();
+            remaining.chunks = file.chunks[session.durable_chunks(file)..].to_vec();
+            remaining
+        })
+        .collect::<Vec<_>>();
+    let missing_chunks =
+        plan_missing_chunks(&local_sources, session.cache_root(), &remaining_files, None)?;
+    journal.bytes_total = download_transfer_bytes(&missing_chunks);
+    journal.bytes_done = 0;
+    configure_download_metrics(&mut journal, &missing_chunks, false);
+    journal.metrics.pipeline = "sequential-stage-v1".to_string();
+    let assembly_total = changed
+        .iter()
+        .map(|file| {
+            file.size.saturating_sub(
+                file.chunks
+                    .iter()
+                    .take(session.durable_chunks(file))
+                    .map(|chunk| chunk.uncompressed_size)
+                    .sum::<u64>(),
+            )
+        })
+        .sum::<u64>();
+    let planned_network = human_bytes(journal.bytes_total);
+    append_log(
+        &mut journal,
+        "info",
+        &format!(
+            "{} changed files; {} reusable bytes; {} network bytes planned",
+            changed.len(),
+            human_bytes(
+                changed
+                    .iter()
+                    .map(|file| file.size)
+                    .sum::<u64>()
+                    .saturating_sub(assembly_total)
+            ),
+            planned_network
+        ),
+    );
+    complete_step(app, &mut journal, 1)?;
+
+    journal.steps[2].name = "Stream update".to_string();
+    journal.steps[2].detail =
+        "Download verified chunks and append them to short staging files".to_string();
+    set_step_running(
+        app,
+        &mut journal,
+        2,
+        JobStatus::Downloading,
+        "Download and stage chunks",
+    )?;
+    let queue_budget = crate::platform::current_settings()
+        .download_queue_mb
+        .max(8)
+        .saturating_mul(1024 * 1024);
+    let mut downloaded = 0_u64;
+    let mut assembled = 0_u64;
+    let mut in_flight = HashMap::<String, u64>::new();
+    let mut last_emit = Instant::now();
+
+    for (file_index, file) in changed.iter().enumerate() {
+        wait_for_control(app, &control, &mut journal, 2)?;
+        append_log(
+            &mut journal,
+            "info",
+            &format!("Streaming verified chunks for {}", file.path),
+        );
+        let mut writer = session.open_writer(file)?;
+        let mut checkpointed_hashes = Vec::<String>::new();
+
+        while writer.next_chunk() < file.chunks.len() {
+            wait_for_control(app, &control, &mut journal, 2)?;
+            let batch_start = writer.next_chunk();
+            let batch_end = sequential_batch_end(
+                file,
+                batch_start,
+                &local_sources,
+                session.cache_root(),
+                queue_budget,
+            )?;
+            let mut batch_file = file.clone();
+            batch_file.chunks = file.chunks[batch_start..batch_end].to_vec();
+            let batch_missing =
+                plan_missing_chunks(&local_sources, session.cache_root(), &[batch_file], None)?;
+
+            if !batch_missing.is_empty() {
+                let assembled_snapshot = assembled;
+                let mut progress_callback = |progress: DownloadProgress| {
+                    if progress.clear_in_flight {
+                        in_flight.remove(&progress.task_id);
+                    } else {
+                        in_flight.insert(progress.task_id.clone(), progress.in_flight_bytes);
+                    }
+                    downloaded = downloaded.saturating_add(progress.committed_bytes);
+                    wait_for_control(app, &control, &mut journal, 2)?;
+                    let active_bytes = in_flight.values().copied().sum::<u64>();
+                    observe_download_progress(&mut journal, &progress, active_bytes);
+                    journal.bytes_done = downloaded
+                        .saturating_add(active_bytes)
+                        .min(journal.bytes_total);
+                    journal.steps[2].progress = streamed_update_progress(
+                        journal.bytes_done,
+                        journal.bytes_total,
+                        assembled_snapshot,
+                        assembly_total,
+                    );
+                    journal.overall_progress = overall_progress(2, journal.steps[2].progress);
+                    journal.steps[2].retry_count =
+                        journal.steps[2].retry_count.max(progress.retry_count);
+                    touch(&mut journal);
+                    persist_and_emit(app, &journal)
+                };
+                source.download_chunks_to_store_parallel(
+                    session.cache_root(),
+                    &batch_missing,
+                    Some(&target_version),
+                    Arc::clone(&control),
+                    &mut progress_callback,
+                )?;
+            }
+
+            while writer.next_chunk() < batch_end {
+                wait_for_control(app, &control, &mut journal, 2)?;
+                let chunk = &file.chunks[writer.next_chunk()];
+                let data = read_chunk_bytes(chunk, &local_sources, session.cache_root())?;
+                writer.append(chunk, &data)?;
+                assembled = assembled.saturating_add(data.len() as u64);
+                checkpointed_hashes.push(chunk.hash.clone());
+
+                if writer.checkpoint_due() {
+                    session.checkpoint_writer(&mut writer, false)?;
+                    session.release_checkpointed_chunks(&mut checkpointed_hashes)?;
+                }
+                if last_emit.elapsed() >= Duration::from_millis(200) {
+                    journal.steps[2].progress = streamed_update_progress(
+                        journal.bytes_done,
+                        journal.bytes_total,
+                        assembled,
+                        assembly_total,
+                    );
+                    journal.overall_progress = overall_progress(2, journal.steps[2].progress);
+                    touch(&mut journal);
+                    persist_and_emit(app, &journal)?;
+                    last_emit = Instant::now();
+                }
+            }
+
+            session.checkpoint_writer(&mut writer, false)?;
+            session.release_checkpointed_chunks(&mut checkpointed_hashes)?;
+        }
+
+        session.finish_writer(&mut writer, file)?;
+        drop(writer);
+        let target = safe_join(&install_root, &file.path)
+            .ok_or_else(|| JobError::Depot(format!("unsafe manifest path: {}", file.path)))?;
+        if let Some((old_target, backup)) = session.commit_file(&install_root, file)? {
+            for source in local_sources.values_mut() {
+                if same_filesystem_path(&source.path, &old_target) {
+                    source.path = backup.clone();
+                }
+            }
+        }
+        for chunk in &file.chunks {
+            local_sources.insert(
+                chunk.hash.clone(),
+                LocalChunkSource {
+                    path: target.clone(),
+                    offset: chunk.file_offset,
+                    size: chunk.uncompressed_size,
+                },
+            );
+        }
+        journal.steps[2].progress = streamed_update_progress(
+            journal.bytes_done,
+            journal.bytes_total,
+            assembled,
+            assembly_total,
+        );
+        journal.steps[3].progress = progress_fraction(file_index + 1, changed.len());
+        journal.overall_progress = overall_progress(2, journal.steps[2].progress);
+        touch(&mut journal);
+        persist_and_emit(app, &journal)?;
+    }
+    complete_step(app, &mut journal, 2)?;
+
+    journal.steps[3].name = "Commit transaction".to_string();
+    journal.steps[3].detail =
+        "Retain rollback backups until install metadata is committed".to_string();
+    set_step_running(
+        app,
+        &mut journal,
+        3,
+        JobStatus::Assembling,
+        "Commit update transaction",
+    )?;
+    let obsolete_paths = obsolete_update_paths(
+        &install_root,
+        &source,
+        &from_manifest,
+        &target_manifest,
+        &target_version,
+    )?;
+    for (index, relative_path) in obsolete_paths.iter().enumerate() {
+        wait_for_control(app, &control, &mut journal, 3)?;
+        session.backup_obsolete_file(&install_root, relative_path)?;
+        journal.steps[3].progress = progress_fraction(index + 1, obsolete_paths.len());
+    }
+    journal.steps[3].progress = 1.0;
+    complete_step(app, &mut journal, 3)?;
+
+    set_step_running(app, &mut journal, 4, JobStatus::Running, "Finalize")?;
+    write_install_marker(
+        app,
+        &install_root,
+        &target_manifest,
+        &source,
+        &target_version,
+    )?;
+    session.mark_marker_committed()?;
+    let cleanup_complete = match session.cleanup_committed(&install_root) {
+        Ok(()) => true,
+        Err(error) => {
+            append_log(
+                &mut journal,
+                "warning",
+                &format!("Update committed; backup cleanup remains pending: {error}"),
+            );
+            false
+        }
+    };
+    if cleanup_complete {
+        if let Err(error) = session.cleanup_session_files() {
+            append_log(
+                &mut journal,
+                "warning",
+                &format!("Update committed; session cleanup remains pending: {error}"),
+            );
+        }
+    }
+    journal.status = JobStatus::Committed;
+    journal.phase = "Committed".to_string();
+    journal.overall_progress = 1.0;
+    journal.bytes_done = journal.bytes_total;
+    complete_step(app, &mut journal, 4)?;
+    append_log(&mut journal, "info", "Sequential update committed");
+    persist_and_emit(app, &journal)?;
+
+    let to_version = journal.to_version.clone();
+    try_apply_patch_fix(
+        app,
+        &mut journal,
+        &source,
+        &install_root,
+        &to_version,
+        &control,
+        false,
+    )?;
+    Ok(journal)
+}
+
+fn sequential_batch_end(
+    file: &FileEntry,
+    start: usize,
+    local_sources: &HashMap<String, LocalChunkSource>,
+    cache_root: &Path,
+    queue_budget: u64,
+) -> Result<usize, JobError> {
+    let mut end = start;
+    let mut network_bytes = 0_u64;
+    while end < file.chunks.len() {
+        let chunk = &file.chunks[end];
+        let cached =
+            compressed_chunk_file_valid(&staged_chunk_path_from(cache_root, &chunk.hash), chunk)?;
+        let cost = if local_sources.contains_key(&chunk.hash) || cached {
+            0
+        } else {
+            chunk.compressed_size
+        };
+        if end > start && cost > 0 && network_bytes.saturating_add(cost) > queue_budget {
+            break;
+        }
+        network_bytes = network_bytes.saturating_add(cost);
+        end += 1;
+        if network_bytes >= queue_budget {
+            break;
+        }
+    }
+    Ok(end.max(start.saturating_add(1)).min(file.chunks.len()))
+}
+
+fn streamed_update_progress(
+    network_done: u64,
+    network_total: u64,
+    assembled_done: u64,
+    assembly_total: u64,
+) -> f32 {
+    let total = network_total.saturating_add(assembly_total);
+    if total == 0 {
+        return 1.0;
+    }
+    network_done.saturating_add(assembled_done).min(total) as f32 / total as f32
+}
+
+fn same_filesystem_path(left: &Path, right: &Path) -> bool {
+    left.to_string_lossy()
+        .replace('/', "\\")
+        .eq_ignore_ascii_case(&right.to_string_lossy().replace('/', "\\"))
+}
+
+fn obsolete_update_paths(
+    install_root: &Path,
+    source: &DepotSource,
+    from_manifest: &VersionManifest,
+    target_manifest: &VersionManifest,
+    target_version: &str,
+) -> Result<Vec<String>, JobError> {
+    let target_patch = load_patch_manifest(source, target_version)?;
+    let mut retained = target_manifest
+        .files
+        .iter()
+        .map(|file| file.path.to_ascii_lowercase())
+        .collect::<HashSet<_>>();
+    if let Some(patch) = target_patch {
+        retained.extend(
+            patch
+                .files
+                .iter()
+                .map(|file| file.path.to_ascii_lowercase()),
+        );
+    }
+
+    let mut obsolete = Vec::new();
+    let mut seen = HashSet::new();
+    for path in from_manifest.files.iter().map(|file| file.path.clone()) {
+        let normalized = path.to_ascii_lowercase();
+        if !retained.contains(&normalized) && seen.insert(normalized) {
+            obsolete.push(path);
+        }
+    }
+    if let Some(old_patch) = read_applied_patch_manifest(install_root)? {
+        for path in old_patch.files.into_iter().map(|file| file.path) {
+            let normalized = path.to_ascii_lowercase();
+            if !retained.contains(&normalized) && seen.insert(normalized) {
+                obsolete.push(path);
+            }
+        }
+    }
+    Ok(obsolete)
+}
+
+#[allow(dead_code)]
+fn run_legacy_update_job(
+    app: &AppHandle,
+    control: Arc<JobControl>,
+    mut journal: JobJournal,
+) -> Result<JobJournal, JobError> {
     let install_root = PathBuf::from(&journal.install_path);
     let source = DepotSource::for_game(&journal.game_id);
     let downloading_root = downloading_dir_for_install(&install_root, &source);
@@ -2337,18 +3016,19 @@ fn run_real_update_job(
             "Validated {reused_chunks} reusable local chunks; {rejected_chunks} chunks not strictly valid at original offset"
         ),
     );
-    
+
     // Attempt to discover remaining chunks in changed files
-    let (discovered_sources, discovered_count) = discover_local_chunks(&install_root, &changed, &control)?;
+    let (discovered_sources, discovered_count) =
+        discover_local_chunks(&install_root, &changed, &control)?;
     local_sources.extend(discovered_sources);
     if discovered_count > 0 {
         append_log(
             &mut journal,
             "info",
-            &format!("Discovered {discovered_count} matching chunks shifted in existing files")
+            &format!("Discovered {discovered_count} matching chunks shifted in existing files"),
         );
     }
-    
+
     fs::create_dir_all(&staged_chunks_root)?;
     let direct_stage = prepare_direct_stage(
         &downloading_root,
@@ -2361,7 +3041,12 @@ fn run_real_update_job(
     let missing_chunks = if let Some(stage) = direct_stage.as_ref() {
         stage.filter_missing_chunks(&local_sources, &changed)
     } else {
-        plan_missing_chunks(&local_sources, &staged_chunks_root, &changed, Some(&install_root))?
+        plan_missing_chunks(
+            &local_sources,
+            &staged_chunks_root,
+            &changed,
+            Some(&install_root),
+        )?
     };
     journal.bytes_total = download_transfer_bytes(&missing_chunks);
     configure_download_metrics(&mut journal, &missing_chunks, direct_stage.is_some());
@@ -2446,7 +3131,7 @@ fn run_real_update_job(
         "info",
         "Cleaning up obsolete files from previous version",
     );
-    
+
     // 1. Cleanup obsolete base game files
     let mut deleted_obsolete = 0;
     let target_map: HashSet<String> = target_manifest
@@ -2454,14 +3139,21 @@ fn run_real_update_job(
         .iter()
         .map(|f| f.path.to_ascii_lowercase())
         .collect();
-        
+
     for old_file in &from_manifest.files {
         if !target_map.contains(&old_file.path.to_ascii_lowercase()) {
             if let Some(path) = safe_join(&install_root, &old_file.path) {
                 let lp = long_path(&path);
                 if lp.exists() {
                     if let Err(e) = fs::remove_file(&lp) {
-                        append_log(&mut journal, "warning", &format!("Failed to delete obsolete base file {}: {}", old_file.path, e));
+                        append_log(
+                            &mut journal,
+                            "warning",
+                            &format!(
+                                "Failed to delete obsolete base file {}: {}",
+                                old_file.path, e
+                            ),
+                        );
                     } else {
                         deleted_obsolete += 1;
                     }
@@ -2469,22 +3161,34 @@ fn run_real_update_job(
             }
         }
     }
-    
+
     // 2. Cleanup obsolete patch files
     if let Ok(Some(old_patch_manifest)) = read_applied_patch_manifest(&install_root) {
         let target_patch_manifest = load_patch_manifest(&source, &target_version).unwrap_or(None);
         let target_patch_map: HashSet<String> = target_patch_manifest
             .as_ref()
-            .map(|m| m.files.iter().map(|f| f.path.to_ascii_lowercase()).collect())
+            .map(|m| {
+                m.files
+                    .iter()
+                    .map(|f| f.path.to_ascii_lowercase())
+                    .collect()
+            })
             .unwrap_or_default();
-            
+
         for old_patch_file in &old_patch_manifest.files {
             if !target_patch_map.contains(&old_patch_file.path.to_ascii_lowercase()) {
                 if let Some(path) = safe_join(&install_root, &old_patch_file.path) {
                     let lp = long_path(&path);
                     if lp.exists() {
                         if let Err(e) = fs::remove_file(&lp) {
-                            append_log(&mut journal, "warning", &format!("Failed to delete obsolete patch file {}: {}", old_patch_file.path, e));
+                            append_log(
+                                &mut journal,
+                                "warning",
+                                &format!(
+                                    "Failed to delete obsolete patch file {}: {}",
+                                    old_patch_file.path, e
+                                ),
+                            );
                         } else {
                             deleted_obsolete += 1;
                         }
@@ -2493,9 +3197,13 @@ fn run_real_update_job(
             }
         }
     }
-    
+
     if deleted_obsolete > 0 {
-        append_log(&mut journal, "info", &format!("Successfully deleted {} obsolete file(s)", deleted_obsolete));
+        append_log(
+            &mut journal,
+            "info",
+            &format!("Successfully deleted {} obsolete file(s)", deleted_obsolete),
+        );
     }
 
     if let Some(stage) = direct_stage.as_ref() {
@@ -2510,7 +3218,8 @@ fn run_real_update_job(
         journal.overall_progress = overall_progress(3, 1.0);
         persist_and_emit(app, &journal)?;
     } else {
-        let mut chunk_usage: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
+        let mut chunk_usage: std::collections::HashMap<String, usize> =
+            std::collections::HashMap::new();
         for file in &changed {
             for chunk in &file.chunks {
                 *chunk_usage.entry(chunk.hash.clone()).or_insert(0) += 1;
@@ -2524,13 +3233,8 @@ fn run_real_update_job(
         for (index, file) in changed.iter().enumerate() {
             wait_for_control(app, &control, &mut journal, 3)?;
             append_log(&mut journal, "info", &format!("Assembling {}", file.path));
-            assemble_target_file(
-                &install_root,
-                &staged_chunks_root,
-                file,
-                &local_sources,
-            )?;
-            
+            assemble_target_file(&install_root, &staged_chunks_root, file, &local_sources)?;
+
             // Free up disk space immediately by deleting chunks no longer needed
             for chunk in &file.chunks {
                 if let Some(count) = chunk_usage.get_mut(&chunk.hash) {
@@ -2541,7 +3245,7 @@ fn run_real_update_job(
                     }
                 }
             }
-            
+
             journal.steps[3].progress = progress_fraction(index + 1, total_files);
             journal.overall_progress = overall_progress(3, journal.steps[3].progress);
             touch(&mut journal);
@@ -2574,13 +3278,9 @@ fn run_real_update_job(
         "committed",
         install_root.display().to_string(),
     )?;
-    
+
     // Cleanup chunks used by this game
-    append_log(
-        &mut journal,
-        "info",
-        "Cleaning up cached chunks",
-    );
+    append_log(&mut journal, "info", "Cleaning up cached chunks");
     let mut cleaned_chunks = 0;
     for file in &changed {
         for chunk in &file.chunks {
@@ -2600,7 +3300,7 @@ fn run_real_update_job(
         "info",
         &format!("Cleaned {} chunk files", cleaned_chunks),
     );
-    
+
     append_log(
         &mut journal,
         "info",
@@ -2659,7 +3359,7 @@ fn run_real_install_job(
         "info",
         &format!("Chunks cached in {}", staged_chunks_root.display()),
     );
-    
+
     write_download_session_marker(
         &downloading_root,
         &journal,
@@ -2673,13 +3373,14 @@ fn run_real_install_job(
     let target_version = resolve_target_version(&catalog, Some(journal.to_version.clone()))?;
     journal.to_version = target_version.clone();
     let target_manifest = source.load_manifest(&catalog, &target_version)?;
-    
+
     let mut changed = target_manifest.files.clone();
     changed = filter_already_assembled(app, &mut journal, &install_root, changed, &control)?;
     let mut local_sources = HashMap::new();
-    
+
     // Attempt to discover chunks in existing files in the install directory (if any)
-    let (discovered_sources, discovered_count) = discover_local_chunks(&install_root, &changed, &control)?;
+    let (discovered_sources, discovered_count) =
+        discover_local_chunks(&install_root, &changed, &control)?;
     local_sources.extend(discovered_sources);
     if discovered_count > 0 {
         append_log(
@@ -2688,11 +3389,16 @@ fn run_real_install_job(
             &format!("Discovered {discovered_count} matching chunks in existing files for install recovery")
         );
     }
-    
+
     // We assemble directly to install folder now, no staging needed
     let direct_stage = None;
-    
-    let missing_chunks = plan_missing_chunks(&local_sources, &staged_chunks_root, &changed, Some(&install_root))?;
+
+    let missing_chunks = plan_missing_chunks(
+        &local_sources,
+        &staged_chunks_root,
+        &changed,
+        Some(&install_root),
+    )?;
     journal.bytes_total = download_transfer_bytes(&missing_chunks);
     configure_download_metrics(&mut journal, &missing_chunks, direct_stage.is_some());
     let resumed_in_flight = existing_partial_task_progress(&staged_chunks_root, &missing_chunks);
@@ -2736,7 +3442,7 @@ fn run_real_install_job(
             in_flight.insert(progress.task_id.clone(), progress.in_flight_bytes);
         }
         downloaded += progress.committed_bytes;
-        
+
         wait_for_control(app, &control, &mut journal, 2)?;
         let display_done = downloaded.saturating_add(in_flight.values().copied().sum::<u64>());
         observe_download_progress(&mut journal, &progress, in_flight.values().copied().sum());
@@ -2774,7 +3480,7 @@ fn run_real_install_job(
         JobStatus::Assembling,
         "Assemble install files",
     )?;
-    
+
     if let Some(stage) = direct_stage.as_ref() {
         wait_for_control(app, &control, &mut journal, 3)?;
         append_log(
@@ -2783,12 +3489,13 @@ fn run_real_install_job(
             "Verifying and committing direct staging files",
         );
         stage.commit_files(&install_root, &changed)?;
-        
+
         journal.steps[3].progress = 1.0;
         journal.overall_progress = overall_progress(3, 1.0);
         persist_and_emit(app, &journal)?;
     } else {
-        let mut chunk_usage: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
+        let mut chunk_usage: std::collections::HashMap<String, usize> =
+            std::collections::HashMap::new();
         for file in &changed {
             for chunk in &file.chunks {
                 *chunk_usage.entry(chunk.hash.clone()).or_insert(0) += 1;
@@ -2802,13 +3509,8 @@ fn run_real_install_job(
         for (index, file) in changed.iter().enumerate() {
             wait_for_control(app, &control, &mut journal, 3)?;
             append_log(&mut journal, "info", &format!("Assembling {}", file.path));
-            assemble_target_file(
-                &install_root,
-                &staged_chunks_root,
-                file,
-                &local_sources,
-            )?;
-            
+            assemble_target_file(&install_root, &staged_chunks_root, file, &local_sources)?;
+
             // Free up disk space immediately by deleting chunks no longer needed
             for chunk in &file.chunks {
                 if let Some(count) = chunk_usage.get_mut(&chunk.hash) {
@@ -2819,7 +3521,7 @@ fn run_real_install_job(
                     }
                 }
             }
-            
+
             journal.steps[3].progress = progress_fraction(index + 1, total_files);
             journal.overall_progress = overall_progress(3, journal.steps[3].progress);
             touch(&mut journal);
@@ -2834,7 +3536,7 @@ fn run_real_install_job(
     complete_step(app, &mut journal, 3)?;
 
     set_step_running(app, &mut journal, 4, JobStatus::Running, "Finalize")?;
-    
+
     write_install_marker(
         app,
         &install_root,
@@ -2853,13 +3555,9 @@ fn run_real_install_job(
         "committed",
         install_root.display().to_string(),
     )?;
-    
+
     // Cleanup chunks used by this game
-    append_log(
-        &mut journal,
-        "info",
-        "Cleaning up cached chunks",
-    );
+    append_log(&mut journal, "info", "Cleaning up cached chunks");
     let mut cleaned_chunks = 0;
     for file in &changed {
         for chunk in &file.chunks {
@@ -2879,7 +3577,7 @@ fn run_real_install_job(
         "info",
         &format!("Cleaned {} chunk files", cleaned_chunks),
     );
-    
+
     append_log(
         &mut journal,
         "info",
@@ -2951,7 +3649,12 @@ fn run_real_repair_job(
     let missing_chunks = if let Some(stage) = direct_stage.as_ref() {
         stage.filter_missing_chunks(&local_sources, &repair_files)
     } else {
-        plan_missing_chunks(&local_sources, &staged_chunks_root, &repair_files, Some(&install_root))?
+        plan_missing_chunks(
+            &local_sources,
+            &staged_chunks_root,
+            &repair_files,
+            Some(&install_root),
+        )?
     };
     journal.bytes_total = download_transfer_bytes(&missing_chunks);
     configure_download_metrics(&mut journal, &missing_chunks, direct_stage.is_some());
@@ -3039,7 +3742,8 @@ fn run_real_repair_job(
         journal.overall_progress = overall_progress(3, 1.0);
         persist_and_emit(app, &journal)?;
     } else {
-        let mut chunk_usage: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
+        let mut chunk_usage: std::collections::HashMap<String, usize> =
+            std::collections::HashMap::new();
         for file in &repair_files {
             for chunk in &file.chunks {
                 *chunk_usage.entry(chunk.hash.clone()).or_insert(0) += 1;
@@ -3052,13 +3756,8 @@ fn run_real_repair_job(
         for (index, file) in repair_files.iter().enumerate() {
             wait_for_control(app, &control, &mut journal, 3)?;
             append_log(&mut journal, "info", &format!("Repairing {}", file.path));
-            assemble_target_file(
-                &install_root,
-                &staged_chunks_root,
-                file,
-                &local_sources,
-            )?;
-            
+            assemble_target_file(&install_root, &staged_chunks_root, file, &local_sources)?;
+
             // Free up disk space immediately by deleting chunks no longer needed
             for chunk in &file.chunks {
                 if let Some(count) = chunk_usage.get_mut(&chunk.hash) {
@@ -3069,7 +3768,7 @@ fn run_real_repair_job(
                     }
                 }
             }
-            
+
             journal.steps[3].progress = progress_fraction(index + 1, total_files);
             journal.overall_progress = overall_progress(3, journal.steps[3].progress);
             touch(&mut journal);
@@ -3257,31 +3956,36 @@ fn sanitize_token(token: Option<String>) -> Option<String> {
 /// Returns HashMap of game_id -> app_id
 fn load_steam_appid_mapping() -> HashMap<String, u32> {
     use std::fs;
-    
+
     // Try bundled resource first (production), then local file (development)
     let paths = [
         PathBuf::from("steam_appids_mapping.json"),
         PathBuf::from("../steam_appids_mapping.json"),
         PathBuf::from("../../steam_appids_mapping.json"),
     ];
-    
+
     for mapping_path in &paths {
         if let Ok(content) = fs::read_to_string(mapping_path) {
             if let Ok(mapping) = serde_json::from_str::<HashMap<String, u32>>(&content) {
-                eprintln!("âœ“ Loaded {} AppID mappings from {:?}", mapping.len(), mapping_path);
+                eprintln!(
+                    "âœ“ Loaded {} AppID mappings from {:?}",
+                    mapping.len(),
+                    mapping_path
+                );
                 return mapping;
             }
         }
     }
-    
+
     // Fallback: return empty map if file not found or invalid
-    eprintln!("â  Warning: steam_appids_mapping.json not found - download paths will use long game IDs");
+    eprintln!(
+        "â  Warning: steam_appids_mapping.json not found - download paths will use long game IDs"
+    );
     HashMap::new()
 }
 
 fn hf_environment_token() -> Option<String> {
-    env::var("FIRST_LIGHT_HF_TOKEN")
-        .or_else(|_| env::var("HF_TOKEN"))
+    env::var("HF_TOKEN")
         .ok()
         .and_then(|value| sanitize_token(Some(value)))
 }
@@ -3339,12 +4043,15 @@ impl DepotSource {
         // Fetch Steam AppID from local mapping file for shorter download paths
         let mapping = load_steam_appid_mapping();
         let app_id = mapping.get(&game_id).copied();
-        
+
         // Debug log
         if let Some(appid) = app_id {
             eprintln!("âœ“ Found AppID {} for game '{}'", appid, game_id);
         } else {
-            eprintln!("â  No AppID found for game '{}' (will use long game ID)", game_id);
+            eprintln!(
+                "â  No AppID found for game '{}' (will use long game ID)",
+                game_id
+            );
         }
 
         Self {
@@ -3366,9 +4073,7 @@ impl DepotSource {
     }
 
     fn default_downloading_game_dir(&self) -> PathBuf {
-        default_store_root()
-            .join("dl")
-            .join(&self.game_dir_name)
+        default_store_root().join("dl").join(&self.game_dir_name)
     }
 
     fn status_label(&self) -> String {
@@ -3420,7 +4125,11 @@ impl DepotSource {
             .and_then(|guard| guard.clone());
         let mut ordered = Vec::with_capacity(self.base_urls.len());
         if let Some(active) = active {
-            if let Some(base) = self.base_urls.iter().find(|candidate| candidate.url == active) {
+            if let Some(base) = self
+                .base_urls
+                .iter()
+                .find(|candidate| candidate.url == active)
+            {
                 ordered.push(base.clone());
             }
         }
@@ -3647,15 +4356,19 @@ impl DepotSource {
         task_id: &str,
         partial_path: &Path,
         control: &JobControl,
-        progress_tx: &mpsc::Sender<Result<DownloadProgress, String>>,
+        progress_tx: &mpsc::Sender<Result<DownloadProgress, JobError>>,
     ) -> Result<Vec<u8>, JobError> {
         let expected_len = end_exclusive.saturating_sub(start);
         if expected_len == 0 {
             return Ok(Vec::new());
         }
         if let Some(parent) = partial_path.parent() {
-            fs::create_dir_all(parent)
-                .map_err(|e| JobError::Depot(format!("failed to create download dir '{}': {e}", parent.display())))?;
+            fs::create_dir_all(parent).map_err(|e| {
+                JobError::Depot(format!(
+                    "failed to create download dir '{}': {e}",
+                    parent.display()
+                ))
+            })?;
         }
         normalize_partial_file(partial_path, expected_len)?;
 
@@ -3795,15 +4508,17 @@ impl DepotSource {
         let tasks = build_pack_download_tasks(chunks, self.effective_pack_range_task_bytes());
         let settings = crate::platform::current_settings();
         let queue_budget = settings.download_queue_mb.saturating_mul(1024 * 1024);
-        let workers_by_budget = (queue_budget / self.effective_pack_range_task_bytes()).max(1) as usize;
-        let worker_count = self.effective_worker_count()
+        let workers_by_budget =
+            (queue_budget / self.effective_pack_range_task_bytes()).max(1) as usize;
+        let worker_count = self
+            .effective_worker_count()
             .min(workers_by_budget)
             .min(tasks.len())
             .max(1);
         let tasks = Arc::new(Mutex::new(VecDeque::from(tasks)));
         let abort = Arc::new(AtomicBool::new(false));
-        let (tx, rx) = mpsc::channel::<Result<DownloadProgress, String>>();
-        let mut first_error: Option<String> = None;
+        let (tx, rx) = mpsc::channel::<Result<DownloadProgress, JobError>>();
+        let mut first_error: Option<JobError> = None;
 
         thread::scope(|scope| {
             for _ in 0..worker_count {
@@ -3820,13 +4535,13 @@ impl DepotSource {
                     }
                     if control.is_canceled() {
                         abort.store(true, Ordering::SeqCst);
-                        let _ = tx.send(Err("job canceled".to_string()));
+                        let _ = tx.send(Err(JobError::Canceled));
                         break;
                     }
                     while control.is_paused() {
                         if control.is_canceled() {
                             abort.store(true, Ordering::SeqCst);
-                            let _ = tx.send(Err("job canceled".to_string()));
+                            let _ = tx.send(Err(JobError::Canceled));
                             return;
                         }
                         thread::sleep(Duration::from_millis(150));
@@ -3856,7 +4571,7 @@ impl DepotSource {
                                 let next_retry = retry_count.saturating_add(1);
                                 let Some(delay) = err.retry_delay(next_retry) else {
                                     abort.store(true, Ordering::SeqCst);
-                                    let _ = tx.send(Err(err.to_string()));
+                                    let _ = tx.send(Err(err));
                                     break;
                                 };
                                 retry_count = next_retry;
@@ -3881,13 +4596,13 @@ impl DepotSource {
                                 }));
                                 if let Err(err) = sleep_with_control(delay, &control) {
                                     abort.store(true, Ordering::SeqCst);
-                                    let _ = tx.send(Err(err.to_string()));
+                                    let _ = tx.send(Err(err));
                                     break;
                                 }
                             }
                             Err(err) => {
                                 abort.store(true, Ordering::SeqCst);
-                                let _ = tx.send(Err(err.to_string()));
+                                let _ = tx.send(Err(err));
                                 break;
                             }
                         }
@@ -3905,7 +4620,7 @@ impl DepotSource {
                     Ok(progress) => {
                         if let Err(err) = on_progress(progress) {
                             abort.store(true, Ordering::SeqCst);
-                            first_error = Some(err.to_string());
+                            first_error = Some(err);
                             break;
                         }
                     }
@@ -3919,10 +4634,7 @@ impl DepotSource {
         });
 
         if let Some(error) = first_error {
-            if error.eq_ignore_ascii_case("job canceled") {
-                return Err(JobError::Canceled);
-            }
-            return Err(JobError::Depot(error));
+            return Err(error);
         }
         Ok(())
     }
@@ -3934,7 +4646,7 @@ impl DepotSource {
         task_id: &str,
         target_version: Option<&str>,
         control: &JobControl,
-        progress_tx: &mpsc::Sender<Result<DownloadProgress, String>>,
+        progress_tx: &mpsc::Sender<Result<DownloadProgress, JobError>>,
     ) -> Result<(), JobError> {
         let relative_path = if task.pack_id.starts_with("patch-") {
             if let Some(version) = target_version {
@@ -3997,7 +4709,7 @@ impl DepotSource {
                 retry_wait_ms: 0,
                 rate_limit_wait_ms: 0,
             }))
-            .map_err(|err| JobError::Depot(err.to_string()))?;
+            .map_err(|_| JobError::Canceled)?;
         Ok(())
     }
 }
@@ -4058,20 +4770,18 @@ fn partial_checkpoint_path(path: &Path) -> PathBuf {
 fn durable_partial_len(path: &Path) -> u64 {
     let lp = long_path(path);
     let actual = partial_file_len(&lp);
-    
+
     if actual == 0 {
         return 0;
     }
-    
+
     let lp_ckpt = long_path(&partial_checkpoint_path(path));
-    let checkpoint = fs::read_to_string(lp_ckpt)
-        .ok()
-        .and_then(|value| {
-            let trimmed = value.trim();
-            // Validate checkpoint: must be numeric and not exceed actual file size
-            trimmed.parse::<u64>().ok().filter(|&ckpt| ckpt <= actual)
-        });
-    
+    let checkpoint = fs::read_to_string(lp_ckpt).ok().and_then(|value| {
+        let trimmed = value.trim();
+        // Validate checkpoint: must be numeric and not exceed actual file size
+        trimmed.parse::<u64>().ok().filter(|&ckpt| ckpt <= actual)
+    });
+
     checkpoint.unwrap_or(0).min(actual)
 }
 
@@ -4080,8 +4790,12 @@ fn persist_partial_checkpoint(path: &Path, durable_len: u64) -> Result<(), JobEr
     let lp_checkpoint = long_path(&checkpoint);
     let lp_temporary = long_path(&checkpoint.with_extension("checkpoint.tmp"));
     {
-        let mut file = File::create(&lp_temporary)
-            .map_err(|e| JobError::Depot(format!("failed to create checkpoint tmp '{}': {e}", lp_temporary.display())))?;
+        let mut file = File::create(&lp_temporary).map_err(|e| {
+            JobError::Depot(format!(
+                "failed to create checkpoint tmp '{}': {e}",
+                lp_temporary.display()
+            ))
+        })?;
         write!(file, "{durable_len}")?;
         file.sync_all()?;
     }
@@ -4091,7 +4805,10 @@ fn persist_partial_checkpoint(path: &Path, durable_len: u64) -> Result<(), JobEr
     let rename_res = fs::rename(&lp_temporary, &lp_checkpoint);
     if let Err(e) = rename_res {
         if e.kind() != std::io::ErrorKind::NotFound {
-            return Err(JobError::Depot(format!("failed to rename checkpoint '{}': {e}", lp_checkpoint.display())));
+            return Err(JobError::Depot(format!(
+                "failed to rename checkpoint '{}': {e}",
+                lp_checkpoint.display()
+            )));
         }
     }
     Ok(())
@@ -4100,12 +4817,10 @@ fn persist_partial_checkpoint(path: &Path, durable_len: u64) -> Result<(), JobEr
 fn normalize_partial_file(path: &Path, expected_len: u64) -> Result<(), JobError> {
     let lp = long_path(path);
     let lp_checkpoint = long_path(&partial_checkpoint_path(path));
-    
+
     // Try to open the file first to avoid TOCTOU race
-    let file_res = OpenOptions::new()
-        .write(true)
-        .open(&lp);
-    
+    let file_res = OpenOptions::new().write(true).open(&lp);
+
     let file = match file_res {
         Ok(f) => f,
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
@@ -4115,13 +4830,16 @@ fn normalize_partial_file(path: &Path, expected_len: u64) -> Result<(), JobError
             }
             return Ok(());
         }
-        Err(e) => return Err(JobError::Depot(format!("failed to open existing partial '{}' for normalization: {e}", path.display()))),
+        Err(e) => {
+            return Err(JobError::Depot(format!(
+                "failed to open existing partial '{}' for normalization: {e}",
+                path.display()
+            )))
+        }
     };
-    
-    let actual_len = file.metadata()
-        .map(|m| m.len())
-        .unwrap_or(0);
-    
+
+    let actual_len = file.metadata().map(|m| m.len()).unwrap_or(0);
+
     // If file is larger than expected, truncate it completely and remove checkpoint
     if actual_len > expected_len {
         drop(file); // Close file before removing
@@ -4131,16 +4849,16 @@ fn normalize_partial_file(path: &Path, expected_len: u64) -> Result<(), JobError
         }
         return Ok(());
     }
-    
+
     // Determine durable length from checkpoint
     let durable = durable_partial_len(path).min(expected_len);
-    
+
     // Truncate to durable checkpoint position if needed
     if actual_len != durable {
         file.set_len(durable)?;
         file.sync_all()?;
     }
-    
+
     drop(file); // Release file handle before writing checkpoint
     persist_partial_checkpoint(path, durable)?;
     Ok(())
@@ -4215,14 +4933,20 @@ fn append_stream_to_partial<R: Read>(
     expected_len: u64,
     task_id: &str,
     control: &JobControl,
-    progress_tx: &mpsc::Sender<Result<DownloadProgress, String>>,
+    progress_tx: &mpsc::Sender<Result<DownloadProgress, JobError>>,
 ) -> Result<u64, JobError> {
     let lp = long_path(partial_path);
     let mut output = OpenOptions::new()
         .create(true)
         .append(true)
         .open(&lp)
-        .map_err(|e| JobError::Depot(format!("failed to open partial file '{}' (long: '{}'): {e}", partial_path.display(), lp.display())))?;
+        .map_err(|e| {
+            JobError::Depot(format!(
+                "failed to open partial file '{}' (long: '{}'): {e}",
+                partial_path.display(),
+                lp.display()
+            ))
+        })?;
     let mut written = existing_len.min(expected_len);
     let mut durable = written;
     let mut unsynced = 0_u64;
@@ -4241,7 +4965,7 @@ fn append_stream_to_partial<R: Read>(
             retry_wait_ms: 0,
             rate_limit_wait_ms: 0,
         }))
-        .map_err(|err| JobError::Depot(err.to_string()))?;
+        .map_err(|_| JobError::Canceled)?;
 
     let mut scratch = [0_u8; 256 * 1024];
     while written < expected_len {
@@ -4310,7 +5034,7 @@ fn append_stream_to_partial<R: Read>(
                     retry_wait_ms: 0,
                     rate_limit_wait_ms: 0,
                 }))
-                .map_err(|err| JobError::Depot(err.to_string()))?;
+                .map_err(|_| JobError::Canceled)?;
             last_progress_emit = Instant::now();
             last_progress_bytes = written;
         }
@@ -4680,7 +5404,7 @@ fn build_verified_local_chunk_sources(
 
         let path = safe_join(install_root, &file.path)
             .ok_or_else(|| JobError::Depot(format!("unsafe manifest path: {}", file.path)))?;
-        let Ok(mut local_file) = File::open(&path) else {
+        let Ok(mut local_file) = File::open(long_path(&path)) else {
             rejected = rejected.saturating_add(candidates.len());
             continue;
         };
@@ -4743,35 +5467,46 @@ fn discover_local_chunks(
     for file in changed {
         let path = safe_join(install_root, &file.path)
             .ok_or_else(|| JobError::Depot(format!("unsafe manifest path: {}", file.path)))?;
-            
-        let Ok(local_file) = File::open(&path) else {
+
+        let Ok(local_file) = File::open(long_path(&path)) else {
             continue;
         };
 
-        let chunker = StreamCDC::new(local_file, crate::manifest::CHUNK_MIN_SIZE, crate::manifest::CHUNK_TARGET_SIZE, crate::manifest::CHUNK_MAX_SIZE);
+        let chunker = StreamCDC::new(
+            local_file,
+            crate::manifest::CHUNK_MIN_SIZE,
+            crate::manifest::CHUNK_TARGET_SIZE,
+            crate::manifest::CHUNK_MAX_SIZE,
+        );
         let mut offset = 0_u64;
-        
+
         for result in chunker {
             if control.is_canceled() {
                 return Err(JobError::Canceled);
             }
-            
+
             let chunk = match result {
                 Ok(c) => c,
                 Err(_) => break,
             };
-            
+
             let hash = blake3::hash(&chunk.data).to_hex().to_string();
             if required_hashes.contains(&hash) {
-                if out.insert(hash, LocalChunkSource {
-                    path: path.clone(),
-                    offset,
-                    size: chunk.length as u64,
-                }).is_none() {
+                if out
+                    .insert(
+                        hash,
+                        LocalChunkSource {
+                            path: path.clone(),
+                            offset,
+                            size: chunk.length as u64,
+                        },
+                    )
+                    .is_none()
+                {
                     discovered = discovered.saturating_add(1);
                 }
             }
-            
+
             offset += chunk.length as u64;
         }
     }
@@ -4779,55 +5514,16 @@ fn discover_local_chunks(
     Ok((out, discovered))
 }
 
-fn get_applicable_delta_patch(file: &FileEntry, install_root: &Path) -> Option<ChunkRef> {
-    let patches = file.delta_patches.as_ref()?;
-    if patches.is_empty() {
-        return None;
-    }
-    
-    let target = install_root.join(&file.path);
-    if !target.exists() {
-        return None;
-    }
-    
-    if let Ok(hash) = sha256_file(&target) {
-        if let Some(patch) = patches.iter().find(|p| p.from_sha256 == hash) {
-            return Some(ChunkRef {
-                hash: format!("delta-{}", patch.compressed_sha256),
-                file_offset: 0,
-                uncompressed_size: patch.uncompressed_size,
-                pack_id: patch.pack_id.clone(),
-                pack_offset: patch.pack_offset,
-                compressed_size: patch.compressed_size,
-                compressed_sha256: patch.compressed_sha256.clone(),
-                codec: patch.codec,
-                encryption: patch.encryption.clone(),
-            });
-        }
-    }
-    None
-}
-
 fn plan_missing_chunks(
     local_sources: &HashMap<String, LocalChunkSource>,
     staged_chunks_root: &Path,
     changed: &[FileEntry],
-    install_root: Option<&Path>,
+    _install_root: Option<&Path>,
 ) -> Result<Vec<ChunkRef>, JobError> {
     let mut seen = HashSet::new();
     let mut missing = Vec::new();
     for file in changed {
-        let mut chunks_to_check = Vec::new();
-        if let Some(root) = install_root {
-            if let Some(delta_chunk) = get_applicable_delta_patch(file, root) {
-                chunks_to_check.push(delta_chunk);
-            }
-        }
-        if chunks_to_check.is_empty() {
-            chunks_to_check.extend(file.chunks.iter().cloned());
-        }
-
-        for chunk in &chunks_to_check {
+        for chunk in &file.chunks {
             if !seen.insert(chunk.hash.clone()) {
                 continue;
             }
@@ -4927,15 +5623,18 @@ fn build_pack_download_tasks(chunks: &[ChunkRef], max_task_bytes: u64) -> Vec<Pa
 /// Cleanup temporary download files when download is cancelled
 /// Removes .part, .checkpoint, .chunk, and state JSON files from dl/ root
 fn cleanup_download_temp_files(dl_root: &Path) {
-    eprintln!("[CLEANUP] Cleaning up temporary download files in {:?}", dl_root);
-    
+    eprintln!(
+        "[CLEANUP] Cleaning up temporary download files in {:?}",
+        dl_root
+    );
+
     if !dl_root.exists() {
         eprintln!("[CLEANUP] Download root doesn't exist, nothing to cleanup");
         return;
     }
-    
+
     let mut cleaned_count = 0;
-    
+
     // Read all files in dl/ root (not recursive - we only want root level files)
     if let Ok(entries) = fs::read_dir(dl_root) {
         for entry in entries.flatten() {
@@ -4944,7 +5643,7 @@ fn cleanup_download_temp_files(dl_root: &Path) {
                     continue; // Skip directories
                 }
             }
-            
+
             let path = entry.path();
             let should_remove = if let Some(ext) = path.extension().and_then(|s| s.to_str()) {
                 matches!(ext, "part" | "checkpoint" | "chunk")
@@ -4954,7 +5653,7 @@ fn cleanup_download_temp_files(dl_root: &Path) {
             } else {
                 false
             };
-            
+
             if should_remove {
                 match fs::remove_file(&path) {
                     Ok(_) => {
@@ -4968,7 +5667,7 @@ fn cleanup_download_temp_files(dl_root: &Path) {
             }
         }
     }
-    
+
     eprintln!("[CLEANUP] Cleaned up {} temporary files", cleaned_count);
 }
 
@@ -5231,67 +5930,39 @@ fn assemble_target_file(
 ) -> Result<(), JobError> {
     let target = safe_join(install_root, &file.path)
         .ok_or_else(|| JobError::Depot(format!("unsafe manifest path: {}", file.path)))?;
-    
+
     // Check if target already valid
     if target_file_valid(&target, file)? {
         return Ok(());
     }
-    
+
     // Create parent dirs in install folder
     if let Some(parent) = target.parent() {
         fs::create_dir_all(parent)?;
     }
-    
+
     // Assemble directly in install folder (no staging)
     let temp = sibling_path(&target, "007launcher.tmp")?;
     let backup = sibling_path(&target, "007launcher.bak")?;
-    
-    let mut using_delta = false;
-    
-    if let Some(delta_chunk) = get_applicable_delta_patch(file, install_root) {
-        using_delta = true;
-        
-        let delta_payload = read_chunk_bytes(&delta_chunk, local_sources, staged_chunks_root)?;
-        
-        let delta_tmp_path = sibling_path(&target, "007launcher.delta")?;
-        fs::write(&delta_tmp_path, &delta_payload)?;
-        
-        let stats = oxidelta::io::decode_file(&target, &delta_tmp_path, &temp)
-            .map_err(|e| JobError::Depot(format!("Delta patch decode failed: {:?}", e)))?;
-            
-        let _ = fs::remove_file(&delta_tmp_path);
-        
-        let actual = hex::encode(stats.output_sha256.unwrap_or([0; 32]));
-        
-        if actual != file.sha256 {
-            let _ = fs::remove_file(&temp);
-            return Err(JobError::Depot(format!(
-                "assembled file (delta) hash mismatch: {}",
-                file.path
-            )));
-        }
+
+    let mut output = File::create(&temp)?;
+    let mut hasher = Sha256::new();
+
+    for chunk in &file.chunks {
+        let data = read_chunk_bytes(chunk, local_sources, staged_chunks_root)?;
+        hasher.update(&data);
+        output.write_all(&data)?;
     }
-    
-    if !using_delta {
-        let mut output = File::create(&temp)?;
-        let mut hasher = Sha256::new();
+    output.flush()?;
+    drop(output);
 
-        for chunk in &file.chunks {
-            let data = read_chunk_bytes(chunk, local_sources, staged_chunks_root)?;
-            hasher.update(&data);
-            output.write_all(&data)?;
-        }
-        output.flush()?;
-        drop(output);
-
-        let actual = hex::encode(hasher.finalize());
-        if actual != file.sha256 {
-            let _ = fs::remove_file(&temp);
-            return Err(JobError::Depot(format!(
-                "assembled file hash mismatch: {}",
-                file.path
-            )));
-        }
+    let actual = hex::encode(hasher.finalize());
+    if actual != file.sha256 {
+        let _ = fs::remove_file(&temp);
+        return Err(JobError::Depot(format!(
+            "assembled file hash mismatch: {}",
+            file.path
+        )));
     }
 
     if backup.exists() {
@@ -5313,14 +5984,15 @@ fn assemble_target_file(
 }
 
 fn target_file_valid(path: &Path, file: &FileEntry) -> Result<bool, JobError> {
+    let path = long_path(path);
     if !path.exists() {
         return Ok(false);
     }
-    let metadata = fs::metadata(path)?;
+    let metadata = fs::metadata(&path)?;
     if metadata.len() != file.size {
         return Ok(false);
     }
-    Ok(sha256_file(path)? == file.sha256)
+    Ok(sha256_file(&path)? == file.sha256)
 }
 
 fn filter_already_assembled(
@@ -5332,19 +6004,20 @@ fn filter_already_assembled(
 ) -> Result<Vec<FileEntry>, JobError> {
     let mut actual_changed = Vec::with_capacity(changed.len());
     let mut already_assembled = 0;
-    
+
     for file in changed {
         if control.is_canceled() {
             return Err(JobError::Canceled);
         }
         let target = install_root.join(&file.path);
-        
+        let target_io = long_path(&target);
+
         // Fast path: only if file exists and size matches, we check hash
         let mut is_valid = false;
-        if target.exists() {
+        if target_io.exists() {
             if file.preserve {
                 is_valid = true;
-            } else if let Ok(metadata) = fs::metadata(&target) {
+            } else if let Ok(metadata) = fs::metadata(&target_io) {
                 if metadata.len() == file.size {
                     // Only hash files that match the exact size
                     if let Ok(true) = target_file_valid(&target, &file) {
@@ -5353,83 +6026,50 @@ fn filter_already_assembled(
                 }
             }
         }
-        
+
         if is_valid {
             already_assembled += 1;
         } else {
             actual_changed.push(file);
         }
     }
-    
+
     if already_assembled > 0 {
         append_log(
             journal,
             "info",
-            &format!("Skipped {} files that were already fully assembled from a previous run", already_assembled)
+            &format!(
+                "Skipped {} files that were already fully assembled from a previous run",
+                already_assembled
+            ),
         );
         let _ = persist_and_emit(app, journal);
     }
-    
+
     Ok(actual_changed)
 }
 
 pub fn abort_and_clean_job(
     app: &AppHandle,
-    requested_game_id: Option<&str>,
+    _requested_game_id: Option<&str>,
 ) -> Result<(), JobError> {
-    // Read the journal before deleting it so custom install locations are cleaned
-    // correctly. The previous implementation always derived the default library
-    // path from the currently selected game, which could leave the real staging
-    // directory and journal behind.
     let active_journal = read_latest_journal(app).ok().flatten();
     let canceled_job_id = active_journal.as_ref().map(|journal| journal.id.clone());
-    let game_id = active_journal
-        .as_ref()
-        .map(|journal| journal.game_id.as_str())
-        .or(requested_game_id)
-        .filter(|value| !value.trim().is_empty())
-        .unwrap_or(DEFAULT_GAME_ID);
-    let source = DepotSource::for_game(game_id);
-    let install_root = active_journal
-        .as_ref()
-        .map(|journal| journal.install_path.trim())
-        .filter(|value| !value.is_empty())
-        .map(PathBuf::from)
-        .unwrap_or_else(|| source.default_common_game_dir());
-    let downloading_root = downloading_dir_for_install(&install_root, &source);
-
-    // Remove current-job.json immediately so the Downloads tab clears at once.
-    // The worker also clears it again when it observes cancellation, preventing a
-    // final progress event from recreating the stale journal.
     if let Some(job_id) = canceled_job_id.as_deref() {
         clear_current_journal_if_matches(app, job_id)?;
     } else {
         clear_current_journal(app)?;
     }
-
-    // Open pack/chunk handles can remain alive for a short moment while the worker
-    // exits. Retry both cleanup and journal removal asynchronously. The job-id
-    // guard prevents this late cleanup from deleting a newer job.
-    let app_for_cleanup = app.clone();
-    thread::spawn(move || {
-        for attempt in 0..24 {
-            if let Some(job_id) = canceled_job_id.as_deref() {
-                let _ = clear_current_journal_if_matches(&app_for_cleanup, job_id);
-            }
-            match fs::remove_dir_all(&downloading_root) {
-                Ok(()) => {
-                    if let Some(job_id) = canceled_job_id.as_deref() {
-                        let _ = clear_current_journal_if_matches(&app_for_cleanup, job_id);
-                    }
-                    return;
-                }
-                Err(err) if err.kind() == std::io::ErrorKind::NotFound => return,
-                Err(_) if attempt < 23 => thread::sleep(Duration::from_millis(250)),
-                Err(_) => return,
-            }
-        }
-    });
     Ok(())
+}
+
+fn planned_update_temporary_space(files: &[FileEntry], network_bytes: u64) -> u64 {
+    let largest_target = files.iter().map(|file| file.size).max().unwrap_or(0);
+    let queue_budget = crate::platform::current_settings()
+        .download_queue_mb
+        .max(8)
+        .saturating_mul(1024 * 1024);
+    largest_target.saturating_add(network_bytes.min(queue_budget))
 }
 
 fn cleanup_committed_download_session(
@@ -5494,7 +6134,7 @@ fn cleanup_empty_owned_download_dirs(downloading_root: &Path) -> Result<(), JobE
 }
 
 fn sha256_file(path: &Path) -> Result<String, JobError> {
-    let mut file = File::open(path)?;
+    let mut file = File::open(long_path(path))?;
     let mut hasher = Sha256::new();
     std::io::copy(&mut file, &mut hasher)?;
     Ok(hex::encode(hasher.finalize()))
@@ -5538,7 +6178,7 @@ fn read_chunk_bytes(
     if let Some(source) = local_sources.get(&chunk.hash) {
         // The local source file may have been overwritten/renamed by a previous assemble
         // step (os error 2). If so, fall back to the staged chunk silently.
-        match File::open(&source.path) {
+        match File::open(long_path(&source.path)) {
             Ok(mut file) => {
                 if file.seek(SeekFrom::Start(source.offset)).is_ok() {
                     let mut buffer = vec![0_u8; source.size as usize];
@@ -5558,19 +6198,19 @@ fn read_chunk_bytes(
     }
 
     let path = staged_chunk_path_from(staged_chunks_root, &chunk.hash);
-    if !path.exists() {
-        return Err(JobError::Depot(format!(
-            "missing staged chunk: {}",
-            chunk.hash
+    if !long_path(&path).exists() {
+        return Err(JobError::StageMissing(format!(
+            "verified chunk {} at {}",
+            chunk.hash,
+            path.display()
         )));
     }
-    let transport = fs::read(path)?;
+    let transport = fs::read(long_path(&path))?;
     verify_compressed_chunk_bytes(chunk, &transport)?;
     let compressed = decode_transport_chunk(chunk, &transport)?;
     let data = decode_chunk_payload(chunk, &compressed)?;
     verify_chunk_bytes(chunk, &data)?;
     Ok(data)
-
 }
 
 fn decode_chunk_payload(chunk: &ChunkRef, encoded: &[u8]) -> Result<Vec<u8>, JobError> {
@@ -5671,15 +6311,24 @@ fn compressed_chunk_file_valid(path: &Path, chunk: &ChunkRef) -> Result<bool, Jo
 fn write_chunk_file(path: &Path, data: &[u8]) -> Result<(), JobError> {
     let lp = long_path(path);
     if let Some(parent) = lp.parent() {
-        fs::create_dir_all(parent)
-            .map_err(|e| JobError::Depot(format!("failed to create chunk dir '{}': {e}", parent.display())))?;
+        fs::create_dir_all(parent).map_err(|e| {
+            JobError::Depot(format!(
+                "failed to create chunk dir '{}': {e}",
+                parent.display()
+            ))
+        })?;
     }
     // Use .bin.tmp extension to avoid replacing .chunk extension
     let temp = lp.with_extension("tmp");
-    fs::write(&temp, data)
-        .map_err(|e| JobError::Depot(format!("failed to write chunk temp '{}': {e}", path.display())))?;
-    fs::rename(&temp, &lp)
-        .map_err(|e| JobError::Depot(format!("failed to rename chunk '{}': {e}", path.display())))?;
+    fs::write(&temp, data).map_err(|e| {
+        JobError::Depot(format!(
+            "failed to write chunk temp '{}': {e}",
+            path.display()
+        ))
+    })?;
+    fs::rename(&temp, &lp).map_err(|e| {
+        JobError::Depot(format!("failed to rename chunk '{}': {e}", path.display()))
+    })?;
     Ok(())
 }
 
@@ -5687,7 +6336,8 @@ fn write_chunk_file(path: &Path, data: &[u8]) -> Result<(), JobError> {
 
 fn read_install_marker(install_root: &Path) -> Result<Option<InstallMarker>, JobError> {
     let path = install_marker_path(install_root);
-    
+    recover_state_file_if_needed(&path)?;
+
     // Auto-restore backup if missing
     if !path.exists() {
         if let Some(backup_root) = crate::job::paths::get_launcher_backup_root() {
@@ -5753,14 +6403,15 @@ fn write_install_marker(
         launch_executable: Some(launch_executable.clone()),
         applied_patch_id: None,
     };
-    write_install_marker_file(install_root, &marker)?;
-    clear_applied_patch_manifest(install_root);
     if manifest.version == installed_version {
         write_installed_manifest(install_root, manifest)?;
     } else {
         let canonical_manifest = canonicalize_manifest_version(manifest.clone(), installed_version);
         write_installed_manifest(install_root, &canonical_manifest)?;
     }
+    clear_applied_patch_manifest(install_root);
+    // state.0xo is the transaction commit point and must be written last.
+    write_install_marker_file(install_root, &marker)?;
 
     // If the manifest has explicit launch options (e.g. Vanilla / Modded), write
     // a 0xo-launch.json so the picker opens automatically on Play.
@@ -5771,7 +6422,8 @@ fn write_install_marker(
             .iter()
             .enumerate()
             .map(|(idx, opt)| {
-                let id = opt.name
+                let id = opt
+                    .name
                     .to_ascii_lowercase()
                     .chars()
                     .map(|c| if c.is_alphanumeric() { c } else { '-' })
@@ -5816,14 +6468,17 @@ fn write_install_marker(
         }
     }
 
-    crate::platform::register_install(
+    if let Err(error) = crate::platform::register_install(
         app,
         &source.game_id,
         install_root,
         installed_version,
         &launch_executable,
-    )
-    .map_err(JobError::Depot)?;
+    ) {
+        eprintln!(
+            "[UPDATE] Install metadata committed; platform registration will retry later: {error}"
+        );
+    }
 
     // Determine the best exe to use as the shortcut icon and target.
     // For multi-exe games, use the first launch option's exe so the shortcut
@@ -5842,7 +6497,13 @@ fn write_install_marker(
                 // Create shortcut without pinning to a specific exe â€” picker will show.
                 let _ = create_game_shortcut_no_exe(app, source, install_root, &executable);
             } else {
-                let _ = create_game_shortcut(app, source, install_root, &executable, &shortcut_exe_relative);
+                let _ = create_game_shortcut(
+                    app,
+                    source,
+                    install_root,
+                    &executable,
+                    &shortcut_exe_relative,
+                );
             };
             let _ = shortcut_relative;
             let _ = crate::steam_integration::ensure_game_shortcut(
@@ -5859,24 +6520,24 @@ fn write_install_marker(
     Ok(())
 }
 
-fn backup_install_state(app: &AppHandle, install_root: &Path) {
-    use crate::job::paths::{state_backup_dir, get_launcher_backup_root};
-    
+fn backup_install_state(_app: &AppHandle, install_root: &Path) {
+    use crate::job::paths::{get_launcher_backup_root, state_backup_dir};
+
     if let Some(backup_root) = get_launcher_backup_root() {
         let backup_dir = state_backup_dir(&backup_root, install_root);
         let marker_dir = install_root.join(INSTALL_MARKER_DIR);
-        
+
         if marker_dir.exists() {
             let _ = fs::create_dir_all(&backup_dir);
-            
+
             if let Ok(data) = fs::read(marker_dir.join(INSTALL_MARKER_FILE)) {
                 let _ = fs::write(backup_dir.join(INSTALL_MARKER_FILE), data);
             }
-            
+
             if let Ok(data) = fs::read(marker_dir.join(INSTALLED_MANIFEST_FILE)) {
                 let _ = fs::write(backup_dir.join(INSTALLED_MANIFEST_FILE), data);
             }
-            
+
             if let Ok(data) = fs::read(marker_dir.join(APPLIED_PATCH_MANIFEST_FILE)) {
                 let _ = fs::write(backup_dir.join(APPLIED_PATCH_MANIFEST_FILE), data);
             }
@@ -5957,6 +6618,7 @@ fn write_installed_manifest(
 
 fn read_installed_manifest(install_root: &Path) -> Result<Option<VersionManifest>, JobError> {
     let path = installed_manifest_path(install_root);
+    recover_state_file_if_needed(&path)?;
     if !path.exists() {
         return Ok(None);
     }
@@ -5980,10 +6642,9 @@ fn write_applied_patch_manifest(
     write_state_file(&path, manifest)
 }
 
-fn read_applied_patch_manifest(
-    install_root: &Path,
-) -> Result<Option<VersionManifest>, JobError> {
+fn read_applied_patch_manifest(install_root: &Path) -> Result<Option<VersionManifest>, JobError> {
     let path = applied_patch_manifest_path(install_root);
+    recover_state_file_if_needed(&path)?;
     if !path.exists() {
         return Ok(None);
     }
@@ -6017,17 +6678,12 @@ fn overlay_patch_manifest(
     }
 
     let mut base_paths = HashSet::new();
-    let mut merged_files = Vec::with_capacity(base_manifest.files.len() + patch_manifest.files.len());
+    let mut merged_files =
+        Vec::with_capacity(base_manifest.files.len() + patch_manifest.files.len());
     for file in base_manifest.files {
         let key = manifest_file_key(&file.path);
         base_paths.insert(key.clone());
-        merged_files.push(
-            patch_by_path
-                .get(&key)
-                .copied()
-                .cloned()
-                .unwrap_or(file),
-        );
+        merged_files.push(patch_by_path.get(&key).copied().cloned().unwrap_or(file));
     }
     for file in &patch_manifest.files {
         if !base_paths.contains(&manifest_file_key(&file.path)) {
@@ -6095,7 +6751,9 @@ fn installed_manifest_for_version(
 
     if marker_matches_version {
         if let Some(marker) = marker {
-            if let Some(patch_manifest) = applied_patch_manifest_for_marker(source, install_root, marker)? {
+            if let Some(patch_manifest) =
+                applied_patch_manifest_for_marker(source, install_root, marker)?
+            {
                 return overlay_patch_manifest(base_manifest, &patch_manifest);
             }
         }
@@ -6104,11 +6762,35 @@ fn installed_manifest_for_version(
 }
 
 fn write_state_file<T: Serialize>(path: &Path, value: &T) -> Result<(), JobError> {
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(&long_path(parent))?;
+    }
     let mut payload = serde_json::to_vec(value)?;
     transform_state_payload(&mut payload);
     let mut bytes = STATE_MAGIC.to_vec();
     bytes.extend_from_slice(&payload);
-    fs::write(path, bytes)?;
+    let temporary = sibling_path(path, "next")?;
+    let recovery = sibling_path(path, "previous")?;
+    {
+        let mut file = File::create(long_path(&temporary))?;
+        file.write_all(&bytes)?;
+        file.sync_all()?;
+    }
+    if long_path(&recovery).exists() {
+        fs::remove_file(long_path(&recovery))?;
+    }
+    if long_path(path).exists() {
+        fs::rename(long_path(path), long_path(&recovery))?;
+    }
+    if let Err(error) = fs::rename(long_path(&temporary), long_path(path)) {
+        if long_path(&recovery).exists() {
+            let _ = fs::rename(long_path(&recovery), long_path(path));
+        }
+        return Err(error.into());
+    }
+    if long_path(&recovery).exists() {
+        fs::remove_file(long_path(&recovery))?;
+    }
     Ok(())
 }
 
@@ -6120,6 +6802,20 @@ fn read_state_file<T: for<'de> Deserialize<'de>>(path: &Path) -> Result<T, JobEr
     let mut payload = bytes[STATE_MAGIC.len()..].to_vec();
     transform_state_payload(&mut payload);
     Ok(serde_json::from_slice(&payload)?)
+}
+
+fn recover_state_file_if_needed(path: &Path) -> Result<(), JobError> {
+    let recovery = sibling_path(path, "previous")?;
+    if long_path(path).exists() {
+        if long_path(&recovery).exists() {
+            fs::remove_file(long_path(&recovery))?;
+        }
+        return Ok(());
+    }
+    if long_path(&recovery).exists() {
+        fs::rename(long_path(&recovery), long_path(path))?;
+    }
+    Ok(())
 }
 
 fn transform_state_payload(bytes: &mut [u8]) {
@@ -6337,7 +7033,10 @@ fn is_active_real_journal(journal: &JobJournal) -> bool {
             | JobStatus::Verified
             | JobStatus::Failed
     ) || (journal.kind == "patch" && journal.status == JobStatus::Committed);
-    let is_real = matches!(journal.kind.as_str(), "install" | "update" | "repair" | "patch");
+    let is_real = matches!(
+        journal.kind.as_str(),
+        "install" | "update" | "repair" | "patch"
+    );
     is_active && is_real
 }
 
@@ -6445,6 +7144,67 @@ mod downloader_v2_tests {
     use super::*;
     use std::io::{Cursor, Error, ErrorKind, Read};
 
+    #[cfg(target_os = "windows")]
+    #[test]
+    fn windows_long_path_converts_standard_unc_but_preserves_extended_paths() {
+        assert_eq!(
+            long_path(Path::new(r"\\server\share\Game\Content\file.pak")),
+            PathBuf::from(r"\\?\UNC\server\share\Game\Content\file.pak")
+        );
+        assert_eq!(
+            long_path(Path::new(r"\\?\E:\Store\Game\file.pak")),
+            PathBuf::from(r"\\?\E:\Store\Game\file.pak")
+        );
+    }
+
+    #[test]
+    fn missing_chunk_planner_ignores_legacy_oxidelta_entries() {
+        let root = env::temp_dir().join(format!(
+            "0xolemon-chunk-plan-{}",
+            Utc::now().timestamp_nanos_opt().unwrap_or_default()
+        ));
+        fs::create_dir(&root).unwrap();
+        let target_chunk = ChunkRef {
+            hash: "target-fastcdc-hash".to_string(),
+            file_offset: 0,
+            uncompressed_size: 8,
+            pack_id: "pack-target".to_string(),
+            pack_offset: 0,
+            compressed_size: 6,
+            compressed_sha256: "target-compressed".to_string(),
+            codec: ChunkCodec::Raw,
+            encryption: None,
+        };
+        let file = FileEntry {
+            path: "large.pak".to_string(),
+            size: 8,
+            sha256: "target-file".to_string(),
+            chunks: vec![target_chunk.clone()],
+            delta_patches: Some(vec![crate::manifest::DeltaPatch {
+                from_sha256: "base-file".to_string(),
+                pack_id: "legacy-delta-pack".to_string(),
+                pack_offset: 0,
+                uncompressed_size: 4,
+                compressed_size: 4,
+                compressed_sha256: "legacy-delta".to_string(),
+                codec: ChunkCodec::Raw,
+                encryption: None,
+            }]),
+            executable: false,
+            preserve: false,
+        };
+        let missing = plan_missing_chunks(
+            &HashMap::new(),
+            &root,
+            &[file],
+            Some(Path::new("unused-install-root")),
+        )
+        .unwrap();
+        assert_eq!(missing.len(), 1);
+        assert_eq!(missing[0].hash, target_chunk.hash);
+        fs::remove_dir(root).unwrap();
+    }
+
     #[test]
     fn v1_chunk_without_codec_defaults_to_zstd() {
         let chunk: ChunkRef = serde_json::from_value(serde_json::json!({
@@ -6540,16 +7300,8 @@ mod downloader_v2_tests {
             reads: 0,
         };
 
-        let err = append_stream_to_partial(
-            &mut reader,
-            &partial,
-            0,
-            8,
-            "task-1",
-            &control,
-            &tx,
-        )
-        .unwrap_err();
+        let err = append_stream_to_partial(&mut reader, &partial, 0, 8, "task-1", &control, &tx)
+            .unwrap_err();
 
         assert!(matches!(err, JobError::Transient(_)));
         assert!(err.retry_delay(1).is_some());
@@ -6600,9 +7352,21 @@ mod downloader_v2_tests {
             ("patch-1".to_string(), Instant::now()),
         );
 
-        assert!(patch_attempt_is_throttled(&attempts, "geometry-dash", "patch-1"));
-        assert!(!patch_attempt_is_throttled(&attempts, "geometry-dash", "patch-2"));
-        assert!(!patch_attempt_is_throttled(&attempts, "another-game", "patch-1"));
+        assert!(patch_attempt_is_throttled(
+            &attempts,
+            "geometry-dash",
+            "patch-1"
+        ));
+        assert!(!patch_attempt_is_throttled(
+            &attempts,
+            "geometry-dash",
+            "patch-2"
+        ));
+        assert!(!patch_attempt_is_throttled(
+            &attempts,
+            "another-game",
+            "patch-1"
+        ));
     }
 
     #[test]
@@ -6642,12 +7406,10 @@ mod downloader_v2_tests {
             applied_patch_id: None,
         };
 
-        assert!(patch_target_version_from_marker(
-            &source,
-            &marker,
-            Some("2.2082".to_string()),
-        )
-        .is_err());
+        assert!(
+            patch_target_version_from_marker(&source, &marker, Some("2.2082".to_string()),)
+                .is_err()
+        );
     }
 
     #[test]
@@ -6826,7 +7588,10 @@ fn default_patch_journal(
         0,
     );
     journal.steps = vec![
-        step("Check patch", "Confirm the installed version before patching"),
+        step(
+            "Check patch",
+            "Confirm the installed version before patching",
+        ),
         step("Download patch", "Download version-specific patch files"),
         step("Verify patch", "Validate downloaded patch files"),
         step("Apply patch", "Replace patched game files after validation"),
@@ -6866,7 +7631,8 @@ pub fn spawn_patch_job(
         // very fast patch jobs can complete before the Downloads tab is ready
         // to display them.
         thread::sleep(Duration::from_millis(300));
-        let result = run_real_patch_job(&app_for_thread, control_for_thread.clone(), initial.clone());
+        let result =
+            run_real_patch_job(&app_for_thread, control_for_thread.clone(), initial.clone());
         let canceled = control_for_thread.is_canceled();
         control_for_thread.set_running(false);
         if canceled {
@@ -6942,7 +7708,11 @@ fn try_apply_patch_fix(
     let patch_manifest: VersionManifest = match load_patch_manifest(source, version) {
         Ok(Some(manifest)) => manifest,
         Ok(None) => {
-            append_log(journal, "info", &format!("[Patch fix] No patch for {} - skipping", version));
+            append_log(
+                journal,
+                "info",
+                &format!("[Patch fix] No patch for {} - skipping", version),
+            );
             if standalone_patch {
                 for step in journal.steps.iter_mut().skip(patch_step_index) {
                     step.status = StepStatus::Completed;
@@ -6966,7 +7736,11 @@ fn try_apply_patch_fix(
         }
         Err(err) => {
             if manifest_errors_are_fatal {
-                append_log(journal, "error", &format!("[Patch fix] Could not load patch manifest: {err}"));
+                append_log(
+                    journal,
+                    "error",
+                    &format!("[Patch fix] Could not load patch manifest: {err}"),
+                );
                 if let Some(step) = journal.steps.get_mut(patch_step_index) {
                     step.status = StepStatus::Failed;
                     step.detail = "Patch manifest unavailable".to_string();
@@ -6977,7 +7751,11 @@ fn try_apply_patch_fix(
                 return Err(err);
             }
 
-            append_log(journal, "warning", &format!("[Patch fix] Could not load patch manifest: {err} - skipping"));
+            append_log(
+                journal,
+                "warning",
+                &format!("[Patch fix] Could not load patch manifest: {err} - skipping"),
+            );
             if let Some(step) = journal.steps.get_mut(patch_step_index) {
                 step.status = StepStatus::Completed;
                 step.detail = "Skipped (patch manifest unavailable)".to_string();
@@ -6995,7 +7773,10 @@ fn try_apply_patch_fix(
     append_log(
         journal,
         "info",
-        &format!("[Patch fix] Found patch for {} ({} file(s))", version, file_count),
+        &format!(
+            "[Patch fix] Found patch for {} ({} file(s))",
+            version, file_count
+        ),
     );
 
     let patch_chunks = patch_manifest
@@ -7008,7 +7789,13 @@ fn try_apply_patch_fix(
         journal.bytes_done = 0;
         configure_download_metrics(journal, &patch_chunks, true);
         journal.metrics.pipeline = "patch-direct-v1".to_string();
-        set_step_running(app, journal, patch_step_index, JobStatus::Downloading, "Download patch")?;
+        set_step_running(
+            app,
+            journal,
+            patch_step_index,
+            JobStatus::Downloading,
+            "Download patch",
+        )?;
         if let Some(step) = journal.steps.get_mut(patch_step_index) {
             step.detail = format!("Downloading {} patch file(s)...", file_count);
         }
@@ -7028,7 +7815,7 @@ fn try_apply_patch_fix(
     let patch_stage = install_root.join(INSTALL_MARKER_DIR).join("patch_stage");
     fs::create_dir_all(&patch_stage)?;
     let (fallback_progress_tx, _fallback_progress_rx) =
-        mpsc::channel::<Result<DownloadProgress, String>>();
+        mpsc::channel::<Result<DownloadProgress, JobError>>();
     let mut downloaded = 0_u64;
     let mut in_flight = HashMap::<String, u64>::new();
 
@@ -7138,7 +7925,11 @@ fn try_apply_patch_fix(
     marker.applied_patch_id = Some(patch_manifest.created_at.clone());
     write_install_marker_file(install_root, &marker)?;
 
-    append_log(journal, "info", &format!("[Patch fix] Applied {} file(s)", file_count));
+    append_log(
+        journal,
+        "info",
+        &format!("[Patch fix] Applied {} file(s)", file_count),
+    );
     if standalone_patch {
         complete_step(app, journal, 4)?;
         set_step_running(app, journal, 5, JobStatus::Running, "Finalize patch")?;
@@ -7215,7 +8006,7 @@ fn fetch_patch_pack_span_with_journal_progress(
     downloaded: &mut u64,
     in_flight: &mut HashMap<String, u64>,
 ) -> Result<Vec<u8>, JobError> {
-    let (progress_tx, progress_rx) = mpsc::channel::<Result<DownloadProgress, String>>();
+    let (progress_tx, progress_rx) = mpsc::channel::<Result<DownloadProgress, JobError>>();
     let source = source.clone();
     let pack_id = chunk.pack_id.clone();
     let start = chunk.pack_offset;
@@ -7240,17 +8031,11 @@ fn fetch_patch_pack_span_with_journal_progress(
     loop {
         match progress_rx.recv_timeout(Duration::from_millis(100)) {
             Ok(Ok(progress)) => record_patch_download_progress(
-                app,
-                journal,
-                control,
-                step_index,
-                downloaded,
-                in_flight,
-                progress,
+                app, journal, control, step_index, downloaded, in_flight, progress,
             )?,
-            Ok(Err(message)) => {
+            Ok(Err(error)) => {
                 control.cancel();
-                interruption = Some(JobError::Depot(message));
+                interruption = Some(error);
                 break;
             }
             Err(mpsc::RecvTimeoutError::Timeout) => {

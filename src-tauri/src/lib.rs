@@ -949,14 +949,8 @@ fn resume_job(app: AppHandle, state: State<'_, LauncherState>) -> Result<(), Str
                     .map_err(|e| e.to_string())?;
                 }
                 "update" => {
-                    job::spawn_update_job(
-                        app,
-                        state.job_control.clone(),
-                        journal.install_path,
-                        Some(journal.to_version),
-                        Some(journal.game_id),
-                    )
-                    .map_err(|e| e.to_string())?;
+                    job::resume_update_job(app, state.job_control.clone(), journal)
+                        .map_err(|e| e.to_string())?;
                 }
                 _ => {}
             }
@@ -1399,6 +1393,7 @@ pub fn run() {
             debug_log::debug_log("platform::initialize complete.");
             steam_integration::start_pending_worker(app.handle().clone());
             let job_control = app.state::<LauncherState>().job_control.clone();
+            job::start_pending_update_recovery(app.handle().clone(), job_control.clone());
             job::start_auto_update_scheduler(app.handle().clone(), job_control);
             cloud_save::start_google_drive_restore_monitor(app.handle().clone());
             // Initialize overlay window: pass-through mouse events by default so the

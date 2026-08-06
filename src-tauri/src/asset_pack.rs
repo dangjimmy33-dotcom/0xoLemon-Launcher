@@ -1743,8 +1743,9 @@ fn fetch_remote_depot_catalog(game_id: &str) -> Option<Catalog> {
         .build()
         .ok()?;
     let token = std::env::var("HF_TOKEN")
-        .or_else(|_| std::env::var("FIRST_LIGHT_HF_TOKEN"))
-        .ok();
+        .ok()
+        .map(|value| value.trim().to_string())
+        .filter(|value| !value.is_empty());
 
     for (base, repo_token) in depot_repo_base_urls() {
         let url = format!(

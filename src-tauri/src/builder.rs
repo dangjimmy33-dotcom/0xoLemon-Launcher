@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fs::{self, File};
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
@@ -6,6 +6,9 @@ use std::process::Command;
 
 use chrono::Utc;
 use fastcdc::v2020::StreamCDC;
+use reqwest::blocking::Client;
+use reqwest::header::{AUTHORIZATION, RANGE};
+use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use thiserror::Error;
@@ -13,11 +16,13 @@ use walkdir::WalkDir;
 
 use crate::depot_crypto::{self, key_id_from_material, DEPOT_ENCRYPTION_ALGORITHM, DEPOT_KEY_ENV};
 use crate::manifest::{
-    Catalog, CatalogVersion, ChunkCodec, ChunkEncryption, ChunkRef, DeltaPatch, FileEntry, PackRecord,
-    VersionManifest, CHUNK_MAX_SIZE, CHUNK_MIN_SIZE, CHUNK_TARGET_SIZE, FORMAT_VERSION,
+    Catalog, CatalogVersion, ChunkCodec, ChunkEncryption, ChunkRef, DeltaPatch, FileEntry,
+    PackRecord, VersionManifest, CHUNK_MAX_SIZE, CHUNK_MIN_SIZE, CHUNK_TARGET_SIZE, FORMAT_VERSION,
     LEGACY_FORMAT_VERSION, PACK_TARGET_SIZE as DEFAULT_PACK_TARGET_SIZE,
 };
 use crate::scanner::normalize_relative;
+
+const BUILD_LEGACY_OXIDELTA: bool = false;
 
 #[derive(Debug, Error)]
 pub enum BuildError {
@@ -35,6 +40,10 @@ pub enum BuildError {
     Publish(String),
     #[error("crypto error: {0}")]
     Crypto(String),
+    #[error("validation error: {0}")]
+    Validation(String),
+    #[error("validation request failed: {0}")]
+    ValidationRequest(String),
 }
 
 #[derive(Debug, Clone)]
@@ -111,6 +120,30 @@ pub struct BuildReport {
     pub catalog_path: String,
     pub versions: Vec<CatalogVersion>,
     pub packs: Vec<PackRecord>,
+    #[serde(default)]
+    pub transitions: Vec<BuildTransitionReport>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BuildTransitionReport {
+    pub base_version: String,
+    pub target_version: String,
+    pub target_bytes: u64,
+    pub reused_bytes: u64,
+    pub download_bytes: u64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RemoteChunkVerificationReport {
+    pub version: String,
+    pub file_path: String,
+    pub chunk_index: usize,
+    pub pack_id: String,
+    pub compressed_bytes: u64,
+    pub uncompressed_bytes: u64,
+    pub encrypted: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -265,6 +298,7 @@ pub fn build_depot(input: BuildDepotInput) -> Result<BuildReport, BuildError> {
         let mut files = Vec::new();
         let mut total_size = 0u64;
         let mut file_paths = Vec::new();
+        let mut packed_source_paths = Vec::new();
 
         for entry in WalkDir::new(&version_input.root).follow_links(false) {
             let entry = entry?;
@@ -353,13 +387,8 @@ pub fn build_depot(input: BuildDepotInput) -> Result<BuildReport, BuildError> {
             total_size += file_entry.size;
             files.push(file_entry);
 
-            // Delete source file immediately after packing to save disk space
             if input.delete_source_after_pack && !inherited {
-                if let Err(err) = fs::remove_file(&file_path) {
-                    eprintln!("[DEPOT] Warning: failed to delete source file {}: {}", file_path.display(), err);
-                } else {
-                    eprintln!("[DEPOT] Deleted source file: {}", file_path.display());
-                }
+                packed_source_paths.push(file_path);
             }
         }
 
@@ -377,6 +406,18 @@ pub fn build_depot(input: BuildDepotInput) -> Result<BuildReport, BuildError> {
             files,
             signature: None,
         };
+        validate_manifest_against_root(&manifest, &version_input.root)?;
+        for source_path in packed_source_paths {
+            if let Err(error) = fs::remove_file(&source_path) {
+                eprintln!(
+                    "[DEPOT] Warning: failed to delete source file {}: {}",
+                    source_path.display(),
+                    error
+                );
+            } else {
+                eprintln!("[DEPOT] Deleted source file: {}", source_path.display());
+            }
+        }
         let version_output_dir = version_dir.join(&version_input.version);
         fs::create_dir_all(&version_output_dir)?;
         let manifest_path = version_output_dir.join("manifest.json");
@@ -453,6 +494,17 @@ pub fn build_depot(input: BuildDepotInput) -> Result<BuildReport, BuildError> {
         packs: pack_records.clone(),
         signature: None,
     };
+    let transitions = validate_catalog_manifests(&input.output_dir, &catalog)?;
+    for transition in &transitions {
+        eprintln!(
+            "[DEPOT] {} -> {}: target={} reused={} download={}",
+            transition.base_version,
+            transition.target_version,
+            transition.target_bytes,
+            transition.reused_bytes,
+            transition.download_bytes
+        );
+    }
     let catalog_path = input.output_dir.join("catalog.json");
     write_json_pretty(&catalog_path, &catalog)?;
     metadata_uploads.push((catalog_path.clone(), "catalog.json".to_string()));
@@ -469,14 +521,368 @@ pub fn build_depot(input: BuildDepotInput) -> Result<BuildReport, BuildError> {
         catalog_path: catalog_path.display().to_string(),
         versions: catalog_versions,
         packs: pack_records,
+        transitions,
     })
+}
+
+fn validate_manifest_against_root(
+    manifest: &VersionManifest,
+    root: &Path,
+) -> Result<(), BuildError> {
+    let mut total_size = 0_u64;
+    let mut seen_paths = HashSet::new();
+    for entry in &manifest.files {
+        let relative = relative_to_path(&entry.path);
+        if relative.components().any(|component| {
+            matches!(
+                component,
+                std::path::Component::ParentDir
+                    | std::path::Component::RootDir
+                    | std::path::Component::Prefix(_)
+            )
+        }) {
+            return Err(BuildError::Validation(format!(
+                "unsafe manifest path in {}: {}",
+                manifest.version, entry.path
+            )));
+        }
+        let normalized = entry.path.replace('\\', "/").to_ascii_lowercase();
+        if !seen_paths.insert(normalized) {
+            return Err(BuildError::Validation(format!(
+                "duplicate manifest path in {}: {}",
+                manifest.version, entry.path
+            )));
+        }
+        let source_path = root.join(relative);
+        let metadata = fs::metadata(&source_path).map_err(|error| {
+            BuildError::Validation(format!(
+                "target source is missing for {}: {} ({error})",
+                manifest.version, entry.path
+            ))
+        })?;
+        if metadata.len() != entry.size {
+            return Err(BuildError::Validation(format!(
+                "target size mismatch for {} in {}: manifest={}, source={}",
+                entry.path,
+                manifest.version,
+                entry.size,
+                metadata.len()
+            )));
+        }
+        let actual_sha256 = sha256_file(&source_path)?;
+        if !actual_sha256.eq_ignore_ascii_case(&entry.sha256) {
+            return Err(BuildError::Validation(format!(
+                "target SHA-256 mismatch for {} in {}",
+                entry.path, manifest.version
+            )));
+        }
+        validate_file_chunk_layout(entry, None)?;
+        total_size = total_size.saturating_add(entry.size);
+    }
+    if total_size != manifest.total_size {
+        return Err(BuildError::Validation(format!(
+            "manifest total size mismatch for {}: manifest={}, files={}",
+            manifest.version, manifest.total_size, total_size
+        )));
+    }
+    Ok(())
+}
+
+fn validate_catalog_manifests(
+    output_dir: &Path,
+    catalog: &Catalog,
+) -> Result<Vec<BuildTransitionReport>, BuildError> {
+    let mut packs = HashMap::<String, &PackRecord>::new();
+    for pack in &catalog.packs {
+        if packs.insert(pack.id.clone(), pack).is_some() {
+            return Err(BuildError::Validation(format!(
+                "duplicate pack id: {}",
+                pack.id
+            )));
+        }
+    }
+
+    let mut manifests = Vec::with_capacity(catalog.versions.len());
+    let mut chunk_sizes = HashMap::<String, u64>::new();
+    for version in &catalog.versions {
+        let path = output_dir.join(relative_to_path(&version.manifest_path));
+        let bytes = fs::read(&path).map_err(|error| {
+            BuildError::Validation(format!(
+                "catalog version {} has no local manifest {} ({error})",
+                version.version,
+                path.display()
+            ))
+        })?;
+        let manifest: VersionManifest = serde_json::from_slice(&bytes)?;
+        if manifest.version != version.version || manifest.game_id != catalog.game_id {
+            return Err(BuildError::Validation(format!(
+                "catalog ownership mismatch for version {}",
+                version.version
+            )));
+        }
+        if manifest.total_size != version.total_size
+            || manifest.files.len() != version.file_count
+            || manifest
+                .files
+                .iter()
+                .map(|file| file.chunks.len())
+                .sum::<usize>()
+                != version.chunk_count
+        {
+            return Err(BuildError::Validation(format!(
+                "catalog counters do not match manifest {}",
+                version.version
+            )));
+        }
+        let mut total_size = 0_u64;
+        for file in &manifest.files {
+            validate_file_chunk_layout(file, Some(&packs))?;
+            total_size = total_size.saturating_add(file.size);
+            for chunk in &file.chunks {
+                if let Some(existing) = chunk_sizes.get(&chunk.hash) {
+                    if *existing != chunk.uncompressed_size {
+                        return Err(BuildError::Validation(format!(
+                            "chunk {} has conflicting uncompressed sizes across manifests",
+                            chunk.hash
+                        )));
+                    }
+                } else {
+                    chunk_sizes.insert(chunk.hash.clone(), chunk.uncompressed_size);
+                }
+            }
+        }
+        if total_size != manifest.total_size {
+            return Err(BuildError::Validation(format!(
+                "manifest file sizes do not add up for {}",
+                manifest.version
+            )));
+        }
+        manifests.push(manifest);
+    }
+
+    let mut reports = Vec::new();
+    for pair in manifests.windows(2) {
+        let base = &pair[0];
+        let target = &pair[1];
+        let base_hashes = base
+            .files
+            .iter()
+            .flat_map(|file| file.chunks.iter().map(|chunk| chunk.hash.as_str()))
+            .collect::<HashSet<_>>();
+        let mut seen = HashSet::new();
+        let mut reused_bytes = 0_u64;
+        let mut download_bytes = 0_u64;
+        for chunk in target.files.iter().flat_map(|file| file.chunks.iter()) {
+            if !seen.insert(chunk.hash.as_str()) {
+                continue;
+            }
+            if base_hashes.contains(chunk.hash.as_str()) {
+                reused_bytes = reused_bytes.saturating_add(chunk.uncompressed_size);
+            } else {
+                download_bytes = download_bytes.saturating_add(chunk.compressed_size);
+            }
+        }
+        reports.push(BuildTransitionReport {
+            base_version: base.version.clone(),
+            target_version: target.version.clone(),
+            target_bytes: target.total_size,
+            reused_bytes,
+            download_bytes,
+        });
+    }
+    Ok(reports)
+}
+
+pub fn validate_depot_output(output_dir: &Path) -> Result<Vec<BuildTransitionReport>, BuildError> {
+    let catalog_bytes = fs::read(output_dir.join("catalog.json"))?;
+    let catalog: Catalog = serde_json::from_slice(&catalog_bytes)?;
+    validate_catalog_manifests(output_dir, &catalog)
+}
+
+pub fn verify_remote_chunk(
+    output_dir: &Path,
+    remote_base: &str,
+    version: &str,
+    file_path: &str,
+    chunk_index: usize,
+) -> Result<RemoteChunkVerificationReport, BuildError> {
+    let catalog_bytes = fs::read(output_dir.join("catalog.json"))?;
+    let catalog: Catalog = serde_json::from_slice(&catalog_bytes)?;
+    let version_record = catalog
+        .versions
+        .iter()
+        .find(|record| record.version == version)
+        .ok_or_else(|| BuildError::Validation(format!("unknown version: {version}")))?;
+    let manifest_path = output_dir.join(relative_to_path(&version_record.manifest_path));
+    let manifest: VersionManifest = serde_json::from_slice(&fs::read(manifest_path)?)?;
+    let file = manifest
+        .files
+        .iter()
+        .find(|entry| entry.path.eq_ignore_ascii_case(file_path))
+        .ok_or_else(|| BuildError::Validation(format!("unknown target file: {file_path}")))?;
+    let chunk = file.chunks.get(chunk_index).ok_or_else(|| {
+        BuildError::Validation(format!(
+            "chunk index {chunk_index} is out of bounds for {file_path}"
+        ))
+    })?;
+    let pack = catalog
+        .packs
+        .iter()
+        .find(|record| record.id == chunk.pack_id)
+        .ok_or_else(|| BuildError::Validation(format!("unknown pack: {}", chunk.pack_id)))?;
+    let range_end = chunk
+        .pack_offset
+        .checked_add(chunk.compressed_size)
+        .and_then(|value| value.checked_sub(1))
+        .ok_or_else(|| BuildError::Validation("invalid chunk range".to_string()))?;
+    let url = format!(
+        "{}/{}",
+        remote_base.trim_end_matches('/'),
+        crate::remote_paths::encode_hf_relative_path(&pack.path)
+    );
+    let client = Client::builder()
+        .timeout(std::time::Duration::from_secs(60))
+        .build()
+        .map_err(|error| BuildError::ValidationRequest(error.without_url().to_string()))?;
+    let mut request = client
+        .get(&url)
+        .header(RANGE, format!("bytes={}-{}", chunk.pack_offset, range_end));
+    if let Ok(token) = std::env::var("HF_TOKEN") {
+        let token = token.trim();
+        if !token.is_empty() {
+            request = request.header(AUTHORIZATION, format!("Bearer {token}"));
+        }
+    }
+    let response = request
+        .send()
+        .map_err(|error| BuildError::ValidationRequest(error.without_url().to_string()))?;
+    if response.status() != StatusCode::PARTIAL_CONTENT {
+        return Err(BuildError::Validation(format!(
+            "remote server ignored the requested pack range (HTTP {})",
+            response.status()
+        )));
+    }
+    let payload = response
+        .bytes()
+        .map_err(|error| BuildError::ValidationRequest(error.without_url().to_string()))?
+        .to_vec();
+    if payload.len() as u64 != chunk.compressed_size
+        || sha256_bytes(&payload) != chunk.compressed_sha256
+    {
+        return Err(BuildError::Validation(format!(
+            "transport hash mismatch for chunk {}",
+            chunk.hash
+        )));
+    }
+
+    let compressed = if let Some(encryption) = &chunk.encryption {
+        let key_material = depot_crypto::resolve_key_material(None);
+        if key_id_from_material(&key_material) != encryption.key_id {
+            return Err(BuildError::Validation(format!(
+                "OXO_DEPOT_KEY does not match chunk key id {}",
+                encryption.key_id
+            )));
+        }
+        let plaintext = depot_crypto::decrypt_compressed_chunk(
+            &payload,
+            &chunk.hash,
+            &encryption.plaintext_compressed_sha256,
+            &encryption.nonce,
+            &key_material,
+            &encryption.algorithm,
+        )
+        .map_err(|error| BuildError::Crypto(error.to_string()))?;
+        if plaintext.len() as u64 != encryption.plaintext_compressed_size
+            || sha256_bytes(&plaintext) != encryption.plaintext_compressed_sha256
+        {
+            return Err(BuildError::Validation(format!(
+                "decrypted compressed hash mismatch for chunk {}",
+                chunk.hash
+            )));
+        }
+        plaintext
+    } else {
+        payload
+    };
+    let decoded = match chunk.codec {
+        ChunkCodec::Raw => compressed,
+        ChunkCodec::Zstd => zstd::bulk::decompress(&compressed, chunk.uncompressed_size as usize)
+            .map_err(|error| {
+            BuildError::Validation(format!("chunk decompress failed: {error}"))
+        })?,
+    };
+    if decoded.len() as u64 != chunk.uncompressed_size
+        || blake3::hash(&decoded).to_hex().as_str() != chunk.hash
+    {
+        return Err(BuildError::Validation(format!(
+            "decoded BLAKE3 mismatch for chunk {}",
+            chunk.hash
+        )));
+    }
+    Ok(RemoteChunkVerificationReport {
+        version: manifest.version,
+        file_path: file.path.clone(),
+        chunk_index,
+        pack_id: chunk.pack_id.clone(),
+        compressed_bytes: chunk.compressed_size,
+        uncompressed_bytes: chunk.uncompressed_size,
+        encrypted: chunk.encryption.is_some(),
+    })
+}
+
+fn validate_file_chunk_layout(
+    file: &FileEntry,
+    packs: Option<&HashMap<String, &PackRecord>>,
+) -> Result<(), BuildError> {
+    let mut expected_offset = 0_u64;
+    for chunk in &file.chunks {
+        if chunk.file_offset != expected_offset || chunk.uncompressed_size == 0 {
+            return Err(BuildError::Validation(format!(
+                "non-contiguous chunk layout for {} at offset {} (expected {})",
+                file.path, chunk.file_offset, expected_offset
+            )));
+        }
+        expected_offset = expected_offset.saturating_add(chunk.uncompressed_size);
+        if let Some(packs) = packs {
+            let pack = packs.get(&chunk.pack_id).ok_or_else(|| {
+                BuildError::Validation(format!(
+                    "{} references unknown pack {}",
+                    file.path, chunk.pack_id
+                ))
+            })?;
+            if chunk
+                .pack_offset
+                .checked_add(chunk.compressed_size)
+                .is_none_or(|end| end > pack.size)
+            {
+                return Err(BuildError::Validation(format!(
+                    "chunk {} exceeds pack {} bounds",
+                    chunk.hash, chunk.pack_id
+                )));
+            }
+        }
+    }
+    if expected_offset != file.size {
+        return Err(BuildError::Validation(format!(
+            "chunk sizes for {} total {} but target size is {}",
+            file.path, expected_offset, file.size
+        )));
+    }
+    Ok(())
+}
+
+fn sha256_file(path: &Path) -> Result<String, BuildError> {
+    let mut file = File::open(path)?;
+    let mut hasher = Sha256::new();
+    io::copy(&mut file, &mut hasher)?;
+    Ok(hex::encode(hasher.finalize()))
 }
 
 fn build_file_entry(
     root: &Path,
     file_path: &Path,
     previous_version_root: Option<&Path>,
-    previous_version_name: Option<&str>,
+    _previous_version_name: Option<&str>,
     pack_dir: &Path,
     output_dir: &Path,
     current_pack: &mut Option<PackWriter>,
@@ -554,7 +960,14 @@ fn build_file_entry(
             {
                 if let Some(pack) = current_pack.take() {
                     if pack.size > 0 {
-                        finalize_pack(pack, output_dir, publish, pack_records, encryption.enabled, upload_incrementally)?;
+                        finalize_pack(
+                            pack,
+                            output_dir,
+                            publish,
+                            pack_records,
+                            encryption.enabled,
+                            upload_incrementally,
+                        )?;
                     }
                 }
                 let pack = PackWriter::create(pack_dir, pack_id_prefix, *next_pack_index)?;
@@ -595,7 +1008,10 @@ fn build_file_entry(
     let new_file_hash = hex::encode(file_hasher.finalize());
     let mut delta_patches = None;
 
-    if let Some(prev_root) = previous_version_root {
+    // Runtime updates are assembled from target FastCDC chunks. Keep the old
+    // encoder source-compatible for now, but do not publish unused oxidelta
+    // payloads into new depots.
+    if let Some(prev_root) = previous_version_root.filter(|_| BUILD_LEGACY_OXIDELTA) {
         let old_file_path = prev_root.join(crate::scanner::normalize_relative(root, file_path));
         if old_file_path.exists() {
             let mut generate_delta = true;
@@ -612,7 +1028,7 @@ fn build_file_entry(
 
             if generate_delta && !old_hash_str.is_empty() {
                 let delta_tmp_path = pack_dir.join(format!("{}.delta.tmp", new_file_hash));
-                
+
                 match oxidelta::io::encode_file(
                     &old_file_path,
                     file_path,
@@ -622,27 +1038,35 @@ fn build_file_entry(
                     Ok(_) => {
                         if let Ok(delta_bytes) = fs::read(&delta_tmp_path) {
                             let delta_hash = blake3::hash(&delta_bytes).to_hex().to_string();
-                            
-                            let (codec, encoded) = encode_chunk_payload(&delta_bytes, format_version).unwrap_or((ChunkCodec::Raw, delta_bytes.clone()));
-                            
+
+                            let (codec, encoded) =
+                                encode_chunk_payload(&delta_bytes, format_version)
+                                    .unwrap_or((ChunkCodec::Raw, delta_bytes.clone()));
+
                             let plaintext_compressed_sha256 = sha256_bytes(&encoded);
                             let plaintext_compressed_size = encoded.len() as u64;
                             let uncompressed_size = delta_bytes.len() as u64;
 
                             let (transport_bytes, encryption_meta) = if encryption.enabled {
-                                let key_material = depot_crypto::resolve_key_material(encryption.key_material.as_deref());
+                                let key_material = depot_crypto::resolve_key_material(
+                                    encryption.key_material.as_deref(),
+                                );
                                 let key_id = encryption
                                     .key_id
                                     .clone()
                                     .filter(|value| !value.trim().is_empty())
-                                    .unwrap_or_else(|| depot_crypto::key_id_from_material(&key_material));
-                                
-                                if let Ok((encrypted, nonce)) = depot_crypto::encrypt_compressed_chunk(
-                                    &encoded,
-                                    &delta_hash,
-                                    &plaintext_compressed_sha256,
-                                    &key_material,
-                                ) {
+                                    .unwrap_or_else(|| {
+                                        depot_crypto::key_id_from_material(&key_material)
+                                    });
+
+                                if let Ok((encrypted, nonce)) =
+                                    depot_crypto::encrypt_compressed_chunk(
+                                        &encoded,
+                                        &delta_hash,
+                                        &plaintext_compressed_sha256,
+                                        &key_material,
+                                    )
+                                {
                                     (
                                         encrypted,
                                         Some(ChunkEncryption {
@@ -650,7 +1074,8 @@ fn build_file_entry(
                                             key_id,
                                             nonce,
                                             plaintext_compressed_size,
-                                            plaintext_compressed_sha256: plaintext_compressed_sha256.clone(),
+                                            plaintext_compressed_sha256:
+                                                plaintext_compressed_sha256.clone(),
                                         }),
                                     )
                                 } else {
@@ -661,18 +1086,29 @@ fn build_file_entry(
                             };
 
                             let compressed_sha256 = sha256_bytes(&transport_bytes);
-                            
+
                             if current_pack
                                 .as_ref()
-                                .map(|pack| pack.size + (transport_bytes.len() as u64) > pack_target_size && pack.size > 0)
+                                .map(|pack| {
+                                    pack.size + (transport_bytes.len() as u64) > pack_target_size
+                                        && pack.size > 0
+                                })
                                 .unwrap_or(true)
                             {
                                 if let Some(pack) = current_pack.take() {
                                     if pack.size > 0 {
-                                        finalize_pack(pack, output_dir, publish, pack_records, encryption.enabled, upload_incrementally)?;
+                                        finalize_pack(
+                                            pack,
+                                            output_dir,
+                                            publish,
+                                            pack_records,
+                                            encryption.enabled,
+                                            upload_incrementally,
+                                        )?;
                                     }
                                 }
-                                let pack = PackWriter::create(pack_dir, pack_id_prefix, *next_pack_index)?;
+                                let pack =
+                                    PackWriter::create(pack_dir, pack_id_prefix, *next_pack_index)?;
                                 *next_pack_index += 1;
                                 *current_pack = Some(pack);
                             }
@@ -920,15 +1356,21 @@ fn glob_match_inner(pat: &str, path: &str) -> bool {
                     // `**` — consume all remaining path chars (greedy, try each suffix)
                     pi.next();
                     // skip optional separator after **
-                    if pi.peek() == Some(&'/') { pi.next(); }
+                    if pi.peek() == Some(&'/') {
+                        pi.next();
+                    }
                     let rest_pat: String = pi.collect();
                     // try matching rest_pat against every suffix of the remaining path
                     let remaining: String = si.collect();
-                    if rest_pat.is_empty() { return true; }
+                    if rest_pat.is_empty() {
+                        return true;
+                    }
                     // try at each `/` boundary and at start
                     let mut start = 0usize;
                     loop {
-                        if glob_match_inner(&rest_pat, &remaining[start..]) { return true; }
+                        if glob_match_inner(&rest_pat, &remaining[start..]) {
+                            return true;
+                        }
                         match remaining[start..].find('/') {
                             Some(pos) => start += pos + 1,
                             None => return false,
@@ -945,13 +1387,23 @@ fn glob_match_inner(pat: &str, path: &str) -> bool {
                             // don't let single * cross path separators
                             let seg_end = remaining[start..].find('/').unwrap() + start;
                             for end in start..=seg_end {
-                                if glob_match_inner(&rest_pat, &remaining[end..]) { return true; }
+                                if glob_match_inner(&rest_pat, &remaining[end..]) {
+                                    return true;
+                                }
                             }
                             return false;
                         } else {
-                            if glob_match_inner(&rest_pat, &remaining[start..]) { return true; }
-                            if start >= remaining.len() { return false; }
-                            start += remaining[start..].chars().next().map(|c| c.len_utf8()).unwrap_or(1);
+                            if glob_match_inner(&rest_pat, &remaining[start..]) {
+                                return true;
+                            }
+                            if start >= remaining.len() {
+                                return false;
+                            }
+                            start += remaining[start..]
+                                .chars()
+                                .next()
+                                .map(|c| c.len_utf8())
+                                .unwrap_or(1);
                         }
                     }
                 }
@@ -964,12 +1416,12 @@ fn glob_match_inner(pat: &str, path: &str) -> bool {
                     Some(_) => {}
                 }
             }
-            Some(&pc) => {
-                match si.next() {
-                    Some(sc) if sc == pc => { pi.next(); }
-                    _ => return false,
+            Some(&pc) => match si.next() {
+                Some(sc) if sc == pc => {
+                    pi.next();
                 }
-            }
+                _ => return false,
+            },
         }
     }
 }
@@ -1041,6 +1493,44 @@ fn write_json_pretty<T: Serialize>(path: &Path, value: &T) -> Result<(), BuildEr
 mod tests {
     use super::*;
 
+    fn test_chunk(hash: &str, file_offset: u64, size: u64, pack_offset: u64) -> ChunkRef {
+        ChunkRef {
+            hash: hash.to_string(),
+            file_offset,
+            uncompressed_size: size,
+            pack_id: "pack-00000".to_string(),
+            pack_offset,
+            compressed_size: 2,
+            compressed_sha256: format!("compressed-{hash}"),
+            codec: ChunkCodec::Raw,
+            encryption: None,
+        }
+    }
+
+    fn test_manifest(version: &str, chunks: Vec<ChunkRef>, size: u64) -> VersionManifest {
+        VersionManifest {
+            format_version: FORMAT_VERSION,
+            game_id: "fixture-game".to_string(),
+            version: version.to_string(),
+            created_at: "2026-08-06T00:00:00Z".to_string(),
+            root_label: version.to_string(),
+            launch_executable: None,
+            launch_options: Vec::new(),
+            dependencies: None,
+            total_size: size,
+            files: vec![FileEntry {
+                path: "Content/game.pak".to_string(),
+                size,
+                sha256: "file-sha".to_string(),
+                chunks,
+                delta_patches: None,
+                executable: false,
+                preserve: false,
+            }],
+            signature: None,
+        }
+    }
+
     #[test]
     fn v1_always_uses_zstd_for_backward_compatibility() {
         let mut data = vec![0_u8; 64 * 1024];
@@ -1072,5 +1562,77 @@ mod tests {
         let (codec, encoded) = encode_chunk_payload(&data, FORMAT_VERSION).unwrap();
         assert_eq!(codec, ChunkCodec::Raw);
         assert_eq!(encoded, data);
+    }
+
+    #[test]
+    fn validator_reports_reused_and_download_bytes_between_versions() {
+        let root = std::env::temp_dir().join(format!(
+            "0xolemon-builder-validator-{}",
+            Utc::now().timestamp_nanos_opt().unwrap_or_default()
+        ));
+        let versions = root.join("versions");
+        let v1_dir = versions.join("v1");
+        let v2_dir = versions.join("v2");
+        fs::create_dir_all(&v1_dir).unwrap();
+        fs::create_dir_all(&v2_dir).unwrap();
+        let base = test_manifest("v1", vec![test_chunk("shared", 0, 4, 0)], 4);
+        let target = test_manifest(
+            "v2",
+            vec![test_chunk("shared", 0, 4, 0), test_chunk("new", 4, 3, 2)],
+            7,
+        );
+        write_json_pretty(&v1_dir.join("manifest.json"), &base).unwrap();
+        write_json_pretty(&v2_dir.join("manifest.json"), &target).unwrap();
+        let catalog = Catalog {
+            format_version: FORMAT_VERSION,
+            game_id: "fixture-game".to_string(),
+            latest_version: Some("v2".to_string()),
+            versions: vec![
+                CatalogVersion {
+                    version: "v1".to_string(),
+                    manifest_path: "versions/v1/manifest.json".to_string(),
+                    total_size: 4,
+                    file_count: 1,
+                    chunk_count: 1,
+                    created_at: "2026-08-06T00:00:00Z".to_string(),
+                },
+                CatalogVersion {
+                    version: "v2".to_string(),
+                    manifest_path: "versions/v2/manifest.json".to_string(),
+                    total_size: 7,
+                    file_count: 1,
+                    chunk_count: 2,
+                    created_at: "2026-08-06T00:00:00Z".to_string(),
+                },
+            ],
+            packs: vec![PackRecord {
+                id: "pack-00000".to_string(),
+                path: "packs/pack-00000.bin".to_string(),
+                size: 4,
+                sha256: "pack-sha".to_string(),
+            }],
+            signature: None,
+        };
+        let reports = validate_catalog_manifests(&root, &catalog).unwrap();
+        assert_eq!(reports.len(), 1);
+        assert_eq!(reports[0].reused_bytes, 4);
+        assert_eq!(reports[0].download_bytes, 2);
+        assert_eq!(reports[0].target_bytes, 7);
+
+        fs::remove_file(v1_dir.join("manifest.json")).unwrap();
+        fs::remove_file(v2_dir.join("manifest.json")).unwrap();
+        fs::remove_dir(v1_dir).unwrap();
+        fs::remove_dir(v2_dir).unwrap();
+        fs::remove_dir(versions).unwrap();
+        fs::remove_dir(root).unwrap();
+    }
+
+    #[test]
+    fn validator_rejects_non_contiguous_target_chunks() {
+        let file = test_manifest("v2", vec![test_chunk("bad", 2, 4, 0)], 4)
+            .files
+            .remove(0);
+        let error = validate_file_chunk_layout(&file, None).unwrap_err();
+        assert!(error.to_string().contains("non-contiguous"));
     }
 }

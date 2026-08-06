@@ -83,10 +83,12 @@ fn validate_cache_path(path: &Path) -> Result<(), String> {
         ancestor
             .file_name()
             .and_then(|value| value.to_str())
-            .is_some_and(|value| value.eq_ignore_ascii_case("downloading"))
+            .is_some_and(|value| {
+                value.eq_ignore_ascii_case("downloading") || value.eq_ignore_ascii_case("dl")
+            })
     });
     if !below_downloading {
-        return Err("cache cleanup only accepts chunks stored below downloading".to_string());
+        return Err("cache cleanup only accepts chunks stored below dl/downloading".to_string());
     }
     if path.parent().is_none() {
         return Err("cache cleanup refused a filesystem root".to_string());
@@ -106,6 +108,10 @@ mod tests {
         ))
         .is_ok());
         assert!(validate_cache_path(Path::new(r"E:\chunks")).is_err());
+        assert!(validate_cache_path(Path::new(
+            r"E:\0xoLemon store\downloads\007 First Light\chunks"
+        ))
+        .is_err());
         assert!(validate_cache_path(Path::new(
             r"E:\0xoLemon store\downloading\007 First Light\staging"
         ))

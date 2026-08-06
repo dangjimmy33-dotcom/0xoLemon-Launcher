@@ -1,5 +1,5 @@
-use std::fs;
 use std::collections::HashMap;
+use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Mutex, OnceLock};
@@ -27,22 +27,31 @@ fn chunk_size_cache() -> &'static Mutex<HashMap<PathBuf, CachedChunkSize>> {
 }
 
 /// Returns the path to the shared chunks directory.
-/// 
+///
 /// Steam-like layout: chunks are stored DIRECTLY at the root of dl/ folder!
 /// No subfolders - all .chunk files go directly into dl/
 pub(super) fn staged_chunk_dir(downloading_root: &Path) -> PathBuf {
     // Get parent of downloading_root (which is dl/{appid}/) to get dl/ root
     if let Some(dl_root) = downloading_root.parent() {
-        return dl_root.to_path_buf();  // Direct at dl/ root - NO chunks/ subfolder!
+        return dl_root.to_path_buf(); // Direct at dl/ root - NO chunks/ subfolder!
     }
     // Fallback: keep old behavior if path structure is unexpected
     downloading_root.to_path_buf()
 }
 
 pub(super) fn staged_chunk_path_from(staged_chunks_root: &Path, hash: &str) -> PathBuf {
-    // Store chunks DIRECTLY in dl/ root with hash as filename
-    // Format: dl/{hash}.chunk (no prefix subfolder)
-    staged_chunks_root.join(format!("{hash}.chunk"))
+    // Sequential update sessions own a short `c/` directory and use `.part`
+    // for verified transport chunks. Legacy install/repair caches keep the
+    // existing `.chunk` name at the download root for compatibility.
+    let extension = if staged_chunks_root
+        .file_name()
+        .is_some_and(|name| name.eq_ignore_ascii_case("c"))
+    {
+        "part"
+    } else {
+        "chunk"
+    };
+    staged_chunks_root.join(format!("{hash}.{extension}"))
 }
 
 /// Returns the size of verified transport chunks kept beside the game library.
@@ -108,10 +117,7 @@ fn check_canceled(canceled: Option<&AtomicBool>) -> Result<(), JobError> {
     Ok(())
 }
 
-fn directory_size_cancellable(
-    root: &Path,
-    canceled: Option<&AtomicBool>,
-) -> Result<u64, JobError> {
+fn directory_size_cancellable(root: &Path, canceled: Option<&AtomicBool>) -> Result<u64, JobError> {
     check_canceled(canceled)?;
     if !root.exists() {
         return Ok(0);
@@ -156,6 +162,10 @@ pub(super) fn sanitize_game_id(game_id: &str) -> String {
     } else {
         clean
     }
+}
+
+pub(super) fn short_stable_key(value: &str) -> String {
+    blake3::hash(value.as_bytes()).to_hex()[..12].to_string()
 }
 
 pub(super) fn game_dir_name(game_id: &str) -> String {
@@ -206,8 +216,8 @@ pub(super) fn downloading_dir_for_install(install_root: &Path, source: &DepotSou
                 let folder_name = source
                     .app_id
                     .map(|id| id.to_string())
-                    .unwrap_or_else(|| source.game_id.clone());
-                
+                    .unwrap_or_else(|| format!("g-{}", short_stable_key(&source.game_id)));
+
                 return store_root.join("dl").join(folder_name);
             }
         }
@@ -216,18 +226,32 @@ pub(super) fn downloading_dir_for_install(install_root: &Path, source: &DepotSou
     if install_root == source.default_common_game_dir() {
         let mut store_root = PathBuf::from(DEFAULT_STORE_ROOT);
         store_root.push("dl");
-        
+
         // Prefer AppID over game_id
         let folder_name = source
             .app_id
             .map(|id| id.to_string())
-            .unwrap_or_else(|| source.game_id.clone());
-        
+            .unwrap_or_else(|| format!("g-{}", short_stable_key(&source.game_id)));
+
         store_root.push(folder_name);
         store_root
     } else {
         // Shorten fallback directory name
         install_root.join(".0x_dl")
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn stable_key_is_short_and_deterministic() {
+        let first = short_stable_key("a-very-long-game-id-with-many-segments");
+        let second = short_stable_key("a-very-long-game-id-with-many-segments");
+        assert_eq!(first, second);
+        assert_eq!(first.len(), 12);
+        assert!(first.chars().all(|character| character.is_ascii_hexdigit()));
     }
 }
 
@@ -263,16 +287,21 @@ pub(super) fn encode_hf_relative_path(relative_path: &str) -> String {
 
 pub(super) fn state_backup_dir(backup_root: &Path, install_root: &Path) -> PathBuf {
     let path_str = install_root.to_string_lossy().to_string();
-    let safe_name: String = path_str.chars().map(|c| {
-        if c.is_alphanumeric() || c == ' ' || c == '-' {
-            c
-        } else {
-            '_'
-        }
-    }).collect();
+    let safe_name: String = path_str
+        .chars()
+        .map(|c| {
+            if c.is_alphanumeric() || c == ' ' || c == '-' {
+                c
+            } else {
+                '_'
+            }
+        })
+        .collect();
     backup_root.join(safe_name)
 }
 
 pub(super) fn get_launcher_backup_root() -> Option<PathBuf> {
-    std::env::current_exe().ok().and_then(|p| p.parent().map(|parent| parent.join("0xo_Backups")))
+    std::env::current_exe()
+        .ok()
+        .and_then(|p| p.parent().map(|parent| parent.join("0xo_Backups")))
 }
