@@ -116,8 +116,8 @@ pub fn fallback_launch_config(game_id: &str, relative_executable: &str) -> GameL
         args: Vec::new(),
         working_directory: String::new(),
         environment: HashMap::new(),
-        // Always run as admin.
-        run_as_admin: true,
+        // Launch directly by default so the process can be tracked reliably.
+        run_as_admin: false,
         hidden: None,
         wait_for_exit: false,
         delay_before_ms: 0,
@@ -223,8 +223,6 @@ pub fn normalize_launch_config(
                 "helper" | "server" | "auxiliary" => "helper".to_string(),
                 _ => "main".to_string(),
             };
-            // Always run every game process as admin.
-            process.run_as_admin = true;
         }
     }
 

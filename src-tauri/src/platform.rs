@@ -15,7 +15,7 @@ use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Emitter, Manager};
 
 const PLATFORM_STATE_FILE: &str = "platform-state.json";
-const PLATFORM_STATE_SCHEMA: u32 = 1;
+const PLATFORM_STATE_SCHEMA: u32 = 2;
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
@@ -49,7 +49,7 @@ impl Default for GameTurboPreference {
 
 impl Default for GameUpdateMode {
     fn default() -> Self {
-        Self::Automatic
+        Self::Manual
     }
 }
 
@@ -98,7 +98,7 @@ impl Default for LauncherSettings {
             download_queue_mb: 128,
             direct_to_staging: true,
             cloud_save_root: String::new(),
-            game_update_mode: GameUpdateMode::Automatic,
+            game_update_mode: GameUpdateMode::Manual,
             game_update_schedule_start: "02:00".to_string(),
             game_update_schedule_end: "06:00".to_string(),
             depot_hf_repo_id: String::new(),
@@ -354,6 +354,14 @@ fn live_settings() -> &'static RwLock<LauncherSettings> {
 pub fn initialize(app: &AppHandle) -> Result<(), String> {
     eprintln!("[platform] initialize: loading state...");
     let mut state = load_state(app).unwrap_or_default();
+    if state.schema_version < PLATFORM_STATE_SCHEMA {
+        // Earlier builds defaulted to silent automatic game updates. Migrate
+        // existing profiles to explicit/manual mode once so no download starts
+        // without the user opting in after upgrading the launcher.
+        state.settings.game_update_mode = GameUpdateMode::Manual;
+        state.schema_version = PLATFORM_STATE_SCHEMA;
+        eprintln!("[platform] migrated update policy to manual opt-in");
+    }
     eprintln!("[platform] initialize: resetting runtime flags...");
     for runtime in state.runtime.values_mut() {
         runtime.running = false;

@@ -1,5 +1,6 @@
 import type { JobJournal, PhaseProgress, Snapshot } from '../types'
 import { DEFAULT_GAME_ID } from './installPaths'
+import { deriveLogicalTransferProgress } from './transferProgress'
 
 export function createIdleJob(snapshot: Snapshot): JobJournal {
   return {
@@ -14,6 +15,9 @@ export function createIdleJob(snapshot: Snapshot): JobJournal {
     overallProgress: 0,
     bytesDone: 0,
     bytesTotal: snapshot.updateSize,
+    logicalBytesDone: 0,
+    logicalBytesTotal: snapshot.updateSize,
+    sessionBaseBytes: 0,
     retryCount: 0,
     resumable: true,
     updatedAt: new Date().toISOString(),
@@ -38,21 +42,34 @@ export function getPhaseProgress(job: JobJournal, rateBytesPerSecond: number): P
     job.steps.find((step) => step.status === 'running' || step.status === 'paused') ??
     job.steps.find((step) => step.status !== 'completed') ??
     job.steps[job.steps.length - 1]
-  const isDownloading = job.status === 'downloading'
+  const isDownloading =
+    job.status === 'downloading' ||
+    (job.kind === 'patch' &&
+      job.status === 'running' &&
+      job.bytesTotal > 0 &&
+      Boolean(runningStep?.name.toLowerCase().includes('download')))
+  const transfer = deriveLogicalTransferProgress(job)
   const phasePercent = isDownloading
-    ? bytePercent(job.bytesDone, job.bytesTotal)
+    ? transfer.logicalPercent
     : clampPercent((runningStep?.progress ?? job.overallProgress) * 100)
-  const remainingBytes = Math.max(job.bytesTotal - job.bytesDone, 0)
 
   return {
     name: runningStep?.name ?? job.phase,
     detail: job.phase,
     percent: job.status === 'committed' ? 100 : phasePercent,
     overallPercent: clampPercent(job.overallProgress * 100),
-    bytesDone: job.bytesDone,
-    bytesTotal: job.bytesTotal,
+    bytesDone: transfer.logicalBytesDone,
+    bytesTotal: transfer.logicalBytesTotal,
+    logicalBytesDone: transfer.logicalBytesDone,
+    logicalBytesTotal: transfer.logicalBytesTotal,
+    sessionBytesDone: transfer.sessionBytesDone,
+    sessionBytesTotal: transfer.sessionBytesTotal,
+    sessionBaseBytes: transfer.sessionBaseBytes,
+    remainingBytes: transfer.remainingBytes,
     rateBytesPerSecond,
-    etaSeconds: isDownloading && rateBytesPerSecond > 1 ? remainingBytes / rateBytesPerSecond : null,
+    etaSeconds: isDownloading && rateBytesPerSecond > 1
+      ? Math.max(transfer.sessionBytesTotal - transfer.sessionBytesDone, 0) / rateBytesPerSecond
+      : null,
     isDownloading,
   }
 }

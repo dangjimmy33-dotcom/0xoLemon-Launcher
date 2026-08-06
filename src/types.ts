@@ -38,6 +38,12 @@ export type PhaseProgress = {
   overallPercent: number
   bytesDone: number
   bytesTotal: number
+  logicalBytesDone: number
+  logicalBytesTotal: number
+  sessionBytesDone: number
+  sessionBytesTotal: number
+  sessionBaseBytes: number
+  remainingBytes: number
   rateBytesPerSecond: number
   etaSeconds: number | null
   isDownloading: boolean
@@ -55,6 +61,11 @@ export type JobJournal = {
   overallProgress: number
   bytesDone: number
   bytesTotal: number
+  /** Monotonic user-facing transfer progress across resume/replanning. */
+  logicalBytesDone?: number
+  logicalBytesTotal?: number
+  /** Bytes already available before the current remaining-work session. */
+  sessionBaseBytes?: number
   retryCount: number
   resumable: boolean
   updatedAt: string

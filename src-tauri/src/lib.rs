@@ -1165,6 +1165,7 @@ pub fn run() {
             uninstall_game,
             start_update_job,
             translations::get_available_translations,
+            translations::get_translation_status,
             translations::install_translation,
             translations::uninstall_translation,
             start_install_job,
@@ -1422,6 +1423,12 @@ pub fn run() {
                         return;
                     }
                     let _ = handle.emit("launcher://shortcut-launch", request.clone());
+                    // A shortcut without --launch-executable represents a
+                    // multi-option game. The frontend must open the launch
+                    // picker instead of the backend silently choosing a default.
+                    if request.launch_executable.is_none() {
+                        return;
+                    }
                     std::thread::sleep(std::time::Duration::from_millis(1800));
                     if game_tags::game_has_tag(&request.game_id, "online") {
                         if !steam_integration::is_spacewar_installed() {

@@ -371,11 +371,27 @@ fn patch_attempt_is_throttled(
         })
 }
 
+fn automatic_updates_allowed_now(settings: &crate::platform::LauncherSettings) -> bool {
+    match settings.game_update_mode {
+        crate::platform::GameUpdateMode::Manual => false,
+        crate::platform::GameUpdateMode::Automatic => true,
+        crate::platform::GameUpdateMode::Scheduled => time_in_update_window(
+            Local::now().hour() as u16 * 60 + Local::now().minute() as u16,
+            &settings.game_update_schedule_start,
+            &settings.game_update_schedule_end,
+        ),
+    }
+}
+
 fn auto_patch_tick(
     app: &AppHandle,
     control: &Arc<JobControl>,
     last_attempts: &mut HashMap<String, (String, Instant)>,
 ) -> Result<(), String> {
+    let settings = crate::platform::current_settings();
+    if !automatic_updates_allowed_now(&settings) {
+        return Ok(());
+    }
     let installs = reconciled_installs(app)?;
     if !automatic_job_can_start(app, control)? {
         return Ok(());
@@ -452,20 +468,11 @@ fn auto_update_tick(
     control: &Arc<JobControl>,
     last_attempts: &mut HashMap<String, Instant>,
 ) -> Result<(), String> {
-    let installs = reconciled_installs(app)?;
     let settings = crate::platform::current_settings();
-    if settings.game_update_mode == crate::platform::GameUpdateMode::Manual {
+    if !automatic_updates_allowed_now(&settings) {
         return Ok(());
     }
-    if settings.game_update_mode == crate::platform::GameUpdateMode::Scheduled
-        && !time_in_update_window(
-            Local::now().hour() as u16 * 60 + Local::now().minute() as u16,
-            &settings.game_update_schedule_start,
-            &settings.game_update_schedule_end,
-        )
-    {
-        return Ok(());
-    }
+    let installs = reconciled_installs(app)?;
     if !automatic_job_can_start(app, control)? {
         return Ok(());
     }
@@ -488,7 +495,7 @@ fn auto_update_tick(
         let Some(latest) = catalog.effective_latest_version().map(str::to_string) else {
             continue;
         };
-        if latest == installed_version {
+        if versions_equivalent(&installed_version, &latest) {
             continue;
         }
         last_attempts.insert(install.game_id.clone(), Instant::now());
@@ -631,6 +638,14 @@ pub struct JobJournal {
     pub overall_progress: f32,
     pub bytes_done: u64,
     pub bytes_total: u64,
+    /// Monotonic user-facing transfer bytes across resume/replanning.
+    #[serde(default)]
+    pub logical_bytes_done: u64,
+    #[serde(default)]
+    pub logical_bytes_total: u64,
+    /// Bytes already available before the current remaining-work plan.
+    #[serde(default)]
+    pub session_base_bytes: u64,
     pub retry_count: u32,
     pub resumable: bool,
     pub updated_at: String,
@@ -1166,6 +1181,7 @@ pub fn spawn_install_job(
         .copied()
         .sum::<u64>()
         .min(journal.bytes_total);
+    journal.logical_bytes_done = journal.bytes_done;
     persist_and_emit(&app, &journal)?;
     write_download_session_marker(
         &downloading_root,
@@ -1330,6 +1346,7 @@ pub fn spawn_repair_job(
         .copied()
         .sum::<u64>()
         .min(journal.bytes_total);
+    journal.logical_bytes_done = journal.bytes_done;
     append_log(
         &mut journal,
         "info",
@@ -1843,7 +1860,7 @@ fn effective_launch_config(
                                     args,
                                     working_directory: String::new(),
                                     environment: std::collections::HashMap::new(),
-                                    run_as_admin: true,
+                                    run_as_admin: false,
                                     hidden: None,
                                     wait_for_exit: false,
                                     delay_before_ms: 0,
@@ -1926,15 +1943,26 @@ pub fn refresh_registered_game_shortcuts(app: &AppHandle) -> Result<usize, JobEr
         if !executable.is_file() {
             continue;
         }
-        if create_game_shortcut(
+        let has_multiple_options = effective_launch_config(
             app,
-            &source,
+            &source.game_id,
             &install_root,
-            &executable,
-            &relative_executable,
-        )?
-        .is_some()
-        {
+            Some(relative_executable.clone()),
+        )
+        .map(|(config, _, _)| config.options.len() >= 2)
+        .unwrap_or(false);
+        let shortcut = if has_multiple_options {
+            create_game_shortcut_no_exe(app, &source, &install_root, &executable)?
+        } else {
+            create_game_shortcut(
+                app,
+                &source,
+                &install_root,
+                &executable,
+                &relative_executable,
+            )?
+        };
+        if shortcut.is_some() {
             refreshed += 1;
         }
     }
@@ -2063,10 +2091,22 @@ pub fn launch_game(
     }
 
     let dependencies_installed = ensure_game_dependencies(app, &source, install_path)?;
-    let shortcut_path = create_game_shortcut(app, &source, install_path, &executable, &main.path)
-        .ok()
-        .flatten()
-        .map(|path| path.display().to_string());
+    let shortcut_path = match create_game_shortcut(
+        app,
+        &source,
+        install_path,
+        &executable,
+        &main.path,
+    ) {
+        Ok(path) => path.map(|path| path.display().to_string()),
+        Err(error) => {
+            eprintln!(
+                "[shortcut] Could not refresh the desktop shortcut for {}: {}",
+                source.game_id, error
+            );
+            None
+        }
+    };
     let _ = crate::steam_integration::ensure_game_shortcut(
         app,
         &source.game_id,
@@ -2077,35 +2117,81 @@ pub fn launch_game(
     );
 
     let mut launched = launch_option_processes(&source.game_id, install_path, option)?;
-    if let Some(mut child) = launched.main_child.take() {
+    if let Some(mut tracked_process) = launched.main_process.take() {
+        let pid = tracked_process.id();
+        let (started_event, achievement_events) = match crate::platform::begin_game_session(
+            app,
+            &source.game_id,
+            pid,
+            install_path,
+            &executable,
+        ) {
+            Ok(value) => value,
+            Err(error) => {
+                tracked_process.terminate();
+                return Err(JobError::Depot(format!(
+                    "game started but runtime tracking could not be initialized: {error}"
+                )));
+            }
+        };
+
         crate::cloud_save::mark_game_running(&source.game_id, true);
-        let pid = child.id();
         running_games()
             .lock()
             .unwrap()
             .insert(source.game_id.clone(), pid);
-        let _ = app.emit(
-            "launcher://game-started",
-            serde_json::json!({ "gameId": &source.game_id }),
-        );
+        let _ = app.emit("launcher://game-started", started_event);
+        crate::platform::emit_achievement_events(app, &achievement_events);
 
         let app_for_exit = app.clone();
         let game_id_for_exit = source.game_id.clone();
-        // Capture the installed version so the backup module can pick the right save path
         let installed_version_for_exit = marker.version.clone();
+        let session_started_at = Instant::now();
         thread::spawn(move || {
-            let exit_status = child.wait();
+            let exit_code = match tracked_process.wait() {
+                Ok(exit_code) => exit_code,
+                Err(error) => {
+                    eprintln!(
+                        "[runtime] Could not wait for {} process {}: {}",
+                        game_id_for_exit, pid, error
+                    );
+                    None
+                }
+            };
+            let session_seconds = session_started_at.elapsed().as_secs();
             running_games().lock().unwrap().remove(&game_id_for_exit);
-            let exit_code = exit_status.ok().and_then(|s| s.code());
-            let _ = app_for_exit.emit(
-                "launcher://game-exited",
-                serde_json::json!({
-                    "gameId": &game_id_for_exit,
-                    "exitCode": exit_code,
-                    "sessionSeconds": 0
-                }),
-            );
-            // Trigger local save backup (snapshot + Google Drive) before cloud-save sync
+
+            match crate::platform::end_game_session(
+                &app_for_exit,
+                &game_id_for_exit,
+                pid,
+                session_seconds,
+                exit_code,
+            ) {
+                Ok((exited_event, achievement_events)) => {
+                    let _ = app_for_exit.emit("launcher://game-exited", exited_event);
+                    crate::platform::emit_achievement_events(
+                        &app_for_exit,
+                        &achievement_events,
+                    );
+                }
+                Err(error) => {
+                    eprintln!(
+                        "[runtime] Could not finalize the session for {}: {}",
+                        game_id_for_exit, error
+                    );
+                    let _ = app_for_exit.emit(
+                        "launcher://game-exited",
+                        serde_json::json!({
+                            "gameId": &game_id_for_exit,
+                            "pid": pid,
+                            "exitCode": exit_code,
+                            "sessionSeconds": session_seconds
+                        }),
+                    );
+                }
+            }
+
             crate::local_save_backup::backup_after_exit_async(
                 app_for_exit.clone(),
                 game_id_for_exit.clone(),
@@ -2621,8 +2707,8 @@ fn run_real_update_job_once(
         .collect::<Vec<_>>();
     let missing_chunks =
         plan_missing_chunks(&local_sources, session.cache_root(), &remaining_files, None)?;
-    journal.bytes_total = download_transfer_bytes(&missing_chunks);
-    journal.bytes_done = 0;
+    let transfer_total = download_transfer_bytes(&missing_chunks);
+    configure_transfer_plan(&mut journal, transfer_total, 0);
     configure_download_metrics(&mut journal, &missing_chunks, false);
     journal.metrics.pipeline = "sequential-stage-v1".to_string();
     let assembly_total = changed
@@ -3252,14 +3338,15 @@ fn run_legacy_update_job(
             Some(&install_root),
         )?
     };
-    journal.bytes_total = download_transfer_bytes(&missing_chunks);
+    let transfer_total = download_transfer_bytes(&missing_chunks);
     configure_download_metrics(&mut journal, &missing_chunks, direct_stage.is_some());
     let resumed_in_flight = existing_partial_task_progress(&staged_chunks_root, &missing_chunks);
-    journal.bytes_done = resumed_in_flight
+    let resumed_bytes = resumed_in_flight
         .values()
         .copied()
         .sum::<u64>()
-        .min(journal.bytes_total);
+        .min(transfer_total);
+    configure_transfer_plan(&mut journal, transfer_total, resumed_bytes);
     let planned_bytes = human_bytes(journal.bytes_total);
     append_log(
         &mut journal,
@@ -3603,14 +3690,15 @@ fn run_real_install_job(
         &changed,
         Some(&install_root),
     )?;
-    journal.bytes_total = download_transfer_bytes(&missing_chunks);
+    let transfer_total = download_transfer_bytes(&missing_chunks);
     configure_download_metrics(&mut journal, &missing_chunks, direct_stage.is_some());
     let resumed_in_flight = existing_partial_task_progress(&staged_chunks_root, &missing_chunks);
-    journal.bytes_done = resumed_in_flight
+    let resumed_bytes = resumed_in_flight
         .values()
         .copied()
         .sum::<u64>()
-        .min(journal.bytes_total);
+        .min(transfer_total);
+    configure_transfer_plan(&mut journal, transfer_total, resumed_bytes);
     let planned_bytes = human_bytes(journal.bytes_total);
     append_log(
         &mut journal,
@@ -3860,14 +3948,15 @@ fn run_real_repair_job(
             Some(&install_root),
         )?
     };
-    journal.bytes_total = download_transfer_bytes(&missing_chunks);
+    let transfer_total = download_transfer_bytes(&missing_chunks);
     configure_download_metrics(&mut journal, &missing_chunks, direct_stage.is_some());
     let resumed_in_flight = existing_partial_task_progress(&staged_chunks_root, &missing_chunks);
-    journal.bytes_done = resumed_in_flight
+    let resumed_bytes = resumed_in_flight
         .values()
         .copied()
         .sum::<u64>()
-        .min(journal.bytes_total);
+        .min(transfer_total);
+    configure_transfer_plan(&mut journal, transfer_total, resumed_bytes);
     let total_repair_bytes = journal.bytes_total;
     append_log(
         &mut journal,
@@ -5332,6 +5421,22 @@ struct InstalledUpdateBase {
     source_label: String,
 }
 
+fn canonical_version_label(value: &str) -> String {
+    let mut end = value.trim().len();
+    let lower = value.trim().to_ascii_lowercase();
+    for marker in [" - uploaded", " (build"] {
+        if let Some(index) = lower.find(marker) {
+            end = end.min(index);
+        }
+    }
+    value.trim()[..end].trim().to_ascii_lowercase()
+}
+
+fn versions_equivalent(left: &str, right: &str) -> bool {
+    let left = canonical_version_label(left);
+    !left.is_empty() && left == canonical_version_label(right)
+}
+
 fn usable_installed_version(value: &str) -> Option<String> {
     let value = value.trim();
     if value.is_empty()
@@ -6694,7 +6799,7 @@ fn write_install_marker(
                         args,
                         working_directory: String::new(),
                         environment: std::collections::HashMap::new(),
-                        run_as_admin: true,
+                        run_as_admin: false,
                         hidden: None,
                         wait_for_exit: false,
                         delay_before_ms: 0,
@@ -6744,19 +6849,23 @@ fn write_install_marker(
     if let Some(executable) = safe_join(install_root, &shortcut_exe_relative) {
         if executable.exists() {
             // For multi-exe games, don't pass --launch-executable so the picker appears.
-            let shortcut_relative = if manifest.launch_options.len() >= 2 {
-                // Create shortcut without pinning to a specific exe â€” picker will show.
-                let _ = create_game_shortcut_no_exe(app, source, install_root, &executable);
+            let shortcut_result = if manifest.launch_options.len() >= 2 {
+                create_game_shortcut_no_exe(app, source, install_root, &executable)
             } else {
-                let _ = create_game_shortcut(
+                create_game_shortcut(
                     app,
                     source,
                     install_root,
                     &executable,
                     &shortcut_exe_relative,
-                );
+                )
             };
-            let _ = shortcut_relative;
+            if let Err(error) = shortcut_result {
+                eprintln!(
+                    "[shortcut] Install committed, but the desktop shortcut for {} could not be created: {}",
+                    source.game_id, error
+                );
+            }
             let _ = crate::steam_integration::ensure_game_shortcut(
                 app,
                 &source.game_id,
@@ -7291,6 +7400,40 @@ fn is_active_real_journal(journal: &JobJournal) -> bool {
     is_active && is_real
 }
 
+fn current_logical_transfer_done(journal: &JobJournal) -> u64 {
+    let derived = journal
+        .session_base_bytes
+        .saturating_add(journal.bytes_done);
+    journal.logical_bytes_done.max(derived)
+}
+
+fn configure_transfer_plan(journal: &mut JobJournal, session_total: u64, resumed_done: u64) {
+    let previous_total = journal.logical_bytes_total.max(journal.bytes_total);
+    let previous_done = current_logical_transfer_done(journal)
+        .max(journal.bytes_done)
+        .min(previous_total.max(session_total));
+    let resumed_done = resumed_done.min(session_total);
+
+    // A smaller remaining-work plan means verified cache/local bytes already
+    // satisfy the difference. Preserve those bytes as the visible base so a
+    // resume never appears to fall from, for example, 3/8 GB to 0/5 GB.
+    let derived_base = previous_total.saturating_sub(session_total);
+    let preserved_base = previous_done.saturating_sub(resumed_done);
+    let session_base = derived_base.max(preserved_base);
+    let logical_total = previous_total
+        .max(session_base.saturating_add(session_total))
+        .max(session_total);
+    let logical_done = previous_done
+        .max(session_base.saturating_add(resumed_done))
+        .min(logical_total);
+
+    journal.bytes_total = session_total;
+    journal.bytes_done = resumed_done;
+    journal.session_base_bytes = session_base;
+    journal.logical_bytes_total = logical_total;
+    journal.logical_bytes_done = logical_done;
+}
+
 fn default_journal(
     game_id: &str,
     kind: &str,
@@ -7312,6 +7455,9 @@ fn default_journal(
         overall_progress: 0.0,
         bytes_done: 0,
         bytes_total,
+        logical_bytes_done: 0,
+        logical_bytes_total: bytes_total,
+        session_base_bytes: 0,
         retry_count: 0,
         resumable: true,
         updated_at: now.clone(),
@@ -7357,6 +7503,14 @@ fn append_log(journal: &mut JobJournal, level: &str, message: &str) {
 }
 
 fn touch(journal: &mut JobJournal) {
+    // Keep the serialized user-facing counters current throughout the job,
+    // while bytes_done/bytes_total remain scoped to the active transfer plan.
+    let logical_total = journal
+        .logical_bytes_total
+        .max(journal.session_base_bytes.saturating_add(journal.bytes_total));
+    let logical_done = current_logical_transfer_done(journal).min(logical_total);
+    journal.logical_bytes_total = logical_total;
+    journal.logical_bytes_done = logical_done;
     journal.updated_at = Utc::now().to_rfc3339();
 }
 
@@ -7412,6 +7566,28 @@ fn journal_path(app: &AppHandle) -> Result<PathBuf, JobError> {
 mod downloader_v2_tests {
     use super::*;
     use std::io::{Cursor, Error, ErrorKind, Read};
+
+    #[test]
+    fn transfer_replan_preserves_visible_progress_when_remaining_work_shrinks() {
+        let gib = 1024_u64 * 1024 * 1024;
+        let mut journal = default_journal(
+            "hello-kitty-island-adventure",
+            "install",
+            r"E:\0xoLemon store\common\Hello Kitty Island Adventure".to_string(),
+            "not installed",
+            "v2.16.2",
+            8 * gib,
+        );
+        journal.bytes_done = 3 * gib;
+
+        configure_transfer_plan(&mut journal, 5 * gib, 0);
+
+        assert_eq!(journal.bytes_total, 5 * gib);
+        assert_eq!(journal.bytes_done, 0);
+        assert_eq!(journal.session_base_bytes, 3 * gib);
+        assert_eq!(journal.logical_bytes_done, 3 * gib);
+        assert_eq!(journal.logical_bytes_total, 8 * gib);
+    }
 
     #[cfg(target_os = "windows")]
     #[test]
@@ -7609,6 +7785,26 @@ mod downloader_v2_tests {
         fs::remove_file(partial_checkpoint_path(&partial)).ok();
         fs::remove_file(&partial).ok();
         fs::remove_dir(&root).ok();
+    }
+
+    #[test]
+    fn canonical_version_comparison_ignores_display_metadata() {
+        assert!(versions_equivalent(
+            "1.01.1.0.3 (Build 22800422) - Uploaded 2026-07-15",
+            "1.01.1.0.3",
+        ));
+        assert!(versions_equivalent("v2.16.2 (Build 23704290)", "v2.16.2"));
+        assert!(!versions_equivalent("v2.16.1", "v2.16.2"));
+    }
+
+    #[test]
+    fn automatic_updates_require_explicit_opt_in() {
+        let mut settings = crate::platform::LauncherSettings::default();
+        settings.game_update_mode = crate::platform::GameUpdateMode::Manual;
+        assert!(!automatic_updates_allowed_now(&settings));
+
+        settings.game_update_mode = crate::platform::GameUpdateMode::Automatic;
+        assert!(automatic_updates_allowed_now(&settings));
     }
 
     #[test]
@@ -8062,8 +8258,8 @@ fn try_apply_patch_fix(
         .flat_map(|file| file.chunks.iter().cloned())
         .collect::<Vec<_>>();
     if standalone_patch {
-        journal.bytes_total = patch_transfer_bytes(&patch_manifest);
-        journal.bytes_done = 0;
+        let transfer_total = patch_transfer_bytes(&patch_manifest);
+        configure_transfer_plan(journal, transfer_total, 0);
         configure_download_metrics(journal, &patch_chunks, true);
         journal.metrics.pipeline = "patch-direct-v1".to_string();
         set_step_running(

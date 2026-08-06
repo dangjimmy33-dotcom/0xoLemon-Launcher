@@ -692,6 +692,93 @@ pub(super) fn remove_game_shortcut(
     Ok(removed)
 }
 
+#[cfg(target_os = "windows")]
+fn create_windows_game_shortcut(
+    app: &AppHandle,
+    source: &DepotSource,
+    install_root: &Path,
+    icon_executable: &Path,
+    relative_executable: Option<&str>,
+) -> Result<Option<PathBuf>, JobError> {
+    let launcher_exe = env::current_exe().map_err(|error| {
+        JobError::Depot(format!("unable to locate the launcher executable: {error}"))
+    })?;
+    if !launcher_exe.is_file() || !icon_executable.is_file() {
+        return Ok(None);
+    }
+
+    let desktop = desktop_directory(app, install_root);
+    fs::create_dir_all(&desktop)?;
+    let shortcut_path = desktop.join(format!("{}.lnk", source.game_dir_name));
+    let legacy_url = desktop.join(format!("{}.url", source.game_dir_name));
+    let _ = fs::remove_file(&legacy_url);
+    let _ = fs::remove_file(&shortcut_path);
+
+    // Remove the bootstrap copies used by older builds. The shell link now points
+    // straight at the installed launcher and passes the game request as CLI flags.
+    if let Ok(app_data) = app.path().app_data_dir() {
+        let legacy = app_data.join(format!("0xoLemon-{}.exe", source.game_id));
+        let _ = fs::remove_file(legacy);
+    }
+    let _ = fs::remove_file(game_shortcut_bootstrap_path(install_root));
+
+    let install_path = install_root.display().to_string();
+    let arguments = match relative_executable {
+        Some(relative) => shortcut_argument_line(&[
+            ("--launch-game", source.game_id.as_str()),
+            ("--install-path", install_path.as_str()),
+            ("--launch-executable", relative),
+        ]),
+        None => shortcut_argument_line(&[
+            ("--launch-game", source.game_id.as_str()),
+            ("--install-path", install_path.as_str()),
+        ]),
+    };
+    let launcher_directory = launcher_exe.parent().unwrap_or(install_root);
+    let icon_location = format!("{},0", icon_executable.display());
+    let description = format!("Launch {} with 0xoLemon", source.game_dir_name);
+
+    // WScript.Shell creates a native Windows Shell Link (.lnk), so the shortcut
+    // does not depend on URL-protocol registration and supports quoted paths.
+    let script = format!(
+        "$shell = New-Object -ComObject WScript.Shell; \
+         $shortcut = $shell.CreateShortcut({}); \
+         $shortcut.TargetPath = {}; \
+         $shortcut.Arguments = {}; \
+         $shortcut.WorkingDirectory = {}; \
+         $shortcut.IconLocation = {}; \
+         $shortcut.Description = {}; \
+         $shortcut.Save()",
+        ps_quote_os(shortcut_path.as_os_str()),
+        ps_quote_os(launcher_exe.as_os_str()),
+        ps_quote(&arguments),
+        ps_quote_os(launcher_directory.as_os_str()),
+        ps_quote(&icon_location),
+        ps_quote(&description),
+    );
+    let output = hidden_command("powershell.exe")
+        .args([
+            "-NoLogo",
+            "-NoProfile",
+            "-NonInteractive",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-Command",
+            &script,
+        ])
+        .output()?;
+    if !output.status.success() || !shortcut_path.is_file() {
+        let stderr = String::from_utf8_lossy(&output.stderr).trim().to_string();
+        return Err(JobError::Depot(if stderr.is_empty() {
+            format!("unable to create desktop shortcut: {}", shortcut_path.display())
+        } else {
+            format!("unable to create desktop shortcut: {stderr}")
+        }));
+    }
+
+    Ok(Some(shortcut_path))
+}
+
 pub(super) fn create_game_shortcut(
     app: &AppHandle,
     source: &DepotSource,
@@ -704,44 +791,13 @@ pub(super) fn create_game_shortcut(
     }
     #[cfg(target_os = "windows")]
     {
-        use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD};
-
-        let desktop = desktop_directory(app, install_root);
-        fs::create_dir_all(&desktop)?;
-
-        // Clean up legacy .lnk shortcut
-        let old_lnk = desktop.join(format!("{}.lnk", source.game_dir_name));
-        if old_lnk.is_file() {
-            let _ = fs::remove_file(&old_lnk);
-        }
-        // Clean up legacy AppData bootstrap exe
-        if let Ok(app_data) = app.path().app_data_dir() {
-            let legacy = app_data.join(format!("0xoLemon-{}.exe", source.game_id));
-            if legacy.is_file() { let _ = fs::remove_file(legacy); }
-        }
-        // Clean up in-game bootstrap exe
-        let legacy_bootstrap = install_root.join(GAME_SHORTCUT_BOOTSTRAP_FILE);
-        if legacy_bootstrap.is_file() {
-            let _ = fs::remove_file(legacy_bootstrap);
-        }
-
-        // Build 0xolemon:// URL
-        // Format: 0xolemon://launch-game/<game_id>/<base64_install_path>/<base64_exe>
-        let path_b64 = URL_SAFE_NO_PAD.encode(install_root.display().to_string().as_bytes());
-        let exe_b64 = URL_SAFE_NO_PAD.encode(relative_executable.as_bytes());
-        let url = format!("0xolemon://launch-game/{}/{}/{}", source.game_id, path_b64, exe_b64);
-
-        let icon_location = format!("{},0", executable.display());
-        let shortcut_path = desktop.join(format!("{}.url", source.game_dir_name));
-
-        // Write Internet Shortcut (.url) file — same format Steam uses
-        // Windows hides "Open file location" for .url files, so no game-folder bootstrap needed.
-        let content = format!(
-            "[InternetShortcut]\r\nURL={}\r\nIconFile={}\r\nIconIndex=0\r\n",
-            url, icon_location
-        );
-        fs::write(&shortcut_path, content.as_bytes())?;
-        Ok(Some(shortcut_path))
+        create_windows_game_shortcut(
+            app,
+            source,
+            install_root,
+            executable,
+            Some(relative_executable),
+        )
     }
 
     #[cfg(not(target_os = "windows"))]
@@ -751,8 +807,8 @@ pub(super) fn create_game_shortcut(
     }
 }
 
-/// Like `create_game_shortcut` but does NOT pin a specific executable.
-/// Used for multi-exe games so that clicking the shortcut triggers the picker.
+/// Like `create_game_shortcut` but does not pin a specific executable.
+/// Multi-executable games can therefore reopen the launch-option picker.
 pub(super) fn create_game_shortcut_no_exe(
     app: &AppHandle,
     source: &DepotSource,
@@ -764,41 +820,7 @@ pub(super) fn create_game_shortcut_no_exe(
     }
     #[cfg(target_os = "windows")]
     {
-        use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD};
-
-        let desktop = desktop_directory(app, install_root);
-        fs::create_dir_all(&desktop)?;
-
-        // Clean up legacy .lnk shortcut
-        let old_lnk = desktop.join(format!("{}.lnk", source.game_dir_name));
-        if old_lnk.is_file() {
-            let _ = fs::remove_file(&old_lnk);
-        }
-        // Clean up legacy AppData bootstrap exe
-        if let Ok(app_data) = app.path().app_data_dir() {
-            let legacy = app_data.join(format!("0xoLemon-{}.exe", source.game_id));
-            if legacy.is_file() { let _ = fs::remove_file(legacy); }
-        }
-        // Clean up in-game bootstrap exe
-        let legacy_bootstrap = install_root.join(GAME_SHORTCUT_BOOTSTRAP_FILE);
-        if legacy_bootstrap.is_file() {
-            let _ = fs::remove_file(legacy_bootstrap);
-        }
-
-        // Build 0xolemon:// URL — no exe pinned, launcher shows picker
-        // Format: 0xolemon://launch-game/<game_id>/<base64_install_path>
-        let path_b64 = URL_SAFE_NO_PAD.encode(install_root.display().to_string().as_bytes());
-        let url = format!("0xolemon://launch-game/{}/{}", source.game_id, path_b64);
-
-        let icon_location = format!("{},0", icon_executable.display());
-        let shortcut_path = desktop.join(format!("{}.url", source.game_dir_name));
-
-        let content = format!(
-            "[InternetShortcut]\r\nURL={}\r\nIconFile={}\r\nIconIndex=0\r\n",
-            url, icon_location
-        );
-        fs::write(&shortcut_path, content.as_bytes())?;
-        Ok(Some(shortcut_path))
+        create_windows_game_shortcut(app, source, install_root, icon_executable, None)
     }
 
     #[cfg(not(target_os = "windows"))]
@@ -844,7 +866,7 @@ pub(super) fn launch_option_processes(
     option: &GameLaunchOption,
 ) -> Result<LaunchedProcessSet, JobError> {
     let mut launched = Vec::new();
-    let mut main_child = None;
+    let mut main_process = None;
     let main_index = option
         .processes
         .iter()
@@ -909,7 +931,7 @@ pub(super) fn launch_option_processes(
             .unwrap_or_else(|| is_script_path(&executable));
 
         if process.run_as_admin {
-            run_configured_process_elevated(
+            let pid = run_configured_process_elevated(
                 &executable,
                 &args,
                 &working_dir,
@@ -917,6 +939,9 @@ pub(super) fn launch_option_processes(
                 hidden,
                 process.wait_for_exit,
             )?;
+            if main_index == Some(index) {
+                main_process = pid.map(TrackedMainProcess::Pid);
+            }
         } else {
             let child = run_configured_process(
                 &executable,
@@ -927,7 +952,7 @@ pub(super) fn launch_option_processes(
                 process.wait_for_exit,
             )?;
             if main_index == Some(index) {
-                main_child = child;
+                main_process = child.map(TrackedMainProcess::Child);
             }
         }
 
@@ -944,13 +969,85 @@ pub(super) fn launch_option_processes(
     }
     Ok(LaunchedProcessSet {
         paths: launched,
-        main_child,
+        main_process,
     })
 }
 
 pub(super) struct LaunchedProcessSet {
     pub(super) paths: Vec<PathBuf>,
-    pub(super) main_child: Option<Child>,
+    pub(super) main_process: Option<TrackedMainProcess>,
+}
+
+pub(super) enum TrackedMainProcess {
+    Child(Child),
+    /// PID returned by PowerShell Start-Process -Verb RunAs. The elevated
+    /// process is not a std::process::Child of the launcher, so it is monitored
+    /// by PID until Windows reports that it has exited.
+    Pid(u32),
+}
+
+impl TrackedMainProcess {
+    pub(super) fn id(&self) -> u32 {
+        match self {
+            Self::Child(child) => child.id(),
+            Self::Pid(pid) => *pid,
+        }
+    }
+
+    pub(super) fn terminate(&mut self) {
+        match self {
+            Self::Child(child) => {
+                let _ = child.kill();
+                let _ = child.wait();
+            }
+            Self::Pid(pid) => {
+                let _ = hidden_command("taskkill.exe")
+                    .args(["/F", "/T", "/PID", &pid.to_string()])
+                    .status();
+            }
+        }
+    }
+
+    pub(super) fn wait(&mut self) -> Result<Option<i32>, JobError> {
+        match self {
+            Self::Child(child) => Ok(child.wait()?.code()),
+            Self::Pid(pid) => wait_for_elevated_process(*pid),
+        }
+    }
+}
+
+fn wait_for_elevated_process(pid: u32) -> Result<Option<i32>, JobError> {
+    #[cfg(target_os = "windows")]
+    {
+        let script = format!(
+            "Wait-Process -Id {} -ErrorAction SilentlyContinue",
+            pid
+        );
+        let status = hidden_command("powershell.exe")
+            .args([
+                "-NoLogo",
+                "-NoProfile",
+                "-NonInteractive",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-Command",
+                &script,
+            ])
+            .status()?;
+        if status.success() {
+            Ok(None)
+        } else {
+            Err(JobError::Depot(format!(
+                "unable to monitor elevated game process {pid}"
+            )))
+        }
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    {
+        let _ = pid;
+        Ok(None)
+    }
 }
 
 fn run_configured_process(
@@ -1014,7 +1111,7 @@ fn run_configured_process_elevated(
     environment: &[(String, String)],
     hidden: bool,
     wait: bool,
-) -> Result<(), JobError> {
+) -> Result<Option<u32>, JobError> {
     #[cfg(target_os = "windows")]
     {
         let (file_path, process_args) = if is_script_path(executable) {
@@ -1037,7 +1134,7 @@ fn run_configured_process_elevated(
             script.push_str(&format!("$env:{} = {}; ", key, ps_quote(value)));
         }
         script.push_str(&format!(
-            "$p = Start-Process -FilePath {} -Verb RunAs -WindowStyle {} -WorkingDirectory {}",
+            "$p = Start-Process -FilePath {} -Verb RunAs -WindowStyle {} -WorkingDirectory {} -PassThru",
             ps_quote_os(file_path.as_os_str()),
             if hidden { "Hidden" } else { "Normal" },
             ps_quote_os(working_dir.as_os_str()),
@@ -1051,31 +1148,50 @@ fn run_configured_process_elevated(
             script.push_str(&format!(" -ArgumentList @({quoted_args})"));
         }
         if wait {
-            script.push_str(" -Wait -PassThru; if ($p.ExitCode -ne 0) { exit $p.ExitCode }");
+            script.push_str("; $p.WaitForExit(); if ($p.ExitCode -ne 0) { exit $p.ExitCode }");
+        } else {
+            script.push_str("; [Console]::Out.Write($p.Id)");
         }
 
-        let status = hidden_command("powershell.exe")
+        let output = hidden_command("powershell.exe")
             .args([
+                "-NoLogo",
                 "-NoProfile",
+                "-NonInteractive",
                 "-ExecutionPolicy",
                 "Bypass",
                 "-Command",
                 &script,
             ])
-            .status()?;
-        if status.success() {
-            Ok(())
-        } else {
-            Err(JobError::Depot(format!(
-                "admin launch was canceled or failed: {}",
-                executable.display()
-            )))
+            .output()?;
+        if !output.status.success() {
+            let stderr = String::from_utf8_lossy(&output.stderr).trim().to_string();
+            return Err(JobError::Depot(if stderr.is_empty() {
+                format!(
+                    "admin launch was canceled or failed: {}",
+                    executable.display()
+                )
+            } else {
+                format!("admin launch failed: {stderr}")
+            }));
         }
+        if wait {
+            return Ok(None);
+        }
+        let pid_text = String::from_utf8_lossy(&output.stdout).trim().to_string();
+        let pid = pid_text.parse::<u32>().map_err(|_| {
+            JobError::Depot(format!(
+                "admin launch did not return a process id for {}",
+                executable.display()
+            ))
+        })?;
+        Ok(Some(pid))
     }
 
     #[cfg(not(target_os = "windows"))]
     {
         run_configured_process(executable, args, working_dir, environment, hidden, wait)
+            .map(|child| child.map(|child| child.id()))
     }
 }
 

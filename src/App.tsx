@@ -56,6 +56,7 @@ import { assetUrlForId, collectAssetIds, contentServiceLabel, downloadPathForIns
 import { createIdleJob, getPhaseProgress } from './lib/jobProgress'
 import { formatBytes } from './lib/format'
 import { gameHasTag } from './lib/gameTags'
+import { versionsEquivalent } from './lib/version'
 import { DEFAULT_LAUNCHER_PREFERENCES, loadLauncherPreferences, saveLauncherPreferences, type LauncherPreferences } from './lib/preferences'
 import {
   ActiveView,
@@ -76,6 +77,7 @@ import {
   Sidebar,
   UpdateBanner,
   UpdateCenter,
+  TransferDock,
   FirebaseRemoteControl,
   ChangelogModal,
   BigPictureView,
@@ -111,7 +113,7 @@ const defaultLauncherSettings: LauncherSettings = {
   downloadQueueMb: 128,
   directToStaging: true,
   cloudSaveRoot: '',
-  gameUpdateMode: 'automatic',
+  gameUpdateMode: 'manual',
   gameUpdateScheduleStart: '02:00',
   gameUpdateScheduleEnd: '06:00',
   depotHfRepoId: '',
@@ -266,6 +268,7 @@ export default function App() {
   const canceledJobIdRef = useRef<string | null>(null)
   const autoResumeInFlightRef = useRef(false)
   const autoResumeJobIdRef = useRef<string | null>(null)
+  const offlineInterruptedJobIdRef = useRef<string | null>(null)
   const selectedGameIdRef = useRef<string | null>(selectedGameId)
   const versionPlanSequenceRef = useRef(0)
   const versionPlanTimerRef = useRef<number | null>(null)
@@ -757,7 +760,12 @@ export default function App() {
   const refreshRuntimeStates = useCallback(() => {
     if (!isTauriRuntime()) return Promise.resolve()
     return invoke<GameRuntimeState[]>('get_game_runtime_states')
-      .then(setRuntimeStates)
+      .then((states) => {
+        setRuntimeStates(states)
+        const running: Record<string, boolean> = {}
+        for (const state of states) running[state.gameId] = state.running
+        setPlayingGames(running)
+      })
       .catch(() => undefined)
   }, [])
 
@@ -1277,7 +1285,7 @@ export default function App() {
           return false
         }
 
-        const isVersionMismatch = Boolean(latest && latest !== 'unknown' && state.currentVersion !== latest)
+        const isVersionMismatch = Boolean(latest && latest !== 'unknown' && !versionsEquivalent(state.currentVersion, latest))
 
         // Check if there is a pending patch (meaning a patch is available and it hasn't been applied yet)
         const remotePatchId = pendingPatches[game.id]
@@ -1475,13 +1483,21 @@ export default function App() {
         },
       }))
       setActiveTab('Library')
-      setScanStatus(`Starting ${game?.title ?? payload.gameId}`)
-      setLaunchSplash({
-        title: game?.title ?? payload.gameId,
-        heroUrl: game ? assetUrlForId(game.heroAssetId, assetUrls) : undefined,
-        iconUrl: game ? assetUrlForId(game.iconAssetId, assetUrls) || assetUrlForId(game.gridAssetId, assetUrls) : undefined,
-      })
-      window.setTimeout(() => setLaunchSplash(null), 4200)
+      if (payload.launchExecutable) {
+        setScanStatus(`Starting ${game?.title ?? payload.gameId}`)
+        setLaunchSplash({
+          title: game?.title ?? payload.gameId,
+          heroUrl: game ? assetUrlForId(game.heroAssetId, assetUrls) : undefined,
+          iconUrl: game ? assetUrlForId(game.iconAssetId, assetUrls) || assetUrlForId(game.gridAssetId, assetUrls) : undefined,
+        })
+        window.setTimeout(() => setLaunchSplash(null), 4200)
+      } else {
+        // Multi-executable desktop shortcuts deliberately omit the executable.
+        // Reuse the normal Play flow so the configured option picker is shown.
+        pendingHomeLaunchRef.current = payload.gameId
+        setLaunchSplash(null)
+        setScanStatus(`Choose how to launch ${game?.title ?? payload.gameId}`)
+      }
     }).then((fn) => {
       if (disposed) {
         fn()
@@ -1600,9 +1616,15 @@ export default function App() {
       invoke<Snapshot>('get_launcher_snapshot')
         .then((next) => {
           if (disposed) return
-          setSnapshot(next)
-          setJob(next.lastJob)
-          if (next.lastJob?.kind === 'patch') {
+          const initialJob = next.lastJob?.status === 'committed' ? null : next.lastJob
+          setSnapshot(initialJob === next.lastJob ? next : { ...next, lastJob: null })
+          setJob(initialJob)
+          if (next.lastJob?.status === 'committed') {
+            // A launcher restart can happen before the short success timeout fires.
+            // Terminal recovery metadata must never reappear as an active transfer.
+            void invoke('clear_job_journal').catch(() => undefined)
+          }
+          if (initialJob?.kind === 'patch') {
             setActiveTab('Downloads')
           }
           if (next.detectedInstallPath && next.gameId === selectedGameIdRef.current) {
@@ -1697,13 +1719,19 @@ export default function App() {
         window.setTimeout(() => {
           void refreshInstallState(nextJob.gameId, nextJob.installPath).catch(() => undefined)
         }, 350)
-        // Auto-dismiss patch jobs after a display period long enough for the
-        // user to see the completed card (Download + Apply steps visible).
-        if (isPatchJob) {
-          window.setTimeout(() => {
-            invoke('clear_job_journal').catch(() => undefined)
-          }, 5000)
-        }
+        // Keep the success state visible briefly, then remove the terminal job
+        // from Downloads/Updates. A committed journal is recovery metadata, not
+        // an active queue item, regardless of whether it was install/update/patch.
+        window.setTimeout(() => {
+          if (latestJobRef.current?.id === nextJob.id && latestJobRef.current.status === 'committed') {
+            invoke('clear_job_journal')
+              .then(() => {
+                setJob(null)
+                setSnapshot((current) => ({ ...current, lastJob: null }))
+              })
+              .catch(() => undefined)
+          }
+        }, isPatchJob ? 5000 : 6500)
         // Auto-cache the 4 key image assets for offline use (only remote URLs)
         window.setTimeout(() => {
           const installedGame = catalogRef.current.games.find((g) => g.id === nextJob.gameId)
@@ -1791,37 +1819,26 @@ export default function App() {
   useEffect(() => {
     if (!isTauriRuntime()) return
 
-    const canAutoResume = (current: JobJournal | null) => {
-      if (!current) return false
-      if (
-        current.kind !== 'install' &&
-        current.kind !== 'update' &&
-        current.kind !== 'repair' &&
-        current.kind !== 'patch'
-      ) {
-        return false
-      }
-      if (current.status === 'paused') return true
-      if (current.status !== 'failed') return false
-      if (current.kind === 'patch') return true
-      const stepPhase = current.steps.map((step) => `${step.name} ${step.detail}`).join(' ')
-      const phase = `${current.phase ?? ''} ${stepPhase}`.toLowerCase()
-      return phase.includes('download') || phase.includes('assembling') || phase.includes('verify')
+    const canResumeInterruptedJob = (current: JobJournal | null) => {
+      if (!current || current.id !== offlineInterruptedJobIdRef.current) return false
+      if (!['install', 'update', 'repair', 'patch'].includes(current.kind)) return false
+      return current.status === 'paused' || current.status === 'failed'
     }
 
     const resumeInterruptedJob = async () => {
       const current = latestJobRef.current
-      if (!canAutoResume(current)) return
+      if (!canResumeInterruptedJob(current)) return
       if (autoResumeInFlightRef.current && autoResumeJobIdRef.current === current?.id) return
 
       autoResumeInFlightRef.current = true
       autoResumeJobIdRef.current = current?.id ?? null
       try {
         await invoke('resume_job')
+        offlineInterruptedJobIdRef.current = null
         setJob((state) => (state ? { ...state, status: 'running', phase: state.phase || 'Download packs' } : state))
-        setScanStatus('Network restored, resuming download...')
+        setScanStatus('Network restored, resuming the interrupted transfer...')
       } catch (error) {
-        setScanStatus(`Network restored, but auto-resume failed: ${String(error)}`)
+        setScanStatus(`Network restored, but resume failed: ${String(error)}`)
       } finally {
         autoResumeInFlightRef.current = false
       }
@@ -1831,23 +1848,20 @@ export default function App() {
       setIsOnline(true)
       setOfflineModeEnabled(false)
       void resumeInterruptedJob()
-      // Re-check Discord auth when network comes back
       void refreshDiscordAccess(true)
     }
 
     const handleOffline = () => {
       setIsOnline(false)
-      if (canAutoResume(latestJobRef.current)) {
-        setScanStatus('Network lost; launcher will retry when the connection is back.')
+      const current = latestJobRef.current
+      if (current && ['running', 'downloading', 'assembling'].includes(current.status)) {
+        offlineInterruptedJobIdRef.current = current.id
+        setScanStatus('Network lost; this transfer will resume when the connection returns.')
       }
     }
 
     window.addEventListener('online', handleOnline)
     window.addEventListener('offline', handleOffline)
-
-    if (navigator.onLine) {
-      void resumeInterruptedJob()
-    }
 
     return () => {
       window.removeEventListener('online', handleOnline)
@@ -1963,6 +1977,12 @@ export default function App() {
   const progress = phaseProgress.percent
   const hasVisibleJob =
     job !== null && (activeJob.status !== 'committed' || activeJob.kind === 'patch')
+  const activeJobGame = catalog.games.find((game) => game.id === activeJob.gameId) ?? null
+  const activeJobArtwork = assetUrlForId(activeJobGame?.gridAssetId, assetUrls)
+  const showTransferDock =
+    hasVisibleJob &&
+    !['Downloads', 'Updates'].includes(activeTab) &&
+    ['running', 'downloading', 'assembling', 'paused'].includes(activeJob.status)
   const isDefaultGame = selectedGame?.id === DEFAULT_GAME_ID
   const selectedInstallState = selectedGame ? installStates[selectedGame.id] : undefined
   const selectedInstalled = Boolean(selectedInstallState?.installed)
@@ -2123,7 +2143,7 @@ export default function App() {
     selectedCurrentVersion !== 'not installed' &&
     !isInstalledUnknownWithSingleVersion &&
     latestCatalogVersion !== 'unknown' &&
-    selectedCurrentVersion !== latestCatalogVersion
+    !versionsEquivalent(selectedCurrentVersion, latestCatalogVersion)
   const isPaused = activeJob.status === 'paused'
   const [isResuming, setIsResuming] = useState(false)
   const isRunning = job !== null && ['running', 'downloading', 'assembling', 'paused'].includes(activeJob.status)
@@ -3132,7 +3152,9 @@ export default function App() {
       const optionText = report.launchOptionTitle ? ` (${report.launchOptionTitle})` : ''
       setScanStatus(`${dependencyText} ${selectedGame.title}${optionText}`)
 
-      setPlayingGames((prev) => ({ ...prev, [selectedGame.id]: true }))
+      // Running state is authoritative only after the backend has a tracked PID
+      // and emits launcher://game-started. This prevents a failed/elevated launch
+      // from leaving the Play button stuck on Running.
 
       // Game Turbo Logic
       if (launcherSettings.gameTurbo === 'always') {
@@ -4003,6 +4025,24 @@ export default function App() {
               )}
             </section>
           </main>
+          <TransferDock
+            visible={showTransferDock}
+            gameTitle={activeJobGame?.title ?? activeJob.gameId}
+            gameArtwork={activeJobArtwork}
+            job={activeJob}
+            progress={phaseProgress}
+            isPaused={isPaused}
+            onPause={pauseOrResume}
+            onOpen={() => {
+              setSelectedGameId(activeJob.gameId)
+              setSelectedVersion(activeJob.toVersion)
+              if (activeJob.installPath) {
+                setInstallPath(activeJob.installPath)
+                setInstallRoot(activeJob.installPath)
+              }
+              setActiveTab(activeJob.kind === 'install' ? 'Downloads' : 'Updates')
+            }}
+          />
           <UpdateCenter
             open={showUpdateCenter}
             update={launcherUpdate}

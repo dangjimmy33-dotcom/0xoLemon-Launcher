@@ -202,29 +202,14 @@ export function ActiveView({
   }
 
   if (activeTab === 'Translations') {
-    if (!hasSelectedDetail) {
-      return (
-        <TabEmptyState
-          activeTab={activeTab}
-          catalog={catalog}
-          onSelectGame={onSelectGame}
-          assets={assets}
-          onRequestAsset={onRequestAsset}
-        />
-      )
-    }
-
-    const activeGame = selectedGame || catalog.games.find(g => g.id === selectedGameId)
-    if (activeGame && activeGame.heroAssetId && !assets[activeGame.heroAssetId]) {
-      onRequestAsset(activeGame, activeGame.heroAssetId)
-    }
-
     return <TranslationsView
-      gameId={selectedGameId ?? undefined}
-      gameTitle={activeGame?.title}
-      gameBanner={assetUrlForId(activeGame?.heroAssetId, assets)}
+      catalog={catalog}
+      selectedGameId={selectedGameId}
+      assets={assets}
+      installStates={installStates}
+      onSelectGame={onSelectGame}
+      onRequestAsset={onRequestAsset}
       onVerify={onVerify}
-      onBack={() => onSelectGame(null)}
     />
   }
 
@@ -286,6 +271,8 @@ export function ActiveView({
       )
     }
 
+    const transferGame = catalog.games.find((game) => game.id === job.gameId) ?? selectedGame
+
     return (
       <section className="content-grid single-main">
         <div className="main-column">
@@ -301,13 +288,15 @@ export function ActiveView({
           ) : null}
           {activeTab === 'Downloads' ? (
             <DownloadQueuePanel
-              gameTitle={selectedGame?.title ?? 'Selected game'}
+              gameTitle={transferGame?.title ?? 'Selected game'}
+              gameArtwork={assetUrlForId(transferGame?.gridAssetId, assets)}
               job={job}
               hasJob={hasJob}
               progress={progress}
               phaseProgress={phaseProgress}
               selectedVersion={selectedVersion}
               downloadSize={updateSize}
+              isInstalled={!installMode}
               isRunning={isRunning}
               isPaused={isPaused}
               onOpenOptions={onOpenInstallOptions}
@@ -320,6 +309,8 @@ export function ActiveView({
           {hasJob || activeTab === 'Updates' ? (
             <>
               <JobCenter
+                gameTitle={transferGame?.title ?? 'Selected game'}
+                gameArtwork={assetUrlForId(transferGame?.gridAssetId, assets)}
                 job={job}
                 hasJob={hasJob}
                 progress={progress}

@@ -28,3 +28,5 @@ export { ConfirmDialog } from './ConfirmDialog'
 export { DefenderExclusionDialog } from './DefenderExclusionDialog'
 export { CloudRedirectSettings } from './CloudRedirectSettings'
 export { AchievementToastOverlay } from './AchievementToast'
+
+export { TransferDock } from './TransferDock'

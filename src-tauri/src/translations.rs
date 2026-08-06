@@ -156,6 +156,16 @@ pub async fn get_available_translations(_app: AppHandle, game_id: String) -> Res
     Ok(translations)
 }
 
+
+#[tauri::command]
+pub fn get_translation_status(app: AppHandle, game_id: String) -> Result<bool, String> {
+    let install_path = crate::platform::registered_install_path(&app, &game_id)
+        .map_err(|e| format!("Failed to get install path: {}", e))?;
+    Ok(install_path
+        .map(|path| path.join(".viethoa_backup").exists())
+        .unwrap_or(false))
+}
+
 fn get_game_install_path(app: &AppHandle, game_id: &str) -> Result<PathBuf, String> {
     crate::platform::registered_install_path(app, game_id)
         .map_err(|e| format!("Failed to get install path: {}", e))?
