@@ -148,8 +148,15 @@ export type CloudSaveMetadata = {
 }
 
 export type CloudSaveRoot = {
+  id?: string
   path: string
   label: string
+  purpose?: 'save' | 'profile' | 'progress' | 'settings-portable' | string
+  include?: string[]
+  exclude?: string[]
+  fingerprint?: string
+  legacy?: boolean
+  legacyExpiresAt?: string | null
 }
 
 export type CloudSaveConflict = {
@@ -159,6 +166,13 @@ export type CloudSaveConflict = {
   cloudFileCount: number
   localBytes: number
   cloudBytes: number
+  recommended?: 'local' | 'cloud' | string
+  localDevice?: string
+  cloudDevice?: string
+  recommendationReason?: string
+  recommendationConfidence?: 'low' | 'medium' | 'high' | string
+  localLatestWriteAtMs?: number
+  cloudLatestWriteAtMs?: number
 }
 
 export type CloudSaveSnapshot = {
@@ -167,16 +181,50 @@ export type CloudSaveSnapshot = {
   source: string
   fileCount: number
   bytes: number
+  pinned?: boolean
+  snapshotClass?: 'automatic' | 'conflict' | 'manual' | string
+}
+
+export type CloudSaveQuota = {
+  limitBytes: number | null
+  usageBytes: number
+  availableBytes: number | null
+  checkedAt: string
+  state: 'healthy' | 'low' | 'full' | string
+}
+
+export type CloudSaveMapStatus = {
+  version: string
+  source: string
+  healthy: boolean
+  message: string
+  warnings: string[]
 }
 
 export type CloudSaveStatus = {
   gameId: string
   enabled: boolean
+  automaticProtection: boolean
   syncRoot: string
   saveRoots: CloudSaveRoot[]
   include: string[]
   exclude: string[]
-  state: 'disabled' | 'ready' | 'conflict' | string
+  state:
+    | 'disabled'
+    | 'ready'
+    | 'synced'
+    | 'syncing'
+    | 'offline'
+    | 'rate_limited'
+    | 'storage_full'
+    | 'auth_required'
+    | 'waiting_for_first_save'
+    | 'waiting_for_save'
+    | 'conflict_check_required'
+    | 'permission_denied'
+    | 'remote_damaged'
+    | 'conflict'
+    | string
   lastSyncAt: string | null
   lastMessage: string
   conflicts: CloudSaveConflict[]
@@ -188,7 +236,13 @@ export type CloudSaveStatus = {
   googleDriveLastBackupAt: string | null
   googleDriveLastRestoreCount: number
   googleDriveMessage: string
+  pendingOperationCount: number
+  pendingUploadBytes: number
+  quota: CloudSaveQuota | null
+  mapStatus: CloudSaveMapStatus
+  remoteNewerKnown: boolean
 }
+
 
 export type CloudRedirectStatus = {
   steamPath: string | null

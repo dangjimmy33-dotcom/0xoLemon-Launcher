@@ -587,6 +587,60 @@ async fn restore_missing_save_files(
 }
 
 #[tauri::command]
+async fn retry_pending_cloud_saves(
+    app: AppHandle,
+    game_id: Option<String>,
+) -> Result<Vec<cloud_save::CloudSaveStatus>, String> {
+    discord_auth::require_authorized_session()?;
+    tauri::async_runtime::spawn_blocking(move || {
+        cloud_save::retry_pending_syncs(&app, game_id.as_deref())
+    })
+    .await
+    .map_err(|error| error.to_string())?
+}
+
+#[tauri::command]
+fn pin_cloud_save_snapshot(
+    app: AppHandle,
+    game_id: String,
+    snapshot_id: String,
+    pinned: bool,
+) -> Result<cloud_save::CloudSaveStatus, String> {
+    discord_auth::require_authorized_session()?;
+    cloud_save::pin_snapshot(&app, &game_id, &snapshot_id, pinned)
+}
+
+#[tauri::command]
+async fn export_cloud_save_snapshot(
+    app: AppHandle,
+    game_id: String,
+    snapshot_id: Option<String>,
+    target: String,
+) -> Result<cloud_save::CloudSaveStatus, String> {
+    discord_auth::require_authorized_session()?;
+    tauri::async_runtime::spawn_blocking(move || {
+        cloud_save::export_snapshot(
+            &app,
+            &game_id,
+            snapshot_id.as_deref(),
+            std::path::Path::new(&target),
+        )
+    })
+    .await
+    .map_err(|error| error.to_string())?
+}
+
+#[tauri::command]
+async fn refresh_cloud_save_map(
+    app: AppHandle,
+) -> Result<cloud_save::MapUpdateReport, String> {
+    discord_auth::require_authorized_session()?;
+    tauri::async_runtime::spawn_blocking(move || cloud_save::refresh_save_map(&app))
+        .await
+        .map_err(|error| error.to_string())?
+}
+
+#[tauri::command]
 fn get_local_save_backups(
     game_id: String,
 ) -> Result<Vec<local_save_backup::SaveBackupSnapshot>, String> {
@@ -1144,6 +1198,10 @@ pub fn run() {
             global_is_google_drive_connected,
             backup_save_game_to_google_drive,
             restore_missing_save_files,
+            retry_pending_cloud_saves,
+            pin_cloud_save_snapshot,
+            export_cloud_save_snapshot,
+            refresh_cloud_save_map,
             get_local_save_backups,
             restore_local_save_backup,
             plan_install_update,

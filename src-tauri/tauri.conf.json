@@ -43,7 +43,8 @@
       "resources/steam_hooks/*",
       "resources/cloud_redirect/*",
       "resources/emu/**/*",
-      "../steam_appids_mapping.json"
+      "../steam_appids_mapping.json",
+      "src/resources/cloud-save/**/*"
     ],
     "icon": [
       "icons/32x32.png",

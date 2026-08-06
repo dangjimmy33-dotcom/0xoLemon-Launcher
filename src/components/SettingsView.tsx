@@ -16,6 +16,7 @@ import {
   RefreshCcw,
   RotateCcw,
   Settings,
+  ShieldCheck,
   Sparkles,
   CircleAlert,
   TriangleAlert,
@@ -350,8 +351,6 @@ export function SettingsView({
   onChooseLibrary,
   onOpenLibrary,
   onOpenCache,
-  onChooseCloudRoot,
-  onOpenCloudRoot,
   onCheckForUpdates,
   steamEnvironment,
   steamStatus,
@@ -505,26 +504,12 @@ export function SettingsView({
           </header>
           <div className="settings-group-body">
             <SettingRow
-              title={t.settings.cloudSaveRoot}
-              description={
-                launcherSettings.cloudSaveRoot
-                  ? t.settings.cloudSaveRootConfigured
-                  : t.settings.cloudSaveRootEmpty
-              }
+              title="Lưu trữ Cloud Save"
+              description="Launcher tự quản lý dữ liệu trong vùng riêng của Google Drive; không cần chọn thư mục thủ công."
             >
-              <div className="settings-path-control">
-                <span title={launcherSettings.cloudSaveRoot}>
-                  {launcherSettings.cloudSaveRoot || t.settings.cloudSaveNotConfigured}
-                </span>
-                <button
-                  type="button"
-                  onClick={onOpenCloudRoot}
-                  title="Open cloud save folder"
-                  disabled={!launcherSettings.cloudSaveRoot}
-                >
-                  <FolderOpen size={15} />
-                </button>
-                <button type="button" onClick={onChooseCloudRoot}>{t.settings.change}</button>
+              <div className="settings-static-value">
+                <ShieldCheck size={14} />
+                Tự động · appDataFolder
               </div>
             </SettingRow>
             <SettingRow

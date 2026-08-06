@@ -7,7 +7,7 @@
 ///      `%LOCALAPPDATA%\0xoLemon\SaveBackups\<game_id>\<timestamp>\`
 ///   3. Prunes old snapshots so at most `MAX_SNAPSHOTS` are kept.
 ///   4. Emits `launcher://save-backup-progress` events at every stage.
-///   5. After the local snapshot succeeds, attempts a Google Drive upload.
+///   5. Leaves Google Drive synchronization to the transactional Cloud Save engine.
 ///
 /// The backup directory is intentionally in %LOCALAPPDATA% so it:
 ///   - Persists across launcher reinstalls
@@ -285,71 +285,7 @@ fn do_backup(app: &AppHandle, game_id: &str, game_version: &str) -> Result<(), S
         snapshot_id: Some(snapshot_id.clone()),
     });
 
-    // ── 9. Try Google Drive upload (non-fatal if not connected) ───────────────
-    try_gdrive_upload(app, game_id, game_version, &source_paths, files_copied, total_bytes, &snapshot_id);
-
     Ok(())
-}
-
-/// Attempt to upload saves to Google Drive.
-/// If GDrive is not connected or upload fails, emits an error event but does
-/// not propagate the error (local backup is already done).
-fn try_gdrive_upload(
-    app: &AppHandle,
-    game_id: &str,
-    game_version: &str,
-    source_paths: &[PathBuf],
-    files_copied: usize,
-    total_bytes: u64,
-    snapshot_id: &str,
-) {
-    // Seed save roots into cloud-save state so backup_to_google_drive can find them
-    if let Err(e) = crate::cloud_save::seed_save_roots_for_local_backup(app, game_id, source_paths) {
-        eprintln!("[save_backup] Could not seed save roots: {e}");
-    }
-
-    // Check if GDrive is connected before attempting
-    if !crate::cloud_save::global_is_google_drive_connected(app) {
-        emit_progress(app, SaveBackupProgressEvent {
-            game_id: game_id.to_string(),
-            state: "done".to_string(),
-            message: format!(
-                "Local backup complete ({files_copied} files, {} KB). Google Drive not connected — skipped.",
-                total_bytes / 1024
-            ),
-            files_copied,
-            bytes_copied: total_bytes,
-            snapshot_id: Some(snapshot_id.to_string()),
-        });
-        return;
-    }
-
-    match crate::cloud_save::backup_to_google_drive_silent(app, game_id) {
-        Ok(()) => {
-            emit_progress(app, SaveBackupProgressEvent {
-                game_id: game_id.to_string(),
-                state: "done".to_string(),
-                message: format!(
-                    "Save backed up locally & to Google Drive ({files_copied} files)."
-                ),
-                files_copied,
-                bytes_copied: total_bytes,
-                snapshot_id: Some(snapshot_id.to_string()),
-            });
-        }
-        Err(e) => {
-            emit_progress(app, SaveBackupProgressEvent {
-                game_id: game_id.to_string(),
-                state: "error".to_string(),
-                message: format!(
-                    "Local backup OK, but Google Drive upload failed: {e}"
-                ),
-                files_copied,
-                bytes_copied: total_bytes,
-                snapshot_id: Some(snapshot_id.to_string()),
-            });
-        }
-    }
 }
 
 fn game_backup_dir(game_id: &str) -> Result<PathBuf, String> {

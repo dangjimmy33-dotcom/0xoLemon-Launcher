@@ -2208,6 +2208,7 @@ export default function App() {
     let disposed = false
     let unlistenStatus: (() => void) | undefined
     let unlistenError: (() => void) | undefined
+    let unlistenMap: (() => void) | undefined
 
     listen<{ gameId: string; status: CloudSaveStatus }>('launcher://cloud-save', (event) => {
       if (disposed) return
@@ -2231,13 +2232,30 @@ export default function App() {
       else unlistenStatus = dispose
     })
 
+    listen<{ updated: boolean; activeVersion: string; source: string; message: string }>('launcher://cloud-save-map', (event) => {
+      if (disposed || !event.payload.updated) return
+      void publishNotification({
+        category: 'cloudSaves',
+        severity: 'info',
+        title: 'Đã cập nhật nhận diện Cloud Save',
+        message: `Launcher đã kích hoạt cấu hình Save ${event.payload.activeVersion} đã được xác minh.`,
+        dedupeKey: `cloud-map:${event.payload.activeVersion}`,
+        entity: { kind: 'launcher', id: 'cloud-save-map' },
+        action: null,
+      })
+    }).then((dispose) => {
+      if (disposed) dispose()
+      else unlistenMap = dispose
+    })
+
     listen<{ gameId: string; message: string }>('launcher://cloud-save-error', (event) => {
       if (disposed) return
       if (event.payload.gameId === selectedGameIdRef.current) setScanStatus(event.payload.message)
+      const needsAction = /conflict|hỏng|corrupt|mới hơn/i.test(event.payload.message)
       void publishNotification({
-        category: 'errors',
-        severity: 'error',
-        title: 'Cloud save failed',
+        category: 'cloudSaves',
+        severity: needsAction ? 'warning' : 'info',
+        title: needsAction ? 'Cloud Save cần bạn kiểm tra' : 'Cloud Save đang chờ',
         message: event.payload.message,
         dedupeKey: `cloud-error:${event.payload.gameId}:${event.payload.message}`,
         entity: { kind: 'game', id: event.payload.gameId },
@@ -2252,6 +2270,7 @@ export default function App() {
       disposed = true
       unlistenStatus?.()
       unlistenError?.()
+      unlistenMap?.()
     }
   }, [publishNotification])
 
@@ -2534,10 +2553,6 @@ export default function App() {
   }
 
   async function toggleCloudSave(enabled: boolean) {
-    if (enabled && !launcherSettings.cloudSaveRoot) {
-      setScanStatus('Choose a Cloud Save root in Settings before enabling sync.')
-      return
-    }
     await saveCloudConfig(enabled, cloudSaveStatus?.saveRoots ?? [])
   }
 
@@ -2675,13 +2690,13 @@ export default function App() {
   async function connectAndBackupGoogleDrive() {
     if (!selectedGame || !selectedInstalled || !isTauriRuntime()) return
     setCloudSaveBusy(true)
-    setScanStatus('Opening Google sign-in in your browser...')
+    setScanStatus('Đang mở trang đăng nhập Google…')
     try {
       const connected = await invoke<CloudSaveStatus>('connect_google_drive', {
         gameId: selectedGame.id,
       })
       setCloudSaveStatus(connected)
-      setScanStatus('Google Drive connected. Backing up save files...')
+      setScanStatus('Google Drive đã kết nối. Đang bảo vệ Save hiện tại…')
 
       const backedUp = await invoke<CloudSaveStatus>('backup_save_game_to_google_drive', {
         gameId: selectedGame.id,

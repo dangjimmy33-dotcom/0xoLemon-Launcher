@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState, useCallback } from 'react'
 import { invoke } from '@tauri-apps/api/core'
-import { Cloud, CloudOff, FolderSync, TriangleAlert, Wrench, CheckCircle2, XCircle, Terminal, ChevronLeft, ShieldCheck, ShieldX, RefreshCw, Save, ChevronDown, FolderOpen, Info } from 'lucide-react'
+import { Cloud, CloudOff, FolderSync, TriangleAlert, Wrench, CheckCircle2, XCircle, Terminal, ChevronLeft, ShieldCheck, ShieldX, RefreshCw, Save, ChevronDown, FolderOpen, Info, HardDrive, DatabaseBackup, Clock3, RotateCw, Settings2 } from 'lucide-react'
 import type { CloudSaveStatus, GameCatalog, GameInstallState, CloudRedirectStatus, StfixerResult, CloudProviderConfig } from '../types'
 import { isTauriRuntime } from '../lib/gameMeta'
+import { formatBytes } from '../lib/format'
+import { cloudSavePresentation, quotaPercent } from '../lib/cloudSaveStatus'
 
 const PROVIDER_OPTIONS = [
   { value: 'gdrive', label: 'Google Drive' },
@@ -32,6 +34,7 @@ export function CloudSavesOverview({
   const [activeMode, setActiveMode] = useState<'native' | 'stfixer' | null>(null)
 
   const [nativeGoogleConnected, setNativeGoogleConnected] = useState(false)
+  const [nativeBusyMessage, setNativeBusyMessage] = useState('')
 
   // --- Cloud Save status polling ---
   useEffect(() => {
@@ -65,6 +68,16 @@ export function CloudSavesOverview({
       clearInterval(interval)
     }
   }, [installed, installedIds, onRequestAsset])
+
+  const nativeSummary = useMemo(() => {
+    const values = Object.values(statuses)
+    const pendingCount = values.reduce((sum, status) => sum + (status.pendingOperationCount || 0), 0)
+    const pendingBytes = values.reduce((sum, status) => sum + (status.pendingUploadBytes || 0), 0)
+    const quota = values.find((status) => status.quota)?.quota ?? null
+    const protectedGames = values.filter((status) => status.enabled && status.automaticProtection).length
+    const attentionGames = values.filter((status) => cloudSavePresentation(status).blocking).length
+    return { pendingCount, pendingBytes, quota, protectedGames, attentionGames }
+  }, [statuses])
 
   // --- STFixer state ---
   const [crStatus, setCrStatus] = useState<CloudRedirectStatus | null>(null)
@@ -204,6 +217,32 @@ export function CloudSavesOverview({
     }
   }
 
+  async function handleRetryPendingCloudSaves() {
+    if (!isTauriRuntime()) return
+    setNativeBusyMessage('Đang kiểm tra các tác vụ chờ…')
+    try {
+      await invoke('retry_pending_cloud_saves', { gameId: null })
+      const entries = await Promise.all(
+        installed.map(async (game) => [game.id, await invoke<CloudSaveStatus>('get_cloud_save_status', { gameId: game.id })] as const),
+      )
+      setStatuses(Object.fromEntries(entries))
+      setNativeBusyMessage('Đã kiểm tra xong. Tác vụ an toàn sẽ tiếp tục tự động.')
+    } catch (error) {
+      setNativeBusyMessage(`Chưa thể thử lại: ${String(error)}`)
+    }
+  }
+
+  async function handleRefreshCloudSaveMap() {
+    if (!isTauriRuntime()) return
+    setNativeBusyMessage('Đang xác minh cấu hình nhận diện Save…')
+    try {
+      const report = await invoke<{ message: string }>('refresh_cloud_save_map')
+      setNativeBusyMessage(report.message)
+    } catch (error) {
+      setNativeBusyMessage(`Vẫn đang dùng cấu hình ổn định trước đó: ${String(error)}`)
+    }
+  }
+
   // Compute auth display
   const authLabel = providerConfig == null
     ? 'Loading...'
@@ -233,7 +272,7 @@ export function CloudSavesOverview({
               <div className="cloud-mode-icon native-icon"><FolderSync size={36} /></div>
               <h3>
                 Cloud Save
-                <span className="cloud-mode-info" title="không cần steamtool" onClick={(e) => e.stopPropagation()}>
+                <span className="cloud-mode-info" title="Chỉ áp dụng cho game cài local qua 0xoLemon; không dùng SteamTools/Lua." onClick={(e) => e.stopPropagation()}>
                   <Info size={16} />
                 </span>
               </h3>
@@ -243,7 +282,7 @@ export function CloudSavesOverview({
               <div className="cloud-mode-icon stfixer-icon"><Wrench size={36} /></div>
               <h3>
                 STFixer
-                <span className="cloud-mode-info" title="thì có" onClick={(e) => e.stopPropagation()}>
+                <span className="cloud-mode-info" title="Chế độ riêng cho SteamTools/Lua; không dùng chung với Cloud Save local." onClick={(e) => e.stopPropagation()}>
                   <Info size={16} />
                 </span>
               </h3>
@@ -260,7 +299,7 @@ export function CloudSavesOverview({
             </button>
             <div>
               <h1>{activeMode === 'native' ? 'Cloud Save' : 'STFixer'}</h1>
-              <p>{activeMode === 'native' ? 'Backup status and conflicts for installed games.' : 'Manage STFixer patches & Cloud Provider.'}</p>
+              <p>{activeMode === 'native' ? 'Tự động bảo vệ save của game cài local bằng Google Drive.' : 'Quản lý STFixer cho game SteamTools/Lua; tách biệt với Cloud Save local.'}</p>
             </div>
           </header>
 
@@ -426,80 +465,122 @@ export function CloudSavesOverview({
           )}
 
           {activeMode === 'native' && (
-            <div className="cloud-redirect-panel">
-              <header className="cr-header">
-                <div className="cr-header-title">
-                  <FolderSync size={20} />
-                  <h2>Native Cloud Save</h2>
-                </div>
-              </header>
-              <div className="cr-body">
-                <div className="cr-form-group">
-                  <label>Google Drive Authentication</label>
-                  <div className="cr-auth-card">
-                    <div className="cr-auth-status">
-                      <strong>Authentication Status</strong>
-                      <span>{nativeGoogleConnected ? 'Connected to Google Drive.' : 'Not connected.'}</span>
-                    </div>
-                    {nativeGoogleConnected
-                      ? <ShieldCheck size={24} className="cr-auth-icon cr-auth-ok" />
-                      : <ShieldX size={24} className="cr-auth-icon cr-auth-none" />}
+            <div className="cloud-native-dashboard">
+              <section className="cloud-native-hero">
+                <div>
+                  <span className="cloud-native-hero-icon"><ShieldCheck size={22} /></span>
+                  <div>
+                    <h2>Bảo vệ Save tự động</h2>
+                    <p>Launcher tự nhận diện, sao lưu và đồng bộ trước/sau khi chơi. Người dùng không cần chọn file thủ công.</p>
                   </div>
                 </div>
-
-                <div className="cr-actions" style={{ marginTop: '20px', marginBottom: '30px' }}>
+                <div className={`cloud-native-account ${nativeGoogleConnected ? 'is-connected' : ''}`}>
+                  <span>{nativeGoogleConnected ? <CheckCircle2 size={17} /> : <CloudOff size={17} />}</span>
+                  <div>
+                    <strong>{nativeGoogleConnected ? 'Google Drive đã kết nối' : 'Chưa kết nối Google Drive'}</strong>
+                    <small>{nativeGoogleConnected ? 'Dữ liệu nằm trong vùng riêng của launcher.' : 'Save vẫn được bảo vệ cục bộ trên máy này.'}</small>
+                  </div>
                   {nativeGoogleConnected ? (
-                    <button
-                      className="cr-btn secondary cr-btn-with-icon"
-                      onClick={handleNativeDisconnectGoogle}
-                      disabled={nativeAuthBusy}
-                    >
-                      <CloudOff size={16} />
-                      Sign Out
-                    </button>
+                    <button type="button" onClick={handleNativeDisconnectGoogle} disabled={nativeAuthBusy}>Ngắt kết nối</button>
                   ) : (
-                    <button
-                      className="cr-btn primary cr-btn-with-icon"
-                      onClick={handleNativeConnectGoogle}
-                      disabled={nativeAuthBusy}
-                    >
-                      <Cloud size={16} />
-                      Sign in with Google Drive
+                    <button type="button" className="primary" onClick={handleNativeConnectGoogle} disabled={nativeAuthBusy}>
+                      <Cloud size={15} /> Kết nối
                     </button>
                   )}
                 </div>
+              </section>
 
-                <div className="cr-form-group">
-                  <label>Installed Games</label>
-                  {installed.length === 0 ? (
-                    <div className="cloud-overview-empty" style={{ marginTop: '10px' }}>
-                      <CloudOff size={28} />
-                      <strong>No installed games</strong>
-                      <span>Install games from the Library to manage their individual cloud saves.</span>
+              <section className="cloud-native-metrics" aria-label="Tổng quan Cloud Save">
+                <article>
+                  <ShieldCheck size={18} />
+                  <span><b>{nativeSummary.protectedGames}</b><small>game được bảo vệ</small></span>
+                </article>
+                <article>
+                  <Clock3 size={18} />
+                  <span><b>{nativeSummary.pendingCount}</b><small>Đang chờ đồng bộ</small></span>
+                </article>
+                <article className={nativeSummary.attentionGames ? 'needs-attention' : ''}>
+                  <TriangleAlert size={18} />
+                  <span><b>{nativeSummary.attentionGames}</b><small>cần bạn kiểm tra</small></span>
+                </article>
+                <article>
+                  <DatabaseBackup size={18} />
+                  <span><b>{formatBytes(nativeSummary.pendingBytes)}</b><small>đang bảo vệ trên máy</small></span>
+                </article>
+              </section>
+
+              {nativeSummary.quota ? (
+                <section className={`cloud-native-quota is-${nativeSummary.quota.state}`}>
+                  <div>
+                    <HardDrive size={18} />
+                    <span>
+                      <strong>Dung lượng Google Drive</strong>
+                      <small>
+                        {nativeSummary.quota.availableBytes == null
+                          ? `${formatBytes(nativeSummary.quota.usageBytes)} đã dùng`
+                          : `${formatBytes(nativeSummary.quota.availableBytes)} còn trống`}
+                      </small>
+                    </span>
+                  </div>
+                  {quotaPercent(nativeSummary.quota) != null ? (
+                    <div className="cloud-native-quota-bar">
+                      <span style={{ width: `${quotaPercent(nativeSummary.quota)}%` }} />
                     </div>
-                  ) : (
-                    <div className="cloud-overview-list" style={{ marginTop: '10px' }}>
-                      {installed.map((game) => {
-                        const status = statuses[game.id]
-                        const hasConflict = Boolean(status?.conflicts.length)
-                        return (
-                          <button type="button" key={game.id} onClick={() => onOpenGame(game.id)}>
-                            {assets[game.gridAssetId] ? <img src={assets[game.gridAssetId]} alt="" /> : <div />}
-                            <span>
-                              <strong>{game.title}</strong>
-                              <small>{status?.lastMessage || (status?.enabled ? 'Cloud save ready' : 'Cloud save is disabled')}</small>
-                            </span>
-                            <em className={hasConflict ? 'is-conflict' : status?.enabled ? 'is-ready' : ''}>
-                              {hasConflict ? <TriangleAlert size={15} /> : <FolderSync size={15} />}
-                              {hasConflict ? `${status.conflicts.length} conflict${status.conflicts.length === 1 ? '' : 's'}` : status?.enabled ? 'Enabled' : 'Disabled'}
-                            </em>
-                          </button>
-                        )
-                      })}
-                    </div>
-                  )}
+                  ) : null}
+                </section>
+              ) : null}
+
+              <section className="cloud-native-toolbar">
+                <div>
+                  <button type="button" className="primary" onClick={() => void handleRetryPendingCloudSaves()} disabled={!nativeGoogleConnected || nativeAuthBusy}>
+                    <RotateCw size={15} /> Thử lại tác vụ chờ
+                  </button>
+                  <button type="button" onClick={() => void handleRefreshCloudSaveMap()} disabled={nativeAuthBusy}>
+                    <Settings2 size={15} /> Cập nhật nhận diện Save
+                  </button>
                 </div>
-              </div>
+                {nativeBusyMessage ? <p role="status" aria-live="polite">{nativeBusyMessage}</p> : null}
+              </section>
+
+              <section className="cloud-native-games">
+                <header>
+                  <div>
+                    <h3>Game đã cài</h3>
+                    <p>Mỗi game dùng đường dẫn Save đã được xác minh; chỉ hiện chi tiết kỹ thuật khi cần.</p>
+                  </div>
+                </header>
+                {installed.length === 0 ? (
+                  <div className="cloud-overview-empty">
+                    <CloudOff size={28} />
+                    <strong>Chưa có game local</strong>
+                    <span>Cloud Save sẽ tự xuất hiện sau khi bạn cài game bằng launcher.</span>
+                  </div>
+                ) : (
+                  <div className="cloud-overview-list cloud-native-game-list">
+                    {installed.map((game) => {
+                      const status = statuses[game.id]
+                      const view = cloudSavePresentation(status ?? null)
+                      return (
+                        <button type="button" key={game.id} onClick={() => onOpenGame(game.id)}>
+                          {assets[game.gridAssetId] ? <img src={assets[game.gridAssetId]} alt="" /> : <div className="cloud-game-placeholder" />}
+                          <span className="cloud-game-copy">
+                            <strong>{game.title}</strong>
+                            <small>{status?.lastMessage || view.description}</small>
+                            <span className="cloud-game-meta">
+                              {status?.pendingOperationCount ? `Đang chờ đồng bộ · ${formatBytes(status.pendingUploadBytes)}` : 'Được bảo vệ trên máy này'}
+                              {status?.lastSyncAt ? ` · ${new Date(status.lastSyncAt).toLocaleString('vi-VN')}` : ''}
+                            </span>
+                          </span>
+                          <em className={`cloud-game-state tone-${view.tone}`}>
+                            {view.tone === 'danger' ? <TriangleAlert size={15} /> : view.tone === 'success' ? <CheckCircle2 size={15} /> : <FolderSync size={15} />}
+                            {view.title}
+                          </em>
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+              </section>
             </div>
           )}
         </>

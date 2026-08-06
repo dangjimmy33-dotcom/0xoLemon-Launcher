@@ -65,6 +65,21 @@ impl ProcessManager {
             }
         }
 
+        // Protect and reconcile the local save before the game starts. Transient
+        // Drive failures are handled offline-first by the Cloud Save engine; only
+        // a real two-sided conflict or a reliably known newer remote save blocks launch.
+        if let Err(error) = crate::cloud_save::sync_before_launch(&app, &game_id) {
+            if error.starts_with("CLOUD_SAVE_CONFLICT:")
+                || error.starts_with("CLOUD_SAVE_REMOTE_NEWER:")
+            {
+                return Err(error);
+            }
+            let _ = app.emit(
+                "launcher://cloud-save-error",
+                serde_json::json!({ "gameId": &game_id, "message": error }),
+            );
+        }
+
         // --- Steam Emulator injection ---
         // Determine if game exe is 64-bit or 32-bit, then copy the matching DLL.
         let game_dir = executable.parent().unwrap_or(install_path);
@@ -148,6 +163,7 @@ impl ProcessManager {
             .lock()
             .map_err(|_| "process manager lock poisoned".to_string())?
             .insert(game_id.clone(), running_info);
+        crate::cloud_save::mark_game_running(&game_id, true);
         let _ = app.emit("launcher://game-started", started_event);
         platform::emit_achievement_events(&app, &achievement_events);
 
@@ -160,6 +176,7 @@ impl ProcessManager {
                     running.remove(&game_id);
                 }
             }
+            crate::cloud_save::mark_game_running(&game_id, false);
             match platform::end_game_session(
                 &app,
                 &game_id,
@@ -175,6 +192,7 @@ impl ProcessManager {
                     let _ = app.emit("launcher://runtime-error", error);
                 }
             }
+            crate::cloud_save::sync_after_exit_async(app.clone(), game_id.clone());
         });
 
         Ok(pid)

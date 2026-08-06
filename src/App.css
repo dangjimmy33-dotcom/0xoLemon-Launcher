@@ -9038,3 +9038,811 @@ button:disabled {
     transition: none;
   }
 }
+
+/* =========================================================
+   Cloud Save v2 — restrained native launcher presentation
+   ========================================================= */
+.cloud-protection-status {
+  --cloud-surface: #11161b;
+  --cloud-surface-raised: #161c22;
+  --cloud-surface-soft: #0d1216;
+  --cloud-border: rgba(255, 255, 255, 0.085);
+  --cloud-border-strong: rgba(255, 255, 255, 0.14);
+  --cloud-accent: var(--gold, #e5b75b);
+  --cloud-success: #72bd7a;
+  --cloud-warning: #e4b45d;
+  --cloud-danger: #e17770;
+  position: relative;
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid var(--cloud-border);
+  border-radius: 10px;
+  background: var(--cloud-surface);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.24);
+}
+
+.cloud-protection-status::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: #65717b;
+}
+
+.cloud-protection-status.tone-success::before { background: var(--cloud-success); }
+.cloud-protection-status.tone-warning::before { background: var(--cloud-warning); }
+.cloud-protection-status.tone-danger::before { background: var(--cloud-danger); }
+.cloud-protection-status.tone-info::before { background: #6eaed5; }
+
+.cloud-save-panel-header {
+  min-height: 62px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 13px 15px 13px 17px;
+  border-bottom: 1px solid var(--cloud-border);
+  background: #13191e;
+}
+
+.cloud-save-heading {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.cloud-save-heading-icon,
+.cloud-native-hero-icon,
+.cloud-overview-icon,
+.cloud-mode-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  color: var(--cloud-accent, var(--gold));
+  border: 1px solid rgba(229, 183, 91, 0.24);
+  background: #1b1c19;
+}
+
+.cloud-save-heading-icon {
+  width: 35px;
+  height: 35px;
+  border-radius: 8px;
+}
+
+.cloud-save-heading > div {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.cloud-save-heading strong {
+  color: var(--text-strong);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.cloud-save-heading small {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cloud-save-primary-status {
+  min-height: 72px;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  margin: 14px 14px 0 16px;
+  padding: 12px;
+  border: 1px solid var(--cloud-border);
+  border-radius: 8px;
+  background: var(--cloud-surface-raised);
+}
+
+.cloud-save-status-icon {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  color: #aab4bc;
+  background: #0e1317;
+}
+
+.tone-success .cloud-save-status-icon { color: var(--cloud-success); }
+.tone-warning .cloud-save-status-icon { color: var(--cloud-warning); }
+.tone-danger .cloud-save-status-icon { color: var(--cloud-danger); }
+.tone-info .cloud-save-status-icon { color: #76b6dc; }
+
+.cloud-save-primary-status > div {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.cloud-save-primary-status strong {
+  color: var(--text-strong);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.cloud-save-primary-status p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.cloud-save-pending-chip,
+.cloud-game-state {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  padding: 0 9px;
+  border: 1px solid rgba(228, 180, 93, 0.26);
+  border-radius: 999px;
+  color: #d9ba7d;
+  background: #1b1915;
+  font-size: 9px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.cloud-save-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  margin: 10px 14px 0 16px;
+  overflow: hidden;
+  border: 1px solid var(--cloud-border);
+  border-radius: 8px;
+  background: var(--cloud-border);
+}
+
+.cloud-save-facts > div {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px;
+  color: #89959e;
+  background: var(--cloud-surface-soft);
+}
+
+.cloud-save-facts span {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.cloud-save-facts b,
+.cloud-save-facts small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cloud-save-facts b {
+  color: var(--text-strong);
+  font-size: 10px;
+}
+
+.cloud-save-facts small {
+  color: var(--muted);
+  font-size: 8px;
+}
+
+.cloud-quota-strip {
+  display: grid;
+  gap: 8px;
+  margin: 10px 14px 0 16px;
+  padding: 10px 11px;
+  border: 1px solid var(--cloud-border);
+  border-radius: 8px;
+  background: var(--cloud-surface-soft);
+}
+
+.cloud-quota-strip > div:first-child {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.cloud-quota-strip strong {
+  color: var(--text-strong);
+  font-size: 10px;
+}
+
+.cloud-quota-strip.is-low { border-color: rgba(228, 180, 93, 0.28); }
+.cloud-quota-strip.is-full { border-color: rgba(225, 119, 112, 0.38); }
+
+.cloud-quota-meter,
+.cloud-native-quota-bar {
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #080c0f;
+}
+
+.cloud-quota-meter > span,
+.cloud-native-quota-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--cloud-success);
+  transition: width 220ms ease;
+}
+
+.cloud-quota-strip.is-low .cloud-quota-meter > span { background: var(--cloud-warning); }
+.cloud-quota-strip.is-full .cloud-quota-meter > span { background: var(--cloud-danger); }
+
+.cloud-save-main-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding: 12px 14px 14px 16px;
+}
+
+.cloud-save-main-actions > button,
+.cloud-conflict-actions > button,
+.cloud-save-latest-backup > button,
+.cloud-snapshot-row > button,
+.cloud-native-toolbar > button,
+.cloud-native-hero button {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 11px;
+  border: 1px solid var(--cloud-border-strong);
+  border-radius: 7px;
+  color: #c4cbd0;
+  background: #181e23;
+  font-size: 10px;
+  font-weight: 750;
+  cursor: pointer;
+  transition: border-color 140ms ease, background 140ms ease, color 140ms ease;
+}
+
+.cloud-save-main-actions > button:hover:not(:disabled),
+.cloud-conflict-actions > button:hover:not(:disabled),
+.cloud-save-latest-backup > button:hover:not(:disabled),
+.cloud-snapshot-row > button:hover:not(:disabled),
+.cloud-native-toolbar > button:hover:not(:disabled),
+.cloud-native-hero button:hover:not(:disabled) {
+  border-color: rgba(229, 183, 91, 0.34);
+  color: var(--text-strong);
+  background: #20262b;
+}
+
+.cloud-save-main-actions > button.primary,
+.cloud-conflict-actions > button.primary,
+.cloud-native-toolbar > button.primary,
+.cloud-native-hero button.primary {
+  border-color: rgba(229, 183, 91, 0.46);
+  color: #17130c;
+  background: var(--cloud-accent);
+}
+
+.cloud-save-main-actions > button:disabled,
+.cloud-conflict-actions > button:disabled,
+.cloud-save-latest-backup > button:disabled,
+.cloud-snapshot-row > button:disabled,
+.cloud-native-toolbar > button:disabled,
+.cloud-native-hero button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.cloud-conflict {
+  margin: 0 14px 12px 16px;
+  padding: 13px;
+  border-color: rgba(228, 180, 93, 0.34);
+  border-radius: 8px;
+  color: var(--cloud-warning);
+  background: #1a1814;
+}
+
+.cloud-conflict-body {
+  min-width: 0;
+  display: grid;
+  gap: 9px;
+}
+
+.cloud-conflict-body > strong {
+  color: #f0d29b;
+  font-size: 12px;
+}
+
+.cloud-conflict-body > p {
+  margin: 0;
+  color: #b7aa91;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.cloud-conflict-compare {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px !important;
+}
+
+.cloud-conflict-compare > span {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+  padding: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 7px;
+  color: var(--muted);
+  background: #111518;
+  font-size: 9px;
+}
+
+.cloud-conflict-compare b {
+  color: var(--text-strong);
+  font-size: 10px;
+}
+
+.cloud-conflict-actions {
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 7px !important;
+}
+
+.cloud-launch-anyway {
+  min-height: 34px;
+  margin: 0 14px 12px 16px;
+  padding: 0 12px;
+  border: 1px solid rgba(228, 180, 93, 0.3);
+  border-radius: 7px;
+  color: #dfc48c;
+  background: #181611;
+  font-size: 9px;
+  font-weight: 750;
+}
+
+.cloud-save-latest-backup {
+  min-height: 54px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  margin: 0 14px 12px 16px;
+  padding: 10px 11px;
+  border: 1px solid var(--cloud-border);
+  border-radius: 8px;
+  color: #89959e;
+  background: var(--cloud-surface-soft);
+}
+
+.cloud-save-latest-backup > span {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.cloud-save-latest-backup b,
+.cloud-save-latest-backup small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cloud-save-latest-backup b { color: var(--text-strong); font-size: 10px; }
+.cloud-save-latest-backup small { color: var(--muted); font-size: 8px; }
+
+.cloud-save-advanced-toggle {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: calc(100% - 30px);
+  margin: 0 14px 14px 16px;
+  padding: 0 11px;
+  border: 1px solid var(--cloud-border);
+  border-radius: 7px;
+  color: #aeb7bd;
+  background: #101519;
+  font-size: 9px;
+  font-weight: 750;
+}
+
+.cloud-save-advanced-toggle svg {
+  transition: transform 160ms ease;
+}
+
+.cloud-save-advanced-toggle svg.is-open { transform: rotate(90deg); }
+
+.cloud-save-advanced {
+  display: grid;
+  gap: 10px;
+  margin: -4px 14px 14px 16px;
+  padding: 12px;
+  border: 1px solid var(--cloud-border);
+  border-radius: 8px;
+  background: #0c1115;
+}
+
+.cloud-save-advanced > section {
+  min-width: 0;
+  display: grid;
+  gap: 7px;
+}
+
+.cloud-save-advanced > section + section {
+  padding-top: 11px;
+  border-top: 1px solid var(--cloud-border);
+}
+
+.cloud-advanced-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #c6cdd2;
+}
+
+.cloud-advanced-title strong { font-size: 10px; }
+.cloud-save-advanced p { margin: 0; color: var(--muted); font-size: 9px; line-height: 1.45; }
+.cloud-save-advanced small { color: #707c84; font-size: 8px; }
+
+.cloud-save-roots > span.is-legacy {
+  border-color: rgba(228, 180, 93, 0.24);
+  color: #d6bc89;
+  background: #191712;
+}
+
+.cloud-snapshot-row {
+  min-height: 42px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  border: 1px solid var(--cloud-border);
+  border-radius: 7px;
+  background: #11161a;
+}
+
+.cloud-snapshot-row > span {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.cloud-snapshot-row b,
+.cloud-snapshot-row small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cloud-snapshot-row b { color: var(--text-strong); font-size: 9px; }
+.cloud-snapshot-row small { color: var(--muted); font-size: 8px; }
+.cloud-snapshot-row > button { min-height: 27px; padding: 0 8px; }
+
+/* Native Cloud Save hub */
+.cloud-native-dashboard {
+  min-height: 100%;
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  padding: 0 32px 32px;
+}
+
+.cloud-native-hero {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 15px;
+  padding: 17px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.085);
+  border-radius: 10px;
+  background: #11161b;
+}
+
+.cloud-native-hero-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 9px;
+}
+
+.cloud-native-hero-icon.is-connected {
+  color: #79c282;
+  border-color: rgba(114, 189, 122, 0.28);
+  background: #151c17;
+}
+
+.cloud-native-hero > div:not(.cloud-native-hero-icon) {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.cloud-native-hero h2,
+.cloud-native-hero p {
+  margin: 0;
+}
+
+.cloud-native-hero h2 {
+  color: var(--text-strong);
+  font-size: 16px;
+}
+
+.cloud-native-hero p {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.cloud-native-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.cloud-native-metrics > div {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+  padding: 12px 13px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 8px;
+  background: #101519;
+}
+
+.cloud-native-metrics > div.needs-attention {
+  border-color: rgba(228, 180, 93, 0.28);
+  background: #171611;
+}
+
+.cloud-native-metrics span {
+  color: var(--muted);
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.cloud-native-metrics strong {
+  overflow: hidden;
+  color: var(--text-strong);
+  font-size: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cloud-native-metrics small { color: #77828a; font-size: 8px; }
+
+.cloud-native-quota {
+  display: grid;
+  gap: 8px;
+  padding: 12px 13px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 8px;
+  background: #101519;
+}
+
+.cloud-native-quota > div:first-child {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.cloud-native-quota strong { color: var(--text-strong); font-size: 10px; }
+
+.cloud-native-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.cloud-native-toolbar > span {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.cloud-native-games {
+  display: grid;
+  gap: 10px;
+}
+
+.cloud-native-games > header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 2px;
+}
+
+.cloud-native-games h2,
+.cloud-native-games p { margin: 0; }
+.cloud-native-games h2 { color: var(--text-strong); font-size: 14px; }
+.cloud-native-games p { color: var(--muted); font-size: 9px; }
+
+.cloud-native-game-list {
+  display: grid;
+  gap: 7px;
+}
+
+.cloud-native-game-list > article,
+.cloud-overview-list > article {
+  min-height: 66px;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 8px;
+  background: #11161a;
+  transition: border-color 140ms ease, background 140ms ease;
+}
+
+.cloud-native-game-list > article:hover,
+.cloud-overview-list > article:hover {
+  border-color: rgba(229, 183, 91, 0.2);
+  background: #151b20;
+}
+
+.cloud-game-placeholder {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: #82909a;
+  background: #0c1115;
+}
+
+.cloud-game-copy {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.cloud-game-copy strong,
+.cloud-game-copy span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cloud-game-copy strong { color: var(--text-strong); font-size: 11px; }
+.cloud-game-copy span { color: var(--muted); font-size: 9px; }
+
+.cloud-game-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: #737f87;
+  font-size: 8px;
+}
+
+.cloud-overview-empty {
+  min-height: 160px;
+  display: grid;
+  place-items: center;
+  gap: 7px;
+  padding: 24px;
+  border: 1px dashed rgba(255, 255, 255, 0.09);
+  border-radius: 9px;
+  color: var(--muted);
+  background: #0e1317;
+  text-align: center;
+}
+
+.cloud-mode-selection {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 18px 32px 32px;
+}
+
+.cloud-mode-card {
+  min-height: 118px;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  align-items: center;
+  gap: 13px;
+  padding: 17px;
+  border: 1px solid rgba(255, 255, 255, 0.085);
+  border-radius: 10px;
+  color: inherit;
+  background: #11161b;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 140ms ease, background 140ms ease;
+}
+
+.cloud-mode-card:hover {
+  border-color: rgba(229, 183, 91, 0.28);
+  background: #151b20;
+}
+
+.cloud-mode-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+}
+
+.cloud-mode-info { min-width: 0; display: grid; gap: 5px; }
+.cloud-mode-info strong { color: var(--text-strong); font-size: 13px; }
+.cloud-mode-info span { color: var(--muted); font-size: 9px; line-height: 1.45; }
+
+@media (max-width: 980px) {
+  .cloud-save-primary-status { grid-template-columns: 38px minmax(0, 1fr); }
+  .cloud-save-pending-chip { grid-column: 2; justify-self: start; }
+  .cloud-save-facts { grid-template-columns: 1fr; }
+  .cloud-native-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 720px) {
+  .cloud-save-panel-header,
+  .cloud-native-hero { align-items: stretch; grid-template-columns: 1fr; }
+  .cloud-save-panel-header { flex-direction: column; }
+  .cloud-save-toggle { margin-left: 0; }
+  .cloud-save-primary-status { grid-template-columns: 34px minmax(0, 1fr); margin-inline: 12px; }
+  .cloud-save-facts,
+  .cloud-quota-strip,
+  .cloud-conflict,
+  .cloud-save-latest-backup,
+  .cloud-save-advanced,
+  .cloud-save-advanced-toggle,
+  .cloud-launch-anyway { margin-inline: 12px; }
+  .cloud-save-main-actions { padding-inline: 12px; }
+  .cloud-conflict-compare { grid-template-columns: 1fr; }
+  .cloud-save-latest-backup { grid-template-columns: auto minmax(0, 1fr); }
+  .cloud-save-latest-backup > button { grid-column: 1 / -1; }
+  .cloud-native-dashboard { padding-inline: 16px; }
+  .cloud-native-metrics,
+  .cloud-mode-selection { grid-template-columns: 1fr; }
+  .cloud-native-game-list > article,
+  .cloud-overview-list > article { grid-template-columns: 40px minmax(0, 1fr); }
+  .cloud-game-state { grid-column: 2; justify-self: start; }
+  .cloud-native-toolbar > span { width: 100%; margin-left: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cloud-quota-meter > span,
+  .cloud-native-quota-bar > span,
+  .cloud-save-advanced-toggle svg,
+  .cloud-native-game-list > article,
+  .cloud-overview-list > article,
+  .cloud-mode-card,
+  .cloud-save-main-actions > button,
+  .cloud-conflict-actions > button {
+    transition: none !important;
+  }
+}
+
+.cloud-conflict-reason {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 2px 0 12px;
+  color: rgba(235, 239, 244, 0.78);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.cloud-conflict-reason svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: #d8b45a;
+}

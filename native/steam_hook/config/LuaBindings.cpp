@@ -358,11 +358,14 @@ int Bind_fetchManifestCodeEx(lua_State* L) {
     }
 
     // ── setManifestid(depotId, gidString [, size]) ──────────────────────
-    // The optional `size` is intentionally ignored — Steam rejects manifests
-    // when the size doesn't line up with what the depot reports, so we force
-    // 0 and let Steam fill it in.
+    // Pins depot `depotId` to manifest `gid` to prevent Steam from updating
+    // it or to allow downgrading to a specific version.
+    // Optional `size`: if 0 or omitted, Steam keeps the original depot size
+    // in UI (doesn't affect the actual download). If provided and >0, the
+    // override size is used instead (matches OpenSteamTool behavior).
     int Bind_setManifestid(lua_State* L) {
-        if (lua_gettop(L) < 2) {
+        const int argc = lua_gettop(L);
+        if (argc < 2) {
             return luaL_error(L, "setManifestid: need depotId, gid");
         }
 
@@ -377,7 +380,15 @@ int Bind_fetchManifestCodeEx(lua_State* L) {
             return luaL_error(L, "setManifestid: gid must be a decimal uint64");
         }
 
-        ManifestOverrides[depotId] = { parsedGid, 0 };
+        // Optional 3rd arg: explicit size. 0 (default) means keep Steam's original.
+        uint64_t size = 0;
+        if (argc >= 3 && lua_type(L, 3) == LUA_TNUMBER) {
+            lua_Number n = lua_tonumber(L, 3);
+            if (n > 0) size = static_cast<uint64_t>(n);
+        }
+
+        ManifestOverrides[depotId] = { parsedGid, size };
+        LOG_LUA_INFO("setManifestid: depot={} gid={} size={}", depotId, parsedGid, size);
         return 0;
     }
 
