@@ -115,6 +115,10 @@ const VERIFY_READ_BUFFER_BYTES: usize = 4 * 1024 * 1024;
 const DOWNLOAD_CHECKPOINT_BYTES: u64 = 64 * 1024 * 1024;
 const DOWNLOAD_CHECKPOINT_MIN_INTERVAL: Duration = Duration::from_secs(1);
 const DOWNLOAD_CHECKPOINT_MAX_INTERVAL: Duration = Duration::from_secs(5);
+const SEQUENTIAL_PREFETCH_MAX_FILES: usize = 256;
+const SEQUENTIAL_COMMIT_BATCH_FILES: usize = 256;
+const JOB_UI_EMIT_INTERVAL: Duration = Duration::from_millis(200);
+const JOB_JOURNAL_PERSIST_INTERVAL: Duration = Duration::from_secs(2);
 const CIRCUIT_BREAKER_FAILURES: u32 = 3;
 const CIRCUIT_BREAKER_COOLDOWN: Duration = Duration::from_secs(30);
 
@@ -249,6 +253,8 @@ impl JobError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LauncherSnapshot {
+    #[serde(default = "default_game_id_string")]
+    pub game_id: String,
     pub current_version: String,
     pub latest_version: String,
     pub available_versions: Vec<String>,
@@ -724,6 +730,7 @@ pub fn snapshot(app: &AppHandle) -> Result<LauncherSnapshot, JobError> {
     };
 
     Ok(LauncherSnapshot {
+        game_id: source.game_id.clone(),
         current_version,
         latest_version,
         available_versions,
@@ -865,6 +872,7 @@ pub fn snapshot_for_fresh_install_cancellable(
     ensure_plan_not_canceled(canceled)?;
     let temporary_space = planned_temporary_space(&manifest.files, update_size);
     Ok(LauncherSnapshot {
+        game_id: source.game_id.clone(),
         current_version: "not installed".to_string(),
         latest_version: catalog
             .effective_latest_version()
@@ -954,6 +962,7 @@ pub fn snapshot_for_install_cancellable(
     let cache_free_space = downloading_cache_free_space(install_path, &source);
 
     Ok(LauncherSnapshot {
+        game_id: source.game_id.clone(),
         current_version,
         latest_version,
         available_versions: catalog_versions(Some(&catalog)),
@@ -2649,7 +2658,7 @@ fn run_real_update_job_once(
 
     journal.steps[2].name = "Stream update".to_string();
     journal.steps[2].detail =
-        "Download verified chunks and append them to short staging files".to_string();
+        "Prefetch verified chunks across files and append them to short staging files".to_string();
     set_step_running(
         app,
         &mut journal,
@@ -2664,15 +2673,30 @@ fn run_real_update_job_once(
     let mut downloaded = 0_u64;
     let mut assembled = 0_u64;
     let mut in_flight = HashMap::<String, u64>::new();
-    let mut last_emit = Instant::now();
+    let mut last_ui_emit = Instant::now();
+    let mut last_journal_persist = Instant::now();
+    let mut pending_commit_files = Vec::<FileEntry>::new();
+    let mut pending_commit_bytes = 0_u64;
+    let mut prefetched_through = 0_usize;
+    let mut committed_files = 0_usize;
 
     for (file_index, file) in changed.iter().enumerate() {
         wait_for_control(app, &control, &mut journal, 2)?;
-        append_log(
-            &mut journal,
-            "info",
-            &format!("Streaming verified chunks for {}", file.path),
-        );
+        if file_index == 0
+            || file_index.saturating_add(1) == changed.len()
+            || file_index % 64 == 0
+        {
+            append_log(
+                &mut journal,
+                "info",
+                &format!(
+                    "Streaming file {}/{}: {}",
+                    file_index.saturating_add(1),
+                    changed.len(),
+                    file.path
+                ),
+            );
+        }
         let mut writer = session.open_writer(file)?;
         let mut checkpointed_hashes = Vec::<String>::new();
 
@@ -2688,8 +2712,30 @@ fn run_real_update_job_once(
             )?;
             let mut batch_file = file.clone();
             batch_file.chunks = file.chunks[batch_start..batch_end].to_vec();
-            let batch_missing =
-                plan_missing_chunks(&local_sources, session.cache_root(), &[batch_file], None)?;
+            let current_file_complete = batch_end == file.chunks.len();
+            let should_refill_prefetch =
+                current_file_complete && file_index.saturating_add(1) >= prefetched_through;
+            let prefetch_files = if should_refill_prefetch {
+                let (files, through) = sequential_prefetch_files(
+                    &changed,
+                    file_index,
+                    batch_file,
+                    &local_sources,
+                    session.cache_root(),
+                    &session,
+                    queue_budget,
+                )?;
+                prefetched_through = prefetched_through.max(through);
+                files
+            } else {
+                vec![batch_file]
+            };
+            let batch_missing = plan_missing_chunks(
+                &local_sources,
+                session.cache_root(),
+                &prefetch_files,
+                None,
+            )?;
 
             if !batch_missing.is_empty() {
                 let assembled_snapshot = assembled;
@@ -2716,7 +2762,13 @@ fn run_real_update_job_once(
                     journal.steps[2].retry_count =
                         journal.steps[2].retry_count.max(progress.retry_count);
                     touch(&mut journal);
-                    persist_and_emit(app, &journal)
+                    publish_job_progress(
+                        app,
+                        &journal,
+                        &mut last_ui_emit,
+                        &mut last_journal_persist,
+                        false,
+                    )
                 };
                 source.download_chunks_to_store_parallel(
                     session.cache_root(),
@@ -2739,7 +2791,7 @@ fn run_real_update_job_once(
                     session.checkpoint_writer(&mut writer, false)?;
                     session.release_checkpointed_chunks(&mut checkpointed_hashes)?;
                 }
-                if last_emit.elapsed() >= Duration::from_millis(200) {
+                if last_ui_emit.elapsed() >= JOB_UI_EMIT_INTERVAL {
                     journal.steps[2].progress = streamed_update_progress(
                         journal.bytes_done,
                         journal.bytes_total,
@@ -2748,35 +2800,58 @@ fn run_real_update_job_once(
                     );
                     journal.overall_progress = overall_progress(2, journal.steps[2].progress);
                     touch(&mut journal);
-                    persist_and_emit(app, &journal)?;
-                    last_emit = Instant::now();
+                    publish_job_progress(
+                        app,
+                        &journal,
+                        &mut last_ui_emit,
+                        &mut last_journal_persist,
+                        false,
+                    )?;
                 }
             }
 
-            session.checkpoint_writer(&mut writer, false)?;
-            session.release_checkpointed_chunks(&mut checkpointed_hashes)?;
+            if writer.next_chunk() < file.chunks.len() {
+                session.checkpoint_writer(&mut writer, false)?;
+                session.release_checkpointed_chunks(&mut checkpointed_hashes)?;
+            }
         }
 
         session.finish_writer(&mut writer, file)?;
+        session.release_checkpointed_chunks(&mut checkpointed_hashes)?;
         drop(writer);
-        let target = safe_join(&install_root, &file.path)
-            .ok_or_else(|| JobError::Depot(format!("unsafe manifest path: {}", file.path)))?;
-        if let Some((old_target, backup)) = session.commit_file(&install_root, file)? {
-            for source in local_sources.values_mut() {
-                if same_filesystem_path(&source.path, &old_target) {
-                    source.path = backup.clone();
-                }
-            }
-        }
+        let stage = session.stage_path(file);
         for chunk in &file.chunks {
             local_sources.insert(
                 chunk.hash.clone(),
                 LocalChunkSource {
-                    path: target.clone(),
+                    path: stage.clone(),
                     offset: chunk.file_offset,
                     size: chunk.uncompressed_size,
                 },
             );
+        }
+        pending_commit_bytes = pending_commit_bytes.saturating_add(file.size);
+        pending_commit_files.push(file.clone());
+
+        let commit_due = pending_commit_files.len() >= SEQUENTIAL_COMMIT_BATCH_FILES
+            || pending_commit_bytes >= queue_budget
+            || file_index + 1 == changed.len();
+        if commit_due {
+            append_log(
+                &mut journal,
+                "info",
+                &format!(
+                    "Durably committing {} staged files",
+                    pending_commit_files.len()
+                ),
+            );
+            committed_files = committed_files.saturating_add(commit_sequential_batch(
+                &mut session,
+                &install_root,
+                &mut pending_commit_files,
+                &mut local_sources,
+            )?);
+            pending_commit_bytes = 0;
         }
         journal.steps[2].progress = streamed_update_progress(
             journal.bytes_done,
@@ -2784,10 +2859,16 @@ fn run_real_update_job_once(
             assembled,
             assembly_total,
         );
-        journal.steps[3].progress = progress_fraction(file_index + 1, changed.len());
+        journal.steps[3].progress = progress_fraction(committed_files, changed.len());
         journal.overall_progress = overall_progress(2, journal.steps[2].progress);
         touch(&mut journal);
-        persist_and_emit(app, &journal)?;
+        publish_job_progress(
+            app,
+            &journal,
+            &mut last_ui_emit,
+            &mut last_journal_persist,
+            file_index + 1 == changed.len(),
+        )?;
     }
     complete_step(app, &mut journal, 2)?;
 
@@ -2808,6 +2889,7 @@ fn run_real_update_job_once(
         &target_manifest,
         &target_version,
     )?;
+    session.prepare_obsolete_batch(&install_root, &obsolete_paths)?;
     for (index, relative_path) in obsolete_paths.iter().enumerate() {
         wait_for_control(app, &control, &mut journal, 3)?;
         session.backup_obsolete_file(&install_root, relative_path)?;
@@ -2896,6 +2978,126 @@ fn sequential_batch_end(
     Ok(end.max(start.saturating_add(1)).min(file.chunks.len()))
 }
 
+fn sequential_prefetch_files(
+    changed: &[FileEntry],
+    file_index: usize,
+    current_batch: FileEntry,
+    local_sources: &HashMap<String, LocalChunkSource>,
+    cache_root: &Path,
+    session: &SequentialUpdateSession,
+    queue_budget: u64,
+) -> Result<(Vec<FileEntry>, usize), JobError> {
+    let mut seen = HashSet::<String>::new();
+    let mut network_bytes = 0_u64;
+    for chunk in &current_batch.chunks {
+        if !seen.insert(chunk.hash.clone()) || local_sources.contains_key(&chunk.hash) {
+            continue;
+        }
+        let staged = staged_chunk_path_from(cache_root, &chunk.hash);
+        if !compressed_chunk_file_valid(&staged, chunk)? {
+            network_bytes = network_bytes.saturating_add(chunk.compressed_size);
+        }
+    }
+
+    let mut window = vec![current_batch];
+    let mut prefetched_through = file_index.saturating_add(1);
+    if network_bytes >= queue_budget {
+        return Ok((window, prefetched_through));
+    }
+
+    for (future_index, future) in changed
+        .iter()
+        .enumerate()
+        .skip(file_index.saturating_add(1))
+        .take(SEQUENTIAL_PREFETCH_MAX_FILES.saturating_sub(1))
+    {
+        let durable = session.durable_chunks(future);
+        if durable >= future.chunks.len() {
+            prefetched_through = future_index.saturating_add(1);
+            continue;
+        }
+
+        let mut candidate_hashes = HashSet::<String>::new();
+        let mut candidate_bytes = 0_u64;
+        for chunk in future.chunks.iter().skip(durable) {
+            if seen.contains(&chunk.hash)
+                || !candidate_hashes.insert(chunk.hash.clone())
+                || local_sources.contains_key(&chunk.hash)
+            {
+                continue;
+            }
+            let staged = staged_chunk_path_from(cache_root, &chunk.hash);
+            if !compressed_chunk_file_valid(&staged, chunk)? {
+                candidate_bytes = candidate_bytes.saturating_add(chunk.compressed_size);
+            }
+        }
+
+        if candidate_bytes > 0
+            && network_bytes.saturating_add(candidate_bytes) > queue_budget
+        {
+            break;
+        }
+
+        network_bytes = network_bytes.saturating_add(candidate_bytes);
+        seen.extend(candidate_hashes);
+        let mut remaining = future.clone();
+        remaining.chunks = future.chunks[durable..].to_vec();
+        window.push(remaining);
+        prefetched_through = future_index.saturating_add(1);
+        if network_bytes >= queue_budget {
+            break;
+        }
+    }
+
+    Ok((window, prefetched_through))
+}
+
+fn commit_sequential_batch(
+    session: &mut SequentialUpdateSession,
+    install_root: &Path,
+    files: &mut Vec<FileEntry>,
+    local_sources: &mut HashMap<String, LocalChunkSource>,
+) -> Result<usize, JobError> {
+    if files.is_empty() {
+        return Ok(0);
+    }
+
+    session.sync_staged_files(files)?;
+    session.prepare_commit_batch(install_root, files)?;
+    let committed = files.len();
+    let mut path_remaps = HashMap::<String, PathBuf>::new();
+
+    for file in files.drain(..) {
+        let stage = session.stage_path(&file);
+        let target = safe_join(install_root, &file.path)
+            .ok_or_else(|| JobError::Depot(format!("unsafe manifest path: {}", file.path)))?;
+        if let Some((old_target, backup)) = session.commit_file(install_root, &file)? {
+            path_remaps.insert(filesystem_path_key(&old_target), backup);
+        }
+        path_remaps.insert(filesystem_path_key(&stage), target.clone());
+        for chunk in &file.chunks {
+            local_sources.insert(
+                chunk.hash.clone(),
+                LocalChunkSource {
+                    path: target.clone(),
+                    offset: chunk.file_offset,
+                    size: chunk.uncompressed_size,
+                },
+            );
+        }
+    }
+
+    // Remap every source once per batch instead of scanning the full chunk map
+    // once (or twice) for every file. This keeps 7k-file updates near O(chunks).
+    for source in local_sources.values_mut() {
+        if let Some(replacement) = path_remaps.get(&filesystem_path_key(&source.path)) {
+            source.path = replacement.clone();
+        }
+    }
+
+    Ok(committed)
+}
+
 fn streamed_update_progress(
     network_done: u64,
     network_total: u64,
@@ -2909,10 +3111,12 @@ fn streamed_update_progress(
     network_done.saturating_add(assembled_done).min(total) as f32 / total as f32
 }
 
+fn filesystem_path_key(path: &Path) -> String {
+    path.to_string_lossy().replace('/', "\\").to_ascii_lowercase()
+}
+
 fn same_filesystem_path(left: &Path, right: &Path) -> bool {
-    left.to_string_lossy()
-        .replace('/', "\\")
-        .eq_ignore_ascii_case(&right.to_string_lossy().replace('/', "\\"))
+    filesystem_path_key(left) == filesystem_path_key(right)
 }
 
 fn obsolete_update_paths(
@@ -3916,6 +4120,10 @@ struct DepotSource {
     local_root: Option<PathBuf>,
     client: OnceLock<Client>,
     rate_coordinator: Arc<RateCoordinator>,
+    // Negative cache for optional JSON objects (notably patch manifests).
+    // A missing patch must not be fetched from every mirror again later in
+    // the same install/update job.
+    missing_json_paths: Arc<Mutex<HashSet<String>>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -3988,6 +4196,10 @@ fn hf_environment_token() -> Option<String> {
     env::var("HF_TOKEN")
         .ok()
         .and_then(|value| sanitize_token(Some(value)))
+}
+
+fn all_remote_json_candidates_missing(attempted: usize, missing: usize) -> bool {
+    attempted > 0 && attempted == missing
 }
 
 impl DepotSource {
@@ -4063,6 +4275,7 @@ impl DepotSource {
             local_root,
             client: OnceLock::new(),
             rate_coordinator: Arc::new(RateCoordinator::default()),
+            missing_json_paths: Arc::new(Mutex::new(HashSet::new())),
         }
     }
 
@@ -4144,6 +4357,19 @@ impl DepotSource {
     fn mark_active_base_url(&self, base_url: &str) {
         if let Ok(mut guard) = self.active_base_url.lock() {
             *guard = Some(base_url.to_string());
+        }
+    }
+
+    fn json_path_is_known_missing(&self, relative_path: &str) -> bool {
+        self.missing_json_paths
+            .lock()
+            .ok()
+            .is_some_and(|paths| paths.contains(relative_path))
+    }
+
+    fn remember_missing_json_path(&self, relative_path: &str) {
+        if let Ok(mut paths) = self.missing_json_paths.lock() {
+            paths.insert(relative_path.to_string());
         }
     }
 
@@ -4298,17 +4524,26 @@ impl DepotSource {
     }
 
     fn load_json<T: for<'de> Deserialize<'de>>(&self, relative_path: &str) -> Result<T, JobError> {
+        let mut local_candidate_missing = false;
         if let Some(root) = &self.local_root {
             let path = root.join(relative_to_path(relative_path));
             if path.exists() {
                 let bytes = fs::read(path)?;
                 return Ok(serde_json::from_slice(&bytes)?);
             }
+            local_candidate_missing = true;
+        }
+
+        if self.json_path_is_known_missing(relative_path) {
+            return Err(JobError::NotFound(relative_path.to_string()));
         }
 
         let encoded_relative_path = encode_hf_relative_path(relative_path);
         let mut failures = Vec::new();
+        let mut attempted_remotes = 0_usize;
+        let mut missing_remotes = 0_usize;
         for base in self.ordered_base_urls() {
+            attempted_remotes = attempted_remotes.saturating_add(1);
             let url = format!(
                 "{}/{}",
                 base.url.trim_end_matches('/'),
@@ -4322,8 +4557,22 @@ impl DepotSource {
                     }
                     Err(err) => failures.push(format!("{url}: invalid JSON ({err})")),
                 },
+                Err(JobError::NotFound(err)) => {
+                    missing_remotes = missing_remotes.saturating_add(1);
+                    failures.push(err);
+                }
                 Err(err) => failures.push(err.to_string()),
             }
+        }
+
+        // Preserve the semantic distinction between "optional object absent"
+        // and "content service failed". load_patch_manifest relies on
+        // JobError::NotFound to treat games without patches as a normal case.
+        if all_remote_json_candidates_missing(attempted_remotes, missing_remotes)
+            || (local_candidate_missing && attempted_remotes == 0)
+        {
+            self.remember_missing_json_path(relative_path);
+            return Err(JobError::NotFound(relative_path.to_string()));
         }
 
         let detail = if failures.is_empty() {
@@ -6069,7 +6318,9 @@ fn planned_update_temporary_space(files: &[FileEntry], network_bytes: u64) -> u6
         .download_queue_mb
         .max(8)
         .saturating_mul(1024 * 1024);
-    largest_target.saturating_add(network_bytes.min(queue_budget))
+    largest_target
+        .saturating_add(network_bytes.min(queue_budget))
+        .saturating_add(queue_budget)
 }
 
 fn cleanup_committed_download_session(
@@ -7109,12 +7360,30 @@ fn touch(journal: &mut JobJournal) {
     journal.updated_at = Utc::now().to_rfc3339();
 }
 
+fn publish_job_progress(
+    app: &AppHandle,
+    journal: &JobJournal,
+    last_ui_emit: &mut Instant,
+    last_journal_persist: &mut Instant,
+    force_persist: bool,
+) -> Result<(), JobError> {
+    if force_persist || last_journal_persist.elapsed() >= JOB_JOURNAL_PERSIST_INTERVAL {
+        persist_and_emit(app, journal)?;
+        *last_journal_persist = Instant::now();
+        *last_ui_emit = Instant::now();
+    } else if last_ui_emit.elapsed() >= JOB_UI_EMIT_INTERVAL {
+        app.emit("launcher://job", journal)?;
+        *last_ui_emit = Instant::now();
+    }
+    Ok(())
+}
+
 fn persist_and_emit(app: &AppHandle, journal: &JobJournal) -> Result<(), JobError> {
     let path = journal_path(app)?;
     if let Some(parent) = path.parent() {
         fs::create_dir_all(parent)?;
     }
-    let data = serde_json::to_vec_pretty(journal)?;
+    let data = serde_json::to_vec(journal)?;
     let temp = path.with_extension("json.tmp");
     {
         let mut file = File::create(&temp)?;
@@ -7239,6 +7508,14 @@ mod downloader_v2_tests {
         assert!(JobError::Transient("timeout".to_string())
             .retry_delay(1)
             .is_some());
+    }
+
+    #[test]
+    fn all_404_json_candidates_remain_not_found_for_optional_resources() {
+        assert!(all_remote_json_candidates_missing(5, 5));
+        assert!(all_remote_json_candidates_missing(1, 1));
+        assert!(!all_remote_json_candidates_missing(5, 4));
+        assert!(!all_remote_json_candidates_missing(0, 0));
     }
 
     #[test]

@@ -185,14 +185,33 @@ export function InstallOptionsDialog({
     }
   }, [detail.gameId, installRoot, downloadSize])
 
+  const cleanVersionText = (value: string) => {
+    return value
+      .replace(/\s*-\s*Uploaded\s+\d{4}-\d{2}-\d{2}.*$/, '')
+      .replace(/\s*\(Build\b.*$/i, '')
+      .trim()
+  }
+
+  const extractBuildId = (value: string) => {
+    const matches = Array.from(value.matchAll(/\bBuild\s+([A-Za-z0-9._-]+)/gi))
+    return matches.length > 0 ? matches[matches.length - 1][1].trim() : ''
+  }
+
+  const isBuildOnlyLabel = (value: string) => /^build\s+[A-Za-z0-9._-]+$/i.test(value.trim())
+
+  const displayVersionLabel = (info: GameVersionInfo | undefined) => {
+    if (!info) return ''
+    const label = (info.label || '').trim()
+    if (label && !isBuildOnlyLabel(label)) return label
+    return cleanVersionText(info.version) || info.version
+  }
+
   // versionInfos might be undefined or might contain legacy strings (e.g. from activeDetail).
-  // We must normalize it to an array of objects, extracting buildId and cleaning labels.
+  // Keep the raw version for backend lookup, but render a clean user-facing label.
   const normalizeVersion = (v: VersionInfoInput, fallbackLatest: boolean): GameVersionInfo => {
     if (typeof v === 'string') {
-      const buildMatch = v.match(/\(Build ([^)]+)\)/)
-      const extractedBuildId = buildMatch ? buildMatch[1].trim() : ''
-      let cleanLabel = v.replace(/\s*-\s*Uploaded\s+\d{4}-\d{2}-\d{2}.*$/, '').trim()
-      cleanLabel = cleanLabel.replace(/\s*\(Build [^)]+\)\s*/i, '').trim()
+      const extractedBuildId = extractBuildId(v)
+      const cleanLabel = cleanVersionText(v)
       return {
         version: v,
         label: cleanLabel,
@@ -204,13 +223,16 @@ export function InstallOptionsDialog({
 
     const version = typeof v.version === 'string' ? v.version : ''
     const label = typeof v.label === 'string' ? v.label : version
-    const inferredBuild = version.match(/\(Build ([^)]+)\)/)?.[1]?.trim() ?? ''
+    const inferredBuild = extractBuildId(version)
     const buildId =
-      typeof v.buildId === 'string' && v.buildId && v.buildId !== version
+      inferredBuild ||
+      (typeof v.buildId === 'string' && v.buildId && v.buildId !== version
         ? v.buildId
-        : inferredBuild
-    let cleanedLabel = label.replace(/\s*-\s*Uploaded\s+\d{4}-\d{2}-\d{2}.*$/, '').trim()
-    cleanedLabel = cleanedLabel.replace(/\s*\(Build [^)]+\)\s*/i, '').trim()
+        : '')
+    let cleanedLabel = cleanVersionText(label)
+    if (!cleanedLabel || isBuildOnlyLabel(cleanedLabel)) {
+      cleanedLabel = cleanVersionText(version)
+    }
 
     return {
       version,
@@ -234,7 +256,7 @@ export function InstallOptionsDialog({
 
   const isVersionChange = mode === 'version'
   const selectedBuildId = selectedInfo?.buildId?.trim()
-  const selectedVersionLabel = selectedInfo?.label || selectedVersion
+  const selectedVersionLabel = displayVersionLabel(selectedInfo) || cleanVersionText(selectedVersion) || selectedVersion
 
   return (
     <div className="dialog-backdrop" role="presentation">
@@ -291,7 +313,7 @@ export function InstallOptionsDialog({
                   >
                     <CheckCircle2 size={17} />
                     <span>
-                      <strong>{info.label || info.version}</strong>
+                      <strong>{displayVersionLabel(info)}</strong>
                       {info.buildId ? (
                         <small>Build {info.buildId}</small>
                       ) : info.label && info.label !== info.version ? (

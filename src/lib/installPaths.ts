@@ -7,6 +7,7 @@ export const DEFAULT_DOWNLOADING_GAME = `${DEFAULT_STORE_ROOT}\\downloading\\007
 export const CUSTOM_DOWNLOADING_RELATIVE = '.0xolemon\\downloading'
 
 export const fallbackSnapshot: Snapshot = {
+  gameId: DEFAULT_GAME_ID,
   currentVersion: 'not scanned',
   latestVersion: 'unknown',
   availableVersions: [],

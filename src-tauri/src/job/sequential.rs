@@ -7,6 +7,9 @@ const CACHE_DIRECTORY: &str = "c";
 const STATE_FILE: &str = "state.json";
 const TRANSACTION_FILE: &str = "txn.json";
 const CHECKPOINT_INTERVAL: Duration = Duration::from_secs(2);
+const STATE_PERSIST_INTERVAL: Duration = Duration::from_secs(2);
+const STATE_PERSIST_BYTES: u64 = 64 * 1024 * 1024;
+const STAGE_SYNC_WORKERS: usize = 8;
 const FILE_IO_RETRIES: usize = 12;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -86,6 +89,7 @@ pub(super) struct SequentialFileWriter {
     path_hash: String,
     path: PathBuf,
     file: File,
+    hasher: Sha256,
     next_chunk: usize,
     durable_bytes: u64,
     uncheckpointed_bytes: u64,
@@ -108,6 +112,7 @@ impl SequentialFileWriter {
         self.file
             .write_all(data)
             .map_err(|error| classify_file_io(error, &self.path, "append staging data"))?;
+        self.hasher.update(data);
         self.next_chunk = self.next_chunk.saturating_add(1);
         self.durable_bytes = self.durable_bytes.saturating_add(data.len() as u64);
         self.uncheckpointed_bytes = self.uncheckpointed_bytes.saturating_add(data.len() as u64);
@@ -132,6 +137,9 @@ pub(super) struct SequentialUpdateSession {
     state: SequentialStageState,
     transaction: UpdateTransaction,
     rollback_armed: bool,
+    state_dirty: bool,
+    state_bytes_since_persist: u64,
+    last_state_persist: Instant,
 }
 
 impl SequentialUpdateSession {
@@ -190,6 +198,9 @@ impl SequentialUpdateSession {
                 state,
                 transaction,
                 rollback_armed: true,
+                state_dirty: false,
+                state_bytes_since_persist: 0,
+                last_state_persist: Instant::now(),
             }));
         }
         Ok(None)
@@ -288,6 +299,9 @@ impl SequentialUpdateSession {
             state,
             transaction,
             rollback_armed: true,
+            state_dirty: false,
+            state_bytes_since_persist: 0,
+            last_state_persist: Instant::now(),
         };
         session.persist_state()?;
         session.persist_transaction()?;
@@ -297,6 +311,10 @@ impl SequentialUpdateSession {
 
     pub(super) fn cache_root(&self) -> &Path {
         &self.cache_root
+    }
+
+    pub(super) fn stage_path(&self, file: &FileEntry) -> PathBuf {
+        self.stage_path_for_hash(&manifest_path_hash(&file.path))
     }
 
     pub(super) fn durable_chunks(&self, file: &FileEntry) -> usize {
@@ -316,7 +334,8 @@ impl SequentialUpdateSession {
         files: &[FileEntry],
     ) -> Result<(), JobError> {
         reconcile_shared_chunk_uses(&mut self.state, files);
-        self.persist_state()
+        self.state_dirty = true;
+        self.persist_state_now()
     }
 
     pub(super) fn release_checkpointed_chunks(
@@ -336,7 +355,8 @@ impl SequentialUpdateSession {
                 None => removable.push(hash),
             }
         }
-        self.persist_state()?;
+        self.state_dirty = true;
+        self.persist_state_if_due(false)?;
         for hash in removable {
             self.remove_cached_chunk(&hash)?;
         }
@@ -435,6 +455,7 @@ impl SequentialUpdateSession {
         }
 
         handle.seek(SeekFrom::Start(0))?;
+        let mut hasher = Sha256::new();
         let mut verified_chunks = 0_usize;
         let mut verified_bytes = 0_u64;
         for chunk in file.chunks.iter().take(durable_chunks) {
@@ -446,6 +467,7 @@ impl SequentialUpdateSession {
             {
                 break;
             }
+            hasher.update(&bytes);
             verified_chunks = verified_chunks.saturating_add(1);
             verified_bytes = verified_bytes.saturating_add(bytes.len() as u64);
         }
@@ -456,6 +478,7 @@ impl SequentialUpdateSession {
                 classify_file_io(error, &stage_path, "repair staging checkpoint")
             })?;
             self.update_progress(&path_hash, durable_chunks, durable_bytes, false)?;
+            self.persist_state_now()?;
         }
 
         handle.seek(SeekFrom::Start(durable_bytes))?;
@@ -463,6 +486,7 @@ impl SequentialUpdateSession {
             path_hash,
             path: stage_path,
             file: handle,
+            hasher,
             next_chunk: durable_chunks,
             durable_bytes,
             uncheckpointed_bytes: 0,
@@ -485,6 +509,10 @@ impl SequentialUpdateSession {
             writer.durable_bytes,
             complete,
         )?;
+        // checkpoint_writer is an explicit crash-resume boundary. Persist its
+        // metadata now; finish_writer uses the debounced path and is made
+        // durable in batches immediately before commit.
+        self.persist_state_now()?;
         writer.uncheckpointed_bytes = 0;
         writer.last_checkpoint = Instant::now();
         Ok(())
@@ -501,12 +529,13 @@ impl SequentialUpdateSession {
                 file.path
             )));
         }
-        self.checkpoint_writer(writer, false)?;
         writer
             .file
-            .sync_all()
+            .flush()
             .map_err(|error| classify_file_io(error, &writer.path, "flush staging file"))?;
-        let actual = sha256_file(&long_path(&writer.path))?;
+        writer.uncheckpointed_bytes = 0;
+        writer.last_checkpoint = Instant::now();
+        let actual = hex::encode(writer.hasher.clone().finalize());
         if actual != file.sha256 {
             return Err(JobError::Depot(format!(
                 "staging hash mismatch: {}",
@@ -518,7 +547,127 @@ impl SequentialUpdateSession {
             writer.next_chunk,
             writer.durable_bytes,
             true,
-        )
+        )?;
+        self.persist_state_if_due(false)
+    }
+
+    pub(super) fn sync_staged_files(&self, files: &[FileEntry]) -> Result<(), JobError> {
+        if files.is_empty() {
+            return Ok(());
+        }
+        let queue = Arc::new(Mutex::new(VecDeque::from(
+            files
+                .iter()
+                .map(|file| self.stage_path(file))
+                .collect::<Vec<_>>(),
+        )));
+        let (tx, rx) = mpsc::channel::<Result<(), (PathBuf, std::io::Error)>>();
+        let worker_count = files.len().min(STAGE_SYNC_WORKERS).max(1);
+
+        thread::scope(|scope| {
+            for _ in 0..worker_count {
+                let queue = Arc::clone(&queue);
+                let tx = tx.clone();
+                scope.spawn(move || loop {
+                    let path = {
+                        let mut guard = queue.lock().expect("stage sync queue poisoned");
+                        guard.pop_front()
+                    };
+                    let Some(path) = path else {
+                        break;
+                    };
+                    let result = OpenOptions::new()
+                        .read(true)
+                        .write(true)
+                        .open(long_path(&path))
+                        .and_then(|file| file.sync_data())
+                        .map_err(|error| (path, error));
+                    if tx.send(result).is_err() {
+                        break;
+                    }
+                });
+            }
+            drop(tx);
+            for result in rx {
+                if let Err((path, error)) = result {
+                    return Err(classify_file_io(error, &path, "sync staged file"));
+                }
+            }
+            Ok(())
+        })
+    }
+
+    pub(super) fn prepare_commit_batch(
+        &mut self,
+        install_root: &Path,
+        files: &[FileEntry],
+    ) -> Result<(), JobError> {
+        let mut pending = Vec::new();
+        for file in files {
+            if self.transaction.files.iter().any(|record| {
+                !record.obsolete && record.relative_path.eq_ignore_ascii_case(&file.path)
+            }) {
+                continue;
+            }
+            let target = safe_join(install_root, &file.path)
+                .ok_or_else(|| JobError::Depot(format!("unsafe manifest path: {}", file.path)))?;
+            let backup = transaction_backup_path(&target, &self.job_key)?;
+            if long_path(&backup).exists() {
+                return Err(JobError::SessionMismatch(format!(
+                    "unexpected transaction backup already exists for {}",
+                    file.path
+                )));
+            }
+            pending.push(TransactionFile {
+                relative_path: file.path.clone(),
+                had_original: long_path(&target).exists(),
+                obsolete: false,
+                phase: TransactionFilePhase::Prepared,
+            });
+        }
+        if pending.is_empty() {
+            return Ok(());
+        }
+        self.transaction.files.extend(pending);
+        self.persist_transaction()
+    }
+
+    pub(super) fn prepare_obsolete_batch(
+        &mut self,
+        install_root: &Path,
+        relative_paths: &[String],
+    ) -> Result<(), JobError> {
+        let mut pending = Vec::new();
+        for relative_path in relative_paths {
+            if self.transaction.files.iter().any(|record| {
+                record.obsolete && record.relative_path.eq_ignore_ascii_case(relative_path)
+            }) {
+                continue;
+            }
+            let target = safe_join(install_root, relative_path).ok_or_else(|| {
+                JobError::Depot(format!("unsafe manifest path: {relative_path}"))
+            })?;
+            if !long_path(&target).exists() {
+                continue;
+            }
+            let backup = transaction_backup_path(&target, &self.job_key)?;
+            if long_path(&backup).exists() {
+                return Err(JobError::SessionMismatch(format!(
+                    "unexpected obsolete backup already exists for {relative_path}"
+                )));
+            }
+            pending.push(TransactionFile {
+                relative_path: relative_path.clone(),
+                had_original: true,
+                obsolete: true,
+                phase: TransactionFilePhase::Prepared,
+            });
+        }
+        if pending.is_empty() {
+            return Ok(());
+        }
+        self.transaction.files.extend(pending);
+        self.persist_transaction()
     }
 
     pub(super) fn commit_file(
@@ -526,6 +675,11 @@ impl SequentialUpdateSession {
         install_root: &Path,
         file: &FileEntry,
     ) -> Result<Option<(PathBuf, PathBuf)>, JobError> {
+        if !self.transaction.files.iter().any(|record| {
+            !record.obsolete && record.relative_path.eq_ignore_ascii_case(&file.path)
+        }) {
+            self.prepare_commit_batch(install_root, std::slice::from_ref(file))?;
+        }
         let path_hash = manifest_path_hash(&file.path);
         let stage = self.stage_path_for_hash(&path_hash);
         let target = safe_join(install_root, &file.path)
@@ -534,7 +688,16 @@ impl SequentialUpdateSession {
             fs::create_dir_all(&long_path(parent))?;
         }
         let backup = transaction_backup_path(&target, &self.job_key)?;
-        let had_original = long_path(&target).exists();
+        let had_original = self
+            .transaction
+            .files
+            .iter()
+            .rev()
+            .find(|record| {
+                !record.obsolete && record.relative_path.eq_ignore_ascii_case(&file.path)
+            })
+            .map(|record| record.had_original)
+            .ok_or_else(|| JobError::Depot(format!("missing transaction intent for {}", file.path)))?;
 
         if long_path(&backup).exists() {
             return Err(JobError::SessionMismatch(format!(
@@ -543,17 +706,23 @@ impl SequentialUpdateSession {
             )));
         }
 
-        self.transaction.files.push(TransactionFile {
-            relative_path: file.path.clone(),
-            had_original,
-            obsolete: false,
-            phase: TransactionFilePhase::Prepared,
-        });
-        self.persist_transaction()?;
-
         if had_original {
+            if !long_path(&target).exists() {
+                return Err(JobError::SessionMismatch(format!(
+                    "installed file disappeared before commit: {}",
+                    file.path
+                )));
+            }
             rename_with_retry(&target, &backup, "back up installed file")?;
-            self.set_transaction_file_phase(&file.path, TransactionFilePhase::BackedUp)?;
+            self.set_transaction_file_phase_in_memory(
+                &file.path,
+                TransactionFilePhase::BackedUp,
+            )?;
+        } else if long_path(&target).exists() {
+            return Err(JobError::SessionMismatch(format!(
+                "new target appeared before commit: {}",
+                file.path
+            )));
         }
 
         if let Err(error) = rename_with_retry(&stage, &target, "install verified staging file") {
@@ -562,9 +731,8 @@ impl SequentialUpdateSession {
             }
             return Err(error);
         }
-        self.set_transaction_file_phase(&file.path, TransactionFilePhase::Installed)?;
+        self.set_transaction_file_phase_in_memory(&file.path, TransactionFilePhase::Installed)?;
         self.transaction.phase = TransactionPhase::FilesInstalled;
-        self.persist_transaction()?;
 
         Ok(had_original.then_some((target, backup)))
     }
@@ -579,21 +747,22 @@ impl SequentialUpdateSession {
         if !long_path(&target).exists() {
             return Ok(());
         }
+        if !self.transaction.files.iter().any(|record| {
+            record.obsolete && record.relative_path.eq_ignore_ascii_case(relative_path)
+        }) {
+            self.prepare_obsolete_batch(install_root, &[relative_path.to_string()])?;
+        }
         let backup = transaction_backup_path(&target, &self.job_key)?;
         if long_path(&backup).exists() {
             return Err(JobError::SessionMismatch(format!(
                 "unexpected obsolete backup already exists for {relative_path}"
             )));
         }
-        self.transaction.files.push(TransactionFile {
-            relative_path: relative_path.to_string(),
-            had_original: true,
-            obsolete: true,
-            phase: TransactionFilePhase::Prepared,
-        });
-        self.persist_transaction()?;
         rename_with_retry(&target, &backup, "back up obsolete file")?;
-        self.set_transaction_file_phase(relative_path, TransactionFilePhase::ObsoleteBackedUp)
+        self.set_transaction_file_phase_in_memory(
+            relative_path,
+            TransactionFilePhase::ObsoleteBackedUp,
+        )
     }
 
     pub(super) fn mark_marker_committed(&mut self) -> Result<(), JobError> {
@@ -743,10 +912,11 @@ impl SequentialUpdateSession {
             file.durable_bytes = 0;
             file.complete = false;
         }
-        self.persist_state()
+        self.state_dirty = true;
+        self.persist_state_now()
     }
 
-    fn set_transaction_file_phase(
+    fn set_transaction_file_phase_in_memory(
         &mut self,
         relative_path: &str,
         phase: TransactionFilePhase,
@@ -761,7 +931,7 @@ impl SequentialUpdateSession {
                 JobError::Depot(format!("missing transaction record for {relative_path}"))
             })?;
         record.phase = phase;
-        self.persist_transaction()
+        Ok(())
     }
 
     fn update_progress(
@@ -771,17 +941,46 @@ impl SequentialUpdateSession {
         durable_bytes: u64,
         complete: bool,
     ) -> Result<(), JobError> {
-        let state = self.state.files.get_mut(path_hash).ok_or_else(|| {
-            JobError::Depot(format!("missing sequential progress for {path_hash}"))
-        })?;
-        state.durable_chunks = durable_chunks;
-        state.durable_bytes = durable_bytes;
-        state.complete = complete;
-        self.persist_state()
+        let previous_bytes = {
+            let state = self.state.files.get_mut(path_hash).ok_or_else(|| {
+                JobError::Depot(format!("missing sequential progress for {path_hash}"))
+            })?;
+            let previous_bytes = state.durable_bytes;
+            state.durable_chunks = durable_chunks;
+            state.durable_bytes = durable_bytes;
+            state.complete = complete;
+            previous_bytes
+        };
+        self.state_dirty = true;
+        self.state_bytes_since_persist = self
+            .state_bytes_since_persist
+            .saturating_add(durable_bytes.saturating_sub(previous_bytes));
+        Ok(())
     }
 
     fn persist_state(&self) -> Result<(), JobError> {
         write_json_atomic(&self.state_path, &self.state)
+    }
+
+    fn persist_state_if_due(&mut self, force: bool) -> Result<(), JobError> {
+        if !self.state_dirty {
+            return Ok(());
+        }
+        if !force
+            && self.state_bytes_since_persist < STATE_PERSIST_BYTES
+            && self.last_state_persist.elapsed() < STATE_PERSIST_INTERVAL
+        {
+            return Ok(());
+        }
+        self.persist_state_now()
+    }
+
+    fn persist_state_now(&mut self) -> Result<(), JobError> {
+        self.persist_state()?;
+        self.state_dirty = false;
+        self.state_bytes_since_persist = 0;
+        self.last_state_persist = Instant::now();
+        Ok(())
     }
 
     fn persist_transaction(&self) -> Result<(), JobError> {
@@ -1016,7 +1215,7 @@ fn write_json_atomic<T: Serialize>(path: &Path, value: &T) -> Result<(), JobErro
     }
     let temporary = path.with_extension("next");
     let recovery = recovery_path(path);
-    let data = serde_json::to_vec_pretty(value)?;
+    let data = serde_json::to_vec(value)?;
     {
         let mut file = File::create(&temporary)?;
         file.write_all(&data)?;
@@ -1201,12 +1400,14 @@ mod tests {
             SequentialUpdateSession::open_owned_for_recovery(&downloading, &job, &install)
                 .unwrap()
                 .unwrap();
-        let resumed_writer = resumed.open_writer(&file).unwrap();
+        let mut resumed_writer = resumed.open_writer(&file).unwrap();
         assert_eq!(resumed_writer.next_chunk(), 1);
         assert_eq!(
             resumed_writer.file.metadata().unwrap().len(),
             first.len() as u64
         );
+        resumed_writer.append(&file.chunks[1], second).unwrap();
+        resumed.finish_writer(&mut resumed_writer, &file).unwrap();
 
         drop(resumed_writer);
         remove_flat_files(&resumed.stage_root).unwrap();
@@ -1252,6 +1453,80 @@ mod tests {
         assert_ne!(writer.file.metadata().unwrap().len(), target_size);
         drop(writer);
         session.cleanup_session_files().unwrap();
+        fs::remove_dir(&install).unwrap();
+        fs::remove_dir(install.parent().unwrap()).unwrap();
+        fs::remove_dir(downloading.parent().unwrap()).unwrap();
+        fs::remove_dir(&root).unwrap();
+    }
+
+    #[test]
+    fn expanded_delta_file_is_verified_and_committed_at_target_size() {
+        let root = env::temp_dir().join(format!(
+            "0xolemon-sequential-expanded-{}",
+            Utc::now().timestamp_nanos_opt().unwrap_or_default()
+        ));
+        let downloading = root.join("dl").join("123456");
+        let install = root.join("common").join("Game");
+        fs::create_dir_all(&install).unwrap();
+
+        let base = b"existing-pak-prefix";
+        let delta = b"-new-delta-tail";
+        let target_bytes = [base.as_slice(), delta.as_slice()].concat();
+        let target_path = install.join("Content").join("Paks").join("game.pak");
+        fs::create_dir_all(target_path.parent().unwrap()).unwrap();
+        fs::write(&target_path, base).unwrap();
+
+        let file = FileEntry {
+            path: "Content/Paks/game.pak".to_string(),
+            size: target_bytes.len() as u64,
+            sha256: sha256_bytes(&target_bytes),
+            chunks: vec![chunk(0, base), chunk(base.len() as u64, delta)],
+            executable: false,
+            delta_patches: None,
+            preserve: false,
+        };
+        let job = journal(&install);
+        let mut session = SequentialUpdateSession::prepare(
+            &downloading,
+            &job,
+            "v1",
+            "v2",
+            &install,
+            std::slice::from_ref(&file),
+        )
+        .unwrap();
+
+        let mut writer = session.open_writer(&file).unwrap();
+        writer.append(&file.chunks[0], base).unwrap();
+        session.checkpoint_writer(&mut writer, false).unwrap();
+        writer.append(&file.chunks[1], delta).unwrap();
+        session.finish_writer(&mut writer, &file).unwrap();
+        drop(writer);
+        session.commit_file(&install, &file).unwrap();
+
+        assert_eq!(fs::metadata(&target_path).unwrap().len(), file.size);
+        assert_eq!(fs::read(&target_path).unwrap(), target_bytes);
+
+        write_install_marker_file(
+            &install,
+            &InstallMarker {
+                game_id: job.game_id.clone(),
+                version: "v2".to_string(),
+                installed_at: Utc::now().to_rfc3339(),
+                launch_executable: None,
+                applied_patch_id: None,
+            },
+        )
+        .unwrap();
+        session.mark_marker_committed().unwrap();
+        session.cleanup_committed(&install).unwrap();
+        session.cleanup_session_files().unwrap();
+
+        fs::remove_file(install_marker_path(&install)).unwrap();
+        fs::remove_dir(install.join(INSTALL_MARKER_DIR)).unwrap();
+        fs::remove_file(&target_path).unwrap();
+        fs::remove_dir(target_path.parent().unwrap()).unwrap();
+        fs::remove_dir(install.join("Content")).unwrap();
         fs::remove_dir(&install).unwrap();
         fs::remove_dir(install.parent().unwrap()).unwrap();
         fs::remove_dir(downloading.parent().unwrap()).unwrap();
@@ -1306,6 +1581,89 @@ mod tests {
 
         SequentialUpdateSession::cleanup_owned_session(&downloading, &job.id).unwrap();
         fs::remove_file(&target_path).unwrap();
+        fs::remove_dir(&install).unwrap();
+        fs::remove_dir(install.parent().unwrap()).unwrap();
+        fs::remove_dir(downloading.parent().unwrap()).unwrap();
+        fs::remove_dir(&root).unwrap();
+    }
+
+    #[test]
+    fn batch_intent_is_durable_before_the_first_file_rename() {
+        let root = env::temp_dir().join(format!(
+            "0xolemon-sequential-batch-intent-{}",
+            Utc::now().timestamp_nanos_opt().unwrap_or_default()
+        ));
+        let downloading = root.join("dl").join("123456");
+        let install = root.join("common").join("Game");
+        fs::create_dir_all(&install).unwrap();
+
+        let first_base = b"first-base";
+        let second_base = b"second-base";
+        let first_target = b"first-target";
+        let second_target = b"second-target";
+        fs::write(install.join("first.bin"), first_base).unwrap();
+        fs::write(install.join("second.bin"), second_base).unwrap();
+        let files = vec![
+            FileEntry {
+                path: "first.bin".to_string(),
+                size: first_target.len() as u64,
+                sha256: sha256_bytes(first_target),
+                chunks: vec![chunk(0, first_target)],
+                executable: false,
+                delta_patches: None,
+                preserve: false,
+            },
+            FileEntry {
+                path: "second.bin".to_string(),
+                size: second_target.len() as u64,
+                sha256: sha256_bytes(second_target),
+                chunks: vec![chunk(0, second_target)],
+                executable: false,
+                delta_patches: None,
+                preserve: false,
+            },
+        ];
+        let job = journal(&install);
+        {
+            let mut session = SequentialUpdateSession::prepare(
+                &downloading,
+                &job,
+                "v1",
+                "v2",
+                &install,
+                &files,
+            )
+            .unwrap();
+            for (file, bytes) in files
+                .iter()
+                .zip([&first_target[..], &second_target[..]])
+            {
+                let mut writer = session.open_writer(file).unwrap();
+                writer.append(&file.chunks[0], bytes).unwrap();
+                session.finish_writer(&mut writer, file).unwrap();
+            }
+
+            session.sync_staged_files(&files).unwrap();
+            session.prepare_commit_batch(&install, &files).unwrap();
+            let transaction = read_json_recovering::<UpdateTransaction>(&session.transaction_path)
+                .unwrap()
+                .unwrap();
+            assert_eq!(transaction.files.len(), 2);
+            assert!(transaction
+                .files
+                .iter()
+                .all(|record| record.phase == TransactionFilePhase::Prepared));
+
+            session.commit_file(&install, &files[0]).unwrap();
+            assert_eq!(fs::read(install.join("first.bin")).unwrap(), first_target);
+            assert_eq!(fs::read(install.join("second.bin")).unwrap(), second_base);
+        }
+
+        assert_eq!(fs::read(install.join("first.bin")).unwrap(), first_base);
+        assert_eq!(fs::read(install.join("second.bin")).unwrap(), second_base);
+        SequentialUpdateSession::cleanup_owned_session(&downloading, &job.id).unwrap();
+        fs::remove_file(install.join("first.bin")).unwrap();
+        fs::remove_file(install.join("second.bin")).unwrap();
         fs::remove_dir(&install).unwrap();
         fs::remove_dir(install.parent().unwrap()).unwrap();
         fs::remove_dir(downloading.parent().unwrap()).unwrap();

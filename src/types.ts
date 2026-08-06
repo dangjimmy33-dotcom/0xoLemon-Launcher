@@ -82,6 +82,7 @@ export type ChangedFile = {
 }
 
 export type Snapshot = {
+  gameId?: string | null
   currentVersion: string
   latestVersion: string
   availableVersions: string[]

@@ -1557,6 +1557,17 @@ export default function App() {
     }
   }, [installStates, preferences.defaultLibraryRoot, selectedGame])
 
+  useEffect(() => {
+    versionPlanSequenceRef.current += 1
+    if (versionPlanTimerRef.current !== null) {
+      window.clearTimeout(versionPlanTimerRef.current)
+      versionPlanTimerRef.current = null
+    }
+    setSelectedVersion('')
+    setIsStartingDownload(false)
+    setShowInstallOptions(false)
+  }, [selectedGame?.id])
+
   // Scale mode: selected game assets are urgent; browse cards request their
   // thumbnails only when they become visible. This avoids reading every .0xo
   // image at launcher startup.
@@ -1594,7 +1605,7 @@ export default function App() {
           if (next.lastJob?.kind === 'patch') {
             setActiveTab('Downloads')
           }
-          if (next.detectedInstallPath) {
+          if (next.detectedInstallPath && next.gameId === selectedGameIdRef.current) {
             setInstallPath(next.detectedInstallPath)
             setInstallRoot(next.detectedInstallPath)
             setHasScanned(next.currentVersion !== 'unknown' && next.currentVersion !== 'not installed')
@@ -1710,6 +1721,7 @@ export default function App() {
         }, 2000)
         setSnapshot((current) => ({
           ...current,
+          gameId: nextJob.gameId,
           currentVersion: nextJob.toVersion,
           detectedInstallPath: nextJob.installPath,
           updateSize: 0,
@@ -1963,6 +1975,7 @@ export default function App() {
     : gameInstall.defaultInstallFolder
   const selectedCurrentVersion = selectedInstalled ? selectedInstallState?.currentVersion ?? 'installed' : 'not installed'
   const selectedVerifyStatus = selectedGame && verifyStatus?.gameId === selectedGame.id ? verifyStatus : null
+  const snapshotBelongsToSelectedGame = Boolean(selectedGame?.id && snapshot.gameId === selectedGame.id)
   const availableVersions = selectedGame ? versionOptions(snapshot, selectedGame, isDefaultGame) : []
   const mergedVersionInfos = useMemo(() => {
     const tagMap = new Map<string, string[]>()
@@ -1975,7 +1988,7 @@ export default function App() {
         const getCleanInline = (verStr: string) => {
           if (!verStr) return ''
           let c = verStr.replace(/\s*-\s*Uploaded.*$/, '').trim()
-          return c.replace(/\s*\(Build [^)]+\)\s*/i, '').trim()
+          return c.replace(/\s*\(Build\b.*$/i, '').trim()
         }
         tagMap.set(getCleanInline(ver), tags as string[])
       })
@@ -1995,11 +2008,11 @@ export default function App() {
     const getClean = (verStr: string) => {
       if (!verStr) return ''
       let c = verStr.replace(/\s*-\s*Uploaded.*$/, '').trim()
-      return c.replace(/\s*\(Build [^)]+\)\s*/i, '').trim()
+      return c.replace(/\s*\(Build\b.*$/i, '').trim()
     }
 
     const detailVersions = activeDetail?.versions || []
-    const hfVersions: any[] = snapshot?.availableVersions || []
+    const hfVersions: any[] = snapshotBelongsToSelectedGame ? (snapshot?.availableVersions || []) : []
 
     // If the catalog explicitly lists versions, ONLY show those versions
     if (selectedGame?.availableVersions && selectedGame.availableVersions.length > 0) {
@@ -2057,7 +2070,7 @@ export default function App() {
       }
       return tags ? { ...v, tags } : v
     })
-  }, [isDefaultGame, selectedGame?.availableVersions, activeDetail, snapshot, firestoreAssetVersion, selectedGame?.id])
+  }, [isDefaultGame, selectedGame?.availableVersions, activeDetail, snapshot.availableVersions, snapshotBelongsToSelectedGame, firestoreAssetVersion, selectedGame?.id])
   const latestCatalogVersion =
     selectedGame?.availableVersions.find((version: any) => version.latest)?.version ||
     activeDetail?.versions.find((version) => version.latest)?.version ||
@@ -2066,7 +2079,7 @@ export default function App() {
     selectedGame?.latestVersion ||
     availableVersions[availableVersions.length - 1] ||
     'unknown'
-  const fallbackTargetVersion = isDefaultGame && availableVersions.includes(snapshot.latestVersion)
+  const fallbackTargetVersion = isDefaultGame && snapshotBelongsToSelectedGame && availableVersions.includes(snapshot.latestVersion)
     ? snapshot.latestVersion
     : latestCatalogVersion !== 'unknown'
       ? latestCatalogVersion
@@ -2131,11 +2144,12 @@ export default function App() {
     const snapshotBelongsToGame =
       snapshot.updateSize > 0 &&
       selectedGame?.id &&
+      snapshotBelongsToSelectedGame &&
       (!activeJobGameId || activeJobGameId === selectedGame.id)
     if (snapshotBelongsToGame) return snapshot.updateSize
     return selectedVersionInfo?.sizeBytes ?? activeDetail?.versions?.[0]?.sizeBytes ?? 0
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [snapshot.updateSize, snapshot.lastJob?.gameId, selectedGame?.id, selectedVersionInfo?.sizeBytes, activeDetail?.versions])
+  }, [snapshot.updateSize, snapshot.lastJob?.gameId, snapshotBelongsToSelectedGame, selectedGame?.id, selectedVersionInfo?.sizeBytes, activeDetail?.versions])
   const displayedInstallTarget =
     selectedInstalled
       ? selectedInstallPath
@@ -2255,8 +2269,8 @@ export default function App() {
       return
     }
 
+    const gameId = selectedGame.id
     try {
-      const gameId = selectedGame.id
       const [report, planned] = await Promise.all([
         invoke<{ fileCount: number; detectedVersion?: string | null; warnings: string[] }>('scan_install', {
           path,
@@ -2267,12 +2281,18 @@ export default function App() {
         planned.currentVersion !== 'unknown' && planned.currentVersion !== 'not installed'
           ? planned.currentVersion
           : report.detectedVersion
+      if (selectedGameIdRef.current !== gameId || (planned.gameId && planned.gameId !== gameId)) {
+        return
+      }
       const versionLabel = plannedVersion ? `installed ${plannedVersion}` : 'version state not found'
       setScanStatus(`${report.fileCount} files, ${versionLabel}`)
       setSnapshot(planned)
       setJob(planned.lastJob)
       setHasScanned(Boolean(plannedVersion))
     } catch (error) {
+      if (selectedGameIdRef.current !== gameId) {
+        return
+      }
       setScanStatus(String(error))
       setHasScanned(false)
     }
@@ -2310,7 +2330,8 @@ export default function App() {
             : await invoke<Snapshot>('plan_fresh_install', { targetVersion: version, gameId })
           if (
             requestSequence !== versionPlanSequenceRef.current ||
-            selectedGameIdRef.current !== gameId
+            selectedGameIdRef.current !== gameId ||
+            (planned.gameId && planned.gameId !== gameId)
           ) {
             return
           }
@@ -2325,7 +2346,10 @@ export default function App() {
           if (message.toLowerCase().includes('job canceled')) {
             return
           }
-          if (requestSequence === versionPlanSequenceRef.current) {
+          if (
+            requestSequence === versionPlanSequenceRef.current &&
+            selectedGameIdRef.current === gameId
+          ) {
             setScanStatus(message)
           }
         }
@@ -2834,7 +2858,9 @@ export default function App() {
       try {
         const targetPath = installMode ? installRoot : selectedInstallPath
         const freeSpace = await invoke<number>('get_disk_free_space', { path: targetPath })
-        const requiredSpace = snapshot?.requiredFreeSpace || snapshot?.updateSize || 0
+        const requiredSpace = snapshotBelongsToSelectedGame
+          ? snapshot.requiredFreeSpace || snapshot.updateSize || effectiveDownloadSize
+          : effectiveDownloadSize
         if (freeSpace < requiredSpace) {
           const freeGB = (freeSpace / 1024 / 1024 / 1024).toFixed(2)
           const reqGB = (requiredSpace / 1024 / 1024 / 1024).toFixed(2)

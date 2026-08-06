@@ -129,22 +129,25 @@ export function mediaPriority(item: GameMedia) {
 }
 
 export function versionOptions(snapshot: Snapshot, game: GameSummary, useSnapshot: boolean) {
-  if (useSnapshot && snapshot.availableVersions.length > 0) {
-    return snapshot.availableVersions
+  const snapshotBelongsToGame = snapshot.gameId === game.id
+  const snapshotVersions = snapshotBelongsToGame ? snapshot.availableVersions : []
+
+  if (useSnapshot && snapshotVersions.length > 0) {
+    return snapshotVersions
   }
   if (game.availableVersions.length > 0) {
     return game.availableVersions.map((version) => {
       const verStr = typeof version === 'string' ? version : version.version
-      const getClean = (v: string) => v.replace(/\s*-\s*Uploaded.*$/, '').replace(/\s*\(Build [^)]+\)\s*/i, '').trim().toLowerCase()
+      const getClean = (v: string) => v.replace(/\s*-\s*Uploaded.*$/, '').replace(/\s*\(Build\b.*$/i, '').trim().toLowerCase()
       const catClean = getClean(verStr)
-      const hfMatch = snapshot.availableVersions.find(hf => getClean(hf) === catClean)
+      const hfMatch = snapshotVersions.find(hf => getClean(hf) === catClean)
       return hfMatch || verStr
     })
   }
-  if (snapshot.availableVersions.length > 0) {
-    return snapshot.availableVersions
+  if (snapshotVersions.length > 0) {
+    return snapshotVersions
   }
-  return snapshot.latestVersion === 'unknown' ? [] : [snapshot.latestVersion]
+  return snapshotBelongsToGame && snapshot.latestVersion !== 'unknown' ? [snapshot.latestVersion] : []
 }
 
 export function collectAssetIds(game: GameSummary) {
