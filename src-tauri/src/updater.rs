@@ -13,7 +13,6 @@ pub struct LauncherUpdateInfo {
     pub notes: String,
     pub published_at: String,
 }
-
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LauncherUpdateProgress {
@@ -98,27 +97,15 @@ pub async fn download_and_apply(app: &AppHandle) -> Result<(), String> {
     let total = bytes.len() as u64;
     emit_progress(app, &version, "installing", total, Some(total), None);
 
-    let temp_dir = std::env::temp_dir();
-    let installer_path = temp_dir.join(format!("0xolemon_update_{}.exe", version));
-    
-    if let Err(e) = std::fs::write(&installer_path, &bytes) {
-        let msg = format!("Failed to save installer: {}", e);
-        emit_progress(app, &version, "failed", total, Some(total), Some(msg.clone()));
-        return Err(msg);
-    }
-    
-    // Use ShellExecuteW with "runas" verb to trigger UAC elevation prompt.
-    // Plain Command::spawn() fails with os error 740 (ERROR_ELEVATION_REQUIRED)
-    // because NSIS installers require admin rights.
-    let launch_result = launch_elevated(&installer_path);
-    if let Err(e) = launch_result {
-        let msg = format!("Failed to launch installer: {}", e);
+    // Tauri launches NSIS with /UPDATE so it reuses the registered install
+    // directory instead of opening the normal install/uninstall wizard.
+    if let Err(error) = update.install(bytes) {
+        let msg = error.to_string();
         emit_progress(app, &version, "failed", total, Some(total), Some(msg.clone()));
         return Err(msg);
     }
 
     emit_progress(app, &version, "restarting", total, Some(total), None);
-    app.exit(0);
     Ok(())
 }
 
@@ -141,54 +128,4 @@ fn emit_progress(
             error,
         },
     );
-}
-
-/// Launch a file with UAC elevation using ShellExecuteW + "runas" verb.
-/// This is needed because NSIS installers require admin rights and
-/// Command::spawn() returns os error 740 (ERROR_ELEVATION_REQUIRED).
-#[cfg(target_os = "windows")]
-fn launch_elevated(path: &std::path::Path) -> Result<(), String> {
-    use std::ffi::OsStr;
-    use std::os::windows::ffi::OsStrExt;
-    use std::ptr;
-    use winapi::um::shellapi::ShellExecuteW;
-    use winapi::um::winuser::SW_SHOWNORMAL;
-
-    fn to_wide(s: &OsStr) -> Vec<u16> {
-        s.encode_wide().chain(std::iter::once(0)).collect()
-    }
-
-    let verb = to_wide(OsStr::new("runas"));
-    let file = to_wide(path.as_os_str());
-
-    // SAFETY: ShellExecuteW is a standard Windows API.
-    let result = unsafe {
-        ShellExecuteW(
-            ptr::null_mut(),
-            verb.as_ptr(),
-            file.as_ptr(),
-            ptr::null(),
-            ptr::null(),
-            SW_SHOWNORMAL,
-        )
-    };
-
-    // ShellExecuteW returns > 32 on success
-    if result as usize > 32 {
-        Ok(())
-    } else {
-        Err(format!(
-            "ShellExecuteW failed with code {} (os error {})",
-            result as usize,
-            std::io::Error::last_os_error()
-        ))
-    }
-}
-
-#[cfg(not(target_os = "windows"))]
-fn launch_elevated(path: &std::path::Path) -> Result<(), String> {
-    std::process::Command::new(path)
-        .spawn()
-        .map(|_| ())
-        .map_err(|e| e.to_string())
 }

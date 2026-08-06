@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useRef, useState, cloneElement, memo } from 'react'
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState, cloneElement, memo } from 'react'
 import { doc, setDoc, increment } from 'firebase/firestore'
 import { db } from '../firebase'
 import { createPortal } from 'react-dom'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
-import { BookOpen, CheckCircle2, ChevronLeft, ChevronRight, CircleAlert, PlusCircle, Download, FolderOpen, HardDrive, Image as ImageIcon, Library, Play, RefreshCcw, Search, ShieldCheck, ShoppingBag, SlidersHorizontal, ThumbsUp, Trophy, X, MessageSquare, Info, Sparkles } from 'lucide-react'
+import { BookOpen, CheckCircle2, ChevronLeft, ChevronRight, CircleAlert, PlusCircle, Download, FolderOpen, HardDrive, Image as ImageIcon, Library, Play, RefreshCcw, Search, ShieldCheck, ShoppingBag, SlidersHorizontal, ThumbsUp, Trophy, X, MessageSquare, Info, Sparkles, Clock3, TrendingUp } from 'lucide-react'
 import { useGameStats } from '../hooks/useGameStats'
 import { TutorialModal } from './TutorialModal'
 import { useLocale } from '../context/LocaleContext'
@@ -21,6 +21,8 @@ import { ConfirmDialog } from './ConfirmDialog'
 import { useRealtimeConfig } from '../hooks/useRealtimeConfig'
 import { useFirestoreDetail } from '../hooks/useFirestoreDetail'
 import { SaveBackupIndicator } from './SaveBackupIndicator'
+import { normalizeStoreSearchTerm, rankStoreGames, type StoreSearchFilter, type StoreSearchResult } from '../lib/storeSearch'
+import { useStoreSearchTelemetry, type StoreSearchTermStat } from '../hooks/useStoreSearchTelemetry'
 
 function LazyGameCardImageBase({
   game,
@@ -56,9 +58,12 @@ function LazyGameCardImageBase({
     return () => observer.disconnect()
   }, [assetId, game, onRequestAsset, url])
 
-  if (url) {
-    return (
-      <div className={`store-card-image-wrapper ${!imageLoaded ? 'is-loading' : ''}`}>
+  return (
+    <div
+      ref={ref}
+      className={`store-card-image-wrapper ${!imageLoaded ? 'is-loading' : ''} ${url ? 'has-image' : 'is-empty'}`}
+    >
+      {url ? (
         <img
           src={url}
           alt=""
@@ -67,19 +72,244 @@ function LazyGameCardImageBase({
           className={imageLoaded ? 'loaded' : 'loading'}
           onLoad={() => setLoadedUrl(url)}
         />
-      </div>
-    )
-  }
-
-  return (
-    <div className="asset-placeholder" ref={ref}>
-      <ImageIcon size={variant === 'browse' ? 34 : 26} />
+      ) : (
+        <span className="store-card-image-placeholder" aria-hidden="true">
+          <ImageIcon size={variant === 'browse' ? 34 : 26} />
+        </span>
+      )}
     </div>
   )
 }
 
 // Memo-ize để tránh re-render khi parent component update nhưng image props không đổi
 const LazyGameCardImage = memo(LazyGameCardImageBase)
+
+const STORE_SEARCH_HISTORY_KEY = '0xo_store_search_history_v1'
+const STORE_SEARCH_FILTERS: Array<{ id: StoreSearchFilter; label: string }> = [
+  { id: 'all', label: 'All' },
+  { id: 'installed', label: 'Installed' },
+  { id: 'popular', label: 'Popular' },
+  { id: 'new', label: 'New releases' },
+  { id: 'downloaded', label: 'Most downloaded' },
+]
+
+function readStoreSearchHistory(): string[] {
+  try {
+    const value = JSON.parse(localStorage.getItem(STORE_SEARCH_HISTORY_KEY) || '[]')
+    return Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === 'string').slice(0, 12) : []
+  } catch {
+    return []
+  }
+}
+
+function compactMetric(value: number): string {
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(value >= 10_000_000 ? 0 : 1)}m`
+  if (value >= 1_000) return `${(value / 1_000).toFixed(value >= 10_000 ? 0 : 1)}k`
+  return value.toLocaleString()
+}
+
+function StoreSearchOverlay({
+  open,
+  query,
+  filter,
+  results,
+  history,
+  trending,
+  searchVolume,
+  statsLoading,
+  assets,
+  downloads,
+  likes,
+  installedGameIds,
+  onQueryChange,
+  onFilterChange,
+  onClose,
+  onSubmit,
+  onSuggestion,
+  onClearHistory,
+  onSelectResult,
+  onRequestAsset,
+}: {
+  open: boolean
+  query: string
+  filter: StoreSearchFilter
+  results: StoreSearchResult[]
+  history: string[]
+  trending: StoreSearchTermStat[]
+  searchVolume: number | null
+  statsLoading: boolean
+  assets: Record<string, string>
+  downloads: Record<string, number>
+  likes: Record<string, number>
+  installedGameIds: Set<string>
+  onQueryChange: (value: string) => void
+  onFilterChange: (value: StoreSearchFilter) => void
+  onClose: () => void
+  onSubmit: () => void
+  onSuggestion: (term: string) => void
+  onClearHistory: () => void
+  onSelectResult: (game: GameSummary) => void
+  onRequestAsset: (game: GameSummary, assetId: string | undefined, urgent?: boolean) => void
+}) {
+  const inputRef = useRef<HTMLInputElement>(null)
+  const normalizedQuery = normalizeStoreSearchTerm(query)
+  const hasQuery = normalizedQuery.length > 0
+
+  useEffect(() => {
+    if (!open) return
+    document.body.classList.add('store-search-overlay-open')
+    const focusTimer = window.setTimeout(() => inputRef.current?.focus(), 30)
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.clearTimeout(focusTimer)
+      window.removeEventListener('keydown', handleKeyDown)
+      document.body.classList.remove('store-search-overlay-open')
+    }
+  }, [onClose, open])
+
+  if (!open || typeof document === 'undefined') return null
+
+  return createPortal(
+    <div className="store-search-overlay" role="dialog" aria-modal="true" aria-label="Search the store">
+      <div className="store-search-backdrop" onClick={onClose} />
+      <section className="store-search-surface">
+        <header className="store-search-hero">
+          <form
+            className="store-search-command"
+            onSubmit={(event) => {
+              event.preventDefault()
+              onSubmit()
+            }}
+          >
+            <Search size={22} />
+            <input
+              ref={inputRef}
+              aria-label="Search games, AppIDs, developers, tags, or versions"
+              value={query}
+              onChange={(event) => onQueryChange(event.target.value)}
+              placeholder="Search games, AppID, developer, tag, version..."
+              autoComplete="off"
+              spellCheck="false"
+            />
+            {query ? (
+              <button type="button" className="store-search-clear" onClick={() => onQueryChange('')} title="Clear search">
+                <X size={18} />
+              </button>
+            ) : (
+              <kbd>Ctrl K</kbd>
+            )}
+          </form>
+          <button type="button" className="store-search-close" onClick={onClose} title="Close search">
+            <X size={20} />
+          </button>
+        </header>
+
+        <div className="store-search-filters" role="tablist" aria-label="Search filters">
+          {STORE_SEARCH_FILTERS.map((option) => (
+            <button
+              key={option.id}
+              type="button"
+              role="tab"
+              aria-selected={filter === option.id}
+              className={filter === option.id ? 'active' : ''}
+              onClick={() => onFilterChange(option.id)}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+
+        {!hasQuery ? (
+          <div className="store-search-discovery">
+            <div className="store-search-discovery-columns">
+              <section>
+                <div className="store-search-section-title">
+                  <span><Clock3 size={15} /> Recent searches</span>
+                  {history.length ? <button type="button" onClick={onClearHistory}>Clear</button> : null}
+                </div>
+                <div className="store-search-chips">
+                  {history.length ? history.map((term) => (
+                    <button key={term} type="button" onClick={() => onSuggestion(term)}>{term}</button>
+                  )) : <p>Your recent searches will appear here.</p>}
+                </div>
+              </section>
+              <section>
+                <div className="store-search-section-title">
+                  <span><TrendingUp size={15} /> Trending now</span>
+                  {statsLoading ? <small>Updating...</small> : null}
+                </div>
+                <div className="store-search-chips trending">
+                  {trending.length ? trending.slice(0, 8).map((entry) => (
+                    <button key={entry.term} type="button" onClick={() => onSuggestion(entry.term)}>
+                      <span>{entry.term}</span>
+                      <small>{compactMetric(entry.searches)}</small>
+                    </button>
+                  )) : <p>Trending searches will appear as the community uses search.</p>}
+                </div>
+              </section>
+            </div>
+            <div className="store-search-results-heading">
+              <span><Sparkles size={16} /> Recommended for discovery</span>
+              <small>Popularity, freshness, and community interest</small>
+            </div>
+          </div>
+        ) : (
+          <div className="store-search-results-heading">
+            <span>{results.length} result{results.length === 1 ? '' : 's'} for “{query.trim()}”</span>
+            <small>
+              {statsLoading
+                ? 'Checking community interest...'
+                : searchVolume !== null
+                  ? `${compactMetric(searchVolume)} community search${searchVolume === 1 ? '' : 'es'}`
+                  : 'Smart ranked results'}
+            </small>
+          </div>
+        )}
+
+        <div className="store-search-results" aria-live="polite">
+          {results.length ? results.slice(0, hasQuery ? 36 : 18).map(({ game, matchLabel }) => {
+            const gameDownloads = downloads[game.id] || 0
+            const gameLikes = likes[game.id] || 0
+            return (
+              <button key={game.id} type="button" className="store-search-result" onClick={() => onSelectResult(game)}>
+                <div className="store-search-result-media">
+                  <LazyGameCardImage
+                    game={game}
+                    assetId={game.gridAssetId}
+                    url={assetUrlForId(game.gridAssetId, assets)}
+                    variant="browse"
+                    onRequestAsset={onRequestAsset}
+                  />
+                </div>
+                <div className="store-search-result-copy">
+                  <strong>{game.title}</strong>
+                  <span>{game.developer || game.publisher || '0xoLemon catalog'}</span>
+                  <small>{matchLabel}</small>
+                </div>
+                <div className="store-search-result-meta">
+                  {installedGameIds.has(game.id) ? <span className="installed"><CheckCircle2 size={13} /> Installed</span> : null}
+                  {gameDownloads > 0 ? <span><Download size={13} /> {compactMetric(gameDownloads)}</span> : null}
+                  {gameLikes > 0 ? <span><ThumbsUp size={13} /> {compactMetric(gameLikes)}</span> : null}
+                </div>
+              </button>
+            )
+          }) : (
+            <div className="store-search-empty">
+              <Search size={28} />
+              <strong>No matching games</strong>
+              <span>Try a title, AppID, publisher, version, or a broader filter.</span>
+              {filter !== 'all' ? <button type="button" onClick={() => onFilterChange('all')}>Search all games</button> : null}
+            </div>
+          )}
+        </div>
+      </section>
+    </div>,
+    document.body,
+  )
+}
 
 function CatalogLoadingView({ viewMode }: { viewMode: 'store' | 'library' }) {
   const { t } = useLocale()
@@ -461,6 +691,10 @@ export function StoreLibraryView({
 }) {
   const { t } = useLocale()
   const [query, setQuery] = useState('')
+  const deferredQuery = useDeferredValue(query)
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [searchFilter, setSearchFilter] = useState<StoreSearchFilter>('all')
+  const [searchHistory, setSearchHistory] = useState<string[]>(readStoreSearchHistory)
   const [tutorialVisible, setTutorialVisible] = useState(false)
   const [storeMode, setStoreMode] = useState<'local' | 'steam'>(() => {
     const saved = localStorage.getItem('libraryStoreMode')
@@ -489,6 +723,29 @@ export function StoreLibraryView({
   const [sortOpen, setSortOpen] = useState(false)
   const realtimeConfig = useRealtimeConfig()
   const gameStats = useGameStats()
+  const {
+    stats: searchStats,
+    loading: searchStatsLoading,
+    recordSearch,
+    recordResultClick,
+  } = useStoreSearchTelemetry(searchOpen, deferredQuery)
+
+  const rememberSearch = useCallback((term: string) => {
+    const normalized = normalizeStoreSearchTerm(term)
+    if (normalized.length < 2) return
+    setSearchHistory((current) => {
+      const next = [term.trim(), ...current.filter((entry) => normalizeStoreSearchTerm(entry) !== normalized)].slice(0, 12)
+      localStorage.setItem(STORE_SEARCH_HISTORY_KEY, JSON.stringify(next))
+      return next
+    })
+  }, [])
+
+  const clearSearchHistory = useCallback(() => {
+    localStorage.removeItem(STORE_SEARCH_HISTORY_KEY)
+    setSearchHistory([])
+  }, [])
+
+  const closeSearch = useCallback(() => setSearchOpen(false), [])
 
   const toggleWishlist = (gameId: string) => {
     setWishlist(prev => {
@@ -568,7 +825,7 @@ export function StoreLibraryView({
 
   const { mapping } = useSteamAppIds()
 
-  const visibleGames = useMemo(() => {
+  const browseGames = useMemo(() => {
     let baseGames = catalog.games
 
     // In library view, filter based on libraryMode
@@ -584,15 +841,38 @@ export function StoreLibraryView({
       })
     }
 
-    const needle = query.trim().toLowerCase()
-    if (needle) {
-      baseGames = baseGames.filter((game) =>
-        [game.title, game.subtitle, game.developer, game.publisher].some((value) => value.toLowerCase().includes(needle)),
-      )
+    return baseGames
+  }, [catalog.games, viewMode, libraryMode, installStates, steamInstalledAppIds, mapping])
+
+  const rankedSearchResults = useMemo(() => rankStoreGames({
+    games: browseGames,
+    query: deferredQuery,
+    filter: searchFilter,
+    installStates,
+    steamInstalledAppIds,
+    steamMapping: mapping,
+    downloads: gameStats.downloads,
+    likes: gameStats.likes,
+    searchClicks: searchStats.gameClicks,
+  }), [
+    browseGames,
+    deferredQuery,
+    searchFilter,
+    installStates,
+    steamInstalledAppIds,
+    mapping,
+    gameStats.downloads,
+    gameStats.likes,
+    searchStats.gameClicks,
+  ])
+
+  const visibleGames = useMemo(() => {
+    if (normalizeStoreSearchTerm(deferredQuery) || searchFilter !== 'all') {
+      return rankedSearchResults.map((result) => result.game)
     }
 
     // Apply sort
-    const sorted = [...baseGames]
+    const sorted = [...browseGames]
     if (sortBy === 'az') sorted.sort((a, b) => a.title.localeCompare(b.title))
     else if (sortBy === 'za') sorted.sort((a, b) => b.title.localeCompare(a.title))
     else if (sortBy === 'liked') sorted.sort((a, b) => (gameStats.likes[b.id] || 0) - (gameStats.likes[a.id] || 0))
@@ -609,11 +889,39 @@ export function StoreLibraryView({
     }
 
     return sorted
-  }, [catalog.games, query, viewMode, libraryMode, installStates, steamInstalledAppIds, mapping, sortBy, gameStats])
+  }, [browseGames, catalog.games, deferredQuery, searchFilter, rankedSearchResults, sortBy, gameStats.downloads, gameStats.likes])
+
+  const installedGameIds = useMemo(() => new Set(catalog.games.flatMap((game) => {
+    const mappedAppId = mapping[game.id]
+    const installedLocally = installStates?.[game.id]?.installed
+    const installedOnSteam = Boolean(mappedAppId && steamInstalledAppIds?.includes(mappedAppId))
+    return installedLocally || installedOnSteam ? [game.id] : []
+  })), [catalog.games, installStates, mapping, steamInstalledAppIds])
+
+  useEffect(() => {
+    if (!searchOpen || normalizeStoreSearchTerm(deferredQuery).length < 2) return
+    const timer = window.setTimeout(() => {
+      rememberSearch(deferredQuery)
+      recordSearch('stable-query', deferredQuery, rankedSearchResults.length)
+    }, 1_100)
+    return () => window.clearTimeout(timer)
+  }, [deferredQuery, rankedSearchResults.length, recordSearch, rememberSearch, searchOpen])
+
+  useEffect(() => {
+    if (selectedGame) return
+    const handleSearchShortcut = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault()
+        setSearchOpen(true)
+      }
+    }
+    window.addEventListener('keydown', handleSearchShortcut)
+    return () => window.removeEventListener('keydown', handleSearchShortcut)
+  }, [selectedGame])
 
   useEffect(() => {
     setCurrentPage(1)
-  }, [query, sortBy, viewLayout, viewMode, libraryMode, gridCols])
+  }, [deferredQuery, searchFilter, sortBy, viewLayout, viewMode, libraryMode, gridCols])
 
   const itemsPerPage = viewLayout === 'list' ? 70 : 50
   const paginatedGames = visibleGames.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
@@ -891,6 +1199,25 @@ export function StoreLibraryView({
     return () => observer.disconnect()
   }, [selectedGameId, detail?.gameId])
 
+  const handleSearchSubmit = useCallback(() => {
+    rememberSearch(query)
+    recordSearch('submit', query, rankedSearchResults.length)
+  }, [query, rankedSearchResults.length, recordSearch, rememberSearch])
+
+  const handleSearchSuggestion = useCallback((term: string) => {
+    setQuery(term)
+    setSearchFilter('all')
+    rememberSearch(term)
+  }, [rememberSearch])
+
+  const handleSearchResult = useCallback((game: GameSummary) => {
+    const telemetryTerm = query.trim() || game.title
+    rememberSearch(telemetryTerm)
+    recordResultClick(telemetryTerm, rankedSearchResults.length, game.id)
+    setSearchOpen(false)
+    onSelectGame(game.id)
+  }, [onSelectGame, query, rankedSearchResults.length, recordResultClick, rememberSearch])
+
   const renderGameCard = (game: GameSummary, variant: 'compact' | 'browse') => {
     const tags = getGameTags(game)
     const isComingSoon = gameHasTag(game, 'coming soon')
@@ -899,7 +1226,7 @@ export function StoreLibraryView({
     const likes = gameStats.likes[game.id] || 0
 
     return (
-      <button
+      <div
         className={[
           'store-game-card',
           variant === 'browse' ? 'browse-game-card' : '',
@@ -909,9 +1236,16 @@ export function StoreLibraryView({
           .filter(Boolean)
           .join(' ')}
         key={game.id}
-        type="button"
-        disabled={isComingSoon}
+        role="button"
+        tabIndex={isComingSoon ? -1 : 0}
+        aria-disabled={isComingSoon}
         onClick={() => !isComingSoon && onSelectGame(game.id)}
+        onKeyDown={(event) => {
+          if (!isComingSoon && (event.key === 'Enter' || event.key === ' ')) {
+            event.preventDefault()
+            onSelectGame(game.id)
+          }
+        }}
       >
         <div className="store-game-card-media">
           <LazyGameCardImage
@@ -979,7 +1313,7 @@ export function StoreLibraryView({
             </button>
           )}
         </div>
-      </button>
+      </div>
 
     )
   }
@@ -1047,12 +1381,46 @@ export function StoreLibraryView({
               </button>
             </div>
 
-            <label className="store-search">
+            <label className="store-search" data-open={searchOpen ? 'true' : 'false'}>
               <Search size={16} />
-              <input aria-label="Search games" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search..." />
+              <input
+                aria-label="Search games"
+                aria-expanded={searchOpen}
+                value={query}
+                onFocus={() => setSearchOpen(true)}
+                onClick={() => setSearchOpen(true)}
+                onChange={(event) => {
+                  setQuery(event.target.value)
+                  setSearchOpen(true)
+                }}
+                placeholder="Search games..."
+              />
+              <kbd>Ctrl K</kbd>
             </label>
           </div>
         </header>
+        <StoreSearchOverlay
+          open={searchOpen}
+          query={query}
+          filter={searchFilter}
+          results={rankedSearchResults}
+          history={searchHistory}
+          trending={searchStats.trending}
+          searchVolume={searchStats.query?.searches ?? null}
+          statsLoading={searchStatsLoading}
+          assets={assets}
+          downloads={gameStats.downloads}
+          likes={gameStats.likes}
+          installedGameIds={installedGameIds}
+          onQueryChange={setQuery}
+          onFilterChange={setSearchFilter}
+          onClose={closeSearch}
+          onSubmit={handleSearchSubmit}
+          onSuggestion={handleSearchSuggestion}
+          onClearHistory={clearSearchHistory}
+          onSelectResult={handleSearchResult}
+          onRequestAsset={onRequestAsset}
+        />
         {visibleGames.length > 0 ? (
           <>
             <div className={`library-browse-grid layout-${viewLayout} ${viewLayout === 'grid' ? `grid-cols-${gridCols}` : ''}`}>

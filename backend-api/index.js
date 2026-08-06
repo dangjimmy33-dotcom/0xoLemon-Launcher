@@ -9,6 +9,7 @@ const cors = require('cors');
 const NodeCache = require('node-cache');
 const admin = require('firebase-admin');
 const rateLimit = require('express-rate-limit');
+const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -123,7 +124,42 @@ const limiter = rateLimit({
 app.use(limiter);
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '32kb' }));
+
+const searchWriteLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many search events, please try again later' }
+});
+
+function normalizeSearchTerm(value) {
+  if (typeof value !== 'string') return '';
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[\u0000-\u001f\u007f]/g, ' ')
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, ' ')
+    .slice(0, 80);
+}
+
+function searchTermKey(term) {
+  return crypto.createHash('sha256').update(term).digest('hex');
+}
+
+function timestampToIso(value) {
+  if (value && typeof value.toDate === 'function') return value.toDate().toISOString();
+  return typeof value === 'string' ? value : '';
+}
+
+function clearSearchStatsCache(tenantId) {
+  cache.keys()
+    .filter((key) => key.startsWith(`${tenantId}:search-stats`))
+    .forEach((key) => cache.del(key));
+}
 
 // Tenant validator middleware
 function validateTenant(req, res, next) {
@@ -354,6 +390,131 @@ app.get('/api/:tenant/game-stats', validateTenant, async (req, res) => {
   } catch (error) {
     console.error(`❌ [${req.params.tenant}] Error fetching game stats:`, error);
     res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * GET /api/:tenant/search-stats
+ * Returns anonymized aggregate search trends and optional query volume.
+ */
+app.get('/api/:tenant/search-stats', validateTenant, async (req, res) => {
+  try {
+    const tenantId = req.params.tenant;
+    const normalizedQuery = normalizeSearchTerm(req.query.query || '');
+    const queryKey = normalizedQuery ? searchTermKey(normalizedQuery) : 'overview';
+    const cacheKey = `${tenantId}:search-stats:${queryKey}`;
+    let data = cache.get(cacheKey);
+
+    if (!data) {
+      const db = getTenantDb(tenantId);
+      const trendingPromise = db.collection('searchTerms').orderBy('count', 'desc').limit(12).get();
+      const clicksPromise = db.collection('gameSearchClicks').orderBy('clicks', 'desc').limit(50).get();
+      const queryPromise = normalizedQuery
+        ? db.collection('searchTerms').doc(queryKey).get()
+        : Promise.resolve(null);
+
+      const [trendingSnapshot, clicksSnapshot, queryDocument] = await Promise.all([
+        trendingPromise,
+        clicksPromise,
+        queryPromise
+      ]);
+
+      const trending = trendingSnapshot.docs.map((document) => {
+        const termData = document.data();
+        return {
+          term: termData.term || '',
+          searches: Number(termData.count || 0),
+          lastSearchedAt: timestampToIso(termData.lastSearchedAt)
+        };
+      }).filter((entry) => entry.term);
+
+      const gameClicks = {};
+      clicksSnapshot.docs.forEach((document) => {
+        gameClicks[document.id] = Number(document.data().clicks || 0);
+      });
+
+      let query = null;
+      if (queryDocument && queryDocument.exists) {
+        const queryData = queryDocument.data();
+        query = {
+          term: queryData.term || normalizedQuery,
+          searches: Number(queryData.count || 0),
+          lastSearchedAt: timestampToIso(queryData.lastSearchedAt)
+        };
+      } else if (normalizedQuery) {
+        query = { term: normalizedQuery, searches: 0 };
+      }
+
+      data = {
+        trending,
+        query,
+        gameClicks,
+        generatedAt: new Date().toISOString()
+      };
+      cache.set(cacheKey, data, 300);
+    }
+
+    res.json(data);
+  } catch (error) {
+    console.error(`[${req.params.tenant}] Error fetching search stats:`, error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * POST /api/:tenant/search-events
+ * Records aggregate terms and result selections without user identifiers.
+ */
+app.post('/api/:tenant/search-events', searchWriteLimiter, validateTenant, async (req, res) => {
+  try {
+    const tenantId = req.params.tenant;
+    const normalizedQuery = normalizeSearchTerm(req.body.query);
+    const source = typeof req.body.source === 'string' ? req.body.source : '';
+    const selectedGameId = typeof req.body.selectedGameId === 'string' ? req.body.selectedGameId.trim() : '';
+    const resultCount = Number(req.body.resultCount);
+    const validSources = new Set(['stable-query', 'submit', 'suggestion-click', 'result-click']);
+
+    if (normalizedQuery.length < 2) return res.status(400).json({ error: 'Search query must contain at least 2 characters' });
+    if (!validSources.has(source)) return res.status(400).json({ error: 'Invalid search event source' });
+    if (!Number.isInteger(resultCount) || resultCount < 0 || resultCount > 10000) {
+      return res.status(400).json({ error: 'Invalid result count' });
+    }
+    if (selectedGameId && !/^[a-zA-Z0-9_.-]{1,100}$/.test(selectedGameId)) {
+      return res.status(400).json({ error: 'Invalid game ID' });
+    }
+    if (source === 'result-click' && !selectedGameId) {
+      return res.status(400).json({ error: 'Result click requires a game ID' });
+    }
+
+    const db = getTenantDb(tenantId);
+    const writes = [];
+    const now = admin.firestore.FieldValue.serverTimestamp();
+
+    if (source !== 'result-click') {
+      writes.push(db.collection('searchTerms').doc(searchTermKey(normalizedQuery)).set({
+        term: normalizedQuery,
+        count: admin.firestore.FieldValue.increment(1),
+        resultCountTotal: admin.firestore.FieldValue.increment(resultCount),
+        lastSearchedAt: now,
+        updatedAt: now
+      }, { merge: true }));
+    }
+
+    if (selectedGameId) {
+      writes.push(db.collection('gameSearchClicks').doc(selectedGameId).set({
+        gameId: selectedGameId,
+        clicks: admin.firestore.FieldValue.increment(1),
+        lastClickedAt: now,
+        updatedAt: now
+      }, { merge: true }));
+    }
+
+    await Promise.all(writes);
+    clearSearchStatsCache(tenantId);
+    res.status(202).json({ accepted: true });
+  } catch (error) {
+    console.error(`[${req.params.tenant}] Error recording search event:`, error);
+    res.status(500).json({ error: 'Could not record search event' });
   }
 });
 

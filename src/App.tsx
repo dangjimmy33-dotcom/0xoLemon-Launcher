@@ -2315,7 +2315,11 @@ export default function App() {
             return
           }
           setSnapshot(planned)
-          setJob(planned.lastJob)
+          // Only update job from plan if there's no active job running.
+          // This prevents a stale plan response from nullifying an active download.
+          if (planned.lastJob || !job) {
+            setJob(planned.lastJob)
+          }
         } catch (error) {
           const message = String(error)
           if (message.toLowerCase().includes('job canceled')) {
@@ -2841,6 +2845,14 @@ export default function App() {
         console.warn('Disk space check failed:', e)
         // Continue anyway if the check fails (e.g. path doesn't exist yet)
       }
+
+      // Cancel any pending version planning timer to prevent it from
+      // overwriting the active job with a stale null value (race condition).
+      if (versionPlanTimerRef.current !== null) {
+        window.clearTimeout(versionPlanTimerRef.current)
+        versionPlanTimerRef.current = null
+      }
+      versionPlanSequenceRef.current += 1
 
       const versionToApply = targetVersion
       setSelectedVersion(versionToApply)
