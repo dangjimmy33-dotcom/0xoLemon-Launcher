@@ -1,5 +1,12 @@
 ﻿[
     {
+        "version":  "2.0.35",
+        "date":  "2026-08-06",
+        "changes":  [
+                        "cải thiện khả năng download, update và apply các bản vá dễ dàng handle hơn, sửa 1 số lỗi vặt"
+                    ]
+    },
+    {
         "version":  "2.0.34",
         "date":  "2026-08-06",
         "changes":  [
