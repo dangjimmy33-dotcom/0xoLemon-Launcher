@@ -1,16 +1,14 @@
 import { useEffect, useMemo, useState, useCallback } from 'react'
 import { invoke } from '@tauri-apps/api/core'
+import { listen } from '@tauri-apps/api/event'
 import { Cloud, CloudOff, FolderSync, TriangleAlert, Wrench, CheckCircle2, XCircle, Terminal, ChevronLeft, ShieldCheck, ShieldX, RefreshCw, Save, ChevronDown, FolderOpen, Info, HardDrive, DatabaseBackup, Clock3, RotateCw, Settings2 } from 'lucide-react'
 import type { CloudSaveStatus, GameCatalog, GameInstallState, CloudRedirectStatus, StfixerResult, CloudProviderConfig } from '../types'
 import { isTauriRuntime } from '../lib/gameMeta'
 import { formatBytes } from '../lib/format'
 import { cloudSavePresentation, quotaPercent } from '../lib/cloudSaveStatus'
+import { useLocale } from '../context/LocaleContext'
 
-const PROVIDER_OPTIONS = [
-  { value: 'gdrive', label: 'Google Drive' },
-  { value: 'onedrive', label: 'OneDrive' },
-  { value: 'folder', label: 'Local Folder' },
-] as const
+const PROVIDER_VALUES = ['gdrive', 'onedrive', 'folder'] as const
 
 export function CloudSavesOverview({
   catalog,
@@ -25,6 +23,8 @@ export function CloudSavesOverview({
   onOpenGame: (gameId: string) => void
   onRequestAsset: (gameId: string, assetId: string, urgent?: boolean) => void
 }) {
+  const { t, locale } = useLocale()
+  const c = t.cloudSave
   const installed = useMemo(
     () => catalog.games.filter((game) => installStates[game.id]?.installed),
     [catalog.games, installStates],
@@ -75,7 +75,7 @@ export function CloudSavesOverview({
     const pendingBytes = values.reduce((sum, status) => sum + (status.pendingUploadBytes || 0), 0)
     const quota = values.find((status) => status.quota)?.quota ?? null
     const protectedGames = values.filter((status) => status.enabled && status.automaticProtection).length
-    const attentionGames = values.filter((status) => cloudSavePresentation(status).blocking).length
+    const attentionGames = values.filter((status) => cloudSavePresentation(status, c.states).blocking).length
     return { pendingCount, pendingBytes, quota, protectedGames, attentionGames }
   }, [statuses])
 
@@ -91,6 +91,7 @@ export function CloudSavesOverview({
   const [editTokenPath, setEditTokenPath] = useState('')
   const [providerSaving, setProviderSaving] = useState(false)
   const [providerSaveMsg, setProviderSaveMsg] = useState('')
+  const [providerSaveError, setProviderSaveError] = useState(false)
 
   // Load STFixer status + provider config when entering stfixer mode
   const loadStfixerData = useCallback(async () => {
@@ -135,6 +136,7 @@ export function CloudSavesOverview({
     if (!isTauriRuntime()) return
     setProviderSaving(true)
     setProviderSaveMsg('')
+    setProviderSaveError(false)
     try {
       await invoke('cloud_redirect_save_provider_config', {
         provider: editProvider,
@@ -145,9 +147,10 @@ export function CloudSavesOverview({
       setProviderConfig(config)
       setEditProvider(config.provider || '')
       setEditTokenPath(config.tokenPath || '')
-      setProviderSaveMsg('Configuration saved.')
+      setProviderSaveMsg(c.configurationSaved)
     } catch (e: any) {
-      setProviderSaveMsg(`Error: ${e}`)
+      setProviderSaveError(true)
+      setProviderSaveMsg(c.providerError.replace('{error}', String(e)))
     } finally {
       setProviderSaving(false)
       setTimeout(() => setProviderSaveMsg(''), 4000)
@@ -160,12 +163,12 @@ export function CloudSavesOverview({
       const { open } = await import('@tauri-apps/plugin-dialog')
       const isFolder = editProvider === 'folder'
       if (isFolder) {
-        const selected = await open({ directory: true, title: 'Select sync folder' })
+        const selected = await open({ directory: true, title: c.selectSyncFolder })
         if (selected) setEditTokenPath(selected as string)
       } else {
         const selected = await open({
           filters: [{ name: 'JSON', extensions: ['json'] }],
-          title: 'Select token file',
+          title: c.selectTokenFile,
         })
         if (selected) setEditTokenPath(selected as string)
       }
@@ -177,13 +180,15 @@ export function CloudSavesOverview({
   async function handleConnectGoogle() {
     if (!isTauriRuntime()) return
     setProviderSaving(true)
-    setProviderSaveMsg('Opening browser for Google Drive authentication...')
+    setProviderSaveError(false)
+    setProviderSaveMsg(c.openingBrowser)
     try {
       await invoke('cloud_redirect_connect_google')
       await loadStfixerData()
-      setProviderSaveMsg('Successfully authenticated with Google Drive.')
+      setProviderSaveMsg(c.authVerified)
     } catch (e: any) {
-      setProviderSaveMsg(`Error: ${e}`)
+      setProviderSaveError(true)
+      setProviderSaveMsg(c.providerError.replace('{error}', String(e)))
     } finally {
       setProviderSaving(false)
       setTimeout(() => setProviderSaveMsg(''), 4000)
@@ -191,14 +196,43 @@ export function CloudSavesOverview({
   }
 
   const [nativeAuthBusy, setNativeAuthBusy] = useState(false)
+
+  const refreshNativeStatuses = useCallback(async () => {
+    if (!isTauriRuntime()) return
+    const [connected, entries] = await Promise.all([
+      invoke<boolean>('global_is_google_drive_connected'),
+      Promise.all(
+        installed.map(async (game) => [game.id, await invoke<CloudSaveStatus>('get_cloud_save_status', { gameId: game.id })] as const),
+      ),
+    ])
+    setNativeGoogleConnected(connected)
+    setStatuses(Object.fromEntries(entries))
+  }, [installed])
+
+  useEffect(() => {
+    if (!isTauriRuntime()) return
+    let unlisten: (() => void) | undefined
+    listen<{ connected: boolean }>('launcher://cloud-save-auth-changed', (event) => {
+      setNativeGoogleConnected(Boolean(event.payload?.connected))
+      void refreshNativeStatuses().catch(() => undefined)
+    }).then((dispose) => { unlisten = dispose }).catch(() => undefined)
+    return () => unlisten?.()
+  }, [refreshNativeStatuses])
+
   async function handleNativeConnectGoogle() {
     if (!isTauriRuntime()) return
     setNativeAuthBusy(true)
+    setNativeBusyMessage(c.openingBrowser)
     try {
       await invoke('global_connect_google_drive')
-      setNativeGoogleConnected(true)
+      await refreshNativeStatuses()
+      const connected = await invoke<boolean>('global_is_google_drive_connected')
+      if (!connected) throw new Error('OAuth token was not persisted')
+      setNativeBusyMessage(c.authVerified)
     } catch (e) {
       console.error('Native Google Connect Error:', e)
+      setNativeGoogleConnected(false)
+      setNativeBusyMessage(c.authFailed.replace('{error}', String(e)))
     } finally {
       setNativeAuthBusy(false)
     }
@@ -209,9 +243,9 @@ export function CloudSavesOverview({
     setNativeAuthBusy(true)
     try {
       await invoke('global_disconnect_google_drive')
-      setNativeGoogleConnected(false)
+      await refreshNativeStatuses()
     } catch (e) {
-      console.error('Native Google Disconnect Error:', e)
+      setNativeBusyMessage(c.authFailed.replace('{error}', String(e)))
     } finally {
       setNativeAuthBusy(false)
     }
@@ -219,40 +253,36 @@ export function CloudSavesOverview({
 
   async function handleRetryPendingCloudSaves() {
     if (!isTauriRuntime()) return
-    setNativeBusyMessage('Đang kiểm tra các tác vụ chờ…')
+    setNativeBusyMessage(c.checkingPending)
     try {
       await invoke('retry_pending_cloud_saves', { gameId: null })
       const entries = await Promise.all(
         installed.map(async (game) => [game.id, await invoke<CloudSaveStatus>('get_cloud_save_status', { gameId: game.id })] as const),
       )
       setStatuses(Object.fromEntries(entries))
-      setNativeBusyMessage('Đã kiểm tra xong. Tác vụ an toàn sẽ tiếp tục tự động.')
+      setNativeBusyMessage(c.pendingChecked)
     } catch (error) {
-      setNativeBusyMessage(`Chưa thể thử lại: ${String(error)}`)
+      setNativeBusyMessage(c.pendingFailed.replace('{error}', String(error)))
     }
   }
 
   async function handleRefreshCloudSaveMap() {
     if (!isTauriRuntime()) return
-    setNativeBusyMessage('Đang xác minh cấu hình nhận diện Save…')
+    setNativeBusyMessage(c.checkingDetection)
     try {
       const report = await invoke<{ message: string }>('refresh_cloud_save_map')
       setNativeBusyMessage(report.message)
     } catch (error) {
-      setNativeBusyMessage(`Vẫn đang dùng cấu hình ổn định trước đó: ${String(error)}`)
+      setNativeBusyMessage(c.stableMapFallback.replace('{error}', String(error)))
     }
   }
 
   // Compute auth display
   const authLabel = providerConfig == null
-    ? 'Loading...'
-    : !providerConfig.configFound
-      ? 'Not configured — select a provider and save.'
-      : !providerConfig.provider
-        ? 'No provider selected.'
-        : providerConfig.authenticated
-          ? 'Authenticated.'
-          : 'Not authenticated — sign in via CloudRedirect.'
+    ? c.loading
+    : providerConfig.authenticated
+      ? c.authenticated
+      : c.notAuthenticated
 
   const isAuthed = providerConfig?.authenticated ?? false
 
@@ -263,30 +293,30 @@ export function CloudSavesOverview({
           <header>
             <div className="cloud-overview-icon"><Cloud size={22} /></div>
             <div>
-              <h1>Cloud Saves</h1>
-              <p>Select your preferred cloud save management mode.</p>
+              <h1>{c.pageTitle}</h1>
+              <p>{c.chooseMode}</p>
             </div>
           </header>
           <div className="cloud-mode-selection">
             <button className="cloud-mode-card" onClick={() => setActiveMode('native')}>
               <div className="cloud-mode-icon native-icon"><FolderSync size={36} /></div>
               <h3>
-                Cloud Save
-                <span className="cloud-mode-info" title="Chỉ áp dụng cho game cài local qua 0xoLemon; không dùng SteamTools/Lua." onClick={(e) => e.stopPropagation()}>
+                {c.nativeModeTitle}
+                <span className="cloud-mode-info" title={c.nativeModeInfo} onClick={(e) => e.stopPropagation()}>
                   <Info size={16} />
                 </span>
               </h3>
-              <p>Sync game saves natively to Google Drive. Manage backup status and conflicts for your installed games.</p>
+              <p>{c.nativeModeDesc}</p>
             </button>
             <button className="cloud-mode-card" onClick={() => setActiveMode('stfixer')}>
               <div className="cloud-mode-icon stfixer-icon"><Wrench size={36} /></div>
               <h3>
-                STFixer
-                <span className="cloud-mode-info" title="Chế độ riêng cho SteamTools/Lua; không dùng chung với Cloud Save local." onClick={(e) => e.stopPropagation()}>
+                {c.legacyModeTitle}
+                <span className="cloud-mode-info" title={c.legacyModeInfo} onClick={(e) => e.stopPropagation()}>
                   <Info size={16} />
                 </span>
               </h3>
-              <p>Patch SteamTools to bypass the AppID 760 sync bug and configure CloudRedirect provider.</p>
+              <p>{c.legacyModeDesc}</p>
             </button>
           </div>
         </>
@@ -295,11 +325,11 @@ export function CloudSavesOverview({
           <header className="cloud-overview-header-with-back">
             <button className="cloud-back-btn" onClick={() => setActiveMode(null)}>
               <ChevronLeft size={20} />
-              <span>Back</span>
+              <span>{c.back}</span>
             </button>
             <div>
-              <h1>{activeMode === 'native' ? 'Cloud Save' : 'STFixer'}</h1>
-              <p>{activeMode === 'native' ? 'Tự động bảo vệ save của game cài local bằng Google Drive.' : 'Quản lý STFixer cho game SteamTools/Lua; tách biệt với Cloud Save local.'}</p>
+              <h1>{activeMode === 'native' ? c.nativeTitle : c.legacyTitle}</h1>
+              <p>{activeMode === 'native' ? c.nativeSubtitle : c.legacySubtitle}</p>
             </div>
           </header>
 
@@ -308,30 +338,30 @@ export function CloudSavesOverview({
               <header className="cr-header">
                 <div className="cr-header-title">
                   <Wrench size={20} />
-                  <h2>STFixer Configuration</h2>
+                  <h2>{c.stfixerConfig}</h2>
                 </div>
                 <div className="cr-status-badges">
                   {crStatus ? (
                     <>
                       <span className={`cr-badge ${crStatus.steamRunning ? 'warning' : 'ok'}`}>
-                        Steam: {crStatus.steamRunning ? 'Running' : 'Closed'}
+                        {c.steamLabel}: {crStatus.steamRunning ? c.steamRunning : c.steamClosed}
                       </span>
                       <span className={`cr-badge ${crStatus.steamVersionSupported ? 'ok' : 'error'}`}>
-                        Version: {crStatus.steamVersion || 'Unknown'} {crStatus.steamVersionSupported ? '' : '(Unsupported)'}
+                        {c.versionLabel}: {crStatus.steamVersion || c.versionUnknown} {crStatus.steamVersionSupported ? '' : `(${c.unsupported})`}
                       </span>
                       <span className={`cr-badge ${crStatus.stfixerApplied ? 'ok' : 'warning'}`}>
-                        STFixer: {crStatus.stfixerApplied ? 'Applied' : 'Not Applied'}
+                        {c.stfixerLabel}: {crStatus.stfixerApplied ? c.applied : c.notApplied}
                       </span>
                     </>
                   ) : (
-                    <span className="cr-badge">Loading status...</span>
+                    <span className="cr-badge">{c.loading}</span>
                   )}
                 </div>
               </header>
 
               <div className="cr-body">
                 <p>
-                  CloudRedirect patches SteamTools to allow proper cloud saves for non-owned (lua) games, bypassing the AppID 760 (Screenshots) limitation.
+                  {c.stfixerExplain}
                 </p>
                 <div className="cr-actions">
                   <button 
@@ -339,7 +369,7 @@ export function CloudSavesOverview({
                     onClick={handleApplyStfixer}
                     disabled={stfixerBusy || !crStatus?.steamPath}
                   >
-                    {stfixerBusy ? 'Applying Patch...' : 'Apply STFixer Patches'}
+                    {stfixerBusy ? c.applyingPatches : c.applyPatches}
                   </button>
                   <label className="cr-checkbox-label">
                     <input 
@@ -348,7 +378,7 @@ export function CloudSavesOverview({
                       onChange={(e) => setInstallCoreIfMissing(e.target.checked)}
                       disabled={stfixerBusy}
                     />
-                    Tự động tải &amp; cài đặt SteamTools Core (nếu chưa có)
+                    {c.installCore}
                   </label>
                 </div>
 
@@ -356,7 +386,7 @@ export function CloudSavesOverview({
                   <div className={`cr-result ${stfixerResult.succeeded ? 'success' : 'error'}`}>
                     <div className="cr-result-header">
                       {stfixerResult.succeeded ? <CheckCircle2 size={18} /> : <XCircle size={18} />}
-                      <strong>{stfixerResult.succeeded ? 'Patch Applied Successfully' : 'Patch Failed'}</strong>
+                      <strong>{stfixerResult.succeeded ? c.patchSuccess : c.patchFailed}</strong>
                     </div>
                     <div className="cr-terminal">
                       <Terminal size={14} className="cr-term-icon" />
@@ -375,26 +405,28 @@ export function CloudSavesOverview({
                 <header className="cr-header">
                   <div className="cr-header-title">
                     <Cloud size={20} />
-                    <h2>Cloud Provider</h2>
+                    <h2>{c.legacyProvider}</h2>
                   </div>
-                  <button className="cr-btn-icon" onClick={loadStfixerData} title="Refresh">
+                  <button className="cr-btn-icon" onClick={loadStfixerData} title={c.refresh}>
                     <RefreshCw size={16} />
                   </button>
                 </header>
                 <div className="cr-body">
-                  <p>Configure your Steam Cloud provider. Google Drive/OneDrive/Local Folder only for now.</p>
+                  <p>{c.providerDesc}</p>
                   
                   <div className="cr-form-group">
-                    <label>Provider</label>
+                    <label>{c.provider}</label>
                     <div className="cr-select-wrapper">
                       <select 
                         value={editProvider} 
                         onChange={(e) => setEditProvider(e.target.value)}
                         className="cr-select"
                       >
-                        <option value="">— Select Provider —</option>
-                        {PROVIDER_OPTIONS.map((opt) => (
-                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        <option value="">— {c.selectProvider} —</option>
+                        {PROVIDER_VALUES.map((value) => (
+                          <option key={value} value={value}>
+                            {value === 'gdrive' ? c.providerGoogleDrive : value === 'onedrive' ? c.providerOneDrive : c.providerLocalFolder}
+                          </option>
                         ))}
                       </select>
                       <ChevronDown size={16} className="cr-select-icon" />
@@ -403,28 +435,28 @@ export function CloudSavesOverview({
 
                   {editProvider && (
                     <div className="cr-form-group">
-                      <label>{editProvider === 'folder' ? 'Sync Folder Path' : 'Token File Path'}</label>
+                      <label>{editProvider === 'folder' ? c.syncFolderPath : c.tokenFilePath}</label>
                       <div className="cr-input-group">
                         <input 
                           type="text" 
                           value={editTokenPath}
                           onChange={(e) => setEditTokenPath(e.target.value)}
                           className="cr-input"
-                          placeholder={editProvider === 'folder' ? 'Select a local folder...' : 'Path to token file...'}
+                          placeholder={editProvider === 'folder' ? c.folderPlaceholder : c.tokenPlaceholder}
                         />
                         <button className="cr-btn secondary" onClick={handleBrowseTokenPath}>
                           <FolderOpen size={14} />
-                          Browse
+                          {c.browse}
                         </button>
                       </div>
                     </div>
                   )}
 
                   <div className="cr-form-group">
-                    <label>Authentication</label>
+                    <label>{c.authentication}</label>
                     <div className="cr-auth-card">
                       <div className="cr-auth-status">
-                        <strong>Authentication Status</strong>
+                        <strong>{c.authentication}</strong>
                         <span>{authLabel}</span>
                       </div>
                       {isAuthed
@@ -440,7 +472,7 @@ export function CloudSavesOverview({
                       disabled={providerSaving || !editProvider}
                     >
                       <Save size={16} />
-                      {providerSaving ? 'Saving...' : 'Save Configuration'}
+                      {providerSaving ? c.saving : c.saveConfiguration}
                     </button>
                     {editProvider === 'gdrive' && (
                       <button
@@ -449,13 +481,13 @@ export function CloudSavesOverview({
                         disabled={providerSaving}
                       >
                         <Cloud size={16} />
-                        Sign in with Google Drive
+                        {c.signInGoogle}
                       </button>
                     )}
                   </div>
 
                   {providerSaveMsg && (
-                    <div className={`cr-save-msg ${providerSaveMsg.startsWith('Error') ? 'error' : 'success'}`}>
+                    <div className={`cr-save-msg ${providerSaveError ? 'error' : 'success'}`}>
                       {providerSaveMsg}
                     </div>
                   )}
@@ -470,42 +502,42 @@ export function CloudSavesOverview({
                 <div>
                   <span className="cloud-native-hero-icon"><ShieldCheck size={22} /></span>
                   <div>
-                    <h2>Bảo vệ Save tự động</h2>
-                    <p>Launcher tự nhận diện, sao lưu và đồng bộ trước/sau khi chơi. Người dùng không cần chọn file thủ công.</p>
+                    <h2>{c.automaticProtection}</h2>
+                    <p>{c.automaticProtectionDesc}</p>
                   </div>
                 </div>
                 <div className={`cloud-native-account ${nativeGoogleConnected ? 'is-connected' : ''}`}>
                   <span>{nativeGoogleConnected ? <CheckCircle2 size={17} /> : <CloudOff size={17} />}</span>
                   <div>
-                    <strong>{nativeGoogleConnected ? 'Google Drive đã kết nối' : 'Chưa kết nối Google Drive'}</strong>
-                    <small>{nativeGoogleConnected ? 'Dữ liệu nằm trong vùng riêng của launcher.' : 'Save vẫn được bảo vệ cục bộ trên máy này.'}</small>
+                    <strong>{nativeGoogleConnected ? c.connected : c.notConnected}</strong>
+                    <small>{nativeGoogleConnected ? c.connectedDesc : c.notConnectedDesc}</small>
                   </div>
                   {nativeGoogleConnected ? (
-                    <button type="button" onClick={handleNativeDisconnectGoogle} disabled={nativeAuthBusy}>Ngắt kết nối</button>
+                    <button type="button" onClick={handleNativeDisconnectGoogle} disabled={nativeAuthBusy}>{c.disconnect}</button>
                   ) : (
                     <button type="button" className="primary" onClick={handleNativeConnectGoogle} disabled={nativeAuthBusy}>
-                      <Cloud size={15} /> Kết nối
+                      <Cloud size={15} /> {c.connect}
                     </button>
                   )}
                 </div>
               </section>
 
-              <section className="cloud-native-metrics" aria-label="Tổng quan Cloud Save">
+              <section className="cloud-native-metrics" aria-label={c.pageTitle}>
                 <article>
                   <ShieldCheck size={18} />
-                  <span><b>{nativeSummary.protectedGames}</b><small>game được bảo vệ</small></span>
+                  <span><b>{nativeSummary.protectedGames}</b><small>{c.protectedGames}</small></span>
                 </article>
                 <article>
                   <Clock3 size={18} />
-                  <span><b>{nativeSummary.pendingCount}</b><small>Đang chờ đồng bộ</small></span>
+                  <span><b>{nativeSummary.pendingCount}</b><small>{c.pendingSync}</small></span>
                 </article>
                 <article className={nativeSummary.attentionGames ? 'needs-attention' : ''}>
                   <TriangleAlert size={18} />
-                  <span><b>{nativeSummary.attentionGames}</b><small>cần bạn kiểm tra</small></span>
+                  <span><b>{nativeSummary.attentionGames}</b><small>{c.needsAttention}</small></span>
                 </article>
                 <article>
                   <DatabaseBackup size={18} />
-                  <span><b>{formatBytes(nativeSummary.pendingBytes)}</b><small>đang bảo vệ trên máy</small></span>
+                  <span><b>{formatBytes(nativeSummary.pendingBytes)}</b><small>{c.protectedLocally}</small></span>
                 </article>
               </section>
 
@@ -514,11 +546,11 @@ export function CloudSavesOverview({
                   <div>
                     <HardDrive size={18} />
                     <span>
-                      <strong>Dung lượng Google Drive</strong>
+                      <strong>{c.driveStorage}</strong>
                       <small>
                         {nativeSummary.quota.availableBytes == null
-                          ? `${formatBytes(nativeSummary.quota.usageBytes)} đã dùng`
-                          : `${formatBytes(nativeSummary.quota.availableBytes)} còn trống`}
+                          ? `${formatBytes(nativeSummary.quota.usageBytes)} ${c.used}`
+                          : `${formatBytes(nativeSummary.quota.availableBytes)} ${c.available}`}
                       </small>
                     </span>
                   </div>
@@ -533,10 +565,10 @@ export function CloudSavesOverview({
               <section className="cloud-native-toolbar">
                 <div>
                   <button type="button" className="primary" onClick={() => void handleRetryPendingCloudSaves()} disabled={!nativeGoogleConnected || nativeAuthBusy}>
-                    <RotateCw size={15} /> Thử lại tác vụ chờ
+                    <RotateCw size={15} /> {c.retryPending}
                   </button>
                   <button type="button" onClick={() => void handleRefreshCloudSaveMap()} disabled={nativeAuthBusy}>
-                    <Settings2 size={15} /> Cập nhật nhận diện Save
+                    <Settings2 size={15} /> {c.refreshDetection}
                   </button>
                 </div>
                 {nativeBusyMessage ? <p role="status" aria-live="polite">{nativeBusyMessage}</p> : null}
@@ -545,30 +577,30 @@ export function CloudSavesOverview({
               <section className="cloud-native-games">
                 <header>
                   <div>
-                    <h3>Game đã cài</h3>
-                    <p>Mỗi game dùng đường dẫn Save đã được xác minh; chỉ hiện chi tiết kỹ thuật khi cần.</p>
+                    <h3>{c.installedGames}</h3>
+                    <p>{c.installedGamesDesc}</p>
                   </div>
                 </header>
                 {installed.length === 0 ? (
                   <div className="cloud-overview-empty">
                     <CloudOff size={28} />
-                    <strong>Chưa có game local</strong>
-                    <span>Cloud Save sẽ tự xuất hiện sau khi bạn cài game bằng launcher.</span>
+                    <strong>{c.noLocalGames}</strong>
+                    <span>{c.noLocalGamesDesc}</span>
                   </div>
                 ) : (
                   <div className="cloud-overview-list cloud-native-game-list">
                     {installed.map((game) => {
                       const status = statuses[game.id]
-                      const view = cloudSavePresentation(status ?? null)
+                      const view = cloudSavePresentation(status ?? null, c.states)
                       return (
                         <button type="button" key={game.id} onClick={() => onOpenGame(game.id)}>
                           {assets[game.gridAssetId] ? <img src={assets[game.gridAssetId]} alt="" /> : <div className="cloud-game-placeholder" />}
                           <span className="cloud-game-copy">
                             <strong>{game.title}</strong>
-                            <small>{status?.lastMessage || view.description}</small>
+                            <small>{view.description}</small>
                             <span className="cloud-game-meta">
-                              {status?.pendingOperationCount ? `Đang chờ đồng bộ · ${formatBytes(status.pendingUploadBytes)}` : 'Được bảo vệ trên máy này'}
-                              {status?.lastSyncAt ? ` · ${new Date(status.lastSyncAt).toLocaleString('vi-VN')}` : ''}
+                              {status?.pendingOperationCount ? `${c.pendingLabel} · ${formatBytes(status.pendingUploadBytes)}` : c.gameProtected}
+                              {status?.lastSyncAt ? ` · ${new Date(status.lastSyncAt).toLocaleString(locale)}` : ''}
                             </span>
                           </span>
                           <em className={`cloud-game-state tone-${view.tone}`}>

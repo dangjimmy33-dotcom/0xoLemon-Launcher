@@ -16,7 +16,7 @@ use reqwest::blocking::{Client, Response};
 use reqwest::header::{AUTHORIZATION, CONTENT_LENGTH, CONTENT_TYPE, LOCATION};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Emitter, Manager};
 use url::Url;
 
 use crate::secret_store::{protect as protect_secret, unprotect as unprotect_secret};
@@ -300,7 +300,13 @@ pub(super) fn client_configured() -> bool {
 }
 
 pub(super) fn connected(app: &AppHandle) -> bool {
-    read_stored_auth(app).is_ok()
+    let Ok(stored) = read_stored_auth(app) else {
+        return false;
+    };
+    stored.client_id == client_id()
+        && read_refresh_token(app)
+            .map(|token| !token.trim().is_empty())
+            .unwrap_or(false)
 }
 
 pub(super) fn disconnect(app: &AppHandle) -> Result<(), String> {
@@ -311,6 +317,10 @@ pub(super) fn disconnect(app: &AppHandle) -> Result<(), String> {
     if let Ok(mut cached) = token_cache().lock() {
         *cached = None;
     }
+    let _ = app.emit(
+        "launcher://cloud-save-auth-changed",
+        serde_json::json!({ "connected": false }),
+    );
     Ok(())
 }
 
@@ -338,32 +348,30 @@ pub(super) fn authorize(app: &AppHandle) -> Result<(), String> {
         .append_pair("scope", DRIVE_SCOPE)
         .append_pair("access_type", "offline")
         .append_pair("prompt", "consent")
+        .append_pair("include_granted_scopes", "true")
         .append_pair("code_challenge", &challenge)
         .append_pair("code_challenge_method", "S256")
         .append_pair("state", &state);
     open_system_browser(auth_url.as_str())?;
 
     let deadline = Instant::now() + OAUTH_TIMEOUT;
-    let mut authorization_code = None;
     while Instant::now() < deadline {
         match listener.accept() {
             Ok((mut stream, _)) => {
-                let mut request = [0_u8; 8192];
-                let read = stream.read(&mut request).map_err(|error| error.to_string())?;
-                let request = String::from_utf8_lossy(&request[..read]);
-                let target = request
-                    .lines()
-                    .next()
-                    .and_then(|line| line.split_whitespace().nth(1))
-                    .ok_or_else(|| "Google OAuth callback không hợp lệ".to_string())?;
-                let callback = Url::parse(&format!("http://127.0.0.1:{port}{target}"))
-                    .map_err(|error| error.to_string())?;
+                let callback = match read_oauth_callback(&mut stream, port) {
+                    Ok(callback) => callback,
+                    Err(error) => {
+                        let _ = write_oauth_callback_response(&mut stream, false, Some(&error));
+                        return Err(error);
+                    }
+                };
+
                 let params = callback.query_pairs().into_owned().collect::<Vec<_>>();
                 let returned_state = params
                     .iter()
                     .find(|(key, _)| key == "state")
                     .map(|(_, value)| value.as_str());
-                let error = params
+                let denied = params
                     .iter()
                     .find(|(key, _)| key == "error")
                     .map(|(_, value)| value.clone());
@@ -371,25 +379,43 @@ pub(super) fn authorize(app: &AppHandle) -> Result<(), String> {
                     .iter()
                     .find(|(key, _)| key == "code")
                     .map(|(_, value)| value.clone());
-                let success = returned_state == Some(state.as_str()) && error.is_none() && code.is_some();
-                let body = if success {
-                    "<html><body style='font-family:system-ui;background:#111;color:#fff;padding:32px'><h2>0xoLemon đã kết nối Google Drive.</h2><p>Bạn có thể đóng tab này và quay lại launcher.</p></body></html>"
-                } else {
-                    "<html><body style='font-family:system-ui;background:#111;color:#fff;padding:32px'><h2>Không thể kết nối Google Drive.</h2><p>Hãy quay lại launcher để xem hướng dẫn.</p></body></html>"
-                };
-                let response = format!(
-                    "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
-                    body.len(), body
-                );
-                stream.write_all(response.as_bytes()).map_err(|error| error.to_string())?;
+
                 if returned_state != Some(state.as_str()) {
-                    return Err("Google OAuth state validation failed".to_string());
+                    let error = "Google OAuth state validation failed".to_string();
+                    let _ = write_oauth_callback_response(&mut stream, false, Some(&error));
+                    return Err(error);
                 }
-                if let Some(error) = error {
-                    return Err(format!("Google authorization was denied: {error}"));
+                if let Some(denied) = denied {
+                    let error = format!("Google authorization was denied: {denied}");
+                    let _ = write_oauth_callback_response(&mut stream, false, Some(&error));
+                    return Err(error);
                 }
-                authorization_code = code;
-                break;
+                let Some(code) = code else {
+                    let error = "Google OAuth callback did not include an authorization code".to_string();
+                    let _ = write_oauth_callback_response(&mut stream, false, Some(&error));
+                    return Err(error);
+                };
+
+                match exchange_authorization_code(
+                    app,
+                    &client_id,
+                    &code,
+                    &verifier,
+                    &redirect_uri,
+                ) {
+                    Ok(()) => {
+                        write_oauth_callback_response(&mut stream, true, None)?;
+                        let _ = app.emit(
+                            "launcher://cloud-save-auth-changed",
+                            serde_json::json!({ "connected": true }),
+                        );
+                        return Ok(());
+                    }
+                    Err(error) => {
+                        let _ = write_oauth_callback_response(&mut stream, false, Some(&error));
+                        return Err(error);
+                    }
+                }
             }
             Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
                 thread::sleep(Duration::from_millis(120));
@@ -397,26 +423,111 @@ pub(super) fn authorize(app: &AppHandle) -> Result<(), String> {
             Err(error) => return Err(error.to_string()),
         }
     }
-    let code = authorization_code.ok_or_else(|| "Google Drive sign-in timed out".to_string())?;
-    let token = http_client()
+
+    Err("Google Drive sign-in timed out".to_string())
+}
+
+fn read_oauth_callback(stream: &mut std::net::TcpStream, port: u16) -> Result<Url, String> {
+    let mut request = [0_u8; 8192];
+    let read = stream.read(&mut request).map_err(|error| error.to_string())?;
+    let request = String::from_utf8_lossy(&request[..read]);
+    let target = request
+        .lines()
+        .next()
+        .and_then(|line| line.split_whitespace().nth(1))
+        .ok_or_else(|| "Google OAuth callback không hợp lệ".to_string())?;
+    Url::parse(&format!("http://127.0.0.1:{port}{target}"))
+        .map_err(|error| error.to_string())
+}
+
+fn exchange_authorization_code(
+    app: &AppHandle,
+    client_id: &str,
+    code: &str,
+    verifier: &str,
+    redirect_uri: &str,
+) -> Result<(), String> {
+    let response = http_client()
         .map_err(|error| error.to_string())?
         .post(TOKEN_ENDPOINT)
         .form(&[
-            ("client_id", client_id.as_str()),
-            ("code", code.as_str()),
-            ("code_verifier", verifier.as_str()),
+            ("client_id", client_id),
+            ("code", code),
+            ("code_verifier", verifier),
             ("grant_type", "authorization_code"),
-            ("redirect_uri", redirect_uri.as_str()),
+            ("redirect_uri", redirect_uri),
         ])
         .send()
         .map_err(|error| error.to_string())?;
-    let token = checked_json::<TokenResponse>(token).map_err(|error| error.to_string())?;
-    let refresh_token = token.refresh_token.ok_or_else(|| {
-        "Google không trả refresh token; hãy thu hồi quyền và đăng nhập lại.".to_string()
-    })?;
-    write_refresh_token(app, &refresh_token)?;
+    let token = checked_json::<TokenResponse>(response).map_err(|error| error.to_string())?;
+
+    if let Some(refresh_token) = token.refresh_token.as_deref() {
+        write_refresh_token(app, refresh_token)?;
+    } else if read_refresh_token(app).is_err() {
+        return Err(
+            "Google không trả refresh token. Hãy thu hồi quyền 0xoLemon trong Tài khoản Google rồi kết nối lại."
+                .to_string(),
+        );
+    }
+
     cache_access_token(token.access_token, token.expires_in);
+    if !connected(app) {
+        return Err("Google Drive token was not persisted successfully".to_string());
+    }
     Ok(())
+}
+
+fn write_oauth_callback_response(
+    stream: &mut std::net::TcpStream,
+    success: bool,
+    detail: Option<&str>,
+) -> Result<(), String> {
+    let (title, message, accent) = if success {
+        (
+            "Google Drive connected / Đã kết nối Google Drive",
+            "Authorization was verified and saved. You can close this tab and return to 0xoLemon. / Quyền truy cập đã được xác minh và lưu. Bạn có thể đóng tab này và quay lại 0xoLemon.",
+            "#53d769",
+        )
+    } else {
+        (
+            "Google Drive connection failed / Kết nối Google Drive thất bại",
+            "Return to 0xoLemon to review the error and try again. / Hãy quay lại 0xoLemon để xem lỗi và thử lại.",
+            "#ff6b6b",
+        )
+    };
+    let detail = detail
+        .filter(|value| !value.trim().is_empty())
+        .map(escape_html)
+        .map(|value| format!("<pre>{value}</pre>"))
+        .unwrap_or_default();
+    let body = format!(
+        "<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width'><title>{}</title></head><body style='margin:0;background:#080d12;color:#f4f7fa;font-family:system-ui,Segoe UI,sans-serif;display:grid;place-items:center;min-height:100vh'><main style='width:min(620px,calc(100% - 40px));background:#0f171f;border:1px solid #2c3945;border-radius:12px;padding:28px;box-sizing:border-box'><div style='width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:{}22;color:{};font-size:24px'>{}</div><h1 style='font-size:21px;margin:18px 0 10px'>{}</h1><p style='color:#b9c4ce;line-height:1.6;margin:0'>{}</p>{}</main></body></html>",
+        escape_html(title),
+        accent,
+        accent,
+        if success { "✓" } else { "!" },
+        escape_html(title),
+        escape_html(message),
+        detail,
+    );
+    let response = format!(
+        "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nCache-Control: no-store\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+        body.as_bytes().len(),
+        body,
+    );
+    stream
+        .write_all(response.as_bytes())
+        .map_err(|error| error.to_string())?;
+    stream.flush().map_err(|error| error.to_string())
+}
+
+fn escape_html(value: &str) -> String {
+    value
+        .replace('&', "&amp;")
+        .replace('<', "&lt;")
+        .replace('>', "&gt;")
+        .replace('"', "&quot;")
+        .replace('\'', "&#39;")
 }
 
 // `fetch_remote_snapshot` is the public contract name used by the sync engine design.

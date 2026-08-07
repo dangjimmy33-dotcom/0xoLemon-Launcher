@@ -14,7 +14,7 @@ import {
   sendNotification,
 } from '@tauri-apps/plugin-notification'
 import { MotionConfig, AnimatePresence } from 'motion/react'
-import { CircleAlert, Download, Heart, X, Cloud } from 'lucide-react'
+import { CircleAlert, Download, Heart, X } from 'lucide-react'
 import packageMetadata from '../package.json'
 import './App.css'
 import './premium.css'
@@ -60,7 +60,7 @@ import { versionsEquivalent } from './lib/version'
 import { DEFAULT_LAUNCHER_PREFERENCES, loadLauncherPreferences, saveLauncherPreferences, type LauncherPreferences } from './lib/preferences'
 import {
   ActiveView,
-  CloudRedirectSettings,
+  CloudSavesOverview,
   CustomTitleBar,
   DriveLibraryPickerModal,
   DiscordAccessGate,
@@ -2188,7 +2188,7 @@ export default function App() {
       setCloudLaunchBlocked(status.conflicts.length > 0)
     } catch (error) {
       setCloudSaveStatus(null)
-      setScanStatus(`Could not load cloud save status: ${String(error)}`)
+      setScanStatus(t.cloudSave.loadError.replace('{error}', String(error)))
     }
   }, [])
 
@@ -2209,6 +2209,7 @@ export default function App() {
     let unlistenStatus: (() => void) | undefined
     let unlistenError: (() => void) | undefined
     let unlistenMap: (() => void) | undefined
+    let unlistenAuth: (() => void) | undefined
 
     listen<{ gameId: string; status: CloudSaveStatus }>('launcher://cloud-save', (event) => {
       if (disposed) return
@@ -2220,8 +2221,8 @@ export default function App() {
         void publishNotification({
           category: 'cloudSaves',
           severity: 'warning',
-          title: 'Cloud save conflict detected',
-          message: `${event.payload.status.conflicts.length} conflict${event.payload.status.conflicts.length === 1 ? '' : 's'} require a decision.`,
+          title: t.cloudSave.conflictNotificationTitle,
+          message: t.cloudSave.conflictNotificationMessage.replace('{count}', String(event.payload.status.conflicts.length)),
           dedupeKey: `cloud-conflict:${event.payload.gameId}:${event.payload.status.conflicts.map((item) => item.id).join(',')}`,
           entity: { kind: 'game', id: event.payload.gameId },
           action: { kind: 'open-cloud-save', tab: 'Library', gameId: event.payload.gameId },
@@ -2237,8 +2238,8 @@ export default function App() {
       void publishNotification({
         category: 'cloudSaves',
         severity: 'info',
-        title: 'Đã cập nhật nhận diện Cloud Save',
-        message: `Launcher đã kích hoạt cấu hình Save ${event.payload.activeVersion} đã được xác minh.`,
+        title: t.cloudSave.mapUpdatedTitle,
+        message: t.cloudSave.mapUpdatedMessage.replace('{version}', event.payload.activeVersion),
         dedupeKey: `cloud-map:${event.payload.activeVersion}`,
         entity: { kind: 'launcher', id: 'cloud-save-map' },
         action: null,
@@ -2248,6 +2249,15 @@ export default function App() {
       else unlistenMap = dispose
     })
 
+    listen<{ connected: boolean }>('launcher://cloud-save-auth-changed', () => {
+      if (disposed) return
+      const gameId = selectedGameIdRef.current
+      if (gameId) void refreshCloudSaveStatus(gameId)
+    }).then((dispose) => {
+      if (disposed) dispose()
+      else unlistenAuth = dispose
+    })
+
     listen<{ gameId: string; message: string }>('launcher://cloud-save-error', (event) => {
       if (disposed) return
       if (event.payload.gameId === selectedGameIdRef.current) setScanStatus(event.payload.message)
@@ -2255,7 +2265,7 @@ export default function App() {
       void publishNotification({
         category: 'cloudSaves',
         severity: needsAction ? 'warning' : 'info',
-        title: needsAction ? 'Cloud Save cần bạn kiểm tra' : 'Cloud Save đang chờ',
+        title: needsAction ? t.cloudSave.attentionNotificationTitle : t.cloudSave.waitingNotificationTitle,
         message: event.payload.message,
         dedupeKey: `cloud-error:${event.payload.gameId}:${event.payload.message}`,
         entity: { kind: 'game', id: event.payload.gameId },
@@ -2271,8 +2281,9 @@ export default function App() {
       unlistenStatus?.()
       unlistenError?.()
       unlistenMap?.()
+      unlistenAuth?.()
     }
-  }, [publishNotification])
+  }, [publishNotification, refreshCloudSaveStatus])
 
   async function chooseInstallFolder() {
     if (!isTauriRuntime()) {
@@ -2652,14 +2663,14 @@ export default function App() {
       void publishNotification({
         category: 'cloudSaves',
         severity: 'success',
-        title: 'Cloud-save snapshot restored',
-        message: status.lastMessage || 'The selected snapshot was restored successfully.',
+        title: t.cloudSave.snapshotRestoredTitle,
+        message: status.lastMessage || t.cloudSave.snapshotRestoredMessage,
         dedupeKey: `cloud-snapshot:${selectedGame.id}:${snapshotId}:restored`,
         entity: { kind: 'game', id: selectedGame.id },
         action: { kind: 'open-cloud-save', tab: 'Library', gameId: selectedGame.id },
       })
     } catch (error) {
-      setScanStatus(`Could not restore cloud save snapshot: ${String(error)}`)
+      setScanStatus(t.cloudSave.snapshotRestoreFailed.replace('{error}', String(error)))
     } finally {
       setCloudSaveBusy(false)
     }
@@ -2681,7 +2692,7 @@ export default function App() {
       setCloudSaveStatus(status)
       setScanStatus(status.googleDriveMessage || status.lastMessage)
     } catch (error) {
-      setScanStatus(`Google Drive operation failed: ${String(error)}`)
+      setScanStatus(t.cloudSave.operationFailed.replace('{error}', String(error)))
     } finally {
       setCloudSaveBusy(false)
     }
@@ -2690,13 +2701,13 @@ export default function App() {
   async function connectAndBackupGoogleDrive() {
     if (!selectedGame || !selectedInstalled || !isTauriRuntime()) return
     setCloudSaveBusy(true)
-    setScanStatus('Đang mở trang đăng nhập Google…')
+    setScanStatus(t.cloudSave.openingBrowser)
     try {
       const connected = await invoke<CloudSaveStatus>('connect_google_drive', {
         gameId: selectedGame.id,
       })
       setCloudSaveStatus(connected)
-      setScanStatus('Google Drive đã kết nối. Đang bảo vệ Save hiện tại…')
+      setScanStatus(t.cloudSave.authVerified)
 
       const backedUp = await invoke<CloudSaveStatus>('backup_save_game_to_google_drive', {
         gameId: selectedGame.id,
@@ -2704,7 +2715,7 @@ export default function App() {
       setCloudSaveStatus(backedUp)
       setScanStatus(backedUp.googleDriveMessage || backedUp.lastMessage)
     } catch (error) {
-      setScanStatus(`Google Drive backup failed: ${String(error)}`)
+      setScanStatus(t.cloudSave.authFailed.replace('{error}', String(error)))
     } finally {
       setCloudSaveBusy(false)
     }
@@ -3187,7 +3198,7 @@ export default function App() {
       const message = String(error)
       if (message.includes('CLOUD_SAVE_CONFLICT:')) {
         setCloudLaunchBlocked(true)
-        setScanStatus('Cloud save conflict detected. Resolve it or choose Launch without sync.')
+        setScanStatus(t.cloudSave.conflictDetectedStatus)
         void refreshCloudSaveStatus(selectedGame.id)
       } else {
         pendingCloudLaunchRef.current = null
@@ -3199,7 +3210,7 @@ export default function App() {
   function launchWithoutCloudSync() {
     const pending = pendingCloudLaunchRef.current
     if (!pending) {
-      setScanStatus('Start the game again, then choose Launch without sync if the conflict remains.')
+      setScanStatus(t.cloudSave.launchAgainStatus)
       return
     }
     setCloudLaunchBlocked(false)
@@ -3708,18 +3719,13 @@ export default function App() {
                   />
                 ) : activeTab === 'CloudRedirect' ? (
                   <div className="settings-view settings-view-global" style={{ padding: '40px' }}>
-                    <header className="settings-page-header">
-                      <div>
-                        <span className="settings-page-icon">
-                          <Cloud size={21} />
-                        </span>
-                        <div>
-                          <h1>CloudRedirect</h1>
-                          <p>Cloud saves for lua games using Google Drive, OneDrive, or local folder.</p>
-                        </div>
-                      </div>
-                    </header>
-                    <CloudRedirectSettings />
+                    <CloudSavesOverview
+                      catalog={catalog}
+                      installStates={installStates}
+                      assets={assetUrls}
+                      onOpenGame={openHomeGame}
+                      onRequestAsset={requestHomeAsset}
+                    />
                   </div>
                 ) : activeTab === 'Settings' ? (
                   <SettingsView
@@ -3834,13 +3840,13 @@ export default function App() {
                     onLaunchWithoutCloudSync={launchWithoutCloudSync}
                     onConnectGoogleDrive={() => void connectAndBackupGoogleDrive()}
                     onDisconnectGoogleDrive={() =>
-                      void runGoogleDriveAction('disconnect_google_drive', 'Disconnecting Google Drive...')
+                      void runGoogleDriveAction('disconnect_google_drive', t.cloudSave.disconnectingDrive)
                     }
                     onBackupGoogleDrive={() =>
-                      void runGoogleDriveAction('backup_save_game_to_google_drive', 'Backing up save files to Google Drive...')
+                      void runGoogleDriveAction('backup_save_game_to_google_drive', t.cloudSave.backingUpDrive)
                     }
                     onRestoreMissingSaveFiles={() =>
-                      void runGoogleDriveAction('restore_missing_save_files', 'Checking Google Drive for missing save files...')
+                      void runGoogleDriveAction('restore_missing_save_files', t.cloudSave.checkingMissingDrive)
                     }
                     cacheBusy={cacheBusy}
                     onClearCache={() => void clearLauncherCache()}

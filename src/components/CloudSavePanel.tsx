@@ -25,11 +25,12 @@ import {
 import type { CloudSaveStatus } from '../types'
 import { formatBytes } from '../lib/format'
 import { cloudSavePresentation, quotaPercent } from '../lib/cloudSaveStatus'
+import { useLocale } from '../context/LocaleContext'
 
-function formatDate(value?: string | null) {
-  if (!value) return 'Chưa đồng bộ'
+function formatDate(value: string | null | undefined, locale: string, empty: string) {
+  if (!value) return empty
   const date = new Date(value)
-  return Number.isNaN(date.getTime()) ? value : date.toLocaleString('vi-VN')
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleString(locale)
 }
 
 export function CloudSavePanel({
@@ -61,11 +62,13 @@ export function CloudSavePanel({
   onBackupGoogleDrive: () => void
   onRestoreMissingFiles: () => void
 }) {
+  const { t, locale } = useLocale()
+  const c = t.cloudSave
   const enabled = status?.enabled ?? false
   const roots = status?.saveRoots ?? []
   const conflicts = status?.conflicts ?? []
   const snapshots = status?.snapshots ?? []
-  const presentation = cloudSavePresentation(status)
+  const presentation = cloudSavePresentation(status, c.states)
   const quota = quotaPercent(status?.quota ?? null)
   const [localBusy, setLocalBusy] = useState<string | null>(null)
   const [advancedOpen, setAdvancedOpen] = useState(false)
@@ -93,7 +96,7 @@ export function CloudSavePanel({
     const target = await open({
       directory: true,
       multiple: false,
-      title: 'Chọn thư mục xuất bản sao lưu',
+      title: c.chooseExportFolder,
     })
     if (typeof target !== 'string') return
     setLocalBusy(`export:${snapshotId ?? 'cloud'}`)
@@ -114,8 +117,8 @@ export function CloudSavePanel({
         <div className="cloud-save-heading">
           <span className="cloud-save-heading-icon"><ShieldCheck size={19} /></span>
           <div>
-            <strong>Bảo vệ tự động</strong>
-            <small>Google Drive · vùng dữ liệu riêng của launcher</small>
+            <strong>{c.automaticProtection}</strong>
+            <small>{c.privateDriveArea}</small>
           </div>
         </div>
         <button
@@ -123,7 +126,7 @@ export function CloudSavePanel({
           type="button"
           role="switch"
           aria-checked={enabled}
-          aria-label="Bật hoặc tắt bảo vệ Cloud Save"
+          aria-label={c.toggleAria}
           disabled={isBusy || !status?.mapStatus?.healthy}
           onClick={() => onToggle(!enabled)}
         >
@@ -137,11 +140,11 @@ export function CloudSavePanel({
         </span>
         <div>
           <strong>{presentation.title}</strong>
-          <p>{status?.lastMessage || presentation.description}</p>
+          <p>{presentation.description}</p>
         </div>
         {status?.pendingOperationCount ? (
           <span className="cloud-save-pending-chip">
-            Đang chờ đồng bộ · {formatBytes(status.pendingUploadBytes)}
+            {c.pendingLabel} · {formatBytes(status.pendingUploadBytes)}
           </span>
         ) : null}
       </div>
@@ -149,30 +152,30 @@ export function CloudSavePanel({
       <div className="cloud-save-facts">
         <div>
           <HardDrive size={15} />
-          <span><b>Trên máy này</b><small>Được bảo vệ trên máy này</small></span>
+          <span><b>{c.thisPc}</b><small>{c.protectedOnThisPc}</small></span>
         </div>
         <div>
           <Cloud size={15} />
-          <span><b>Google Drive</b><small>{status?.googleDriveConnected ? 'Đã kết nối' : 'Chưa kết nối'}</small></span>
+          <span><b>Google Drive</b><small>{status?.googleDriveConnected ? c.connected : c.notConnected}</small></span>
         </div>
         <div>
           <History size={15} />
-          <span><b>Lần gần nhất</b><small>{formatDate(status?.lastSyncAt)}</small></span>
+          <span><b>{c.lastSync}</b><small>{formatDate(status?.lastSyncAt, locale, c.neverSynced)}</small></span>
         </div>
       </div>
 
       {status?.quota ? (
         <div className={`cloud-quota-strip is-${status.quota.state}`}>
           <div>
-            <span>Dung lượng Google Drive</span>
+            <span>{c.driveStorage}</span>
             <strong>
               {status.quota.availableBytes == null
-                ? `${formatBytes(status.quota.usageBytes)} đã dùng`
-                : `${formatBytes(status.quota.availableBytes)} còn trống`}
+                ? `${formatBytes(status.quota.usageBytes)} ${c.used}`
+                : `${formatBytes(status.quota.availableBytes)} ${c.available}`}
             </strong>
           </div>
           {quota != null ? (
-            <div className="cloud-quota-meter" aria-label={`Đã dùng ${quota}% dung lượng Google Drive`}>
+            <div className="cloud-quota-meter" aria-label={`${quota}% ${c.used}`}>
               <span style={{ width: `${quota}%` }} />
             </div>
           ) : null}
@@ -184,21 +187,21 @@ export function CloudSavePanel({
           <>
             <button type="button" className="primary" onClick={onSync} disabled={!enabled || isBusy || !status?.canSync}>
               <RefreshCcw size={15} className={isBusy ? 'spin' : ''} />
-              {isBusy ? 'Đang kiểm tra…' : 'Đồng bộ ngay'}
+              {isBusy ? c.checking : c.syncNow}
             </button>
             <button type="button" onClick={onBackupGoogleDrive} disabled={!enabled || isBusy}>
               <CloudUpload size={15} />
-              Dùng bản trên máy
+              {c.useThisPc}
             </button>
             <button type="button" onClick={onRestoreMissingFiles} disabled={!enabled || isBusy}>
               <CloudDownload size={15} />
-              Kiểm tra bản Cloud
+              {c.checkCloud}
             </button>
           </>
         ) : (
           <button type="button" className="primary" onClick={onConnectGoogleDrive} disabled={isBusy || !status?.googleDriveConfigured}>
             <LogIn size={15} />
-            Kết nối Google Drive
+            {c.connectGoogle}
           </button>
         )}
       </div>
@@ -209,8 +212,8 @@ export function CloudSavePanel({
           <article className="cloud-conflict" key={conflict.id}>
             <AlertTriangle size={19} />
             <div className="cloud-conflict-body">
-              <strong>Cần chọn bản tiến trình</strong>
-              <p>Cả hai bản đã được sao lưu an toàn. Launcher đề xuất bản {recommended === 'local' ? 'trên máy này' : 'trên Cloud'}.</p>
+              <strong>{c.chooseProgress}</strong>
+              <p>{c.bothPreserved} {recommended === 'local' ? c.recommendedLocal : c.recommendedCloud}</p>
               {conflict.recommendationReason ? (
                 <p className="cloud-conflict-reason">
                   <ShieldCheck size={14} />
@@ -218,17 +221,17 @@ export function CloudSavePanel({
                 </p>
               ) : null}
               <div className="cloud-conflict-compare">
-                <span><b>Máy này</b>{conflict.localDevice || 'This PC'} · {conflict.localFileCount} file · {formatBytes(conflict.localBytes)}</span>
-                <span><b>Cloud</b>{conflict.cloudDevice || 'Google Drive'} · {conflict.cloudFileCount} file · {formatBytes(conflict.cloudBytes)}</span>
+                <span><b>{c.thisPc}</b>{conflict.localDevice || c.thisPc} · {conflict.localFileCount} {c.files} · {formatBytes(conflict.localBytes)}</span>
+                <span><b>{c.cloud}</b>{conflict.cloudDevice || 'Google Drive'} · {conflict.cloudFileCount} {c.files} · {formatBytes(conflict.cloudBytes)}</span>
               </div>
               <div className="cloud-conflict-actions">
                 <button className={recommended === 'local' ? 'primary' : ''} type="button" onClick={() => onResolve(conflict.id, 'local')} disabled={isBusy}>
                   <HardDrive size={14} />
-                  {recommended === 'local' ? 'Tiếp tục với bản đề xuất' : 'Dùng bản trên máy'}
+                  {recommended === 'local' ? c.continueRecommended : c.useLocal}
                 </button>
                 <button className={recommended === 'cloud' ? 'primary' : ''} type="button" onClick={() => onResolve(conflict.id, 'cloud')} disabled={isBusy}>
                   <Cloud size={14} />
-                  {recommended === 'cloud' ? 'Tiếp tục với bản đề xuất' : 'Dùng bản trên Cloud'}
+                  {recommended === 'cloud' ? c.continueRecommended : c.useCloud}
                 </button>
               </div>
             </div>
@@ -238,7 +241,7 @@ export function CloudSavePanel({
 
       {launchBlocked ? (
         <button className="cloud-launch-anyway" type="button" onClick={onLaunchWithoutSync}>
-          Vẫn chơi bằng bản trên máy — launcher sẽ giữ thành một nhánh riêng
+          {c.playLocalBranch}
         </button>
       ) : null}
 
@@ -246,68 +249,68 @@ export function CloudSavePanel({
         <div className="cloud-save-latest-backup">
           <Archive size={16} />
           <span>
-            <b>Bản khôi phục gần nhất</b>
-            <small>{formatDate(latestSnapshot.createdAt)} · {latestSnapshot.fileCount} file · {formatBytes(latestSnapshot.bytes)}</small>
+            <b>{c.latestRecovery}</b>
+            <small>{formatDate(latestSnapshot.createdAt, locale, c.neverSynced)} · {latestSnapshot.fileCount} {c.files} · {formatBytes(latestSnapshot.bytes)}</small>
           </span>
           <button type="button" onClick={() => onRestore(latestSnapshot.id)} disabled={isBusy}>
-            <RotateCcw size={14} /> Khôi phục
+            <RotateCcw size={14} /> {c.restore}
           </button>
         </div>
       ) : null}
 
       <button className="cloud-save-advanced-toggle" type="button" onClick={() => setAdvancedOpen((value) => !value)} aria-expanded={advancedOpen}>
-        <span>Xem chi tiết nâng cao</span>
+        <span>{c.advanced}</span>
         <ChevronRight size={16} className={advancedOpen ? 'is-open' : ''} />
       </button>
 
       {advancedOpen ? (
         <div className="cloud-save-advanced">
           <section>
-            <div className="cloud-advanced-title"><Sparkles size={15} /><strong>Nhận diện Save</strong></div>
-            <p>{status?.mapStatus?.message || 'Launcher đang dùng save-path map đã xác minh.'}</p>
-            <small>Map {status?.mapStatus?.version || 'built-in'} · {status?.mapStatus?.source || 'fallback'}</small>
+            <div className="cloud-advanced-title"><Sparkles size={15} /><strong>{c.saveDetection}</strong></div>
+            <p>{c.verifiedMap}</p>
+            <small>{c.mapLabel} {status?.mapStatus?.version || c.builtIn} · {c.sourceLabel} {status?.mapStatus?.source || c.fallback}</small>
             <div className="cloud-save-roots">
               {roots.map((root) => (
                 <span key={`${root.id ?? ''}:${root.path}`} title={root.path} className={root.legacy ? 'is-legacy' : ''}>
-                  {root.label || root.path}{root.legacy ? ' · đường dẫn cũ được giữ an toàn' : ''}
+                  {root.label || root.path}{root.legacy ? ` · ${c.legacyPath}` : ''}
                 </span>
               ))}
               <button type="button" onClick={onAddFolder} disabled={isBusy}>
-                <FolderPlus size={14} /> Thêm thủ công
+                <FolderPlus size={14} /> {c.addManually}
               </button>
             </div>
           </section>
 
           <section>
-            <div className="cloud-advanced-title"><History size={15} /><strong>Lịch sử khôi phục</strong></div>
+            <div className="cloud-advanced-title"><History size={15} /><strong>{c.recoveryHistory}</strong></div>
             {snapshots.length ? snapshots.map((snapshot) => (
               <div className="cloud-snapshot-row" key={snapshot.id}>
                 <span>
-                  <b>{formatDate(snapshot.createdAt)}</b>
-                  <small>{snapshot.source} · {snapshot.fileCount} file · {formatBytes(snapshot.bytes)}</small>
+                  <b>{formatDate(snapshot.createdAt, locale, c.neverSynced)}</b>
+                  <small>{snapshot.source} · {snapshot.fileCount} {c.files} · {formatBytes(snapshot.bytes)}</small>
                 </span>
                 <div>
-                  <button type="button" title={snapshot.pinned ? 'Bỏ ghim' : 'Giữ vô thời hạn'} onClick={() => void togglePin(snapshot.id, !snapshot.pinned)} disabled={isBusy}>
+                  <button type="button" title={snapshot.pinned ? c.unpin : c.pinForever} onClick={() => void togglePin(snapshot.id, !snapshot.pinned)} disabled={isBusy}>
                     {snapshot.pinned ? <PinOff size={13} /> : <Pin size={13} />}
                   </button>
                   <button type="button" onClick={() => void exportSnapshot(snapshot.id)} disabled={isBusy}>
-                    Xuất
+                    {c.export}
                   </button>
                   <button type="button" onClick={() => onRestore(snapshot.id)} disabled={isBusy}>
-                    Khôi phục
+                    {c.restore}
                   </button>
                 </div>
               </div>
-            )) : <p>Chưa có bản khôi phục. Bản đầu tiên sẽ được tạo tự động.</p>}
+            )) : <p>{c.noRecovery}</p>}
           </section>
 
           <footer>
             <button type="button" onClick={() => void exportSnapshot()} disabled={isBusy || !status?.googleDriveConnected}>
-              <Archive size={14} /> Xuất bản Cloud hiện tại
+              <Archive size={14} /> {c.exportCurrentCloud}
             </button>
             {status?.googleDriveConnected ? (
               <button type="button" onClick={onDisconnectGoogleDrive} disabled={isBusy}>
-                <LogOut size={14} /> Ngắt kết nối Google Drive
+                <LogOut size={14} /> {c.disconnectGoogle}
               </button>
             ) : null}
           </footer>

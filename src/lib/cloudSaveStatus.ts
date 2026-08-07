@@ -9,100 +9,54 @@ export type CloudSavePresentation = {
   blocking: boolean
 }
 
-const PRESENTATIONS: Record<string, CloudSavePresentation> = {
-  synced: {
-    title: 'Đã đồng bộ',
-    description: 'Save mới nhất đã được bảo vệ trên máy này và Google Drive.',
-    tone: 'success',
-    blocking: false,
-  },
-  ready: {
-    title: 'Sẵn sàng bảo vệ',
-    description: 'Launcher sẽ tự kiểm tra trước khi chơi và đồng bộ sau khi thoát game.',
-    tone: 'success',
-    blocking: false,
-  },
-  syncing: {
-    title: 'Đang bảo vệ Save',
-    description: 'Bạn vẫn có thể dùng launcher bình thường.',
-    tone: 'info',
-    blocking: false,
-  },
-  offline: {
-    title: 'Đang chờ kết nối',
-    description: 'Save mới nhất được bảo vệ trên máy này và sẽ tự đồng bộ khi có mạng.',
-    tone: 'warning',
-    blocking: false,
-  },
-  rate_limited: {
-    title: 'Google Drive đang bận',
-    description: 'Launcher đã lưu tác vụ và sẽ tự thử lại, không cần thao tác thủ công.',
-    tone: 'warning',
-    blocking: false,
-  },
-  storage_full: {
-    title: 'Google Drive đã đầy',
-    description: 'Save vẫn an toàn trên máy này nhưng chưa thể tải lên Cloud.',
-    tone: 'warning',
-    blocking: false,
-  },
-  auth_required: {
-    title: 'Cần kết nối Google Drive',
-    description: 'Save vẫn được bảo vệ cục bộ. Kết nối một lần để đồng bộ đa thiết bị.',
-    tone: 'warning',
-    blocking: false,
-  },
-  waiting_for_first_save: {
-    title: 'Đang chờ Save đầu tiên',
-    description: 'Launcher sẽ tự nhận diện ngay khi game tạo dữ liệu tiến trình.',
-    tone: 'neutral',
-    blocking: false,
-  },
-  waiting_for_save: {
-    title: 'Đang chờ game ghi Save xong',
-    description: 'Launcher đã giữ bản an toàn và sẽ tự đồng bộ khi file ổn định.',
-    tone: 'info',
-    blocking: false,
-  },
-  conflict_check_required: {
-    title: 'Đang kiểm tra bản Save mới',
-    description: 'Cloud vừa thay đổi từ thiết bị khác. Launcher không ghi đè và sẽ tự so sánh lại.',
-    tone: 'warning',
-    blocking: false,
-  },
-  permission_denied: {
-    title: 'Cần kết nối lại Google Drive',
-    description: 'Save trên máy vẫn an toàn; quyền Google Drive hiện không còn hợp lệ.',
-    tone: 'warning',
-    blocking: false,
-  },
-  conflict: {
-    title: 'Cần chọn bản tiến trình',
-    description: 'Cả bản trên máy và bản trên Cloud đều đã được giữ an toàn.',
-    tone: 'danger',
-    blocking: true,
-  },
-  remote_damaged: {
-    title: 'Cloud Save cần kiểm tra',
-    description: 'Dữ liệu trên máy chưa bị thay đổi. Launcher đã dừng khôi phục để bảo vệ Save.',
-    tone: 'danger',
-    blocking: true,
-  },
-  disabled: {
-    title: 'Bảo vệ tự động đang tắt',
-    description: 'Save chỉ được giữ trên máy này.',
-    tone: 'neutral',
-    blocking: false,
-  },
+type StateCopy = { title: string; description: string }
+
+const STATE_META: Record<string, Pick<CloudSavePresentation, 'tone' | 'blocking'>> = {
+  synced: { tone: 'success', blocking: false },
+  ready: { tone: 'success', blocking: false },
+  syncing: { tone: 'info', blocking: false },
+  offline: { tone: 'warning', blocking: false },
+  rate_limited: { tone: 'warning', blocking: false },
+  storage_full: { tone: 'warning', blocking: false },
+  auth_required: { tone: 'warning', blocking: false },
+  waiting_for_first_save: { tone: 'neutral', blocking: false },
+  waiting_for_save: { tone: 'info', blocking: false },
+  conflict_check_required: { tone: 'warning', blocking: false },
+  permission_denied: { tone: 'warning', blocking: false },
+  conflict: { tone: 'danger', blocking: true },
+  remote_damaged: { tone: 'danger', blocking: true },
+  disabled: { tone: 'neutral', blocking: false },
 }
 
-export function cloudSavePresentation(status: Pick<CloudSaveStatus, 'state' | 'lastMessage'> | null): CloudSavePresentation {
+const FALLBACK_COPY: Record<string, StateCopy> = {
+  synced: { title: 'Synced', description: 'The latest save is protected on this PC and Google Drive.' },
+  ready: { title: 'Ready to protect', description: 'The launcher checks before play and syncs after the game exits.' },
+  syncing: { title: 'Protecting save', description: 'You can keep using the launcher normally.' },
+  offline: { title: 'Waiting for connection', description: 'The latest save is protected on this PC and will sync automatically.' },
+  rate_limited: { title: 'Google Drive is busy', description: 'The task is queued and will retry automatically.' },
+  storage_full: { title: 'Google Drive is full', description: 'The save is safe on this PC but cannot upload yet.' },
+  auth_required: { title: 'Connect Google Drive', description: 'The save is protected locally. Connect once to sync across devices.' },
+  waiting_for_first_save: { title: 'Waiting for the first save', description: 'The launcher will detect it when the game creates progress data.' },
+  waiting_for_save: { title: 'Waiting for the game to finish saving', description: 'A safe local copy is kept until the files become stable.' },
+  conflict_check_required: { title: 'Checking a newer save', description: 'Cloud changed on another device, so nothing is overwritten yet.' },
+  permission_denied: { title: 'Reconnect Google Drive', description: 'The local save is safe, but Drive authorization is no longer valid.' },
+  conflict: { title: 'Choose a progress version', description: 'Both the local and Cloud versions were preserved safely.' },
+  remote_damaged: { title: 'Cloud Save needs attention', description: 'Local data was not changed; restore stopped for safety.' },
+  disabled: { title: 'Automatic protection is off', description: 'The save is kept only on this PC.' },
+}
+
+export function cloudSavePresentation(
+  status: Pick<CloudSaveStatus, 'state' | 'lastMessage'> | null,
+  localizedCopy?: Readonly<Record<string, Readonly<StateCopy>>>,
+): CloudSavePresentation {
   const state = status?.state || 'disabled'
-  return PRESENTATIONS[state] ?? {
+  const meta = STATE_META[state] ?? { tone: 'neutral' as const, blocking: false }
+  const copy = localizedCopy?.[state] ?? FALLBACK_COPY[state]
+  if (copy) return { ...copy, ...meta }
+  return {
     title: 'Cloud Save',
-    description: status?.lastMessage || 'Launcher đang kiểm tra trạng thái Save.',
-    tone: 'neutral',
-    blocking: false,
+    description: status?.lastMessage || 'The launcher is checking save status.',
+    ...meta,
   }
 }
 
