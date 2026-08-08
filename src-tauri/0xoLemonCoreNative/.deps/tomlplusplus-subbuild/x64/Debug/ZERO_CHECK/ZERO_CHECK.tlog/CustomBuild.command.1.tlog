@@ -1,0 +1,10 @@
+^E:\007LAUNCHER\SRC-TAURI\0XOLEMONCORENATIVE\.DEPS\TOMLPLUSPLUS-SUBBUILD\CMAKEFILES\1F090E3509F96582E3E8586309FC020A\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SE:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/tomlplusplus-subbuild -BE:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/tomlplusplus-subbuild --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/tomlplusplus-subbuild/tomlplusplus-populate.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

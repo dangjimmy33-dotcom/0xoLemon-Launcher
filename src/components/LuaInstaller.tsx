@@ -1,9 +1,8 @@
-import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { stat } from '@tauri-apps/plugin-fs'
-import { Upload, RefreshCw, CheckCircle, XCircle, AlertCircle, Search } from 'lucide-react'
-import { LuaGameItem } from './LuaGameItem'
+import { Upload, RefreshCw, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
 import './LuaInstaller.css'
 
 type InstallStatus = 'idle' | 'processing' | 'success' | 'error'
@@ -19,60 +18,12 @@ export function LuaInstaller() {
   const [status, setStatus] = useState<InstallStatus>('idle')
   const [message, setMessage] = useState('')
   const [isDragOver, setIsDragOver] = useState(false)
-  const [installedLuas, setInstalledLuas] = useState<string[]>([])
-  const [luaSearch, setLuaSearch] = useState('')
-  const [resolvedNames, setResolvedNames] = useState<Record<string, string>>({})
-  const [visibleState, setVisibleState] = useState({ key: '', count: 20 })
-  const installedListRef = useRef<HTMLDivElement>(null)
-
-  const filteredLuas = useMemo(() => {
-    const q = luaSearch.trim().toLowerCase()
-    if (!q) return installedLuas
-    return installedLuas.filter(id => {
-      if (id.toLowerCase().includes(q)) return true
-      const name = resolvedNames[id]
-      if (name && name.toLowerCase().includes(q)) return true
-      return false
-    })
-  }, [installedLuas, luaSearch, resolvedNames])
-
-  const visibleListKey = useMemo(
-    () => luaSearch + '|' + filteredLuas.join('|'),
-    [filteredLuas, luaSearch],
-  )
-  const visibleCount = visibleState.key === visibleListKey ? visibleState.count : 20
-
-  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    const target = e.currentTarget
-    if (target.scrollHeight - target.scrollTop - target.clientHeight < 100) {
-      setVisibleState((current) => {
-        const currentCount = current.key === visibleListKey ? current.count : 20
-        const nextCount = Math.min(currentCount + 20, filteredLuas.length)
-        if (current.key === visibleListKey && current.count === nextCount) return current
-        return { key: visibleListKey, count: nextCount }
-      })
-    }
-  }, [filteredLuas.length, visibleListKey])
 
   const fetchInstalled = useCallback(async () => {
-    try {
-      const luas = await invoke<string[]>('list_installed_luas')
-      setInstalledLuas(luas)
-    } catch (err) {
-      console.error('Failed to fetch installed luas:', err)
-    }
+    // We still keep this to perhaps trigger something if needed, or we can just remove it
+    // Wait, the handleInstall uses fetchInstalled:
+    // fetchInstalled() -> maybe I can just remove fetchInstalled since installed list is gone.
   }, [])
-
-  const handleNameLoaded = useCallback((appid: string, name: string) => {
-    setResolvedNames((current) => current[appid] === name ? current : { ...current, [appid]: name })
-  }, [])
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      void fetchInstalled()
-    }, 0)
-    return () => window.clearTimeout(timer)
-  }, [fetchInstalled])
 
   // Listen for Tauri file drop events
   useEffect(() => {
@@ -332,73 +283,6 @@ export function LuaInstaller() {
             <li>Click "Restart Steam" to apply changes</li>
             <li>The game will appear in your Steam library</li>
           </ol>
-        </div>
-      </div>
-
-      {/* Installed Luas panel */}
-      <div style={{ marginTop: '24px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)', overflow: 'hidden', width: '100%', maxWidth: '700px' }}>
-        {/* Header */}
-        <div style={{ padding: '14px 16px 10px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ flex: 1 }}>
-            <span style={{ fontSize: '14px', fontWeight: 700, color: '#ccc' }}>Installed Luas</span>
-            <span style={{ marginLeft: '8px', fontSize: '12px', color: '#555', fontVariantNumeric: 'tabular-nums' }}>
-              {installedLuas.length > 0 ? `${filteredLuas.length}${luaSearch ? `/${installedLuas.length}` : ''} games` : ''}
-            </span>
-          </div>
-          {/* Search */}
-          {installedLuas.length > 5 && (
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-              <Search size={13} style={{ position: 'absolute', left: '9px', color: '#555', pointerEvents: 'none' }} />
-              <input
-                type="text"
-                placeholder="Search by name or appid…"
-                value={luaSearch}
-                onChange={e => setLuaSearch(e.target.value)}
-                style={{
-                  background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  borderRadius: '6px',
-                  color: '#ccc',
-                  fontSize: '12px',
-                  padding: '5px 10px 5px 28px',
-                  outline: 'none',
-                  width: '180px',
-                }}
-              />
-            </div>
-          )}
-          <button
-            onClick={fetchInstalled}
-            title="Refresh list"
-            style={{ background: 'transparent', border: 'none', color: '#555', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center', borderRadius: '4px' }}
-            onMouseEnter={e => (e.currentTarget.style.color = '#aaa')}
-            onMouseLeave={e => (e.currentTarget.style.color = '#555')}
-          >
-            <RefreshCw size={14} />
-          </button>
-        </div>
-
-        {/* List */}
-        <div 
-          ref={installedListRef}
-          style={{ maxHeight: '420px', overflowY: 'auto', padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: '6px' }}
-          onScroll={handleScroll}
-        >
-          {installedLuas.length === 0 ? (
-            <p style={{ color: '#555', fontSize: '13px', margin: '8px 0', textAlign: 'center' }}>No Lua manifests installed.</p>
-          ) : filteredLuas.length === 0 ? (
-            <p style={{ color: '#555', fontSize: '13px', margin: '8px 0', textAlign: 'center' }}>No results for "{luaSearch}"</p>
-          ) : (
-            filteredLuas.slice(0, visibleCount).map(appid => (
-              <LuaGameItem 
-                key={appid} 
-                appid={appid} 
-                onRemoved={fetchInstalled}
-                onNameLoaded={handleNameLoaded}
-                scrollRoot={installedListRef}
-              />
-            ))
-          )}
         </div>
       </div>
     </div>

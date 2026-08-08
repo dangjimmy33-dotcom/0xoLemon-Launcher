@@ -1,0 +1,255 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\core\entry.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\core\Orchestrator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\runtime\Ticket.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\runtime\Logger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\runtime\HookStatus.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\runtime\DirWatch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\runtime\Diagnostics.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\runtime\VehUtil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\runtime\RuntimeHttp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\runtime\ManifestFetch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\runtime\ProtectionProbe.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\runtime\RemoteTools.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\runtime\IpcSpecLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\runtime\BootDiag.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\runtime\CredentialStore.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\runtime\EticketFetcher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\runtime\TicketProvider.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\runtime\ProcessInspect.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\runtime\IntegrityScanner.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\runtime\LibraryInjector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\patterns\ByteScan.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\patterns\PatternSig.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\patterns\PatternFetcher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\config\LuaState.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\config\LuaBindings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\config\LuaQuery.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\config\Settings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\hooks\client\DepotKeys.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\hooks\client\IPCBus.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\hooks\client\CmdUser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\hooks\client\CmdUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\hooks\client\ManifestBind.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\hooks\client\PacketRouter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\hooks\client\NetPacket.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\hooks\client\NetPacket_AccessToken.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\hooks\client\NetPacket_UserStats.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\hooks\client\NetPacket_ETicket.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\hooks\client\NetPacket_Manifest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\hooks\client\NetPacket_FamilySharing.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\hooks\client\NetPacket_OnlineFix.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\hooks\client\NetPacket_SteamStub.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\hooks\client\PackagePatch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\hooks\client\RichPresence.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\hooks\client\LicenseHooks.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\hooks\client\StringFind.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\hooks\client\PipeWatch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\hooks\client\AuthWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\hooks\client\AsyncTicketMap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\hooks\client\DecryptionKeyHook.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\hooks\client\PendingCallMap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\hooks\client\OnlineFixInject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\hooks\client\ProcessExtension.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\hooks\client\SteamStubAuto.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\hooks\client\SteamStubTicket.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\hooks\client\IpcMethodLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\hooks\client\IpcDispatch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\hooks\client\IpcHooks.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\hooks\client\IpcHandlers_ISteamUser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\hooks\client\IpcHandlers_ISteamUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\hooks\client\DenuvoAuthenticator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\hooks\capture\RuntimeCapture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\hooks\ui\SteamUI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\hooks\ui\StatusWriter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\build\proto\steam_messages.pb.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\build\proto_lite\steam_messages.pb.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\build\CMakeFiles\15e51fa3a221698d1560c76ab3f1342e\steam_messages.pb.cc.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\build\CMakeFiles\8dcd059fd9da790d11d485338a399fa8\steam_messages.pb.cc.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Object Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\build\OxoSffNativeCore.dir\$(Configuration)\NativeCore.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\build\OxoSffNativeCore.dir\$(Configuration)\CorePaths.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\build\OxoSffNativeCore.dir\$(Configuration)\CoreProcess.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\build\OxoSffNativeCore.dir\$(Configuration)\CoreIntegrity.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\build\OxoSffNativeCore.dir\$(Configuration)\CoreSecretStore.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\build\OxoSffNativeCore.dir\$(Configuration)\CoreCache.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\build\OxoSffNativeCore.dir\$(Configuration)\KeyValues.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\build\OxoSffNativeCore.dir\$(Configuration)\CoreAcf.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\build\OxoSffNativeCore.dir\$(Configuration)\CoreIni.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\build\OxoSffNativeCore.dir\$(Configuration)\CoreSettings.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\build\OxoSffNativeCore.dir\$(Configuration)\CoreNamedIds.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{7C69F3F3-A725-375A-83B0-6E3BE0DD6867}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Object Libraries">
+      <UniqueIdentifier>{642C483E-4F68-36A7-A8E4-5A48E8207873}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{B8914932-97F0-312E-A59D-45943F90AE50}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,458 @@
+412           0 LOAD_GLOBAL              0 (url_base64)
+              2 LOAD_GLOBAL              1 (os)
+              4 LOAD_METHOD              2 (urandom)
+              6 LOAD_CONST               1 (32)
+              8 CALL_METHOD              1
+             10 CALL_FUNCTION            1
+             12 STORE_FAST               1 (code_verifier)
+
+413          14 LOAD_GLOBAL              0 (url_base64)
+             16 LOAD_GLOBAL              3 (hashlib)
+             18 LOAD_METHOD              4 (sha256)
+             20 LOAD_FAST                1 (code_verifier)
+             22 LOAD_METHOD              5 (encode)
+             24 CALL_METHOD              0
+             26 CALL_METHOD              1
+             28 LOAD_METHOD              6 (digest)
+             30 CALL_METHOD              0
+             32 CALL_FUNCTION            1
+             34 STORE_FAST               2 (code_challenge)
+
+414          36 LOAD_GLOBAL              7 (random)
+             38 LOAD_METHOD              8 (randint)
+             40 LOAD_CONST               2 (-2147483648)
+             42 LOAD_CONST               3 (2147483647)
+             44 CALL_METHOD              2
+             46 STORE_FAST               3 (nonce)
+
+416          48 LOAD_GLOBAL              9 (_DATA)
+             50 LOAD_CONST               4 ('login_remid')
+             52 BINARY_SUBSCR
+             54 STORE_FAST               4 (remid)
+
+417          56 LOAD_GLOBAL              9 (_DATA)
+             58 LOAD_CONST               5 ('login_signature')
+             60 BINARY_SUBSCR
+             62 LOAD_METHOD             10 (copy)
+             64 CALL_METHOD              0
+             66 STORE_FAST               5 (pc_sign_data)
+
+418          68 LOAD_CONST               6 ('v2')
+             70 LOAD_FAST                5 (pc_sign_data)
+             72 LOAD_CONST               7 ('sv')
+             74 STORE_SUBSCR
+
+419          76 LOAD_GLOBAL             11 (datetime)
+             78 LOAD_ATTR               11 (datetime)
+             80 LOAD_METHOD             12 (utcnow)
+             82 CALL_METHOD              0
+             84 STORE_FAST               6 (n)
+
+420          86 LOAD_FAST                6 (n)
+             88 LOAD_ATTR               13 (year)
+             90 FORMAT_VALUE             0
+             92 LOAD_CONST               8 ('-')
+             94 LOAD_FAST                6 (n)
+             96 LOAD_ATTR               14 (month)
+             98 FORMAT_VALUE             0
+            100 LOAD_CONST               8 ('-')
+            102 LOAD_FAST                6 (n)
+            104 LOAD_ATTR               15 (day)
+            106 FORMAT_VALUE             0
+            108 LOAD_CONST               9 (' ')
+            110 LOAD_FAST                6 (n)
+            112 LOAD_ATTR               16 (hour)
+            114 FORMAT_VALUE             0
+            116 LOAD_CONST              10 (':')
+            118 LOAD_FAST                6 (n)
+            120 LOAD_ATTR               17 (minute)
+            122 FORMAT_VALUE             0
+            124 LOAD_CONST              10 (':')
+            126 LOAD_FAST                6 (n)
+            128 LOAD_ATTR               18 (second)
+            130 FORMAT_VALUE             0
+            132 LOAD_CONST              10 (':')
+            134 LOAD_FAST                6 (n)
+            136 LOAD_ATTR               19 (microsecond)
+            138 LOAD_CONST              11 (1000)
+            140 BINARY_FLOOR_DIVIDE
+            142 FORMAT_VALUE             0
+            144 BUILD_STRING            13
+            146 LOAD_FAST                5 (pc_sign_data)
+            148 LOAD_CONST              12 ('ts')
+            150 STORE_SUBSCR
+
+421         152 LOAD_GLOBAL              0 (url_base64)
+            154 LOAD_GLOBAL             20 (json)
+            156 LOAD_ATTR               21 (dumps)
+            158 LOAD_FAST                5 (pc_sign_data)
+            160 LOAD_CONST              13 ((',', ':'))
+            162 LOAD_CONST              14 (('separators',))
+            164 CALL_FUNCTION_KW         2
+            166 CALL_FUNCTION            1
+            168 STORE_FAST               7 (tmp)
+
+422         170 LOAD_FAST                7 (tmp)
+            172 FORMAT_VALUE             0
+            174 LOAD_CONST              15 ('.')
+            176 LOAD_GLOBAL             22 (generate_signature_hash)
+            178 LOAD_FAST                0 (version)
+            180 LOAD_FAST                7 (tmp)
+            182 CALL_FUNCTION            2
+            184 FORMAT_VALUE             0
+            186 BUILD_STRING             3
+            188 STORE_FAST               8 (pc_sign)
+
+424         190 LOAD_GLOBAL             23 (_SESS_EA)
+            192 LOAD_ATTR               24 (get)
+
+425         194 LOAD_CONST              16 ('https://accounts.ea.com/connect/auth')
+
+427         196 LOAD_FAST                2 (code_challenge)
+
+428         198 LOAD_CONST              17 ('S256')
+
+429         200 LOAD_CONST              18 ('JUNO_PC_CLIENT')
+
+430         202 LOAD_CONST              19 ('code id_token')
+
+431         204 LOAD_CONST              20 ('qrc:///html/login_successful.html')
+
+432         206 LOAD_CONST              21 ('junoClient/login')
+
+433         208 LOAD_CONST              22 ('en_US')
+
+434         210 LOAD_FAST                3 (nonce)
+
+435         212 LOAD_FAST                8 (pc_sign)
+
+436         214 LOAD_CONST              23 ('true')
+
+426         216 LOAD_CONST              24 (('code_challenge', 'code_challenge_method', 'client_id', 'response_type', 'redirect_uri', 'display', 'locale', 'nonce', 'pc_sign', 'sbiod_enabled'))
+            218 BUILD_CONST_KEY_MAP     10
+
+439         220 LOAD_CONST              25 ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) QtWebEngine/5.15.2 Chrome/83.0.4103.122 Safari/537.36 Origin/10.6.0.00000 EAApp/')
+            222 LOAD_GLOBAL             25 (load_version)
+            224 CALL_FUNCTION            0
+            226 FORMAT_VALUE             0
+            228 BUILD_STRING             2
+
+440         230 LOAD_CONST              26 ('remid=')
+            232 LOAD_FAST                4 (remid)
+            234 FORMAT_VALUE             0
+            236 BUILD_STRING             2
+
+438         238 LOAD_CONST              27 (('User-Agent', 'Cookie'))
+            240 BUILD_CONST_KEY_MAP      2
+
+442         242 LOAD_CONST              28 (False)
+
+424         244 LOAD_CONST              29 (('params', 'headers', 'allow_redirects'))
+            246 CALL_FUNCTION_KW         4
+            248 STORE_FAST               9 (r1)
+
+444         250 LOAD_FAST                9 (r1)
+            252 LOAD_ATTR               26 (cookies)
+            254 LOAD_METHOD             24 (get)
+            256 LOAD_CONST              30 ('remid')
+            258 CALL_METHOD              1
+            260 LOAD_GLOBAL              9 (_DATA)
+            262 LOAD_CONST               4 ('login_remid')
+            264 STORE_SUBSCR
+
+445         266 LOAD_GLOBAL             27 (save_data)
+            268 CALL_FUNCTION            0
+            270 POP_TOP
+
+446         272 LOAD_FAST                9 (r1)
+            274 LOAD_ATTR               28 (headers)
+            276 LOAD_METHOD             24 (get)
+            278 LOAD_CONST              31 ('Location')
+            280 LOAD_CONST              32 ('')
+            282 CALL_METHOD              2
+            284 STORE_FAST              10 (location)
+
+447         286 LOAD_FAST               10 (location)
+            288 LOAD_METHOD             29 (find)
+            290 LOAD_CONST              33 ('#code=')
+            292 CALL_METHOD              1
+            294 STORE_FAST              11 (position_start)
+
+448         296 LOAD_FAST               11 (position_start)
+            298 LOAD_CONST              34 (-1)
+            300 COMPARE_OP               2 (==)
+            302 POP_JUMP_IF_FALSE      215 (to 430)
+
+449         304 LOAD_GLOBAL             30 (len)
+            306 LOAD_FAST               10 (location)
+            308 CALL_FUNCTION            1
+            310 LOAD_CONST              35 (0)
+            312 COMPARE_OP               4 (>)
+            314 POP_JUMP_IF_FALSE      162 (to 324)
+
+450         316 LOAD_GLOBAL             31 (AuthError)
+
+451         318 LOAD_CONST              36 ('Authentication error, turn automatic login off and on again.')
+
+450         320 CALL_FUNCTION            1
+            322 RAISE_VARARGS            1
+
+453     >>  324 SETUP_FINALLY            6 (to 338)
+
+454         326 LOAD_FAST                9 (r1)
+            328 LOAD_METHOD             20 (json)
+            330 CALL_METHOD              0
+            332 STORE_FAST              12 (data1)
+            334 POP_BLOCK
+            336 JUMP_FORWARD             5 (to 348)
+
+455     >>  338 POP_TOP
+            340 POP_TOP
+            342 POP_TOP
+
+456         344 POP_EXCEPT
+            346 JUMP_FORWARD            22 (to 392)
+
+458     >>  348 LOAD_FAST                0 (version)
+            350 LOAD_CONST              35 (0)
+            352 COMPARE_OP               2 (==)
+            354 POP_JUMP_IF_FALSE      196 (to 392)
+            356 LOAD_FAST               12 (data1)
+            358 LOAD_METHOD             24 (get)
+            360 LOAD_CONST              37 ('error')
+            362 BUILD_MAP                0
+            364 CALL_METHOD              2
+            366 POP_JUMP_IF_FALSE      196 (to 392)
+            368 LOAD_FAST               12 (data1)
+            370 LOAD_METHOD             24 (get)
+            372 LOAD_CONST              38 ('code')
+            374 CALL_METHOD              1
+            376 LOAD_CONST              39 (102105)
+            378 COMPARE_OP               2 (==)
+            380 POP_JUMP_IF_FALSE      196 (to 392)
+
+459         382 LOAD_GLOBAL             32 (login_automatic)
+            384 LOAD_CONST              40 (1)
+            386 LOAD_CONST              41 (('version',))
+            388 CALL_FUNCTION_KW         1
+            390 RETURN_VALUE
+
+460     >>  392 LOAD_GLOBAL             33 (print)
+            394 LOAD_FAST                9 (r1)
+            396 LOAD_ATTR               34 (status_code)
+            398 CALL_FUNCTION            1
+            400 POP_TOP
+
+461         402 LOAD_GLOBAL             33 (print)
+            404 LOAD_FAST                9 (r1)
+            406 LOAD_ATTR               28 (headers)
+            408 CALL_FUNCTION            1
+            410 POP_TOP
+
+462         412 LOAD_GLOBAL             33 (print)
+            414 LOAD_FAST                9 (r1)
+            416 LOAD_ATTR               35 (content)
+            418 CALL_FUNCTION            1
+            420 POP_TOP
+
+463         422 LOAD_GLOBAL             31 (AuthError)
+
+464         424 LOAD_CONST              42 ('Authentication error, message above might help anadius fix it. For now turn automatic login off and on again, that might fix it too.')
+
+463         426 CALL_FUNCTION            1
+            428 RAISE_VARARGS            1
+
+467     >>  430 LOAD_FAST               11 (position_start)
+            432 LOAD_CONST              43 (6)
+            434 INPLACE_ADD
+            436 STORE_FAST              11 (position_start)
+
+468         438 LOAD_FAST               10 (location)
+            440 LOAD_METHOD             29 (find)
+            442 LOAD_CONST              44 ('&')
+            444 LOAD_FAST               11 (position_start)
+            446 CALL_METHOD              2
+            448 STORE_FAST              13 (position_end)
+
+469         450 LOAD_FAST               13 (position_end)
+            452 LOAD_CONST              34 (-1)
+            454 COMPARE_OP               2 (==)
+            456 POP_JUMP_IF_FALSE      237 (to 474)
+
+470         458 LOAD_GLOBAL             33 (print)
+            460 LOAD_FAST               10 (location)
+            462 CALL_FUNCTION            1
+            464 POP_TOP
+
+471         466 LOAD_GLOBAL             31 (AuthError)
+
+472         468 LOAD_CONST              45 ('Authentication error, unexpected location. Report that to anadius.')
+
+471         470 CALL_FUNCTION            1
+            472 RAISE_VARARGS            1
+
+474     >>  474 LOAD_FAST               10 (location)
+            476 LOAD_FAST               11 (position_start)
+            478 LOAD_FAST               13 (position_end)
+            480 BUILD_SLICE              2
+            482 BINARY_SUBSCR
+            484 STORE_FAST              14 (code)
+
+476         486 LOAD_GLOBAL             23 (_SESS_EA)
+            488 LOAD_ATTR               36 (post)
+
+477         490 LOAD_CONST              46 ('https://accounts.ea.com/connect/token')
+
+479         492 LOAD_CONST              47 ('User-Agent')
+            494 LOAD_CONST              48 ('Mozilla/5.0 EA Download Manager Origin/10.6.0.00000')
+
+478         496 BUILD_MAP                1
+
+482         498 LOAD_CONST              49 ('authorization_code')
+
+483         500 LOAD_FAST               14 (code)
+
+484         502 LOAD_FAST                1 (code_verifier)
+
+485         504 LOAD_CONST              50 ('JWS')
+
+486         506 LOAD_CONST              18 ('JUNO_PC_CLIENT')
+
+487         508 LOAD_CONST              51 ('4mRLtYMb6vq9qglomWEaT4ChxsXWcyqbQpuBNfMPOYOiDmYYQmjuaBsF2Zp0RyVeWkfqhE9TuGgAw7te')
+
+488         510 LOAD_CONST              20 ('qrc:///html/login_successful.html')
+
+481         512 LOAD_CONST              52 (('grant_type', 'code', 'code_verifier', 'token_format', 'client_id', 'client_secret', 'redirect_uri'))
+            514 BUILD_CONST_KEY_MAP      7
+
+490         516 LOAD_CONST              28 (False)
+
+476         518 LOAD_CONST              53 (('headers', 'data', 'allow_redirects'))
+            520 CALL_FUNCTION_KW         4
+            522 STORE_FAST              15 (r2)
+
+492         524 LOAD_FAST               15 (r2)
+            526 LOAD_ATTR               34 (status_code)
+            528 LOAD_CONST              54 (200)
+            530 COMPARE_OP               3 (!=)
+            532 EXTENDED_ARG             1
+            534 POP_JUMP_IF_FALSE      287 (to 574)
+
+493         536 LOAD_GLOBAL             33 (print)
+            538 LOAD_FAST               15 (r2)
+            540 LOAD_ATTR               34 (status_code)
+            542 CALL_FUNCTION            1
+            544 POP_TOP
+
+494         546 LOAD_GLOBAL             33 (print)
+            548 LOAD_FAST               15 (r2)
+            550 LOAD_ATTR               28 (headers)
+            552 CALL_FUNCTION            1
+            554 POP_TOP
+
+495         556 LOAD_GLOBAL             33 (print)
+            558 LOAD_FAST               15 (r2)
+            560 LOAD_ATTR               35 (content)
+            562 CALL_FUNCTION            1
+            564 POP_TOP
+
+496         566 LOAD_GLOBAL             31 (AuthError)
+
+497         568 LOAD_CONST              55 ('Authentication error, message above might help anadius fix it. ')
+
+496         570 CALL_FUNCTION            1
+            572 RAISE_VARARGS            1
+
+499     >>  574 SETUP_FINALLY            6 (to 588)
+
+500         576 LOAD_FAST               15 (r2)
+            578 LOAD_METHOD             20 (json)
+            580 CALL_METHOD              0
+            582 STORE_FAST              16 (data2)
+            584 POP_BLOCK
+            586 JUMP_FORWARD             5 (to 598)
+
+501     >>  588 POP_TOP
+            590 POP_TOP
+            592 POP_TOP
+
+502         594 POP_EXCEPT
+            596 JUMP_FORWARD            44 (to 686)
+
+504     >>  598 LOAD_FAST               16 (data2)
+            600 LOAD_METHOD             24 (get)
+            602 LOAD_CONST              37 ('error')
+            604 CALL_METHOD              1
+            606 STORE_FAST              17 (error)
+
+505         608 LOAD_FAST               17 (error)
+            610 LOAD_CONST               0 (None)
+            612 IS_OP                    0
+            614 EXTENDED_ARG             1
+            616 POP_JUMP_IF_FALSE      316 (to 632)
+            618 LOAD_CONST              56 ('access_token')
+            620 LOAD_FAST               16 (data2)
+            622 CONTAINS_OP              1
+            624 EXTENDED_ARG             1
+            626 POP_JUMP_IF_FALSE      316 (to 632)
+
+506         628 LOAD_CONST              57 ('access token missing')
+            630 STORE_FAST              17 (error)
+
+507     >>  632 LOAD_FAST               17 (error)
+            634 LOAD_CONST               0 (None)
+            636 IS_OP                    1
+            638 EXTENDED_ARG             1
+            640 POP_JUMP_IF_FALSE      339 (to 678)
+
+508         642 LOAD_GLOBAL             33 (print)
+            644 LOAD_GLOBAL             20 (json)
+            646 LOAD_ATTR               21 (dumps)
+            648 LOAD_FAST               16 (data2)
+            650 LOAD_CONST              58 ('\t')
+            652 LOAD_CONST              59 (('indent',))
+            654 CALL_FUNCTION_KW         2
+            656 CALL_FUNCTION            1
+            658 POP_TOP
+
+509         660 LOAD_GLOBAL             31 (AuthError)
+
+510         662 LOAD_CONST              60 ('Authentication error, ')
+            664 LOAD_FAST               16 (data2)
+            666 LOAD_CONST              37 ('error')
+            668 BINARY_SUBSCR
+            670 FORMAT_VALUE             0
+            672 BUILD_STRING             2
+
+509         674 CALL_FUNCTION            1
+            676 RAISE_VARARGS            1
+
+512     >>  678 LOAD_FAST               16 (data2)
+            680 LOAD_CONST              56 ('access_token')
+            682 BINARY_SUBSCR
+            684 RETURN_VALUE
+
+514     >>  686 LOAD_GLOBAL             33 (print)
+            688 LOAD_FAST               15 (r2)
+            690 LOAD_ATTR               34 (status_code)
+            692 CALL_FUNCTION            1
+            694 POP_TOP
+
+515         696 LOAD_GLOBAL             33 (print)
+            698 LOAD_FAST               15 (r2)
+            700 LOAD_ATTR               28 (headers)
+            702 CALL_FUNCTION            1
+            704 POP_TOP
+
+516         706 LOAD_GLOBAL             33 (print)
+            708 LOAD_FAST               15 (r2)
+            710 LOAD_ATTR               35 (content)
+            712 CALL_FUNCTION            1
+            714 POP_TOP
+
+517         716 LOAD_GLOBAL             31 (AuthError)
+
+518         718 LOAD_CONST              55 ('Authentication error, message above might help anadius fix it. ')
+
+517         720 CALL_FUNCTION            1
+            722 RAISE_VARARGS            1

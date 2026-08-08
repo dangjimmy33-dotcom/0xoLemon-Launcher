@@ -26,6 +26,14 @@ path = "src/bin/asset_pack_builder.rs"
 name = "injector_cli"
 path = "src/bin/injector_cli.rs"
 
+[[bin]]
+name = "test_denuvo"
+path = "src/bin/test_denuvo.rs"
+
+[[bin]]
+name = "debug_extract"
+path = "src/bin/debug_extract.rs"
+
 [build-dependencies]
 tauri-build = { version = "2.5.3", features = [] }
 

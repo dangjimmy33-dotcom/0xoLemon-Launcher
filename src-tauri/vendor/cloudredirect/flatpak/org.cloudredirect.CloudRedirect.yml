@@ -1,0 +1,91 @@
+app-id: org.cloudredirect.CloudRedirect
+runtime: org.kde.Platform
+runtime-version: '6.10'
+sdk: org.kde.Sdk
+command: cloud-redirect-ui-wrapper
+separate-locales: false
+no-debuginfo: true
+
+finish-args:
+  # Filesystem access for:
+  # - Reading/writing Steam installation and save data
+  # - Deploying cloud_redirect.so to user directories
+  - --filesystem=home
+
+  # Network access for OAuth and cloud provider APIs
+  - --share=network
+
+  # Display
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+
+  # DBus access for desktop integration
+  - --talk-name=org.freedesktop.Notifications
+  - --talk-name=org.freedesktop.portal.Desktop
+  - --talk-name=org.freedesktop.Flatpak
+
+modules:
+  # The cloud_redirect.so (32-bit) is for Steam hooking via LD_AUDIT.
+  # Steam is 32-bit, so the .so must be 32-bit to be loaded.
+  # The UI app copies it to ~/.local/share/SLSsteam/ during deployment.
+  - name: cloud-redirect-native
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 cloud_redirect.so /app/share/cloud_redirect/cloud_redirect.so
+      - install -Dm755 cloud_redirect_cli /app/share/cloud_redirect/cloud_redirect_cli
+      - install -Dm644 cloudredirect.flatpakrepo /app/share/cloud_redirect/cloudredirect.flatpakrepo
+    sources:
+      - type: file
+        path: cloud_redirect.so
+      # 32-bit CLI for the Migration page
+      - type: file
+        path: cloud_redirect_cli
+      - type: file
+        path: cloudredirect.flatpakrepo
+
+  - name: cloud-redirect-ui
+    buildsystem: cmake-ninja
+    no-debuginfo: true
+    config-opts:
+      # Version is read from Version.props (copied into the sandbox below) by
+      # ui-linux/CMakeLists.txt. Do NOT hardcode CR_RELEASE_VERSION here -- it
+      # overrides Version.props and drifts out of sync.
+      - -DCMAKE_BUILD_TYPE=Release
+    sources:
+      - type: dir
+        path: ../ui-linux
+      - type: file
+        path: ../Version.props
+    post-install:
+      - |
+        cat > /app/bin/cloud-redirect-ui-wrapper <<'EOF'
+        #!/bin/bash
+        # Path to bundled native binary for the deployer
+        # 32-bit .so for Steam hooking (deployed to ~/.local/share/SLSsteam/)
+        export CR_BUNDLED_SO="/app/share/cloud_redirect/cloud_redirect.so"
+        # 32-bit CLI for cloud-provider migration (deployed alongside the .so).
+        export CR_BUNDLED_CLI="/app/share/cloud_redirect/cloud_redirect_cli"
+        exec /app/bin/cloud-redirect-ui "$@"
+        EOF
+        chmod +x /app/bin/cloud-redirect-ui-wrapper
+
+  - name: desktop-file
+    buildsystem: simple
+    build-commands:
+      - install -Dm644 org.cloudredirect.CloudRedirect.desktop /app/share/applications/org.cloudredirect.CloudRedirect.desktop
+      - install -Dm644 org.cloudredirect.CloudRedirect.metainfo.xml /app/share/metainfo/org.cloudredirect.CloudRedirect.metainfo.xml
+      - |
+        for size in 16x16 32x32 48x48 64x64 128x128 256x256 512x512; do
+          install -Dm644 "icons/${size}/apps/cloudredirect.png" \
+            "/app/share/icons/hicolor/${size}/apps/org.cloudredirect.CloudRedirect.png"
+        done
+      - gtk-update-icon-cache -f -t /app/share/icons/hicolor || true
+    sources:
+      - type: file
+        path: org.cloudredirect.CloudRedirect.desktop
+      - type: file
+        path: org.cloudredirect.CloudRedirect.metainfo.xml
+      - type: dir
+        path: icons
+        dest: icons

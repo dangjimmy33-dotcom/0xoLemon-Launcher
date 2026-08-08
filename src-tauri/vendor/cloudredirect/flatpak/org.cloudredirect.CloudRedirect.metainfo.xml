@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>org.cloudredirect.CloudRedirect</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <name>CloudRedirect</name>
+  <summary>Steam Cloud redirection magic for Linux!</summary>
+  
+  <description>
+    <p>
+      CloudRedirect for Linux! Redirect Steam Cloud for games unlocked by SLSSteam
+      to the provider of your choice!
+    </p>
+  </description>
+  
+  <icon type="stock">org.cloudredirect.CloudRedirect</icon>
+  
+  <launchable type="desktop-id">org.cloudredirect.CloudRedirect.desktop</launchable>
+  
+  <url type="homepage">https://github.com/Selectively11/CloudRedirect-Unified</url>
+  <url type="bugtracker">https://github.com/Selectively11/CloudRedirect-Unified/issues</url>
+  
+  <developer_name>Selectively11</developer_name>
+  
+  <provides>
+    <binary>cloud-redirect-ui</binary>
+  </provides>
+  
+  <requires>
+    <display_length compare="ge">360</display_length>
+  </requires>
+  
+  <recommends>
+    <control>pointing</control>
+    <control>keyboard</control>
+  </recommends>
+  
+  <content_rating type="oars-1.1" />
+  
+  <releases>
+    <release version="2.6.4" date="2026-08-06" />
+    <release version="2.6.3" date="2026-07-22" />
+    <release version="2.6.0" date="2026-07-18" />
+    <release version="2.5.4" date="2026-07-08" />
+    <release version="2.5.2" date="2026-07-04" />
+    <release version="2.5.1" date="2026-07-02" />
+    <release version="2.5.0" date="2026-07-01" />
+    <release version="2.2.5" date="2026-06-29" />
+    <release version="2.2.0" date="2026-06-16" />
+    <release version="2.1.5" date="2026-06-04" />
+    <release version="2.1.2" date="2026-06-02" />
+    <release version="2.0.4" date="2026-05-15" />
+    <release version="2.0.3" date="2026-05-13" />
+    <release version="2.0.0" date="2026-05-04">
+      <description>
+        <p>Initial Flatpak release</p>
+      </description>
+    </release>
+  </releases>
+  
+  <screenshots>
+    <!-- Add screenshots when available -->
+  </screenshots>
+  
+  <keywords>
+    <keyword>steam</keyword>
+    <keyword>cloud</keyword>
+    <keyword>save</keyword>
+    <keyword>backup</keyword>
+    <keyword>sync</keyword>
+    <keyword>game</keyword>
+  </keywords>
+</component>

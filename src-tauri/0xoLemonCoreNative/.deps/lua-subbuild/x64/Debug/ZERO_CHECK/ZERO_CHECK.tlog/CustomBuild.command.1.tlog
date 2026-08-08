@@ -1,0 +1,10 @@
+^E:\007LAUNCHER\SRC-TAURI\0XOLEMONCORENATIVE\.DEPS\LUA-SUBBUILD\CMAKEFILES\1509BC7FEB775D6B09C598AC5DD7EAC1\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SE:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/lua-subbuild -BE:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/lua-subbuild --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/lua-subbuild/lua-populate.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

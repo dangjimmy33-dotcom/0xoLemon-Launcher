@@ -31,6 +31,9 @@ pub mod process_manager;
 pub mod achievement_watcher;
 pub mod save_paths;
 pub mod local_save_backup;
+pub mod shop_lua;
+pub mod open_steam_tool;
+pub mod denuvo;
 
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -1093,36 +1096,6 @@ fn get_debug_log_path(app: AppHandle) -> Result<String, String> {
     Ok(log_path.to_string_lossy().to_string())
 }
 
-/// Detect AMD GPU by reading Windows registry display adapter keys.
-/// Returns true if any display adapter contains "AMD" or "Radeon" in its description.
-fn detect_amd_gpu() -> bool {
-    // Fast registry-based detection — no subprocess, no blocking
-    #[cfg(target_os = "windows")]
-    {
-        // Read HKLM\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\
-        // DriverDesc values for each display adapter
-        let hklm = winreg::RegKey::predef(winreg::enums::HKEY_LOCAL_MACHINE);
-        let class_key = hklm
-            .open_subkey("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}")
-            .or_else(|_| {
-                hklm.open_subkey("SYSTEM\\CurrentControlSet\\Control\\Video")
-            });
-
-        if let Ok(key) = class_key {
-            for sub in key.enum_keys().filter_map(|k| k.ok()) {
-                if let Ok(sub_key) = key.open_subkey(&sub) {
-                    let desc: String = sub_key.get_value("DriverDesc").unwrap_or_default();
-                    let desc_lower = desc.to_lowercase();
-                    if desc_lower.contains("amd") || desc_lower.contains("radeon") || desc_lower.contains("rx ") {
-                        return true;
-                    }
-                }
-            }
-        }
-    }
-    false
-}
-
 pub fn run() {
     #[allow(unused_variables)]
     let port: u16 = 14201;
@@ -1252,11 +1225,18 @@ pub fn run() {
             disable_lua_game_mode,
             steam_integration::get_steam_game_install_dir,
             steam_integration::get_steam_game_buildid,
+            steam_integration::scan_all_installed_buildids,
             steam_integration::check_defender_realtime_status,
             check_defender_exclusion,
             add_defender_exclusion,
             set_debug_logging_enabled,
             get_debug_log_path,
+            denuvo::get_denuvo_token_from_server,
+            denuvo::apply_denuvo_token_to_cfg,
+            denuvo::scan_for_denuvo_ticket,
+            denuvo::delete_denuvo_tickets,
+            denuvo::launch_game_executable,
+            denuvo::download_and_extract_magic_file,
             exit_app,
             clear_launcher_config,
             cloud_redirect::cloud_redirect_get_status,
@@ -1265,20 +1245,38 @@ pub fn run() {
             cloud_redirect::cloud_redirect_save_provider_config,
             cloud_redirect::cloud_redirect_connect_google,
             // CloudRedirect V2 (new features)
-            cloud_redirect_v2::cloud_redirect_v2_get_status,
-            cloud_redirect_v2::cloud_redirect_enable,
-            cloud_redirect_v2::cloud_redirect_disable,
-            cloud_redirect_v2::cloud_redirect_set_local_path,
             cloud_redirect_v2::cloud_redirect_start_oauth,
             cloud_redirect_v2::cloud_redirect_complete_oauth,
-            cloud_redirect_v2::cloud_redirect_trigger_sync,
-            cloud_redirect_v2::cloud_redirect_get_sync_status,
             cloud_redirect_v2::cloud_redirect_poll_oauth_code,
-            cloud_redirect_v2::cloud_redirect_list_game_saves,
-            cloud_redirect_v2::cloud_redirect_backup_save,
-            cloud_redirect_v2::cloud_redirect_reset_game,
-            cloud_redirect_v2::cloud_redirect_list_backups,
-            cloud_redirect_v2::cloud_redirect_restore_backup,
+            cloud_redirect_v2::cloud_redirect_poll_oauth_error,
+            // CloudRedirect upstream 2.6.3 engine adapter
+            cloud_redirect_v2::cloud_redirect_engine_get_status,
+            cloud_redirect_v2::cloud_redirect_engine_get_steam_state,
+            cloud_redirect_v2::cloud_redirect_engine_close_steam,
+            cloud_redirect_v2::cloud_redirect_engine_install,
+            cloud_redirect_v2::cloud_redirect_engine_remove,
+            cloud_redirect_v2::cloud_redirect_engine_run_required_patches,
+            cloud_redirect_v2::cloud_redirect_engine_get_provider,
+            cloud_redirect_v2::cloud_redirect_engine_save_provider,
+            cloud_redirect_v2::cloud_redirect_engine_set_mode,
+            cloud_redirect_v2::cloud_redirect_engine_test_provider,
+            cloud_redirect_v2::cloud_redirect_engine_list_apps,
+            cloud_redirect_v2::cloud_redirect_engine_list_files,
+            cloud_redirect_v2::cloud_redirect_engine_sync_app,
+            cloud_redirect_v2::cloud_redirect_engine_sync_all,
+            cloud_redirect_v2::cloud_redirect_engine_delete_app,
+            cloud_redirect_v2::cloud_redirect_engine_get_manifest_pins,
+            cloud_redirect_v2::cloud_redirect_engine_save_manifest_pins,
+            cloud_redirect_v2::cloud_redirect_engine_create_backup,
+            cloud_redirect_v2::cloud_redirect_engine_list_backups,
+            cloud_redirect_v2::cloud_redirect_engine_restore_backup,
+            cloud_redirect_v2::cloud_redirect_engine_list_stats,
+            cloud_redirect_v2::cloud_redirect_engine_migrate,
+            cloud_redirect_v2::cloud_redirect_engine_gc_blobs,
+            cloud_redirect_v2::cloud_redirect_engine_publish_manifest,
+            cloud_redirect_v2::cloud_redirect_engine_prune_legacy,
+            cloud_redirect_v2::cloud_redirect_engine_run_cloud760,
+            cloud_redirect_v2::cloud_redirect_engine_diagnostics,
             // Steamless — native DRM remover (Error 54 Fix)
             steamless::steamless_apply,
             steamless::steamless_restore,
@@ -1294,6 +1292,18 @@ pub fn run() {
             steam::run_depot_patch,
             steam::list_installed_luas,
             steam::list_available_manifests,
+            // 0xoLemon Lua Shop — Depotdownloader catalog
+            shop_lua::lua_shop_get_catalog,
+            shop_lua::lua_shop_get_patchnotes_rss,
+            shop_lua::lua_shop_get_game_builds,
+            shop_lua::lua_shop_install_game,
+            // 0xoLemon Hook Management
+            open_steam_tool::ost_install_hook,
+            open_steam_tool::ost_remove_hook,
+            open_steam_tool::ost_check_hook_status,
+            denuvo::get_denuvo_token_from_server,
+            denuvo::apply_denuvo_token_to_cfg,
+            denuvo::scan_for_denuvo_ticket,
         ]);
 
     builder.setup(move |app| {
@@ -1312,14 +1322,12 @@ pub fn run() {
                 tauri::WebviewUrl::External(url)
             };
 
-            // Detect AMD GPU via fast registry read (non-blocking)
-            let is_amd_gpu = detect_amd_gpu();
-            if is_amd_gpu {
-                debug_log::debug_log("AMD GPU detected via registry");
-            }
-            debug_log::debug_log("Building main window...");
+            // Keep WebView2 startup hardware-vendor agnostic.
+            // Do not force vendor-specific Chromium/ANGLE flags here; let WebView2
+            // choose its default renderer for the active Windows graphics stack.
+            debug_log::debug_log("Building main window with default WebView2 renderer...");
 
-            let mut window_builder = tauri::WebviewWindowBuilder::new(app, "main", main_url)
+            let window_builder = tauri::WebviewWindowBuilder::new(app, "main", main_url)
                 .title("0xoLemon")
                 .inner_size(1200.0, 800.0)
                 .min_inner_size(1120.0, 720.0)
@@ -1329,12 +1337,6 @@ pub fn run() {
                 .decorations(false)
                 .transparent(true)
                 .visible(true);
-
-            // Only apply ANGLE workaround for AMD to avoid breaking non-AMD setups.
-            if is_amd_gpu {
-                debug_log::debug_log("AMD: applying --use-angle=gl workaround");
-                window_builder = window_builder.additional_browser_args("--use-angle=gl --disable-gpu-sandbox");
-            }
 
             window_builder.build()?;
             debug_log::debug_log("Main window built successfully.");

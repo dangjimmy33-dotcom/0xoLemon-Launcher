@@ -1,0 +1,10 @@
+^E:\007LAUNCHER\SRC-TAURI\0XOLEMONCORENATIVE\.DEPS\DETOURS-SUBBUILD\CMAKEFILES\48A42EFF93A3120F04C3F8D67057D05A\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SE:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/detours-subbuild -BE:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/detours-subbuild --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/detours-subbuild/detours-populate.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

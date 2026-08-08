@@ -83,6 +83,7 @@ import {
   BigPictureView,
   DefenderExclusionDialog,
   AchievementToastOverlay,
+  HelpCenter,
 } from './components'
 import { useLocale } from './context/LocaleContext'
 
@@ -225,7 +226,7 @@ export default function App() {
     // Restore from localStorage on mount (persist across app restarts)
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('0xo_activeTab') as TabId | null
-      if (saved && ['Home', 'Store', 'Library', 'Downloads', 'Updates', 'CloudRedirect', 'Settings', 'Cache', "What's New!", 'Translations'].includes(saved)) {
+      if (saved && ['Home', 'Store', 'Library', 'Downloads', 'Updates', 'CloudRedirect', 'Settings', 'Cache', "What's New!", 'Translations', 'Lua Installer', 'Lua Shop'].includes(saved)) {
         return saved
       }
     }
@@ -322,6 +323,7 @@ export default function App() {
   const [cacheBusy, setCacheBusy] = useState(false)
   const [appVersion, setAppVersion] = useState(packageMetadata.version)
   const [showWhatsNewModal, setShowWhatsNewModal] = useState(false)
+  const [helpCenterOpen, setHelpCenterOpen] = useState(false)
   const launcherUpdateRateRef = useRef<Array<{ bytes: number; at: number }>>([])
   const pendingHomeLaunchRef = useRef<string | null>(null)
   const playingGamesRef = useRef<Record<string, boolean>>({})
@@ -1063,6 +1065,19 @@ export default function App() {
     invoke<boolean>('is_lua_game_mode_enabled')
       .then(setLuaModeEnabled)
       .catch(() => setLuaModeEnabled(false))
+  }, [])
+
+  // Automatically check and repair Steam hooks on startup
+  useEffect(() => {
+    if (!isTauriRuntime()) return
+    invoke<boolean>('ost_check_hook_status')
+      .then((isOk) => {
+        if (!isOk) {
+          console.log('Hook status is invalid or missing, attempting to reinstall...')
+          invoke('ost_install_hook').catch(console.error)
+        }
+      })
+      .catch(console.error)
   }, [])
 
   // Cache images for existing installed games for offline use
@@ -3630,6 +3645,8 @@ export default function App() {
             onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
             isSidebarCollapsed={isSidebarCollapsed}
             onlineCount={onlineCount}
+            activeTab={activeTab}
+            onOpenHelpCenter={() => setHelpCenterOpen(true)}
           />
           {/* Pull-to-refresh indicator */}
           {ptrProgress > 0 && (
@@ -3718,15 +3735,13 @@ export default function App() {
                     onOpenDonate={() => setShowDonate(true)}
                   />
                 ) : activeTab === 'CloudRedirect' ? (
-                  <div className="settings-view settings-view-global" style={{ padding: '40px' }}>
-                    <CloudSavesOverview
-                      catalog={catalog}
-                      installStates={installStates}
-                      assets={assetUrls}
-                      onOpenGame={openHomeGame}
-                      onRequestAsset={requestHomeAsset}
-                    />
-                  </div>
+                  <CloudSavesOverview
+                    catalog={catalog}
+                    installStates={installStates}
+                    assets={assetUrls}
+                    onOpenGame={openHomeGame}
+                    onRequestAsset={requestHomeAsset}
+                  />
                 ) : activeTab === 'Settings' ? (
                   <SettingsView
                     preferences={preferences}
@@ -3750,6 +3765,7 @@ export default function App() {
                       updatePreference('onboardingCompleted', false)
                       setActiveTab('Home')
                     }}
+                    onOpenHelpCenter={() => setHelpCenterOpen(true)}
                     onManageNotifications={() => setNotificationOpen(true)}
                     appVersion={appVersion}
                     updateStatus={settingsUpdateStatus}
@@ -4082,6 +4098,15 @@ export default function App() {
             onDismiss={(notificationId) =>
               setToastNotifications((current) => current.filter((item) => item.id !== notificationId))
             }
+          />
+          <HelpCenter
+            open={helpCenterOpen}
+            activeTab={activeTab}
+            onClose={() => setHelpCenterOpen(false)}
+            onReplayTour={() => {
+              updatePreference('onboardingCompleted', false)
+              setActiveTab('Home')
+            }}
           />
           {!preferences.onboardingCompleted ? (
             <Onboarding

@@ -51,7 +51,7 @@ export function Sidebar({
   ]
 
   return (
-    <aside className={`sidebar ${collapsed ? 'sidebar-collapsed' : ''}`}>
+    <aside className={`sidebar ${collapsed ? 'sidebar-collapsed' : ''}`} data-tour="sidebar">
       <div className="sidebar-header">
       </div>
       <nav>
@@ -62,6 +62,7 @@ export function Sidebar({
             type="button"
             aria-label={label}
             title={label}
+            data-tour={`nav-${tabId.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}`}
             onClick={() => onSelect(tabId)}
           >
             <Icon size={20} />

@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\build\CMakeFiles\d714b1d52fedcad180759f488ad0b9bc\INSTALL_force.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{7C69F3F3-A725-375A-83B0-6E3BE0DD6867}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

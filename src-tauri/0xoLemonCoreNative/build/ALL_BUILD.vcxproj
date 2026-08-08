@@ -1,0 +1,165 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ResolveNugetPackages>false</ResolveNugetPackages>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{96C164A7-CFE3-3C65-9F7D-C59B7378BDA9}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+    <Platform>x64</Platform>
+    <ProjectName>ALL_BUILD</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Midl>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Midl>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule E:/007Launcher/src-tauri/0xoLemonCoreNative/source/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SE:/007Launcher/src-tauri/0xoLemonCoreNative/source -BE:/007Launcher/src-tauri/0xoLemonCoreNative/build --check-stamp-file E:/007Launcher/src-tauri/0xoLemonCoreNative/build/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Compiler\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Compiler\MSVC.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\ExternalProject\shared_internal_commands.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\FetchContent.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Internal\CMakeCLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Internal\CMakeCXXLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Internal\CMakeCommonLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Linker\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Linker\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Linker\MSVC.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Linker\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Linker\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Windows-Initialize.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\WindowsPaths.cmake;E:\007Launcher\src-tauri\0xoLemonCoreNative\build\CMakeFiles\4.3.1\CMakeCCompiler.cmake;E:\007Launcher\src-tauri\0xoLemonCoreNative\build\CMakeFiles\4.3.1\CMakeCXXCompiler.cmake;E:\007Launcher\src-tauri\0xoLemonCoreNative\build\CMakeFiles\4.3.1\CMakeRCCompiler.cmake;E:\007Launcher\src-tauri\0xoLemonCoreNative\build\CMakeFiles\4.3.1\CMakeSystem.cmake;E:\007Launcher\src-tauri\0xoLemonCoreNative\source\cmake\LcDetours.cmake;E:\007Launcher\src-tauri\0xoLemonCoreNative\source\cmake\LcFetchCache.cmake;E:\007Launcher\src-tauri\0xoLemonCoreNative\source\cmake\LcLogMacros.cmake;E:\007Launcher\src-tauri\0xoLemonCoreNative\source\cmake\LcLua.cmake;E:\007Launcher\src-tauri\0xoLemonCoreNative\source\cmake\LcProtobuf.cmake;E:\007Launcher\src-tauri\0xoLemonCoreNative\source\cmake\LcSpdlog.cmake;E:\007Launcher\src-tauri\0xoLemonCoreNative\source\cmake\LcTomlplusplus.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:\007Launcher\src-tauri\0xoLemonCoreNative\build\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule E:/007Launcher/src-tauri/0xoLemonCoreNative/source/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SE:/007Launcher/src-tauri/0xoLemonCoreNative/source -BE:/007Launcher/src-tauri/0xoLemonCoreNative/build --check-stamp-file E:/007Launcher/src-tauri/0xoLemonCoreNative/build/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Compiler\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Compiler\MSVC.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\ExternalProject\shared_internal_commands.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\FetchContent.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Internal\CMakeCLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Internal\CMakeCXXLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Internal\CMakeCommonLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Linker\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Linker\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Linker\MSVC.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Linker\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Linker\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Windows-Initialize.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-4.3\Modules\Platform\WindowsPaths.cmake;E:\007Launcher\src-tauri\0xoLemonCoreNative\build\CMakeFiles\4.3.1\CMakeCCompiler.cmake;E:\007Launcher\src-tauri\0xoLemonCoreNative\build\CMakeFiles\4.3.1\CMakeCXXCompiler.cmake;E:\007Launcher\src-tauri\0xoLemonCoreNative\build\CMakeFiles\4.3.1\CMakeRCCompiler.cmake;E:\007Launcher\src-tauri\0xoLemonCoreNative\build\CMakeFiles\4.3.1\CMakeSystem.cmake;E:\007Launcher\src-tauri\0xoLemonCoreNative\source\cmake\LcDetours.cmake;E:\007Launcher\src-tauri\0xoLemonCoreNative\source\cmake\LcFetchCache.cmake;E:\007Launcher\src-tauri\0xoLemonCoreNative\source\cmake\LcLogMacros.cmake;E:\007Launcher\src-tauri\0xoLemonCoreNative\source\cmake\LcLua.cmake;E:\007Launcher\src-tauri\0xoLemonCoreNative\source\cmake\LcProtobuf.cmake;E:\007Launcher\src-tauri\0xoLemonCoreNative\source\cmake\LcSpdlog.cmake;E:\007Launcher\src-tauri\0xoLemonCoreNative\source\cmake\LcTomlplusplus.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:\007Launcher\src-tauri\0xoLemonCoreNative\build\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\build\ZERO_CHECK.vcxproj">
+      <Project>{BA5EA6D3-5ACC-3C03-BBA1-AA63E12FD7C9}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\build\OxoCore.vcxproj">
+      <Project>{410F8E4E-F743-3A2A-B688-A5E5C1F57B3F}</Project>
+      <Name>OxoCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\build\OxoPayload.vcxproj">
+      <Project>{A87549A5-95A5-3BFE-B324-BFCD24ADD05B}</Project>
+      <Name>OxoPayload</Name>
+    </ProjectReference>
+    <ProjectReference Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\build\OxoSffNativeCore.vcxproj">
+      <Project>{FB861831-3C2C-3984-ADAA-62C193F2BFA7}</Project>
+      <Name>OxoSffNativeCore</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\build\detours.vcxproj">
+      <Project>{25F8DF5F-60B2-38FE-B858-5DA7B70F0FB1}</Project>
+      <Name>detours</Name>
+    </ProjectReference>
+    <ProjectReference Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\build\dwmapi.vcxproj">
+      <Project>{68A2F4BD-5530-3604-9D7D-EC9F80F1051E}</Project>
+      <Name>dwmapi</Name>
+    </ProjectReference>
+    <ProjectReference Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\protobuf-build\libprotobuf.vcxproj">
+      <Project>{B6EF0F1A-C323-3D51-9028-F320BE20BD4A}</Project>
+      <Name>libprotobuf</Name>
+    </ProjectReference>
+    <ProjectReference Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\protobuf-build\libprotobuf-lite.vcxproj">
+      <Project>{B5CB6CB2-35F4-3807-A111-242A13A1AD3A}</Project>
+      <Name>libprotobuf-lite</Name>
+    </ProjectReference>
+    <ProjectReference Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\protobuf-build\libprotoc.vcxproj">
+      <Project>{51F9659F-F49E-3A52-9878-02C1A3ED7FF3}</Project>
+      <Name>libprotoc</Name>
+    </ProjectReference>
+    <ProjectReference Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\build\lua_static.vcxproj">
+      <Project>{D88010B8-FAB3-3102-8A9E-4976627C7867}</Project>
+      <Name>lua_static</Name>
+    </ProjectReference>
+    <ProjectReference Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\protobuf-build\protoc.vcxproj">
+      <Project>{D7766CC6-99C9-3805-BC1C-9548BE7561CF}</Project>
+      <Name>protoc</Name>
+    </ProjectReference>
+    <ProjectReference Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\spdlog-build\spdlog.vcxproj">
+      <Project>{410F5E23-A317-3581-AD46-BB2C056AA49D}</Project>
+      <Name>spdlog</Name>
+    </ProjectReference>
+    <ProjectReference Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\build\xinput1_4.vcxproj">
+      <Project>{2F6BEDD0-4E0C-3705-A935-CE3123B3CCA6}</Project>
+      <Name>xinput1_4</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

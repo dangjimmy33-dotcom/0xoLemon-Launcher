@@ -1,0 +1,118 @@
+<ui:FluentWindow x:Class="CloudRedirect.Windows.DisclaimerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        xmlns:res="clr-namespace:CloudRedirect.Resources"
+        Title="{res:Loc Disclaimer_WindowTitle}"
+        Width="600"
+        MinWidth="520"
+        SizeToContent="Height"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        ExtendsContentIntoTitleBar="True">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <ui:TitleBar Grid.Row="0" Title="{res:Loc Disclaimer_WindowTitle}" ShowMinimize="False" ShowMaximize="False" />
+
+        <Grid Grid.Row="1" Margin="16,0,16,16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <ScrollViewer Grid.Row="0"
+                          VerticalScrollBarVisibility="Auto"
+                          Padding="8,8,22,8">
+                <StackPanel>
+
+                    <TextBlock Text="{res:Loc Disclaimer_Heading}"
+                               FontSize="17"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                               Margin="0,0,0,14" />
+
+                    <TextBlock Text="{res:Loc Disclaimer_Intro}"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               FontSize="14"
+                               TextWrapping="Wrap"
+                               LineHeight="23"
+                               Margin="0,0,0,14" />
+
+                    <TextBlock Text="{res:Loc Disclaimer_HowItWorks}"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               FontSize="14"
+                               TextWrapping="Wrap"
+                               LineHeight="23"
+                               Margin="0,0,0,14" />
+
+                    <TextBlock Text="{res:Loc Disclaimer_TrackRecord}"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               FontSize="14"
+                               TextWrapping="Wrap"
+                               LineHeight="23"
+                               Margin="0,0,0,18" />
+
+                    <TextBlock Text="{res:Loc Disclaimer_ChoiceHeading}"
+                               FontSize="15"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                               Margin="0,0,0,12" />
+
+                    <TextBlock Text="{res:Loc Disclaimer_ChoiceIntegrity}"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               FontSize="14"
+                               TextWrapping="Wrap"
+                               LineHeight="23"
+                               Margin="0,0,0,12" />
+
+                    <TextBlock Text="{res:Loc Disclaimer_ChoiceBackup}"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               FontSize="14"
+                               TextWrapping="Wrap"
+                               LineHeight="23"
+                               Margin="0,0,0,12" />
+
+                    <TextBlock Text="{res:Loc Disclaimer_ChoiceMultiPC}"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               FontSize="14"
+                               TextWrapping="Wrap"
+                               LineHeight="23"
+                               Margin="0,0,0,18" />
+
+                    <TextBlock Text="{res:Loc Disclaimer_Closing}"
+                               FontSize="14"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                               Margin="0,0,0,4" />
+
+                </StackPanel>
+            </ScrollViewer>
+
+            <Border Grid.Row="1"
+                    Height="1"
+                    Background="{DynamicResource ControlStrokeColorDefaultBrush}"
+                    Margin="0,12,0,0" />
+
+            <StackPanel Grid.Row="2"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Margin="0,16,8,0">
+                <ui:Button x:Name="CancelButton"
+                           Content="{res:Loc Disclaimer_Cancel}"
+                           Margin="0,0,8,0"
+                           Click="Cancel_Click" />
+
+                <ui:Button x:Name="AcceptButton"
+                           Content="{res:Loc Disclaimer_AcceptButton}"
+                           Click="Accept_Click" />
+            </StackPanel>
+
+        </Grid>
+    </Grid>
+</ui:FluentWindow>

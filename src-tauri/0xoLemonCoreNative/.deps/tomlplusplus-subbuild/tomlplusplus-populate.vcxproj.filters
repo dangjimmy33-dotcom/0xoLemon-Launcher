@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\tomlplusplus-subbuild\CMakeFiles\38b32c37bde2d9e87491f6c74f054199\tomlplusplus-populate-mkdir.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\tomlplusplus-subbuild\CMakeFiles\38b32c37bde2d9e87491f6c74f054199\tomlplusplus-populate-download.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\tomlplusplus-subbuild\CMakeFiles\38b32c37bde2d9e87491f6c74f054199\tomlplusplus-populate-update_disconnected.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\tomlplusplus-subbuild\CMakeFiles\38b32c37bde2d9e87491f6c74f054199\tomlplusplus-populate-patch_disconnected.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\tomlplusplus-subbuild\CMakeFiles\38b32c37bde2d9e87491f6c74f054199\tomlplusplus-populate-configure.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\tomlplusplus-subbuild\CMakeFiles\38b32c37bde2d9e87491f6c74f054199\tomlplusplus-populate-build.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\tomlplusplus-subbuild\CMakeFiles\38b32c37bde2d9e87491f6c74f054199\tomlplusplus-populate-install.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\tomlplusplus-subbuild\CMakeFiles\38b32c37bde2d9e87491f6c74f054199\tomlplusplus-populate-test.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\tomlplusplus-subbuild\CMakeFiles\a3cfc9a8916426b8b9f60bc8056253a8\tomlplusplus-populate-complete.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\tomlplusplus-subbuild\CMakeFiles\1f090e3509f96582e3e8586309fc020a\tomlplusplus-populate.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\tomlplusplus-subbuild\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\tomlplusplus-subbuild\CMakeFiles\tomlplusplus-populate" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{CDFB9B8B-E073-3DD3-A5A7-1957A39C7D59}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

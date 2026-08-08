@@ -1,0 +1,14 @@
+# Build folders
+build/
+native/build/
+*.obj
+*.pdb
+*.dll
+*.lib
+
+release_notes.md
+
+native/src/TokenDumper_test.cpp
+native/src/TokenDumper-ask_user.cpp
+
+src/EA Denuvo Token Dumper.exe

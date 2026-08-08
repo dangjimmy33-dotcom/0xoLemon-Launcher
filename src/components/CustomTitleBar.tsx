@@ -4,8 +4,9 @@ import { getCurrentWindow } from '@tauri-apps/api/window'
 import { Bell, Download, LogOut, Monitor } from 'lucide-react'
 import { isTauriRuntime } from '../lib/gameMeta'
 import type { ClockFormat, CloseBehavior } from '../lib/preferences'
-import type { DiscordAuthUser, JobJournal, LauncherUpdateProgress, NotificationRecord } from '../types'
+import type { DiscordAuthUser, JobJournal, LauncherUpdateProgress, NotificationRecord, TabId } from '../types'
 import { NotificationPopover } from './NotificationCenter'
+import { PageHelpButton } from './HelpSystem'
 
 type NetworkQuality = 'good' | 'weak' | 'offline'
 type BatteryState = { level: number; charging: boolean } | null
@@ -149,6 +150,8 @@ export function CustomTitleBar({
   onToggleSidebar,
   isSidebarCollapsed,
   onlineCount = 0,
+  activeTab,
+  onOpenHelpCenter,
 }: {
   closeBehavior?: CloseBehavior
   job: JobJournal | null
@@ -170,6 +173,8 @@ export function CustomTitleBar({
   isSidebarCollapsed?: boolean
   /** Số người dùng đang online launcher */
   onlineCount?: number
+  activeTab: TabId
+  onOpenHelpCenter: () => void
 }) {
   const win = isTauriRuntime() ? getCurrentWindow() : null
   const [now, setNow] = useState(() => new Date())
@@ -349,6 +354,9 @@ export function CustomTitleBar({
               onOpenSettings={onOpenNotificationSettings}
             />
           </div>
+        ) : null}
+        {!isBlockedState ? (
+          <PageHelpButton tab={activeTab} onOpenCenter={onOpenHelpCenter} placement="titlebar" />
         ) : null}
         {!isBlockedState && (
           <button

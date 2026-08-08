@@ -30,3 +30,5 @@ export { CloudRedirectSettings } from './CloudRedirectSettings'
 export { AchievementToastOverlay } from './AchievementToast'
 
 export { TransferDock } from './TransferDock'
+
+export { HelpButton, PageHelpButton, HelpCenter, InlineHelpLabel } from './HelpSystem'

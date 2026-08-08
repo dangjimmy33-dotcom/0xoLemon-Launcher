@@ -1,0 +1,4 @@
+- [x] Update `denuvo.rs` with robust `scan_for_denuvo_ticket`
+- [x] Update `denuvo.rs` with `apply_denuvo_token_to_cfg` using regex
+- [x] Update `denuvo.rs` with `run_game_executable` and `delete_old_ticket`
+- [x] Update `DenuvoActivation.tsx` to accept `gameId` or `exeName` and run the 6-step flow only for `ea-sports-fc-26`.

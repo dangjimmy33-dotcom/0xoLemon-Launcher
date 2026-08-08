@@ -1,0 +1,143 @@
+<ui:FluentWindow x:Class="CloudRedirect.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        xmlns:pages="clr-namespace:CloudRedirect.Pages"
+        xmlns:res="clr-namespace:CloudRedirect.Resources"
+        Title="{res:Loc MainWindow_Title}"
+        Height="760" Width="1050"
+        MinHeight="500" MinWidth="750"
+        WindowStartupLocation="CenterScreen"
+        ExtendsContentIntoTitleBar="True">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <ui:TitleBar Grid.Row="0" Title="{res:Loc MainWindow_TitleBar}" />
+
+        <Border x:Name="UpdateBanner"
+                Grid.Row="1"
+                Visibility="Collapsed"
+                Background="#332F7A2F"
+                BorderBrush="#FF6A9F42"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="16"
+                Margin="12,8,12,0">
+            <StackPanel>
+                <DockPanel>
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
+                        <ui:Button x:Name="UpdateReleaseNotesButton"
+                                   Content="Release Notes"
+                                   Appearance="Secondary"
+                                   Visibility="Collapsed"
+                                   Margin="0,0,8,0"
+                                   Click="UpdateReleaseNotes_Click" />
+                        <ui:Button x:Name="UpdateSkipButton"
+                                   Content="{res:Loc AppUpdate_Skip}"
+                                   Appearance="Secondary"
+                                   Margin="0,0,8,0"
+                                   Click="UpdateSkip_Click" />
+                        <ui:Button x:Name="UpdateNowButton"
+                                   Content="{res:Loc AppUpdate_UpdateNow}"
+                                   Appearance="Success"
+                                   Click="UpdateNow_Click" />
+                    </StackPanel>
+                    <StackPanel VerticalAlignment="Center" Margin="0,0,12,0">
+                        <TextBlock x:Name="UpdateBannerTitle"
+                                   Text=""
+                                   FontWeight="SemiBold" FontSize="14"
+                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                        <TextBlock x:Name="UpdateBannerStatus"
+                                   Text=""
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                    </StackPanel>
+                </DockPanel>
+                <ScrollViewer x:Name="UpdateChangelogScroll"
+                              Visibility="Collapsed"
+                              MaxHeight="120"
+                              VerticalScrollBarVisibility="Auto"
+                              Margin="0,8,0,0">
+                    <TextBlock x:Name="UpdateChangelogText"
+                               Text=""
+                               TextWrapping="Wrap"
+                               FontSize="12"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                </ScrollViewer>
+                <ProgressBar x:Name="UpdateProgressBar"
+                             Visibility="Collapsed"
+                             Minimum="0" Maximum="100" Value="0"
+                             IsIndeterminate="True"
+                             Height="3"
+                             Margin="0,8,0,0" />
+            </StackPanel>
+        </Border>
+
+        <ui:NavigationView x:Name="RootNavigation"
+                           Grid.Row="2"
+                           PaneDisplayMode="Left"
+                           IsBackButtonVisible="Collapsed"
+                           Transition="None"
+                           TransitionDuration="0">
+
+            <ui:NavigationView.MenuItems>
+                <!-- <ui:NavigationViewItem x:Name="NavNews"
+                                        Content="News"
+                                        Icon="{ui:SymbolIcon News24}"
+                                        TargetPageType="{x:Type pages:NewsPage}" /> -->
+                <ui:NavigationViewItem Content="{res:Loc Nav_Dashboard}"
+                                        Icon="{ui:SymbolIcon Home24}"
+                                        TargetPageType="{x:Type pages:DashboardPage}" />
+                <ui:NavigationViewItem Content="{res:Loc Nav_Setup}"
+                                       Icon="{ui:SymbolIcon Wrench24}"
+                                       TargetPageType="{x:Type pages:SetupPage}" />
+                <ui:NavigationViewItem x:Name="NavChoiceMode"
+                                       Content="{res:Loc Nav_ChoiceMode}"
+                                       Icon="{ui:SymbolIcon Options24}"
+                                       TargetPageType="{x:Type pages:ChoiceModePage}" />
+                <ui:NavigationViewItem x:Name="NavCloudProvider"
+                                       Content="{res:Loc Nav_CloudProvider}"
+                                       Icon="{ui:SymbolIcon Cloud24}"
+                                       TargetPageType="{x:Type pages:CloudProviderPage}" />
+                <ui:NavigationViewItem x:Name="NavApps"
+                                        Icon="{ui:SymbolIcon Apps24}"
+                                        Content="{res:Loc Nav_Apps}"
+                                        TargetPageType="{x:Type pages:AppsPage}" />
+                <ui:NavigationViewItem x:Name="NavCleanup"
+                                         Icon="{ui:SymbolIcon Delete24}"
+                                         Content="{res:Loc Nav_Cleanup}"
+                                         TargetPageType="{x:Type pages:CleanupPage}" />
+                <ui:NavigationViewItem x:Name="NavCloud760"
+                                         Icon="{ui:SymbolIcon CloudDismiss24}"
+                                         Content="760 Clean Up"
+                                         TargetPageType="{x:Type pages:Cloud760Page}" />
+                <ui:NavigationViewItem Content="{res:Loc Nav_Stats}"
+                                         Icon="{ui:SymbolIcon Trophy24}"
+                                         TargetPageType="{x:Type pages:StatsPage}" />
+                <ui:NavigationViewItem x:Name="NavMigration"
+                                         Content="{res:Loc Nav_Migration}"
+                                         Icon="{ui:SymbolIcon ArrowSync24}"
+                                         TargetPageType="{x:Type pages:MigrationPage}" />
+                <ui:NavigationViewItem x:Name="NavManifestPinning"
+                                         Content="{res:Loc Nav_ManifestPinning}"
+                                         Icon="{ui:SymbolIcon Pin24}"
+                                         TargetPageType="{x:Type pages:ManifestPinningPage}" />
+            </ui:NavigationView.MenuItems>
+
+            <ui:NavigationView.FooterMenuItems>
+                <ui:NavigationViewItem x:Name="RestartSteamItem"
+                                       Content="{res:Loc Nav_RestartSteam}"
+                                       Icon="{ui:SymbolIcon ArrowSync24}"
+                                       Click="RestartSteamItem_Click" />
+                <ui:NavigationViewItem Content="{res:Loc Nav_Settings}"
+                                       Icon="{ui:SymbolIcon Settings24}"
+                                       TargetPageType="{x:Type pages:SettingsPage}" />
+            </ui:NavigationView.FooterMenuItems>
+
+        </ui:NavigationView>
+    </Grid>
+</ui:FluentWindow>

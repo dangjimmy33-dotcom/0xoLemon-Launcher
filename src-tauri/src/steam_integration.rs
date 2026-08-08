@@ -1151,8 +1151,8 @@ pub fn check_and_update_dlls() -> Result<(), String> {
 
     // List of DLLs to check and update
     let dlls = vec![
-        ("0xoCore.dll", "0xoCore.dll"),
-        ("0xoPayload.dll", "0xoPayload.dll"),
+        ("0xoLemon.dll", "0xoLemon.dll"),
+        ("xinput1_4.dll", "xinput1_4.dll"),
         ("dwmapi.dll", "dwmapi.dll"),
     ];
 
@@ -1286,8 +1286,8 @@ pub fn enable_lua_game_mode() -> Result<(), String> {
     
     // List of DLLs to copy
     let dlls = vec![
-        ("0xoCore.dll", "0xoCore.dll"),
-        ("0xoPayload.dll", "0xoPayload.dll"),
+        ("0xoLemon.dll", "0xoLemon.dll"),
+        ("xinput1_4.dll", "xinput1_4.dll"),
         ("dwmapi.dll", "dwmapi.dll"),
     ];
     
@@ -1355,7 +1355,7 @@ pub fn disable_lua_game_mode() -> Result<(), String> {
     }
     
     // List of DLLs to remove
-    let dlls = vec!["0xoCore.dll", "0xoPayload.dll", "dwmapi.dll"];
+    let dlls = vec!["0xoLemon.dll", "xinput1_4.dll", "dwmapi.dll"];
     
     // Remove each DLL
     for dll_name in dlls {
@@ -1409,6 +1409,38 @@ pub fn get_steam_game_buildid(appid: u32) -> Option<String> {
         }
     }
     None
+}
+
+/// Scans all Steam library roots and returns a map of appid (as string) → buildid
+/// for every game that has an appmanifest_*.acf file on disk.
+#[tauri::command]
+pub fn scan_all_installed_buildids() -> std::collections::HashMap<String, String> {
+    let mut result = std::collections::HashMap::new();
+    for library in steam_library_roots() {
+        let steamapps = library.join("steamapps");
+        let entries = match fs::read_dir(&steamapps) {
+            Ok(e) => e,
+            Err(_) => continue,
+        };
+        for entry in entries.flatten() {
+            let name = entry.file_name();
+            let fname = name.to_string_lossy();
+            if fname.starts_with("appmanifest_") && fname.ends_with(".acf") {
+                let appid_str = fname
+                    .trim_start_matches("appmanifest_")
+                    .trim_end_matches(".acf")
+                    .to_string();
+                if appid_str.parse::<u32>().is_err() {
+                    continue;
+                }
+                let text = fs::read_to_string(entry.path()).unwrap_or_default();
+                if let Some(buildid) = text_vdf_value(&text, "buildid") {
+                    result.insert(appid_str, buildid);
+                }
+            }
+        }
+    }
+    result
 }
 
 /// Returns (install_dir, buildid)

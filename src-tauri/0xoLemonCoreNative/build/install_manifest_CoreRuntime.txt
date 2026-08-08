@@ -1,0 +1,4 @@
+E:\007Launcher\src-tauri\0xoLemonCoreNative\dist/./0xoCore.dll
+E:\007Launcher\src-tauri\0xoLemonCoreNative\dist/./0xoPayload.dll
+E:\007Launcher\src-tauri\0xoLemonCoreNative\dist/./dwmapi.dll
+E:\007Launcher\src-tauri\0xoLemonCoreNative\dist/./xinput1_4.dll

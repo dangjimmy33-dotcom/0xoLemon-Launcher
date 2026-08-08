@@ -19,6 +19,7 @@ import {
   ShieldCheck,
   Sparkles,
   CircleAlert,
+  CircleHelp,
   TriangleAlert,
 } from 'lucide-react'
 import { invoke } from '@tauri-apps/api/core'
@@ -107,7 +108,9 @@ function SettingRow({
   return (
     <div className="settings-row">
       <div className="settings-row-copy">
-        <strong>{title}</strong>
+        <div className="settings-row-title-line">
+          <strong>{title}</strong>
+        </div>
         <span>{description}</span>
       </div>
       <div className="settings-row-control">{children}</div>
@@ -360,6 +363,7 @@ export function SettingsView({
   onOpenBigPicture,
   onReset,
   onResetOnboarding,
+  onOpenHelpCenter,
   onManageNotifications,
   appVersion,
   updateStatus,
@@ -382,6 +386,7 @@ export function SettingsView({
   onOpenBigPicture: () => void
   onReset: () => void
   onResetOnboarding: () => void
+  onOpenHelpCenter: () => void
   onManageNotifications: () => void
   appVersion: string
   updateStatus: string | null
@@ -867,6 +872,28 @@ export function SettingsView({
             <SettingRow title={t.settings.manageHistory} description={t.settings.manageHistoryDesc}>
               <button type="button" className="settings-secondary-button" onClick={onManageNotifications}>
                 <Bell size={15} /> {t.settings.manageHistoryBtn}
+              </button>
+            </SettingRow>
+          </div>
+        </section>
+
+        <section className="settings-group">
+          <header>
+            <CircleHelp size={18} />
+            <div>
+              <strong>{t.help.centerTitle}</strong>
+              <span>{t.help.centerSubtitle}</span>
+            </div>
+          </header>
+          <div className="settings-group-body">
+            <SettingRow title={t.help.centerTitle} description={t.help.centerSubtitle}>
+              <button type="button" className="settings-secondary-button" onClick={onOpenHelpCenter}>
+                <CircleHelp size={15} /> {t.help.openHelpCenter}
+              </button>
+            </SettingRow>
+            <SettingRow title={t.help.replayTour} description={t.help.replayTourDesc}>
+              <button type="button" className="settings-secondary-button" onClick={onResetOnboarding}>
+                <RefreshCcw size={15} /> {t.help.replayTour}
               </button>
             </SettingRow>
           </div>

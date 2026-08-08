@@ -1,8 +1,8 @@
 // Steam installation detection and version checks.
 use std::path::{Path, PathBuf};
 
-pub const SUPPORTED_STEAM_VERSIONS: [i64; 8] = [
-    1782344391, 1782257239, 1781041600, 1780352834,
+pub const SUPPORTED_STEAM_VERSIONS: [i64; 9] = [
+    1782866176, 1782344391, 1782257239, 1781041600, 1780352834,
     1779918128, 1779486452, 1778281814, 1778003620,
 ];
 
@@ -58,19 +58,48 @@ fn try_known_paths() -> Option<PathBuf> {
     candidates.into_iter().find(|p| p.is_dir() && p.join("steam.exe").is_file())
 }
 
-/// True if any process named "steam.exe" is running.
-pub fn is_steam_running() -> bool {
-    use std::process::Command;
+/// Return exact process IDs for running Steam client processes.
+///
+/// `tasklist` is available on supported Windows versions and avoids another
+/// process-enumeration dependency. CSV output is parsed by exact image name so
+/// localized "no tasks" messages cannot be mistaken for a running Steam.
+pub fn steam_process_ids() -> Vec<u32> {
     use std::os::windows::process::CommandExt;
+    use std::process::Command;
+
     let mut cmd = Command::new("tasklist");
     cmd.creation_flags(0x08000000);
-    let out = cmd
-        .args(["/FI", "IMAGENAME eq steam.exe", "/NH"])
-        .output();
-    match out {
-        Ok(o) => String::from_utf8_lossy(&o.stdout).to_lowercase().contains("steam.exe"),
-        Err(_) => false,
+    let output = match cmd
+        .args(["/FI", "IMAGENAME eq steam.exe", "/FO", "CSV", "/NH"])
+        .output()
+    {
+        Ok(output) if output.status.success() => output,
+        _ => return Vec::new(),
+    };
+
+    let mut ids = Vec::new();
+    for line in String::from_utf8_lossy(&output.stdout).lines() {
+        let line = line.trim();
+        if !line.to_ascii_lowercase().starts_with("\"steam.exe\",") {
+            continue;
+        }
+        let mut columns = line.split(',');
+        let image = columns.next().unwrap_or_default().trim_matches('"');
+        let pid = columns.next().unwrap_or_default().trim_matches('"');
+        if image.eq_ignore_ascii_case("steam.exe") {
+            if let Ok(pid) = pid.parse::<u32>() {
+                ids.push(pid);
+            }
+        }
     }
+    ids.sort_unstable();
+    ids.dedup();
+    ids
+}
+
+/// True only when an actual process named `steam.exe` is present.
+pub fn is_steam_running() -> bool {
+    !steam_process_ids().is_empty()
 }
 
 /// Read the installed Steam client version from the package manifest.

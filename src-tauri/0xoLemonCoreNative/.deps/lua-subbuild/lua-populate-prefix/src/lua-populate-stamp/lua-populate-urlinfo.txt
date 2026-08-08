@@ -1,0 +1,12 @@
+# This is a generated file and its contents are an internal implementation detail.
+# The download step will be re-executed if anything in this file changes.
+# No other meaning or use of this file is supported.
+
+method=url
+command=C:/Program Files/CMake/bin/cmake.exe;-DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE;-P;E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/lua-subbuild/lua-populate-prefix/src/lua-populate-stamp/download-lua-populate.cmake;COMMAND;C:/Program Files/CMake/bin/cmake.exe;-DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE;-P;E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/lua-subbuild/lua-populate-prefix/src/lua-populate-stamp/verify-lua-populate.cmake;COMMAND;C:/Program Files/CMake/bin/cmake.exe;-DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE;-P;E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/lua-subbuild/lua-populate-prefix/src/lua-populate-stamp/extract-lua-populate.cmake
+source_dir=E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/lua-src
+work_dir=E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps
+url(s)=https://raw.githubusercontent.com/dyne/luabinaries/master/lua-5.5.0.tar.gz;https://www.lua.org/ftp/lua-5.5.0.tar.gz
+hash=SHA256=57ccc32bbbd005cab75bcc52444052535af691789dba2b9016d5c50640d68b3d
+      no_extract=
+

@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\detours-subbuild\CMakeFiles\8736d3d0d8588d8cac8c90395c017e07\detours-populate-mkdir.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\detours-subbuild\CMakeFiles\8736d3d0d8588d8cac8c90395c017e07\detours-populate-download.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\detours-subbuild\CMakeFiles\8736d3d0d8588d8cac8c90395c017e07\detours-populate-update_disconnected.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\detours-subbuild\CMakeFiles\8736d3d0d8588d8cac8c90395c017e07\detours-populate-patch_disconnected.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\detours-subbuild\CMakeFiles\8736d3d0d8588d8cac8c90395c017e07\detours-populate-configure.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\detours-subbuild\CMakeFiles\8736d3d0d8588d8cac8c90395c017e07\detours-populate-build.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\detours-subbuild\CMakeFiles\8736d3d0d8588d8cac8c90395c017e07\detours-populate-install.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\detours-subbuild\CMakeFiles\8736d3d0d8588d8cac8c90395c017e07\detours-populate-test.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\detours-subbuild\CMakeFiles\022479a886a6261c0150225f4be33fa6\detours-populate-complete.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\detours-subbuild\CMakeFiles\48a42eff93a3120f04c3f8d67057d05a\detours-populate.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\detours-subbuild\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\detours-subbuild\CMakeFiles\detours-populate" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{37988DB4-B899-3D74-A671-3496837EE240}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

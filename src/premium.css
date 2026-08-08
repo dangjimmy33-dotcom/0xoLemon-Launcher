@@ -318,8 +318,8 @@
 
 .premium-workspace {
   background:
-    radial-gradient(circle at 70% 0%, rgba(68, 82, 111, 0.08), transparent 38%),
-    rgba(5, 8, 12, 0.28);
+    radial-gradient(circle at 70% 0%, rgba(68, 82, 111, 0.045), transparent 40%),
+    rgba(4, 7, 11, 0.12);
 }
 
 /* Launcher updater */

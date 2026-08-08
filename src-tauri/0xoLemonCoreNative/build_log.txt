@@ -1,0 +1,38 @@
+0xoLemon core-only build started Sat 08/08/2026 14:12:22.96
+-- Selecting Windows SDK version 10.0.26100.0 to target Windows 10.0.22631.
+-- FetchContent: reusing cached sources at E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps
+-- Build spdlog: 1.17.0
+-- Build type: 
+-- 
+-- 3.15.3.0
+-- LogMacros: E:/007Launcher/src-tauri/0xoLemonCoreNative/build/generated/lc_log_macros.h is up to date
+-- Configuring done (0.1s)
+-- Generating done (0.1s)
+-- Build files have been written to: E:/007Launcher/src-tauri/0xoLemonCoreNative/build
+MSBuild version 17.14.40+3e7442088 for .NET Framework
+
+  spdlog.vcxproj -> E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\spdlog-build\Release\spdlog.lib
+  OxoSffNativeCore.vcxproj -> E:\007Launcher\src-tauri\0xoLemonCoreNative\build\OxoSffNativeCore.dir\Release\OxoSffNativeCore.lib
+  detours.vcxproj -> E:\007Launcher\src-tauri\0xoLemonCoreNative\build\Release\detours.lib
+  lua_static.vcxproj -> E:\007Launcher\src-tauri\0xoLemonCoreNative\build\Release\lua_static.lib
+  dwmapi.vcxproj -> E:\007Launcher\src-tauri\0xoLemonCoreNative\build\Release\dwmapi.dll
+  xinput1_4.vcxproj -> E:\007Launcher\src-tauri\0xoLemonCoreNative\build\Release\xinput1_4.dll
+  libprotobuf-lite.vcxproj -> E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\protobuf-build\Release\libprotobuf-lite.lib
+  OxoPayload.vcxproj -> E:\007Launcher\src-tauri\0xoLemonCoreNative\build\Release\0xoPayload.dll
+  libprotobuf.vcxproj -> E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\protobuf-build\Release\libprotobuf.lib
+  libprotoc.vcxproj -> E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\protobuf-build\Release\libprotoc.lib
+  protoc.vcxproj -> E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\protobuf-build\Release\protoc.exe
+  LuaBindings.cpp
+  LuaState.cpp
+  IpcMethodLoader.cpp
+  EticketFetcher.cpp
+  IpcSpecLoader.cpp
+  ManifestFetch.cpp
+  RuntimeHttp.cpp
+  Generating Code...
+  OxoCore.vcxproj -> E:\007Launcher\src-tauri\0xoLemonCoreNative\build\Release\0xoCore.dll
+-- Installing: E:\007Launcher\src-tauri\0xoLemonCoreNative\dist/./0xoCore.dll
+-- Up-to-date: E:\007Launcher\src-tauri\0xoLemonCoreNative\dist/./0xoPayload.dll
+-- Up-to-date: E:\007Launcher\src-tauri\0xoLemonCoreNative\dist/./dwmapi.dll
+-- Up-to-date: E:\007Launcher\src-tauri\0xoLemonCoreNative\dist/./xinput1_4.dll
+SUCCESS

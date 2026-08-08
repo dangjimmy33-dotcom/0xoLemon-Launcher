@@ -1,0 +1,152 @@
+^E:\007LAUNCHER\SRC-TAURI\0XOLEMONCORENATIVE\.DEPS\TOMLPLUSPLUS-SUBBUILD\CMAKEFILES\38B32C37BDE2D9E87491F6C74F054199\TOMLPLUSPLUS-POPULATE-MKDIR.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -Dcfgdir=/Debug -P E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/tomlplusplus-subbuild/tomlplusplus-populate-prefix/tmp/tomlplusplus-populate-mkdirs.cmake
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/tomlplusplus-subbuild/tomlplusplus-populate-prefix/src/tomlplusplus-populate-stamp/Debug/tomlplusplus-populate-mkdir
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\SRC-TAURI\0XOLEMONCORENATIVE\.DEPS\TOMLPLUSPLUS-SUBBUILD\CMAKEFILES\38B32C37BDE2D9E87491F6C74F054199\TOMLPLUSPLUS-POPULATE-DOWNLOAD.RULE
+setlocal
+cd E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps
+if %errorlevel% neq 0 goto :cmEnd
+E:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE -P E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/tomlplusplus-subbuild/tomlplusplus-populate-prefix/tmp/tomlplusplus-populate-gitclone.cmake
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/tomlplusplus-subbuild/tomlplusplus-populate-prefix/src/tomlplusplus-populate-stamp/Debug/tomlplusplus-populate-download
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\SRC-TAURI\0XOLEMONCORENATIVE\.DEPS\TOMLPLUSPLUS-SUBBUILD\CMAKEFILES\38B32C37BDE2D9E87491F6C74F054199\TOMLPLUSPLUS-POPULATE-UPDATE_DISCONNECTED.RULE
+setlocal
+cd E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\tomlplusplus-src
+if %errorlevel% neq 0 goto :cmEnd
+E:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -Dcan_fetch=NO -DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE -P E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/tomlplusplus-subbuild/tomlplusplus-populate-prefix/tmp/tomlplusplus-populate-gitupdate.cmake
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/tomlplusplus-subbuild/tomlplusplus-populate-prefix/src/tomlplusplus-populate-stamp/Debug/tomlplusplus-populate-update_disconnected
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\SRC-TAURI\0XOLEMONCORENATIVE\.DEPS\TOMLPLUSPLUS-SUBBUILD\CMAKEFILES\38B32C37BDE2D9E87491F6C74F054199\TOMLPLUSPLUS-POPULATE-PATCH_DISCONNECTED.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/tomlplusplus-subbuild/tomlplusplus-populate-prefix/src/tomlplusplus-populate-stamp/Debug/tomlplusplus-populate-patch_disconnected
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\SRC-TAURI\0XOLEMONCORENATIVE\.DEPS\TOMLPLUSPLUS-SUBBUILD\CMAKEFILES\38B32C37BDE2D9E87491F6C74F054199\TOMLPLUSPLUS-POPULATE-CONFIGURE.RULE
+setlocal
+cd E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\tomlplusplus-build
+if %errorlevel% neq 0 goto :cmEnd
+E:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/tomlplusplus-subbuild/tomlplusplus-populate-prefix/src/tomlplusplus-populate-stamp/Debug/tomlplusplus-populate-configure
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\SRC-TAURI\0XOLEMONCORENATIVE\.DEPS\TOMLPLUSPLUS-SUBBUILD\CMAKEFILES\38B32C37BDE2D9E87491F6C74F054199\TOMLPLUSPLUS-POPULATE-BUILD.RULE
+setlocal
+cd E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\tomlplusplus-build
+if %errorlevel% neq 0 goto :cmEnd
+E:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/tomlplusplus-subbuild/tomlplusplus-populate-prefix/src/tomlplusplus-populate-stamp/Debug/tomlplusplus-populate-build
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\SRC-TAURI\0XOLEMONCORENATIVE\.DEPS\TOMLPLUSPLUS-SUBBUILD\CMAKEFILES\38B32C37BDE2D9E87491F6C74F054199\TOMLPLUSPLUS-POPULATE-INSTALL.RULE
+setlocal
+cd E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\tomlplusplus-build
+if %errorlevel% neq 0 goto :cmEnd
+E:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/tomlplusplus-subbuild/tomlplusplus-populate-prefix/src/tomlplusplus-populate-stamp/Debug/tomlplusplus-populate-install
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\SRC-TAURI\0XOLEMONCORENATIVE\.DEPS\TOMLPLUSPLUS-SUBBUILD\CMAKEFILES\38B32C37BDE2D9E87491F6C74F054199\TOMLPLUSPLUS-POPULATE-TEST.RULE
+setlocal
+cd E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\tomlplusplus-build
+if %errorlevel% neq 0 goto :cmEnd
+E:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/tomlplusplus-subbuild/tomlplusplus-populate-prefix/src/tomlplusplus-populate-stamp/Debug/tomlplusplus-populate-test
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\SRC-TAURI\0XOLEMONCORENATIVE\.DEPS\TOMLPLUSPLUS-SUBBUILD\CMAKEFILES\A3CFC9A8916426B8B9F60BC8056253A8\TOMLPLUSPLUS-POPULATE-COMPLETE.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/tomlplusplus-subbuild/CMakeFiles/Debug
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/tomlplusplus-subbuild/CMakeFiles/Debug/tomlplusplus-populate-complete
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/tomlplusplus-subbuild/tomlplusplus-populate-prefix/src/tomlplusplus-populate-stamp/Debug/tomlplusplus-populate-done
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\SRC-TAURI\0XOLEMONCORENATIVE\.DEPS\TOMLPLUSPLUS-SUBBUILD\CMAKEFILES\1F090E3509F96582E3E8586309FC020A\TOMLPLUSPLUS-POPULATE.RULE
+setlocal
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\SRC-TAURI\0XOLEMONCORENATIVE\.DEPS\TOMLPLUSPLUS-SUBBUILD\CMAKELISTS.TXT
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SE:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/tomlplusplus-subbuild -BE:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/tomlplusplus-subbuild --check-stamp-file E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/tomlplusplus-subbuild/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

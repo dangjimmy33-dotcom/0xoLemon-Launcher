@@ -7,18 +7,44 @@ import {
   fetchSteamGameInfo,
   getCachedSteamGameInfo,
   seedSteamGameInfo,
-  steamCapsuleImageUrl,
-  steamHeaderImageUrl,
   type SteamGameInfo,
   type SteamStoreSearchItem,
 } from '../lib/steamGameInfo'
+import { mergeBuildHistory, parseSteamDbPatchRss } from '../lib/patchHistory'
 import './LuaShop.css'
+import { HelpButton } from './HelpSystem'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
 
-type FilterTab = 'all' | 'installed' | 'notInstalled'
+type FilterTab = 'all' | 'installed' | 'notInstalled' | 'verified'
+const LATEST_PACKAGE_BUILD = '__latest_package__'
+
+export interface ShopGame {
+  name: string
+  appid: number
+}
+
+export interface ManifestEntry {
+  depot_id: number
+  manifest_gid: string
+}
+
+export interface BuildInfo {
+  build_id: string
+  version: string | null
+  build_date?: string
+  manifests: ManifestEntry[]
+  patch_title?: string
+  manifest_available?: boolean
+  history_source?: 'custom' | 'steamdb_rss' | 'merged'
+}
+
+export interface GameBuildsInfo {
+  builds: BuildInfo[]
+  has_key: boolean
+}
 
 function emitLuaShopToast(
   title: string,
@@ -108,6 +134,75 @@ async function fetchGameInfo(appid: string): Promise<SteamGameInfo | null> {
 }
 */
 
+
+const VerifiedGameImage = memo(function VerifiedGameImage({
+  appid,
+  name,
+}: {
+  appid: string
+  name: string
+}) {
+  const [info, setInfo] = useState<SteamGameInfo | null>(getCachedSteamGameInfo(appid) ?? null)
+  const [candidateIndex, setCandidateIndex] = useState(0)
+  const [failed, setFailed] = useState(false)
+
+  useEffect(() => {
+    setCandidateIndex(0)
+    setFailed(false)
+    const cached = getCachedSteamGameInfo(appid)
+    if (cached) {
+      setInfo(cached)
+      return
+    }
+
+    let mounted = true
+    fetchSteamGameInfo(appid).then((result) => {
+      if (mounted && result) setInfo(result)
+    })
+    return () => { mounted = false }
+  }, [appid])
+
+  useEffect(() => {
+    if (!info?.header_image) return
+    setCandidateIndex(0)
+    setFailed(false)
+  }, [info?.header_image])
+
+  const candidates = useMemo(() => Array.from(new Set([
+    info?.header_image,
+    `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${appid}/header.jpg`,
+    `https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/header.jpg`,
+    `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${appid}/capsule_616x353.jpg`,
+  ].filter((value): value is string => Boolean(value)))), [appid, info?.header_image])
+
+  const src = candidates[Math.min(candidateIndex, Math.max(candidates.length - 1, 0))] ?? ''
+
+  if (!src || failed) {
+    return (
+      <div className="verified-game-image-fallback" aria-label={name}>
+        <span>{name}</span>
+        <small>AppID {appid}</small>
+      </div>
+    )
+  }
+
+  return (
+    <img
+      src={src}
+      alt={name}
+      loading="lazy"
+      decoding="async"
+      onError={() => {
+        if (candidateIndex < candidates.length - 1) {
+          setCandidateIndex((current) => current + 1)
+        } else {
+          setFailed(true)
+        }
+      }}
+    />
+  )
+})
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Module-level manifest cache
 // list_available_manifests is fetched ONCE per session, not on every remount
@@ -140,6 +235,30 @@ async function getManifests(bust = false): Promise<string[]> {
       throw error
     })
   _manifestPromise = request
+  return request
+}
+
+let _catalogCache: ShopGame[] | null = null
+let _catalogPromise: Promise<ShopGame[]> | null = null
+
+async function getVerifiedCatalog(bust = false): Promise<ShopGame[]> {
+  if (bust) {
+    _catalogCache = null
+    _catalogPromise = null
+  }
+  if (_catalogCache !== null) return _catalogCache
+  if (_catalogPromise) return _catalogPromise
+  const request = invoke<ShopGame[]>('lua_shop_get_catalog')
+    .then((games) => {
+      _catalogCache = games
+      _catalogPromise = null
+      return games
+    })
+    .catch((error) => {
+      _catalogPromise = null
+      throw error
+    })
+  _catalogPromise = request
   return request
 }
 
@@ -351,10 +470,6 @@ const LuaShopGameCard = memo(function LuaShopGameCard({
   const imageCandidates = useMemo(() => {
     const candidates = [
       info?.header_image,
-      steamHeaderImageUrl(appid),
-      `https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/header.jpg`,
-      steamCapsuleImageUrl(appid),
-      `https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/capsule_231x87.jpg`,
     ].filter((url): url is string => Boolean(url))
     return Array.from(new Set(candidates))
   }, [appid, info?.header_image])
@@ -464,7 +579,40 @@ export function LuaShop() {
   const [pageState, setPageState] = useState({ scope: '', value: 1 })
   const ITEMS_PER_PAGE = 24
 
+  // Verified Catalog State
+  const [verifiedCatalog, setVerifiedCatalog] = useState<ShopGame[]>([])
+  const [isVerifiedLoading, setIsVerifiedLoading] = useState(false)
+  const [verifiedError, setVerifiedError] = useState<string | null>(null)
+  // Map of appid (string) → buildid currently installed in Steam
+  const [steamInstalledBuilds, setSteamInstalledBuilds] = useState<Record<string, string>>({})
+
+  // Detail Panel State
+  const [selectedVerifiedGame, setSelectedVerifiedGame] = useState<ShopGame | null>(null)
+  const [selectedGameBuilds, setSelectedGameBuilds] = useState<GameBuildsInfo | null>(null)
+  const [isBuildsLoading, setIsBuildsLoading] = useState(false)
+  const [selectedBuildId, setSelectedBuildId] = useState<string>('')
+  const [buildDropdownOpen, setBuildDropdownOpen] = useState(false)
+  const [selectedHasLatestPackage, setSelectedHasLatestPackage] = useState(false)
+  const [accessToken, setAccessToken] = useState('')
+  const [statSteamId, setStatSteamId] = useState('')
+  const [skipManifestPin, setSkipManifestPin] = useState(false)
+  const [isVerifiedInstalling, setIsVerifiedInstalling] = useState(false)
+  const [steamRunning, setSteamRunning] = useState(false)
+  const [installedBuildId, setInstalledBuildId] = useState<string | null>(null)
+
   const { t } = useLocale()
+
+  const formatBuildDate = (value?: string) => {
+    if (!value) return ''
+    if (/^\d+$/.test(value)) {
+      const ts = Number(value)
+      if (!Number.isFinite(ts)) return ''
+      return new Date(ts * 1000).toLocaleDateString()
+    }
+    const parsed = Date.parse(value)
+    if (!Number.isFinite(parsed)) return ''
+    return new Date(parsed).toLocaleDateString()
+  }
   const gridRef = useRef<HTMLDivElement>(null)
   const allAppIdsSetRef = useRef<Set<string>>(new Set(_manifestCache ?? []))
   const manifestRequestRef = useRef(0)
@@ -476,6 +624,23 @@ export function LuaShop() {
       return { scope: pageScope, value: update(page) }
     })
   }, [pageScope])
+
+  useEffect(() => {
+    if (!selectedVerifiedGame) return
+    let active = true
+    const check = async () => {
+      if (!active) return
+      try {
+        const running = await invoke<boolean>('is_steam_running').catch(() => false)
+        if (active) setSteamRunning(running)
+      } catch (e) {
+        console.error(e)
+      }
+      if (active) setTimeout(check, 2000)
+    }
+    check()
+    return () => { active = false }
+  }, [selectedVerifiedGame])
 
   const fetchInstalledLuas = useCallback(async () => {
     try {
@@ -513,6 +678,28 @@ export function LuaShop() {
       manifestRequestRef.current += 1
     }
   }, [fetchInstalledLuas])
+
+  // ── Initial load: Verified Catalog & Hook Status ────────────────────────────
+  useEffect(() => {
+    // 1. Fetch Verified Catalog
+    setIsVerifiedLoading(true)
+    getVerifiedCatalog()
+      .then((catalog) => {
+        setVerifiedCatalog(catalog)
+        setVerifiedError(null)
+      })
+      .catch((err) => {
+        setVerifiedError(String(err))
+      })
+      .finally(() => {
+        setIsVerifiedLoading(false)
+      })
+
+    // 2. Scan installed buildids from Steam ACF files
+    invoke<Record<string, string>>('scan_all_installed_buildids')
+      .then(setSteamInstalledBuilds)
+      .catch(() => {})
+  }, [])
 
   // ── Manual refresh (busts manifest cache) ───────────────────────────────────
   const handleRefresh = useCallback(async () => {
@@ -573,7 +760,7 @@ export function LuaShop() {
           if (manifestSet.has(appid) && item.name && !getCachedSteamGameInfo(appid)) {
             seedSteamGameInfo(appid, {
               name: item.name,
-              header_image: item.header_image || steamHeaderImageUrl(appid),
+              header_image: item.header_image || '',
             })
           }
         })
@@ -646,7 +833,91 @@ export function LuaShop() {
     }
   }, [autoInstall, showToast, t.library.restartSteamPrompt, t.settings.restartSteam])
 
-  // ── Add ─────────────────────────────────────────────────────────────────────
+  // ── Version picker + Add ────────────────────────────────────────────────────
+  const loadGameBuilds = useCallback(async (game: ShopGame): Promise<GameBuildsInfo> => {
+    const base = await invoke<GameBuildsInfo>('lua_shop_get_game_builds', {
+      appid: game.appid,
+      gameName: game.name,
+    })
+
+    let rssRows: ReturnType<typeof parseSteamDbPatchRss> = []
+    try {
+      const xml = await invoke<string>('lua_shop_get_patchnotes_rss', { appid: game.appid })
+      rssRows = parseSteamDbPatchRss(xml)
+    } catch (error) {
+      // RSS is optional metadata. Never block the primary custom source.
+      console.warn('Patch history unavailable for', game.appid, error)
+    }
+
+    return {
+      ...base,
+      builds: mergeBuildHistory(base.builds, rssRows) as BuildInfo[],
+    }
+  }, [])
+
+  const openVersionPicker = useCallback(async (game: ShopGame) => {
+    setSelectedVerifiedGame(game)
+    setSelectedGameBuilds(null)
+    setSelectedBuildId('')
+    setInstalledBuildId(null)
+    const hasLatestPackage = allAppIdsSetRef.current.has(String(game.appid))
+    setSelectedHasLatestPackage(hasLatestPackage)
+    setIsBuildsLoading(true)
+
+    // Use cached buildid from the initial scan (avoids extra invoke round-trip)
+    const currentBuildId = steamInstalledBuilds[String(game.appid)] ?? null
+    setInstalledBuildId(currentBuildId)
+
+    try {
+      const info = await loadGameBuilds(game)
+      setSelectedGameBuilds(info)
+      // Auto-select installed build if found in list, else first available, else latest
+      const installedBuild = currentBuildId
+        ? info.builds.find((b) => b.build_id === currentBuildId && b.manifest_available !== false && b.manifests.length > 0)
+        : null
+      const firstExactBuild = info.builds.find((build) => build.manifest_available !== false && build.manifests.length > 0)
+      if (installedBuild) setSelectedBuildId(installedBuild.build_id)
+      else if (firstExactBuild) setSelectedBuildId(firstExactBuild.build_id)
+      else if (hasLatestPackage) setSelectedBuildId(LATEST_PACKAGE_BUILD)
+    } catch (err) {
+      if (hasLatestPackage) {
+        setSelectedGameBuilds({ builds: [], has_key: false })
+        setSelectedBuildId(LATEST_PACKAGE_BUILD)
+      } else {
+        showToast('Error fetching versions', String(err), 'error')
+        setSelectedVerifiedGame(null)
+      }
+    } finally {
+      setIsBuildsLoading(false)
+    }
+  }, [loadGameBuilds, showToast, steamInstalledBuilds])
+
+  const performLatestPackageInstall = useCallback(async (appid: number, gameName: string) => {
+    const checkResult = await invoke('check_steam_update', { appid }) as {
+      needs_update: boolean; reason: string; is_missing: boolean
+    }
+
+    let forceUpdate = false
+    if (checkResult.needs_update) {
+      if (checkResult.is_missing) {
+        showToast(t.library.addToSteam, `Creating config for ${gameName} (30-60s)...`, 'info')
+        forceUpdate = true
+      } else {
+        const { ask } = await import('@tauri-apps/plugin-dialog')
+        const shouldUpdate = await ask(
+          `Update available.\nReason: ${checkResult.reason}\n\nFetch latest version?`,
+          { title: 'Data Update', kind: 'info' }
+        )
+        if (shouldUpdate) {
+          showToast(t.library.addToSteam, `Downloading update for ${gameName} (30-60s)...`, 'info')
+          forceUpdate = true
+        }
+      }
+    }
+
+    await invoke('add_to_steam', { appid, forceUpdate })
+  }, [showToast, t.library.addToSteam])
+
   const handleAddToSteam = useCallback(async (appid: string) => {
     const numAppid = parseInt(appid)
     const gameName = getCachedSteamGameInfo(appid)?.name || 'AppID ' + appid
@@ -663,39 +934,8 @@ export function LuaShop() {
       return
     }
 
-    try {
-      const checkResult = await invoke('check_steam_update', { appid: numAppid }) as {
-        needs_update: boolean; reason: string; is_missing: boolean
-      }
-
-      let forceUpdate = false
-      if (checkResult.needs_update) {
-        if (checkResult.is_missing) {
-          showToast(t.library.addToSteam, `Creating config for ${gameName} (30-60s)...`, 'info')
-          forceUpdate = true
-        } else {
-          const { ask } = await import('@tauri-apps/plugin-dialog')
-          const shouldUpdate = await ask(
-            `Update available.\nReason: ${checkResult.reason}\n\nFetch latest version?`,
-            { title: 'Data Update', kind: 'info' }
-          )
-          if (shouldUpdate) {
-            showToast(t.library.addToSteam, `Downloading update for ${gameName} (30-60s)...`, 'info')
-            forceUpdate = true
-          }
-        }
-      }
-
-      await invoke('add_to_steam', { appid: numAppid, forceUpdate })
-      setInstalledLuas((prev) => new Set([...prev, appid]))
-      showToast(t.library.addToSteam, t.library.addToSteamSuccess, 'success')
-
-      if (skipConfirm) performRestart()
-      else setShowRestartConfirm(true)
-    } catch (err) {
-      showToast(t.library.addToSteam, t.library.addToSteamError + ': ' + String(err), 'error')
-    }
-  }, [performRestart, showToast, skipConfirm, t])
+    await openVersionPicker({ appid: numAppid, name: gameName })
+  }, [openVersionPicker, showToast, t.luaShop.luaModeRequired])
 
   // ── Remove ──────────────────────────────────────────────────────────────────
   const handleRemove = useCallback((appid: string) => {
@@ -729,12 +969,57 @@ export function LuaShop() {
     }
   }
 
+  // ── Verified Catalog Handlers ───────────────────────────────────────────────
+  const handleVerifiedGameClick = async (game: ShopGame) => {
+    await openVersionPicker(game)
+  }
+
+  const handleVerifiedInstall = async () => {
+    if (!selectedVerifiedGame || !selectedBuildId) return
+    
+    const isSteamRunning = await invoke<boolean>('is_steam_running').catch(() => false)
+    if (isSteamRunning) {
+      showToast(t.luaShop.installBuild || 'Install', t.luaShop.closeSteamFirst || 'Vui lòng thoát hoàn toàn Steam trước khi cài đặt.', 'error')
+      return
+    }
+
+    setIsVerifiedInstalling(true)
+    try {
+      if (selectedBuildId === LATEST_PACKAGE_BUILD) {
+        await performLatestPackageInstall(selectedVerifiedGame.appid, selectedVerifiedGame.name)
+      } else {
+        const selectedBuild = selectedGameBuilds?.builds.find((build) => build.build_id === selectedBuildId)
+        if (!selectedBuild || selectedBuild.manifest_available === false || selectedBuild.manifests.length === 0) {
+          throw new Error('This BuildID is available as patch-history metadata, but exact depot manifests are not available from the configured source yet.')
+        }
+        await invoke('lua_shop_install_game', {
+          appid: selectedVerifiedGame.appid,
+          gameName: selectedVerifiedGame.name,
+          buildId: selectedBuildId,
+          accessToken: accessToken.trim() || null,
+          statSteamId: statSteamId.trim() || null,
+          skipManifestPin,
+        })
+      }
+      showToast(t.luaShop.installBuild || 'Install', (t.luaShop.installSuccess || '{name} installed successfully!').replace('{name}', selectedVerifiedGame.name), 'success')
+      setInstalledLuas((prev) => new Set([...prev, String(selectedVerifiedGame.appid)]))
+      setSelectedVerifiedGame(null)
+      if (skipConfirm) performRestart()
+      else setShowRestartConfirm(true)
+    } catch (err) {
+      showToast(t.luaShop.installBuild || 'Install', (t.luaShop.installError || 'Installation failed') + ': ' + String(err), 'error')
+    } finally {
+      setIsVerifiedInstalling(false)
+    }
+  }
+
   // ─────────────────────────────────────────────────────────────────────────────
   // Render
   // ─────────────────────────────────────────────────────────────────────────────
 
   const filterTabs: { id: FilterTab; label: string }[] = [
     { id: 'all', label: 'All' },
+    { id: 'verified', label: t.luaShop.verifiedTab || 'Verified' },
     { id: 'installed', label: t.luaShop.installed || 'Installed' },
     { id: 'notInstalled', label: 'Not Installed' },
   ]
@@ -799,7 +1084,58 @@ export function LuaShop() {
       </div>
 
       {/* ── Body ── */}
-      {isLoading ? (
+      {filterTab === 'verified' ? (
+        isVerifiedLoading ? (
+          <div className="lua-shop-loading">
+            <div className="spinner-large" />
+            <p>{t.luaShop.loadingCatalog || 'Loading verified catalog...'}</p>
+          </div>
+        ) : verifiedError && verifiedCatalog.length === 0 ? (
+          <div className="lua-shop-loading">
+            <p style={{ fontSize: '16px', color: 'rgba(255,255,255,0.6)' }}>{verifiedError}</p>
+          </div>
+        ) : verifiedCatalog.length === 0 ? (
+          <div className="lua-shop-loading">
+            <p style={{ fontSize: '16px', color: 'rgba(255,255,255,0.6)' }}>{t.luaShop.noVerifiedGames || 'No verified games available'}</p>
+          </div>
+        ) : (
+          <div className="lua-shop-grid verified-grid">
+            {verifiedCatalog
+              .filter(game => !search.trim() || titleMatchesQuery(game.name, normalizeSearchText(search)))
+              .map((game) => (
+              <div 
+                key={game.appid} 
+                className="verified-game-card"
+                onClick={() => handleVerifiedGameClick(game)}
+              >
+                <div className="verified-game-image">
+                  <VerifiedGameImage appid={String(game.appid)} name={game.name} />
+                  {installedLuas.has(String(game.appid)) && (
+                    <div className="lua-shop-installed-badge">
+                      <CheckCircle size={12} />
+                      {t.luaShop.installed || 'Installed'}
+                    </div>
+                  )}
+                  {steamInstalledBuilds[String(game.appid)] && (
+                    <div style={{
+                      position: 'absolute', bottom: 4, right: 4,
+                      background: 'rgba(0,0,0,0.75)', color: 'rgba(255,255,255,0.75)',
+                      fontSize: '10px', padding: '2px 6px', borderRadius: 4,
+                      backdropFilter: 'blur(4px)', fontFamily: 'monospace'
+                    }}>
+                      Build {steamInstalledBuilds[String(game.appid)]}
+                    </div>
+                  )}
+                </div>
+                <div className="verified-game-info">
+                  <div className="verified-game-title">{game.name}</div>
+                  <div className="verified-game-appid">AppID: {game.appid}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )
+      ) : isLoading ? (
         <div className="lua-shop-loading">
           <div className="spinner-large" />
           <p>{t.luaShop.loading || 'Đang tải dữ liệu...'}</p>
@@ -869,6 +1205,190 @@ export function LuaShop() {
             </div>
           )}
         </>
+      )}
+
+      {/* ── Verified Detail Panel Overlay ── */}
+      {selectedVerifiedGame && (
+        <div className="verified-detail-overlay" onClick={() => setSelectedVerifiedGame(null)}>
+          <div className="verified-detail-panel" onClick={e => e.stopPropagation()}>
+            <div className="detail-header">
+              <h2>{selectedVerifiedGame.name}</h2>
+              <span className="detail-appid">AppID: {selectedVerifiedGame.appid}</span>
+            </div>
+            
+            <div className="detail-body">
+              {isBuildsLoading ? (
+                <div className="detail-loading">
+                  <div className="spinner" />
+                  <p>Loading builds...</p>
+                </div>
+              ) : selectedGameBuilds ? (
+                <div className="detail-content">
+                  {selectedGameBuilds.has_key && (
+                    <div className="detail-badge success">
+                      <CheckCircle size={14} /> {t.luaShop.hasDepotKey || 'Depot Key Available'}
+                    </div>
+                  )}
+
+                  <div className="detail-section">
+                    <div className="lua-build-label-row">
+                      <label>{t.luaShop.selectBuild || 'Select Build'} ({selectedGameBuilds.builds.length + (selectedHasLatestPackage ? 1 : 0)} {t.luaShop.multipleBuilds || 'versions'})</label>
+                      <HelpButton
+                        title={t.help.conceptGuides.buildId.title}
+                        body={t.help.conceptGuides.buildId.body}
+                        bullets={[t.help.conceptGuides.manifest.body, t.help.conceptGuides.depotKey.body]}
+                      />
+                    </div>
+                    <div className={`version-dropdown${buildDropdownOpen ? ' open' : ''}`}>
+                      <button
+                        type="button"
+                        className="version-dropdown-trigger primary-control"
+                        onClick={() => setBuildDropdownOpen(!buildDropdownOpen)}
+                      >
+                        <div style={{ display: 'contents' }}>
+                          <span>
+                            <strong>
+                              {selectedBuildId === LATEST_PACKAGE_BUILD 
+                                ? (t.luaShop.latestCustomSource || 'Latest available | Custom source')
+                                : `${t.luaShop.buildId || 'Build ID'}: ${selectedBuildId}`
+                              }
+                            </strong>
+                            <small>
+                              {selectedBuildId !== LATEST_PACKAGE_BUILD 
+                                ? [
+                                    selectedGameBuilds.builds.find(b => b.build_id === selectedBuildId)?.version,
+                                    selectedGameBuilds.builds.find(b => b.build_id === selectedBuildId)?.build_date 
+                                      ? formatBuildDate(selectedGameBuilds.builds.find(b => b.build_id === selectedBuildId)!.build_date!) 
+                                      : null
+                                  ].filter(Boolean).join(' | ') 
+                                : ''
+                              }
+                            </small>
+                          </span>
+                        </div>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
+                      </button>
+
+                      {buildDropdownOpen && (
+                        <div className="version-dropdown-menu">
+                          {selectedHasLatestPackage && (
+                            <button
+                              type="button"
+                              className={`version-dropdown-option${selectedBuildId === LATEST_PACKAGE_BUILD ? ' active' : ''}`}
+                              onClick={() => {
+                                setSelectedBuildId(LATEST_PACKAGE_BUILD)
+                                setBuildDropdownOpen(false)
+                              }}
+                            >
+                              <span className="build-radio-indicator" aria-hidden="true" />
+                              <span className="version-option-copy">
+                                <strong>{t.luaShop.latestCustomSource || 'Latest available | Custom source'}</strong>
+                                <small>{t.luaShop.customSource || 'Custom source'}</small>
+                              </span>
+                              <span className="version-status-badge latest">{t.luaShop.latestBuild || 'Latest'}</span>
+                            </button>
+                          )}
+                          {selectedGameBuilds.builds.map((b) => {
+                            const canInstall = b.manifest_available !== false && b.manifests.length > 0
+                            const isInstalled = installedBuildId && b.build_id === installedBuildId
+                            return (
+                              <button
+                                key={b.build_id}
+                                type="button"
+                                className={`version-dropdown-option${selectedBuildId === b.build_id ? ' active' : ''}`}
+                                disabled={!canInstall}
+                                onClick={() => {
+                                  setSelectedBuildId(b.build_id)
+                                  setBuildDropdownOpen(false)
+                                }}
+                              >
+                                <span className="build-radio-indicator" aria-hidden="true" />
+                                <span className="version-option-copy">
+                                  <strong>{t.luaShop.buildId || 'Build ID'}: {b.build_id}</strong>
+                                  <small>
+                                    {[
+                                      b.version,
+                                      b.build_date ? formatBuildDate(b.build_date) : null,
+                                      b.patch_title
+                                    ].filter(Boolean).join(' · ')}
+                                  </small>
+                                </span>
+                                <span className="version-option-badges">
+                                  {isInstalled && <span className="version-status-badge installed">{t.luaShop.installed || 'Installed'}</span>}
+                                  {!canInstall && <span className="version-status-badge metadata">{t.luaShop.metadataOnly || 'Metadata only'}</span>}
+                                </span>
+                              </button>
+                            )
+                          })}
+                        </div>
+                      )}
+                    </div>
+                    {selectedGameBuilds.builds.some((b) => b.manifest_available === false) && (
+                      <small className="build-selector-hint">
+                        {t.luaShop.patchHistoryHint || 'Historical RSS builds are shown for completeness. A build becomes selectable only when the configured source has its exact depot manifests.'}
+                      </small>
+                    )}
+                  </div>
+
+                  <div className="detail-section">
+                    <label>{t.luaShop.advancedOptions || 'Advanced Options'}</label>
+                    <div className="advanced-inputs">
+                      <input 
+                        type="text" 
+                        placeholder={t.luaShop.accessTokenPlaceholder || 'Access Token (Optional)'} 
+                        value={accessToken}
+                        onChange={e => setAccessToken(e.target.value)}
+                      />
+                      <input 
+                        type="text" 
+                        placeholder={t.luaShop.achievementSteamIdPlaceholder || 'Achievement SteamID (Optional)'} 
+                        value={statSteamId}
+                        onChange={e => setStatSteamId(e.target.value)}
+                      />
+                      <label className="advanced-toggle-row">
+                        <input
+                          className="advanced-toggle-input"
+                          type="checkbox"
+                          checked={skipManifestPin}
+                          onChange={e => setSkipManifestPin(e.target.checked)}
+                        />
+                        <span className="advanced-toggle-track" aria-hidden="true"><span className="advanced-toggle-thumb" /></span>
+                        <span className="advanced-toggle-copy">
+                          <strong>{t.luaShop.skipManifestPin || 'Always update Depot (Do not pin version)'}</strong>
+                          <small>{t.luaShop.skipManifestPinHint || 'Leave the depot unpinned so Steam can follow newer manifests.'}</small>
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <p>Failed to load builds.</p>
+              )}
+            </div>
+
+            <div className="detail-footer">
+              <button 
+                className="cancel-btn" 
+                onClick={() => setSelectedVerifiedGame(null)}
+              >
+                {t.install.cancel || 'Cancel'}
+              </button>
+              <button 
+                className="install-btn" 
+                disabled={isBuildsLoading || !selectedBuildId || isVerifiedInstalling || steamRunning}
+                onClick={handleVerifiedInstall}
+              >
+                {steamRunning 
+                  ? (t.luaShop.closeSteamFirst || 'Close Steam first') 
+                  : isVerifiedInstalling 
+                    ? (t.luaShop.installing || 'Installing...') 
+                    : installedBuildId
+                      ? (selectedBuildId === installedBuildId ? (t.luaShop.reinstall || 'Re-install') : (t.luaShop.changeVersion || 'Change Version'))
+                      : (t.luaShop.installBuild || 'Install')}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* ── Remove confirm dialog ── */}

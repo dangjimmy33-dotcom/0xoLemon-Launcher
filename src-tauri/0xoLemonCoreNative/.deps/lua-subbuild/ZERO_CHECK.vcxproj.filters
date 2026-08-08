@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\lua-subbuild\CMakeFiles\1509bc7feb775d6b09c598ac5dd7eac1\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{A95E03F4-25F4-3E9C-BC46-12C3AC86F26D}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

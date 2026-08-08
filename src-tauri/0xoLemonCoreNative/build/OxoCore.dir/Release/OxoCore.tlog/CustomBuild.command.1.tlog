@@ -1,0 +1,34 @@
+^E:\007LAUNCHER\SRC-TAURI\0XOLEMONCORENATIVE\BUILD\CMAKEFILES\15E51FA3A221698D1560C76AB3F1342E\STEAM_MESSAGES.PB.CC.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory E:/007Launcher/src-tauri/0xoLemonCoreNative/build/proto
+if %errorlevel% neq 0 goto :cmEnd
+E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\protobuf-build\Release\protoc.exe --cpp_out=E:/007Launcher/src-tauri/0xoLemonCoreNative/build/proto -IE:/007Launcher/src-tauri/0xoLemonCoreNative/source/proto E:/007Launcher/src-tauri/0xoLemonCoreNative/source/proto/steam_messages.proto
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\SRC-TAURI\0XOLEMONCORENATIVE\BUILD\CMAKEFILES\8DCD059FD9DA790D11D485338A399FA8\STEAM_MESSAGES.PB.CC.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory E:/007Launcher/src-tauri/0xoLemonCoreNative/build/proto_lite
+if %errorlevel% neq 0 goto :cmEnd
+E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\protobuf-build\Release\protoc.exe --cpp_out=lite:E:/007Launcher/src-tauri/0xoLemonCoreNative/build/proto_lite -IE:/007Launcher/src-tauri/0xoLemonCoreNative/source/proto E:/007Launcher/src-tauri/0xoLemonCoreNative/source/proto/steam_messages.proto
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\SRC-TAURI\0XOLEMONCORENATIVE\SOURCE\CMAKELISTS.TXT
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SE:/007Launcher/src-tauri/0xoLemonCoreNative/source -BE:/007Launcher/src-tauri/0xoLemonCoreNative/build --check-stamp-file E:/007Launcher/src-tauri/0xoLemonCoreNative/build/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

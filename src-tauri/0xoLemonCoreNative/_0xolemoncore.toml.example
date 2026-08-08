@@ -1,0 +1,67 @@
+# 0xolemoncore.toml — 0xoLemonCore configuration
+# Place this file in your Steam installation directory (next to steam.exe).
+# Rename to 0xolemoncore.toml to activate. All sections are optional — missing
+# keys fall back to the defaults shown below.
+
+[log]
+# Log level: "debug", "info", "warn", "error"
+level = "debug"
+# Extra verbose logging in debug builds
+verbose = true
+
+[lua]
+# Extra directories to watch for .lua files (beyond config/stplug-in/)
+paths = []
+
+[manifest_fetch]
+# URL chain for depot manifest downloads, tried in order until one returns 200.
+# {gid} is replaced with the manifest GID at request time.
+# The first built-in provider needs a compatibility User-Agent; 0xoLemonCore adds it internally.
+urls = [
+    "https://manifest.opensteamtool.com/{gid}",
+    "https://manifest.steam.run/api/manifest/{gid}",
+    "http://gmrc.wudrm.com/manifest/{gid}",
+]
+# Max seconds to wait per provider before trying the next one
+timeout_sec = 12
+# Trusted host allowlist — responses from other hosts are rejected
+trusted_hosts = [
+    "manifest.opensteamtool.com",
+    "manifest.steam.run",
+    "gmrc.wudrm.com",
+]
+
+[pattern_fetch]
+# Custom mirror URL for per-build pattern TOMLs. {subdir} = steamclient or
+# steamui, {sha} = lowercase hex SHA-256 of the DLL. Leave empty to use
+# the default GitHub + jsDelivr + local cache chain.
+mirror = ""
+
+[stats]
+# Enable stats and achievement API
+enable_api = true
+
+[process_extension]
+# Inject an extension DLL into game processes at launch
+enabled = false
+# Path to 32-bit extension DLL
+x86 = ""
+# Path to 64-bit extension DLL
+x64 = ""
+
+[onlinefix]
+# Inject 0xoPayload.dll into online-fix game processes for EOS bridge
+inject_enabled = true
+
+[boot]
+# Show a diagnostic popup with Steam build ID and steamclient SHA256 when
+# patterns can't load (new Steam build, network down, GitHub cache miss).
+# The popup data is what you need to report a missing build.
+diagnostic_popup = true
+
+[steamstub]
+# Automatically activate the SteamStub bypass route when launching a
+# Lua-tracked game that has SteamStub protection, is not owned, and
+# has no manual stub flag set. Set to false to disable automatic bypass
+# (manual flag override in the Lua pattern still works).
+auto_enabled = false

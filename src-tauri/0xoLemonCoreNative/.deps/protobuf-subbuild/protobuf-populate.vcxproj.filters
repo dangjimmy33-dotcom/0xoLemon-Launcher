@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\protobuf-subbuild\CMakeFiles\3ac2cc50637b265899f552091b8ef739\protobuf-populate-mkdir.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\protobuf-subbuild\CMakeFiles\3ac2cc50637b265899f552091b8ef739\protobuf-populate-download.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\protobuf-subbuild\CMakeFiles\3ac2cc50637b265899f552091b8ef739\protobuf-populate-update_disconnected.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\protobuf-subbuild\CMakeFiles\3ac2cc50637b265899f552091b8ef739\protobuf-populate-patch_disconnected.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\protobuf-subbuild\CMakeFiles\3ac2cc50637b265899f552091b8ef739\protobuf-populate-configure.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\protobuf-subbuild\CMakeFiles\3ac2cc50637b265899f552091b8ef739\protobuf-populate-build.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\protobuf-subbuild\CMakeFiles\3ac2cc50637b265899f552091b8ef739\protobuf-populate-install.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\protobuf-subbuild\CMakeFiles\3ac2cc50637b265899f552091b8ef739\protobuf-populate-test.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\protobuf-subbuild\CMakeFiles\5e1ae47ef4ae5febf335d219fe363572\protobuf-populate-complete.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\protobuf-subbuild\CMakeFiles\ae8021d9b87c5f46f433a4c298e3ae88\protobuf-populate.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\protobuf-subbuild\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\protobuf-subbuild\CMakeFiles\protobuf-populate" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{B320C06E-6AC5-332C-9392-4CB7BD7683D5}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

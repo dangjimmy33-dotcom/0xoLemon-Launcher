@@ -1,0 +1,14 @@
+# Target labels
+ protobuf-populate
+# Source files and their labels
+E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/protobuf-subbuild/CMakeFiles/protobuf-populate
+E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/protobuf-subbuild/CMakeFiles/ae8021d9b87c5f46f433a4c298e3ae88/protobuf-populate.rule
+E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/protobuf-subbuild/CMakeFiles/5e1ae47ef4ae5febf335d219fe363572/protobuf-populate-complete.rule
+E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/protobuf-subbuild/CMakeFiles/3ac2cc50637b265899f552091b8ef739/protobuf-populate-build.rule
+E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/protobuf-subbuild/CMakeFiles/3ac2cc50637b265899f552091b8ef739/protobuf-populate-configure.rule
+E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/protobuf-subbuild/CMakeFiles/3ac2cc50637b265899f552091b8ef739/protobuf-populate-download.rule
+E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/protobuf-subbuild/CMakeFiles/3ac2cc50637b265899f552091b8ef739/protobuf-populate-install.rule
+E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/protobuf-subbuild/CMakeFiles/3ac2cc50637b265899f552091b8ef739/protobuf-populate-mkdir.rule
+E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/protobuf-subbuild/CMakeFiles/3ac2cc50637b265899f552091b8ef739/protobuf-populate-patch_disconnected.rule
+E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/protobuf-subbuild/CMakeFiles/3ac2cc50637b265899f552091b8ef739/protobuf-populate-test.rule
+E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/protobuf-subbuild/CMakeFiles/3ac2cc50637b265899f552091b8ef739/protobuf-populate-update_disconnected.rule

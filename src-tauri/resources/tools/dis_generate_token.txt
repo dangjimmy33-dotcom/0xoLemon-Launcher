@@ -1,0 +1,308 @@
+702           0 LOAD_FAST                4 (__static)
+              2 LOAD_ATTR                0 (machine_hash)
+              4 LOAD_CONST               0 (None)
+              6 IS_OP                    0
+              8 POP_JUMP_IF_FALSE        9 (to 18)
+
+703          10 LOAD_GLOBAL              1 (get_machine_hash)
+             12 CALL_FUNCTION            0
+             14 LOAD_FAST                4 (__static)
+             16 STORE_ATTR               0 (machine_hash)
+
+705     >>   18 LOAD_GLOBAL              2 (_SESS_EA)
+             20 LOAD_ATTR                3 (get)
+
+706          22 LOAD_CONST               1 ('https://proxy.novafusion.ea.com/licenses')
+
+708          24 LOAD_FAST                2 (content_id)
+
+709          26 LOAD_FAST                4 (__static)
+             28 LOAD_ATTR                0 (machine_hash)
+
+710          30 LOAD_GLOBAL              4 (get_access_token)
+             32 CALL_FUNCTION            0
+
+711          34 LOAD_FAST                0 (ticket)
+
+712          36 LOAD_FAST                1 (engine)
+
+707          38 LOAD_CONST               2 (('contentId', 'machineHash', 'ea_eadmtoken', 'requestToken', 'requestType'))
+             40 BUILD_CONST_KEY_MAP      5
+
+715          42 LOAD_CONST               3 ('EACTransaction')
+
+716          44 LOAD_CONST               4 ('Origin Online Activation')
+
+714          46 LOAD_CONST               5 (('User-Agent', 'X-Requester-Id'))
+             48 BUILD_CONST_KEY_MAP      2
+
+718          50 LOAD_CONST               6 (15)
+
+705          52 LOAD_CONST               7 (('params', 'headers', 'timeout'))
+             54 CALL_FUNCTION_KW         4
+             56 STORE_FAST               5 (r)
+
+721          58 LOAD_FAST                5 (r)
+             60 LOAD_ATTR                5 (headers)
+             62 LOAD_METHOD              3 (get)
+             64 LOAD_CONST               8 ('content-type')
+             66 CALL_METHOD              1
+             68 STORE_FAST               6 (content_type)
+
+722          70 LOAD_FAST                6 (content_type)
+             72 LOAD_METHOD              6 (startswith)
+             74 LOAD_CONST               9 ('application/octet-stream')
+             76 CALL_METHOD              1
+             78 POP_JUMP_IF_FALSE       41 (to 82)
+
+724          80 JUMP_FORWARD           171 (to 424)
+
+725     >>   82 LOAD_FAST                6 (content_type)
+             84 LOAD_METHOD              6 (startswith)
+             86 LOAD_CONST              10 ('text/html')
+             88 CALL_METHOD              1
+             90 POP_JUMP_IF_FALSE       99 (to 198)
+
+726          92 LOAD_FAST                5 (r)
+             94 LOAD_ATTR                7 (status_code)
+             96 LOAD_CONST              11 (404)
+             98 COMPARE_OP               2 (==)
+            100 POP_JUMP_IF_FALSE       95 (to 190)
+            102 LOAD_FAST                5 (r)
+            104 LOAD_ATTR                8 (content)
+            106 LOAD_GLOBAL              9 (_EXPECTED_ERROR)
+            108 COMPARE_OP               2 (==)
+            110 POP_JUMP_IF_FALSE       95 (to 190)
+
+727         112 LOAD_FAST                3 (tries)
+            114 LOAD_CONST              12 (10)
+            116 COMPARE_OP               5 (>=)
+            118 POP_JUMP_IF_FALSE       64 (to 128)
+
+728         120 LOAD_GLOBAL             10 (ExpectedError)
+
+729         122 LOAD_CONST              13 ('Failed generating the same token for the 10th time. Something is wrong with EA servers, the ticket or your account.')
+
+728         124 CALL_FUNCTION            1
+            126 RAISE_VARARGS            1
+
+732     >>  128 LOAD_CONST              14 (5)
+            130 LOAD_FAST                3 (tries)
+            132 LOAD_CONST              15 (1)
+            134 BINARY_SUBTRACT
+            136 BINARY_MULTIPLY
+            138 STORE_FAST               7 (sleep_time)
+
+733         140 LOAD_FAST                7 (sleep_time)
+            142 LOAD_CONST              16 (0)
+            144 COMPARE_OP               4 (>)
+            146 POP_JUMP_IF_FALSE       86 (to 172)
+
+734         148 LOAD_GLOBAL             11 (print)
+            150 LOAD_CONST              17 ('An error occured, retrying in ')
+            152 LOAD_FAST                7 (sleep_time)
+            154 FORMAT_VALUE             0
+            156 LOAD_CONST              18 (' seconds')
+            158 BUILD_STRING             3
+            160 CALL_FUNCTION            1
+            162 POP_TOP
+
+735         164 LOAD_GLOBAL             12 (sleep)
+            166 LOAD_FAST                7 (sleep_time)
+            168 CALL_FUNCTION            1
+            170 POP_TOP
+
+736     >>  172 LOAD_GLOBAL             13 (generate_token)
+            174 LOAD_FAST                0 (ticket)
+            176 LOAD_FAST                1 (engine)
+            178 LOAD_FAST                2 (content_id)
+            180 LOAD_FAST                3 (tries)
+            182 LOAD_CONST              15 (1)
+            184 BINARY_ADD
+            186 CALL_FUNCTION            4
+            188 RETURN_VALUE
+
+737     >>  190 LOAD_GLOBAL             14 (UnknownResponseError)
+            192 LOAD_FAST                5 (r)
+            194 CALL_FUNCTION            1
+            196 RAISE_VARARGS            1
+
+738     >>  198 LOAD_FAST                6 (content_type)
+            200 LOAD_METHOD              6 (startswith)
+            202 LOAD_CONST              19 ('application/xml')
+            204 CALL_METHOD              1
+            206 POP_JUMP_IF_FALSE      208 (to 416)
+
+739         208 SETUP_FINALLY           20 (to 250)
+
+740         210 LOAD_GLOBAL             15 (ET)
+            212 LOAD_METHOD             16 (fromstring)
+            214 LOAD_FAST                5 (r)
+            216 LOAD_ATTR                8 (content)
+            218 CALL_METHOD              1
+            220 STORE_FAST               8 (root)
+
+741         222 LOAD_FAST                8 (root)
+            224 LOAD_ATTR               17 (tag)
+            226 LOAD_CONST              20 ('error')
+            228 COMPARE_OP               2 (==)
+            230 POP_JUMP_IF_TRUE       118 (to 236)
+            232 LOAD_ASSERTION_ERROR
+            234 RAISE_VARARGS            1
+
+742     >>  236 LOAD_FAST                8 (root)
+            238 LOAD_ATTR               18 (attrib)
+            240 LOAD_CONST              21 ('code')
+            242 BINARY_SUBSCR
+            244 STORE_FAST               9 (error_code)
+            246 POP_BLOCK
+            248 JUMP_FORWARD             8 (to 266)
+
+743     >>  250 POP_TOP
+            252 POP_TOP
+            254 POP_TOP
+
+744         256 POP_EXCEPT
+
+771         258 LOAD_GLOBAL             14 (UnknownResponseError)
+            260 LOAD_FAST                5 (r)
+            262 CALL_FUNCTION            1
+            264 RAISE_VARARGS            1
+
+746     >>  266 LOAD_FAST                9 (error_code)
+            268 LOAD_CONST              22 ('CG_LIMIT_EXCEEDED')
+            270 COMPARE_OP               2 (==)
+            272 POP_JUMP_IF_FALSE      145 (to 290)
+
+747         274 LOAD_GLOBAL             19 (LimitExceededError)
+
+748         276 LOAD_CONST              23 ('Daily limit of activations exceeded (')
+
+749         278 LOAD_GLOBAL             20 (_MAX_TOKENS_PER_DAY)
+
+748         280 FORMAT_VALUE             0
+            282 LOAD_CONST              24 (' per day).')
+            284 BUILD_STRING             3
+
+747         286 CALL_FUNCTION            1
+            288 RAISE_VARARGS            1
+
+751     >>  290 LOAD_FAST                9 (error_code)
+            292 LOAD_CONST              25 ('VALIDATION_FAILED')
+            294 COMPARE_OP               2 (==)
+            296 POP_JUMP_IF_FALSE      192 (to 384)
+
+752         298 SETUP_FINALLY           10 (to 320)
+
+753         300 LOAD_FAST                8 (root)
+            302 LOAD_METHOD             21 (find)
+            304 LOAD_CONST              26 ('failure')
+            306 CALL_METHOD              1
+            308 LOAD_ATTR               18 (attrib)
+            310 LOAD_CONST              27 ('cause')
+            312 BINARY_SUBSCR
+            314 STORE_FAST              10 (cause)
+            316 POP_BLOCK
+            318 JUMP_FORWARD             8 (to 336)
+
+754     >>  320 POP_TOP
+            322 POP_TOP
+            324 POP_TOP
+
+755         326 POP_EXCEPT
+
+771         328 LOAD_GLOBAL             14 (UnknownResponseError)
+            330 LOAD_FAST                5 (r)
+            332 CALL_FUNCTION            1
+            334 RAISE_VARARGS            1
+
+757     >>  336 LOAD_FAST               10 (cause)
+            338 LOAD_CONST              28 ('NOT_ENTITLED')
+            340 COMPARE_OP               2 (==)
+            342 POP_JUMP_IF_FALSE      180 (to 360)
+
+758         344 LOAD_GLOBAL             22 (NotEntitledError)
+
+759         346 LOAD_CONST              29 ("You don't own this game (")
+            348 LOAD_FAST                2 (content_id)
+            350 FORMAT_VALUE             0
+            352 LOAD_CONST              30 (')')
+            354 BUILD_STRING             3
+
+758         356 CALL_FUNCTION            1
+            358 RAISE_VARARGS            1
+
+761     >>  360 LOAD_FAST               10 (cause)
+            362 LOAD_CONST              31 ('AUTHENTICATION_FAILED')
+            364 COMPARE_OP               2 (==)
+            366 POP_JUMP_IF_FALSE      188 (to 376)
+
+762         368 LOAD_GLOBAL             23 (AuthError)
+
+763         370 LOAD_CONST              32 ("Authentication error, try again. If that doesn't work - get a new access token from the main menu.")
+
+762         372 CALL_FUNCTION            1
+            374 RAISE_VARARGS            1
+
+771     >>  376 LOAD_GLOBAL             14 (UnknownResponseError)
+            378 LOAD_FAST                5 (r)
+            380 CALL_FUNCTION            1
+            382 RAISE_VARARGS            1
+
+767     >>  384 LOAD_FAST                9 (error_code)
+            386 LOAD_CONST              33 ('NUCLEUS_EXCEPTION')
+            388 COMPARE_OP               2 (==)
+            390 POP_JUMP_IF_FALSE      204 (to 408)
+
+768         392 LOAD_GLOBAL             24 (NucleusExceptionError)
+
+769         394 LOAD_CONST              34 ('Nucleus exception. Bad ticket? XML response:\n')
+            396 LOAD_FAST                5 (r)
+            398 LOAD_ATTR               25 (text)
+            400 FORMAT_VALUE             0
+            402 BUILD_STRING             2
+
+768         404 CALL_FUNCTION            1
+            406 RAISE_VARARGS            1
+
+771     >>  408 LOAD_GLOBAL             14 (UnknownResponseError)
+            410 LOAD_FAST                5 (r)
+            412 CALL_FUNCTION            1
+            414 RAISE_VARARGS            1
+
+773     >>  416 LOAD_GLOBAL             14 (UnknownResponseError)
+            418 LOAD_FAST                5 (r)
+            420 CALL_FUNCTION            1
+            422 RAISE_VARARGS            1
+
+775     >>  424 LOAD_GLOBAL             26 (get_license_tree)
+            426 LOAD_FAST                5 (r)
+            428 LOAD_ATTR                8 (content)
+            430 CALL_FUNCTION            1
+            432 STORE_FAST              11 (license_tree)
+
+776         434 LOAD_FAST               11 (license_tree)
+            436 LOAD_METHOD             21 (find)
+            438 LOAD_CONST              35 ('{http://ea.com/license}GameToken')
+            440 CALL_METHOD              1
+            442 LOAD_ATTR               25 (text)
+            444 STORE_FAST              12 (token)
+
+778         446 LOAD_GLOBAL             27 (get_timestamps)
+            448 LOAD_FAST                2 (content_id)
+            450 CALL_FUNCTION            1
+            452 STORE_FAST              13 (timestamps)
+
+779         454 LOAD_FAST               13 (timestamps)
+            456 LOAD_METHOD             28 (append)
+            458 LOAD_GLOBAL             29 (make_timestamp)
+            460 CALL_FUNCTION            0
+            462 CALL_METHOD              1
+            464 POP_TOP
+
+780         466 LOAD_GLOBAL             30 (save_data)
+            468 CALL_FUNCTION            0
+            470 POP_TOP
+
+782         472 LOAD_FAST               12 (token)
+            474 RETURN_VALUE

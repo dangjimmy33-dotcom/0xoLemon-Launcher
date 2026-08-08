@@ -1,0 +1,83 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\Version.props" />
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <ApplicationIcon>steam_logo3.ico</ApplicationIcon>
+    <Version>$(ReleaseVersion)</Version>
+    <!-- User-facing display version (carries the optional pre-release suffix).
+         Read at runtime via AssemblyInformationalVersionAttribute; the build
+         metadata after '+' is stripped for display. -->
+    <InformationalVersion>$(ReleaseVersion)$(ReleasePrerelease)+win.$(WindowsRevision)+core.$(CoreGeneration)</InformationalVersion>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>false</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <!-- Suppress nullable reference warnings (CS8600-CS8625) - cosmetic, not bugs -->
+    <NoWarn>$(NoWarn);CS8600;CS8601;CS8602;CS8603;CS8604;CS8618;CS8619;CS8625</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
+    <PackageReference Include="WPF-UI" Version="4.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="CloudRedirect.Tests\**" />
+    <None Remove="CloudRedirect.Tests\**" />
+    <EmbeddedResource Remove="CloudRedirect.Tests\**" />
+  </ItemGroup>
+
+  <!-- Copy the C++ DLL into Resources/ and add it as an embedded resource after the
+       copy, because SDK-style item evaluation happens before BeforeBuild on a clean
+       checkout. -->
+  <Target Name="CopyNativeDll" BeforeTargets="BeforeBuild">
+    <PropertyGroup>
+      <NativeDllSource>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\..\build\Release\cloud_redirect.dll'))</NativeDllSource>
+      <NativeDllDest>$(MSBuildProjectDirectory)\Resources\cloud_redirect.dll</NativeDllDest>
+      <NativeCliSource>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\..\build\Release\cloud_redirect_cli.exe'))</NativeCliSource>
+      <NativeCliDest>$(MSBuildProjectDirectory)\Resources\cloud_redirect_cli.exe</NativeCliDest>
+    </PropertyGroup>
+    <MakeDir Directories="$(MSBuildProjectDirectory)\Resources" Condition="!Exists('$(MSBuildProjectDirectory)\Resources')" />
+    <Copy SourceFiles="$(NativeDllSource)" DestinationFiles="$(NativeDllDest)"
+          Condition="Exists('$(NativeDllSource)')"
+          SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(NativeCliSource)" DestinationFiles="$(NativeCliDest)"
+          Condition="Exists('$(NativeCliSource)')"
+          SkipUnchangedFiles="true" />
+    <ItemGroup Condition="Exists('$(NativeDllDest)')">
+      <EmbeddedResource Include="$(NativeDllDest)" LogicalName="cloud_redirect.dll" />
+    </ItemGroup>
+    <ItemGroup Condition="Exists('$(NativeCliDest)')">
+      <EmbeddedResource Include="$(NativeCliDest)" LogicalName="cloud_redirect_cli.exe" />
+    </ItemGroup>
+    <Warning Text="cloud_redirect.dll not found at $(NativeDllSource) — embedded resource will be stale or missing"
+             Condition="!Exists('$(NativeDllSource)')" />
+    <Warning Text="cloud_redirect_cli.exe not found at $(NativeCliSource) — embedded CLI will be stale or missing"
+             Condition="!Exists('$(NativeCliSource)')" />
+  </Target>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\payloads\**\*">
+      <LogicalName>$([System.String]::Copy('payloads/%(RecursiveDir)%(Filename)%(Extension)').Replace('\\','/'))</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <!-- 32-bit Steam Cloud manager tool + its steam_api.dll, EMBEDDED into the
+       single-file exe so we ship one file only. They are extracted side by side
+       to a temp dir on demand (see EmbeddedCloud760) and the 64-bit UI spawns the
+       32-bit tool from there. This is the same steam_api.dll that
+       SteamCloudFileManagerLite ships. -->
+  <ItemGroup>
+    <None Remove="native\cloud760_tool.exe" />
+    <None Remove="native\steam_api.dll" />
+    <EmbeddedResource Include="native\cloud760_tool.exe" LogicalName="cloud760_tool.exe" />
+    <EmbeddedResource Include="native\steam_api.dll" LogicalName="steam_api.dll" />
+  </ItemGroup>
+
+</Project>

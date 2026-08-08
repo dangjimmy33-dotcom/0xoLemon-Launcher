@@ -14,7 +14,6 @@ mọi thứ giờ chạy ổn định lại rồi, ê, giờ sao riêng ea-sport
 
 **Assistant**
 
-Error: Your requests have exceeded the quota.
 
 ---
 

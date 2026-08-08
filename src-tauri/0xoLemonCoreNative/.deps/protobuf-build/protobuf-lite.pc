@@ -1,0 +1,11 @@
+prefix=E:/007Launcher/src-tauri/0xoLemonCoreNative/dist
+exec_prefix=E:/007Launcher/src-tauri/0xoLemonCoreNative/dist
+libdir=E:/007Launcher/src-tauri/0xoLemonCoreNative/dist/lib
+includedir=E:/007Launcher/src-tauri/0xoLemonCoreNative/dist/include
+
+Name: Protocol Buffers
+Description: Google's Data Interchange Format
+Version: 3.15.3.0
+Libs: -L${libdir} -lprotobuf-lite 
+Cflags: -I${includedir}
+Conflicts: protobuf

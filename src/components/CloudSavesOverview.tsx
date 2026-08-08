@@ -7,6 +7,7 @@ import { isTauriRuntime } from '../lib/gameMeta'
 import { formatBytes } from '../lib/format'
 import { cloudSavePresentation, quotaPercent } from '../lib/cloudSaveStatus'
 import { useLocale } from '../context/LocaleContext'
+import { CloudRedirectSettings } from './CloudRedirectSettings'
 
 const PROVIDER_VALUES = ['gdrive', 'onedrive', 'folder'] as const
 
@@ -299,24 +300,20 @@ export function CloudSavesOverview({
           </header>
           <div className="cloud-mode-selection">
             <button className="cloud-mode-card" onClick={() => setActiveMode('native')}>
-              <div className="cloud-mode-icon native-icon"><FolderSync size={36} /></div>
-              <h3>
-                {c.nativeModeTitle}
-                <span className="cloud-mode-info" title={c.nativeModeInfo} onClick={(e) => e.stopPropagation()}>
-                  <Info size={16} />
-                </span>
-              </h3>
-              <p>{c.nativeModeDesc}</p>
+              <div className="cloud-mode-icon native-icon"><FolderSync size={24} /></div>
+              <span className="cloud-mode-info">
+                <strong>{c.nativeModeTitle}</strong>
+                <span>{c.nativeModeDesc}</span>
+              </span>
+              <Info className="cloud-mode-help" size={15} aria-label={c.nativeModeInfo} />
             </button>
             <button className="cloud-mode-card" onClick={() => setActiveMode('stfixer')}>
-              <div className="cloud-mode-icon stfixer-icon"><Wrench size={36} /></div>
-              <h3>
-                {c.legacyModeTitle}
-                <span className="cloud-mode-info" title={c.legacyModeInfo} onClick={(e) => e.stopPropagation()}>
-                  <Info size={16} />
-                </span>
-              </h3>
-              <p>{c.legacyModeDesc}</p>
+              <div className="cloud-mode-icon stfixer-icon"><Wrench size={24} /></div>
+              <span className="cloud-mode-info">
+                <strong>{c.legacyModeTitle}</strong>
+                <span>{c.legacyModeDesc}</span>
+              </span>
+              <Info className="cloud-mode-help" size={15} aria-label={c.legacyModeInfo} />
             </button>
           </div>
         </>
@@ -333,7 +330,9 @@ export function CloudSavesOverview({
             </div>
           </header>
 
-          {activeMode === 'stfixer' && (
+          {activeMode === 'stfixer' ? <CloudRedirectSettings /> : null}
+
+          {false && activeMode === 'stfixer' && (
             <div className="cloud-redirect-panel">
               <header className="cr-header">
                 <div className="cr-header-title">
@@ -343,14 +342,14 @@ export function CloudSavesOverview({
                 <div className="cr-status-badges">
                   {crStatus ? (
                     <>
-                      <span className={`cr-badge ${crStatus.steamRunning ? 'warning' : 'ok'}`}>
-                        {c.steamLabel}: {crStatus.steamRunning ? c.steamRunning : c.steamClosed}
+                      <span className={`cr-badge ${crStatus?.steamRunning ? 'warning' : 'ok'}`}>
+                        {c.steamLabel}: {crStatus?.steamRunning ? c.steamRunning : c.steamClosed}
                       </span>
-                      <span className={`cr-badge ${crStatus.steamVersionSupported ? 'ok' : 'error'}`}>
-                        {c.versionLabel}: {crStatus.steamVersion || c.versionUnknown} {crStatus.steamVersionSupported ? '' : `(${c.unsupported})`}
+                      <span className={`cr-badge ${crStatus?.steamVersionSupported ? 'ok' : 'error'}`}>
+                        {c.versionLabel}: {crStatus?.steamVersion || c.versionUnknown} {crStatus?.steamVersionSupported ? '' : `(${c.unsupported})`}
                       </span>
-                      <span className={`cr-badge ${crStatus.stfixerApplied ? 'ok' : 'warning'}`}>
-                        {c.stfixerLabel}: {crStatus.stfixerApplied ? c.applied : c.notApplied}
+                      <span className={`cr-badge ${crStatus?.stfixerApplied ? 'ok' : 'warning'}`}>
+                        {c.stfixerLabel}: {crStatus?.stfixerApplied ? c.applied : c.notApplied}
                       </span>
                     </>
                   ) : (
@@ -383,15 +382,15 @@ export function CloudSavesOverview({
                 </div>
 
                 {stfixerResult && (
-                  <div className={`cr-result ${stfixerResult.succeeded ? 'success' : 'error'}`}>
+                  <div className={`cr-result ${stfixerResult?.succeeded ? 'success' : 'error'}`}>
                     <div className="cr-result-header">
-                      {stfixerResult.succeeded ? <CheckCircle2 size={18} /> : <XCircle size={18} />}
-                      <strong>{stfixerResult.succeeded ? c.patchSuccess : c.patchFailed}</strong>
+                      {stfixerResult?.succeeded ? <CheckCircle2 size={18} /> : <XCircle size={18} />}
+                      <strong>{stfixerResult?.succeeded ? c.patchSuccess : c.patchFailed}</strong>
                     </div>
                     <div className="cr-terminal">
                       <Terminal size={14} className="cr-term-icon" />
                       <div className="cr-term-content">
-                        {stfixerResult.log.map((line, i) => (
+                        {stfixerResult?.log.map((line, i) => (
                           <div key={i} className="cr-term-line">{line}</div>
                         ))}
                       </div>
@@ -499,7 +498,7 @@ export function CloudSavesOverview({
           {activeMode === 'native' && (
             <div className="cloud-native-dashboard">
               <section className="cloud-native-hero">
-                <div>
+                <div className="cloud-native-title">
                   <span className="cloud-native-hero-icon"><ShieldCheck size={22} /></span>
                   <div>
                     <h2>{c.automaticProtection}</h2>

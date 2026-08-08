@@ -1,0 +1,286 @@
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Net.Http;
+using System.Reflection;
+using System.Security.Cryptography;
+using System.Text.Json;
+using System.Threading.Tasks;
+
+namespace CloudRedirect.Services;
+
+/// <summary>
+/// Checks GitHub for a newer release and, if found, downloads the .exe asset,
+/// validates it, swaps the running executable, and relaunches.
+/// </summary>
+internal static class AppUpdater
+{
+    private const string RepoOwner = "Selectively11";
+    private const string RepoName = "CloudRedirect";
+    // Uses /releases (not /releases/latest) so prerelease/draft flags and tag
+    // suffixes can be filtered client-side.
+    private const string ReleasesApiUrl = $"https://api.github.com/repos/{RepoOwner}/{RepoName}/releases";
+
+    private static readonly string[] PrereleaseTagSuffixes =
+        { "-test", "-pre", "-rc", "-beta", "-alpha" };
+
+    internal static bool IsPrereleaseTag(string? tagName)
+    {
+        if (string.IsNullOrEmpty(tagName)) return false;
+        foreach (var suffix in PrereleaseTagSuffixes)
+        {
+            if (tagName.Contains(suffix, StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+        return false;
+    }
+
+    private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(30) };
+
+    static AppUpdater()
+    {
+        Http.DefaultRequestHeaders.UserAgent.ParseAdd("CloudRedirect-AutoUpdate");
+    }
+
+    /// <summary>
+    /// Result of checking for an update.
+    /// </summary>
+    internal sealed class CheckResult
+    {
+        public bool UpdateAvailable { get; init; }
+        public string? TagName { get; init; }
+        public string? DownloadUrl { get; init; }
+        public string? AssetName { get; init; }
+        /// <summary>Release body (markdown changelog) from GitHub.</summary>
+        public string? Body { get; init; }
+        /// <summary>URL to the GitHub release page.</summary>
+        public string? HtmlUrl { get; init; }
+    }
+
+    /// <summary>
+    /// Checks GitHub releases for a newer version. Returns null on any failure
+    /// (network, parse, etc.) -- callers treat null as "no update / check failed".
+    /// </summary>
+    internal static async Task<CheckResult?> CheckAsync()
+    {
+        try
+        {
+            var json = await Http.GetStringAsync(ReleasesApiUrl);
+            using var doc = JsonDocument.Parse(json);
+            var releases = doc.RootElement;
+
+            if (releases.GetArrayLength() == 0) return null;
+
+            var localVersion = Assembly.GetExecutingAssembly().GetName().Version;
+            if (localVersion == null) return null;
+
+            // First non-prerelease, non-draft release with a parseable version tag.
+            JsonElement root = default;
+            string tagName = "";
+            Version? remoteVersion = null;
+            bool foundCandidate = false;
+            foreach (var rel in releases.EnumerateArray())
+            {
+                if (rel.TryGetProperty("prerelease", out var prProp) &&
+                    prProp.ValueKind == JsonValueKind.True)
+                    continue;
+                if (rel.TryGetProperty("draft", out var draftProp) &&
+                    draftProp.ValueKind == JsonValueKind.True)
+                    continue;
+                var candidateTag = rel.GetProperty("tag_name").GetString() ?? "";
+                if (IsPrereleaseTag(candidateTag)) continue;
+
+                var candidateVerStr = candidateTag.TrimStart('v');
+                if (!Version.TryParse(candidateVerStr, out var candidateVer)) continue;
+
+                root = rel;
+                tagName = candidateTag;
+                remoteVersion = candidateVer;
+                foundCandidate = true;
+                break;
+            }
+
+            if (!foundCandidate || remoteVersion == null) return null;
+
+            // Find the GUI exe asset and hash file (exact match to avoid grabbing the CLI exe)
+            if (!root.TryGetProperty("assets", out var assets))
+                return null;
+
+            string? downloadUrl = null;
+            string? assetName = null;
+            string? sha256Url = null;
+            foreach (var asset in assets.EnumerateArray())
+            {
+                var name = asset.GetProperty("name").GetString() ?? "";
+                if (name.Equals("CloudRedirect.exe", StringComparison.OrdinalIgnoreCase))
+                {
+                    downloadUrl = asset.GetProperty("browser_download_url").GetString();
+                    assetName = name;
+                }
+                else if (name.Equals("CloudRedirect.exe.sha256", StringComparison.OrdinalIgnoreCase))
+                {
+                    sha256Url = asset.GetProperty("browser_download_url").GetString();
+                }
+            }
+
+            if (downloadUrl == null) return null;
+
+            // Compare local exe hash against published hash; skip if unchanged.
+            if (sha256Url != null)
+            {
+                try
+                {
+                    var remoteHash = (await Http.GetStringAsync(sha256Url)).Trim();
+                    if (remoteHash.Length == 64)
+                    {
+                        var localExePath = Environment.ProcessPath;
+                        if (!string.IsNullOrEmpty(localExePath) && File.Exists(localExePath))
+                        {
+                            var localHash = ComputeFileSHA256(localExePath);
+                            if (string.Equals(localHash, remoteHash, StringComparison.OrdinalIgnoreCase))
+                                return new CheckResult { UpdateAvailable = false };
+                        }
+                    }
+                }
+                catch { /* hash check failed, fall through to version comparison */ }
+            }
+
+            // No hash file available, fall back to version comparison
+            if (remoteVersion <= localVersion)
+                return new CheckResult { UpdateAvailable = false };
+
+            var body = root.TryGetProperty("body", out var bodyProp)
+                ? bodyProp.GetString() ?? ""
+                : "";
+            var htmlUrl = root.TryGetProperty("html_url", out var htmlProp)
+                ? htmlProp.GetString()
+                : null;
+
+            return new CheckResult
+            {
+                UpdateAvailable = true,
+                TagName = tagName,
+                DownloadUrl = downloadUrl,
+                AssetName = assetName,
+                Body = body,
+                HtmlUrl = htmlUrl
+            };
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static string ComputeFileSHA256(string path)
+    {
+        using var sha = SHA256.Create();
+        using var stream = File.OpenRead(path);
+        var hash = sha.ComputeHash(stream);
+        return Convert.ToHexString(hash).ToLowerInvariant();
+    }
+
+    // Hard caps on a downloaded update payload. Framework-dependent single-file is ~8 MB;
+    // 50 MB leaves ample headroom while ensuring a hostile or corrupted response cannot
+    // exhaust memory or disk before validation rejects it.
+    private const long MinUpdateBytes = 1L * 1024 * 1024;
+    private const long MaxUpdateBytes = 50L * 1024 * 1024;
+
+    /// <summary>
+    /// Downloads the update, validates it, swaps the running exe, and relaunches.
+    /// Returns an error message on failure, or null on success (the process will exit).
+    /// <paramref name="onProgress"/> receives values 0-100 for download progress, or -1 for non-download steps.
+    /// </summary>
+    internal static async Task<string?> DownloadAndApplyAsync(string downloadUrl, Action<int, string>? onProgress = null)
+    {
+        var tempPath = Path.Combine(Path.GetTempPath(), $"CloudRedirect_{Guid.NewGuid():N}.exe");
+        try
+        {
+            onProgress?.Invoke(0, "Downloading update...");
+
+            using var response = await Http.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead);
+            response.EnsureSuccessStatusCode();
+
+            var totalBytes = response.Content.Headers.ContentLength ?? -1;
+
+            // Reject obviously bogus Content-Length up front so we never start writing
+            // a 4 GB "update" to a temp file before discovering it.
+            if (totalBytes > MaxUpdateBytes)
+                return $"Downloaded file has suspicious size ({totalBytes} bytes)";
+
+            // Stream to disk with a bounded buffer; cap running total even when the
+            // server omitted or lied about Content-Length.
+            using var stream = await response.Content.ReadAsStreamAsync();
+            long bytesRead = 0;
+            await using (var fs = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None, 81920, useAsync: true))
+            {
+                var buffer = new byte[81920];
+                int read;
+                while ((read = await stream.ReadAsync(buffer)) > 0)
+                {
+                    bytesRead += read;
+                    if (bytesRead > MaxUpdateBytes)
+                        return $"Downloaded file has suspicious size (>{MaxUpdateBytes} bytes)";
+                    await fs.WriteAsync(buffer.AsMemory(0, read));
+                    if (totalBytes > 0)
+                    {
+                        var pct = (int)(bytesRead * 100 / totalBytes);
+                        onProgress?.Invoke(pct, $"Downloading... {pct}%");
+                    }
+                }
+            }
+
+            // Validate: size between 1 MB and 50 MB (framework-dependent single-file ~8 MB)
+            if (bytesRead < MinUpdateBytes || bytesRead > MaxUpdateBytes)
+                return $"Downloaded file has suspicious size ({bytesRead} bytes)";
+
+            // Validate: MZ header (PE executable). Read just the first two bytes back
+            // from the temp file rather than holding the whole payload in memory.
+            byte[] mz = new byte[2];
+            await using (var verify = new FileStream(tempPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                if (await verify.ReadAsync(mz.AsMemory(0, 2)) < 2 || mz[0] != (byte)'M' || mz[1] != (byte)'Z')
+                    return "Downloaded file is not a valid executable";
+            }
+
+            onProgress?.Invoke(-1, "Installing update...");
+
+            var currentExe = Environment.ProcessPath;
+            if (string.IsNullOrEmpty(currentExe))
+                return "Could not determine current executable path";
+
+            var backupPath = currentExe + ".old";
+
+            // Swap: rename current -> .old, move downloaded -> current
+            try
+            {
+                if (File.Exists(backupPath))
+                    File.Delete(backupPath);
+                File.Move(currentExe, backupPath);
+                File.Move(tempPath, currentExe);
+            }
+            catch (Exception ex)
+            {
+                // Attempt rollback if the rename partially succeeded
+                if (!File.Exists(currentExe) && File.Exists(backupPath))
+                    File.Move(backupPath, currentExe);
+                return $"Could not replace exe: {ex.Message}";
+            }
+
+            // Relaunch
+            onProgress?.Invoke(100, "Relaunching...");
+            Process.Start(new ProcessStartInfo(currentExe) { UseShellExecute = true });
+            Environment.Exit(0);
+
+            return null; // unreachable, but satisfies compiler
+        }
+        catch (Exception ex)
+        {
+            return $"Update failed: {ex.Message}";
+        }
+        finally
+        {
+            try { if (File.Exists(tempPath)) File.Delete(tempPath); } catch { }
+        }
+    }
+}

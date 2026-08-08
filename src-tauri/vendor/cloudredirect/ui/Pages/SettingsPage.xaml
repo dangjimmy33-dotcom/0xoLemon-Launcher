@@ -1,0 +1,249 @@
+<Page x:Class="CloudRedirect.Pages.SettingsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      xmlns:res="clr-namespace:CloudRedirect.Resources"
+      ScrollViewer.CanContentScroll="False">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24">
+        <StackPanel MaxWidth="800">
+            <TextBlock Text="{res:Loc Settings_Title}"
+                       FontSize="28" FontWeight="SemiBold"
+                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                       Margin="0,0,0,24" />
+
+            <TextBlock Text="{res:Loc Settings_Language}"
+                       FontSize="20" FontWeight="SemiBold"
+                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                       Margin="0,0,0,12" />
+
+            <ui:CardControl Margin="0,0,0,32">
+                <ui:CardControl.Header>
+                    <StackPanel>
+                        <TextBlock Text="{res:Loc Settings_Language}"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                        <TextBlock x:Name="LanguageHintText"
+                                   Text="{res:Loc Settings_LanguageHint}"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   TextWrapping="Wrap" />
+                    </StackPanel>
+                </ui:CardControl.Header>
+                <StackPanel Orientation="Horizontal">
+                    <ComboBox x:Name="LanguageComboBox"
+                              Width="200"
+                              SelectionChanged="LanguageComboBox_SelectionChanged" />
+                    <ui:Button x:Name="RestartButton"
+                               Content="{res:Loc Settings_RestartNow}"
+                               Icon="{ui:SymbolIcon ArrowSync24}"
+                               Appearance="Primary"
+                               Click="RestartApp_Click"
+                               Visibility="Collapsed"
+                               Margin="8,0,0,0" />
+                </StackPanel>
+            </ui:CardControl>
+
+            <!-- Quality of Life: visible in BOTH modes so "Make Achievements Work"
+                 is always reachable. The cloud_redirect-only cards inside collapse
+                 in STFixer mode (see code-behind). -->
+            <StackPanel x:Name="ExtraSection" Margin="0,0,0,24">
+                <TextBlock Text="{res:Loc Settings_Extra}"
+                           FontSize="20" FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                           Margin="0,0,0,12" />
+                <StackPanel>
+                    <ui:CardControl Margin="0,0,0,8">
+                        <ui:CardControl.Header>
+                            <StackPanel>
+                                <TextBlock Text="{res:Loc Settings_AutoUpdate}"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                                <TextBlock Text="{res:Loc Settings_AutoUpdate_Description}"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+                        </ui:CardControl.Header>
+                        <ui:ToggleSwitch x:Name="AutoUpdateDllToggle"
+                                         Checked="SyncToggle_Changed"
+                                         Unchecked="SyncToggle_Changed" />
+                    </ui:CardControl>
+
+                    <!-- "Make Achievements Work": exposed in both modes. -->
+                    <ui:CardControl x:Name="AchievementsSection" Margin="0,0,0,8">
+                        <ui:CardControl.Header>
+                            <StackPanel>
+                                <TextBlock Text="{res:Loc Settings_GetAchievementData}"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                                <TextBlock Text="{res:Loc Settings_GetAchievementDataHint}"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+                        </ui:CardControl.Header>
+                        <ui:ToggleSwitch x:Name="GetAchievementDataToggle"
+                                         Checked="SyncToggle_Changed"
+                                         Unchecked="SyncToggle_Changed" />
+                    </ui:CardControl>
+
+                    <!-- cloud_redirect-only QoL card. -->
+                    <ui:CardControl x:Name="ShowNonSteamGameCard" Margin="0,0,0,0">
+                        <ui:CardControl.Header>
+                            <StackPanel>
+                                <TextBlock Text="{res:Loc Settings_ShowNonSteamGame}"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                                <TextBlock Text="{res:Loc Settings_ShowNonSteamGameHint}"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+                        </ui:CardControl.Header>
+                        <ui:ToggleSwitch x:Name="ShowNonSteamGameToggle"
+                                         Checked="SyncToggle_Changed"
+                                         Unchecked="SyncToggle_Changed" />
+                    </ui:CardControl>
+                </StackPanel>
+            </StackPanel>
+
+            <StackPanel x:Name="ExperimentalSection" Margin="0,0,0,24">
+                <TextBlock Text="{res:Loc Settings_Experimental}"
+                           FontSize="20" FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                           Margin="0,0,0,12" />
+                <StackPanel>
+
+                <ui:CardControl Margin="0,0,0,8">
+                    <ui:CardControl.Header>
+                        <StackPanel>
+                            <TextBlock Text="{res:Loc Settings_SyncAchievements}"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                            <TextBlock Text="{res:Loc Settings_SyncAchievementsHint}"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                    </ui:CardControl.Header>
+                    <ui:ToggleSwitch x:Name="SyncAchievementsToggle"
+                                     Checked="SyncToggle_Changed"
+                                     Unchecked="SyncToggle_Changed" />
+                </ui:CardControl>
+
+                <ui:CardControl Margin="0,0,0,8">
+                    <ui:CardControl.Header>
+                        <StackPanel>
+                            <TextBlock Text="{res:Loc Settings_SyncPlaytime}"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                            <TextBlock Text="{res:Loc Settings_SyncPlaytimeHint}"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                    </ui:CardControl.Header>
+                    <ui:ToggleSwitch x:Name="SyncPlaytimeToggle"
+                                     Checked="SyncToggle_Changed"
+                                     Unchecked="SyncToggle_Changed" />
+                </ui:CardControl>
+
+                <ui:CardControl x:Name="SyncLuasCard" Margin="0,0,0,8">
+                    <ui:CardControl.Header>
+                        <StackPanel>
+                            <TextBlock Text="{res:Loc Settings_SyncLuas}"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                            <TextBlock Text="{res:Loc Settings_SyncLuasHint}"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                    </ui:CardControl.Header>
+                    <ui:ToggleSwitch x:Name="SyncLuasToggle"
+                                     Checked="SyncToggle_Changed"
+                                     Unchecked="SyncToggle_Changed" />
+                </ui:CardControl>
+                </StackPanel>
+            </StackPanel>
+
+            <StackPanel x:Name="ParentalSection" Margin="0,0,0,24">
+                <TextBlock Text="{res:Loc Settings_Parental}"
+                           FontSize="20" FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                           Margin="0,0,0,12" />
+                <StackPanel>
+
+                <ui:CardControl Margin="0,0,0,8">
+                    <ui:CardControl.Header>
+                        <StackPanel>
+                            <TextBlock Text="{res:Loc Settings_ParentalIgnorePlaytime}"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                            <TextBlock Text="{res:Loc Settings_ParentalIgnorePlaytimeHint}"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                    </ui:CardControl.Header>
+                    <ui:ToggleSwitch x:Name="ParentalIgnorePlaytimeToggle"
+                                     Checked="SyncToggle_Changed"
+                                     Unchecked="SyncToggle_Changed" />
+                </ui:CardControl>
+
+                <ui:CardControl Margin="0,0,0,8">
+                    <ui:CardControl.Header>
+                        <StackPanel>
+                            <TextBlock Text="{res:Loc Settings_ParentalBypassPlaytime}"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                            <TextBlock Text="{res:Loc Settings_ParentalBypassPlaytimeHint}"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                    </ui:CardControl.Header>
+                    <ui:ToggleSwitch x:Name="ParentalBypassPlaytimeToggle"
+                                     Checked="SyncToggle_Changed"
+                                     Unchecked="SyncToggle_Changed" />
+                </ui:CardControl>
+
+                </StackPanel>
+            </StackPanel>
+
+            <TextBlock Text="{res:Loc Settings_DangerZone}"
+                       FontSize="20" FontWeight="SemiBold"
+                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                       Margin="0,0,0,12" />
+
+            <ui:CardControl Margin="0,0,0,16">
+                <ui:CardControl.Header>
+                    <StackPanel>
+                        <TextBlock Text="{res:Loc Settings_ResetCacheTitle}" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                        <TextBlock Text="{res:Loc Settings_ResetCacheDescription}"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   TextWrapping="Wrap" />
+                    </StackPanel>
+                </ui:CardControl.Header>
+                <ui:Button Content="{res:Loc Settings_Reset}"
+                           Appearance="Danger"
+                           Click="ResetData_Click" />
+            </ui:CardControl>
+
+            <TextBlock Text="{res:Loc Settings_About}"
+                       FontSize="20" FontWeight="SemiBold"
+                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                       Margin="0,0,0,12" />
+
+            <ui:CardControl Margin="0,0,0,8">
+                <ui:CardControl.Header>
+                    <StackPanel>
+                        <TextBlock x:Name="VersionText"
+                                   Text="{res:Loc Settings_CloudRedirect}"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                        <TextBlock Text="{res:Loc Settings_AboutDescription}"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                    </StackPanel>
+                </ui:CardControl.Header>
+                <ui:Button Content="{res:Loc Settings_GitHub}"
+                           Icon="{ui:SymbolIcon Open24}"
+                           Click="OpenGitHub_Click" />
+            </ui:CardControl>
+
+        </StackPanel>
+    </ScrollViewer>
+</Page>

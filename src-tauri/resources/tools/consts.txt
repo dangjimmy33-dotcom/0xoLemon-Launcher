@@ -1,0 +1,490 @@
+nt
+1.5.1
+13.560.0.6073
+frozen
+QTJyLdCC77DcZFfFdmjKCQ==
+token_data.txt
+%Y-%m-%d %H:%M:%S.%f%z
+
+            query getCurrentUser {
+                me {
+                    pd
+                    personas {
+                        psd
+                        displayName
+                        namespaceName
+                    }
+                }
+            }
+            
+Select "Choose games" in options and then select automatic generation again
+TokenGeneratorError
+NucleusExceptionError
+ExpectedError
+LimitExceededError
+AuthError
+NotEntitledError
+RestartMainMenu
+GeneratorRestartError
+UnknownResponseError
+TimeoutHTTPAdapter
+get_legacy_session
+ColorsOn
+ColorsOff
+colors_test
+set_colors
+load_data
+save_data
+parse_version
+input2
+aes_decrypt
+get_registry_key
+get_ea_desktop
+kill_process_by_name
+EAAppStarter
+match_memory_pattern
+url_base64
+generate_signature_hash
+login_automatic
+get_access_token
+cls
+clear
+print_line
+menu
+now
+make_timestamp
+remove_old_timestamps
+get_timestamps
+get_license_tree
+get_machine_hash
+generate_token
+enter_to_continue
+ctrl_c_to_continue
+match_ticket
+generate_token_manually
+get_no_cache
+ask_yes_no
+timestamp_to_date
+submit_form
+get_tickets
+get_master_data
+_generate_tokens_automatically
+generate_tokens_automatically
+force_get_access_token
+_choose_games
+automatic_game_status
+toggle_automatic_game
+disable_all_games
+enable_all_games
+choose_games
+load_version
+get_values_for_helper
+get_limit_value
+show_limit_value
+set_limit_value
+reset_limits
+limit_tokens
+toggle_colors
+automatic_login_status
+automatic_login_get_values_text
+scan_all_processes
+automatic_login_get_values
+set_remid_cookie
+toggle_automatic_login
+choose_login_method
+options
+my_exit
+main
+__main__
+token_generator
+Program for generating Denuvo tokens for EA games.
+-v
+--version
+version
+%(prog)s 
+-c
+--config
+path to config file; absolute or relative to working dir
+-t
+--token
+store_true
+at startup, force get a new access token
+-a
+--auto
+at startup, start automatic token generation
+-e
+--exit-immediately
+on error, exit immediately instead of waiting for enter
+HTTP request failed. Exception raised:
+ 
+
+
+TokenGeneratorError
+NucleusExceptionError
+ExpectedError
+LimitExceededError
+AuthError
+NotEntitledError
+RestartMainMenu
+GeneratorRestartError
+UnknownResponseError
+UnknownResponseError.__init__
+Unknown response
+Status code: 
+
+
+Content type: 
+content-type
+
+
+All headers: 
+
+
+Text: 
+TimeoutHTTPAdapter
+TimeoutHTTPAdapter.__init__
+TimeoutHTTPAdapter.send
+TimeoutHTTPAdapter.init_poolmanager
+timeout
+https://
+ColorsOn
+[31;1m
+[32;1m
+[34;1m
+[35;1m
+[36;1m
+[0m
+ColorsOff
+
+TEST
+Do you see colored text above? If you see gibberish like "[32;1m" - answer no. You can change this in options any time you want.
+colors
+colors
+r
+utf-8
+all_games
+games
+tokens
+z_old_tokens
+limit_tokens
+colors
+login_automatic
+login_signature
+login_remid
+sv
+	
+_tmp
+w
+parse_version.<locals>.<listcomp>
+.
+AES-128 key size mismatch.
+nt
+First switch to automatic login on Windows and then move the config file to this OS
+SOFTWARE\Electronic Arts\EA Desktop
+DesktopAppPath
+ClientPath
+This program needs EA app installed. Download it from here: https://www.ea.com/ea-app
+kill_process_by_name.<locals>.<listcomp>
+EAAppStarter
+EAAppStarter.__init__
+EAAppStarter.__enter__
+EAAppStarter.__exit__
+nt
+First switch to automatic login on Windows and then move the config file to this OS
+EADesktop.exe
+=
+login_remid
+login_signature
+v2
+sv
+-
+ 
+:
+ts
+.
+https://accounts.ea.com/connect/auth
+S256
+JUNO_PC_CLIENT
+code id_token
+qrc:///html/login_successful.html
+junoClient/login
+en_US
+true
+Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) QtWebEngine/5.15.2 Chrome/83.0.4103.122 Safari/537.36 Origin/10.6.0.00000 EAApp/
+remid=
+remid
+Location
+
+#code=
+Authentication error, turn automatic login off and on again.
+error
+code
+Authentication error, message above might help anadius fix it. For now turn automatic login off and on again, that might fix it too.
+&
+Authentication error, unexpected location. Report that to anadius.
+https://accounts.ea.com/connect/token
+User-Agent
+Mozilla/5.0 EA Download Manager Origin/10.6.0.00000
+authorization_code
+JWS
+4mRLtYMb6vq9qglomWEaT4ChxsXWcyqbQpuBNfMPOYOiDmYYQmjuaBsF2Zp0RyVeWkfqhE9TuGgAw7te
+Authentication error, message above might help anadius fix it. 
+access_token
+access token missing
+	
+Authentication error, 
+last_access_token
+login_automatic
+
+----------------------------------------
+
+. 
+ 
+q
+. Quit
+b
+. Back
+menu.<locals>.menu_text
+Your choice: 
+Interrupted by user!
+Bad choice! 
+ not in menu!
+
+
+tokens
+machine_hash
+nt
+1
+%ProgramData%\Electronic Arts\EA Services\License
+*.dlf
+rb
+{http://ea.com/license}MachineHash
+https://proxy.novafusion.ea.com/licenses
+EACTransaction
+Origin Online Activation
+content-type
+application/octet-stream
+text/html
+Failed generating the same token for the 10th time. Something is wrong with EA servers, the ticket or your account.
+An error occured, retrying in 
+ seconds
+application/xml
+error
+code
+CG_LIMIT_EXCEEDED
+Daily limit of activations exceeded (
+ per day).
+VALIDATION_FAILED
+failure
+cause
+NOT_ENTITLED
+You don't own this game (
+)
+AUTHENTICATION_FAILED
+Authentication error, try again. If that doesn't work - get a new access token from the main menu.
+NUCLEUS_EXCEPTION
+Nucleus exception. Bad ticket? XML response:
+
+{http://ea.com/license}GameToken
+Press enter to continue.
+
+Press Ctrl+C to continue.
+^((?:[A-Za-z0-9_\-]{4}){40,}(?:[A-Za-z0-9_\-]{2}==|[A-Za-z0-9_\-]{3}=)?)\|(\d+)\|([a-zA-Z_\d]+)$
+Enter ticket: 
+
+Bad ticket! Most probably malformed by user.
+
+0
+
+Bad ticket! Content ID can't be unset or set to 0.
+
+According to saved data you've reached your daily activation limit for this game (content ID 
+).
+Next token can be generated on 
+ at 
+
+Do you want to try generating another token anyway?
+Generated token:
+
+
+
+form
+no-cache
+ y/n: 
+y
+url
+ticket
+token
+success
+generate_next
+z_old_tokens
+RESTART
+Automatic token generator, press Ctrl+C to interrupt.
+
+
+
+message
+
+version
+link
+critical
+Can't continue, a new version of this program with critical changes is available.
+Download it here: 
+A new version of this program is available!
+Download it here: 
+games
+all_games
+_generate_tokens_automatically.<locals>.<listcomp>
+s
+New game
+ added to the list:
+Nothing to do, no games selected.
+Getting tickets
+tickets
+Generating tokens
+max_tokens
+    
+ (queue size: 
+)
+        Generating token #
+!
+        
+You don't own this game! Removing it from automatic generation.
+Limit exceeded!
+        Bad ticket? Adding to temporary ignore list.
+BAD
+form
+
+
+Token generator error! Request details below:
+generate_next
+z_old_tokens
+Failed to send token, send it to anadius yourself:
+Failed to send token, send the message above to anadius.
+        Next token can be generated on 
+ at 
+    sleeping 
+ until 
+games
+games
+HTTP request failed. Exception raised:
+ 
+
+
+Restarting automatic generation in 30 seconds.
+Getting access token
+games
+all_games
+_choose_games.<locals>.<listcomp>
+Do you want to generate tokens for 
+?
+games
+games
+on
+off
+ - 
+games
+games
+all_games
+games
+Checking for new games
+
+Disable all
+d
+Enable all
+e
+choose_games.<locals>.<listcomp>
+all_games
+Choose which games you want to generate the tokens for.
+ea_app_version
+https://service-aggregation-layer.juno.ea.com/graphql
+EADesktop/
+Bearer 
+EAX-JUNO-CLIENT
+application/json
+query
+data
+me
+pd
+Something's wrong with the loaded profile, try again!
+Profile loaded!
+personas
+namespaceName
+cem_ea_id
+displayName
+psd
+Username not found!
+
+Copy these values:
+
+limit_tokens
+ - 
+How many tokens per day do you want to generate for 
+?
+Choose value from 1 to 5: 
+Bad value!
+limit_tokens
+limit_tokens
+games
+No games for automatic generation selected, nothing to do.
+Reset all to default
+r
+limit_tokens.<locals>.<listcomp>
+all_games
+colors
+login_automatic
+on
+off
+Toggle automatic login: 
+login_automatic
+Get values from EA app again
+Launching EA app
+Scanning for remid cookie - if it takes too long, abort with Ctrl+C and try again. If it still gets stuck - reboot your PC and try again.
+eacefsubprocess.exe
+Scanning for PC signature
+login_remid
+=
+ts
+sv
+login_signature
+Instead of scanning the values from the EA app you can log in on 
+https://ea.com
+, and then grab the 
+remid
+ cookie from 
+https://accounts.ea.com/connect
+
+Keep in mind that some data will be generated randomly - but I use that method in my online crack and nobody got banned for it.
+Remid cookie value: 
+login_remid
+set_remid_cookie.<locals>.generate_number
+set_remid_cookie.<locals>.generate_letter
+set_remid_cookie.<locals>.generate_mac
+login_signature
+v1
+login_automatic
+
+
+$
+02x
+login_automatic
+You can enable experimental login method. Once enabled token generator will launch EA app once, grab some values and save them to config file. From then on it will get access token using these values, without launching EA app. To make it work make sure you're logged in with your username/EA ID and password and that you checked "remember me" box.
+Set remid cookie
+Choose games for automatic generation
+Limit how many tokens should be automatically generated
+Toggle colors
+Choose login method
+Press enter to exit.
+Generate Denuvo token
+Force get access token
+Generate Denuvo tokens automatically
+Get values for Origin Helper UserScript/HTML file
+Options
+Version: 
+
+
+This program requires access token from EA app. It will open EA app, get the token and close it.
+If EA app is already running - it will be closed first.
+So DON'T use this program while you're playing a game.
+
+Alternatively you can try the automatic login method in options.

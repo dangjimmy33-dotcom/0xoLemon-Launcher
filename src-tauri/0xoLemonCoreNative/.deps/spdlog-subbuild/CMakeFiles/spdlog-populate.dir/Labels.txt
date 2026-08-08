@@ -1,0 +1,14 @@
+# Target labels
+ spdlog-populate
+# Source files and their labels
+E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/spdlog-subbuild/CMakeFiles/spdlog-populate
+E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/spdlog-subbuild/CMakeFiles/c8188d390a007c5de30e3cced5da12f4/spdlog-populate.rule
+E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/spdlog-subbuild/CMakeFiles/88515dc19533045218d136033b481735/spdlog-populate-complete.rule
+E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/spdlog-subbuild/CMakeFiles/b3e4dfcac53d2d862abc2215ea8645a4/spdlog-populate-build.rule
+E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/spdlog-subbuild/CMakeFiles/b3e4dfcac53d2d862abc2215ea8645a4/spdlog-populate-configure.rule
+E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/spdlog-subbuild/CMakeFiles/b3e4dfcac53d2d862abc2215ea8645a4/spdlog-populate-download.rule
+E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/spdlog-subbuild/CMakeFiles/b3e4dfcac53d2d862abc2215ea8645a4/spdlog-populate-install.rule
+E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/spdlog-subbuild/CMakeFiles/b3e4dfcac53d2d862abc2215ea8645a4/spdlog-populate-mkdir.rule
+E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/spdlog-subbuild/CMakeFiles/b3e4dfcac53d2d862abc2215ea8645a4/spdlog-populate-patch_disconnected.rule
+E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/spdlog-subbuild/CMakeFiles/b3e4dfcac53d2d862abc2215ea8645a4/spdlog-populate-test.rule
+E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/spdlog-subbuild/CMakeFiles/b3e4dfcac53d2d862abc2215ea8645a4/spdlog-populate-update_disconnected.rule

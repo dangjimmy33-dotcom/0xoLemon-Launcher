@@ -1,0 +1,152 @@
+^E:\007LAUNCHER\SRC-TAURI\0XOLEMONCORENATIVE\.DEPS\LUA-SUBBUILD\CMAKEFILES\AFC9052EE3494216F1FA7281B4A147A2\LUA-POPULATE-MKDIR.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -Dcfgdir=/Debug -P E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/lua-subbuild/lua-populate-prefix/tmp/lua-populate-mkdirs.cmake
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/lua-subbuild/lua-populate-prefix/src/lua-populate-stamp/Debug/lua-populate-mkdir
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\SRC-TAURI\0XOLEMONCORENATIVE\.DEPS\LUA-SUBBUILD\CMAKEFILES\AFC9052EE3494216F1FA7281B4A147A2\LUA-POPULATE-DOWNLOAD.RULE
+setlocal
+cd E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps
+if %errorlevel% neq 0 goto :cmEnd
+E:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE -P E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/lua-subbuild/lua-populate-prefix/src/lua-populate-stamp/download-lua-populate.cmake
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE -P E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/lua-subbuild/lua-populate-prefix/src/lua-populate-stamp/verify-lua-populate.cmake
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE -P E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/lua-subbuild/lua-populate-prefix/src/lua-populate-stamp/extract-lua-populate.cmake
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/lua-subbuild/lua-populate-prefix/src/lua-populate-stamp/Debug/lua-populate-download
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\SRC-TAURI\0XOLEMONCORENATIVE\.DEPS\LUA-SUBBUILD\CMAKEFILES\AFC9052EE3494216F1FA7281B4A147A2\LUA-POPULATE-UPDATE_DISCONNECTED.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/lua-subbuild/lua-populate-prefix/src/lua-populate-stamp/Debug/lua-populate-update_disconnected
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\SRC-TAURI\0XOLEMONCORENATIVE\.DEPS\LUA-SUBBUILD\CMAKEFILES\AFC9052EE3494216F1FA7281B4A147A2\LUA-POPULATE-PATCH_DISCONNECTED.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/lua-subbuild/lua-populate-prefix/src/lua-populate-stamp/Debug/lua-populate-patch_disconnected
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\SRC-TAURI\0XOLEMONCORENATIVE\.DEPS\LUA-SUBBUILD\CMAKEFILES\AFC9052EE3494216F1FA7281B4A147A2\LUA-POPULATE-CONFIGURE.RULE
+setlocal
+cd E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\lua-build
+if %errorlevel% neq 0 goto :cmEnd
+E:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/lua-subbuild/lua-populate-prefix/src/lua-populate-stamp/Debug/lua-populate-configure
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\SRC-TAURI\0XOLEMONCORENATIVE\.DEPS\LUA-SUBBUILD\CMAKEFILES\AFC9052EE3494216F1FA7281B4A147A2\LUA-POPULATE-BUILD.RULE
+setlocal
+cd E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\lua-build
+if %errorlevel% neq 0 goto :cmEnd
+E:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/lua-subbuild/lua-populate-prefix/src/lua-populate-stamp/Debug/lua-populate-build
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\SRC-TAURI\0XOLEMONCORENATIVE\.DEPS\LUA-SUBBUILD\CMAKEFILES\AFC9052EE3494216F1FA7281B4A147A2\LUA-POPULATE-INSTALL.RULE
+setlocal
+cd E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\lua-build
+if %errorlevel% neq 0 goto :cmEnd
+E:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/lua-subbuild/lua-populate-prefix/src/lua-populate-stamp/Debug/lua-populate-install
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\SRC-TAURI\0XOLEMONCORENATIVE\.DEPS\LUA-SUBBUILD\CMAKEFILES\AFC9052EE3494216F1FA7281B4A147A2\LUA-POPULATE-TEST.RULE
+setlocal
+cd E:\007Launcher\src-tauri\0xoLemonCoreNative\.deps\lua-build
+if %errorlevel% neq 0 goto :cmEnd
+E:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E echo_append
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/lua-subbuild/lua-populate-prefix/src/lua-populate-stamp/Debug/lua-populate-test
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\SRC-TAURI\0XOLEMONCORENATIVE\.DEPS\LUA-SUBBUILD\CMAKEFILES\6D7EFEA60834F616D23CAACE2678C37E\LUA-POPULATE-COMPLETE.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/lua-subbuild/CMakeFiles/Debug
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/lua-subbuild/CMakeFiles/Debug/lua-populate-complete
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E touch E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/lua-subbuild/lua-populate-prefix/src/lua-populate-stamp/Debug/lua-populate-done
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\SRC-TAURI\0XOLEMONCORENATIVE\.DEPS\LUA-SUBBUILD\CMAKEFILES\1509BC7FEB775D6B09C598AC5DD7EAC1\LUA-POPULATE.RULE
+setlocal
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^E:\007LAUNCHER\SRC-TAURI\0XOLEMONCORENATIVE\.DEPS\LUA-SUBBUILD\CMAKELISTS.TXT
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SE:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/lua-subbuild -BE:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/lua-subbuild --check-stamp-file E:/007Launcher/src-tauri/0xoLemonCoreNative/.deps/lua-subbuild/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

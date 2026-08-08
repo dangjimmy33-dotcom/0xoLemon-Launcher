@@ -8,10 +8,18 @@ use tauri::command;
 mod dll_manager;
 mod provider_config;
 mod oauth;
+mod backup;
+mod engine;
+mod integration;
+mod manifest_pinning;
+mod models;
+mod upstream_config;
 
 pub use dll_manager::*;
 pub use provider_config::*;
 pub use oauth::*;
+pub use integration::*;
+pub use models::*;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -212,6 +220,11 @@ pub async fn cloud_redirect_get_sync_status() -> Result<SyncStatus, String> {
 #[command]
 pub fn cloud_redirect_poll_oauth_code() -> Option<String> {
     oauth::get_oauth_code()
+}
+
+#[command]
+pub fn cloud_redirect_poll_oauth_error() -> Option<String> {
+    oauth::get_oauth_error()
 }
 
 /// Get list of games with saves (for backup)
