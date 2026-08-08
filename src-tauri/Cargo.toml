@@ -5,6 +5,7 @@ description = "Steam-like chunk launcher for 007 First Light"
 authors = ["007 Launcher"]
 edition = "2021"
 default-run = "0xoLemon"
+autobins = false
 
 [lib]
 name = "first_light_launcher"
@@ -13,26 +14,6 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 [[bin]]
 name = "0xoLemon"
 path = "src/main.rs"
-
-[[bin]]
-name = "depot_builder"
-path = "src/bin/depot_builder.rs"
-
-[[bin]]
-name = "asset_pack_builder"
-path = "src/bin/asset_pack_builder.rs"
-
-[[bin]]
-name = "injector_cli"
-path = "src/bin/injector_cli.rs"
-
-[[bin]]
-name = "test_denuvo"
-path = "src/bin/test_denuvo.rs"
-
-[[bin]]
-name = "debug_extract"
-path = "src/bin/debug_extract.rs"
 
 [build-dependencies]
 tauri-build = { version = "2.5.3", features = [] }
