@@ -1,5 +1,25 @@
 ﻿[
     {
+        "version":  "2.0.41",
+        "date":  "2026-08-09",
+        "changes":  [
+                        "Thêm hệ thống Help Center \u0026 hướng dẫn sử dụng hoàn chỉnh cho toàn bộ Launcher.",
+                        "Thêm hướng dẫn cho người dùng mới trong lần đầu mở Launcher, hỗ trợ mở lại bất cứ lúc nào.",
+                        "Đồng bộ toàn bộ Help \u0026 Onboarding với tiếng Việt và tiếng Anh.",
+                        "Cải thiện tương thích AMD và nhiều cấu hình phần cứng khác nhau.",
+                        "Cải tiến giao diện tổng thể với dark ambient background động hiện đại hơn.",
+                        "Sửa lỗi background hiển thị không đồng nhất ở Settings, Cloud Saves và một số khu vực khác.",
+                        "Cải tiến Lua Shop Version Selector, hỗ trợ chọn BuildID và hiển thị ngày cập nhật khi có dữ liệu.",
+                        "Thêm trạng thái Latest / Installed / Metadata Only cho các phiên bản game.",
+                        "Cải tiến giao diện dropdown chọn phiên bản và tùy chọn Always Update Depot.",
+                        "Bổ sung cơ chế fallback manifest khi nguồn chính không có dữ liệu.",
+                        "Sửa lỗi đổi version làm mất nội dung Lua; Launcher giờ giữ nguyên cấu hình gốc và chỉ thay đổi phần cần thiết.",
+                        "Cải tiến Offline Activation, sửa lỗi game hiển thị nhưng không thể chọn.",
+                        "Sửa nhiều lỗi UI, i18n, TypeScript và build.",
+                        "Cải thiện độ ổn định và trải nghiệm sử dụng tổng thể của Launcher."
+                    ]
+    },
+    {
         "version":  "2.0.40",
         "date":  "2026-08-09",
         "changes":  [
