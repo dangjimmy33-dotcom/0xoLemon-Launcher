@@ -3,8 +3,13 @@ use std::sync::{
     atomic::{AtomicU64, Ordering},
     Arc,
 };
+#[cfg(windows)]
+use std::{ffi::OsString, path::Path};
 use tauri::{AppHandle, Emitter};
 use tauri_plugin_updater::UpdaterExt;
+
+#[cfg(windows)]
+const NSIS_PRESERVE_INSTALL_DIR_FLAG: &str = "/OXO_PRESERVE_INSTALL_DIR";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -26,9 +31,7 @@ pub struct LauncherUpdateProgress {
 
 pub async fn check_update(app: &AppHandle) -> Result<Option<LauncherUpdateInfo>, String> {
     emit_progress(app, "", "checking", 0, None, None);
-    let update = app
-        .updater()
-        .map_err(|error| error.to_string())?
+    let update = configured_updater(app)?
         .check()
         .await
         .map_err(|error| error.to_string())?;
@@ -41,9 +44,7 @@ pub async fn check_update(app: &AppHandle) -> Result<Option<LauncherUpdateInfo>,
 }
 
 pub async fn download_and_apply(app: &AppHandle) -> Result<(), String> {
-    let update = app
-        .updater()
-        .map_err(|error| error.to_string())?
+    let update = configured_updater(app)?
         .check()
         .await
         .map_err(|error| error.to_string())?
@@ -97,16 +98,66 @@ pub async fn download_and_apply(app: &AppHandle) -> Result<(), String> {
     let total = bytes.len() as u64;
     emit_progress(app, &version, "installing", total, Some(total), None);
 
-    // Tauri launches NSIS with /UPDATE so it reuses the registered install
-    // directory instead of opening the normal install/uninstall wizard.
+    // Tauri launches NSIS with /UPDATE. configured_updater also passes /D as
+    // the final argument so registry scope changes cannot redirect the update.
     if let Err(error) = update.install(bytes) {
         let msg = error.to_string();
-        emit_progress(app, &version, "failed", total, Some(total), Some(msg.clone()));
+        emit_progress(
+            app,
+            &version,
+            "failed",
+            total,
+            Some(total),
+            Some(msg.clone()),
+        );
         return Err(msg);
     }
 
     emit_progress(app, &version, "restarting", total, Some(total), None);
     Ok(())
+}
+
+fn configured_updater(app: &AppHandle) -> Result<tauri_plugin_updater::Updater, String> {
+    #[cfg(windows)]
+    {
+        let executable = std::env::current_exe()
+            .map_err(|error| format!("Unable to locate the running launcher: {error}"))?;
+        let installer_args = nsis_install_args_for_executable(&executable)?;
+
+        // /D must be the final NSIS argument and cannot be quoted. The updater
+        // preserves insertion order, so keep the install directory last.
+        return app
+            .updater_builder()
+            .installer_args(installer_args)
+            .build()
+            .map_err(|error| error.to_string());
+    }
+
+    #[cfg(not(windows))]
+    {
+        app.updater().map_err(|error| error.to_string())
+    }
+}
+
+#[cfg(windows)]
+fn nsis_install_args_for_executable(executable: &Path) -> Result<Vec<OsString>, String> {
+    let install_dir = executable
+        .parent()
+        .filter(|path| path.is_absolute() && !path.as_os_str().is_empty())
+        .ok_or_else(|| {
+            format!(
+                "Unable to determine the launcher install directory from {}",
+                executable.display()
+            )
+        })?;
+
+    let mut install_dir_arg = OsString::from("/D=");
+    install_dir_arg.push(install_dir.as_os_str());
+
+    Ok(vec![
+        OsString::from(NSIS_PRESERVE_INSTALL_DIR_FLAG),
+        install_dir_arg,
+    ])
 }
 
 fn emit_progress(
@@ -128,4 +179,29 @@ fn emit_progress(
             error,
         },
     );
+}
+
+#[cfg(all(test, windows))]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn nsis_install_dir_is_the_running_executable_directory() {
+        let args = nsis_install_args_for_executable(Path::new(
+            r"E:\Apps With Spaces\0xoLemon\0xoLemon.exe",
+        ))
+        .expect("absolute executable path should be accepted");
+
+        assert_eq!(args.len(), 2);
+        assert_eq!(args[0], OsString::from(NSIS_PRESERVE_INSTALL_DIR_FLAG));
+        assert_eq!(args[1], OsString::from(r"/D=E:\Apps With Spaces\0xoLemon"));
+    }
+
+    #[test]
+    fn nsis_install_dir_rejects_relative_executable_paths() {
+        let error = nsis_install_args_for_executable(Path::new("0xoLemon.exe"))
+            .expect_err("relative executable path must not fall back to Program Files");
+
+        assert!(error.contains("Unable to determine"));
+    }
 }
