@@ -1,0 +1,77 @@
+{
+  "$schema": "./cloud-save-map.schema.json",
+  "schemaVersion": 1,
+  "mapVersion": "2026.08.06.1",
+  "platform": "windows",
+  "minimumLauncherVersion": "0.1.1",
+  "publishedAt": "2026-08-06T00:00:00Z",
+  "expiresAt": "2028-08-06T00:00:00Z",
+  "defaults": {
+    "syncMode": "automatic",
+    "syncBeforeLaunch": true,
+    "syncAfterExit": true,
+    "followReparsePoints": false,
+    "excludeWins": true,
+    "limits": {
+      "maxFiles": 10000,
+      "maxTotalBytes": 5368709120,
+      "maxFileBytes": 2147483648
+    },
+    "stability": {
+      "settleTimeMs": 2000,
+      "pollIntervalMs": 500,
+      "maxWaitMs": 30000
+    },
+    "retention": {
+      "recent": 10,
+      "dailyDays": 7,
+      "weeklyWeeks": 4,
+      "conflictDays": 90
+    },
+    "migration": {
+      "legacyRetentionDays": 30
+    }
+  },
+  "games": {
+    "replace-with-launcher-game-id": {
+      "enabled": true,
+      "displayName": "Replace with game title",
+      "supportedInstallModes": ["local"],
+      "roots": [
+        {
+          "id": "main-save",
+          "label": "Game progress",
+          "purpose": "save",
+          "required": false,
+          "matchPolicy": "allExisting",
+          "candidates": [
+            {
+              "base": "KnownFolder.LocalAppData",
+              "path": "Studio\\Game\\Saved\\SaveGames",
+              "priority": 100
+            },
+            {
+              "base": "GameInstall",
+              "path": "0xoLemon\\saves",
+              "priority": 80
+            }
+          ],
+          "include": ["**/*"],
+          "exclude": ["**/*.tmp", "**/*.log", "**/Cache/**", "**/Logs/**"],
+          "recursive": true,
+          "followReparsePoints": false,
+          "profileDiscovery": {
+            "strategy": "all",
+            "maxProfiles": 32,
+            "maxDepth": 8
+          },
+          "restore": {
+            "createMissingDirectories": true,
+            "backupBeforeOverwrite": true,
+            "atomicReplace": true
+          }
+        }
+      ]
+    }
+  }
+}

@@ -82,4 +82,5 @@ backend-api/*.env.*.txt
 !tsconfig.json
 !tsconfig.*.json
 !src-tauri/tauri.conf.json
+!src-tauri/src/resources/cloud-save/*.json
 !latest.json

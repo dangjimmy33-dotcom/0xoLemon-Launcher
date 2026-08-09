@@ -1,0 +1,346 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://0xolemon.local/schemas/cloud-save-map-v1.json",
+  "title": "0xoLemon Cloud Save Map",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "mapVersion",
+    "platform",
+    "defaults",
+    "games"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "mapVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "platform": {
+      "const": "windows"
+    },
+    "minimumLauncherVersion": {
+      "type": "string"
+    },
+    "publishedAt": {
+      "type": "string"
+    },
+    "expiresAt": {
+      "type": "string"
+    },
+    "defaults": {
+      "type": "object",
+      "required": [
+        "syncMode",
+        "syncBeforeLaunch",
+        "syncAfterExit",
+        "limits",
+        "stability",
+        "retention",
+        "migration"
+      ],
+      "properties": {
+        "syncMode": {
+          "const": "automatic"
+        },
+        "syncBeforeLaunch": {
+          "type": "boolean"
+        },
+        "syncAfterExit": {
+          "type": "boolean"
+        },
+        "followReparsePoints": {
+          "const": false
+        },
+        "excludeWins": {
+          "type": "boolean"
+        },
+        "limits": {
+          "$ref": "#/$defs/limits"
+        },
+        "stability": {
+          "$ref": "#/$defs/stability"
+        },
+        "retention": {
+          "$ref": "#/$defs/retention"
+        },
+        "migration": {
+          "$ref": "#/$defs/migration"
+        }
+      },
+      "additionalProperties": false
+    },
+    "games": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/game"
+      }
+    }
+  },
+  "$defs": {
+    "limits": {
+      "type": "object",
+      "required": [
+        "maxFiles",
+        "maxTotalBytes",
+        "maxFileBytes"
+      ],
+      "properties": {
+        "maxFiles": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50000
+        },
+        "maxTotalBytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 21474836480
+        },
+        "maxFileBytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4294967296
+        }
+      },
+      "additionalProperties": false
+    },
+    "stability": {
+      "type": "object",
+      "required": [
+        "settleTimeMs",
+        "pollIntervalMs",
+        "maxWaitMs"
+      ],
+      "properties": {
+        "settleTimeMs": {
+          "type": "integer",
+          "minimum": 250
+        },
+        "pollIntervalMs": {
+          "type": "integer",
+          "minimum": 100
+        },
+        "maxWaitMs": {
+          "type": "integer",
+          "minimum": 1000
+        }
+      },
+      "additionalProperties": false
+    },
+    "retention": {
+      "type": "object",
+      "required": [
+        "recent",
+        "dailyDays",
+        "weeklyWeeks",
+        "conflictDays"
+      ],
+      "properties": {
+        "recent": {
+          "type": "integer",
+          "minimum": 2
+        },
+        "dailyDays": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "weeklyWeeks": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "conflictDays": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "migration": {
+      "type": "object",
+      "required": [
+        "legacyRetentionDays"
+      ],
+      "properties": {
+        "legacyRetentionDays": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 365
+        }
+      },
+      "additionalProperties": false
+    },
+    "candidate": {
+      "type": "object",
+      "required": [
+        "base",
+        "path"
+      ],
+      "properties": {
+        "base": {
+          "enum": [
+            "KnownFolder.LocalAppData",
+            "KnownFolder.LocalAppDataLow",
+            "KnownFolder.RoamingAppData",
+            "KnownFolder.Documents",
+            "KnownFolder.PublicDocuments",
+            "KnownFolder.SavedGames",
+            "KnownFolder.UserProfile",
+            "GameInstall",
+            "LauncherData",
+            "AbsolutePath"
+          ]
+        },
+        "path": {
+          "type": "string"
+        },
+        "priority": {
+          "type": "integer"
+        },
+        "platform": {
+          "type": "string"
+        },
+        "minGameVersion": {
+          "type": "string"
+        },
+        "maxGameVersion": {
+          "type": "string"
+        },
+        "allowAbsolute": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "root": {
+      "type": "object",
+      "required": [
+        "id",
+        "purpose",
+        "candidates"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "label": {
+          "type": "string"
+        },
+        "purpose": {
+          "enum": [
+            "save",
+            "profile",
+            "progress",
+            "settings-portable",
+            "machine-settings",
+            "screenshots",
+            "other"
+          ]
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "matchPolicy": {
+          "enum": [
+            "allExisting",
+            "firstExisting",
+            "highestPriority"
+          ]
+        },
+        "candidates": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/candidate"
+          }
+        },
+        "include": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "exclude": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "recursive": {
+          "type": "boolean"
+        },
+        "followReparsePoints": {
+          "const": false
+        },
+        "kind": {
+          "enum": [
+            "",
+            "file",
+            "directory"
+          ]
+        },
+        "profileDiscovery": {
+          "type": "object"
+        },
+        "limits": {
+          "$ref": "#/$defs/limits"
+        },
+        "stability": {
+          "$ref": "#/$defs/stability"
+        },
+        "restore": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    "game": {
+      "type": "object",
+      "required": [
+        "enabled",
+        "supportedInstallModes",
+        "roots"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "supportedInstallModes": {
+          "type": "array",
+          "contains": {
+            "const": "local"
+          }
+        },
+        "roots": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/root"
+          }
+        },
+        "limits": {
+          "$ref": "#/$defs/limits"
+        },
+        "stability": {
+          "$ref": "#/$defs/stability"
+        },
+        "retention": {
+          "$ref": "#/$defs/retention"
+        },
+        "migration": {
+          "$ref": "#/$defs/migration"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

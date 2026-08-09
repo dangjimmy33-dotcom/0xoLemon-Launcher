@@ -1,6 +1,6 @@
 [package]
 name = "first-light-smart-launcher"
-version = "2.0.43"
+version = "2.0.44"
 description = "Steam-like chunk launcher for 007 First Light"
 authors = ["007 Launcher"]
 edition = "2021"

@@ -1,5 +1,12 @@
 ﻿[
     {
+        "version":  "2.0.44",
+        "date":  "2026-08-09",
+        "changes":  [
+                        "Fixed release builds by packaging required cloud-save metadata."
+                    ]
+    },
+    {
         "version":  "2.0.41",
         "date":  "2026-08-09",
         "changes":  [

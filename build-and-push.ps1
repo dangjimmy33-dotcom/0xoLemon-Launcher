@@ -2,7 +2,9 @@ param (
     [string]$CommitMessage = "Auto build and release",
     [string]$SigningKeyPath = "C:\Users\conte\.tauri\0xolemon.key",
     [string]$SigningPasswordPath = "C:\Users\conte\.tauri\0xolemon-signing-password.dpapi",
-    [switch]$BuildOnly
+    [switch]$BuildOnly,
+    [string[]]$ChangelogChanges = @(),
+    [switch]$NoPause
 )
 
 $ErrorActionPreference = "Stop"
@@ -166,16 +168,8 @@ function Assert-NoTrackedBuildOutputs {
 }
 
 function Invoke-ReleaseGitStage {
-    $pathspecs = @(
-        ".",
-        ":(exclude)**/target/**",
-        ":(exclude).playwright-mcp/**",
-        ":(exclude)playwright-report/**",
-        ":(exclude)test-results/**",
-        ":(exclude)launcher-shell-bg-check.png"
-    )
-
-    git add --all -- @pathspecs
+    Assert-NoTrackedBuildOutputs
+    git add --all -- .
     Assert-NativeCommandSucceeded "Staging release changes"
     Assert-NoTrackedBuildOutputs
 }
@@ -309,60 +303,67 @@ try {
 
     Write-Host "`n=== STEP 3: UPDATE CHANGELOG ===" -ForegroundColor Cyan
     $changelogFile = "src/changelog.json"
+    $changes = @(
+        $ChangelogChanges |
+            Where-Object { $_ -match '\S' } |
+            ForEach-Object { $_.Trim() -replace '^- ', '' -replace '^\* ', '' }
+    )
 
-    Add-Type -AssemblyName System.Windows.Forms
-    Add-Type -AssemblyName System.Drawing
+    if ($changes.Count -eq 0) {
+        Add-Type -AssemblyName System.Windows.Forms
+        Add-Type -AssemblyName System.Drawing
 
-    $form = New-Object System.Windows.Forms.Form
-    $form.Text = "Changelog for $newVersion"
-    $form.Size = New-Object System.Drawing.Size(600, 400)
-    $form.StartPosition = "CenterScreen"
-    $form.TopMost = $true
+        $form = New-Object System.Windows.Forms.Form
+        $form.Text = "Changelog for $newVersion"
+        $form.Size = New-Object System.Drawing.Size(600, 400)
+        $form.StartPosition = "CenterScreen"
+        $form.TopMost = $true
 
-    $label = New-Object System.Windows.Forms.Label
-    $label.Location = New-Object System.Drawing.Point(15, 15)
-    $label.Size = New-Object System.Drawing.Size(550, 40)
-    $label.Font = New-Object System.Drawing.Font("Arial", 10)
-    $label.Text = "Enter one change per line. Leave empty to keep the existing changelog."
+        $label = New-Object System.Windows.Forms.Label
+        $label.Location = New-Object System.Drawing.Point(15, 15)
+        $label.Size = New-Object System.Drawing.Size(550, 40)
+        $label.Font = New-Object System.Drawing.Font("Arial", 10)
+        $label.Text = "Enter one change per line. Leave empty to keep the existing changelog."
 
-    $textBox = New-Object System.Windows.Forms.TextBox
-    $textBox.Location = New-Object System.Drawing.Point(15, 60)
-    $textBox.Size = New-Object System.Drawing.Size(550, 240)
-    $textBox.Multiline = $true
-    $textBox.ScrollBars = "Vertical"
-    $textBox.Font = New-Object System.Drawing.Font("Consolas", 11)
+        $textBox = New-Object System.Windows.Forms.TextBox
+        $textBox.Location = New-Object System.Drawing.Point(15, 60)
+        $textBox.Size = New-Object System.Drawing.Size(550, 240)
+        $textBox.Multiline = $true
+        $textBox.ScrollBars = "Vertical"
+        $textBox.Font = New-Object System.Drawing.Font("Consolas", 11)
 
-    $okButton = New-Object System.Windows.Forms.Button
-    $okButton.Location = New-Object System.Drawing.Point(465, 315)
-    $okButton.Size = New-Object System.Drawing.Size(100, 30)
-    $okButton.Text = "Save and continue"
-    $okButton.DialogResult = [System.Windows.Forms.DialogResult]::OK
+        $okButton = New-Object System.Windows.Forms.Button
+        $okButton.Location = New-Object System.Drawing.Point(465, 315)
+        $okButton.Size = New-Object System.Drawing.Size(100, 30)
+        $okButton.Text = "Save and continue"
+        $okButton.DialogResult = [System.Windows.Forms.DialogResult]::OK
 
-    $form.Controls.Add($label)
-    $form.Controls.Add($textBox)
-    $form.Controls.Add($okButton)
-    $form.AcceptButton = $okButton
+        $form.Controls.Add($label)
+        $form.Controls.Add($textBox)
+        $form.Controls.Add($okButton)
+        $form.AcceptButton = $okButton
 
-    $result = $form.ShowDialog()
-    if ($result -eq [System.Windows.Forms.DialogResult]::OK -and -not [string]::IsNullOrWhiteSpace($textBox.Text)) {
-        $changes = @(
-            $textBox.Text -split "`n" |
-                Where-Object { $_ -match '\S' } |
-                ForEach-Object { $_.Trim() -replace '^- ', '' -replace '^\* ', '' }
-        )
-
-        if ($changes.Count -gt 0) {
-            $jsonContent = Get-Content -Raw -Encoding UTF8 -LiteralPath $changelogFile | ConvertFrom-Json
-            $newEntry = [ordered]@{
-                version = $newVersion.TrimStart("v")
-                date = (Get-Date -Format "yyyy-MM-dd")
-                changes = @($changes)
-            }
-            @($newEntry) + $jsonContent |
-                ConvertTo-Json -Depth 10 |
-                Set-Content -LiteralPath $changelogFile -Encoding UTF8
-            Write-Host "Updated changelog with $($changes.Count) entries." -ForegroundColor Green
+        $result = $form.ShowDialog()
+        if ($result -eq [System.Windows.Forms.DialogResult]::OK -and -not [string]::IsNullOrWhiteSpace($textBox.Text)) {
+            $changes = @(
+                $textBox.Text -split "`n" |
+                    Where-Object { $_ -match '\S' } |
+                    ForEach-Object { $_.Trim() -replace '^- ', '' -replace '^\* ', '' }
+            )
         }
+    }
+
+    if ($changes.Count -gt 0) {
+        $jsonContent = Get-Content -Raw -Encoding UTF8 -LiteralPath $changelogFile | ConvertFrom-Json
+        $newEntry = [ordered]@{
+            version = $newVersion.TrimStart("v")
+            date = (Get-Date -Format "yyyy-MM-dd")
+            changes = @($changes)
+        }
+        @($newEntry) + $jsonContent |
+            ConvertTo-Json -Depth 10 |
+            Set-Content -LiteralPath $changelogFile -Encoding UTF8
+        Write-Host "Updated changelog with $($changes.Count) entries." -ForegroundColor Green
     } else {
         Write-Host "Changelog unchanged." -ForegroundColor Yellow
     }
@@ -401,4 +402,6 @@ Assert-NativeCommandSucceeded "Pushing release tag $newVersion"
 Write-Host "`n=== COMPLETE ===" -ForegroundColor Green
 Write-Host "GitHub Actions will build and publish the signed release for $newVersion." -ForegroundColor Yellow
 Write-Host "Required GitHub secrets: TAURI_SIGNING_PRIVATE_KEY, TAURI_SIGNING_PRIVATE_KEY_PASSWORD, HF_REPOS_JSON" -ForegroundColor Cyan
-pause
+if (-not $NoPause) {
+    pause
+}
