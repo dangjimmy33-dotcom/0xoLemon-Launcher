@@ -118,7 +118,13 @@ function SettingRow({
   )
 }
 
-export function LuaGameModeToggle({ steamEnvironment }: { steamEnvironment: SteamEnvironmentInfo | null }) {
+export function LuaGameModeToggle({
+  steamEnvironment,
+  onEnabledChange,
+}: {
+  steamEnvironment: SteamEnvironmentInfo | null
+  onEnabledChange: (enabled: boolean) => void
+}) {
   const { t } = useLocale()
   const [enabled, setEnabled] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -142,13 +148,14 @@ export function LuaGameModeToggle({ steamEnvironment }: { steamEnvironment: Stea
     try {
       const isEnabled = await invoke<boolean>('is_lua_game_mode_enabled')
       setEnabled(isEnabled)
+      onEnabledChange(isEnabled)
       if (isEnabled) {
         await checkDefender()
       }
     } catch (e) {
       console.error('Failed to check lua-game mode status', e)
     }
-  }, [checkDefender])
+  }, [checkDefender, onEnabledChange])
 
   useEffect(() => {
     const timer = window.setTimeout(() => void checkStatus(), 0)
@@ -175,7 +182,7 @@ export function LuaGameModeToggle({ steamEnvironment }: { steamEnvironment: Stea
     }
 
     // Disable without confirmation
-    performDisable()
+    void performDisable()
   }
 
   const performEnable = async () => {
@@ -184,14 +191,20 @@ export function LuaGameModeToggle({ steamEnvironment }: { steamEnvironment: Stea
     try {
       showToast(t.settings.luaGameMode, t.settings.luaGameModeInstalling, 'info')
       await invoke('enable_lua_game_mode')
-      setEnabled(true)
+      const actualState = await invoke<boolean>('is_lua_game_mode_enabled')
+      if (!actualState) {
+        throw new Error('Steam hooks were copied but did not pass the installed-state check')
+      }
+      setEnabled(actualState)
+      onEnabledChange(actualState)
       showToast(t.settings.luaGameMode, t.settings.luaGameModeInstallSuccess, 'success')
-      checkDefender()
+      void checkDefender()
     } catch (e) {
       console.error(e)
       showToast(t.settings.luaGameMode, t.settings.luaGameModeInstallError + ': ' + String(e), 'error')
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   const performDisable = async () => {
@@ -199,7 +212,12 @@ export function LuaGameModeToggle({ steamEnvironment }: { steamEnvironment: Stea
     try {
       showToast(t.settings.luaGameMode, t.settings.luaGameModeUninstalling, 'info')
       await invoke('disable_lua_game_mode')
-      setEnabled(false)
+      const actualState = await invoke<boolean>('is_lua_game_mode_enabled')
+      setEnabled(actualState)
+      onEnabledChange(actualState)
+      if (actualState) {
+        throw new Error('Steam hooks are still present after the removal attempt')
+      }
       setDefenderOn(null)
       setDefenderChecked(false)
       showToast(t.settings.luaGameMode, t.settings.luaGameModeUninstallSuccess, 'success')
@@ -208,17 +226,18 @@ export function LuaGameModeToggle({ steamEnvironment }: { steamEnvironment: Stea
       console.error(e)
 
       // Check if error is about Steam running
-      if (errorMsg.includes('Steam is currently running')) {
+      if (errorMsg.toLowerCase().includes('steam is still running')) {
         showToast(
           t.settings.luaGameMode,
-          'Please close Steam before disabling Lua-Game Mode. You can use "Restart Steam" button below to close and reopen Steam.',
+          errorMsg,
           'warning'
         )
       } else {
         showToast(t.settings.luaGameMode, t.settings.luaGameModeUninstallError + ': ' + errorMsg, 'error')
       }
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   if (!steamEnvironment?.installed) return null
@@ -356,6 +375,7 @@ export function SettingsView({
   onOpenLibrary,
   onOpenCache,
   onCheckForUpdates,
+  onLuaGameModeChange,
   steamEnvironment,
   steamStatus,
   onRefreshSteam,
@@ -379,6 +399,7 @@ export function SettingsView({
   onChooseCloudRoot: () => void
   onOpenCloudRoot: () => void
   onCheckForUpdates: () => void
+  onLuaGameModeChange: (enabled: boolean) => void
   steamEnvironment: SteamEnvironmentInfo | null
   steamStatus: string | null
   onRefreshSteam: () => void
@@ -602,7 +623,10 @@ export function SettingsView({
               </div>
             </SettingRow>
             <SteamAutoInstallSettings />
-            <LuaGameModeToggle steamEnvironment={steamEnvironment} />
+            <LuaGameModeToggle
+              steamEnvironment={steamEnvironment}
+              onEnabledChange={onLuaGameModeChange}
+            />
           </div>
         </section>
 

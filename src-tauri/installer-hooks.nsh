@@ -26,5 +26,11 @@
         StrCpy $INSTDIR $R8
       ${EndIf}
     ${EndIf}
+
+    ; Tauri invokes this hook after its initial `SetOutPath $INSTDIR`. When a
+    ; legacy update changes $INSTDIR above, NSIS otherwise keeps writing every
+    ; bundled File entry to the old $OUTDIR (usually Program Files), even though
+    ; CreateDirectory commands already point at the recovered install path.
+    SetOutPath "$INSTDIR"
   ${EndIf}
 !macroend

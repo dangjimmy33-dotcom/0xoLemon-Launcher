@@ -1103,19 +1103,6 @@ export default function App() {
       .catch(() => setLuaModeEnabled(false))
   }, [])
 
-  // Automatically check and repair Steam hooks on startup
-  useEffect(() => {
-    if (!isTauriRuntime()) return
-    invoke<boolean>('ost_check_hook_status')
-      .then((isOk) => {
-        if (!isOk) {
-          console.log('Hook status is invalid or missing, attempting to reinstall...')
-          invoke('ost_install_hook').catch(console.error)
-        }
-      })
-      .catch(console.error)
-  }, [])
-
   // Cache images for existing installed games for offline use
   useEffect(() => {
     if (!isTauriRuntime() || !isOnline) return
@@ -3787,6 +3774,7 @@ export default function App() {
                     onChooseCloudRoot={() => void chooseCloudSaveRoot()}
                     onOpenCloudRoot={() => void openCloudSaveRoot()}
                     onCheckForUpdates={() => void checkLauncherUpdateNow()}
+                    onLuaGameModeChange={setLuaModeEnabled}
                     steamEnvironment={steamEnvironment}
                     steamStatus={steamSettingsStatus}
                     onRefreshSteam={() => void refreshSteamEnvironment(true)}

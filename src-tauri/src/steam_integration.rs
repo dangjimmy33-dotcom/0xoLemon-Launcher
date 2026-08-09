@@ -98,27 +98,7 @@ pub fn environment_info(app: &AppHandle) -> SteamEnvironmentInfo {
 }
 
 pub fn is_steam_running() -> bool {
-    #[cfg(target_os = "windows")]
-    {
-        let mut command = Command::new("tasklist.exe");
-        command.creation_flags(CREATE_NO_WINDOW);
-        let output = command
-            .args(["/FI", "IMAGENAME eq steam.exe", "/FO", "CSV", "/NH"])
-            .output();
-        return output
-            .ok()
-            .filter(|result| result.status.success())
-            .map(|result| {
-                let text = String::from_utf8_lossy(&result.stdout).to_ascii_lowercase();
-                text.contains("\"steam.exe\"")
-            })
-            .unwrap_or(false);
-    }
-
-    #[cfg(not(target_os = "windows"))]
-    {
-        false
-    }
+    crate::cloud_redirect::steam_detector::is_steam_running()
 }
 
 pub fn open_steam() -> Result<(), String> {
@@ -1114,104 +1094,45 @@ mod tests {
 // Lua-Game Mode DLL Management
 // ============================================================================
 
-const LUA_GAME_MODE_MARKER: &str = ".0xo-lua-game-mode-enabled";
-
 /// Check if Lua-Game Mode is currently enabled
 pub fn is_lua_game_mode_enabled() -> bool {
     if let Some(steam_root) = get_steam_path() {
-        let marker_path = Path::new(&steam_root).join(LUA_GAME_MODE_MARKER);
-        marker_path.exists()
+        let steam_path = Path::new(&steam_root);
+        let marker_path = steam_path.join(crate::open_steam_tool::LUA_GAME_MODE_MARKER);
+        marker_path.is_file() && crate::open_steam_tool::hook_files_present(steam_path)
     } else {
         false
     }
 }
 
 /// Check and update DLLs if launcher version changed (run on startup)
-pub fn check_and_update_dlls() -> Result<(), String> {
-    // Check if Lua-Game Mode is enabled
-    if !is_lua_game_mode_enabled() {
-        return Ok(()); // Not enabled, skip update
+pub fn check_and_update_dlls(app: &AppHandle) -> Result<(), String> {
+    let Ok(steam_root) = crate::open_steam_tool::get_steam_root() else {
+        return Ok(());
+    };
+    if !steam_root
+        .join(crate::open_steam_tool::LUA_GAME_MODE_MARKER)
+        .is_file()
+    {
+        return Ok(());
     }
 
-    let steam_root = get_steam_path()
-        .ok_or_else(|| "Steam installation not found".to_string())?;
-    let steam_path = Path::new(&steam_root);
-
-    // Get DLL source path (bundled with launcher)
-    let dll_source = std::env::current_exe()
-        .map_err(|e| format!("Failed to get executable path: {}", e))?
-        .parent()
-        .ok_or_else(|| "Failed to get parent directory".to_string())?
-        .join("resources")
-        .join("steam_hooks");
-
-    if !dll_source.exists() {
-        return Err(format!("Steam hooks directory not found at: {}", dll_source.display()));
+    // Loaded proxy DLLs cannot be replaced safely. The next launcher start
+    // while Steam is closed will reconcile them. Process-enumeration errors
+    // must fail closed instead of risking a write into a running Steam client.
+    if !crate::cloud_redirect::steam_detector::try_steam_process_ids()?.is_empty() {
+        return Ok(());
     }
 
-    // List of DLLs to check and update
-    let dlls = vec![
-        ("0xoLemon.dll", "0xoLemon.dll"),
-        ("xinput1_4.dll", "xinput1_4.dll"),
-        ("dwmapi.dll", "dwmapi.dll"),
-    ];
-
+    let steam_path = steam_root.as_path();
     let mut updated = false;
-
-    for (source_name, dest_name) in dlls {
-        let source = dll_source.join(source_name);
-        let dest = steam_path.join(dest_name);
-
-        if !source.exists() {
-            eprintln!("Warning: Source DLL not found: {}", source.display());
-            continue;
-        }
-
-        // Check if destination exists
-        if !dest.exists() {
-            // DLL missing, copy it
-            fs::copy(&source, &dest)
-                .map_err(|e| format!("Failed to copy {}: {}", source_name, e))?;
-            updated = true;
-            println!("Installed missing DLL: {}", dest_name);
-            continue;
-        }
-
-        // Compare file sizes and timestamps to detect updates
-        let source_meta = fs::metadata(&source)
-            .map_err(|e| format!("Failed to read source metadata: {}", e))?;
-        let dest_meta = fs::metadata(&dest)
-            .map_err(|e| format!("Failed to read dest metadata: {}", e))?;
-
-        let needs_update = source_meta.len() != dest_meta.len()
-            || source_meta.modified().ok() > dest_meta.modified().ok();
-
-        if needs_update {
-            // Backup existing file
-            let backup = steam_path.join(format!("{}.backup", dest_name));
-            if dest.exists() {
-                fs::copy(&dest, &backup)
-                    .map_err(|e| format!("Failed to backup {}: {}", dest_name, e))?;
-            }
-
-            // Update DLL
-            fs::copy(&source, &dest)
-                .map_err(|e| format!("Failed to update {}: {}", source_name, e))?;
-
-            updated = true;
-            println!("Updated DLL: {} (size: {} -> {})", 
-                dest_name, 
-                dest_meta.len(), 
-                source_meta.len()
-            );
-        }
+    if !crate::open_steam_tool::hook_files_match_sources(app, steam_path) {
+        crate::open_steam_tool::install_hook_files(app, steam_path)?;
+        updated = true;
     }
 
     // Also check CloudRedirect DLL
-    let cloudredirect_source = std::env::current_exe()
-        .ok()
-        .and_then(|exe| exe.parent().map(|p| p.to_path_buf()))
-        .map(|p| p.join("resources").join("cloud_redirect").join("0xoCloudRedirect.dll"));
+    let cloudredirect_source = resolve_cloud_redirect_dll(app);
 
     if let Some(source) = cloudredirect_source {
         if source.exists() {
@@ -1266,124 +1187,76 @@ pub fn check_and_update_dlls() -> Result<(), String> {
 }
 
 /// Enable Lua-Game Mode by copying DLLs to Steam directory
-pub fn enable_lua_game_mode() -> Result<(), String> {
-    let steam_root = get_steam_path()
-        .ok_or_else(|| "Steam installation not found".to_string())?;
-    
-    let steam_path = Path::new(&steam_root);
-    
-    // Get DLL source path (bundled with launcher)
-    let dll_source = std::env::current_exe()
-        .map_err(|e| format!("Failed to get executable path: {}", e))?
-        .parent()
-        .ok_or_else(|| "Failed to get parent directory".to_string())?
-        .join("resources")
-        .join("steam_hooks");
-    
-    if !dll_source.exists() {
-        return Err(format!("Steam hooks directory not found at: {}", dll_source.display()));
-    }
-    
-    // List of DLLs to copy
-    let dlls = vec![
-        ("0xoLemon.dll", "0xoLemon.dll"),
-        ("xinput1_4.dll", "xinput1_4.dll"),
-        ("dwmapi.dll", "dwmapi.dll"),
-    ];
-    
-    // Copy each DLL
-    for (source_name, dest_name) in dlls {
-        let source = dll_source.join(source_name);
-        let dest = steam_path.join(dest_name);
-        
-        if !source.exists() {
-            return Err(format!("DLL not found: {}", source.display()));
-        }
-        
-        // Backup existing file if present
-        if dest.exists() {
-            let backup = steam_path.join(format!("{}.backup", dest_name));
-            fs::copy(&dest, &backup)
-                .map_err(|e| format!("Failed to backup {}: {}", dest_name, e))?;
-        }
-        
-        // Copy new DLL
-        fs::copy(&source, &dest)
-            .map_err(|e| format!("Failed to copy {}: {}", source_name, e))?;
-    }
-    
+pub fn enable_lua_game_mode(app: &AppHandle) -> Result<(), String> {
+    crate::open_steam_tool::ensure_steam_closed()?;
+    let steam_root = crate::open_steam_tool::get_steam_root()?;
+    let steam_path = steam_root.as_path();
+
+    crate::open_steam_tool::install_hook_files(app, steam_path)?;
+
     // Create marker file
-    let marker_path = steam_path.join(LUA_GAME_MODE_MARKER);
-    fs::write(&marker_path, "Lua-Game Mode enabled by 0xoLemon Launcher")
-        .map_err(|e| format!("Failed to create marker file: {}", e))?;
+    let marker_path = steam_path.join(crate::open_steam_tool::LUA_GAME_MODE_MARKER);
+    if let Err(error) = fs::write(&marker_path, "Lua-Game Mode enabled by 0xoLemon Launcher") {
+        let _ = crate::open_steam_tool::remove_hook_files(steam_path);
+        return Err(format!(
+            "Failed to create Lua-Game Mode marker at {}: {error}",
+            marker_path.display()
+        ));
+    }
 
     // Auto-install CloudRedirect DLL alongside Lua-Game Mode
-    match crate::cloud_redirect_v2::install_dll(
-        &std::env::current_exe()
-            .map_err(|e| format!("Failed to get exe path: {}", e))?
-            .parent()
-            .ok_or("Failed to get parent dir")?
-            .join("resources")
-            .join("cloud_redirect")
-            .join("0xoCloudRedirect.dll"),
-        steam_path,
-    ) {
-        Ok(_) => {
-            // CloudRedirect installed successfully
-            println!("CloudRedirect DLL installed with Lua-Game Mode");
-        }
-        Err(e) => {
-            // Don't fail the entire operation if CloudRedirect fails
-            eprintln!("Warning: Failed to install CloudRedirect: {}", e);
+    if let Some(source) = resolve_cloud_redirect_dll(app) {
+        match crate::cloud_redirect_v2::install_dll(&source, steam_path) {
+            Ok(_) => println!("CloudRedirect DLL installed with Lua-Game Mode"),
+            Err(error) => {
+                // CloudRedirect is optional and must not roll back valid core hooks.
+                eprintln!("Warning: Failed to install CloudRedirect: {error}");
+            }
         }
     }
-    
+
     Ok(())
 }
 
 /// Disable Lua-Game Mode by removing DLLs from Steam directory
 pub fn disable_lua_game_mode() -> Result<(), String> {
-    let steam_root = get_steam_path()
-        .ok_or_else(|| "Steam installation not found".to_string())?;
-    
-    let steam_path = Path::new(&steam_root);
-    
-    // If Steam is running, DLLs are locked and cannot be deleted
-    // We need to close Steam first
-    if is_steam_running() {
-        return Err("Steam is currently running. Please close Steam before disabling Lua-Game Mode, or restart Steam to apply changes.".to_string());
-    }
-    
-    // List of DLLs to remove
-    let dlls = vec!["0xoLemon.dll", "xinput1_4.dll", "dwmapi.dll"];
-    
-    // Remove each DLL
-    for dll_name in dlls {
-        let dll_path = steam_path.join(dll_name);
-        
-        if dll_path.exists() {
-            fs::remove_file(&dll_path)
-                .map_err(|e| format!("Failed to remove {}: {}", dll_name, e))?;
-        }
-        
-        // Remove backup files (DO NOT RESTORE - these are 0xo DLLs, not original Steam files)
-        let backup_path = steam_path.join(format!("{}.backup", dll_name));
-        if backup_path.exists() {
-            fs::remove_file(&backup_path).ok();
-        }
-    }
-    
-    // Remove marker file
-    let marker_path = steam_path.join(LUA_GAME_MODE_MARKER);
-    if marker_path.exists() {
-        fs::remove_file(&marker_path)
-            .map_err(|e| format!("Failed to remove marker file: {}", e))?;
-    }
+    crate::open_steam_tool::ensure_steam_closed()?;
+    let steam_root = crate::open_steam_tool::get_steam_root()?;
+    let steam_path = steam_root.as_path();
+
+    crate::open_steam_tool::remove_hook_files(steam_path)?;
 
     // Also uninstall CloudRedirect DLL
     let _ = crate::cloud_redirect_v2::uninstall_dll(steam_path);
     
     Ok(())
+}
+
+fn resolve_cloud_redirect_dll(app: &AppHandle) -> Option<PathBuf> {
+    let mut candidates = Vec::new();
+    if let Ok(resource_dir) = app.path().resource_dir() {
+        candidates.push(
+            resource_dir
+                .join("resources")
+                .join("cloud_redirect")
+                .join("engine")
+                .join("2.6.4")
+                .join("0xoCloudRedirect.dll"),
+        );
+    }
+    if let Ok(executable) = std::env::current_exe() {
+        if let Some(parent) = executable.parent() {
+            candidates.push(
+                parent
+                    .join("resources")
+                    .join("cloud_redirect")
+                    .join("engine")
+                    .join("2.6.4")
+                    .join("0xoCloudRedirect.dll"),
+            );
+        }
+    }
+    candidates.into_iter().find(|path| path.is_file())
 }
 
 /// Find the actual Steam install directory for a game by its Steam appid.

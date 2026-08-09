@@ -60,46 +60,99 @@ fn try_known_paths() -> Option<PathBuf> {
 
 /// Return exact process IDs for running Steam client processes.
 ///
-/// `tasklist` is available on supported Windows versions and avoids another
-/// process-enumeration dependency. CSV output is parsed by exact image name so
-/// localized "no tasks" messages cannot be mistaken for a running Steam.
-pub fn steam_process_ids() -> Vec<u32> {
-    use std::os::windows::process::CommandExt;
-    use std::process::Command;
-
-    let mut cmd = Command::new("tasklist");
-    cmd.creation_flags(0x08000000);
-    let output = match cmd
-        .args(["/FI", "IMAGENAME eq steam.exe", "/FO", "CSV", "/NH"])
-        .output()
-    {
-        Ok(output) if output.status.success() => output,
-        _ => return Vec::new(),
+/// Process enumeration uses Toolhelp directly. Spawning `tasklist.exe` can
+/// block indefinitely when Windows process-management services are unhealthy,
+/// which used to freeze synchronous launcher commands such as disabling the
+/// Steam hooks.
+#[cfg(target_os = "windows")]
+pub fn try_steam_process_ids() -> Result<Vec<u32>, String> {
+    use std::mem::{size_of, zeroed};
+    use winapi::um::handleapi::{CloseHandle, INVALID_HANDLE_VALUE};
+    use winapi::um::tlhelp32::{
+        CreateToolhelp32Snapshot, Process32FirstW, Process32NextW, PROCESSENTRY32W,
+        TH32CS_SNAPPROCESS,
     };
 
-    let mut ids = Vec::new();
-    for line in String::from_utf8_lossy(&output.stdout).lines() {
-        let line = line.trim();
-        if !line.to_ascii_lowercase().starts_with("\"steam.exe\",") {
-            continue;
+    unsafe {
+        let snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+        if snapshot == INVALID_HANDLE_VALUE {
+            return Err(format!(
+                "Windows process snapshot failed: {}",
+                std::io::Error::last_os_error()
+            ));
         }
-        let mut columns = line.split(',');
-        let image = columns.next().unwrap_or_default().trim_matches('"');
-        let pid = columns.next().unwrap_or_default().trim_matches('"');
-        if image.eq_ignore_ascii_case("steam.exe") {
-            if let Ok(pid) = pid.parse::<u32>() {
-                ids.push(pid);
+
+        let mut entry: PROCESSENTRY32W = zeroed();
+        entry.dwSize = size_of::<PROCESSENTRY32W>() as u32;
+        let mut has_entry = Process32FirstW(snapshot, &mut entry);
+        if has_entry == 0 {
+            let error = std::io::Error::last_os_error();
+            CloseHandle(snapshot);
+            return Err(format!("Windows process enumeration failed: {error}"));
+        }
+        let mut ids = Vec::new();
+
+        while has_entry != 0 {
+            if wide_process_name_eq(&entry.szExeFile, "steam.exe") {
+                ids.push(entry.th32ProcessID);
             }
+            has_entry = Process32NextW(snapshot, &mut entry);
         }
+
+        CloseHandle(snapshot);
+        ids.sort_unstable();
+        ids.dedup();
+        Ok(ids)
     }
-    ids.sort_unstable();
-    ids.dedup();
-    ids
+}
+
+#[cfg(not(target_os = "windows"))]
+pub fn try_steam_process_ids() -> Result<Vec<u32>, String> {
+    Ok(Vec::new())
+}
+
+pub fn steam_process_ids() -> Vec<u32> {
+    try_steam_process_ids().unwrap_or_default()
+}
+
+#[cfg(target_os = "windows")]
+fn wide_process_name_eq(buffer: &[u16], expected: &str) -> bool {
+    let end = buffer
+        .iter()
+        .position(|character| *character == 0)
+        .unwrap_or(buffer.len());
+    String::from_utf16_lossy(&buffer[..end]).eq_ignore_ascii_case(expected)
 }
 
 /// True only when an actual process named `steam.exe` is present.
 pub fn is_steam_running() -> bool {
     !steam_process_ids().is_empty()
+}
+
+#[cfg(all(test, target_os = "windows"))]
+mod tests {
+    use super::{try_steam_process_ids, wide_process_name_eq};
+    use std::time::{Duration, Instant};
+
+    #[test]
+    fn process_name_match_is_case_insensitive_and_null_terminated() {
+        let mut name = "STEAM.EXE".encode_utf16().collect::<Vec<_>>();
+        name.extend([0, 'x' as u16]);
+
+        assert!(wide_process_name_eq(&name, "steam.exe"));
+        assert!(!wide_process_name_eq(&name, "steamwebhelper.exe"));
+    }
+
+    #[test]
+    fn native_process_snapshot_returns_without_external_process_timeout() {
+        let started = Instant::now();
+        let _ = try_steam_process_ids().expect("native process enumeration");
+
+        assert!(
+            started.elapsed() < Duration::from_secs(5),
+            "native process enumeration unexpectedly blocked"
+        );
+    }
 }
 
 /// Read the installed Steam client version from the package manifest.

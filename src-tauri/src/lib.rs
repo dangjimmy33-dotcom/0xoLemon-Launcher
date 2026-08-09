@@ -214,8 +214,10 @@ fn open_steam_big_picture() -> Result<(), String> {
 }
 
 #[tauri::command]
-fn restart_steam() -> Result<steam_integration::RestartSteamReport, String> {
-    steam_integration::restart_steam()
+async fn restart_steam() -> Result<steam_integration::RestartSteamReport, String> {
+    tauri::async_runtime::spawn_blocking(steam_integration::restart_steam)
+        .await
+        .map_err(|error| format!("Steam restart worker failed: {error}"))?
 }
 
 #[tauri::command]
@@ -224,13 +226,17 @@ fn is_lua_game_mode_enabled() -> bool {
 }
 
 #[tauri::command]
-fn enable_lua_game_mode() -> Result<(), String> {
-    steam_integration::enable_lua_game_mode()
+async fn enable_lua_game_mode(app: AppHandle) -> Result<(), String> {
+    tauri::async_runtime::spawn_blocking(move || steam_integration::enable_lua_game_mode(&app))
+        .await
+        .map_err(|error| format!("Lua-Game Mode worker failed: {error}"))?
 }
 
 #[tauri::command]
-fn disable_lua_game_mode() -> Result<(), String> {
-    steam_integration::disable_lua_game_mode()
+async fn disable_lua_game_mode() -> Result<(), String> {
+    tauri::async_runtime::spawn_blocking(steam_integration::disable_lua_game_mode)
+        .await
+        .map_err(|error| format!("Lua-Game Mode worker failed: {error}"))?
 }
 
 #[tauri::command]
@@ -1295,10 +1301,6 @@ pub fn run() {
             shop_lua::lua_shop_get_patchnotes_rss,
             shop_lua::lua_shop_get_game_builds,
             shop_lua::lua_shop_install_game,
-            // 0xoLemon Hook Management
-            open_steam_tool::ost_install_hook,
-            open_steam_tool::ost_remove_hook,
-            open_steam_tool::ost_check_hook_status,
         ]);
 
     builder.setup(move |app| {
@@ -1338,8 +1340,9 @@ pub fn run() {
 
 
             // Check and update DLLs on startup if Lua-Game Mode is enabled
-            std::thread::spawn(|| {
-                if let Err(e) = steam_integration::check_and_update_dlls() {
+            let hook_update_app = app.handle().clone();
+            std::thread::spawn(move || {
+                if let Err(e) = steam_integration::check_and_update_dlls(&hook_update_app) {
                     eprintln!("Failed to check/update DLLs: {}", e);
                 }
             });
