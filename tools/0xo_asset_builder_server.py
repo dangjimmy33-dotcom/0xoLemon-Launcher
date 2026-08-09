@@ -873,18 +873,22 @@ class Handler(BaseHTTPRequestHandler):
         app_id = safe_str(body.get("appId"), "").strip()
         asset_folder = safe_str(body.get("assetFolder"), "").strip()
         output_path = str(Path(project_root) / "assets" / "catalog.0xo")
+        tools_manifest = Path(project_root).parent / "tools" / "launcher-tools" / "Cargo.toml"
+        if not tools_manifest.is_file():
+            self._send_json({"ok": False, "error": f"Khong tim thay launcher tools manifest: {tools_manifest}"}, 500)
+            return
 
         if build_mode == "all":
             title = "Xây dựng tất cả gói asset"
-            args = [cargo, "run", "--bin", "asset_pack_builder", "--", "--source", assets_root, "--output", output_path]
+            args = [cargo, "run", "--manifest-path", str(tools_manifest), "--bin", "asset_pack_builder", "--", "--source", assets_root, "--output", output_path]
             preflight = lambda write: preflight_videos_before_build(assets_root, write)
         else:
             title = f"Xây dựng gói asset: {asset_folder or game_name or app_id or 'game hiện tại'}"
             target_dir = find_game_asset_dir(assets_root, game_name, app_id, asset_folder)
             if target_dir:
-                args = [cargo, "run", "--bin", "asset_pack_builder", "--", "--source", str(target_dir), "--output", output_path]
+                args = [cargo, "run", "--manifest-path", str(tools_manifest), "--bin", "asset_pack_builder", "--", "--source", str(target_dir), "--output", output_path]
             else:
-                args = [cargo, "run", "--bin", "asset_pack_builder", "--", "--source", assets_root, "--output", output_path]
+                args = [cargo, "run", "--manifest-path", str(tools_manifest), "--bin", "asset_pack_builder", "--", "--source", assets_root, "--output", output_path]
             preflight = lambda write: preflight_single_game_build(assets_root, game_name, app_id, write, asset_folder, body)
 
         self._run_and_stream(

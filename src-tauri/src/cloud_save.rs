@@ -2698,6 +2698,7 @@ mod tests {
                 size: 4,
                 modified_at_ms: 1,
                 blake3: hash.to_string(),
+                sha256: String::new(),
             }],
         }
     }

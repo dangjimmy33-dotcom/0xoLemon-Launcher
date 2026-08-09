@@ -45,6 +45,10 @@ function formatDate(ts: number) {
   return new Date(ts).toLocaleDateString([], { day: 'numeric', month: 'short' })
 }
 
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
+}
+
 const REACTION_KEY = 'chat_reaction_history'
 const DEFAULT_REACTIONS = ['👍', '✅', '❤️', '😂', '😮', '😢']
 
@@ -180,8 +184,8 @@ function MessageContent({ text, imageBase64, mediaUrl, mediaType, fileName }: { 
       if (!savePath) return
       await invoke('download_chat_media_to_disk', { url, filepath: savePath })
       showChatToast('Tải xuống hoàn tất!')
-    } catch (e: any) {
-      showChatToast(`Lỗi: ${e?.message || e}`)
+    } catch (error) {
+      showChatToast(`Lỗi: ${errorMessage(error)}`)
     }
   }
 
@@ -307,8 +311,8 @@ const IdIcon = () => (
   </svg>
 )
 
-function HoverActions({ msg: _msg, isMine, topReactions, onContext, onEdit, onDelete, onReact }: {
-  msg: ChatMessage; isMine: boolean; topReactions: string[]
+function HoverActions({ isMine, topReactions, onContext, onEdit, onDelete, onReact }: {
+  isMine: boolean; topReactions: string[]
   onContext: (e: React.MouseEvent) => void
   onEdit: () => void; onDelete: () => void; onReact: (emoji: string) => void
 }) {
@@ -429,7 +433,7 @@ function useChatState(gameId: string, discordUser?: DiscordAuthUser | null) {
     setSending(true)
     try {
       let mediaUrl = undefined
-      let payload: any = {
+      const payload: Record<string, unknown> = {
         senderId, senderName, senderAvatar: senderAvatar ?? null,
         text: inputText.trim(), timestamp: serverTimestamp(),
       }
@@ -448,16 +452,16 @@ function useChatState(gameId: string, discordUser?: DiscordAuthUser | null) {
       setInputText('')
       setStagedFile(null)
       setStagedPreviewUrl(null)
-    } catch (e: any) { 
-      console.error('Send failed:', e)
-      showChatToast('Upload/Send failed: ' + (e.message || e))
+    } catch (error) {
+      console.error('Send failed:', error)
+      showChatToast('Upload/Send failed: ' + errorMessage(error))
     } finally { 
       setSending(false)
       setUploadProgress(null)
     }
   }
 
-  const processFile = async (filepath: string) => {
+  const processFile = useCallback(async (filepath: string) => {
     const originalName = filepath.split('\\').pop()?.split('/').pop() || 'file'
     const ext = originalName.split('.').pop()?.toLowerCase() || 'png'
     const isVideo = ['mp4', 'webm'].includes(ext)
@@ -483,7 +487,7 @@ function useChatState(gameId: string, discordUser?: DiscordAuthUser | null) {
     } else {
       setStagedPreviewUrl(null)
     }
-  }
+  }, [])
 
   const handleMediaUpload = async () => {
     try {
@@ -495,8 +499,8 @@ function useChatState(gameId: string, discordUser?: DiscordAuthUser | null) {
       const filepath = Array.isArray(selected) ? selected[0] : selected
       if (!filepath) return
       await processFile(filepath)
-    } catch (err: any) {
-      console.error(err)
+    } catch (error) {
+      console.error(error)
     }
   }
 
@@ -510,11 +514,19 @@ function useChatState(gameId: string, discordUser?: DiscordAuthUser | null) {
     } else {
       reactions[emoji] = [...existing, senderId]
     }
-    try { await updateDoc(doc(db, 'chats', gameId, 'messages', msg.id), { reactions }) } catch (e) {}
+    try {
+      await updateDoc(doc(db, 'chats', gameId, 'messages', msg.id), { reactions })
+    } catch (error) {
+      console.warn('Failed to update chat reaction', error)
+    }
   }, [gameId, senderId])
 
   const handleEdit = async (msgId: string, newText: string) => {
-    try { await updateDoc(doc(db, 'chats', gameId, 'messages', msgId), { text: newText }) } catch (e) {}
+    try {
+      await updateDoc(doc(db, 'chats', gameId, 'messages', msgId), { text: newText })
+    } catch (error) {
+      console.warn('Failed to edit chat message', error)
+    }
   }
 
   const handleDelete = async (msg: ChatMessage) => {
@@ -522,7 +534,9 @@ function useChatState(gameId: string, discordUser?: DiscordAuthUser | null) {
     try {
       await deleteDoc(doc(db, 'chats', gameId, 'messages', msg.id))
       if (msg.mediaUrl) invoke('delete_chat_media', { url: msg.mediaUrl }).catch(console.error)
-    } catch (e) {}
+    } catch (error) {
+      console.warn('Failed to delete chat message', error)
+    }
   }
 
   return {
@@ -534,10 +548,9 @@ function useChatState(gameId: string, discordUser?: DiscordAuthUser | null) {
 }
 
 // ── ChatBody UI ───────────────────────────────────────────
-function ChatBody({ 
-  gameId, compact, state 
-}: { 
-  gameId: string; compact: boolean; state: ReturnType<typeof useChatState> 
+function ChatBody({ compact, state }: {
+  compact: boolean
+  state: ReturnType<typeof useChatState>
 }) {
   const [editingMsgId, setEditingMsgId] = useState<string | null>(null)
   const [editInput, setEditInput] = useState('')
@@ -556,15 +569,15 @@ function ChatBody({
   useEffect(() => {
     let unlisten: () => void = () => {}
     import('@tauri-apps/api/window').then(({ getCurrentWindow }) => {
-      getCurrentWindow().onDragDropEvent((event: any) => {
+      getCurrentWindow().onDragDropEvent((event) => {
         if (event.payload.type === 'drop') {
           const paths = event.payload.paths
           if (paths && paths.length > 0) processFile(paths[0])
         }
-      }).then((f: any) => unlisten = f)
+      }).then((dispose) => { unlisten = dispose })
     })
     return () => unlisten()
-  }, [gameId])
+  }, [processFile])
 
   useEffect(() => {
     const el = containerRef.current
@@ -648,7 +661,7 @@ function ChatBody({
                   </div>
                     {editingMsgId !== msg.id && (
                     <HoverActions
-                      msg={msg} isMine={msg.senderId === senderId} topReactions={topReactions}
+                      isMine={msg.senderId === senderId} topReactions={topReactions}
                       onContext={e => openCtx(e, msg)}
                       onEdit={() => { setEditingMsgId(msg.id); setEditInput(msg.text) }}
                       onDelete={() => handleDelete(msg)}
@@ -722,7 +735,7 @@ export function GameChat({ gameId, discordUser }: GameChatProps) {
         <Hash size={15} style={{ opacity: 0.6 }} />
         <h4>Community Hub</h4>
       </div>
-      <ChatBody gameId={gameId} state={chatState} compact={false} />
+      <ChatBody state={chatState} compact={false} />
     </div>
   )
 }

@@ -22,16 +22,14 @@
 
 .app-root {
   background:
-    radial-gradient(circle at 68% -10%, rgba(74, 93, 130, 0.14), transparent 34%),
-    radial-gradient(circle at 18% 120%, rgba(174, 125, 47, 0.09), transparent 36%),
-    var(--premium-bg);
+    linear-gradient(180deg, var(--launcher-chrome-bg-strong, #05080b), var(--launcher-chrome-bg, #070b0f));
 }
 
 .premium-titlebar {
   height: 44px;
   align-items: stretch;
-  background: rgba(6, 9, 13, 0.95);
-  border-bottom-color: rgba(255, 255, 255, 0.075);
+  background: var(--launcher-chrome-bg, #070b0f);
+  border-bottom: 0;
 }
 
 .premium-titlebar.use-glass {
@@ -233,12 +231,14 @@
 }
 
 .premium-shell {
-  background: transparent;
+  --launcher-sidebar-track: 218px;
+  background: var(--launcher-chrome-bg, #070b0f);
   /* Override default 198px grid track from App.css so sidebar fits perfectly */
   grid-template-columns: 218px minmax(0, 1fr);
 }
 
 .premium-shell.sidebar-collapsed-shell {
+  --launcher-sidebar-track: 76px;
   grid-template-columns: 76px minmax(0, 1fr);
 }
 
@@ -246,8 +246,8 @@
   /* Let the grid manage width, remove fixed width that causes overflow */
   border-right-color: rgba(255, 255, 255, 0.075);
   background:
-    linear-gradient(180deg, rgba(12, 17, 22, 0.97), rgba(7, 11, 15, 0.99)),
-    #080c10;
+    linear-gradient(180deg, rgba(9, 14, 19, 0.98), rgba(6, 10, 14, 0.995)),
+    var(--launcher-chrome-bg, #070b0f);
 }
 
 .premium-shell > .sidebar.sidebar-collapsed {
@@ -317,9 +317,13 @@
 }
 
 .premium-workspace {
-  background:
-    radial-gradient(circle at 70% 0%, rgba(68, 82, 111, 0.045), transparent 40%),
-    rgba(4, 7, 11, 0.12);
+  background: rgba(7, 10, 15, 0.98);
+  background-image:
+    linear-gradient(180deg, rgba(10, 14, 20, 0.98), rgba(7, 10, 15, 0.99)),
+    radial-gradient(circle at 76% 0%, rgba(64, 77, 100, 0.035), transparent 42%);
+  border-top-left-radius: var(--launcher-content-radius, 18px);
+  backdrop-filter: blur(18px) saturate(112%);
+  -webkit-backdrop-filter: blur(18px) saturate(112%);
 }
 
 /* Launcher updater */

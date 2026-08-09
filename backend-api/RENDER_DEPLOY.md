@@ -1,91 +1,42 @@
-# 🚀 Deploy Backend lên Render
+# Trien khai backend tren Render
 
-## Bước 1: Tạo Web Service trên Render
+Su dung Web Service hien co tai
+`https://zeroxolemon-launcher.onrender.com`. Khong tao them service activation.
 
-1. Vào https://dashboard.render.com/
-2. Click **"New +" → "Web Service"**
-3. Connect GitHub repo: `dangjimmy33-dotcom/0xoLemon-Launcher`
+## Cau hinh service
 
-## Bước 2: Cấu hình Service
+- Root Directory: `backend-api`
+- Build Command: `npm install`
+- Start Command: `npm start`
+- Health Check Path: `/health`
 
-```
-Name: oxolemon-backend
-Region: Singapore (gần Việt Nam nhất)
-Branch: main
-Root Directory: backend-api
-Runtime: Node
-Build Command: npm install
-Start Command: npm start
-Instance Type: Free
-```
+Tat ca bien trong [`.env.example`](.env.example) phai duoc cau hinh trong
+Render Environment. Cac gia tri secret khong duoc commit, ghi vao log, hoac dua
+vao React.
 
-## Bước 3: Environment Variables
+## Firestore
 
-Click **"Environment"** tab và thêm biến:
+Backend dung cac collection rieng:
 
-### Cách 1: Paste toàn bộ JSON (KHUYẾN NGHỊ)
+- `offlineActivationQuota`
+- `offlineActivationAccounts`
+- `offlineActivationRequests`
+- `offlineActivationAudit`
+- `offlineActivationSecrets`
 
-```
-GOOGLE_APPLICATION_CREDENTIALS_JSON = <paste nội dung file E:\xolemon-b360e-firebase-adminsdk-fbsvc-3f99099488.json>
-```
+Bat Firestore TTL cho field
+`offlineActivationRequests.secretExpiresAt` de xoa token da ma hoa sau
+cooldown. Quota va cooldown chi dung thoi gian UTC cua backend.
 
-**⚠️ LƯU Ý:** 
-- Paste 1 dòng duy nhất, không xuống dòng!
-- File JSON nằm ở `E:\xolemon-b360e-firebase-adminsdk-fbsvc-3f99099488.json`
-- KHÔNG commit file này lên Git!
+## Kiem tra sau deploy
 
-### Cách 2: Individual Fields (nếu cách 1 không work)
-
-```
-FIREBASE_PROJECT_ID = xolemon-b360e
-FIREBASE_PRIVATE_KEY_ID = <lấy từ JSON file>
-FIREBASE_PRIVATE_KEY = <lấy từ JSON file, giữ nguyên \n>
-FIREBASE_CLIENT_EMAIL = <lấy từ JSON file>
-FIREBASE_CLIENT_ID = <lấy từ JSON file>
-FIREBASE_CERT_URL = <lấy từ JSON file>
+```powershell
+Invoke-RestMethod https://zeroxolemon-launcher.onrender.com/health
+Invoke-RestMethod https://zeroxolemon-launcher.onrender.com/api/0xolemon/offline-activation/ea-sports-fc-26/status
 ```
 
-## Bước 4: Deploy
+Status phai tra `capacity: 5`, `serverTime`, `readiness` va metadata package
+nhung khong duoc chua Discord ID, ticket, refresh token hay activation token.
 
-Click **"Create Web Service"** và đợi deploy (~2-3 phút).
-
-URL sẽ là: `https://oxolemon-backend.onrender.com`
-
-## Bước 5: Test
-
-```bash
-curl https://oxolemon-backend.onrender.com/health
-curl https://oxolemon-backend.onrender.com/api/catalog
-```
-
-## Bước 6: Setup UptimeRobot (giữ FREE tier không sleep)
-
-1. Vào https://uptimerobot.com/
-2. **Add New Monitor**:
-   - Monitor Type: `HTTP(s)`
-   - Friendly Name: `oxoLemon Backend`
-   - URL: `https://oxolemon-backend.onrender.com/health`
-   - Monitoring Interval: `5 minutes`
-3. Click **Create Monitor**
-
-## Bước 7: Update Launcher
-
-File `.env` trong launcher đã được cấu hình:
-```
-VITE_BACKEND_URL=https://xoxolemon-launcher.onrender.com
-```
-
-Build lại launcher và phát hành bản update mới!
-
-## 📊 Kết quả mong đợi
-
-- **Trước:** 807 listeners + 49k reads/day
-- **Sau:** 0 listeners + ~100 reads/day (chỉ backend gọi Firestore)
-- **Tiết kiệm:** 99% quota!
-
-## 🔒 Security Notes
-
-- ⚠️ File JSON chứa private key **KHÔNG BAO GIỜ commit lên Git**
-- ✅ Chỉ lưu trên Render Environment Variables
-- ✅ Backend đã config CORS để chỉ accept request từ launcher domain
-- ✅ Rate limiting được bật (100 requests/minute/IP)
+Khong goi endpoint `activate` trong smoke test tu dong. Mot activation that chi
+duoc chay khi nguoi dung chu dong xac nhan.

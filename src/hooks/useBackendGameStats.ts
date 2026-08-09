@@ -24,12 +24,12 @@ export function useBackendGameStats(): void {
           throw new Error(`Backend error: ${response.status}`)
         }
 
-        const data = await response.json()
+        const data = await response.json() as Record<string, unknown>
         
         if (!mounted) return
         
         // Store globally
-        ;(window as any).globalGameStats = { ...((window as any).globalGameStats || {}), ...data }
+        window.globalGameStats = { ...(window.globalGameStats || {}), ...data }
       } catch (error) {
         console.error('[useBackendGameStats] Failed to fetch:', error)
       }

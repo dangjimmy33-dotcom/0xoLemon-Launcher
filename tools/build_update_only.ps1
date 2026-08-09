@@ -20,7 +20,7 @@
   [string]$RepoType = "dataset",
   [string]$RepoPrefix = "",
   [string]$DepotRoot = "E:\007Launcher\depot",
-  [string]$CargoManifest = "E:\007Launcher\src-tauri\Cargo.toml",
+  [string]$CargoManifest = "E:\007Launcher\tools\launcher-tools\Cargo.toml",
   [int]$PackTargetMb = 256,
   [int]$PackStartIndex = -1,   # -1 = auto-detect from catalog
   [string]$PackIdPrefix = "pack-",
@@ -43,8 +43,8 @@ $versionString = "$Version (Build $BuildId) - Uploaded $UploadDate"
 $scriptRoot    = Split-Path -Parent $PSCommandPath
 $syncTool      = Join-Path $scriptRoot "sync_hf_depot_metadata.py"
 $depotOut      = Join-Path $DepotRoot $GameId
-$srcTauri      = Split-Path -Parent $CargoManifest
-$builder       = Join-Path $srcTauri "target\release\depot_builder.exe"
+$toolsRoot     = Split-Path -Parent $CargoManifest
+$builder       = Join-Path $toolsRoot "target\release\depot_builder.exe"
 
 # ── Validate ──────────────────────────────────────────────────────────────
 
@@ -163,7 +163,7 @@ Write-Host "━━━ Step 2/4: Building depot packs... ━━━" -ForegroundCo
 # Build builder if needed
 if (-not (Test-Path -LiteralPath $builder)) {
   Write-Host "  Building depot_builder (release)..."
-  Push-Location $srcTauri
+  Push-Location $toolsRoot
   try {
     cargo build --release --manifest-path $CargoManifest --bin depot_builder
     if ($LASTEXITCODE -ne 0) { throw "cargo build failed" }

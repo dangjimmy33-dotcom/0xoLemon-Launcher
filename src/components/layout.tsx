@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import type { ReactNode } from 'react'
 import { Cloud, Database, Download, Home, Image as ImageIcon, Library, RefreshCcw, Settings, ShoppingBag, ShoppingCart, Wifi, WifiOff, Languages, Sparkles, FileCode, Search } from 'lucide-react'
-import { useLocale } from '../context/LocaleContext'
+import { useLocale } from '../context/locale'
 import type { GameCatalog, TabId } from '../types'
 import { assetUrlForId } from '../lib/gameMeta'
 

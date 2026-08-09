@@ -10,6 +10,8 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+target/
+**/target/
 src-tauri/target
 depot
 depot-*
@@ -29,6 +31,10 @@ steam_api_utf8.json
 *.zip
 *_backup_*/
 native/steam_hook_backup_*/
+.playwright-mcp/
+playwright-report/
+test-results/
+launcher-shell-bg-check.png
 
 # Secrets — never commit tokens (keep local only)
 src-tauri/huggingface-repos.json

@@ -27,7 +27,7 @@ import {
   Wrench,
   XCircle,
 } from 'lucide-react'
-import { useLocale } from '../context/LocaleContext'
+import { useLocale } from '../context/locale'
 import { formatBytes } from '../lib/format'
 import './CloudRedirectSettings.css'
 
@@ -298,7 +298,10 @@ export function CloudRedirectSettings() {
   }, [])
 
   useEffect(() => {
-    void loadCore().catch((error) => notify('error', c.loadFailed.replace('{error}', String(error))))
+    const timer = window.setTimeout(() => {
+      void loadCore().catch((error) => notify('error', c.loadFailed.replace('{error}', String(error))))
+    }, 0)
+    return () => window.clearTimeout(timer)
   }, [loadCore, notify, c.loadFailed])
 
   useEffect(() => {
@@ -388,7 +391,10 @@ export function CloudRedirectSettings() {
       await saveProvider(false)
       const authUrl = await invoke<string>('cloud_redirect_start_oauth', { provider })
       await invoke('open_url', { url: authUrl })
+      // OAuth polling runs only after a user action, never during render.
+      // eslint-disable-next-line react-hooks/purity
       const deadline = Date.now() + 5 * 60_000
+      // eslint-disable-next-line react-hooks/purity
       while (Date.now() < deadline) {
         await sleep(800)
         const error = await invoke<string | null>('cloud_redirect_poll_oauth_error')
@@ -451,24 +457,26 @@ export function CloudRedirectSettings() {
     else setS3((value) => ({ ...value, caCertPath: selected }))
   }
 
-  const refreshApps = async () => {
+  const effectiveProvider = providerConfig?.provider || provider
+
+  const refreshApps = useCallback(async () => {
     setAppsLoading(true)
     try {
-      const result = await invoke<RemoteApp[]>('cloud_redirect_engine_list_apps', { provider: providerConfig?.provider || provider })
+      const result = await invoke<RemoteApp[]>('cloud_redirect_engine_list_apps', { provider: effectiveProvider })
       setApps(result)
-      if (!accountId && result[0]) setAccountId(result[0].accountId)
+      if (result[0]) setAccountId((current) => current || result[0].accountId)
     } catch (error) {
       notify('error', String(error))
     } finally {
       setAppsLoading(false)
     }
-  }
+  }, [effectiveProvider, notify])
 
   useEffect(() => {
-    if (view === 'games' && providerConfig?.authenticated && !isLocalOnly(providerConfig.provider)) void refreshApps()
-    // Deliberately only refresh when entering the view/provider changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [view, providerConfig?.provider, providerConfig?.authenticated])
+    if (view !== 'games' || !providerConfig?.authenticated || isLocalOnly(providerConfig.provider)) return
+    const timer = window.setTimeout(() => void refreshApps(), 0)
+    return () => window.clearTimeout(timer)
+  }, [providerConfig, refreshApps, view])
 
   const visibleApps = useMemo(
     () => accountId ? apps.filter((app) => app.accountId === accountId) : apps,
@@ -490,7 +498,7 @@ export function CloudRedirectSettings() {
     })
   }
 
-  const runDiagnostics = async () => {
+  const runDiagnostics = useCallback(async () => {
     setBusy('diagnostics')
     try {
       setDiagnostics(await invoke<DiagnosticsReport>('cloud_redirect_engine_diagnostics'))
@@ -499,7 +507,7 @@ export function CloudRedirectSettings() {
     } finally {
       setBusy('')
     }
-  }
+  }, [notify])
 
   const loadManifestPins = useCallback(async () => {
     try {
@@ -595,16 +603,22 @@ export function CloudRedirectSettings() {
   }
 
   useEffect(() => {
-    if (view === 'maintenance') void loadManifestPins()
+    if (view !== 'maintenance') return
+    const timer = window.setTimeout(() => void loadManifestPins(), 0)
+    return () => window.clearTimeout(timer)
   }, [loadManifestPins, view])
 
   useEffect(() => {
-    if (view === 'backups') void refreshBackups()
+    if (view !== 'backups') return
+    const timer = window.setTimeout(() => void refreshBackups(), 0)
+    return () => window.clearTimeout(timer)
   }, [refreshBackups, view])
 
   useEffect(() => {
-    if (view === 'diagnostics' && !diagnostics && !busy) void runDiagnostics()
-  }, [busy, diagnostics, view])
+    if (view !== 'diagnostics' || diagnostics || busy) return
+    const timer = window.setTimeout(() => void runDiagnostics(), 0)
+    return () => window.clearTimeout(timer)
+  }, [busy, diagnostics, runDiagnostics, view])
 
   const providerReady = providerConfig?.authenticated ?? false
   const effectiveSteamRunning = steamState?.running ?? status?.steamRunning ?? false

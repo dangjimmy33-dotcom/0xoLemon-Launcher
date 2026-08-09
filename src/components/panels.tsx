@@ -1,6 +1,6 @@
 import { Archive, Download, HardDrive, RotateCcw, ShieldCheck, Square, Play, SkipBack, SkipForward, Music, ArrowRight, Repeat, Shuffle } from 'lucide-react'
 import { enUS as t } from '../i18n/en-US'
-import type { ChangedFile, GameDetail, Snapshot } from '../types'
+import type { ChangedFile, GameDetail, GameRating, Snapshot } from '../types'
 import { formatBytes, formatDelta } from '../lib/format'
 
 export function CachePanel({
@@ -88,7 +88,8 @@ export function GameDetailsPanel({ detail }: { detail: GameDetail }) {
   const genreData = detail.genres as unknown
   const genreList: string[] = Array.isArray(genreData) ? genreData : (typeof genreData === 'string' ? genreData.split(',').map((s: string)=>s.trim()) : [])
   const ratingsData = detail.ratings as unknown
-  const ratingsList: any[] = Array.isArray(ratingsData) ? ratingsData : []
+  const ratingsList: GameRating[] = Array.isArray(ratingsData) ? ratingsData : []
+  const releaseDate = detail.releaseDate as unknown as string | { date?: string }
 
   return (
     <section className="panel game-info-panel">
@@ -108,9 +109,9 @@ export function GameDetailsPanel({ detail }: { detail: GameDetail }) {
         <div className="meta-pair">
           <dt>Release Date</dt>
           <dd>
-            {typeof detail.releaseDate === 'object' && detail.releaseDate !== null 
-              ? (detail.releaseDate as any).date 
-              : detail.releaseDate || 'Unknown'}
+            {typeof releaseDate === 'object' && releaseDate !== null
+              ? releaseDate.date || 'Unknown'
+              : releaseDate || 'Unknown'}
           </dd>
         </div>
         <div>
@@ -222,7 +223,7 @@ export function OSTPlayer({ bgImage, gameId }: { bgImage?: string, gameId: strin
         audioRef.current.play().catch(e => console.warn('Autoplay prevented', e))
       }
     }
-  }, [activeTrackIndex])
+  }, [activeTrack, isPlaying])
 
   const togglePlayMode = () => {
     if (playMode === 'sequential') setPlayMode('repeat')
@@ -264,6 +265,8 @@ export function OSTPlayer({ bgImage, gameId }: { bgImage?: string, gameId: strin
   const handleNext = () => {
     if (tracks.length === 0) return
     if (playMode === 'shuffle') {
+      // Randomness is triggered by a user/media event, never during render.
+      // eslint-disable-next-line react-hooks/purity
       let nextIndex = Math.floor(Math.random() * tracks.length)
       if (nextIndex === activeTrackIndex && tracks.length > 1) {
          nextIndex = (nextIndex + 1) % tracks.length

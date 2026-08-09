@@ -1,4 +1,4 @@
-- [x] Update `denuvo.rs` with robust `scan_for_denuvo_ticket`
-- [x] Update `denuvo.rs` with `apply_denuvo_token_to_cfg` using regex
-- [x] Update `denuvo.rs` with `run_game_executable` and `delete_old_ticket`
-- [x] Update `DenuvoActivation.tsx` to accept `gameId` or `exeName` and run the 6-step flow only for `ea-sports-fc-26`.
+- [x] Replace low-level activation IPC with `get_offline_activation_state`, `start_offline_activation`, `resume_offline_activation`, and `cancel_offline_activation`.
+- [x] Keep Discord credentials, EA tickets, and activation tokens inside the Rust/backend boundary.
+- [x] Validate the registered `ea-sports-fc-26` install, package manifest, hashes, ticket, and atomic config update before launch.
+- [x] Show quota, account eligibility, package readiness, resumable journal state, and phase progress in `DenuvoActivation.tsx`.

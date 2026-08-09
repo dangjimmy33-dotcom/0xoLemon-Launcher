@@ -11,3 +11,25 @@ services:
         value: production
       - key: PORT
         value: 10000
+      - key: ACTIVATION_ENCRYPTION_KEY
+        sync: false
+      - key: ACTIVATION_ADMIN_KEY
+        sync: false
+      - key: EA_CLIENT_SECRET
+        sync: false
+      - key: EA_MACHINE_HASH
+        sync: false
+      - key: EA_REFRESH_TOKEN_BOOTSTRAP
+        sync: false
+      - key: ACTIVATION_PACKAGE_URL
+        sync: false
+      - key: ACTIVATION_PACKAGE_VERSION
+        sync: false
+      - key: ACTIVATION_PACKAGE_SIZE_BYTES
+        sync: false
+      - key: ACTIVATION_PACKAGE_SHA256
+        sync: false
+      - key: ACTIVATION_PACKAGE_PASSWORD
+        sync: false
+      - key: ACTIVATION_PACKAGE_FILES_JSON
+        sync: false

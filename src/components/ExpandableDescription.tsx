@@ -10,12 +10,14 @@ interface ExpandableDescriptionProps {
 export function ExpandableDescription({ html, maxHeight = 200 }: ExpandableDescriptionProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [needsExpansion, setNeedsExpansion] = useState(false)
+  const [expandedHeight, setExpandedHeight] = useState(maxHeight)
   const contentRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (contentRef.current) {
       const fullHeight = contentRef.current.scrollHeight
       setNeedsExpansion(fullHeight > maxHeight)
+      setExpandedHeight(fullHeight)
     }
   }, [html, maxHeight])
 
@@ -25,7 +27,7 @@ export function ExpandableDescription({ html, maxHeight = 200 }: ExpandableDescr
         ref={contentRef}
         className={`description-html ${isExpanded ? 'expanded' : 'collapsed'}`}
         style={{
-          maxHeight: isExpanded ? `${contentRef.current?.scrollHeight}px` : `${maxHeight}px`,
+          maxHeight: `${isExpanded ? expandedHeight : maxHeight}px`,
           overflow: 'hidden',
           transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
         }}

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
-import { useState, useEffect, useRef } from 'react'
-import { useLocale, type Locale } from '../context/LocaleContext'
+import { useCallback, useState, useEffect, useRef } from 'react'
+import { useLocale, type Locale } from '../context/locale'
 import {
   ChevronDown, Bell,
   Clock3,
@@ -127,23 +127,7 @@ export function LuaGameModeToggle({ steamEnvironment }: { steamEnvironment: Stea
   const [defenderOn, setDefenderOn] = useState<boolean | null>(null)
   const [defenderChecked, setDefenderChecked] = useState(false)
 
-  useEffect(() => {
-    checkStatus()
-  }, [])
-
-  const checkStatus = async () => {
-    try {
-      const isEnabled = await invoke<boolean>('is_lua_game_mode_enabled')
-      setEnabled(isEnabled)
-      if (isEnabled) {
-        checkDefender()
-      }
-    } catch (e) {
-      console.error('Failed to check lua-game mode status', e)
-    }
-  }
-
-  const checkDefender = async () => {
+  const checkDefender = useCallback(async () => {
     setDefenderChecked(false)
     try {
       const status = await invoke<boolean | null>('check_defender_realtime_status')
@@ -152,7 +136,24 @@ export function LuaGameModeToggle({ steamEnvironment }: { steamEnvironment: Stea
       setDefenderOn(null)
     }
     setDefenderChecked(true)
-  }
+  }, [])
+
+  const checkStatus = useCallback(async () => {
+    try {
+      const isEnabled = await invoke<boolean>('is_lua_game_mode_enabled')
+      setEnabled(isEnabled)
+      if (isEnabled) {
+        await checkDefender()
+      }
+    } catch (e) {
+      console.error('Failed to check lua-game mode status', e)
+    }
+  }, [checkDefender])
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => void checkStatus(), 0)
+    return () => window.clearTimeout(timer)
+  }, [checkStatus])
 
   const showToast = (title: string, msg: string, severity: 'success' | 'error' | 'info' | 'warning' = 'info') => {
     window.dispatchEvent(new CustomEvent('0xo-toast', {

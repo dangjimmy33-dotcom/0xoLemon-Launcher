@@ -18,14 +18,14 @@ npm run tauri:dev
 ## Build Launcher
 
 ```powershell
-cd E:\007Launcher\src-tauri
-cargo tauri build
+cd E:\007Launcher
+npm run tauri:build
 ```
 
 The portable executable is normally here:
 
 ```text
-E:\007Launcher\src-tauri\target\release\first-light-smart-launcher.exe
+E:\007Launcher\src-tauri\target\release\0xoLemon.exe
 ```
 
 ## Publish A New Game Version
@@ -35,7 +35,7 @@ Use the wrapper tool instead of remembering the long `depot_builder` command.
 ### One-time build of the builder
 
 ```powershell
-cd E:\007Launcher\src-tauri
+cd E:\007Launcher\tools\launcher-tools
 cargo build --release --bin depot_builder
 ```
 
@@ -95,7 +95,7 @@ E:\007Launcher\src-tauri\target\release\assets\games\<game-id>\*.0xo
 Build asset packs:
 
 ```powershell
-cd E:\007Launcher\src-tauri
+cd E:\007Launcher\tools\launcher-tools
 cargo build --release --bin asset_pack_builder
 .\target\release\asset_pack_builder.exe
 ```
@@ -112,7 +112,7 @@ npm run tauri:build
 Use this only if the wrapper is not enough:
 
 ```powershell
-cd E:\007Launcher\src-tauri
+cd E:\007Launcher\tools\launcher-tools
 .\target\release\depot_builder.exe build-version `
   --input "E:\007 First Light" `
   --version v1.3 `

@@ -62,10 +62,14 @@ export function BigPictureView({
   const [showHelp, setShowHelp] = useState(false)
   const trackRef = useRef<HTMLDivElement>(null)
   const autoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const lastInteractionRef = useRef(Date.now())
+  const lastInteractionRef = useRef(0)
 
   const activeGame = games[activeIndex] || null
   const unread = notifications.filter((n) => !n.read).length
+
+  useEffect(() => {
+    lastInteractionRef.current = Date.now()
+  }, [])
 
   // Clock tick
   useEffect(() => {

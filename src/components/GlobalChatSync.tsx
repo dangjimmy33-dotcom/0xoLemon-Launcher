@@ -63,7 +63,7 @@ export function GlobalChatSync({ catalog }: { catalog: GameCatalog | null }) {
             console.log(`[HF Sync] Won leader election for ${game.id}. Syncing to Hugging Face...`)
             await invoke('sync_to_huggingface', { gameId: game.id })
             console.log(`[HF Sync] Success for ${game.id}!`)
-          } catch (e) {
+          } catch {
             // Ignored, someone else is leader or it's not time yet
           }
         }, index * 2000) // Stagger mỗi game cách nhau 2s để không lag

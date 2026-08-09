@@ -14,6 +14,12 @@
   --bg: #080c0f;
   --surface: #10171c;
   --surface-strong: #151e24;
+  --launcher-chrome-bg: #070b0f;
+  --launcher-chrome-bg-strong: #05080b;
+  --launcher-page-bg: #070a0f;
+  --launcher-page-bg-soft: #090d13;
+  --launcher-content-radius: 18px;
+  --launcher-content-soft-line: rgba(142, 163, 179, 0.055);
   --line: rgba(232, 196, 120, 0.16);
   --line-strong: rgba(232, 196, 120, 0.34);
   --text: #c7ced3;

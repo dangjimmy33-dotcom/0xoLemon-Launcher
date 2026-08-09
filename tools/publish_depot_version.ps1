@@ -14,7 +14,7 @@ param(
   [string]$RepoType = "dataset",
   [string]$RepoPrefix = "",
   [string]$DepotRoot = "E:\007Launcher\depot",
-  [string]$CargoManifest = "E:\007Launcher\src-tauri\Cargo.toml",
+  [string]$CargoManifest = "E:\007Launcher\tools\launcher-tools\Cargo.toml",
   [string]$SyncToolPath = "",
   [string]$EncryptionKey = "",
   [switch]$KeepLocalPacks,
@@ -99,9 +99,9 @@ if ((-not $NoSyncMetadata) -and (-not (Test-Path -LiteralPath $SyncToolPath))) {
   throw "Metadata sync tool does not exist: $SyncToolPath"
 }
 
-$srcTauri = Split-Path -Parent $CargoManifest
+$toolsRoot = Split-Path -Parent $CargoManifest
 $depotOut = Join-Path $DepotRoot $GameId
-$builder = Join-Path $srcTauri "target\release\depot_builder.exe"
+$builder = Join-Path $toolsRoot "target\release\depot_builder.exe"
 
 Write-Host "[SAFE] GameId        : $GameId"
 Write-Host "[SAFE] Version       : $Version"
@@ -144,7 +144,7 @@ if (-not $UploadOnly) {
 
   if (-not (Test-Path -LiteralPath $builder)) {
     Write-Host "[SAFE] Release depot_builder not found. Building release..."
-    Push-Location $srcTauri
+    Push-Location $toolsRoot
     try {
       cargo build --release --manifest-path $CargoManifest --bin depot_builder
     } finally {
@@ -154,7 +154,7 @@ if (-not $UploadOnly) {
     Write-Host "[SAFE] Using release builder: $builder"
   }
 
-  Push-Location $srcTauri
+  Push-Location $toolsRoot
   try {
     $builderArgs = @(
       "build-version",

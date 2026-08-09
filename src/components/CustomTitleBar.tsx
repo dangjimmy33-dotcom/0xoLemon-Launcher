@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useRef } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type React from 'react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { Bell, Download, LogOut, Monitor } from 'lucide-react'
@@ -14,9 +14,7 @@ type BatteryState = { level: number; charging: boolean } | null
 function useNetworkQuality(): NetworkQuality {
   const getQuality = (): NetworkQuality => {
     if (!navigator.onLine) return 'offline'
-    const conn = (navigator as any).connection ||
-                 (navigator as any).mozConnection ||
-                 (navigator as any).webkitConnection
+    const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection
     if (!conn) return 'good'
     const type: string = conn.effectiveType || ''
     if (type === 'slow-2g' || type === '2g') return 'weak'
@@ -28,9 +26,7 @@ function useNetworkQuality(): NetworkQuality {
     const update = () => setQuality(getQuality())
     window.addEventListener('online', update)
     window.addEventListener('offline', update)
-    const conn = (navigator as any).connection ||
-                 (navigator as any).mozConnection ||
-                 (navigator as any).webkitConnection
+    const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection
     conn?.addEventListener('change', update)
     return () => {
       window.removeEventListener('online', update)
@@ -43,20 +39,25 @@ function useNetworkQuality(): NetworkQuality {
 
 function useBattery(): BatteryState {
   const [battery, setBattery] = useState<BatteryState>(null)
-  const batteryRef = useRef<any>(null)
   useEffect(() => {
-    if (!('getBattery' in navigator)) return
-    ;(navigator as any).getBattery().then((bat: any) => {
-      batteryRef.current = bat
-      const update = () => setBattery({ level: bat.level, charging: bat.charging })
+    if (!navigator.getBattery) return
+    let disposed = false
+    let manager: BatteryManager | null = null
+    const update = () => {
+      if (manager && !disposed) setBattery({ level: manager.level, charging: manager.charging })
+    }
+    void navigator.getBattery().then((bat) => {
+      if (disposed) return
+      manager = bat
       update()
       bat.addEventListener('levelchange', update)
       bat.addEventListener('chargingchange', update)
-      return () => {
-        bat.removeEventListener('levelchange', update)
-        bat.removeEventListener('chargingchange', update)
-      }
     })
+    return () => {
+      disposed = true
+      manager?.removeEventListener('levelchange', update)
+      manager?.removeEventListener('chargingchange', update)
+    }
   }, [])
   return battery
 }

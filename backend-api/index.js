@@ -10,8 +10,11 @@ const NodeCache = require('node-cache');
 const admin = require('firebase-admin');
 const rateLimit = require('express-rate-limit');
 const crypto = require('crypto');
+const { createOfflineActivationRouter } = require('./activation/routes');
+const { constantTimeKeyMatches } = require('./activation/secret-crypto');
 
 const app = express();
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 8080;
 
 // Cache: 1 giờ TTL per tenant
@@ -587,11 +590,29 @@ app.get('/api/:tenant/game-details/:gameId', validateTenant, async (req, res) =>
   }
 });
 
+app.use(
+  '/api/:tenant/offline-activation',
+  validateTenant,
+  createOfflineActivationRouter({ getTenantDb })
+);
+
+function requireAdminKey(req, res, next) {
+  const configuredKey = process.env.ACTIVATION_ADMIN_KEY || '';
+  const providedKey = req.get('x-admin-key') || '';
+  if (!configuredKey) {
+    return res.status(503).json({ error: 'Admin endpoint is not configured' });
+  }
+  if (!constantTimeKeyMatches(providedKey, configuredKey)) {
+    return res.status(401).json({ error: 'Admin authorization required' });
+  }
+  next();
+}
+
 /**
  * POST /api/:tenant/cache/clear
  * Clear cache for specified tenant (admin endpoint)
  */
-app.post('/api/:tenant/cache/clear', validateTenant, (req, res) => {
+app.post('/api/:tenant/cache/clear', validateTenant, requireAdminKey, (req, res) => {
   const tenantId = req.params.tenant;
   const { key } = req.body;
 

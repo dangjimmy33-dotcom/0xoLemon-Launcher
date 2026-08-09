@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useCallback, useState, useEffect } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { Trash2, RefreshCw } from 'lucide-react'
 
@@ -13,7 +13,7 @@ export function InstalledLuaGames() {
   const [loading, setLoading] = useState(true)
   const [removing, setRemoving] = useState<string | null>(null)
 
-  const loadGames = async () => {
+  const loadGames = useCallback(async () => {
     setLoading(true)
     try {
       const installed = await invoke<InstalledLuaGame[]>('get_installed_lua_games')
@@ -23,11 +23,12 @@ export function InstalledLuaGames() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   useEffect(() => {
-    loadGames()
-  }, [])
+    const timer = window.setTimeout(() => void loadGames(), 0)
+    return () => window.clearTimeout(timer)
+  }, [loadGames])
 
   const handleRemove = async (appid: string) => {
     if (!confirm(`Remove game ${appid} from Steam?`)) return

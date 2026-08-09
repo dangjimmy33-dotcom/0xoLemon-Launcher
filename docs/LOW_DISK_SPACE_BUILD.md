@@ -55,14 +55,14 @@ $env:HF_TOKEN = "hf_xxxxxxxxxxxxxxxxxxxx"
 ### 3. Compile Depot Builder
 
 ```powershell
-cd E:\007Launcher\src-tauri
+cd E:\007Launcher\tools\launcher-tools
 cargo build --release --bin depot_builder
 ```
 
 ### 4. Run Build with Incremental Deletion
 
 ```powershell
-cd E:\007Launcher\src-tauri
+cd E:\007Launcher\tools\launcher-tools
 
 .\target\release\depot_builder.exe build-version `
   --input        "E:\007 First Light"    `

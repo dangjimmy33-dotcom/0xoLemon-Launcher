@@ -1,6 +1,6 @@
 import { Play, FolderInput, Trash2 } from 'lucide-react'
 import type { GameSummary } from '../types'
-import { useLocale } from '../context/LocaleContext'
+import { useLocale } from '../context/locale'
 import { assetUrlForId } from '../lib/gameMeta'
 
 interface OfflineGameDetailProps {

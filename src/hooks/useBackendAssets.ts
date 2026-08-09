@@ -53,7 +53,7 @@ export function useBackendAssets(): number {
 
         if (Object.keys(merged).length > 0) {
           // Store globally for catalog normalization
-          ;(window as any).globalAssetsOverride = merged
+          window.globalAssetsOverride = merged
           setVersion(v => v + 1)
         }
       } catch (error) {

@@ -55,7 +55,7 @@ async function bootstrap() {
   let isOverlay = false;
   try {
     isOverlay = getCurrentWebviewWindow().label === 'overlay';
-  } catch (e) {
+  } catch {
     // Ignore error if not running in Tauri
   }
 

@@ -1,7 +1,7 @@
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { BookOpen, CircleHelp, RotateCcw, Search, X } from 'lucide-react'
-import { useLocale } from '../context/LocaleContext'
+import { useLocale } from '../context/locale'
 import type { TabId } from '../types'
 import {
   HELP_CONCEPT_ORDER,
@@ -167,12 +167,6 @@ export function HelpCenter({
   const { t } = useLocale()
   const [query, setQuery] = useState('')
   const [selection, setSelection] = useState<HelpSelection>({ kind: 'topic', id: HELP_TOPIC_BY_TAB[activeTab] })
-
-  useEffect(() => {
-    if (!open) return
-    setSelection({ kind: 'topic', id: HELP_TOPIC_BY_TAB[activeTab] })
-    setQuery('')
-  }, [activeTab, open])
 
   useEffect(() => {
     if (!open) return

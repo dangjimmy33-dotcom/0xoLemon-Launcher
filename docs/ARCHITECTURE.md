@@ -28,7 +28,7 @@ All packs are hosted on Hugging Face: `CatManga/Cat-Manga` dataset, prefix `007-
 ### Step 1 — Compile the depot builder
 
 ```powershell
-cd E:\007Launcher\src-tauri
+cd E:\007Launcher\tools\launcher-tools
 cargo build --release --bin depot_builder
 ```
 
@@ -50,7 +50,7 @@ Use `build-version --extend-existing` to:
 If you're running low on disk space (e.g., 132GB game + 66GB depot output = 198GB needed), add `--delete-source-after-pack` to delete game files **immediately after they're packed**:
 
 ```powershell
-cd E:\007Launcher\src-tauri
+cd E:\007Launcher\tools\launcher-tools
 
 .\target\release\depot_builder.exe build-version `
   --input        "E:\007 First Light"    `
@@ -76,7 +76,7 @@ cd E:\007Launcher\src-tauri
 #### Normal Build (with enough disk space):
 
 ```powershell
-cd E:\007Launcher\src-tauri
+cd E:\007Launcher\tools\launcher-tools
 
 .\target\release\depot_builder.exe build-version `
   --input        "E:\007 First Light"    `
@@ -126,7 +126,7 @@ cargo tauri build
 Build a v1.0 + v1.1 depot pair from two local directories:
 
 ```powershell
-cd E:\007Launcher\src-tauri
+cd E:\007Launcher\tools\launcher-tools
 cargo run --bin depot_builder -- build-pair `
   --old-input  "E:\007 First Light - Sao chép" `
   --new-input  "E:\007 First Light"             `

@@ -18,7 +18,7 @@ export type GameTagTable = {
 type GameTagTarget = string | Pick<GameSummary, 'id' | 'title' | 'assetPackPath'>
 
 let table = { ...gameTagTableDefault } as GameTagTable
-let gameTagIndex = new Map<string, string[]>()
+const gameTagIndex = new Map<string, string[]>()
 
 function rebuildIndex() {
   gameTagIndex.clear()

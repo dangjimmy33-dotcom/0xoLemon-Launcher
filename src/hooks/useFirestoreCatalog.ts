@@ -3,6 +3,7 @@ import { doc, onSnapshot } from 'firebase/firestore'
 import { contentDb as db } from '../firebase'
 import type { GameCatalog, GameSummary, GameInstallMetadata, CloudSaveMetadata } from '../types'
 import { globalAssetsOverride } from './useRealtimeAssets'
+import { normalizeGameVersions } from '../lib/catalogVersions'
 
 const DEFAULT_CLOUD_SAVE: CloudSaveMetadata = {
   enabled: false,
@@ -31,7 +32,6 @@ function normalizeSummary(raw: Record<string, unknown>): GameSummary {
   const assetOverride = globalAssetsOverride[gameId] ?? {}
 
   
-  const rawAvailableVersions = (raw.availableVersions as GameSummary['availableVersions']) || []
   const rawLatestVersion = (raw.latestVersion as string) || ''
   // Clean latestVersion: remove "- Uploaded YYYY-MM-DD" suffix that uploader may have appended
   const cleanedLatestVersion = rawLatestVersion.replace(/\s*-\s*Uploaded\s+\d{4}-\d{2}-\d{2}.*$/, '').trim()
@@ -47,53 +47,7 @@ function normalizeSummary(raw: Record<string, unknown>): GameSummary {
     developer: (raw.developer as string) || '',
     publisher: (raw.publisher as string) || '',
     latestVersion: cleanedLatestVersion,
-    availableVersions: Array.isArray(rawAvailableVersions) ? rawAvailableVersions.map(v => {
-      if (!v) return v as any
-      const entry = v as any
-      let normalized: any
-      if (typeof entry === 'string') {
-        // Trích buildId từ pattern "X.X.X (Build 24298527)" nếu có
-        const buildMatch = (entry as string).match(/\(Build ([^)]+)\)/)
-        const extractedBuildId = buildMatch ? buildMatch[1].trim() : ''
-        // Label sạch: bỏ phần "- Uploaded ..." và phần "(Build ...)"
-        let cleanLabel = (entry as string).replace(/\s*-\s*Uploaded\s+\d{4}-\d{2}-\d{2}.*$/, '').trim()
-        cleanLabel = cleanLabel.replace(/\s*\(Build [^)]+\)\s*/i, '').trim()
-        normalized = { version: entry, label: cleanLabel, buildId: extractedBuildId, sizeBytes: 0, latest: false }
-      } else {
-        // Object từ catalog: extract buildId nếu chưa có
-        const obj = { ...entry }
-        if (!obj.buildId || obj.buildId === obj.version) {
-          const match = (obj.version || '').match(/\(Build ([^)]+)\)/)
-          if (match) obj.buildId = match[1].trim()
-          else obj.buildId = ''
-        }
-        // Clean label: bỏ "- Uploaded ..." và "(Build ...)"
-        if (obj.label && typeof obj.label === 'string') {
-          let cleaned = obj.label.replace(/\s*-\s*Uploaded\s+\d{4}-\d{2}-\d{2}.*$/, '').trim()
-          cleaned = cleaned.replace(/\s*\(Build [^)]+\)\s*/i, '').trim()
-          obj.label = cleaned
-        }
-        normalized = obj
-      }
-      // Lookup tags: thử full version string trước, sau đó thử semver prefix (phần trước space/ngoặc)
-      // Vd: "1.1.0 (Build 24298527) - Uploaded 2026-07-29" → thử "1.1.0" nếu full không match
-      function semverPrefix(s: string): string { return s ? s.split(/[ (]/)[0].trim() : s }
-      const ver = normalized.version || ''
-      const lbl = normalized.label || ''
-      const bid = normalized.buildId || ''
-      const foundTags =
-        versionTags[ver] ||
-        versionTags[lbl] ||
-        versionTags[bid] ||
-        versionTags[semverPrefix(ver)] ||
-        versionTags[semverPrefix(lbl)] ||
-        versionTags[semverPrefix(bid)] ||
-        normalized.tags
-      return {
-        ...normalized,
-        tags: foundTags
-      } as any
-    }).filter(Boolean) : [],
+    availableVersions: normalizeGameVersions(raw.availableVersions, versionTags),
     // Prefer assets_override CDN links (fixed SteamGridDB URLs) over catalog values
     gridAssetId: assetOverride.grid || (raw.gridAssetId as string) || '',
     heroAssetId: assetOverride.hero || (raw.heroAssetId as string) || '',

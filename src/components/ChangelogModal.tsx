@@ -1,7 +1,7 @@
 import { createPortal } from 'react-dom'
 import { X, Sparkles } from 'lucide-react'
 import { WhatsNewView } from './WhatsNewView'
-import { useLocale } from '../context/LocaleContext'
+import { useLocale } from '../context/locale'
 
 export function ChangelogModal({
   onClose,

@@ -4,7 +4,7 @@ import { CheckCircle2, ChevronRight, HardDrive, KeyRound, Loader2, X } from 'luc
 import type { GameCatalog, GameInstallState, GameSummary } from '../types'
 import { assetUrlForId } from '../lib/gameMeta'
 import { useSteamAppIds } from '../hooks/useSteamAppIds'
-import { useLocale } from '../context/LocaleContext'
+import { useLocale } from '../context/locale'
 import { DenuvoActivationButton } from './DenuvoActivation'
 import '../App.css'
 
@@ -13,7 +13,6 @@ const DENUVO_GAME_IDS = ['ea-sports-fc-26']
 type OfflineSelection = {
   game: GameSummary
   appid?: number
-  gameDir: string
   installed: boolean
 }
 
@@ -25,46 +24,37 @@ export function OfflineActivation({
   assets: Record<string, string>
 }) {
   const { t } = useLocale()
-  const [installedApps, setInstalledApps] = useState<number[]>([])
+  const [installStates, setInstallStates] = useState<Record<string, GameInstallState>>({})
   const [selected, setSelected] = useState<OfflineSelection | null>(null)
   const [isResolving, setIsResolving] = useState(false)
   const { mapping } = useSteamAppIds()
+  const offlineGames = catalog.games.filter((game) => DENUVO_GAME_IDS.includes(game.id))
 
   useEffect(() => {
-    invoke<number[]>('get_installed_steam_apps')
-      .then(setInstalledApps)
-      .catch(console.error)
-  }, [])
-
-  const offlineGames = catalog.games.filter((game) => DENUVO_GAME_IDS.includes(game.id))
+    const gameIds = catalog.games
+      .filter((game) => DENUVO_GAME_IDS.includes(game.id))
+      .map((game) => game.id)
+    if (gameIds.length === 0) return
+    invoke<GameInstallState[]>('get_game_install_states', { gameIds })
+      .then((states) => {
+        setInstallStates(Object.fromEntries(states.map((state) => [state.gameId, state])))
+      })
+      .catch((error) => console.error('Unable to load offline activation install states:', error))
+  }, [catalog.games])
 
   async function handleSelectGame(game: GameSummary) {
     const rawAppid = mapping[game.id] ?? game.appid
     const appid = rawAppid ? Number(rawAppid) : undefined
-    const installed = Boolean(appid && installedApps.includes(appid))
 
     setIsResolving(true)
     try {
-      let gameDir = ''
-
-      // Prefer the launcher's registered install state, then fall back to the
-      // Steam library path so games installed directly through Steam still work.
-      try {
-        const launcherState = await invoke<GameInstallState>('get_game_install_state', { gameId: game.id })
-        if (launcherState.installed && launcherState.installPath) {
-          gameDir = launcherState.installPath
-        }
-      } catch {
-        // The Steam path fallback below covers games not managed by the launcher.
-      }
-
-      if (!gameDir && appid && installed) {
-        gameDir = (await invoke<string | null>('get_steam_game_install_dir', { appid })) || ''
-      }
-      setSelected({ game, appid, gameDir, installed: Boolean(gameDir) })
+      const launcherState = await invoke<GameInstallState>('get_game_install_state', { gameId: game.id })
+      const installed = launcherState.installed && Boolean(launcherState.installPath)
+      setInstallStates((current) => ({ ...current, [game.id]: launcherState }))
+      setSelected({ game, appid, installed })
     } catch (error) {
       console.error('Unable to resolve offline activation game path:', error)
-      setSelected({ game, appid, gameDir: '', installed: false })
+      setSelected({ game, appid, installed: false })
     } finally {
       setIsResolving(false)
     }
@@ -81,7 +71,7 @@ export function OfflineActivation({
         {offlineGames.map((game) => {
           const rawAppid = mapping[game.id] ?? game.appid
           const appid = rawAppid ? Number(rawAppid) : undefined
-          const isInstalled = Boolean(appid && installedApps.includes(appid))
+          const isInstalled = Boolean(installStates[game.id]?.installed && installStates[game.id]?.installPath)
           const hero = assetUrlForId(game.heroAssetId, assets)
 
           return (
@@ -146,13 +136,9 @@ export function OfflineActivation({
               </div>
             </div>
 
-            {selected.installed && selected.gameDir ? (
+            {selected.installed ? (
               <div className="offline-detail-action">
-                <DenuvoActivationButton
-                  gameDir={selected.gameDir}
-                  cfgPath={`${selected.gameDir}\\anadius.cfg`}
-                  gameId={selected.game.id}
-                />
+                <DenuvoActivationButton gameId={selected.game.id} />
               </div>
             ) : (
               <div className="offline-detail-path-hint">{t.offlineActivation.installHint}</div>

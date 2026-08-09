@@ -24,8 +24,11 @@ export function IntroScreen({ onExiting, onDone }: IntroScreenProps) {
   // Stable refs so timers always call the latest callback without re-running
   const onExitingRef = useRef(onExiting)
   const onDoneRef = useRef(onDone)
-  onExitingRef.current = onExiting
-  onDoneRef.current = onDone
+
+  useEffect(() => {
+    onExitingRef.current = onExiting
+    onDoneRef.current = onDone
+  }, [onDone, onExiting])
 
   useEffect(() => {
     const t1 = window.setTimeout(() => setPhase('hold'), 900)

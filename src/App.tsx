@@ -29,6 +29,7 @@ import type {
   GameInstallState,
   GameRuntimeState,
   GameSummary,
+  GameVersionInfo,
   JobJournal,
   LaunchReport,
   LauncherUpdateInfo,
@@ -85,10 +86,15 @@ import {
   AchievementToastOverlay,
   HelpCenter,
 } from './components'
-import { useLocale } from './context/LocaleContext'
+import { useLocale } from './context/locale'
 
 const initialLauncherPreferences = loadLauncherPreferences()
 const emptyCatalog: GameCatalog = { defaultLocale: 'en-US', games: [] }
+const TAB_IDS = ['Home', 'Store', 'Library', 'Downloads', 'Updates', 'CloudRedirect', 'Settings', 'Cache', "What's New!", 'Translations', 'Lua Installer', 'Lua Shop'] as const satisfies readonly TabId[]
+
+function isTabId(value: string): value is TabId {
+  return (TAB_IDS as readonly string[]).includes(value)
+}
 const initialDiscordAuthStatus: DiscordAuthStatus = {
   state: isTauriRuntime() ? 'checking' : 'notConfigured',
   configured: false,
@@ -164,8 +170,8 @@ export default function App() {
 
 
   // Pull-to-refresh: kéo xuống khi đang ở đầu trang để reload
-  const [ptrProgress, _setPtrProgress] = useState(0)
-  const [ptrRefreshing, _setPtrRefreshing] = useState(false)
+  const [ptrProgress] = useState(0)
+  const [ptrRefreshing] = useState(false)
   const bodyRef = useRef<HTMLElement | null>(null)
   useEffect(() => { bodyRef.current = document.body }, [])
 
@@ -188,7 +194,7 @@ export default function App() {
 
   usePullToRefresh(bodyRef, {
     threshold: 160,
-    onProgress: (_p) => {
+    onProgress: () => {
       // Disabled pull to refresh per user request
       // setPtrProgress(p)
       // if (p >= 1 && !ptrRefreshing) {
@@ -226,7 +232,7 @@ export default function App() {
     // Restore from localStorage on mount (persist across app restarts)
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('0xo_activeTab') as TabId | null
-      if (saved && ['Home', 'Store', 'Library', 'Downloads', 'Updates', 'CloudRedirect', 'Settings', 'Cache', "What's New!", 'Translations', 'Lua Installer', 'Lua Shop'].includes(saved)) {
+      if (saved && isTabId(saved)) {
         return saved
       }
     }
@@ -318,12 +324,14 @@ export default function App() {
   const [luaModeEnabled, setLuaModeEnabled] = useState(false)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
 
-  // Block notifications, big picture, sidebar toggle & branding during intro or Discord verification/gate
-  const isBlockedState = showIntro || discordAuth.state !== 'authorized'
+  // Block shell-only features while intro or the Discord gate owns the screen.
+  const hasLauncherAccess = offlineModeEnabled || discordAuth.state === 'authorized'
+  const isBlockedState = showIntro || !hasLauncherAccess
   const [cacheBusy, setCacheBusy] = useState(false)
   const [appVersion, setAppVersion] = useState(packageMetadata.version)
   const [showWhatsNewModal, setShowWhatsNewModal] = useState(false)
   const [helpCenterOpen, setHelpCenterOpen] = useState(false)
+  const [onboardingGateReady, setOnboardingGateReady] = useState(false)
   const launcherUpdateRateRef = useRef<Array<{ bytes: number; at: number }>>([])
   const pendingHomeLaunchRef = useRef<string | null>(null)
   const playingGamesRef = useRef<Record<string, boolean>>({})
@@ -439,6 +447,34 @@ export default function App() {
   const reducedMotion =
     preferences.motionMode === 'reduced' ||
     (preferences.motionMode === 'system' && systemReducedMotion)
+
+  const onboardingMayStart =
+    !preferences.onboardingCompleted &&
+    !showIntro &&
+    introExiting &&
+    hasLauncherAccess
+  const shouldShowOnboarding =
+    onboardingMayStart &&
+    activeTab === 'Home' &&
+    onboardingGateReady
+
+  useEffect(() => {
+    if (!onboardingMayStart || activeTab === 'Home') return
+    setActiveTab('Home')
+  }, [activeTab, onboardingMayStart])
+
+  useEffect(() => {
+    if (!onboardingMayStart || activeTab !== 'Home') {
+      setOnboardingGateReady(false)
+      return
+    }
+
+    const timer = window.setTimeout(() => {
+      setOnboardingGateReady(true)
+    }, reducedMotion ? 0 : 500)
+
+    return () => window.clearTimeout(timer)
+  }, [activeTab, onboardingMayStart, reducedMotion])
 
   const refreshDiscordAccess = useCallback(async (force = false) => {
     if (!isTauriRuntime()) {
@@ -986,7 +1022,7 @@ export default function App() {
     const backendGames = backendCatalog?.games || []
     const firestoreGames = firestoreCatalog?.games || []
 
-    const mergedGamesMap = new Map()
+    const mergedGamesMap = new Map<string, GameSummary>()
 
     // Add Firestore games first (default / 0xolemon)
     firestoreGames.forEach(game => {
@@ -999,13 +1035,13 @@ export default function App() {
       if (firestoreGame && firestoreGame.availableVersions?.length > 0) {
         // Merge tags from Firestore into backend game's versions
         const firestoreVersionMap = new Map<string, string[]>()
-        firestoreGame.availableVersions.forEach((v: any) => {
+        firestoreGame.availableVersions.forEach((v) => {
           if (v && v.tags && Array.isArray(v.tags) && v.tags.length > 0) {
             firestoreVersionMap.set(v.version || v.label || '', v.tags)
           }
         })
         if (firestoreVersionMap.size > 0) {
-          const mergedVersions = (game.availableVersions || []).map((v: any) => {
+          const mergedVersions = (game.availableVersions || []).map((v) => {
             if (!v || (v.tags && v.tags.length > 0)) return v
             const tags = firestoreVersionMap.get(v.version) || firestoreVersionMap.get(v.label) || firestoreVersionMap.get(v.buildId)
             return tags ? { ...v, tags } : v
@@ -1189,7 +1225,7 @@ export default function App() {
     return () => window.clearTimeout(updateTimer)
   }, [preferences.autoCheckLauncherUpdates, publishNotification])
 
-  async function refreshPatchAvailability(gameId: string, state: GameInstallState) {
+  const refreshPatchAvailability = useCallback(async (gameId: string, state: GameInstallState) => {
     if (
       !state.installed ||
       !state.currentVersion ||
@@ -1224,9 +1260,9 @@ export default function App() {
       // Preserve a previously detected patch while the backend retries a transient manifest error.
       console.error(`check_patch_available failed for ${gameId}:`, error)
     }
-  }
+  }, [])
 
-  async function refreshInstallState(gameId: string, committedInstallPath?: string) {
+  const refreshInstallState = useCallback(async (gameId: string, committedInstallPath?: string) => {
     if (!isTauriRuntime()) {
       return
     }
@@ -1244,7 +1280,7 @@ export default function App() {
       return { ...current, [gameId]: state }
     })
     void refreshPatchAvailability(gameId, state)
-  }
+  }, [refreshPatchAvailability])
 
   useEffect(() => {
     if (!isTauriRuntime() || catalog.games.length === 0) {
@@ -1280,7 +1316,7 @@ export default function App() {
     return () => {
       disposed = true
     }
-  }, [catalog.games])
+  }, [catalog.games, refreshInstallState, refreshPatchAvailability])
 
   const updateReadyGameIds = useMemo(() => {
     return catalog.games
@@ -1291,8 +1327,8 @@ export default function App() {
         }
 
         const latest =
-          game.availableVersions.find((version: any) => version.latest)?.version ||
-          (game.availableVersions.length === 1 ? (game.availableVersions[0] as any).version : '') ||
+          game.availableVersions.find((version) => version.latest)?.version ||
+          (game.availableVersions.length === 1 ? game.availableVersions[0].version : '') ||
           game.latestVersion
 
         // If the local state is 'installed' (unknown version string), and the game only has 1 version, assume it's up-to-date
@@ -1330,7 +1366,7 @@ export default function App() {
               try {
                 const buildId = await invoke<string | null>('get_steam_game_buildid', { appid: appId })
                 buildIds[appId] = buildId || 'Unknown'
-              } catch (e) {
+              } catch {
                 buildIds[appId] = 'Unknown'
               }
             })
@@ -1342,8 +1378,8 @@ export default function App() {
     fetchSteamApps()
 
     const handleLuaGameModeChange = () => fetchSteamApps()
-    window.addEventListener('lua-game-mode-changed' as any, handleLuaGameModeChange)
-    return () => window.removeEventListener('lua-game-mode-changed' as any, handleLuaGameModeChange)
+    window.addEventListener('lua-game-mode-changed', handleLuaGameModeChange)
+    return () => window.removeEventListener('lua-game-mode-changed', handleLuaGameModeChange)
   }, [])
 
   const libraryCatalog = useMemo(
@@ -1390,7 +1426,7 @@ export default function App() {
       return selectedGameId && updateReadyGameIds.includes(selectedGameId) ? selectedGameId : null
     }
     return selectedGameId
-  }, [activeTab, installStates, job?.gameId, job?.kind, snapshot.lastJob?.gameId, snapshot.lastJob?.kind, selectedGameId, updateReadyGameIds])
+  }, [activeTab, installStates, job?.gameId, job?.kind, mapping, snapshot.lastJob?.gameId, snapshot.lastJob?.kind, selectedGameId, steamInstalledAppIds, updateReadyGameIds])
 
   const requestHomeAsset = useCallback(
     (gameId: string, assetId: string, urgent = false) => {
@@ -1829,7 +1865,7 @@ export default function App() {
       unsubscribe?.()
       unsubscribeJobCleared?.()
     }
-  }, [playInstallCompleteSound, publishNotification])
+  }, [playInstallCompleteSound, publishNotification, refreshInstallState])
 
   useEffect(() => {
     if (!isTauriRuntime()) return
@@ -1882,7 +1918,7 @@ export default function App() {
       window.removeEventListener('online', handleOnline)
       window.removeEventListener('offline', handleOffline)
     }
-  }, [])
+  }, [refreshDiscordAccess])
 
   useEffect(() => {
     if (!isTauriRuntime()) {
@@ -1979,7 +2015,7 @@ export default function App() {
     tick()
     const timer = window.setInterval(tick, 1000)
     return () => window.clearInterval(timer)
-  }, [activeJob.id, activeJob.status])
+  }, [activeJob.bytesTotal, activeJob.id, activeJob.kind, activeJob.status])
 
   const isPatchDownloading =
     activeJob.kind === 'patch' &&
@@ -2014,7 +2050,7 @@ export default function App() {
   const availableVersions = selectedGame ? versionOptions(snapshot, selectedGame, isDefaultGame) : []
   const mergedVersionInfos = useMemo(() => {
     const tagMap = new Map<string, string[]>()
-    const winTags = (typeof window !== 'undefined' && (window as any).globalVersionTags) || {}
+    const winTags = (typeof window !== 'undefined' && window.globalVersionTags) || {}
     if (selectedGame?.id && winTags[selectedGame.id]) {
       Object.entries(winTags[selectedGame.id]).forEach(([ver, tags]) => {
         tagMap.set(ver, tags as string[])
@@ -2022,7 +2058,7 @@ export default function App() {
         // Helper to get clean version
         const getCleanInline = (verStr: string) => {
           if (!verStr) return ''
-          let c = verStr.replace(/\s*-\s*Uploaded.*$/, '').trim()
+          const c = verStr.replace(/\s*-\s*Uploaded.*$/, '').trim()
           return c.replace(/\s*\(Build\b.*$/i, '').trim()
         }
         tagMap.set(getCleanInline(ver), tags as string[])
@@ -2030,7 +2066,7 @@ export default function App() {
     }
 
     if (selectedGame?.availableVersions) {
-      selectedGame.availableVersions.forEach((v: any) => {
+      selectedGame.availableVersions.forEach((v) => {
         if (v && v.tags) {
           if (v.version) tagMap.set(v.version, v.tags)
           if (v.label) tagMap.set(v.label, v.tags)
@@ -2042,51 +2078,40 @@ export default function App() {
     // Helper to get clean version
     const getClean = (verStr: string) => {
       if (!verStr) return ''
-      let c = verStr.replace(/\s*-\s*Uploaded.*$/, '').trim()
+      const c = verStr.replace(/\s*-\s*Uploaded.*$/, '').trim()
       return c.replace(/\s*\(Build\b.*$/i, '').trim()
     }
 
     const detailVersions = activeDetail?.versions || []
-    const hfVersions: any[] = snapshotBelongsToSelectedGame ? (snapshot?.availableVersions || []) : []
+    const hfVersions: string[] = snapshotBelongsToSelectedGame ? (snapshot.availableVersions || []) : []
 
     // If the catalog explicitly lists versions, ONLY show those versions
     if (selectedGame?.availableVersions && selectedGame.availableVersions.length > 0) {
-      return selectedGame.availableVersions.map((catalogVer: any) => {
-        const catStr = typeof catalogVer === 'string' ? catalogVer : (catalogVer.version || '')
+      return selectedGame.availableVersions.map((catalogVer): GameVersionInfo => {
+        const catStr = catalogVer.version || ''
         const catClean = getClean(catStr)
 
         // Find matching rich string in detailVersions (usually provides sizeBytes)
-        const richMatch = detailVersions.find((dv: any) => {
-          const dvStr = typeof dv === 'string' ? dv : (dv.version || '')
+        const richMatch = detailVersions.find((dv) => {
+          const dvStr = dv.version || ''
           return getClean(dvStr) === catClean
         })
 
         // Find matching string in snapshot versions (provides original buildId string)
-        const hfMatch = hfVersions.find((hv: any) => {
-          const hvStr = typeof hv === 'string' ? hv : (hv.version || '')
-          return getClean(hvStr) === catClean
-        })
+        const hfMatch = hfVersions.find((hv) => getClean(hv) === catClean)
 
-        let baseVer = catalogVer
-        let trueVersion = typeof catalogVer === 'string' ? catalogVer : catalogVer.version
+        let baseVer: GameVersionInfo = catalogVer
+        let trueVersion = catalogVer.version
         if (hfMatch) {
-          trueVersion = typeof hfMatch === 'string' ? hfMatch : hfMatch.version
-          baseVer = typeof catalogVer === 'object'
-            ? { ...catalogVer, version: trueVersion }
-            : hfMatch
+          trueVersion = hfMatch
+          baseVer = { ...catalogVer, version: trueVersion }
         }
         if (richMatch) {
-          baseVer = typeof baseVer === 'object' 
-            ? { ...baseVer, ...richMatch, version: trueVersion } 
-            : { ...richMatch, version: trueVersion }
+          baseVer = { ...baseVer, ...richMatch, version: trueVersion }
         }
 
-        const baseStr = typeof baseVer === 'string' ? baseVer : (baseVer.version || '')
+        const baseStr = baseVer.version || ''
         const tags = tagMap.get(baseStr) || tagMap.get(getClean(baseStr)) || tagMap.get(baseVer.buildId || '') || tagMap.get(baseVer.label || '')
-
-        if (typeof baseVer === 'string') {
-          return tags ? { version: baseVer, tags } : baseVer
-        }
         return tags ? { ...baseVer, tags } : baseVer
       })
     }
@@ -2094,22 +2119,17 @@ export default function App() {
     // Fallback: if catalog has no explicitly listed versions, show everything from depot
     const merged = [...detailVersions]
 
-    return merged.map((v: any) => {
-      const v_any = v as any
-      const strVer = typeof v === 'string' ? v : (v_any.version || '')
+    return merged.map((v) => {
+      const strVer = v.version || ''
       const cleanVer = getClean(strVer)
-      const tags = tagMap.get(strVer) || tagMap.get(v_any.label) || tagMap.get(v_any.buildId) || tagMap.get(cleanVer)
-
-      if (typeof v === 'string') {
-        return tags ? { version: v, tags } : v
-      }
+      const tags = tagMap.get(strVer) || tagMap.get(v.label) || tagMap.get(v.buildId) || tagMap.get(cleanVer)
       return tags ? { ...v, tags } : v
     })
-  }, [isDefaultGame, selectedGame?.availableVersions, activeDetail, snapshot.availableVersions, snapshotBelongsToSelectedGame, firestoreAssetVersion, selectedGame?.id])
+  }, [activeDetail, selectedGame?.availableVersions, selectedGame?.id, snapshot.availableVersions, snapshotBelongsToSelectedGame])
   const latestCatalogVersion =
-    selectedGame?.availableVersions.find((version: any) => version.latest)?.version ||
+    selectedGame?.availableVersions.find((version) => version.latest)?.version ||
     activeDetail?.versions.find((version) => version.latest)?.version ||
-    (selectedGame?.availableVersions.length === 1 ? (selectedGame.availableVersions[0] as any).version : '') ||
+    (selectedGame?.availableVersions.length === 1 ? selectedGame.availableVersions[0].version : '') ||
     (activeDetail?.versions.length === 1 ? activeDetail.versions[0].version : '') ||
     selectedGame?.latestVersion ||
     availableVersions[availableVersions.length - 1] ||
@@ -2120,7 +2140,7 @@ export default function App() {
       ? latestCatalogVersion
       : availableVersions[availableVersions.length - 1] || 'select game'
   const versionNumericCore = (v: string) => {
-    let s = v.trim().toLowerCase().replace(/^v/, '')
+    const s = v.trim().toLowerCase().replace(/^v/, '')
     let result = ''
     let sawDigit = false
     let lastWasSep = false
@@ -2146,8 +2166,8 @@ export default function App() {
   // allows the same version picker to perform upgrades, reinstalls and downgrades.
   const targetVersion = requestedTargetVersion
   const selectedVersionInfo =
-    selectedGame?.availableVersions.find((version: any) => (version.version || version) === targetVersion) ??
-    activeDetail?.versions.find((version: any) => (version.version || version) === targetVersion)
+    selectedGame?.availableVersions.find((version) => version.version === targetVersion) ??
+    activeDetail?.versions.find((version) => version.version === targetVersion)
   const installMode = !selectedInstalled
   const isInstalledUnknownWithSingleVersion =
     selectedCurrentVersion === 'installed' && availableVersions.length <= 1
@@ -2183,7 +2203,7 @@ export default function App() {
       (!activeJobGameId || activeJobGameId === selectedGame.id)
     if (snapshotBelongsToGame) return snapshot.updateSize
     return selectedVersionInfo?.sizeBytes ?? activeDetail?.versions?.[0]?.sizeBytes ?? 0
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [snapshot.updateSize, snapshot.lastJob?.gameId, snapshotBelongsToSelectedGame, selectedGame?.id, selectedVersionInfo?.sizeBytes, activeDetail?.versions])
   const displayedInstallTarget =
     selectedInstalled
@@ -2205,7 +2225,7 @@ export default function App() {
       setCloudSaveStatus(null)
       setScanStatus(t.cloudSave.loadError.replace('{error}', String(error)))
     }
-  }, [])
+  }, [t.cloudSave.loadError])
 
   useEffect(() => {
     if ((activeTab !== 'Library' && activeTab !== 'Store') || !selectedGame || !selectedInstalled) {
@@ -2298,7 +2318,16 @@ export default function App() {
       unlistenMap?.()
       unlistenAuth?.()
     }
-  }, [publishNotification, refreshCloudSaveStatus])
+  }, [
+    publishNotification,
+    refreshCloudSaveStatus,
+    t.cloudSave.attentionNotificationTitle,
+    t.cloudSave.conflictNotificationMessage,
+    t.cloudSave.conflictNotificationTitle,
+    t.cloudSave.mapUpdatedMessage,
+    t.cloudSave.mapUpdatedTitle,
+    t.cloudSave.waitingNotificationTitle,
+  ])
 
   async function chooseInstallFolder() {
     if (!isTauriRuntime()) {
@@ -3089,7 +3118,7 @@ export default function App() {
     if (!isTauriRuntime()) return
     let unlistenNavigate: (() => void) | undefined
     listen<string>('navigate', (event) => {
-      setActiveTab(event.payload as any)
+      if (isTabId(event.payload)) setActiveTab(event.payload)
       // We don't need to manually show() the window because the Rust side already calls window.show()
     }).then((dispose) => {
       unlistenNavigate = dispose
@@ -3711,7 +3740,11 @@ export default function App() {
 
               <div
                 key={activeTab}
-                className={`${reducedMotion ? '' : 'tab-enter'}${activeTab === 'Lua Shop' ? ' lua-shop-tab-content' : ''}`}
+                className={[
+                  'tab-content',
+                  reducedMotion ? '' : 'tab-enter',
+                  activeTab === 'Lua Shop' ? 'lua-shop-tab-content' : '',
+                ].filter(Boolean).join(' ')}
               >
                 {/* Offline gate: tabs requiring internet show NoInternetView when offline */}
                 {!isOnline && !['Library', 'Settings'].includes(activeTab) ? (
@@ -4100,6 +4133,7 @@ export default function App() {
             }
           />
           <HelpCenter
+            key={`${activeTab}:${helpCenterOpen}`}
             open={helpCenterOpen}
             activeTab={activeTab}
             onClose={() => setHelpCenterOpen(false)}
@@ -4108,10 +4142,9 @@ export default function App() {
               setActiveTab('Home')
             }}
           />
-          {!preferences.onboardingCompleted ? (
+          {shouldShowOnboarding ? (
             <Onboarding
               onComplete={() => updatePreference('onboardingCompleted', true)}
-              onEnableWindowsNotifications={() => void enableWindowsNotifications()}
             />
           ) : null}
           {showDonate ? (

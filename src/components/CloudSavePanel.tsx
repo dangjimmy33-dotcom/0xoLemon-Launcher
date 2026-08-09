@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { open } from '@tauri-apps/plugin-dialog'
 import {
@@ -25,7 +25,7 @@ import {
 import type { CloudSaveStatus } from '../types'
 import { formatBytes } from '../lib/format'
 import { cloudSavePresentation, quotaPercent } from '../lib/cloudSaveStatus'
-import { useLocale } from '../context/LocaleContext'
+import { useLocale } from '../context/locale'
 
 function formatDate(value: string | null | undefined, locale: string, empty: string) {
   if (!value) return empty
@@ -73,7 +73,7 @@ export function CloudSavePanel({
   const [localBusy, setLocalBusy] = useState<string | null>(null)
   const [advancedOpen, setAdvancedOpen] = useState(false)
 
-  const latestSnapshot = useMemo(() => snapshots[0] ?? null, [snapshots])
+  const latestSnapshot = snapshots[0] ?? null
   const isBusy = busy || localBusy !== null
 
   async function togglePin(snapshotId: string, pinned: boolean) {

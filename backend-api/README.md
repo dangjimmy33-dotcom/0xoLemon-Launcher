@@ -1,84 +1,49 @@
-# 🔥 0xoLemon Backend Middleware
+# 0xoLemon Backend API
 
-Backend API to solve Firebase quota burn (807 listeners → 0, 49k reads → 100/day)
+The existing Render service is the only production backend for launcher
+metadata and EA SPORTS FC 26 offline activation. Firestore is authoritative for
+the rolling global quota, account cooldowns, idempotent requests, audit events,
+and encrypted rotating EA credentials.
 
-## 🚀 Deploy to Render
+## Local checks
 
-### 1. Push to GitHub
-```bash
-git add backend-api/
-git commit -m "Add backend middleware"
-git push origin main
-```
-
-### 2. Create Web Service on Render
-- Go to: https://dashboard.render.com
-- Click: **New → Web Service**
-- Connect your GitHub repo
-- **Settings:**
-  - Name: `0xolemon-backend`
-  - Root Directory: `backend-api`
-  - Build Command: `npm install`
-  - Start Command: `npm start`
-  - Health Check Path: `/health`
-
-### 3. Environment Variables
-Add in Render dashboard:
-```
-FIREBASE_PROJECT_ID=xolemon-b360e
-```
-
-**Optional** (if using service account):
-```
-FIREBASE_PRIVATE_KEY_ID=<your-key-id>
-FIREBASE_PRIVATE_KEY=<your-private-key>
-FIREBASE_CLIENT_EMAIL=<firebase-adminsdk-email>
-FIREBASE_CLIENT_ID=<client-id>
-FIREBASE_CERT_URL=<cert-url>
-```
-
-### 4. Deploy!
-Click **Create Web Service** → Wait 2-3 minutes
-
----
-
-## 🎯 Local Testing
-
-```bash
-cd backend-api
+```powershell
+cd E:\007Launcher\backend-api
 npm install
-npm start
+npm test
+node --check index.js
 ```
 
-Test endpoints:
-```bash
-curl http://localhost:8080/health
-curl http://localhost:8080/api/catalog
-curl http://localhost:8080/api/assets
-curl http://localhost:8080/api/tags
-```
+The test suite mocks Discord and EA. It never consumes a production activation.
+The Firestore concurrency test runs only when `FIRESTORE_EMULATOR_HOST` is set.
 
----
+## Activation API
 
-## 📡 API Endpoints
+- `GET /api/0xolemon/offline-activation/ea-sports-fc-26/status`
+- `GET /api/0xolemon/offline-activation/ea-sports-fc-26/events`
+- `GET /api/0xolemon/offline-activation/ea-sports-fc-26/me`
+- `POST /api/0xolemon/offline-activation/ea-sports-fc-26/activate`
+- `POST /api/0xolemon/offline-activation/ea-sports-fc-26/cancel`
 
-- `GET /health` - Health check
-- `GET /api/catalog` - Game catalog (cached 1h)
-- `GET /api/assets` - Asset URLs (cached 1h)
-- `GET /api/tags` - Version tags (cached 1h)
-- `GET /api/game-tags` - Game filter tags (cached 1h)
-- `POST /api/cache/clear` - Clear cache
+`status` and `events` contain only public quota/package metadata. `me`,
+`activate`, and `cancel` require the Discord bearer token and verify the
+account, guild, role, and age directly against Discord.
 
----
+`POST /api/:tenant/cache/clear` requires `X-Admin-Key`; it is not a public
+maintenance endpoint.
 
-## 📊 Performance
+## Required Render secrets
 
-**Before:**
-- 807 listeners
-- 49,000 reads/day
+Use [`.env.example`](.env.example) as the schema. Real Firebase credentials,
+the activation encryption/admin keys, EA credentials, package password, and
+package metadata must exist only in Render's secret environment.
 
-**After:**
-- 0 listeners
-- ~100 reads/day
+After deploying, enable a Firestore TTL policy for
+`offlineActivationRequests.secretExpiresAt`. This removes encrypted recovery
+tokens after the 96-hour cooldown. The numeric `tokenExpiresAtMs` remains the
+authoritative application check even while Firestore TTL deletion is pending.
 
-**Savings:** 99.8% ✅
+The package allowlist in `ACTIVATION_PACKAGE_FILES_JSON` must include every
+file that Rust may install, with exact SHA-256 and byte size. A real activation
+must be started manually from the launcher because it consumes one of the five
+rolling ten-hour slots.

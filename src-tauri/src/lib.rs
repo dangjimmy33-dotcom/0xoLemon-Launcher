@@ -1231,12 +1231,10 @@ pub fn run() {
             add_defender_exclusion,
             set_debug_logging_enabled,
             get_debug_log_path,
-            denuvo::get_denuvo_token_from_server,
-            denuvo::apply_denuvo_token_to_cfg,
-            denuvo::scan_for_denuvo_ticket,
-            denuvo::delete_denuvo_tickets,
-            denuvo::launch_game_executable,
-            denuvo::download_and_extract_magic_file,
+            denuvo::get_offline_activation_state,
+            denuvo::start_offline_activation,
+            denuvo::resume_offline_activation,
+            denuvo::cancel_offline_activation,
             exit_app,
             clear_launcher_config,
             cloud_redirect::cloud_redirect_get_status,
@@ -1301,9 +1299,6 @@ pub fn run() {
             open_steam_tool::ost_install_hook,
             open_steam_tool::ost_remove_hook,
             open_steam_tool::ost_check_hook_status,
-            denuvo::get_denuvo_token_from_server,
-            denuvo::apply_denuvo_token_to_cfg,
-            denuvo::scan_for_denuvo_ticket,
         ]);
 
     builder.setup(move |app| {

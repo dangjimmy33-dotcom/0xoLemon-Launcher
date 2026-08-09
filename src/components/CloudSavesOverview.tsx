@@ -6,10 +6,11 @@ import type { CloudSaveStatus, GameCatalog, GameInstallState, CloudRedirectStatu
 import { isTauriRuntime } from '../lib/gameMeta'
 import { formatBytes } from '../lib/format'
 import { cloudSavePresentation, quotaPercent } from '../lib/cloudSaveStatus'
-import { useLocale } from '../context/LocaleContext'
+import { useLocale } from '../context/locale'
 import { CloudRedirectSettings } from './CloudRedirectSettings'
 
 const PROVIDER_VALUES = ['gdrive', 'onedrive', 'folder'] as const
+const showLegacyStfixerPanel = import.meta.env.VITE_SHOW_LEGACY_STFIXER === 'true'
 
 export function CloudSavesOverview({
   catalog,
@@ -56,7 +57,7 @@ export function CloudSavesOverview({
           }),
         )
         if (!disposed) setStatuses(Object.fromEntries(entries))
-      } catch (e) {
+      } catch {
         // ignore
       }
     }
@@ -78,7 +79,7 @@ export function CloudSavesOverview({
     const protectedGames = values.filter((status) => status.enabled && status.automaticProtection).length
     const attentionGames = values.filter((status) => cloudSavePresentation(status, c.states).blocking).length
     return { pendingCount, pendingBytes, quota, protectedGames, attentionGames }
-  }, [statuses])
+  }, [c.states, statuses])
 
   // --- STFixer state ---
   const [crStatus, setCrStatus] = useState<CloudRedirectStatus | null>(null)
@@ -112,7 +113,9 @@ export function CloudSavesOverview({
   }, [])
 
   useEffect(() => {
-    if (activeMode === 'stfixer') loadStfixerData()
+    // This effect hydrates state from Tauri only when the external mode changes.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (activeMode === 'stfixer') void loadStfixerData()
   }, [activeMode, loadStfixerData])
 
   async function handleApplyStfixer() {
@@ -126,7 +129,7 @@ export function CloudSavesOverview({
       setStfixerResult(result)
       const newStatus = await invoke<CloudRedirectStatus>('cloud_redirect_get_status')
       setCrStatus(newStatus)
-    } catch (e: any) {
+    } catch (e) {
       setStfixerResult({ succeeded: false, log: [String(e)], error: String(e) })
     } finally {
       setStfixerBusy(false)
@@ -149,7 +152,7 @@ export function CloudSavesOverview({
       setEditProvider(config.provider || '')
       setEditTokenPath(config.tokenPath || '')
       setProviderSaveMsg(c.configurationSaved)
-    } catch (e: any) {
+    } catch (e) {
       setProviderSaveError(true)
       setProviderSaveMsg(c.providerError.replace('{error}', String(e)))
     } finally {
@@ -187,7 +190,7 @@ export function CloudSavesOverview({
       await invoke('cloud_redirect_connect_google')
       await loadStfixerData()
       setProviderSaveMsg(c.authVerified)
-    } catch (e: any) {
+    } catch (e) {
       setProviderSaveError(true)
       setProviderSaveMsg(c.providerError.replace('{error}', String(e)))
     } finally {
@@ -332,7 +335,7 @@ export function CloudSavesOverview({
 
           {activeMode === 'stfixer' ? <CloudRedirectSettings /> : null}
 
-          {false && activeMode === 'stfixer' && (
+          {showLegacyStfixerPanel && activeMode === 'stfixer' && (
             <div className="cloud-redirect-panel">
               <header className="cr-header">
                 <div className="cr-header-title">

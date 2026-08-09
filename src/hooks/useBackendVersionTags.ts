@@ -25,7 +25,7 @@ function parseFlatVersionTags(data: Record<string, string[]>): Record<string, Re
 
     // Strategy: Find the dash before a version-like pattern
     // Version patterns: v + digit, or digit + period
-    const versionPattern = /-((v\d+|\d+\.\d+)[\w\.\-]*?)$/
+    const versionPattern = /-((v\d+|\d+\.\d+)[\w.-]*?)$/
     const match = key.match(versionPattern)
 
     if (match) {
@@ -48,12 +48,6 @@ function parseFlatVersionTags(data: Record<string, string[]>): Record<string, Re
   }
 
   return parsed
-}
-
-declare global {
-  interface Window {
-    globalVersionTags?: Record<string, Record<string, string[]>>
-  }
 }
 
 /**

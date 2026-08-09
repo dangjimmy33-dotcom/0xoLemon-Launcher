@@ -12,32 +12,32 @@ export function useLuaUpdateCheck(appid: number | undefined, isAddedToSteam: boo
   const [checking, setChecking] = useState(false)
 
   useEffect(() => {
-    if (!appid || !isAddedToSteam) {
-      setUpdateInfo(null)
-      return
-    }
+    if (!appid || !isAddedToSteam) return
 
     let mounted = true
-    setChecking(true)
-
-    invoke<LuaUpdateInfo>('check_steam_update', { appid })
-      .then((info) => {
-        if (mounted) {
-          setUpdateInfo(info)
-          setChecking(false)
-        }
-      })
-      .catch((err) => {
-        console.error('Failed to check Lua update:', err)
-        if (mounted) {
-          setChecking(false)
-        }
-      })
+    const timer = window.setTimeout(() => {
+      setChecking(true)
+      invoke<LuaUpdateInfo>('check_steam_update', { appid })
+        .then((info) => {
+          if (mounted) {
+            setUpdateInfo(info)
+            setChecking(false)
+          }
+        })
+        .catch((err) => {
+          console.error('Failed to check Lua update:', err)
+          if (mounted) setChecking(false)
+        })
+    }, 0)
 
     return () => {
       mounted = false
+      window.clearTimeout(timer)
     }
   }, [appid, isAddedToSteam])
 
-  return { updateInfo, checking }
+  return {
+    updateInfo: appid && isAddedToSteam ? updateInfo : null,
+    checking: appid && isAddedToSteam ? checking : false,
+  }
 }

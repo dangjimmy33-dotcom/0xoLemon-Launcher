@@ -3,7 +3,7 @@ import { Check, ChevronRight, Download, RefreshCcw, ShieldCheck, X, SkipForward 
 import { useState } from 'react'
 import { formatBytes, formatDuration } from '../lib/format'
 import { MOTION } from '../lib/motion'
-import { useLocale } from '../context/LocaleContext'
+import { useLocale } from '../context/locale'
 import type { LauncherUpdateInfo, LauncherUpdateProgress } from '../types'
 
 const phases = ['downloading', 'verifying', 'installing', 'restarting'] as const
@@ -22,7 +22,7 @@ export function UpdateBanner({
   onSkip: () => void
 }) {
   const { t } = useLocale()
-  const uc = (t as any).updateCenter ?? {}
+  const uc = t.updateCenter
   const active = progress && progress.phase !== 'checking' && progress.phase !== 'failed'
   const percent = downloadPercent(progress)
   return (
@@ -74,7 +74,7 @@ export function UpdateCenter({
   onSkip: () => void
 }) {
   const { t } = useLocale()
-  const uc = (t as any).updateCenter ?? {}
+  const uc = t.updateCenter
   const phase = progress?.phase ?? 'available'
   const active = ['downloading', 'verifying', 'installing', 'restarting'].includes(phase)
   const percent = downloadPercent(progress)

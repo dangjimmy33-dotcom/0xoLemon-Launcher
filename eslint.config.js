@@ -9,6 +9,7 @@ export default defineConfig([
   globalIgnores([
     'dist',
     'src-tauri/target',
+    'tools/launcher-tools/target',
     'src/App_backup.tsx',
     'worker/node_modules',
     'worker/dist',

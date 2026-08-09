@@ -1,19 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { GameCatalog, GameSummary, GameInstallMetadata, CloudSaveMetadata } from '../types'
 import { fetchWithRetry } from '../lib/fetchWithRetry'
+import { normalizeGameVersions } from '../lib/catalogVersions'
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://zeroxolemon-launcher.onrender.com'
 // 0xolemon1 = overflow/secondary project (FIFA 23, future games not in 0xolemon)
 // App.tsx merges this with firestoreCatalog (0xolemon) to get full game list
 const TENANT_ID = import.meta.env.VITE_TENANT_ID || '0xolemon1'
-
-// Access global assets override (set by useBackendAssets)
-declare global {
-  interface Window {
-    globalAssetsOverride?: Record<string, { grid?: string; hero?: string; logo?: string; icon?: string }>
-    globalVersionTags?: Record<string, Record<string, string[]>>
-  }
-}
 
 const DEFAULT_CLOUD_SAVE: CloudSaveMetadata = {
   enabled: false,
@@ -53,8 +46,6 @@ function normalizeSummary(raw: Record<string, unknown>): GameSummary {
 
   const versionTags = globalVersionTags[gameId] ?? {}
 
-  const rawAvailableVersions = (raw.availableVersions as GameSummary['availableVersions']) || []
-
   return {
     id: gameId,
     title,
@@ -62,51 +53,7 @@ function normalizeSummary(raw: Record<string, unknown>): GameSummary {
     developer: (raw.developer as string) || '',
     publisher: (raw.publisher as string) || '',
     latestVersion: (raw.latestVersion as string) || '',
-    availableVersions: Array.isArray(rawAvailableVersions) ? rawAvailableVersions.map(v => {
-      if (!v) return v as any
-      // Cast to any để handle cả string lẫn object (API có thể trả về cả hai)
-      const entry = v as any
-      let normalized: any
-      if (typeof entry === 'string') {
-        const buildMatch = (entry as string).match(/\(Build ([^)]+)\)/)
-        const extractedBuildId = buildMatch ? buildMatch[1].trim() : ''
-        let cleanLabel = (entry as string).replace(/\s*-\s*Uploaded\s+\d{4}-\d{2}-\d{2}.*$/, '').trim()
-        cleanLabel = cleanLabel.replace(/\s*\(Build [^)]+\)\s*/i, '').trim()
-        normalized = { version: entry, label: cleanLabel, buildId: extractedBuildId, sizeBytes: 0, latest: false }
-      } else {
-        // Object: extract buildId từ version string nếu chưa có
-        if (!entry.buildId || entry.buildId === entry.version) {
-          const buildMatch = (entry.version || '').match(/\(Build ([^)]+)\)/)
-          if (buildMatch) entry.buildId = buildMatch[1].trim()
-          else entry.buildId = ''
-        }
-        // Clean label: bỏ "- Uploaded ..." và "(Build ...)" suffix
-        if (entry.label && typeof entry.label === 'string') {
-          let cleaned = entry.label.replace(/\s*-\s*Uploaded\s+\d{4}-\d{2}-\d{2}.*$/, '').trim()
-          cleaned = cleaned.replace(/\s*\(Build [^)]+\)\s*/i, '').trim()
-          entry.label = cleaned
-        }
-        normalized = entry
-      }
-      // Lookup tags: thử full version string trước, sau đó thử semver prefix (phần trước space/ngoặc)
-      // Vd: "1.1.0 (Build 24298527) - Uploaded 2026-07-29" → thử "1.1.0" nếu full không match
-      const _semverPrefix = (s: string): string => s ? s.split(/[ (]/)[0].trim() : s
-      const _ver = normalized.version || ''
-      const _lbl = normalized.label || ''
-      const _bid = normalized.buildId || ''
-      const _foundTags =
-        versionTags[_ver] ||
-        versionTags[_lbl] ||
-        versionTags[_bid] ||
-        versionTags[_semverPrefix(_ver)] ||
-        versionTags[_semverPrefix(_lbl)] ||
-        versionTags[_semverPrefix(_bid)] ||
-        normalized.tags
-      return {
-        ...normalized,
-        tags: _foundTags
-      } as any
-    }).filter(Boolean) : [],
+    availableVersions: normalizeGameVersions(raw.availableVersions, versionTags),
     // Prefer assets_override CDN links over catalog values
     gridAssetId: (assetOverride.grid as string) || (raw.gridAssetId as string) || '',
     heroAssetId: (assetOverride.hero as string) || (raw.heroAssetId as string) || '',

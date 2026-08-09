@@ -27,9 +27,11 @@
   font-size: clamp(13px, 0.7vw + 10px, 15px);
   color: var(--hv-text-1);
   overflow-y: auto;
+  flex: 1 0 auto;
   height: 100%;
+  min-height: 100%;
   padding: 26px clamp(16px, 3vw, 40px) 80px;
-  background: #0a0d14;
+  background: transparent;
   -webkit-font-smoothing: antialiased;
 }
 

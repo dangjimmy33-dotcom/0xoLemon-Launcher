@@ -687,7 +687,7 @@ function buildCmd(action) {
     return cmd;
   }
   if (action === 'build') {
-    return `cd "E:\\007Launcher\\src-tauri" && cargo run --bin asset_pack_builder`;
+    return `cargo run --manifest-path "E:\\007Launcher\\tools\\launcher-tools\\Cargo.toml" --bin asset_pack_builder`;
   }
   return null;
 }
@@ -755,7 +755,7 @@ function runFetchAll() {
 }
 
 function runBuildAll() {
-  showCommand('cd "E:\\007Launcher\\src-tauri" && cargo run --bin asset_pack_builder', 'Build All Asset Packs');
+  showCommand('cargo run --manifest-path "E:\\007Launcher\\tools\\launcher-tools\\Cargo.toml" --bin asset_pack_builder', 'Build All Asset Packs');
 }
 
 function stopCurrent() {

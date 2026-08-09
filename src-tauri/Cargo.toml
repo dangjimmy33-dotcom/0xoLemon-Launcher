@@ -1,6 +1,6 @@
 [package]
 name = "first-light-smart-launcher"
-version = "1.0.0"
+version = "2.0.43"
 description = "Steam-like chunk launcher for 007 First Light"
 authors = ["007 Launcher"]
 edition = "2021"
@@ -14,18 +14,6 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 [[bin]]
 name = "0xoLemon"
 path = "src/main.rs"
-
-[[bin]]
-name = "depot_builder"
-path = "src/bin/depot_builder.rs"
-
-[[bin]]
-name = "asset_pack_builder"
-path = "src/bin/asset_pack_builder.rs"
-
-[[bin]]
-name = "injector_cli"
-path = "src/bin/injector_cli.rs"
 
 [build-dependencies]
 tauri-build = { version = "2.5.3", features = [] }

@@ -1,5 +1,5 @@
 import { Sparkles, Calendar, Tag } from 'lucide-react'
-import { useLocale } from '../context/LocaleContext'
+import { useLocale } from '../context/locale'
 import CHANGELOG from '../changelog.json'
 
 export function WhatsNewView({ isModal = false }: { isModal?: boolean }) {

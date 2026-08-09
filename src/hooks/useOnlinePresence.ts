@@ -105,7 +105,7 @@ export function useOnlinePresence(
       // Fire-and-forget — không await vì cleanup không async
       void deleteDoc(myDocRef).catch(() => {})
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [])
 
   return { onlineCount, loading }

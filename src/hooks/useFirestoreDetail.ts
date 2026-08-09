@@ -15,10 +15,7 @@ export function useFirestoreDetail(gameId: string | null): GameDetail | null {
   const [detail, setDetail] = useState<GameDetail | null>(null)
 
   useEffect(() => {
-    if (!gameId) {
-      setDetail(null)
-      return
-    }
+    if (!gameId) return
     console.log('[useFirestoreDetail] fetching details for', gameId)
     let mounted = true
     
@@ -57,5 +54,5 @@ export function useFirestoreDetail(gameId: string | null): GameDetail | null {
     }
   }, [gameId])
 
-  return detail
+  return gameId ? detail : null
 }

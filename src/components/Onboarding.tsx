@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import { ChevronLeft, ChevronRight, CircleHelp, Compass, X } from 'lucide-react'
-import { useLocale } from '../context/LocaleContext'
+import { useLocale } from '../context/locale'
 
 type TourRect = { top: number; left: number; width: number; height: number }
 
@@ -55,10 +55,8 @@ function cardPosition(rect: TourRect | null) {
 
 export function Onboarding({
   onComplete,
-  onEnableWindowsNotifications: _onEnableWindowsNotifications,
 }: {
   onComplete: () => void
-  onEnableWindowsNotifications: () => void
 }) {
   const { t } = useLocale()
   const [step, setStep] = useState(0)

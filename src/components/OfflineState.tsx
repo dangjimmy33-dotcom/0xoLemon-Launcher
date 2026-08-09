@@ -1,5 +1,5 @@
 import { CloudOff } from 'lucide-react'
-import { useLocale } from '../context/LocaleContext'
+import { useLocale } from '../context/locale'
 export function OfflineState() {
   const { t } = useLocale()
 

@@ -28,29 +28,30 @@ export function useDefenderExclusion() {
       setIsDialogOpen(true);
       
       // Store resolve function for dialog callbacks
-      (window as any).__defenderExclusionResolve = resolve;
+      window.__defenderExclusionResolve = resolve;
     });
   }, [checkExclusion]);
 
   const handleAccept = useCallback(async () => {
     try {
       await invoke('add_defender_exclusion', { path: exclusionPath });
-      const resolve = (window as any).__defenderExclusionResolve;
+      const resolve = window.__defenderExclusionResolve;
       if (resolve) {
         resolve({ success: true });
-        delete (window as any).__defenderExclusionResolve;
+        delete window.__defenderExclusionResolve;
       }
       setIsDialogOpen(false);
-    } catch (err: any) {
-      throw new Error(err?.message || 'Failed to add Windows Defender exclusion');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(message || 'Failed to add Windows Defender exclusion', { cause: error });
     }
   }, [exclusionPath]);
 
   const handleClose = useCallback(() => {
-    const resolve = (window as any).__defenderExclusionResolve;
+    const resolve = window.__defenderExclusionResolve;
     if (resolve) {
       resolve({ success: false, skipped: true });
-      delete (window as any).__defenderExclusionResolve;
+      delete window.__defenderExclusionResolve;
     }
     setIsDialogOpen(false);
   }, []);

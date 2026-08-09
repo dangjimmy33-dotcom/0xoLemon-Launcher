@@ -15,9 +15,6 @@ export function useSteamAppIds() {
 
   useEffect(() => {
     let mounted = true
-    if (cachedMapping !== null) {
-      setMapping(cachedMapping)
-    }
 
     // Fetch from backend (tenant specific)
     const fetchBackendMapping = async () => {

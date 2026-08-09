@@ -119,6 +119,21 @@ pub fn require_authorized_session() -> Result<(), String> {
     }
 }
 
+pub(crate) fn access_token_for_backend(app: &AppHandle) -> Result<String, String> {
+    let stored = read_stored_auth(app).map_err(|error| match error.kind() {
+        ErrorKind::NotFound => "Discord authorization is required.".to_string(),
+        _ => format!("Discord sign-in data could not be read: {error}"),
+    })?;
+    if stored.client_id != client_id() || stored.expires_at <= unix_seconds().saturating_add(30) {
+        return Err("Discord authorization expired. Sign in again.".to_string());
+    }
+    let encrypted = STANDARD
+        .decode(stored.encrypted_access_token)
+        .map_err(|_| "Discord sign-in data is invalid.".to_string())?;
+    let bytes = unprotect(&encrypted)?;
+    String::from_utf8(bytes).map_err(|_| "Discord sign-in data is invalid.".to_string())
+}
+
 pub fn get_status(app: &AppHandle) -> DiscordAuthStatus {
     let client_id = client_id();
     if client_id.is_empty() {
@@ -368,12 +383,17 @@ pub fn logout(app: &AppHandle) -> Result<DiscordAuthStatus, String> {
 
 fn validate_token(token: &str) -> Result<DiscordAuthStatus, ApiError> {
     let client = http_client().map_err(ApiError::Other)?;
-    let user =
-        match discord_get::<DiscordUserResponse>(&client, token, &format!("{DISCORD_API}/users/@me")) {
-            Ok(u) => u,
-            Err(ApiError::NetworkError(_)) => return Err(ApiError::NetworkError("offline".to_string())),
-            Err(e) => return Err(e),
-        };
+    let user = match discord_get::<DiscordUserResponse>(
+        &client,
+        token,
+        &format!("{DISCORD_API}/users/@me"),
+    ) {
+        Ok(u) => u,
+        Err(ApiError::NetworkError(_)) => {
+            return Err(ApiError::NetworkError("offline".to_string()))
+        }
+        Err(e) => return Err(e),
+    };
     let guild = find_required_guild(&client, token)?;
     let now_ms = unix_seconds().saturating_mul(1000);
     let created_ms = snowflake_timestamp_ms(&user.id).ok_or_else(|| {
@@ -436,9 +456,10 @@ fn validate_token(token: &str) -> Result<DiscordAuthStatus, ApiError> {
 fn check_guild_roles(client: &Client, token: &str) -> bool {
     let url = format!("{DISCORD_API}/users/@me/guilds/{REQUIRED_GUILD_ID}/member");
     match discord_get::<GuildMemberResponse>(client, token, &url) {
-        Ok(member) => {
-            member.roles.iter().any(|r| ALLOWED_ROLE_IDS.contains(&r.as_str()))
-        }
+        Ok(member) => member
+            .roles
+            .iter()
+            .any(|r| ALLOWED_ROLE_IDS.contains(&r.as_str())),
         Err(_) => false, // If we can't fetch member info, deny access
     }
 }

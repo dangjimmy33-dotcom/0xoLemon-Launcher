@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef, useCallback, memo } from 'react'
 import { createPortal } from 'react-dom'
 import { invoke } from '@tauri-apps/api/core'
 import { Search, ChevronLeft, ChevronRight, Plus, Trash2, RefreshCw, CheckCircle } from 'lucide-react'
-import { useLocale } from '../context/LocaleContext'
+import { useLocale } from '../context/locale'
 import {
   fetchSteamGameInfo,
   getCachedSteamGameInfo,
@@ -147,26 +147,18 @@ const VerifiedGameImage = memo(function VerifiedGameImage({
   const [failed, setFailed] = useState(false)
 
   useEffect(() => {
-    setCandidateIndex(0)
-    setFailed(false)
-    const cached = getCachedSteamGameInfo(appid)
-    if (cached) {
-      setInfo(cached)
-      return
-    }
+    if (info) return
 
     let mounted = true
     fetchSteamGameInfo(appid).then((result) => {
-      if (mounted && result) setInfo(result)
+      if (mounted && result) {
+        setCandidateIndex(0)
+        setFailed(false)
+        setInfo(result)
+      }
     })
     return () => { mounted = false }
-  }, [appid])
-
-  useEffect(() => {
-    if (!info?.header_image) return
-    setCandidateIndex(0)
-    setFailed(false)
-  }, [info?.header_image])
+  }, [appid, info])
 
   const candidates = useMemo(() => Array.from(new Set([
     info?.header_image,
@@ -432,30 +424,24 @@ const LuaShopGameCard = memo(function LuaShopGameCard({
   const appliedHeaderRef = useRef<string | null>(null)
   const { t } = useLocale()
 
-  // ── IntersectionObserver: trigger fetch only when card enters viewport ──────
-  useEffect(() => {
-    appliedHeaderRef.current = null
-    setImageLoaded(false)
-    setImageIndex(0)
-    setImageFailed(false)
-  }, [appid])
-
   // ── Fetch game info once the card is visible ────────────────────────────────
   useEffect(() => {
     if (!shouldLoad) {
       return
     }
-    const cached = getCachedSteamGameInfo(appid)
-    if (cached) {
-      setInfo((current) => current ?? cached)
-      return
-    }
+    if (info) return
     let mounted = true
     fetchSteamGameInfo(appid).then((result) => {
-      if (mounted && result) setInfo(result)
+      if (mounted && result) {
+        appliedHeaderRef.current = null
+        setImageLoaded(false)
+        setImageIndex(0)
+        setImageFailed(false)
+        setInfo(result)
+      }
     })
     return () => { mounted = false }
-  }, [shouldLoad, appid])
+  }, [shouldLoad, appid, info])
 
   const handleAction = async () => {
     setIsProcessing(true)
@@ -472,7 +458,7 @@ const LuaShopGameCard = memo(function LuaShopGameCard({
       info?.header_image,
     ].filter((url): url is string => Boolean(url))
     return Array.from(new Set(candidates))
-  }, [appid, info?.header_image])
+  }, [info?.header_image])
 
   const imageUrl = shouldLoad && !imageFailed
     ? imageCandidates[Math.min(imageIndex, imageCandidates.length - 1)] ?? ''
@@ -581,7 +567,7 @@ export function LuaShop() {
 
   // Verified Catalog State
   const [verifiedCatalog, setVerifiedCatalog] = useState<ShopGame[]>([])
-  const [isVerifiedLoading, setIsVerifiedLoading] = useState(false)
+  const [isVerifiedLoading, setIsVerifiedLoading] = useState(true)
   const [verifiedError, setVerifiedError] = useState<string | null>(null)
   // Map of appid (string) → buildid currently installed in Steam
   const [steamInstalledBuilds, setSteamInstalledBuilds] = useState<Record<string, string>>({})
@@ -682,7 +668,6 @@ export function LuaShop() {
   // ── Initial load: Verified Catalog & Hook Status ────────────────────────────
   useEffect(() => {
     // 1. Fetch Verified Catalog
-    setIsVerifiedLoading(true)
     getVerifiedCatalog()
       .then((catalog) => {
         setVerifiedCatalog(catalog)
@@ -747,8 +732,11 @@ export function LuaShop() {
 
     const manifestSet = allAppIdsSetRef.current
     const localMatches = localLuaSearchMatches(allAppIds, q)
-    setSearchResults(localMatches)
-    setIsSearching(true)
+    const localTimer = window.setTimeout(() => {
+      if (cancelled) return
+      setSearchResults(localMatches)
+      setIsSearching(true)
+    }, 0)
 
     const timer = window.setTimeout(async () => {
       try {
@@ -782,6 +770,7 @@ export function LuaShop() {
 
     return () => {
       cancelled = true
+      window.clearTimeout(localTimer)
       window.clearTimeout(timer)
     }
   }, [search, allAppIds])

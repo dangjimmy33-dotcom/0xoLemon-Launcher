@@ -26,8 +26,8 @@ export function DefenderExclusionDialog({
     try {
       await onAccept();
       onClose();
-    } catch (err: any) {
-      setError(err?.message || 'Failed to add exclusion');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to add exclusion');
     } finally {
       setIsProcessing(false);
     }

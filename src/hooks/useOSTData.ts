@@ -10,6 +10,25 @@ export interface OSTTrack {
   durationStr: string
 }
 
+type HfTreeFile = {
+  type: string
+  path: string
+  size?: number
+  lfs?: { size?: number }
+}
+
+function isAudioTreeFile(value: unknown): value is HfTreeFile {
+  if (!value || typeof value !== 'object') return false
+  const file = value as Record<string, unknown>
+  if (file.type !== 'file' || typeof file.path !== 'string') return false
+  const path = file.path.toLowerCase()
+  return path.endsWith('.mp3') || path.endsWith('.flac')
+}
+
+function audioFilesFromResponse(value: unknown): HfTreeFile[] {
+  return Array.isArray(value) ? value.filter(isAudioTreeFile) : []
+}
+
 // Module-level cache: repo URL per game (avoids multi-repo scan within session)
 const ostRepoCache: Record<string, { treeUrl: string, resolveBaseUrl: string, token: string | null }> = {}
 
@@ -19,14 +38,18 @@ function loadTracksFromStorage(gameId: string): OSTTrack[] | null {
   try {
     const raw = localStorage.getItem(TRACKS_CACHE_PREFIX + gameId)
     if (raw) return JSON.parse(raw) as OSTTrack[]
-  } catch {}
+  } catch {
+    // Corrupt cache entries are ignored and replaced by fresh metadata.
+  }
   return null
 }
 
 function saveTracksToStorage(gameId: string, tracks: OSTTrack[]) {
   try {
     localStorage.setItem(TRACKS_CACHE_PREFIX + gameId, JSON.stringify(tracks))
-  } catch {}
+  } catch {
+    // Storage quotas must not break soundtrack playback.
+  }
 }
 
 export function useOSTData(gameId: string | null) {
@@ -44,7 +67,6 @@ export function useOSTData(gameId: string | null) {
   useEffect(() => {
     let mounted = true
     if (!gameId) {
-      setTracks([])
       return
     }
 
@@ -63,7 +85,7 @@ export function useOSTData(gameId: string | null) {
           throw new Error('No repository configured for this game')
         }
 
-        let audioFiles: { type: string, path: string, size?: number, lfs?: { size: number } }[] = []
+        let audioFiles: HfTreeFile[] = []
         let activeResolveBaseUrl = ''
         let activeHeaders: Record<string, string> = {}
 
@@ -75,8 +97,7 @@ export function useOSTData(gameId: string | null) {
           try {
             const res = await fetch(`${cached.treeUrl}?t=${Date.now()}`, { headers, cache: 'no-store' })
             if (res.ok) {
-              const files = await res.json()
-              const audios = files.filter((f: any) => f.type === 'file' && (f.path.toLowerCase().endsWith('.mp3') || f.path.toLowerCase().endsWith('.flac')))
+              const audios = audioFilesFromResponse(await res.json())
               if (audios.length > 0) {
                 audioFiles = audios
                 activeResolveBaseUrl = cached.resolveBaseUrl
@@ -96,8 +117,7 @@ export function useOSTData(gameId: string | null) {
             try {
               const res = await fetch(`${treeUrl}?t=${Date.now()}`, { headers, cache: 'no-store' })
               if (res.ok) {
-                const files = await res.json()
-                const audios = files.filter((f: any) => f.type === 'file' && (f.path.toLowerCase().endsWith('.mp3') || f.path.toLowerCase().endsWith('.flac')))
+                const audios = audioFilesFromResponse(await res.json())
                 if (audios.length > 0) {
                   audioFiles = audios
                   activeResolveBaseUrl = resolveBaseUrl
@@ -123,7 +143,7 @@ export function useOSTData(gameId: string | null) {
         // Process each audio file and fetch ID3 metadata
         for (const file of audioFiles) {
           if (!mounted) return
-          const fileName = (file.path as string).split('/').pop() || ''
+          const fileName = file.path.split('/').pop() || ''
           const encodedFileName = encodeURIComponent(fileName)
           const url = `${activeResolveBaseUrl}/${encodedFileName}`
 
@@ -143,7 +163,7 @@ export function useOSTData(gameId: string | null) {
             if (metaRes.ok || metaRes.status === 206) {
               const buffer = await metaRes.arrayBuffer()
               // For xet/LFS files the real size is in lfs.size; file.size is also real for xet
-              const fileSize = (file as any).lfs?.size ?? ((file as any).size > 10000 ? (file as any).size : undefined)
+              const fileSize = file.lfs?.size ?? (file.size && file.size > 10_000 ? file.size : undefined)
               const isFlac = fileName.toLowerCase().endsWith('.flac')
               const metadata = await mm.parseBuffer(new Uint8Array(buffer), isFlac ? 'audio/flac' : 'audio/mpeg', {
                 skipCovers: true,
@@ -177,8 +197,8 @@ export function useOSTData(gameId: string | null) {
         if (mounted) {
           setTracks([...loadedTracks])
         }
-      } catch (err: any) {
-        if (mounted) setError(err.message)
+      } catch (error) {
+        if (mounted) setError(errorMessage(error))
       } finally {
         // Persist to localStorage — survives launcher restarts
         if (gameId && loadedTracks.length > 0) {
@@ -195,5 +215,9 @@ export function useOSTData(gameId: string | null) {
     }
   }, [gameId])
 
-  return { tracks, loading, error }
+  return { tracks: gameId ? tracks : [], loading: gameId ? loading : false, error: gameId ? error : null }
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
 }

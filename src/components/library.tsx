@@ -1,4 +1,5 @@
-import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState, cloneElement, memo } from 'react'
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState, memo } from 'react'
+import type { ReactElement } from 'react'
 import { doc, setDoc, increment } from 'firebase/firestore'
 import { db } from '../firebase'
 import { createPortal } from 'react-dom'
@@ -7,7 +8,7 @@ import { listen } from '@tauri-apps/api/event'
 import { BookOpen, CheckCircle2, ChevronLeft, ChevronRight, CircleAlert, PlusCircle, Download, FolderOpen, HardDrive, Image as ImageIcon, Library, Play, RefreshCcw, Search, ShieldCheck, ShoppingBag, SlidersHorizontal, ThumbsUp, Trophy, X, MessageSquare, Info, Sparkles, Clock3, TrendingUp } from 'lucide-react'
 import { useGameStats } from '../hooks/useGameStats'
 import { TutorialModal } from './TutorialModal'
-import { useLocale } from '../context/LocaleContext'
+import { useLocale } from '../context/locale'
 import { useSteamAppIds } from '../hooks/useSteamAppIds'
 import { useLuaUpdateCheck } from '../hooks/useLuaUpdateCheck'
 import type { CloudSaveStatus, GameAchievement, GameCatalog, GameDetail, GameMedia, GameSummary, GameInstallState, GameVersionInfo, VerifyUiStatus } from '../types'
@@ -23,7 +24,6 @@ import { useFirestoreDetail } from '../hooks/useFirestoreDetail'
 import { SaveBackupIndicator } from './SaveBackupIndicator'
 import { normalizeStoreSearchTerm, rankStoreGames, type StoreSearchFilter, type StoreSearchResult } from '../lib/storeSearch'
 import { useStoreSearchTelemetry, type StoreSearchTermStat } from '../hooks/useStoreSearchTelemetry'
-import { DenuvoActivationButton } from './DenuvoActivation'
 
 function LazyGameCardImageBase({
   game,
@@ -494,46 +494,44 @@ function GameHoverCard({
   game: GameSummary
   assets: Record<string, string>
   onRequestAsset: (game: GameSummary, assetId: string | undefined, urgent?: boolean) => void
-  children: React.ReactElement
+  children: ReactElement
 }) {
   const [hovered, setHovered] = useState(false)
   const [show, setShow] = useState(false)
   const [pos, setPos] = useState({ top: 0, left: 0, right: 0, alignRight: false })
-  const anchorRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
-    if (!hovered) {
-      setShow(false)
-      return
-    }
-    const timer = setTimeout(() => {
-      if (anchorRef.current) {
-        const rect = anchorRef.current.getBoundingClientRect()
-        const isListMode = rect.width > 300
-        const spaceRight = window.innerWidth - rect.right
-        const spaceLeft = rect.left
-        const alignRight = !isListMode && spaceRight < 340 && spaceLeft > 340
-        setPos({
-          top: rect.top + rect.height / 2,
-          left: isListMode ? rect.left + 220 : rect.right + 10,
-          right: window.innerWidth - rect.left + 10,
-          alignRight,
-        })
-      }
-      setShow(true)
-    }, 600)
+    if (!hovered) return
+    const timer = setTimeout(() => setShow(true), 600)
     return () => clearTimeout(timer)
   }, [hovered])
 
-  const clonedChild = cloneElement(children, {
-    ref: anchorRef,
-    onMouseEnter: () => setHovered(true),
-    onMouseLeave: () => setHovered(false),
-  } as any)
+  const handleMouseEnter = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect()
+    const isListMode = rect.width > 300
+    const spaceRight = window.innerWidth - rect.right
+    const spaceLeft = rect.left
+    setPos({
+      top: rect.top + rect.height / 2,
+      left: isListMode ? rect.left + 220 : rect.right + 10,
+      right: window.innerWidth - rect.left + 10,
+      alignRight: !isListMode && spaceRight < 340 && spaceLeft > 340,
+    })
+    setHovered(true)
+  }, [])
 
   return (
     <>
-      {clonedChild}
+      <div
+        className="library-hover-anchor"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={() => {
+          setHovered(false)
+          setShow(false)
+        }}
+      >
+        {children}
+      </div>
       {show && createPortal(<HoverCardPopup game={game} assets={assets} pos={pos} onRequestAsset={onRequestAsset} />, document.body)}
     </>
   )
@@ -799,17 +797,20 @@ export function StoreLibraryView({
 
   // When Firestore confirms the like count, clear the optimistic override
   useEffect(() => {
-    setOptimisticLikes(prev => {
-      const next = { ...prev }
-      let changed = false
-      for (const gameId of Object.keys(next)) {
-        if (gameStats.likes[gameId] !== undefined) {
-          delete next[gameId]
-          changed = true
+    const timer = window.setTimeout(() => {
+      setOptimisticLikes(prev => {
+        const next = { ...prev }
+        let changed = false
+        for (const gameId of Object.keys(next)) {
+          if (gameStats.likes[gameId] !== undefined) {
+            delete next[gameId]
+            changed = true
+          }
         }
-      }
-      return changed ? next : prev
-    })
+        return changed ? next : prev
+      })
+    }, 0)
+    return () => window.clearTimeout(timer)
   }, [gameStats.likes])
 
   useEffect(() => {
@@ -921,7 +922,8 @@ export function StoreLibraryView({
   }, [selectedGame])
 
   useEffect(() => {
-    setCurrentPage(1)
+    const timer = window.setTimeout(() => setCurrentPage(1), 0)
+    return () => window.clearTimeout(timer)
   }, [deferredQuery, searchFilter, sortBy, viewLayout, viewMode, libraryMode, gridCols])
 
   const itemsPerPage = viewLayout === 'list' ? 70 : 50
@@ -959,7 +961,7 @@ export function StoreLibraryView({
       }
     }
 
-    window.addEventListener('lua-game-mode-changed' as any, handleLuaGameModeChange)
+    window.addEventListener('lua-game-mode-changed', handleLuaGameModeChange)
 
     // Check initial status
     const checkLuaGameStatus = async () => {
@@ -976,7 +978,7 @@ export function StoreLibraryView({
     checkLuaGameStatus()
 
     return () => {
-      window.removeEventListener('lua-game-mode-changed' as any, handleLuaGameModeChange)
+      window.removeEventListener('lua-game-mode-changed', handleLuaGameModeChange)
     }
   }, [selectedGame, activeDetailTab, mapping])
 
@@ -988,28 +990,28 @@ export function StoreLibraryView({
     const effectiveMode = viewMode === 'library' ? libraryMode : storeMode
 
     if (effectiveMode !== 'steam' || !isInstalledOnSteam || !executable) {
-      if (steamGameRunning) setSteamGameRunning(false)
-      return
+      const timer = window.setTimeout(() => setSteamGameRunning(false), 0)
+      return () => window.clearTimeout(timer)
     }
 
     const interval = setInterval(async () => {
       try {
         const running = await invoke<boolean>('is_process_running', { executable })
         setSteamGameRunning(running)
-      } catch (e) {
+      } catch {
         // ignore
       }
     }, 3000)
 
     return () => clearInterval(interval)
-  }, [detail, mapping, selectedGame, steamInstalledAppIds, libraryMode, storeMode, viewMode, steamGameRunning])
+  }, [detail, mapping, selectedGame, steamInstalledAppIds, libraryMode, storeMode, viewMode])
 
   const [steamlessStatus, setSteamlessStatus] = useState<boolean>(false)
   const [steamlessLoading, setSteamlessLoading] = useState<boolean>(false)
   const [steamlessMessage, setSteamlessMessage] = useState<{ text: string; isError: boolean } | null>(null)
 
   /** Resolve the exe path: prefer Steam's own install dir over launcher's installPath */
-  const resolveSteamlessExePath = async (): Promise<string | null> => {
+  const resolveSteamlessExePath = useCallback(async (): Promise<string | null> => {
     const launchExe = selectedInstallState?.launchExecutable
     if (!launchExe) return null
     // Only the filename part — strip any subdirectory that might be in launchExecutable
@@ -1029,7 +1031,7 @@ export function StoreLibraryView({
     const installPath = selectedInstallState?.installPath
     if (!installPath) return null
     return `${installPath}\\${launchExe}`
-  }
+  }, [mapping, selectedGame, selectedInstallState])
 
   useEffect(() => {
     if (!selectedGame || !selectedInstallState?.launchExecutable || activeDetailTab !== 'lua-game') {
@@ -1044,7 +1046,7 @@ export function StoreLibraryView({
       }
     })
     return () => { cancelled = true }
-  }, [selectedGame, selectedInstallState, activeDetailTab])
+  }, [activeDetailTab, resolveSteamlessExePath, selectedGame, selectedInstallState])
 
   const handleToggleSteamless = async () => {
     const exePath = await resolveSteamlessExePath()
@@ -1058,7 +1060,7 @@ export function StoreLibraryView({
         setSteamlessStatus(false)
         setSteamlessMessage({ text: msg, isError: false })
       } else {
-        const res = await invoke<any>('steamless_apply', { exePath })
+        const res = await invoke<{ success: boolean; message: string }>('steamless_apply', { exePath })
         if (res.success) {
           setSteamlessStatus(true)
           setSteamlessMessage({ text: res.message, isError: false })
@@ -1318,7 +1320,7 @@ export function StoreLibraryView({
             <div className={`library-browse-grid layout-${viewLayout} ${viewLayout === 'grid' ? `grid-cols-${gridCols}` : ''}`}>
               {paginatedGames.map((game) => (
                 <GameHoverCard key={game.id} game={game} assets={assets} onRequestAsset={onRequestAsset}>
-                  {renderGameCard(game, 'browse') as React.ReactElement}
+                  {renderGameCard(game, 'browse') as ReactElement}
                 </GameHoverCard>
               ))}
             </div>
@@ -1665,11 +1667,6 @@ export function StoreLibraryView({
               </button>
             ) : null}
             
-            {/* Denuvo Activation Button */}
-            {(installed && effectiveMode !== 'steam') && (
-                <DenuvoActivationButton gameDir={selectedInstallState?.installPath || ''} cfgPath={selectedInstallState?.installPath + '\\anadius.cfg'} gameId={selectedGame.id} />
-            )}
-
             {(installed && effectiveMode !== 'steam') ? (
               <button className="danger-control" type="button" onClick={onUninstall}>
                 <X size={17} />
@@ -1770,8 +1767,8 @@ export function StoreLibraryView({
                       await invoke('add_to_steam', { appid: currentSteamAppId, forceUpdate: true })
                       // Trigger re-check
                       window.location.reload()
-                    } catch (e: any) {
-                      alert(`Failed to update: ${e}`)
+                    } catch (error) {
+                      alert(`Failed to update: ${String(error)}`)
                     }
                   }}
                   style={{
@@ -2091,20 +2088,21 @@ function SteamIntegrationButton({ gameId, gameTitle, storeMode }: { gameId: stri
 
   const appid = mapping[gameId]
 
-  const checkStatus = async () => {
+  const checkStatus = useCallback(async () => {
     try {
       const isAdded = await invoke<boolean>('check_steam_status', { appid })
       setStatus(isAdded)
     } catch (e) {
       console.error('Failed to check steam status', e)
     }
-  }
+  }, [appid])
 
   // MUST be before any conditional return (React hooks rule)
   useEffect(() => {
     if (!appid) return
-    checkStatus()
-  }, [appid])
+    const timer = window.setTimeout(() => void checkStatus(), 0)
+    return () => window.clearTimeout(timer)
+  }, [appid, checkStatus])
 
   // Hide in "local" mode
   if (storeMode === 'local') {
