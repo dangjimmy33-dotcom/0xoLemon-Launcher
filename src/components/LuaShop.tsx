@@ -908,8 +908,13 @@ export function LuaShop() {
   }, [showToast, t.library.addToSteam])
 
   const handleAddToSteam = useCallback(async (appid: string) => {
-    const numAppid = parseInt(appid)
-    const gameName = getCachedSteamGameInfo(appid)?.name || 'AppID ' + appid
+    const normalizedAppid = appid.trim()
+    if (!/^\d+$/.test(normalizedAppid)) {
+      showToast('Error', `Invalid AppID: ${appid}`, 'error')
+      return
+    }
+    const numAppid = Number.parseInt(normalizedAppid, 10)
+    const gameName = getCachedSteamGameInfo(normalizedAppid)?.name || 'AppID ' + normalizedAppid
 
     try {
       const isEnabled = await invoke<boolean>('is_lua_game_mode_enabled')
@@ -923,8 +928,25 @@ export function LuaShop() {
       return
     }
 
-    await openVersionPicker({ appid: numAppid, name: gameName })
-  }, [openVersionPicker, showToast, t.luaShop.luaModeRequired])
+    try {
+      await performLatestPackageInstall(numAppid, gameName)
+      setInstalledLuas((prev) => new Set([...prev, normalizedAppid]))
+      showToast(t.library.addToSteam, t.library.addToSteamSuccess, 'success')
+      if (skipConfirm) performRestart()
+      else setShowRestartConfirm(true)
+    } catch (err) {
+      showToast(t.library.addToSteam, t.library.addToSteamError + ': ' + String(err), 'error')
+    }
+  }, [
+    performLatestPackageInstall,
+    performRestart,
+    showToast,
+    skipConfirm,
+    t.library.addToSteam,
+    t.library.addToSteamError,
+    t.library.addToSteamSuccess,
+    t.luaShop.luaModeRequired,
+  ])
 
   // ── Remove ──────────────────────────────────────────────────────────────────
   const handleRemove = useCallback((appid: string) => {
