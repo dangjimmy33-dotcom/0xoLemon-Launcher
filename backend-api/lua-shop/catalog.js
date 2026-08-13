@@ -372,10 +372,10 @@ async function searchSteamCatalog({ query = '', cursor = '', limit = 40 }) {
     items: page.map((entry) => ({
       appid: entry.appid,
       name: entry.name,
-      // IStore does not return asset paths. Leave this empty so the desktop
-      // resolver can obtain Steam's hashed header URL instead of flashing the
-      // generic 200-OK "Header Capsule" placeholder.
-      headerImage: ''
+      // Keep the legacy path for already-released clients. New desktop builds
+      // treat catalog images as provisional and replace them with Steam's
+      // verified hashed URL when the card enters the viewport.
+      headerImage: `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${entry.appid}/header.jpg`
     })),
     nextCursor: offset + page.length < matches.length
       ? encodeCursor(normalizedQuery, offset + page.length)
