@@ -51,7 +51,58 @@ function catalogEntry(entry) {
     .trim()
     .slice(0, 256);
   if (!Number.isSafeInteger(appid) || appid <= 0 || !name) return null;
-  return { appid, name, normalized: normalize(name) };
+  const rawHeaderImage = String(entry && entry.headerImage || '').trim();
+  const headerImage = /^https:\/\//i.test(rawHeaderImage) ? rawHeaderImage.slice(0, 1024) : '';
+  return { appid, name, normalized: normalize(name), headerImage };
+}
+
+function catalogMatchScore(entry, normalizedQuery) {
+  if (!normalizedQuery) return 0;
+  if (/^\d+$/.test(normalizedQuery)) {
+    return String(entry.appid) === normalizedQuery ? 0 : null;
+  }
+
+  const queryTokens = normalizedQuery.split(' ').filter(Boolean);
+  const nameTokens = entry.normalized.split(' ').filter(Boolean);
+  if (queryTokens.length === 0 || queryTokens.length > nameTokens.length) return null;
+  if (entry.normalized === normalizedQuery) return 0;
+
+  let bestScore = Number.POSITIVE_INFINITY;
+  for (let start = 0; start <= nameTokens.length - queryTokens.length; start += 1) {
+    let exactTokens = 0;
+    let matches = true;
+    for (let index = 0; index < queryTokens.length; index += 1) {
+      const queryToken = queryTokens[index];
+      const nameToken = nameTokens[start + index];
+      if (!nameToken.startsWith(queryToken)) {
+        matches = false;
+        break;
+      }
+      if (nameToken === queryToken) exactTokens += 1;
+    }
+    if (!matches) continue;
+
+    // Consecutive word-prefix matching keeps typeahead useful while excluding
+    // Steam Store's unrelated fuzzy matches. Exact leading phrases rank first.
+    const positionPenalty = start === 0 ? 10 : 100 + start;
+    const completionPenalty = queryTokens.length - exactTokens;
+    bestScore = Math.min(bestScore, positionPenalty + completionPenalty);
+  }
+  return Number.isFinite(bestScore) ? bestScore : null;
+}
+
+function searchCatalogEntries(apps, query) {
+  const normalizedQuery = normalize(query);
+  if (!normalizedQuery) return apps;
+  return apps
+    .map((entry) => ({ entry, score: catalogMatchScore(entry, normalizedQuery) }))
+    .filter((match) => match.score != null)
+    .sort((left, right) =>
+      left.score - right.score
+      || left.entry.normalized.length - right.entry.normalized.length
+      || left.entry.name.localeCompare(right.entry.name, 'en', { sensitivity: 'base' })
+    )
+    .map((match) => match.entry);
 }
 
 async function loadCatalogPages(fetchImpl, apiKey) {
@@ -174,10 +225,54 @@ function parseStoreSearchPayload(payload) {
     if (!itemKey.startsWith('App_') || !/^\d{1,10}$/.test(rawAppId)) return null;
     return catalogEntry({
       appid: Number(rawAppId),
-      name: row.querySelector('.title')?.textContent || ''
+      name: row.querySelector('.title')?.textContent || '',
+      headerImage: row.querySelector('.search_capsule img')?.getAttribute('src') || ''
     });
   });
   return { slots, start, total };
+}
+
+async function searchPublicStoreStrict(query, offset, limit, fetchImpl = fetch) {
+  const normalizedQuery = normalize(query);
+  const items = [];
+  const seen = new Set();
+  let scanOffset = offset;
+  let total = null;
+
+  while (items.length < limit && (total == null || scanOffset < total)) {
+    const blockStart = Math.floor(scanOffset / STORE_SEARCH_PAGE_SIZE) * STORE_SEARCH_PAGE_SIZE;
+    const block = await fetchStoreSearchBlock(query, blockStart, fetchImpl);
+    total = block.total;
+    let slotIndex = scanOffset - blockStart;
+    if (slotIndex >= block.slots.length) {
+      scanOffset = blockStart + STORE_SEARCH_PAGE_SIZE;
+      if (block.slots.length < STORE_SEARCH_PAGE_SIZE) break;
+      continue;
+    }
+    while (slotIndex < block.slots.length && items.length < limit) {
+      const entry = block.slots[slotIndex];
+      scanOffset += 1;
+      slotIndex += 1;
+      if (!entry || seen.has(entry.appid)) continue;
+      const score = catalogMatchScore(entry, normalizedQuery);
+      if (score == null) continue;
+      seen.add(entry.appid);
+      items.push({ entry, score });
+    }
+    if (block.slots.length < STORE_SEARCH_PAGE_SIZE) break;
+  }
+
+  items.sort((left, right) =>
+    left.score - right.score
+    || left.entry.normalized.length - right.entry.normalized.length
+    || left.entry.name.localeCompare(right.entry.name, 'en', { sensitivity: 'base' })
+  );
+  const exhausted = total != null && scanOffset >= total;
+  return {
+    items: items.map((match) => match.entry),
+    nextOffset: exhausted ? null : scanOffset,
+    totalEstimate: offset === 0 && exhausted ? items.length : null
+  };
 }
 
 async function fetchStoreSearchBlock(query, start, fetchImpl) {
@@ -190,6 +285,8 @@ async function fetchStoreSearchBlock(query, start, fetchImpl) {
   url.searchParams.set('start', String(start));
   url.searchParams.set('count', String(STORE_SEARCH_PAGE_SIZE));
   url.searchParams.set('infinite', '1');
+  // Lua Shop installs games, not DLC, soundtracks, demos, or upgrade packs.
+  url.searchParams.set('category1', '998');
   try {
     const response = await fetchImpl(url, {
       headers: {
@@ -255,27 +352,30 @@ async function searchSteamCatalog({ query = '', cursor = '', limit = 40 }) {
   const safeLimit = Math.max(1, Math.min(40, Number(limit) || 40));
   const offset = decodeCursor(normalizedQuery, cursor);
   if (normalizedQuery) {
-    const result = await searchPublicStore(text, offset, safeLimit);
+    const result = await searchPublicStoreStrict(text, offset, safeLimit);
     return {
       items: result.items.map((entry) => ({
         appid: entry.appid,
         name: entry.name,
-        headerImage: `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${entry.appid}/header.jpg`
+        headerImage: entry.headerImage
       })),
       nextCursor: result.nextOffset == null
         ? null
         : encodeCursor(normalizedQuery, result.nextOffset),
-      totalEstimate: result.total
+      totalEstimate: result.totalEstimate
     };
   }
   const apps = await fetchCatalog();
-  const matches = apps;
+  const matches = searchCatalogEntries(apps, text);
   const page = matches.slice(offset, offset + safeLimit);
   return {
     items: page.map((entry) => ({
       appid: entry.appid,
       name: entry.name,
-      headerImage: `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${entry.appid}/header.jpg`
+      // IStore does not return asset paths. Leave this empty so the desktop
+      // resolver can obtain Steam's hashed header URL instead of flashing the
+      // generic 200-OK "Header Capsule" placeholder.
+      headerImage: ''
     })),
     nextCursor: offset + page.length < matches.length
       ? encodeCursor(normalizedQuery, offset + page.length)
@@ -293,6 +393,8 @@ module.exports = {
   loadCatalogPages,
   normalize,
   parseStoreSearchPayload,
+  searchCatalogEntries,
   searchPublicStore,
+  searchPublicStoreStrict,
   searchSteamCatalog
 };

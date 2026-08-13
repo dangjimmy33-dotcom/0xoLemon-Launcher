@@ -3,7 +3,13 @@ const crypto = require('crypto');
 const test = require('node:test');
 
 const { mergeIndex } = require('../lua-shop/hf-publisher');
-const { loadCatalogPages, searchPublicStore } = require('../lua-shop/catalog');
+const {
+  loadCatalogPages,
+  parseStoreSearchPayload,
+  searchCatalogEntries,
+  searchPublicStore,
+  searchPublicStoreStrict
+} = require('../lua-shop/catalog');
 const { validateCanonicalLua, validateCanonicalPackage } = require('../lua-shop/package-validator');
 const { FirestoreLuaShopQuota, localDayKey, nextLocalMidnightMs } = require('../lua-shop/quota');
 
@@ -97,6 +103,14 @@ function steamSearchHtml(firstAppId, count) {
   }).join('');
 }
 
+function namedSteamSearchHtml(items) {
+  return items.map(({ appid, name, image = '' }) =>
+    `<a class="search_result_row" data-ds-appid="${appid}" data-ds-itemkey="App_${appid}">`
+    + `<div class="search_capsule"><img src="${image}"></div>`
+    + `<span class="title">${name}</span></a>`
+  ).join('');
+}
+
 test('Steam IStore catalog follows its monotonic cursor and deduplicates AppIDs', async () => {
   const requested = [];
   const apps = await loadCatalogPages(async (url) => {
@@ -146,10 +160,57 @@ test('public Steam Store search is paged without a Web API key', async () => {
   });
   assert.deepEqual(requestUrls.map((url) => url.searchParams.get('start')), ['0', '50']);
   assert.equal(requestUrls[0].searchParams.get('term'), 'ark');
+  assert.equal(requestUrls[0].searchParams.get('category1'), '998');
   assert.equal(requestUrls[0].searchParams.has('key'), false);
   assert.equal(result.total, 60);
   assert.equal(result.nextOffset, null);
   assert.deepEqual(result.items.map((entry) => entry.appid), Array.from({ length: 20 }, (_, index) => 41 + index));
+});
+
+test('catalog search keeps consecutive title matches and rejects fuzzy noise', () => {
+  const apps = [
+    { appid: 2947440, name: 'SILENT HILL f', normalized: 'silent hill f' },
+    { appid: 3516200, name: 'SILENT HILL f - Digital Deluxe Upgrade', normalized: 'silent hill f digital deluxe upgrade' },
+    { appid: 4423570, name: 'FATAL FRAME II REMAKE x SILENT HILL f', normalized: 'fatal frame ii remake x silent hill f' },
+    { appid: 1353770, name: 'Tree of Savior - Silent JULY OST Collection', normalized: 'tree of savior silent july ost collection' },
+    { appid: 2419041, name: 'Spirit Island - Jagged Earth', normalized: 'spirit island jagged earth' },
+    { appid: 1195910, name: 'Dead Dreams', normalized: 'dead dreams' }
+  ];
+
+  assert.deepEqual(
+    searchCatalogEntries(apps, 'silent hill f').map((entry) => entry.appid),
+    [2947440, 3516200, 4423570]
+  );
+  assert.deepEqual(
+    searchCatalogEntries(apps, 'silen hil').map((entry) => entry.appid),
+    [2947440, 3516200, 4423570]
+  );
+  assert.deepEqual(searchCatalogEntries(apps, '2947440').map((entry) => entry.appid), [2947440]);
+});
+
+test('strict Store search preserves hashed artwork and drops unrelated fuzzy results', async () => {
+  const image = 'https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2947440/hash/capsule_231x87.jpg';
+  const payload = {
+    success: 1,
+    start: 0,
+    total_count: 6,
+    results_html: namedSteamSearchHtml([
+      { appid: 2947440, name: 'SILENT HILL f', image },
+      { appid: 3516200, name: 'SILENT HILL f - Digital Deluxe Upgrade' },
+      { appid: 4423570, name: 'FATAL FRAME II REMAKE x SILENT HILL f' },
+      { appid: 1353770, name: 'Tree of Savior - Silent JULY OST Collection' },
+      { appid: 2419041, name: 'Spirit Island - Jagged Earth' },
+      { appid: 1195910, name: 'Dead Dreams' }
+    ])
+  };
+  const parsed = parseStoreSearchPayload(payload);
+  assert.equal(parsed.slots[0].headerImage, image);
+
+  const result = await searchPublicStoreStrict('silent hill f', 0, 24, async () => jsonResponse(payload));
+  assert.deepEqual(result.items.map((entry) => entry.appid), [2947440, 3516200, 4423570]);
+  assert.equal(result.items[0].headerImage, image);
+  assert.equal(result.nextOffset, null);
+  assert.equal(result.totalEstimate, 3);
 });
 
 test('Lua Shop admits exactly ten concurrent new games and releases failed reservations', async () => {
