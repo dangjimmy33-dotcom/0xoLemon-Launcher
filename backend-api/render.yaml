@@ -15,6 +15,16 @@ services:
         sync: false
       - key: ACTIVATION_ADMIN_KEY
         sync: false
+      - key: LUA_SHOP_ACCOUNT_HMAC_KEY
+        sync: false
+      - key: HF_LUA_COMMUNITY_WRITE_TOKEN
+        sync: false
+      - key: HF_LUA_COMMUNITY_REPO
+        value: Immaking/Luas
+      - key: HF_LUA_COMMUNITY_BRANCH
+        value: main
+      - key: STEAM_WEB_API_KEY
+        sync: false
       - key: EA_CLIENT_SECRET
         sync: false
       - key: EA_MACHINE_HASH

@@ -12,11 +12,14 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
+    "@huggingface/hub": "^2.15.0",
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "express-rate-limit": "^8.6.1",
     "firebase-admin": "^12.0.0",
-    "node-cache": "^5.1.2"
+    "node-cache": "^5.1.2",
+    "node-html-parser": "^7.1.0",
+    "yauzl": "^3.4.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"

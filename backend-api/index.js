@@ -12,6 +12,7 @@ const rateLimit = require('express-rate-limit');
 const crypto = require('crypto');
 const { createOfflineActivationRouter } = require('./activation/routes');
 const { constantTimeKeyMatches } = require('./activation/secret-crypto');
+const { createLuaShopRouter } = require('./lua-shop/routes');
 
 const app = express();
 app.set('trust proxy', 1);
@@ -594,6 +595,12 @@ app.use(
   '/api/:tenant/offline-activation',
   validateTenant,
   createOfflineActivationRouter({ getTenantDb })
+);
+
+app.use(
+  '/api/:tenant/lua-shop',
+  validateTenant,
+  createLuaShopRouter({ getTenantDb })
 );
 
 function requireAdminKey(req, res, next) {
