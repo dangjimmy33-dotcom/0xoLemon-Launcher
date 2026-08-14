@@ -25,7 +25,9 @@ fn safe_component(value: &str, label: &str) -> Result<String, String> {
     let trimmed = value.trim();
     if trimmed.is_empty()
         || trimmed.len() > 64
-        || !trimmed.chars().all(|character| character.is_ascii_alphanumeric() || character == '-' || character == '_')
+        || !trimmed.chars().all(|character| {
+            character.is_ascii_alphanumeric() || character == '-' || character == '_'
+        })
     {
         return Err(format!("Invalid {label}: {value}"));
     }
@@ -86,7 +88,10 @@ fn add_directory(
             relative.to_string_lossy().replace('\\', "/")
         );
         if entry.file_type().is_symlink() {
-            return Err(format!("Refusing to back up symbolic link: {}", path.display()));
+            return Err(format!(
+                "Refusing to back up symbolic link: {}",
+                path.display()
+            ));
         }
         if entry.file_type().is_dir() {
             writer
@@ -120,7 +125,10 @@ fn create_internal(
         return if allow_empty {
             Ok(None)
         } else {
-            Err("No synchronized CloudRedirect cache exists for this app. Sync it first.".to_string())
+            Err(
+                "No synchronized CloudRedirect cache exists for this app. Sync it first."
+                    .to_string(),
+            )
         };
     }
 
@@ -130,7 +138,14 @@ fn create_internal(
         account_id,
         app_id,
         now.format("%Y%m%dT%H%M%SZ"),
-        reason.chars().map(|character| if character.is_ascii_alphanumeric() { character } else { '-' }).collect::<String>()
+        reason
+            .chars()
+            .map(|character| if character.is_ascii_alphanumeric() {
+                character
+            } else {
+                '-'
+            })
+            .collect::<String>()
     );
     let root = backup_root(app)?;
     fs::create_dir_all(&root)
@@ -176,7 +191,9 @@ fn create_internal(
         .map_err(|error| format!("Cannot sync backup archive: {error}"))?;
     fs::rename(&temporary, &destination)
         .map_err(|error| format!("Cannot commit backup archive: {error}"))?;
-    let size = fs::metadata(&destination).map(|value| value.len()).unwrap_or_default();
+    let size = fs::metadata(&destination)
+        .map(|value| value.len())
+        .unwrap_or_default();
 
     Ok(Some(LocalBackupInfo {
         id,
@@ -208,13 +225,14 @@ pub fn create_safety(
     if is_steam_running() {
         return Err("Close Steam before creating a CloudRedirect safety backup".to_string());
     }
-    create_internal(app, account_id, app_id, reason, false)?
-        .ok_or_else(|| "No synchronized CloudRedirect data was available for the safety backup".to_string())
+    create_internal(app, account_id, app_id, reason, false)?.ok_or_else(|| {
+        "No synchronized CloudRedirect data was available for the safety backup".to_string()
+    })
 }
 
 fn metadata_from_archive(path: &Path) -> Result<BackupMetadata, String> {
-    let file = File::open(path)
-        .map_err(|error| format!("Cannot open {}: {error}", path.display()))?;
+    let file =
+        File::open(path).map_err(|error| format!("Cannot open {}: {error}", path.display()))?;
     let mut archive = zip::ZipArchive::new(file)
         .map_err(|error| format!("Invalid backup archive {}: {error}", path.display()))?;
     let mut entry = archive
@@ -233,8 +251,8 @@ pub fn list(app: &AppHandle, app_filter: Option<&str>) -> Result<Vec<LocalBackup
         return Ok(Vec::new());
     }
     let mut backups = Vec::new();
-    for entry in fs::read_dir(&root)
-        .map_err(|error| format!("Cannot list {}: {error}", root.display()))?
+    for entry in
+        fs::read_dir(&root).map_err(|error| format!("Cannot list {}: {error}", root.display()))?
     {
         let entry = match entry {
             Ok(value) => value,
@@ -255,7 +273,9 @@ pub fn list(app: &AppHandle, app_filter: Option<&str>) -> Result<Vec<LocalBackup
             id: metadata.id,
             account_id: metadata.account_id,
             app_id: metadata.app_id,
-            size: fs::metadata(&path).map(|value| value.len()).unwrap_or_default(),
+            size: fs::metadata(&path)
+                .map(|value| value.len())
+                .unwrap_or_default(),
             created_at: metadata.created_at,
             reason: metadata.reason,
             path: path.to_string_lossy().into_owned(),
@@ -266,10 +286,10 @@ pub fn list(app: &AppHandle, app_filter: Option<&str>) -> Result<Vec<LocalBackup
 }
 
 fn extract_archive(path: &Path, destination: &Path) -> Result<BackupMetadata, String> {
-    let file = File::open(path)
-        .map_err(|error| format!("Cannot open {}: {error}", path.display()))?;
-    let mut archive = zip::ZipArchive::new(file)
-        .map_err(|error| format!("Invalid backup archive: {error}"))?;
+    let file =
+        File::open(path).map_err(|error| format!("Cannot open {}: {error}", path.display()))?;
+    let mut archive =
+        zip::ZipArchive::new(file).map_err(|error| format!("Invalid backup archive: {error}"))?;
     let mut metadata = None;
     for index in 0..archive.len() {
         let mut entry = archive
@@ -311,7 +331,11 @@ fn extract_archive(path: &Path, destination: &Path) -> Result<BackupMetadata, St
     metadata.ok_or_else(|| "Backup metadata is missing".to_string())
 }
 
-pub fn restore(app: &AppHandle, backup_id: &str, confirmation: &str) -> Result<LocalBackupInfo, String> {
+pub fn restore(
+    app: &AppHandle,
+    backup_id: &str,
+    confirmation: &str,
+) -> Result<LocalBackupInfo, String> {
     if is_steam_running() {
         return Err("Close Steam before restoring a CloudRedirect backup".to_string());
     }
@@ -345,7 +369,13 @@ pub fn restore(app: &AppHandle, backup_id: &str, confirmation: &str) -> Result<L
         return Err("Backup metadata changed while reading the archive".to_string());
     }
 
-    let _ = create_internal(app, &metadata.account_id, &metadata.app_id, "pre-restore", true)?;
+    let _ = create_internal(
+        app,
+        &metadata.account_id,
+        &metadata.app_id,
+        "pre-restore",
+        true,
+    )?;
     let mut committed: Vec<(PathBuf, Option<PathBuf>)> = Vec::new();
     for name in ["storage", "blobs"] {
         let staged = restore_root.join(name);
@@ -397,7 +427,9 @@ pub fn restore(app: &AppHandle, backup_id: &str, confirmation: &str) -> Result<L
         id: metadata.id,
         account_id: metadata.account_id,
         app_id: metadata.app_id,
-        size: fs::metadata(&archive_path).map(|value| value.len()).unwrap_or_default(),
+        size: fs::metadata(&archive_path)
+            .map(|value| value.len())
+            .unwrap_or_default(),
         created_at: metadata.created_at,
         reason: metadata.reason,
         path: archive_path.to_string_lossy().into_owned(),

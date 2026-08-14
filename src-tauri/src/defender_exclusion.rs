@@ -1,5 +1,5 @@
-use std::process::Command;
 use std::path::Path;
+use std::process::Command;
 
 /// Attempt to add Windows Defender exclusion for a path
 /// Returns Ok(true) if successful, Ok(false) if already excluded or no action needed
@@ -7,17 +7,17 @@ pub fn add_defender_exclusion(path: &Path) -> Result<bool, String> {
     if !cfg!(target_os = "windows") {
         return Ok(false); // Not Windows
     }
-    
+
     let path_str = path.to_string_lossy().to_string();
-    
+
     eprintln!("[DEFENDER] Attempting to add exclusion for: {}", path_str);
-    
+
     // Check if already excluded
     #[cfg(target_os = "windows")]
     let check_output = {
         use std::os::windows::process::CommandExt;
         const CREATE_NO_WINDOW: u32 = 0x08000000;
-        
+
         Command::new("powershell")
             .args(&[
                 "-NoProfile",
@@ -32,12 +32,12 @@ pub fn add_defender_exclusion(path: &Path) -> Result<bool, String> {
             .creation_flags(CREATE_NO_WINDOW)
             .output()
     };
-    
+
     #[cfg(not(target_os = "windows"))]
     let check_output = Command::new("powershell")
         .args(&["-Command", "echo ''"])
         .output();
-    
+
     if let Ok(output) = check_output {
         let stdout = String::from_utf8_lossy(&output.stdout);
         if stdout.trim().contains(&path_str) {
@@ -45,14 +45,14 @@ pub fn add_defender_exclusion(path: &Path) -> Result<bool, String> {
             return Ok(false);
         }
     }
-    
+
     // Try to add exclusion (requires admin)
     // Use CREATE_NO_WINDOW flag to hide console window
     #[cfg(target_os = "windows")]
     let result = {
         use std::os::windows::process::CommandExt;
         const CREATE_NO_WINDOW: u32 = 0x08000000;
-        
+
         Command::new("powershell")
             .args(&[
                 "-NoProfile",
@@ -67,21 +67,26 @@ pub fn add_defender_exclusion(path: &Path) -> Result<bool, String> {
             .creation_flags(CREATE_NO_WINDOW)
             .output()
     };
-    
+
     #[cfg(not(target_os = "windows"))]
     let result = Command::new("powershell")
         .args(&["-Command", "echo 'Not Windows'"])
         .output();
-    
+
     match result {
         Ok(output) => {
             if output.status.success() {
-                eprintln!("[DEFENDER] Successfully added exclusion (admin prompt may have appeared)");
+                eprintln!(
+                    "[DEFENDER] Successfully added exclusion (admin prompt may have appeared)"
+                );
                 Ok(true)
             } else {
                 let stderr = String::from_utf8_lossy(&output.stderr);
                 eprintln!("[DEFENDER] Failed to add exclusion: {}", stderr);
-                Err(format!("Failed to add Windows Defender exclusion. Please add manually: {}", path_str))
+                Err(format!(
+                    "Failed to add Windows Defender exclusion. Please add manually: {}",
+                    path_str
+                ))
             }
         }
         Err(e) => {
@@ -108,14 +113,14 @@ pub fn is_likely_excluded(path: &Path) -> bool {
     if !cfg!(target_os = "windows") {
         return true; // Not applicable
     }
-    
+
     let path_str = path.to_string_lossy().to_string();
-    
+
     #[cfg(target_os = "windows")]
     let check_output = {
         use std::os::windows::process::CommandExt;
         const CREATE_NO_WINDOW: u32 = 0x08000000;
-        
+
         Command::new("powershell")
             .args(&[
                 "-NoProfile",
@@ -130,16 +135,16 @@ pub fn is_likely_excluded(path: &Path) -> bool {
             .creation_flags(CREATE_NO_WINDOW)
             .output()
     };
-    
+
     #[cfg(not(target_os = "windows"))]
     let check_output = Command::new("powershell")
         .args(&["-Command", "echo ''"])
         .output();
-    
+
     if let Ok(output) = check_output {
         let stdout = String::from_utf8_lossy(&output.stdout);
         return stdout.trim().contains(&path_str);
     }
-    
+
     false
 }

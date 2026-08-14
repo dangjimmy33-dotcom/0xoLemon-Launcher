@@ -36,7 +36,9 @@ pub fn atomic_copy(source: &Path, dest: &Path) -> io::Result<()> {
         let mut buf = vec![0u8; 81920];
         loop {
             let n = src.read(&mut buf)?;
-            if n == 0 { break; }
+            if n == 0 {
+                break;
+            }
             f.write_all(&buf[..n])?;
         }
         Ok(())

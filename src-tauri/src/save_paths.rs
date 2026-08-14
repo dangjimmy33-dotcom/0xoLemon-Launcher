@@ -24,11 +24,7 @@ pub struct VersionedSavePath {
 pub fn all_save_path_rules() -> &'static [(&'static str, &'static [VersionedSavePath])] {
     use std::sync::OnceLock;
     static RULES: OnceLock<Vec<(&'static str, &'static [VersionedSavePath])>> = OnceLock::new();
-    RULES.get_or_init(|| {
-        vec![
-            ("007-first-light", RULES_007_FIRST_LIGHT),
-        ]
-    })
+    RULES.get_or_init(|| vec![("007-first-light", RULES_007_FIRST_LIGHT)])
 }
 
 static RULES_007_FIRST_LIGHT: &[VersionedSavePath] = &[
@@ -49,11 +45,7 @@ static RULES_007_FIRST_LIGHT: &[VersionedSavePath] = &[
 
 /// Compare two version strings of the form "vX.Y.Z" lexicographically.
 /// Returns true when `version` falls within [from, to].
-pub fn version_in_range(
-    version: &str,
-    from: Option<&str>,
-    to: Option<&str>,
-) -> bool {
+pub fn version_in_range(version: &str, from: Option<&str>, to: Option<&str>) -> bool {
     if let Some(f) = from {
         if compare_versions(version, f) < 0 {
             return false;

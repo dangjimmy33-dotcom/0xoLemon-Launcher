@@ -18,6 +18,13 @@ export function createIdleJob(snapshot: Snapshot): JobJournal {
     logicalBytesDone: 0,
     logicalBytesTotal: snapshot.updateSize,
     sessionBaseBytes: 0,
+    applyBytesDone: 0,
+    applyBytesTotal: 0,
+    durableBytes: 0,
+    currentFile: '',
+    pipelineVersion: '',
+    commitState: 'idle',
+    plannedFiles: [],
     retryCount: 0,
     resumable: true,
     updatedAt: new Date().toISOString(),
@@ -37,7 +44,11 @@ export function createIdleJob(snapshot: Snapshot): JobJournal {
   }
 }
 
-export function getPhaseProgress(job: JobJournal, rateBytesPerSecond: number): PhaseProgress {
+export function getPhaseProgress(
+  job: JobJournal,
+  rateBytesPerSecond: number,
+  applyRateBytesPerSecond = 0,
+): PhaseProgress {
   const runningStep =
     job.steps.find((step) => step.status === 'running' || step.status === 'paused') ??
     job.steps.find((step) => step.status !== 'completed') ??
@@ -49,15 +60,26 @@ export function getPhaseProgress(job: JobJournal, rateBytesPerSecond: number): P
       job.bytesTotal > 0 &&
       Boolean(runningStep?.name.toLowerCase().includes('download')))
   const transfer = deriveLogicalTransferProgress(job)
-  const phasePercent = isDownloading
-    ? transfer.logicalPercent
+  const applyBytesDone = Math.min(job.applyBytesDone ?? 0, job.applyBytesTotal ?? 0)
+  const applyBytesTotal = job.applyBytesTotal ?? 0
+  const networkPercent = transfer.logicalPercent
+  const applyPercent = bytePercent(applyBytesDone, applyBytesTotal)
+  const streamingTotal = transfer.logicalBytesTotal + applyBytesTotal
+  const streamingDone = transfer.logicalBytesDone + applyBytesDone
+  const phasePercent = isDownloading && streamingTotal > 0
+    ? bytePercent(streamingDone, streamingTotal)
     : clampPercent((runningStep?.progress ?? job.overallProgress) * 100)
+  const commitState = job.commitState ?? 'idle'
+  const isCommitting = ['preparing', 'committing', 'filesInstalled', 'metadata', 'cleanup'].includes(commitState)
+  const committed = job.status === 'committed'
+  const capUntilCommitted = (value: number) =>
+    committed ? clampPercent(value) : Math.min(clampPercent(value), 99.9)
 
   return {
     name: runningStep?.name ?? job.phase,
     detail: job.phase,
-    percent: job.status === 'committed' ? 100 : phasePercent,
-    overallPercent: clampPercent(job.overallProgress * 100),
+    percent: committed ? 100 : capUntilCommitted(phasePercent),
+    overallPercent: committed ? 100 : capUntilCommitted(job.overallProgress * 100),
     bytesDone: transfer.logicalBytesDone,
     bytesTotal: transfer.logicalBytesTotal,
     logicalBytesDone: transfer.logicalBytesDone,
@@ -67,9 +89,22 @@ export function getPhaseProgress(job: JobJournal, rateBytesPerSecond: number): P
     sessionBaseBytes: transfer.sessionBaseBytes,
     remainingBytes: transfer.remainingBytes,
     rateBytesPerSecond,
+    applyRateBytesPerSecond,
     etaSeconds: isDownloading && rateBytesPerSecond > 1
       ? Math.max(transfer.sessionBytesTotal - transfer.sessionBytesDone, 0) / rateBytesPerSecond
       : null,
+    applyEtaSeconds: applyRateBytesPerSecond > 1
+      ? Math.max(applyBytesTotal - applyBytesDone, 0) / applyRateBytesPerSecond
+      : null,
+    networkPercent,
+    applyPercent,
+    applyBytesDone,
+    applyBytesTotal,
+    durableBytes: job.durableBytes ?? applyBytesDone,
+    currentFile: job.currentFile ?? '',
+    pipelineVersion: job.pipelineVersion ?? '',
+    commitState,
+    isCommitting,
     isDownloading,
   }
 }

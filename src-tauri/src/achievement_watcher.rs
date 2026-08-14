@@ -140,9 +140,19 @@ fn find_goldberg_file(app_id: Option<u32>, install_path: &Path) -> Option<PathBu
     if let Some(app_id) = app_id {
         if let Some(appdata) = dirs::data_dir() {
             let candidates = [
-                appdata.join("GSE Saves").join(app_id.to_string()).join("achievements.json"),
-                appdata.join("GSE Saves").join(app_id.to_string()).join("stats").join("achievements.json"),
-                appdata.join("Goldberg SteamEmu Saves").join(app_id.to_string()).join("achievements.json"),
+                appdata
+                    .join("GSE Saves")
+                    .join(app_id.to_string())
+                    .join("achievements.json"),
+                appdata
+                    .join("GSE Saves")
+                    .join(app_id.to_string())
+                    .join("stats")
+                    .join("achievements.json"),
+                appdata
+                    .join("Goldberg SteamEmu Saves")
+                    .join(app_id.to_string())
+                    .join("achievements.json"),
             ];
             for p in &candidates {
                 if p.exists() {
@@ -152,7 +162,9 @@ fn find_goldberg_file(app_id: Option<u32>, install_path: &Path) -> Option<PathBu
         }
     }
     // Last resort: check inside game dir
-    let fallback = install_path.join("steam_settings").join("achievements.json");
+    let fallback = install_path
+        .join("steam_settings")
+        .join("achievements.json");
     if fallback.exists() {
         return Some(fallback);
     }

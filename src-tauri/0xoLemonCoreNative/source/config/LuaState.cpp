@@ -15,6 +15,7 @@
 // at the first call site with "attempt to call a nil value".
 
 #include "config/LuaLoaderInternal.h"
+#include "runtime/StatsClient.h"
 
 #include <lua.hpp>
 #include <array>
@@ -44,6 +45,12 @@ namespace LuaLoader::Internal {
     std::unordered_map<std::string, std::unordered_set<AppId_t>> g_fileLibraryApps;
     std::unordered_map<std::string, std::unordered_set<AppId_t>> g_fileStatsApps;
     std::unordered_map<std::string, std::unordered_map<AppId_t, uint64_t>> g_fileStatSteamIds;
+    std::unordered_map<std::string, std::unordered_map<uint64_t, ManifestOverride>>
+        g_fileManifestOverrides;
+    std::unordered_map<std::string, std::unordered_set<AppId_t>>
+        g_fileManifestAutoUpdate;
+    std::unordered_map<std::string, uint64_t> g_fileParseSequence;
+    uint64_t g_nextFileParseSequence = 0;
     std::unordered_map<AppId_t, uint32_t> g_depotRefCount;
     std::unordered_map<AppId_t, uint32_t> g_libraryRefCount;
     std::unordered_map<AppId_t, uint32_t> g_statsRefCount;
@@ -51,7 +58,6 @@ namespace LuaLoader::Internal {
     std::vector<AppId_t> g_pendingAdditions;
     std::unordered_set<AppId_t> g_pendingLibraryRemovals;
     std::unordered_set<AppId_t> g_manifestDoneByLua;
-    std::unordered_set<AppId_t> g_manifestAutoUpdate;
     ParseSession* g_activeSession = nullptr;
     std::string g_eticketUrl;
     std::unordered_set<AppId_t> g_forcedDenuvoApps;
@@ -101,12 +107,84 @@ namespace LuaLoader::Internal {
         if (!g_fileStatsApps[currentFile].insert(id).second) return;
         if (++g_statsRefCount[id] == 1) {
             StatsAppIdSet.insert(id);
+            StatsClient::Schedule(id);
         }
     }
 
     void ParseSession::recordStatSteamId(AppId_t id, uint64_t steamId) {
         if (currentFile.empty()) return;
         g_fileStatSteamIds[currentFile][id] = steamId;
+    }
+
+    void RebuildManifestOverride(uint64_t depotId) {
+        const ManifestOverride* selected = nullptr;
+        uint64_t selectedSequence = 0;
+
+        for (const auto& [filePath, overrides] : g_fileManifestOverrides) {
+            auto manifestIt = overrides.find(depotId);
+            if (manifestIt == overrides.end()) continue;
+
+            auto sequenceIt = g_fileParseSequence.find(filePath);
+            const uint64_t sequence = sequenceIt == g_fileParseSequence.end()
+                ? 0
+                : sequenceIt->second;
+            if (!selected || sequence >= selectedSequence) {
+                selected = &manifestIt->second;
+                selectedSequence = sequence;
+            }
+        }
+
+        if (selected) {
+            ManifestOverrides[depotId] = *selected;
+        } else {
+            ManifestOverrides.erase(depotId);
+        }
+    }
+
+    bool ActiveFileSkipsManifest(AppId_t depotId) {
+        if (!g_activeSession || g_activeSession->currentFile.empty()) return false;
+        auto fileIt = g_fileManifestAutoUpdate.find(g_activeSession->currentFile);
+        return fileIt != g_fileManifestAutoUpdate.end()
+            && fileIt->second.count(depotId) != 0;
+    }
+
+    void ParseSession::recordManifestOverride(
+        AppId_t id,
+        const ManifestOverride& manifest) {
+        if (currentFile.empty()) return;
+        const uint64_t depotId = static_cast<uint64_t>(id);
+
+        auto liveIt = g_fileManifestAutoUpdate.find(currentFile);
+        if (liveIt != g_fileManifestAutoUpdate.end()
+            && liveIt->second.count(id) != 0) {
+            auto overrideIt = g_fileManifestOverrides.find(currentFile);
+            if (overrideIt != g_fileManifestOverrides.end()) {
+                overrideIt->second.erase(depotId);
+                if (overrideIt->second.empty()) {
+                    g_fileManifestOverrides.erase(overrideIt);
+                }
+            }
+            RebuildManifestOverride(depotId);
+            return;
+        }
+
+        g_fileManifestOverrides[currentFile][depotId] = manifest;
+        RebuildManifestOverride(depotId);
+    }
+
+    void ParseSession::recordManifestAutoUpdate(AppId_t id) {
+        if (currentFile.empty()) return;
+        const uint64_t depotId = static_cast<uint64_t>(id);
+        g_fileManifestAutoUpdate[currentFile].insert(id);
+
+        auto overrideIt = g_fileManifestOverrides.find(currentFile);
+        if (overrideIt != g_fileManifestOverrides.end()) {
+            overrideIt->second.erase(depotId);
+            if (overrideIt->second.empty()) {
+                g_fileManifestOverrides.erase(overrideIt);
+            }
+        }
+        RebuildManifestOverride(depotId);
     }
 
     namespace {

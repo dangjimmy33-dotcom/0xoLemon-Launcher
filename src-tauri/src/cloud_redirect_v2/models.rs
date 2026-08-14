@@ -28,7 +28,6 @@ pub struct EngineStatus {
     pub supported_providers: Vec<String>,
 }
 
-
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct SteamRuntimeState {
@@ -172,7 +171,6 @@ pub struct MigrationEvent {
     pub failed: Option<u64>,
     pub total_bytes: Option<u64>,
 }
-
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]

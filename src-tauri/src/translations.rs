@@ -1,10 +1,10 @@
 use crate::remote_paths;
-use reqwest::header::{USER_AGENT, AUTHORIZATION};
+use reqwest::header::{AUTHORIZATION, USER_AGENT};
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
-use std::fs;
-use tauri::AppHandle;
 use sevenz_rust::Password;
+use std::fs;
+use std::path::PathBuf;
+use tauri::AppHandle;
 
 const VIETHOA_REPO_ID: &str = "JOINCANE/0XoLemon";
 
@@ -97,15 +97,19 @@ async fn find_hf_folder_name(
 }
 
 #[tauri::command]
-pub async fn get_available_translations(_app: AppHandle, game_id: String) -> Result<Vec<TranslationInfo>, String> {
+pub async fn get_available_translations(
+    _app: AppHandle,
+    game_id: String,
+) -> Result<Vec<TranslationInfo>, String> {
     let hf_dir_name = remote_paths::hf_dir_name_for_game_id(&game_id);
-    
+
     let (client, token) = build_client_with_token();
     let token_ref = token.as_deref();
 
     // Try to find the actual folder name on HuggingFace (with fuzzy fallback)
-    let actual_folder = find_hf_folder_name(&client, VIETHOA_REPO_ID, &hf_dir_name, token_ref).await;
-    
+    let actual_folder =
+        find_hf_folder_name(&client, VIETHOA_REPO_ID, &hf_dir_name, token_ref).await;
+
     let folder = match actual_folder {
         Some(f) => f,
         None => return Ok(vec![]), // No viethoa found for this game
@@ -123,7 +127,7 @@ pub async fn get_available_translations(_app: AppHandle, game_id: String) -> Res
     let res = req.send().await.map_err(|e| e.to_string())?;
 
     if res.status() == 404 {
-        return Ok(vec![]); 
+        return Ok(vec![]);
     }
 
     if !res.status().is_success() {
@@ -156,7 +160,6 @@ pub async fn get_available_translations(_app: AppHandle, game_id: String) -> Res
     Ok(translations)
 }
 
-
 #[tauri::command]
 pub fn get_translation_status(app: AppHandle, game_id: String) -> Result<bool, String> {
     let install_path = crate::platform::registered_install_path(&app, &game_id)
@@ -173,10 +176,14 @@ fn get_game_install_path(app: &AppHandle, game_id: &str) -> Result<PathBuf, Stri
 }
 
 #[tauri::command]
-pub async fn install_translation(app: AppHandle, game_id: String, translation_path: String) -> Result<(), String> {
+pub async fn install_translation(
+    app: AppHandle,
+    game_id: String,
+    translation_path: String,
+) -> Result<(), String> {
     let install_path = get_game_install_path(&app, &game_id)?;
     let backup_path = install_path.join(".viethoa_backup");
-    
+
     // Download the 7z file to a temp location
     let repo_id = "JOINCANE/0XoLemon";
     // Construct resolve URL for the file
@@ -184,17 +191,17 @@ pub async fn install_translation(app: AppHandle, game_id: String, translation_pa
         "https://huggingface.co/datasets/{}/resolve/main/{}",
         repo_id, translation_path
     );
-    
+
     let temp_dir = std::env::temp_dir().join("007launcher_viethoa");
     fs::create_dir_all(&temp_dir).map_err(|e| e.to_string())?;
     let temp_file_path = temp_dir.join(translation_path.split('/').last().unwrap_or("patch.7z"));
-    
+
     let (client, token) = build_client_with_token();
     let mut req = client.get(&download_url).header(USER_AGENT, "007Launcher");
     if let Some(ref t) = token {
         req = req.header(AUTHORIZATION, format!("Bearer {t}"));
     }
-    
+
     let res = req.send().await.map_err(|e| e.to_string())?;
     if !res.status().is_success() {
         return Err(format!("Failed to download patch: {}", res.status()));
@@ -205,10 +212,10 @@ pub async fn install_translation(app: AppHandle, game_id: String, translation_pa
     // Extract the 7z file
     tauri::async_runtime::spawn_blocking(move || {
         let password = Password::from("0xoLemon.dll");
-        
+
         // Ensure backup dir exists
         fs::create_dir_all(&backup_path).map_err(|e| e.to_string())?;
-        
+
         let file = std::fs::File::open(&temp_file_path).map_err(|e| e.to_string())?;
 
         sevenz_rust::decompress_with_extract_fn_and_password(
@@ -230,11 +237,14 @@ pub async fn install_translation(app: AppHandle, game_id: String, translation_pa
                 }
                 sevenz_rust::default_entry_extract_fn(entry, reader, dest)
             },
-        ).map_err(|e| e.to_string())?;
-            
+        )
+        .map_err(|e| e.to_string())?;
+
         Ok::<(), String>(())
-    }).await.map_err(|e| e.to_string())??;
-    
+    })
+    .await
+    .map_err(|e| e.to_string())??;
+
     Ok(())
 }
 
@@ -242,20 +252,20 @@ pub async fn install_translation(app: AppHandle, game_id: String, translation_pa
 pub async fn uninstall_translation(app: AppHandle, game_id: String) -> Result<(), String> {
     let install_path = get_game_install_path(&app, &game_id)?;
     let backup_path = install_path.join(".viethoa_backup");
-    
+
     if backup_path.exists() {
         // We do not restore backup manually because there's no tracking of what was overwritten vs added.
         // Or wait, if we only backup what was overwritten, we can restore it.
         // But what about new files added by the patch? We wouldn't know which ones to delete unless we tracked them.
         // The user said: "khi gỡ cài đặt việt hóa, nó tiến hành verify lại game."
         // We will just let the verify process fix everything.
-        
+
         // Delete the backup folder
         fs::remove_dir_all(&backup_path).map_err(|e| format!("Failed to delete backup: {}", e))?;
     }
-    
+
     // We should trigger the verify job here
     // Actually we can just return Ok and let the frontend call `start_verify_job(gameId)` right after this.
-    
+
     Ok(())
 }

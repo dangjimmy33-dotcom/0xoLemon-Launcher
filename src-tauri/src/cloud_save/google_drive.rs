@@ -9,8 +9,8 @@ use std::thread;
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use base64::engine::general_purpose::{STANDARD, URL_SAFE_NO_PAD};
-use chrono::{DateTime, Datelike, Utc};
 use base64::Engine;
+use chrono::{DateTime, Datelike, Utc};
 use rand_core::{OsRng, RngCore};
 use reqwest::blocking::{Client, Response};
 use reqwest::header::{AUTHORIZATION, CONTENT_LENGTH, CONTENT_TYPE, LOCATION};
@@ -22,8 +22,8 @@ use url::Url;
 use crate::secret_store::{protect as protect_secret, unprotect as unprotect_secret};
 
 use super::{
-    copy_file_synced, read_manifest, replace_file_with_rollback, safe_join,
-    write_manifest, CloudFileEntry, CloudManifest,
+    copy_file_synced, read_manifest, replace_file_with_rollback, safe_join, write_manifest,
+    CloudFileEntry, CloudManifest,
 };
 
 const AUTH_FILE: &str = "google-drive-auth.json";
@@ -111,7 +111,9 @@ impl DriveFailure {
     fn offline(error: impl ToString) -> Self {
         Self {
             kind: DriveFailureKind::Offline,
-            message: "Google Drive tạm thời không kết nối được. Save mới nhất vẫn an toàn trên máy này.".to_string(),
+            message:
+                "Google Drive tạm thời không kết nối được. Save mới nhất vẫn an toàn trên máy này."
+                    .to_string(),
             retryable: true,
             retry_after_seconds: Some(30),
             http_status: None,
@@ -334,7 +336,10 @@ pub(super) fn authorize(app: &AppHandle) -> Result<(), String> {
     listener
         .set_nonblocking(true)
         .map_err(|error| error.to_string())?;
-    let port = listener.local_addr().map_err(|error| error.to_string())?.port();
+    let port = listener
+        .local_addr()
+        .map_err(|error| error.to_string())?
+        .port();
     let redirect_uri = format!("http://127.0.0.1:{port}");
     let verifier = random_urlsafe(64);
     let challenge = URL_SAFE_NO_PAD.encode(Sha256::digest(verifier.as_bytes()));
@@ -391,18 +396,14 @@ pub(super) fn authorize(app: &AppHandle) -> Result<(), String> {
                     return Err(error);
                 }
                 let Some(code) = code else {
-                    let error = "Google OAuth callback did not include an authorization code".to_string();
+                    let error =
+                        "Google OAuth callback did not include an authorization code".to_string();
                     let _ = write_oauth_callback_response(&mut stream, false, Some(&error));
                     return Err(error);
                 };
 
-                match exchange_authorization_code(
-                    app,
-                    &client_id,
-                    &code,
-                    &verifier,
-                    &redirect_uri,
-                ) {
+                match exchange_authorization_code(app, &client_id, &code, &verifier, &redirect_uri)
+                {
                     Ok(()) => {
                         write_oauth_callback_response(&mut stream, true, None)?;
                         let _ = app.emit(
@@ -429,15 +430,16 @@ pub(super) fn authorize(app: &AppHandle) -> Result<(), String> {
 
 fn read_oauth_callback(stream: &mut std::net::TcpStream, port: u16) -> Result<Url, String> {
     let mut request = [0_u8; 8192];
-    let read = stream.read(&mut request).map_err(|error| error.to_string())?;
+    let read = stream
+        .read(&mut request)
+        .map_err(|error| error.to_string())?;
     let request = String::from_utf8_lossy(&request[..read]);
     let target = request
         .lines()
         .next()
         .and_then(|line| line.split_whitespace().nth(1))
         .ok_or_else(|| "Google OAuth callback không hợp lệ".to_string())?;
-    Url::parse(&format!("http://127.0.0.1:{port}{target}"))
-        .map_err(|error| error.to_string())
+    Url::parse(&format!("http://127.0.0.1:{port}{target}")).map_err(|error| error.to_string())
 }
 
 fn exchange_authorization_code(
@@ -550,16 +552,17 @@ pub(super) fn fetch_remote_to_cache(
         return Ok(None);
     }
     let token = access_token(app)?;
-    let Some(head_file) = find_single_by_properties(
-        &token,
-        &[("kind", "head"), ("gameId", game_id)],
-    )? else {
+    let Some(head_file) =
+        find_single_by_properties(&token, &[("kind", "head"), ("gameId", game_id)])?
+    else {
         return Ok(None);
     };
     let head_bytes = download_bytes(&token, &head_file.id)?;
     let head: RemoteHead = serde_json::from_slice(&head_bytes).map_err(|error| DriveFailure {
         kind: DriveFailureKind::CorruptRemote,
-        message: "Cloud Save trên Google Drive bị hỏng metadata; launcher chưa ghi đè dữ liệu local.".to_string(),
+        message:
+            "Cloud Save trên Google Drive bị hỏng metadata; launcher chưa ghi đè dữ liệu local."
+                .to_string(),
         retryable: false,
         retry_after_seconds: None,
         http_status: None,
@@ -586,14 +589,15 @@ pub(super) fn fetch_remote_to_cache(
             reason: "manifest sha256 mismatch".to_string(),
         });
     }
-    let remote: RemoteManifest = serde_json::from_slice(&manifest_bytes).map_err(|error| DriveFailure {
-        kind: DriveFailureKind::CorruptRemote,
-        message: "Cloud Save manifest không đọc được.".to_string(),
-        retryable: false,
-        retry_after_seconds: None,
-        http_status: None,
-        reason: error.to_string(),
-    })?;
+    let remote: RemoteManifest =
+        serde_json::from_slice(&manifest_bytes).map_err(|error| DriveFailure {
+            kind: DriveFailureKind::CorruptRemote,
+            message: "Cloud Save manifest không đọc được.".to_string(),
+            retryable: false,
+            retry_after_seconds: None,
+            http_status: None,
+            reason: error.to_string(),
+        })?;
     if remote.snapshot_id != head.snapshot_id || remote.game_id != game_id {
         return Err(DriveFailure {
             kind: DriveFailureKind::CorruptRemote,
@@ -612,7 +616,12 @@ pub(super) fn fetch_remote_to_cache(
     fs::create_dir_all(staging.join("files")).map_err(DriveFailure::offline)?;
     let object_index = list_files_by_kind(&token, "object")?
         .into_iter()
-        .filter_map(|file| file.app_properties.get("sha256").cloned().map(|hash| (hash, file)))
+        .filter_map(|file| {
+            file.app_properties
+                .get("sha256")
+                .cloned()
+                .map(|hash| (hash, file))
+        })
         .collect::<HashMap<_, _>>();
 
     for entry in &remote.files {
@@ -630,7 +639,8 @@ pub(super) fn fetch_remote_to_cache(
         };
         let file = object_index.get(&object_hash).ok_or_else(|| DriveFailure {
             kind: DriveFailureKind::CorruptRemote,
-            message: "Cloud Save thiếu một phần dữ liệu; launcher chưa ghi đè save local.".to_string(),
+            message: "Cloud Save thiếu một phần dữ liệu; launcher chưa ghi đè save local."
+                .to_string(),
             retryable: false,
             retry_after_seconds: None,
             http_status: None,
@@ -680,7 +690,8 @@ pub(super) fn upload_current_snapshot(
     snapshot_class: &str,
     pinned: bool,
 ) -> Result<RemoteHead, DriveFailure> {
-    let manifest = read_manifest(&current_root.join("manifest.json")).map_err(DriveFailure::other)?;
+    let manifest =
+        read_manifest(&current_root.join("manifest.json")).map_err(DriveFailure::other)?;
     if manifest.files.is_empty() {
         return Err(DriveFailure::other("Không có save file để đồng bộ."));
     }
@@ -703,7 +714,9 @@ pub(super) fn upload_current_snapshot(
     {
         return Err(DriveFailure {
             kind: DriveFailureKind::StorageFull,
-            message: "Google Drive không còn đủ dung lượng. Save mới nhất vẫn được bảo vệ trên máy này.".to_string(),
+            message:
+                "Google Drive không còn đủ dung lượng. Save mới nhất vẫn được bảo vệ trên máy này."
+                    .to_string(),
             retryable: true,
             retry_after_seconds: Some(15 * 60),
             http_status: Some(403),
@@ -712,7 +725,8 @@ pub(super) fn upload_current_snapshot(
     }
 
     for entry in &manifest.files {
-        let source = safe_join(&current_root.join("files"), &entry.path).map_err(DriveFailure::other)?;
+        let source =
+            safe_join(&current_root.join("files"), &entry.path).map_err(DriveFailure::other)?;
         upload_object_if_missing(&token, game_id, &entry.sha256, &source, entry.size)?;
     }
 
@@ -728,7 +742,8 @@ pub(super) fn upload_current_snapshot(
         pinned,
         files: manifest.files.clone(),
     };
-    let manifest_bytes = serde_json::to_vec(&remote_manifest).map_err(|error| DriveFailure::other(error.to_string()))?;
+    let manifest_bytes = serde_json::to_vec(&remote_manifest)
+        .map_err(|error| DriveFailure::other(error.to_string()))?;
     let manifest_hash = hex_sha256(&manifest_bytes);
     let manifest_file_id = upload_manifest(
         &token,
@@ -768,9 +783,13 @@ pub(super) fn upload_current_snapshot(
 pub(super) fn storage_quota(app: &AppHandle) -> Result<DriveQuota, DriveFailure> {
     let token = access_token(app)?;
     let response = send_with_backoff(|| {
-        http_client()?.get(format!("{DRIVE_API}/about"))
+        http_client()?
+            .get(format!("{DRIVE_API}/about"))
             .header(AUTHORIZATION, format!("Bearer {token}"))
-            .query(&[("fields", "storageQuota(limit,usage,usageInDrive,usageInDriveTrash)")])
+            .query(&[(
+                "fields",
+                "storageQuota(limit,usage,usageInDrive,usageInDriveTrash)",
+            )])
             .send()
             .map_err(DriveFailure::offline)
     })?;
@@ -790,7 +809,8 @@ pub(super) fn storage_quota(app: &AppHandle) -> Result<DriveQuota, DriveFailure>
 pub(super) fn get_start_page_token(app: &AppHandle) -> Result<String, DriveFailure> {
     let token = access_token(app)?;
     let response = send_with_backoff(|| {
-        http_client()?.get(format!("{DRIVE_API}/changes/startPageToken"))
+        http_client()?
+            .get(format!("{DRIVE_API}/changes/startPageToken"))
             .header(AUTHORIZATION, format!("Bearer {token}"))
             .send()
             .map_err(DriveFailure::offline)
@@ -808,13 +828,17 @@ pub(super) fn changes_since(
     let mut new_start = page_token.to_string();
     while let Some(token_page) = next.take() {
         let response = send_with_backoff(|| {
-            http_client()?.get(format!("{DRIVE_API}/changes"))
+            http_client()?
+                .get(format!("{DRIVE_API}/changes"))
                 .header(AUTHORIZATION, format!("Bearer {token}"))
                 .query(&[
                     ("pageToken", token_page.as_str()),
                     ("spaces", APP_DATA_SPACE),
                     ("includeRemoved", "true"),
-                    ("fields", "nextPageToken,newStartPageToken,changes(fileId,removed)"),
+                    (
+                        "fields",
+                        "nextPageToken,newStartPageToken,changes(fileId,removed)",
+                    ),
                 ])
                 .send()
                 .map_err(DriveFailure::offline)
@@ -824,7 +848,13 @@ pub(super) fn changes_since(
             list.changes
                 .into_iter()
                 .filter(|change| !change.file_id.is_empty())
-                .map(|change| if change.removed { format!("removed:{}", change.file_id) } else { change.file_id }),
+                .map(|change| {
+                    if change.removed {
+                        format!("removed:{}", change.file_id)
+                    } else {
+                        change.file_id
+                    }
+                }),
         );
         if let Some(value) = list.new_start_page_token {
             new_start = value;
@@ -881,10 +911,7 @@ pub(super) fn prune_remote_history(
     current_snapshot_id: Option<&str>,
 ) -> Result<GarbageCollectionReport, DriveFailure> {
     let token = access_token(app)?;
-    let manifest_files = list_by_properties(
-        &token,
-        &[("kind", "manifest"), ("gameId", game_id)],
-    )?;
+    let manifest_files = list_by_properties(&token, &[("kind", "manifest"), ("gameId", game_id)])?;
 
     struct HistoryEntry {
         file_id: String,
@@ -979,7 +1006,11 @@ pub(super) fn delete_remote_manifest(
     let token = access_token(app)?;
     if let Some(file) = find_single_by_properties(
         &token,
-        &[("kind", "manifest"), ("gameId", game_id), ("snapshotId", snapshot_id)],
+        &[
+            ("kind", "manifest"),
+            ("gameId", game_id),
+            ("snapshotId", snapshot_id),
+        ],
     )? {
         delete_file(&token, &file.id)?;
     }
@@ -993,7 +1024,9 @@ pub(super) fn export_remote_snapshot(
 ) -> Result<(), DriveFailure> {
     let cache = target.with_extension("0xo-export-cache");
     let Some(remote) = fetch_remote_to_cache(app, game_id, &cache)? else {
-        return Err(DriveFailure::other("Game chưa có Cloud Save trên Google Drive."));
+        return Err(DriveFailure::other(
+            "Game chưa có Cloud Save trên Google Drive.",
+        ));
     };
     if target.exists() {
         clear_tree(target).map_err(DriveFailure::other)?;
@@ -1033,7 +1066,9 @@ fn upload_object_if_missing(
     if sha256.trim().is_empty() {
         return Err(DriveFailure::other("Object SHA-256 bị trống."));
     }
-    if let Some(existing) = find_single_by_properties(token, &[("kind", "object"), ("sha256", sha256)])? {
+    if let Some(existing) =
+        find_single_by_properties(token, &[("kind", "object"), ("sha256", sha256)])?
+    {
         return Ok(existing.id);
     }
     let metadata = serde_json::json!({
@@ -1047,7 +1082,14 @@ fn upload_object_if_missing(
             "schema": REMOTE_SCHEMA.to_string()
         }
     });
-    upload_file(token, None, &metadata, source, size, "application/octet-stream")
+    upload_file(
+        token,
+        None,
+        &metadata,
+        source,
+        size,
+        "application/octet-stream",
+    )
 }
 
 fn upload_manifest(
@@ -1073,16 +1115,22 @@ fn upload_manifest(
             "schema": REMOTE_SCHEMA.to_string()
         }
     });
-    let result = upload_file(token, None, &metadata, &temporary, bytes.len() as u64, "application/json");
+    let result = upload_file(
+        token,
+        None,
+        &metadata,
+        &temporary,
+        bytes.len() as u64,
+        "application/json",
+    );
     let _ = fs::remove_file(temporary);
     result
 }
 
 fn read_remote_head(token: &str, game_id: &str) -> Result<Option<RemoteHead>, DriveFailure> {
-    let Some(head_file) = find_single_by_properties(
-        token,
-        &[("kind", "head"), ("gameId", game_id)],
-    )? else {
+    let Some(head_file) =
+        find_single_by_properties(token, &[("kind", "head"), ("gameId", game_id)])?
+    else {
         return Ok(None);
     };
     let bytes = download_bytes(token, &head_file.id)?;
@@ -1097,7 +1145,8 @@ fn read_remote_head(token: &str, game_id: &str) -> Result<Option<RemoteHead>, Dr
     if head.schema_version != REMOTE_SCHEMA || head.game_id != game_id {
         return Err(DriveFailure {
             kind: DriveFailureKind::CorruptRemote,
-            message: "Cloud Save head không tương thích; launcher chưa ghi đè dữ liệu local.".to_string(),
+            message: "Cloud Save head không tương thích; launcher chưa ghi đè dữ liệu local."
+                .to_string(),
             retryable: false,
             retry_after_seconds: None,
             http_status: None,
@@ -1153,7 +1202,11 @@ fn commit_head(token: &str, game_id: &str, head: &RemoteHead) -> Result<String, 
     result
 }
 
-fn write_device_record(token: &str, device_id: &str, device_name: &str) -> Result<String, DriveFailure> {
+fn write_device_record(
+    token: &str,
+    device_id: &str,
+    device_name: &str,
+) -> Result<String, DriveFailure> {
     let bytes = serde_json::to_vec(&serde_json::json!({
         "schemaVersion": REMOTE_SCHEMA,
         "deviceId": device_id,
@@ -1163,7 +1216,8 @@ fn write_device_record(token: &str, device_id: &str, device_name: &str) -> Resul
     .map_err(|error| DriveFailure::other(error.to_string()))?;
     let temporary = std::env::temp_dir().join(format!("oxo-device-{device_id}.json"));
     fs::write(&temporary, &bytes).map_err(DriveFailure::offline)?;
-    let existing = find_single_by_properties(token, &[("kind", "device"), ("deviceId", device_id)])?;
+    let existing =
+        find_single_by_properties(token, &[("kind", "device"), ("deviceId", device_id)])?;
     let mut metadata = serde_json::json!({
         "name": format!("oxo-device-{device_id}.json"),
         "mimeType": "application/json",
@@ -1239,7 +1293,8 @@ fn upload_file(
     let mut offset = 0u64;
     let mut attempts = 0u32;
     while offset < size {
-        file.seek(SeekFrom::Start(offset)).map_err(DriveFailure::offline)?;
+        file.seek(SeekFrom::Start(offset))
+            .map_err(DriveFailure::offline)?;
         let remaining = size.saturating_sub(offset);
         let chunk_len = remaining.min(RESUMABLE_CHUNK_BYTES as u64) as usize;
         let mut chunk = vec![0u8; chunk_len];
@@ -1291,7 +1346,9 @@ fn upload_file(
             }
         }
     }
-    Err(DriveFailure::other("Google Drive resumable upload ended without a file ID."))
+    Err(DriveFailure::other(
+        "Google Drive resumable upload ended without a file ID.",
+    ))
 }
 
 enum ResumableSessionState {
@@ -1375,7 +1432,10 @@ fn list_by_properties(
                 .query(&[
                     ("spaces", APP_DATA_SPACE),
                     ("q", clauses.as_str()),
-                    ("fields", "nextPageToken,files(id,name,size,modifiedTime,appProperties)"),
+                    (
+                        "fields",
+                        "nextPageToken,files(id,name,size,modifiedTime,appProperties)",
+                    ),
                     ("pageSize", "1000"),
                 ]);
             if let Some(page) = token_page.as_deref() {
@@ -1395,12 +1455,16 @@ fn list_by_properties(
 
 fn download_bytes(token: &str, file_id: &str) -> Result<Vec<u8>, DriveFailure> {
     let response = send_with_backoff(|| {
-        http_client()?.get(format!("{DRIVE_API}/files/{file_id}?alt=media"))
+        http_client()?
+            .get(format!("{DRIVE_API}/files/{file_id}?alt=media"))
             .header(AUTHORIZATION, format!("Bearer {token}"))
             .send()
             .map_err(DriveFailure::offline)
     })?;
-    response.bytes().map(|value| value.to_vec()).map_err(DriveFailure::offline)
+    response
+        .bytes()
+        .map(|value| value.to_vec())
+        .map_err(DriveFailure::offline)
 }
 
 fn download_file(token: &str, file_id: &str, target: &Path) -> Result<(), DriveFailure> {
@@ -1408,13 +1472,16 @@ fn download_file(token: &str, file_id: &str, target: &Path) -> Result<(), DriveF
         fs::create_dir_all(parent).map_err(DriveFailure::offline)?;
     }
     let mut response = send_with_backoff(|| {
-        http_client()?.get(format!("{DRIVE_API}/files/{file_id}?alt=media"))
+        http_client()?
+            .get(format!("{DRIVE_API}/files/{file_id}?alt=media"))
             .header(AUTHORIZATION, format!("Bearer {token}"))
             .send()
             .map_err(DriveFailure::offline)
     })?;
     let mut output = File::create(target).map_err(DriveFailure::offline)?;
-    response.copy_to(&mut output).map_err(DriveFailure::offline)?;
+    response
+        .copy_to(&mut output)
+        .map_err(DriveFailure::offline)?;
     output.sync_all().map_err(DriveFailure::offline)
 }
 
@@ -1549,7 +1616,11 @@ fn classify_response(response: Response) -> DriveFailure {
         retryable,
         retry_after_seconds,
         http_status: Some(status.as_u16()),
-        reason: if reason.is_empty() { raw_message } else { format!("{reason}: {raw_message}") },
+        reason: if reason.is_empty() {
+            raw_message
+        } else {
+            format!("{reason}: {raw_message}")
+        },
     }
 }
 
@@ -1694,7 +1765,10 @@ fn client_id() -> String {
 }
 
 fn auth_path(app: &AppHandle) -> Result<PathBuf, String> {
-    let root = app.path().app_data_dir().map_err(|error| error.to_string())?;
+    let root = app
+        .path()
+        .app_data_dir()
+        .map_err(|error| error.to_string())?;
     fs::create_dir_all(&root).map_err(|error| error.to_string())?;
     Ok(root.join(AUTH_FILE))
 }

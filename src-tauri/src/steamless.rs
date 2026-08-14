@@ -10,7 +10,6 @@
 ///   4. AES-256-CBC decrypt the code section using key/IV from header
 ///   5. Restore stolen bytes, patch OEP, remove .bind, write clean exe
 ///   6. Backup original as <name>.org.exe; replace original path
-
 use std::fs;
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
@@ -33,7 +32,12 @@ pub struct SteamlessResult {
 }
 
 impl SteamlessResult {
-    fn ok(msg: impl Into<String>, path: impl Into<String>, variant: impl Into<String>, app_id: u32) -> Self {
+    fn ok(
+        msg: impl Into<String>,
+        path: impl Into<String>,
+        variant: impl Into<String>,
+        app_id: u32,
+    ) -> Self {
         Self {
             success: true,
             message: msg.into(),
@@ -80,10 +84,18 @@ fn write_u64_le(data: &mut [u8], offset: usize, val: u64) {
 fn find_pattern(haystack: &[u8], pattern: &str) -> Option<usize> {
     let tokens: Vec<Option<u8>> = pattern
         .split_whitespace()
-        .map(|t| if t == "??" { None } else { u8::from_str_radix(t, 16).ok() })
+        .map(|t| {
+            if t == "??" {
+                None
+            } else {
+                u8::from_str_radix(t, 16).ok()
+            }
+        })
         .collect();
 
-    if tokens.is_empty() { return None; }
+    if tokens.is_empty() {
+        return None;
+    }
 
     'outer: for i in 0..haystack.len().saturating_sub(tokens.len() - 1) {
         for (j, tok) in tokens.iter().enumerate() {
@@ -102,8 +114,8 @@ fn find_pattern(haystack: &[u8], pattern: &str) -> Option<usize> {
 
 struct PeHeaders {
     is_64: bool,
-    pe_offset: usize,          // e_lfanew → PE signature
-    opt_offset: usize,         // optional header start
+    pe_offset: usize,  // e_lfanew → PE signature
+    opt_offset: usize, // optional header start
     sections_offset: usize,
     num_sections: u16,
     entry_point_rva: u32,
@@ -115,19 +127,29 @@ struct PeHeaders {
 const IMAGE_SIZEOF_SECTION_HEADER: usize = 40;
 
 fn parse_pe(data: &[u8]) -> Option<PeHeaders> {
-    if data.len() < 0x40 { return None; }
-    if &data[0..2] != b"MZ" { return None; }
+    if data.len() < 0x40 {
+        return None;
+    }
+    if &data[0..2] != b"MZ" {
+        return None;
+    }
 
     let pe_offset = read_u32_le(data, 0x3C) as usize;
-    if pe_offset + 4 > data.len() { return None; }
-    if &data[pe_offset..pe_offset + 4] != b"PE\0\0" { return None; }
+    if pe_offset + 4 > data.len() {
+        return None;
+    }
+    if &data[pe_offset..pe_offset + 4] != b"PE\0\0" {
+        return None;
+    }
 
     let file_header_offset = pe_offset + 4;
     let num_sections = read_u16_le(data, file_header_offset + 2);
     let size_of_optional = read_u16_le(data, file_header_offset + 16) as usize;
 
     let opt_offset = file_header_offset + 20;
-    if opt_offset + 2 > data.len() { return None; }
+    if opt_offset + 2 > data.len() {
+        return None;
+    }
 
     let magic = read_u16_le(data, opt_offset);
     let is_64 = magic == 0x20B; // PE32+ (64-bit)
@@ -145,10 +167,17 @@ fn parse_pe(data: &[u8]) -> Option<PeHeaders> {
     // TLS data directory index = 9
     // In PE32+: data dirs start at opt_offset + 112
     // In PE32:  data dirs start at opt_offset + 96
-    let data_dir_base = if is_64 { opt_offset + 112 } else { opt_offset + 96 };
+    let data_dir_base = if is_64 {
+        opt_offset + 112
+    } else {
+        opt_offset + 96
+    };
     let tls_dir_offset = data_dir_base + 9 * 8;
     let (tls_data_dir_rva, tls_data_dir_size) = if tls_dir_offset + 8 <= data.len() {
-        (read_u32_le(data, tls_dir_offset), read_u32_le(data, tls_dir_offset + 4))
+        (
+            read_u32_le(data, tls_dir_offset),
+            read_u32_le(data, tls_dir_offset + 4),
+        )
     } else {
         (0, 0)
     };
@@ -180,7 +209,9 @@ fn read_sections(data: &[u8], hdr: &PeHeaders) -> Vec<Section> {
     let mut sections = Vec::new();
     for i in 0..hdr.num_sections as usize {
         let off = hdr.sections_offset + i * IMAGE_SIZEOF_SECTION_HEADER;
-        if off + IMAGE_SIZEOF_SECTION_HEADER > data.len() { break; }
+        if off + IMAGE_SIZEOF_SECTION_HEADER > data.len() {
+            break;
+        }
         let mut name = [0u8; 8];
         name.copy_from_slice(&data[off..off + 8]);
         sections.push(Section {
@@ -201,7 +232,9 @@ fn section_name(s: &Section) -> &str {
 
 fn rva_to_file_offset(sections: &[Section], rva: u32) -> Option<usize> {
     for s in sections {
-        if rva >= s.virtual_address && rva < s.virtual_address + s.size_of_raw_data.max(s.virtual_size) {
+        if rva >= s.virtual_address
+            && rva < s.virtual_address + s.size_of_raw_data.max(s.virtual_size)
+        {
             let delta = rva - s.virtual_address;
             return Some((s.pointer_to_raw_data + delta) as usize);
         }
@@ -211,7 +244,9 @@ fn rva_to_file_offset(sections: &[Section], rva: u32) -> Option<usize> {
 
 fn get_owner_section<'a>(sections: &'a [Section], rva: u32) -> Option<usize> {
     for (i, s) in sections.iter().enumerate() {
-        if rva >= s.virtual_address && rva < s.virtual_address + s.size_of_raw_data.max(s.virtual_size) {
+        if rva >= s.virtual_address
+            && rva < s.virtual_address + s.size_of_raw_data.max(s.virtual_size)
+        {
             return Some(i);
         }
     }
@@ -254,12 +289,12 @@ fn xtea_decrypt_pass2(keys: &[u32; 4], v1: u32, v2: u32, n: u32) -> (u32, u32) {
     for _ in 0..n {
         v2 = v2.wrapping_sub(
             ((v1.wrapping_shl(4) ^ v1.wrapping_shr(5)).wrapping_add(v1))
-            ^ (sum.wrapping_add(keys[((sum >> 11) & 3) as usize])),
+                ^ (sum.wrapping_add(keys[((sum >> 11) & 3) as usize])),
         );
         sum = sum.wrapping_sub(DELTA as u32);
         v1 = v1.wrapping_sub(
             ((v2.wrapping_shl(4) ^ v2.wrapping_shr(5)).wrapping_add(v2))
-            ^ (sum.wrapping_add(keys[(sum & 3) as usize])),
+                ^ (sum.wrapping_add(keys[(sum & 3) as usize])),
         );
     }
     (v1, v2)
@@ -289,14 +324,10 @@ fn aes256_cbc_decrypt(key: &[u8; 32], iv: &[u8; 16], data: &[u8]) -> Result<Vec<
     }
     type Aes256CbcDec = cbc::Decryptor<Aes256>;
     let mut buf = data.to_vec();
-    Aes256CbcDec::new(key.into(), iv.into())
-        .decrypt_blocks_mut(unsafe {
-            // SAFETY: buf is block-aligned, length checked above
-            std::slice::from_raw_parts_mut(
-                buf.as_mut_ptr() as *mut aes::Block,
-                buf.len() / 16,
-            )
-        });
+    Aes256CbcDec::new(key.into(), iv.into()).decrypt_blocks_mut(unsafe {
+        // SAFETY: buf is block-aligned, length checked above
+        std::slice::from_raw_parts_mut(buf.as_mut_ptr() as *mut aes::Block, buf.len() / 16)
+    });
     Ok(buf)
 }
 
@@ -331,7 +362,9 @@ const STUB31_SIZE: usize = 0xF0;
 const STUB30_SIZES: [u32; 2] = [0xB0, 0xD0]; // Variant 3.0 sizes
 
 fn parse_stub31(raw: &[u8]) -> Option<SteamStub64Var31> {
-    if raw.len() < STUB31_SIZE { return None; }
+    if raw.len() < STUB31_SIZE {
+        return None;
+    }
     let mut aes_key = [0u8; 32];
     aes_key.copy_from_slice(&raw[0x60..0x80]);
     let mut aes_iv = [0u8; 16];
@@ -385,20 +418,26 @@ impl std::fmt::Display for SteamVariant {
             SteamVariant::Var30x64 => write!(f, "3.0 x64"),
             SteamVariant::Var31x86 => write!(f, "3.1 x86"),
             SteamVariant::Var30x86 => write!(f, "3.0 x86"),
-            SteamVariant::Unknown  => write!(f, "Unknown"),
+            SteamVariant::Unknown => write!(f, "Unknown"),
         }
     }
 }
 
 /// Detect SteamStub variant from .bind section.
 /// Returns None if not a SteamStub protected file.
-fn detect_variant(data: &[u8], hdr: &PeHeaders, sections: &[Section]) -> Option<(SteamVariant, u32)> {
+fn detect_variant(
+    data: &[u8],
+    hdr: &PeHeaders,
+    sections: &[Section],
+) -> Option<(SteamVariant, u32)> {
     let bind_idx = sections.iter().position(|s| section_name(s) == ".bind")?;
     let bind_sec = &sections[bind_idx];
 
     let bind_start = bind_sec.pointer_to_raw_data as usize;
     let bind_end = (bind_start + bind_sec.size_of_raw_data as usize).min(data.len());
-    if bind_start >= bind_end { return None; }
+    if bind_start >= bind_end {
+        return None;
+    }
 
     let bind_data = &data[bind_start..bind_end.min(bind_start + 0x3000)];
 
@@ -422,8 +461,15 @@ fn detect_variant(data: &[u8], hdr: &PeHeaders, sections: &[Section]) -> Option<
     };
 
     let hdr_size_offset = (offset as i32 + 3 + extra) as usize;
-    if hdr_size_offset + 4 > bind_data.len() { return None; }
-    let header_size = (i32::from_le_bytes(bind_data[hdr_size_offset..hdr_size_offset + 4].try_into().ok()?).abs()) as u32;
+    if hdr_size_offset + 4 > bind_data.len() {
+        return None;
+    }
+    let header_size = (i32::from_le_bytes(
+        bind_data[hdr_size_offset..hdr_size_offset + 4]
+            .try_into()
+            .ok()?,
+    )
+    .abs()) as u32;
 
     let variant = if hdr.is_64 {
         if header_size == 0xF0 {
@@ -464,9 +510,14 @@ pub fn unpack_exe(exe_path: &Path, backup_suffix: &str) -> SteamlessResult {
                     let fname = entry.file_name();
                     let fname_str = fname.to_string_lossy();
                     let stem = std::path::Path::new(&*fname_str)
-                        .file_stem()?.to_string_lossy().replace(' ', "").to_lowercase();
+                        .file_stem()?
+                        .to_string_lossy()
+                        .replace(' ', "")
+                        .to_lowercase();
                     let ext = std::path::Path::new(&*fname_str)
-                        .extension()?.to_string_lossy().to_lowercase();
+                        .extension()?
+                        .to_string_lossy()
+                        .to_lowercase();
                     if ext == "exe" && stem == target {
                         Some(entry.path())
                     } else {
@@ -487,15 +538,20 @@ pub fn unpack_exe(exe_path: &Path, backup_suffix: &str) -> SteamlessResult {
 
     let data = match fs::read(&*exe_path_resolved) {
         Ok(d) => d,
-        Err(e) => return SteamlessResult::err(format!(
-            "Không thể đọc file game.\nĐường dẫn thử: {}\nLỗi: {}", exe_path_resolved.display(), e
-        )),
+        Err(e) => {
+            return SteamlessResult::err(format!(
+                "Không thể đọc file game.\nĐường dẫn thử: {}\nLỗi: {}",
+                exe_path_resolved.display(),
+                e
+            ))
+        }
     };
 
     let hdr = match parse_pe(&data) {
         Some(h) => h,
         None => return SteamlessResult::err(
-            "File này không phải là game exe hợp lệ. Hãy chọn đúng file thực thi chính của game.".to_string()
+            "File này không phải là game exe hợp lệ. Hãy chọn đúng file thực thi chính của game."
+                .to_string(),
         ),
     };
 
@@ -510,16 +566,28 @@ pub fn unpack_exe(exe_path: &Path, backup_suffix: &str) -> SteamlessResult {
     };
 
     match &variant {
-        SteamVariant::Var31x64 | SteamVariant::Var30x64 => {
-            unpack_x64(&exe_path_resolved, &data, &hdr, &sections, variant, backup_suffix)
-        }
+        SteamVariant::Var31x64 | SteamVariant::Var30x64 => unpack_x64(
+            &exe_path_resolved,
+            &data,
+            &hdr,
+            &sections,
+            variant,
+            backup_suffix,
+        ),
         SteamVariant::Var31x86 | SteamVariant::Var30x86 => {
             // x86 structure is slightly different, falls back to a simplified path
-            unpack_x86_simple(&exe_path_resolved, &data, &hdr, &sections, variant, backup_suffix)
+            unpack_x86_simple(
+                &exe_path_resolved,
+                &data,
+                &hdr,
+                &sections,
+                variant,
+                backup_suffix,
+            )
         }
-        SteamVariant::Unknown => {
-            SteamlessResult::err("Phiên bản DRM của game này chưa được hỗ trợ. Hãy báo cáo cho team để cập nhật.")
-        }
+        SteamVariant::Unknown => SteamlessResult::err(
+            "Phiên bản DRM của game này chưa được hỗ trợ. Hãy báo cáo cho team để cập nhật.",
+        ),
     }
 }
 
@@ -534,10 +602,11 @@ fn unpack_x64(
     backup_suffix: &str,
 ) -> SteamlessResult {
     // Step 1 — Read and XOR-decode the DRM header
-    let (stub, xor_after_payload, tls_used, oep_rva_for_bind) = match read_stub_x64(data, hdr, sections) {
-        Ok(r) => r,
-        Err(msg) => return SteamlessResult::err(msg),
-    };
+    let (stub, xor_after_payload, tls_used, oep_rva_for_bind) =
+        match read_stub_x64(data, hdr, sections) {
+            Ok(r) => r,
+            Err(msg) => return SteamlessResult::err(msg),
+        };
 
     if stub.signature != 0xC0DEC0DF {
         return SteamlessResult::err(
@@ -557,7 +626,11 @@ fn unpack_x64(
     let code_section_idx = if !no_encryption {
         let cva = stub.code_section_va;
         // code_section_va is a virtual address, convert to RVA
-        let cva_rva = if cva > hdr.image_base { (cva - hdr.image_base) as u32 } else { cva as u32 };
+        let cva_rva = if cva > hdr.image_base {
+            (cva - hdr.image_base) as u32
+        } else {
+            cva as u32
+        };
         match get_owner_section(sections, cva_rva) {
             Some(i) => Some(i),
             None => return SteamlessResult::err(
@@ -602,13 +675,25 @@ fn unpack_x64(
     };
 
     // Step 6 — Rebuild PE
-    let backup_suffix = if backup_suffix.is_empty() { ".org.exe" } else { backup_suffix };
+    let backup_suffix = if backup_suffix.is_empty() {
+        ".org.exe"
+    } else {
+        backup_suffix
+    };
     let output_path = exe_path.with_extension("").with_file_name(format!(
         "{}.unpacked.exe",
         exe_path.file_stem().unwrap_or_default().to_string_lossy()
     ));
 
-    match rebuild_pe_x64(data, hdr, sections, &stub, code_section_idx, decrypted_code.as_deref(), &output_path) {
+    match rebuild_pe_x64(
+        data,
+        hdr,
+        sections,
+        &stub,
+        code_section_idx,
+        decrypted_code.as_deref(),
+        &output_path,
+    ) {
         Ok(()) => {}
         Err(msg) => return SteamlessResult::err(msg),
     }
@@ -630,7 +715,8 @@ fn unpack_x64(
         // Restore backup before reporting error
         let _ = fs::copy(&backup_path, exe_path);
         return SteamlessResult::err(format!(
-            "Không thể thay thế file game: {}. Hãy đảm bảo game không đang chạy.", e
+            "Không thể thay thế file game: {}. Hãy đảm bảo game không đang chạy.",
+            e
         ));
     }
 
@@ -666,7 +752,11 @@ fn read_stub_x64(
     if hdr.tls_data_dir_rva != 0 && hdr.tls_data_dir_size != 0 {
         if let Some(tls_file_off) = rva_to_file_offset(sections, hdr.tls_data_dir_rva) {
             // TLS directory: 64-bit: 2x u64 (start/end), 1x u64 (address of callbacks)
-            let cb_rva_offset = if hdr.is_64 { tls_file_off + 24 } else { tls_file_off + 12 };
+            let cb_rva_offset = if hdr.is_64 {
+                tls_file_off + 24
+            } else {
+                tls_file_off + 12
+            };
             if cb_rva_offset + 8 <= data.len() {
                 let cb_va = if hdr.is_64 {
                     read_u64_le(data, cb_rva_offset)
@@ -674,17 +764,35 @@ fn read_stub_x64(
                     read_u32_le(data, cb_rva_offset) as u64
                 };
                 if cb_va != 0 {
-                    let cb_rva = if cb_va > hdr.image_base { (cb_va - hdr.image_base) as u32 } else { 0 };
+                    let cb_rva = if cb_va > hdr.image_base {
+                        (cb_va - hdr.image_base) as u32
+                    } else {
+                        0
+                    };
                     // Read first callback address from table
                     if let Some(cb_table_off) = rva_to_file_offset(sections, cb_rva) {
                         let first_cb_va = if hdr.is_64 {
-                            if cb_table_off + 8 <= data.len() { read_u64_le(data, cb_table_off) } else { 0 }
+                            if cb_table_off + 8 <= data.len() {
+                                read_u64_le(data, cb_table_off)
+                            } else {
+                                0
+                            }
                         } else {
-                            if cb_table_off + 4 <= data.len() { read_u32_le(data, cb_table_off) as u64 } else { 0 }
+                            if cb_table_off + 4 <= data.len() {
+                                read_u32_le(data, cb_table_off) as u64
+                            } else {
+                                0
+                            }
                         };
                         if first_cb_va != 0 {
-                            let first_cb_rva = if first_cb_va > hdr.image_base { (first_cb_va - hdr.image_base) as u32 } else { 0 };
-                            if let Some(result) = try_read_stub_at_x64(data, hdr, sections, first_cb_rva, true) {
+                            let first_cb_rva = if first_cb_va > hdr.image_base {
+                                (first_cb_va - hdr.image_base) as u32
+                            } else {
+                                0
+                            };
+                            if let Some(result) =
+                                try_read_stub_at_x64(data, hdr, sections, first_cb_rva, true)
+                            {
                                 if result.0.signature == 0xC0DEC0DF {
                                     return Ok(result);
                                 }
@@ -707,9 +815,13 @@ fn try_read_stub_at_x64(
     is_tls: bool,
 ) -> Option<(SteamStub64Var31, u32, bool, u32)> {
     let file_offset = rva_to_file_offset(sections, entry_rva)?;
-    if file_offset < STUB31_SIZE { return None; }
+    if file_offset < STUB31_SIZE {
+        return None;
+    }
     let header_start = file_offset - STUB31_SIZE;
-    if header_start + STUB31_SIZE > data.len() { return None; }
+    if header_start + STUB31_SIZE > data.len() {
+        return None;
+    }
 
     let mut hdr_data = data[header_start..header_start + STUB31_SIZE].to_vec();
     let xor_after = steam_xor(&mut hdr_data, 0);
@@ -727,9 +839,15 @@ fn try_read_stub_at_x64(
             if payload_off + payload_size <= data.len() {
                 let mut payload = data[payload_off..payload_off + payload_size].to_vec();
                 steam_xor(&mut payload, xor_after)
-            } else { xor_after }
-        } else { xor_after }
-    } else { xor_after };
+            } else {
+                xor_after
+            }
+        } else {
+            xor_after
+        }
+    } else {
+        xor_after
+    };
 
     Some((stub, xor_final, is_tls, entry_rva))
 }
@@ -787,9 +905,12 @@ fn rebuild_pe_x64(
         write_u16_le(&mut out, num_sec_off, num_sec.saturating_sub(1));
     }
 
-    fs::write(output_path, &out).map_err(|e| format!(
-        "Không thể ghi file đã giải mã: {}. Hãy kiểm tra dung lượng ổ đĩa và quyền ghi.", e
-    ))
+    fs::write(output_path, &out).map_err(|e| {
+        format!(
+            "Không thể ghi file đã giải mã: {}. Hãy kiểm tra dung lượng ổ đĩa và quyền ghi.",
+            e
+        )
+    })
 }
 
 fn write_u16_le(data: &mut [u8], offset: usize, val: u16) {
@@ -820,7 +941,11 @@ fn unpack_x86_simple(
 
 /// Restore the original exe from backup and delete the patched version.
 pub fn restore_exe(exe_path: &Path, backup_suffix: &str) -> Result<String, String> {
-    let backup_suffix = if backup_suffix.is_empty() { ".org.exe" } else { backup_suffix };
+    let backup_suffix = if backup_suffix.is_empty() {
+        ".org.exe"
+    } else {
+        backup_suffix
+    };
     let backup_path = exe_path.with_file_name(format!(
         "{}{}",
         exe_path.file_stem().unwrap_or_default().to_string_lossy(),
@@ -828,13 +953,19 @@ pub fn restore_exe(exe_path: &Path, backup_suffix: &str) -> Result<String, Strin
     ));
 
     if !backup_path.exists() {
-        return Err("Không tìm thấy bản sao lưu file gốc. Có thể đã bị xóa hoặc chưa từng được fix.".to_string());
+        return Err(
+            "Không tìm thấy bản sao lưu file gốc. Có thể đã bị xóa hoặc chưa từng được fix."
+                .to_string(),
+        );
     }
 
     // Restore
-    fs::copy(&backup_path, exe_path).map_err(|e| format!(
-        "Không thể khôi phục file gốc: {}. Hãy đảm bảo game không đang chạy.", e
-    ))?;
+    fs::copy(&backup_path, exe_path).map_err(|e| {
+        format!(
+            "Không thể khôi phục file gốc: {}. Hãy đảm bảo game không đang chạy.",
+            e
+        )
+    })?;
 
     // Remove backup
     let _ = fs::remove_file(&backup_path);
@@ -848,7 +979,11 @@ pub fn restore_exe(exe_path: &Path, backup_suffix: &str) -> Result<String, Strin
 
 /// Check if an exe has already been patched (backup exists alongside it).
 pub fn is_patched(exe_path: &Path, backup_suffix: &str) -> bool {
-    let backup_suffix = if backup_suffix.is_empty() { ".org.exe" } else { backup_suffix };
+    let backup_suffix = if backup_suffix.is_empty() {
+        ".org.exe"
+    } else {
+        backup_suffix
+    };
     let backup_path = exe_path.with_file_name(format!(
         "{}{}",
         exe_path.file_stem().unwrap_or_default().to_string_lossy(),
@@ -866,7 +1001,10 @@ pub fn steamless_apply(exe_path: String, backup_suffix: Option<String>) -> Steam
 }
 
 #[tauri::command]
-pub fn steamless_restore(exe_path: String, backup_suffix: Option<String>) -> Result<String, String> {
+pub fn steamless_restore(
+    exe_path: String,
+    backup_suffix: Option<String>,
+) -> Result<String, String> {
     let suffix = backup_suffix.unwrap_or_else(|| ".org.exe".to_string());
     restore_exe(Path::new(&exe_path), &suffix)
 }

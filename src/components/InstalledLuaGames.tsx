@@ -3,9 +3,8 @@ import { invoke } from '@tauri-apps/api/core'
 import { Trash2, RefreshCw } from 'lucide-react'
 
 interface InstalledLuaGame {
-  appid: string
-  lua_exists: boolean
-  manifest_exists: boolean
+  appid: number
+  channel: 'live' | 'locked'
 }
 
 export function InstalledLuaGames() {
@@ -16,7 +15,7 @@ export function InstalledLuaGames() {
   const loadGames = useCallback(async () => {
     setLoading(true)
     try {
-      const installed = await invoke<InstalledLuaGame[]>('get_installed_lua_games')
+      const installed = await invoke<InstalledLuaGame[]>('get_lua_game_states')
       setGames(installed)
     } catch (error) {
       console.error('Failed to load installed games:', error)
@@ -123,7 +122,7 @@ export function InstalledLuaGames() {
             }}
           >
             <img
-              src={getSteamImageUrl(game.appid)}
+              src={getSteamImageUrl(String(game.appid))}
               alt={`Game ${game.appid}`}
               style={{
                 width: '100%',
@@ -147,31 +146,30 @@ export function InstalledLuaGames() {
                     AppID: {game.appid}
                   </div>
                   <div style={{ fontSize: '12px', color: '#888' }}>
-                    {game.lua_exists && <span>✓ Lua </span>}
-                    {game.manifest_exists && <span>✓ Manifest</span>}
+                    <span>{game.channel === 'live' ? 'Live' : 'Version locked'}</span>
                   </div>
                 </div>
 
                 <button
                   type="button"
-                  onClick={() => handleRemove(game.appid)}
-                  disabled={removing === game.appid}
+                  onClick={() => handleRemove(String(game.appid))}
+                  disabled={removing === String(game.appid)}
                   style={{
                     padding: '8px 12px',
                     background: 'rgba(255,50,50,0.1)',
                     border: '1px solid rgba(255,50,50,0.3)',
                     borderRadius: '6px',
                     color: '#ff6b6b',
-                    cursor: removing === game.appid ? 'not-allowed' : 'pointer',
+                    cursor: removing === String(game.appid) ? 'not-allowed' : 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '6px',
                     fontSize: '13px',
-                    opacity: removing === game.appid ? 0.5 : 1,
+                    opacity: removing === String(game.appid) ? 0.5 : 1,
                     transition: 'all 0.2s'
                   }}
                   onMouseEnter={(e) => {
-                    if (removing !== game.appid) {
+                    if (removing !== String(game.appid)) {
                       e.currentTarget.style.background = 'rgba(255,50,50,0.2)'
                       e.currentTarget.style.borderColor = 'rgba(255,50,50,0.5)'
                     }
@@ -182,7 +180,7 @@ export function InstalledLuaGames() {
                   }}
                 >
                   <Trash2 size={14} />
-                  {removing === game.appid ? 'Removing...' : 'Remove'}
+                  {removing === String(game.appid) ? 'Removing...' : 'Remove'}
                 </button>
               </div>
             </div>

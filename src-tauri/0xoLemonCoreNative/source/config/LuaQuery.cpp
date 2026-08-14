@@ -16,6 +16,7 @@
 #include "runtime/ManifestFetch.h"
 #include "runtime/HookStatus.h"
 #include "runtime/Logger.h"
+#include "runtime/StatsClient.h"
 
 #include <lua.hpp>
 #include <algorithm>
@@ -36,6 +37,100 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+
+namespace {
+    bool TryLuaLongBracketOpen(
+        std::string_view source,
+        size_t index,
+        size_t& level,
+        size_t& contentStart) {
+        if (index >= source.size() || source[index] != '[') return false;
+        size_t cursor = index + 1;
+        while (cursor < source.size() && source[cursor] == '=') ++cursor;
+        if (cursor >= source.size() || source[cursor] != '[') return false;
+        level = cursor - index - 1;
+        contentStart = cursor + 1;
+        return true;
+    }
+
+    size_t FindLuaLongBracketEnd(
+        std::string_view source,
+        size_t cursor,
+        size_t level) {
+        while (cursor < source.size()) {
+            if (source[cursor] == ']') {
+                size_t probe = cursor + 1;
+                size_t equals = 0;
+                while (probe < source.size() && source[probe] == '=') {
+                    ++equals;
+                    ++probe;
+                }
+                if (equals == level && probe < source.size() && source[probe] == ']') {
+                    return probe + 1;
+                }
+            }
+            ++cursor;
+        }
+        return source.size();
+    }
+
+    std::string MaskLuaNonCode(std::string_view source) {
+        std::string masked(source);
+        const auto blank = [&masked](size_t start, size_t end) {
+            for (size_t index = start; index < end; ++index) {
+                if (masked[index] != '\r' && masked[index] != '\n') masked[index] = ' ';
+            }
+        };
+
+        size_t index = 0;
+        while (index < source.size()) {
+            if (source[index] == '-'
+                && index + 1 < source.size()
+                && source[index + 1] == '-') {
+                const size_t start = index;
+                size_t level = 0;
+                size_t contentStart = 0;
+                if (TryLuaLongBracketOpen(source, index + 2, level, contentStart)) {
+                    index = FindLuaLongBracketEnd(source, contentStart, level);
+                } else {
+                    index += 2;
+                    while (index < source.size() && source[index] != '\n') ++index;
+                }
+                blank(start, index);
+                continue;
+            }
+
+            if (source[index] == '\'' || source[index] == '"') {
+                const char quote = source[index];
+                const size_t start = index++;
+                while (index < source.size()) {
+                    if (source[index] == '\\') {
+                        index = index + 2 < source.size() ? index + 2 : source.size();
+                        continue;
+                    }
+                    if (source[index] == quote) {
+                        ++index;
+                        break;
+                    }
+                    ++index;
+                }
+                blank(start, index);
+                continue;
+            }
+
+            size_t level = 0;
+            size_t contentStart = 0;
+            if (TryLuaLongBracketOpen(source, index, level, contentStart)) {
+                const size_t start = index;
+                index = FindLuaLongBracketEnd(source, contentStart, level);
+                blank(start, index);
+                continue;
+            }
+            ++index;
+        }
+        return masked;
+    }
+}
 
 namespace LuaLoader {
 
@@ -175,6 +270,11 @@ namespace LuaLoader {
             outCount = 1;
             return &it->second;
         }
+        thread_local uint64_t apiSteamId = 0;
+        if (StatsClient::TryGet(appId, apiSteamId)) {
+            outCount = 1;
+            return &apiSteamId;
+        }
         outCount = sizeof(kStatSteamIdPool) / sizeof(kStatSteamIdPool[0]);
         return kStatSteamIdPool;
     }
@@ -211,10 +311,16 @@ namespace LuaLoader {
         auto libraryIt = g_fileLibraryApps.find(filePath);
         auto statsIt = g_fileStatsApps.find(filePath);
         auto statIdIt = g_fileStatSteamIds.find(filePath);
+        auto manifestIt = g_fileManifestOverrides.find(filePath);
+        auto autoUpdateIt = g_fileManifestAutoUpdate.find(filePath);
+        auto parseSequenceIt = g_fileParseSequence.find(filePath);
         if (it == g_fileDepots.end()
             && libraryIt == g_fileLibraryApps.end()
             && statsIt == g_fileStatsApps.end()
-            && statIdIt == g_fileStatSteamIds.end()) return;
+            && statIdIt == g_fileStatSteamIds.end()
+            && manifestIt == g_fileManifestOverrides.end()
+            && autoUpdateIt == g_fileManifestAutoUpdate.end()
+            && parseSequenceIt == g_fileParseSequence.end()) return;
 
         size_t removedDepots = 0;
         if (it != g_fileDepots.end()) {
@@ -255,6 +361,7 @@ namespace LuaLoader {
                     g_statsRefCount.erase(refIt);
                     StatsAppIdSet.erase(id);
                     StatSteamIdSet.erase(id);
+                    StatsClient::Forget(id);
                 }
             }
             g_fileStatsApps.erase(statsIt);
@@ -270,6 +377,27 @@ namespace LuaLoader {
                 }
             }
             g_fileStatSteamIds.erase(statIdIt);
+        }
+
+        std::unordered_set<uint64_t> affectedManifestDepots;
+        if (manifestIt != g_fileManifestOverrides.end()) {
+            for (const auto& [depotId, manifest] : manifestIt->second) {
+                (void)manifest;
+                affectedManifestDepots.insert(depotId);
+            }
+            g_fileManifestOverrides.erase(manifestIt);
+        }
+        if (autoUpdateIt != g_fileManifestAutoUpdate.end()) {
+            for (AppId_t depotId : autoUpdateIt->second) {
+                affectedManifestDepots.insert(static_cast<uint64_t>(depotId));
+            }
+            g_fileManifestAutoUpdate.erase(autoUpdateIt);
+        }
+        if (parseSequenceIt != g_fileParseSequence.end()) {
+            g_fileParseSequence.erase(parseSequenceIt);
+        }
+        for (uint64_t depotId : affectedManifestDepots) {
+            RebuildManifestOverride(depotId);
         }
 
         LOG_PACKAGE_INFO("UnloadFile: removed {} depots, {} library roots, and {} stats roots from {}",
@@ -310,6 +438,7 @@ namespace LuaLoader {
 
         ParseSession session;
         session.currentFile = filePath;
+        g_fileParseSequence[filePath] = ++g_nextFileParseSequence;
         g_activeSession = &session;
         struct SessionGuard {
             ~SessionGuard() { g_activeSession = nullptr; }
@@ -413,52 +542,81 @@ namespace LuaLoader {
                 229020,229030,229031,229032,229033,220211,
             };
 
+            const std::string maskedBody = MaskLuaNonCode(body);
             const char* pos = body.data();
             const char* end = body.data() + body.size();
             while (pos < end) {
-                const char* hit = std::strstr(pos, "setManifestid");
-                if (!hit) hit = std::strstr(pos, "setmanifestid");
-                if (!hit) break;
+                const char* lineEnd = static_cast<const char*>(
+                    std::memchr(pos, '\n', static_cast<size_t>(end - pos)));
+                if (!lineEnd) lineEnd = end;
 
-                const char* lineStart = hit;
-                while (lineStart > body.data() && lineStart[-1] != '\n') --lineStart;
-                while (lineStart < hit && (*lineStart == ' ' || *lineStart == '\t')) ++lineStart;
-                if (lineStart[0] == '-' && lineStart[1] == '-') {
-                    pos = hit + 1;
+                const size_t lineOffset = static_cast<size_t>(pos - body.data());
+                const char* codeCursor = maskedBody.data() + lineOffset;
+                const char* codeLineEnd = codeCursor + (lineEnd - pos);
+                while (codeCursor < codeLineEnd
+                    && (*codeCursor == ' ' || *codeCursor == '\t')) ++codeCursor;
+                constexpr size_t kCallLength = 13;
+                const bool isManifestCall =
+                    static_cast<size_t>(codeLineEnd - codeCursor) >= kCallLength
+                    && (std::memcmp(codeCursor, "setManifestid", kCallLength) == 0
+                        || std::memcmp(codeCursor, "setmanifestid", kCallLength) == 0);
+                if (!isManifestCall) {
+                    pos = lineEnd < end ? lineEnd + 1 : end;
                     continue;
                 }
 
-                pos = hit + 13;
-                if (pos >= end || *pos != '(') continue;
-                ++pos;
+                const size_t callOffset = static_cast<size_t>(codeCursor - maskedBody.data());
+                const char* cursor = body.data() + callOffset + kCallLength;
+                while (cursor < lineEnd && (*cursor == ' ' || *cursor == '\t')) ++cursor;
+                if (cursor >= lineEnd || *cursor != '(') {
+                    pos = lineEnd < end ? lineEnd + 1 : end;
+                    continue;
+                }
+                ++cursor;
 
-                while (pos < end && (*pos == ' ' || *pos == '\t')) ++pos;
-                if (pos >= end || !std::isdigit(static_cast<unsigned char>(*pos))) continue;
+                while (cursor < lineEnd && (*cursor == ' ' || *cursor == '\t')) ++cursor;
+                if (cursor >= lineEnd || !std::isdigit(static_cast<unsigned char>(*cursor))) {
+                    pos = lineEnd < end ? lineEnd + 1 : end;
+                    continue;
+                }
                 char* ne = nullptr;
-                uint64_t depotId = std::strtoull(pos, &ne, 10);
-                if (!depotId || depotId > UINT32_MAX || !ne) continue;
-                pos = ne;
+                uint64_t depotId = std::strtoull(cursor, &ne, 10);
+                if (!depotId || depotId > UINT32_MAX || !ne || ne > lineEnd) {
+                    pos = lineEnd < end ? lineEnd + 1 : end;
+                    continue;
+                }
+                cursor = ne;
 
                 AppId_t depotKey = static_cast<AppId_t>(depotId);
 
-                if (kAutoUpdateDepots.count(depotId)) continue;
-                if (doneByLua.count(depotKey)) continue;
-                if (Internal::g_manifestAutoUpdate.count(depotKey)) continue;
+                if (kAutoUpdateDepots.count(depotId)
+                    || doneByLua.count(depotKey)
+                    || ActiveFileSkipsManifest(depotKey)) {
+                    pos = lineEnd < end ? lineEnd + 1 : end;
+                    continue;
+                }
 
-                while (pos < end && (*pos == ' ' || *pos == '\t' || *pos == ',')) ++pos;
-                if (pos >= end || *pos != '"') continue;
-                ++pos;
-                const char* gs = pos;
-                while (pos < end && *pos != '"') ++pos;
-                if (pos >= end || pos == gs) continue;
-                std::string_view gidStr(gs, static_cast<size_t>(pos - gs));
+                while (cursor < lineEnd
+                    && (*cursor == ' ' || *cursor == '\t' || *cursor == ',')) ++cursor;
+                if (cursor >= lineEnd || *cursor != '"') {
+                    pos = lineEnd < end ? lineEnd + 1 : end;
+                    continue;
+                }
+                ++cursor;
+                const char* gidStart = cursor;
+                while (cursor < lineEnd && *cursor != '"') ++cursor;
+                if (cursor >= lineEnd || cursor == gidStart) {
+                    pos = lineEnd < end ? lineEnd + 1 : end;
+                    continue;
+                }
+                std::string_view gidStr(gidStart, static_cast<size_t>(cursor - gidStart));
 
                 uint64_t parsedGid = 0;
                 if (TryParseUInt64Decimal(gidStr, parsedGid)) {
-                    ManifestOverrides[depotId] = { parsedGid, 0 };
+                    session.recordManifestOverride(depotKey, { parsedGid, 0 });
                     LOG_PACKAGE_INFO("setManifestid(fallback): depot={} gid={}", depotId, parsedGid);
                 }
-                ++pos;
+                pos = lineEnd < end ? lineEnd + 1 : end;
             }
         }
 

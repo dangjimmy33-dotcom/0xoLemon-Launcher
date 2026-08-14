@@ -35,9 +35,23 @@ const complete = deriveLogicalTransferProgress({
 assert.equal(complete.logicalPercent, 100)
 assert.equal(complete.remainingBytes, 0)
 
+const resumedLargeInstall = deriveLogicalTransferProgress({
+  bytesDone: 0,
+  bytesTotal: 33 * 1024 ** 3,
+  logicalBytesDone: 34 * 1024 ** 3,
+  logicalBytesTotal: 67 * 1024 ** 3,
+  sessionBaseBytes: 34 * 1024 ** 3,
+})
+assert.equal(resumedLargeInstall.logicalBytesDone, 34 * 1024 ** 3)
+assert.equal(resumedLargeInstall.logicalBytesTotal, 67 * 1024 ** 3)
+assert.equal(resumedLargeInstall.sessionBytesDone, 0)
+assert.equal(resumedLargeInstall.sessionBytesTotal, 33 * 1024 ** 3)
+assert.equal(resumedLargeInstall.remainingBytes, 33 * 1024 ** 3)
+
 console.log('jobProgress logical transfer tests passed')
 
 const jobProgressSource = await readFile(new URL('./jobProgress.ts', import.meta.url), 'utf8')
 assert.ok(jobProgressSource.includes("job.kind === 'patch'"), 'patch jobs must participate in download progress')
 assert.ok(jobProgressSource.includes("runningStep?.name.toLowerCase().includes('download')"), 'patch download detection must be phase-aware')
+assert.ok(jobProgressSource.includes('const networkPercent = transfer.logicalPercent'), 'network UI must preserve logical progress across resume')
 console.log('patch download progress contract tests passed')

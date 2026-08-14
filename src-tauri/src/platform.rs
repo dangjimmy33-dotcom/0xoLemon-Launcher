@@ -6,7 +6,7 @@ use std::sync::{OnceLock, RwLock};
 
 use aes_gcm::{
     aead::{Aead, KeyInit},
-    Aes256Gcm, Nonce
+    Aes256Gcm, Nonce,
 };
 use chrono::Utc;
 use keyring::Entry;
@@ -16,6 +16,7 @@ use tauri::{AppHandle, Emitter, Manager};
 
 const PLATFORM_STATE_FILE: &str = "platform-state.json";
 const PLATFORM_STATE_SCHEMA: u32 = 2;
+pub const DEFAULT_LIBRARY_ROOT: &str = r"E:\0xoLemon store";
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
@@ -87,7 +88,7 @@ pub struct LauncherSettings {
 impl Default for LauncherSettings {
     fn default() -> Self {
         Self {
-            default_library: r"E:\0xoLemon store".to_string(),
+            default_library: DEFAULT_LIBRARY_ROOT.to_string(),
             download_workers: 8,
             download_retries: 20,
             pack_range_mb: 16,
@@ -398,6 +399,10 @@ pub fn set_settings(
     settings: LauncherSettings,
 ) -> Result<LauncherSettings, String> {
     let settings = settings.sanitized();
+    let default_library_changed = current_settings().default_library != settings.default_library;
+    if default_library_changed {
+        crate::install_discovery::remember_library_root(Path::new(&settings.default_library))?;
+    }
     update_state(app, |state| {
         state.settings = settings.clone();
     })?;
@@ -415,6 +420,10 @@ pub fn register_install(
     launch_executable: &str,
 ) -> Result<(), String> {
     let game_id = normalize_game_id(game_id);
+    let recovery_game_id = game_id.clone();
+    if crate::install_discovery::remember_managed_install_path(install_path)?.is_some() {
+        crate::install_discovery::remember_install_selection(&recovery_game_id, install_path)?;
+    }
     let record = InstallRecord {
         game_id: game_id.clone(),
         install_path: install_path.display().to_string(),
@@ -424,14 +433,18 @@ pub fn register_install(
     };
     update_state(app, |state| {
         state.installs.insert(game_id, record);
-    })
+    })?;
+    Ok(())
 }
 
 pub fn unregister_install(app: &AppHandle, game_id: &str) -> Result<(), String> {
     let game_id = normalize_game_id(game_id);
+    let recovery_game_id = game_id.clone();
     update_state(app, |state| {
         state.installs.remove(&game_id);
-    })
+    })?;
+    let _ = crate::install_discovery::forget_install_selection(&recovery_game_id);
+    Ok(())
 }
 
 pub fn install_record(app: &AppHandle, game_id: &str) -> Result<Option<InstallRecord>, String> {
@@ -622,7 +635,11 @@ fn build_game_platform_state(state: &PlatformStateFile, game_id: &str) -> GamePl
                     description: "".to_string(),
                     unlocked: ach_state.unlocked_at.is_some(),
                     unlocked_at: ach_state.unlocked_at.clone(),
-                    progress: if ach_state.unlocked_at.is_some() { 1 } else { 0 },
+                    progress: if ach_state.unlocked_at.is_some() {
+                        1
+                    } else {
+                        0
+                    },
                     target: 1,
                 });
             }
@@ -654,8 +671,12 @@ fn unlock_in_state(
     Some(AchievementUnlockedEvent {
         game_id: game_id.to_string(),
         id: achievement_id.to_string(),
-        name: definition.map(|d| d.name.to_string()).unwrap_or_else(|| achievement_id.to_string()),
-        description: definition.map(|d| d.description.to_string()).unwrap_or_else(|| "".to_string()),
+        name: definition
+            .map(|d| d.name.to_string())
+            .unwrap_or_else(|| achievement_id.to_string()),
+        description: definition
+            .map(|d| d.description.to_string())
+            .unwrap_or_else(|| "".to_string()),
         unlocked_at,
     })
 }
@@ -739,7 +760,9 @@ fn load_state_unlocked(app: &AppHandle) -> Result<PlatformStateFile, String> {
                 if nonce_bytes.len() == 12 {
                     let nonce = Nonce::from_slice(&nonce_bytes);
                     if let Ok(plaintext) = cipher.decrypt(nonce, ciphertext.as_ref()) {
-                        if let Ok(mut state) = serde_json::from_slice::<PlatformStateFile>(&plaintext) {
+                        if let Ok(mut state) =
+                            serde_json::from_slice::<PlatformStateFile>(&plaintext)
+                        {
                             state.settings = state.settings.sanitized();
                             return Ok(state);
                         }

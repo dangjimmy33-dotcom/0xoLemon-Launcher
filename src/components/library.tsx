@@ -11,7 +11,7 @@ import { TutorialModal } from './TutorialModal'
 import { useLocale } from '../context/locale'
 import { useSteamAppIds } from '../hooks/useSteamAppIds'
 import { useLuaUpdateCheck } from '../hooks/useLuaUpdateCheck'
-import type { CloudSaveStatus, GameAchievement, GameCatalog, GameDetail, GameMedia, GameSummary, GameInstallState, GameVersionInfo, VerifyUiStatus } from '../types'
+import type { CloudSaveStatus, GameAchievement, GameCatalog, GameDetail, GameMedia, GameSummary, GameInstallState, GameVersionInfo, LuaGameState, LuaSourceOperation, LuaSourceProvider, VerifyUiStatus } from '../types'
 import { assetUrlForId, firstMediaUrl, isCarouselMedia, mediaPriority, processDescriptionHtml, thumbnailUrlForMedia, isTauriRuntime } from '../lib/gameMeta'
 import { formatBytes } from '../lib/format'
 import { getGameTags, gameHasTag } from '../lib/gameTags'
@@ -19,6 +19,7 @@ import { GameDetailsPanel, InstallSummaryPanel, OSTPlayer } from './panels'
 import { CloudSavePanel } from './CloudSavePanel'
 import { GameChat } from './GameChat'
 import { ConfirmDialog } from './ConfirmDialog'
+import { LuaSourcePickerDialog } from './LuaSourcePickerDialog'
 import { useRealtimeConfig } from '../hooks/useRealtimeConfig'
 import { useFirestoreDetail } from '../hooks/useFirestoreDetail'
 import { SaveBackupIndicator } from './SaveBackupIndicator'
@@ -936,12 +937,37 @@ export function StoreLibraryView({
   const [activeDetailTab, setActiveDetailTab] = useState<'overview' | 'chat' | 'lua-game'>('overview')
   const [showLuaGameTab, setShowLuaGameTab] = useState(false)
   const [steamGameRunning, setSteamGameRunning] = useState(false)
+  const [luaSyncing, setLuaSyncing] = useState(false)
 
   // Get current game's Steam App ID
   const currentSteamAppId = selectedGame ? mapping[selectedGame.id] : undefined
 
   // Check for Lua manifest updates
-  const { updateInfo } = useLuaUpdateCheck(currentSteamAppId, showLuaGameTab)
+  const { updateInfo, checking: luaStateChecking, refresh: refreshLuaState } = useLuaUpdateCheck(currentSteamAppId, showLuaGameTab)
+
+  const syncCurrentLuaGame = useCallback(async () => {
+    if (!currentSteamAppId) return
+    setLuaSyncing(true)
+    try {
+      await invoke('check_lua_game_update', { appid: currentSteamAppId })
+      await refreshLuaState()
+    } catch (error) {
+      const message = String(error)
+      if (message) {
+        window.dispatchEvent(new CustomEvent('0xo-toast', {
+          detail: {
+            category: 'launcher',
+            severity: 'error',
+            title: t.luaShop.liveChannel,
+            message,
+            dedupeKey: `lua-sync:${currentSteamAppId}`,
+          },
+        }))
+      }
+    } finally {
+      setLuaSyncing(false)
+    }
+  }, [currentSteamAppId, refreshLuaState, t.luaShop])
 
   // Listen for lua-game-mode changes
   useEffect(() => {
@@ -1387,6 +1413,7 @@ export function StoreLibraryView({
   const hero = assetUrlForId(selectedGame.heroAssetId, assets) || firstMediaUrl(detail, assets)
   const logo = assetUrlForId(selectedGame.logoAssetId, assets)
   const installed = Boolean(selectedInstallState?.installed)
+  const installBlocked = ['recovering', 'conflict', 'unavailable'].includes(selectedInstallState?.discoveryStatus ?? '')
   const isVerifying = verifyStatus?.state === 'running'
 
   // Determine effective mode to control button visibility
@@ -1398,11 +1425,20 @@ export function StoreLibraryView({
 
   const isDownloading = isJobRunning
   const isPlaying = isGameRunning || steamGameRunning
+  const discoveryStatus = selectedInstallState?.discoveryStatus ?? ''
 
   let actionLabel: string = installed ? t.library.play : (!isTauriRuntime() ? 'Remote Install' : t.library.chooseInstall)
   let actionClass = 'primary-control'
   let primaryDisabled = false
-  const stateLabel = !installed ? t.library.readyToInstall : updateReady ? t.library.readyToUpdate : t.library.readyToPlay
+  const stateLabel = discoveryStatus === 'recovering'
+    ? t.installRecovery.checking
+    : installBlocked
+      ? selectedInstallState?.unavailableReason || t.installRecovery.libraryUnavailable
+    : !installed
+      ? t.library.readyToInstall
+      : updateReady
+        ? t.library.readyToUpdate
+        : t.library.readyToPlay
 
   if (isPlaying) {
     actionLabel = 'Running'
@@ -1415,6 +1451,14 @@ export function StoreLibraryView({
   } else if (!installed && effectiveMode !== 'steam') {
     actionLabel = !isTauriRuntime() ? 'Remote Install' : t.library.chooseInstall
     primaryDisabled = !canUpdate
+  }
+  if (installBlocked && effectiveMode !== 'steam') {
+    actionLabel = discoveryStatus === 'recovering'
+      ? t.installRecovery.checking
+      : discoveryStatus === 'conflict'
+        ? t.installRecovery.resolveLocation
+        : t.installRecovery.libraryUnavailable
+    primaryDisabled = true
   }
 
   const handleSteamStop = async () => {
@@ -1444,7 +1488,7 @@ export function StoreLibraryView({
       : installed
         ? <Play size={17} />
         : <Download size={17} />
-  const updateDisabled = !canUpdate || isDownloading || isPlaying
+  const updateDisabled = installBlocked || !canUpdate || isDownloading || isPlaying
   const displayedVersion = installed ? selectedCurrentVersion : selectedVersion
   const downloadSize = updateSize || selectedVersionInfo?.sizeBytes || 0
   const verifyLabel = isVerifying ? 'Verifying...' : t.library.verifyIntegrity
@@ -1486,13 +1530,13 @@ export function StoreLibraryView({
             </button>
           )}
           {(installed && effectiveMode !== 'steam') && (
-            <button type="button" onClick={() => selectedInstallState?.installPath && invoke('open_folder', { path: selectedInstallState.installPath })}>
+            <button type="button" disabled={installBlocked} onClick={() => selectedInstallState?.installPath && invoke('open_folder', { path: selectedInstallState.installPath })}>
               <FolderOpen size={15} />
               Browse
             </button>
           )}
           {effectiveMode !== 'steam' && (
-            <button type="button" onClick={onVerify} disabled={!installed || isVerifying}>
+            <button type="button" onClick={onVerify} disabled={!installed || isVerifying || installBlocked}>
               <VerifyIcon size={15} />
               {verifyLabel}
             </button>
@@ -1534,7 +1578,7 @@ export function StoreLibraryView({
             </button>
           ) : null}
           {(installed && effectiveMode !== 'steam') ? (
-            <button className="danger-control" type="button" onClick={onUninstall}>
+            <button className="danger-control" type="button" onClick={onUninstall} disabled={installBlocked}>
               <X size={15} />
               {t.library.uninstall}
             </button>
@@ -1606,13 +1650,13 @@ export function StoreLibraryView({
               </button>
             )}
             {(installed && effectiveMode !== 'steam') && (
-              <button type="button" onClick={() => selectedInstallState?.installPath && invoke('open_folder', { path: selectedInstallState.installPath })}>
+              <button type="button" disabled={installBlocked} onClick={() => selectedInstallState?.installPath && invoke('open_folder', { path: selectedInstallState.installPath })}>
                 <FolderOpen size={15} />
                 Browse
               </button>
             )}
             {effectiveMode !== 'steam' && (
-              <button type="button" onClick={onVerify} disabled={!installed || isVerifying}>
+              <button type="button" onClick={onVerify} disabled={!installed || isVerifying || installBlocked}>
                 <VerifyIcon size={17} />
                 {verifyLabel}
               </button>
@@ -1668,7 +1712,7 @@ export function StoreLibraryView({
             ) : null}
             
             {(installed && effectiveMode !== 'steam') ? (
-              <button className="danger-control" type="button" onClick={onUninstall}>
+              <button className="danger-control" type="button" onClick={onUninstall} disabled={installBlocked}>
                 <X size={17} />
                 {t.library.uninstall}
               </button>
@@ -1703,17 +1747,8 @@ export function StoreLibraryView({
               }}
             >
               <Sparkles size={16} /> {t.library.luaGameMode}
-              {updateInfo?.needs_update && !updateInfo.is_missing && (
-                <span style={{
-                  position: 'absolute',
-                  top: '6px',
-                  right: '6px',
-                  width: '8px',
-                  height: '8px',
-                  background: '#ff4444',
-                  borderRadius: '50%',
-                  boxShadow: '0 0 8px rgba(255,68,68,0.8)'
-                }} title={updateInfo.reason} />
+              {updateInfo && ['error', 'conflict'].includes(updateInfo.syncStatus) && (
+                <span className="lua-state-alert-dot" title={updateInfo.lastError || updateInfo.syncStatus} />
               )}
             </button>
           )}
@@ -1735,59 +1770,40 @@ export function StoreLibraryView({
           </>
         ) : activeDetailTab === 'lua-game' ? (
           <section className="detail-body lua-game-tab-container">
-            {/* Update Banner */}
-            {updateInfo?.needs_update && !updateInfo.is_missing && (
-              <div style={{
-                marginBottom: '20px',
-                padding: '16px 20px',
-                background: 'linear-gradient(135deg, rgba(255,165,0,0.15), rgba(255,69,0,0.15))',
-                borderRadius: '12px',
-                border: '1px solid rgba(255,165,0,0.4)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                boxShadow: '0 4px 12px rgba(255,165,0,0.2)'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <Download size={20} style={{ color: '#ffa500' }} />
-                  <div>
-                    <div style={{ color: '#ffa500', fontWeight: '600', marginBottom: '4px' }}>
-                      {t.settings.luaManifestUpdateAvailable}
-                    </div>
-                    <div style={{ color: '#bbb', fontSize: '13px' }}>
-                      {updateInfo.reason}
-                    </div>
-                  </div>
+            {updateInfo && (
+              <div className={`lua-live-status-panel status-${updateInfo.syncStatus}`}>
+                <div className="lua-live-status-copy">
+                  <span className={`lua-channel-badge channel-${updateInfo.channel}`}>
+                    {updateInfo.channel === 'live'
+                      ? 'Live'
+                      : `${t.luaShop.lockedChannel}${updateInfo.pinnedBuildId ? ` · ${updateInfo.pinnedBuildId}` : ''}`}
+                  </span>
+                  <strong>
+                    {updateInfo.lastError
+                      || (updateInfo.lastSyncAt
+                        ? t.luaShop.syncedAt.replace('{time}', new Date(updateInfo.lastSyncAt).toLocaleString())
+                        : t.luaShop.syncNever)}
+                  </strong>
+                  {updateInfo.sharedDepotConflicts.length > 0 && (
+                    <small>
+                      {t.luaShop.sharedDepotLocked.replace(
+                        '{depots}',
+                        updateInfo.sharedDepotConflicts.join(', '),
+                      )}
+                    </small>
+                  )}
                 </div>
-                <button
-                  type="button"
-                  onClick={async () => {
-                    if (!currentSteamAppId) return
-                    try {
-                      await invoke('add_to_steam', { appid: currentSteamAppId, forceUpdate: true })
-                      // Trigger re-check
-                      window.location.reload()
-                    } catch (error) {
-                      alert(`Failed to update: ${String(error)}`)
-                    }
-                  }}
-                  style={{
-                    padding: '8px 16px',
-                    background: 'linear-gradient(135deg, #ffa500, #ff8c00)',
-                    border: 'none',
-                    borderRadius: '6px',
-                    color: '#fff',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    whiteSpace: 'nowrap',
-                    transition: 'transform 0.2s',
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-                  onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                >
-                  🔄 Cập Nhật Ngay
-                </button>
+                {updateInfo.channel === 'live' && (
+                  <button
+                    type="button"
+                    className="lua-live-sync-button"
+                    onClick={() => void syncCurrentLuaGame()}
+                    disabled={luaSyncing || luaStateChecking || updateInfo.syncStatus === 'checking'}
+                  >
+                    <RefreshCcw size={15} className={luaSyncing || updateInfo.syncStatus === 'checking' ? 'spin' : ''} />
+                    <span>{t.luaShop.sync}</span>
+                  </button>
+                )}
               </div>
             )}
 
@@ -2077,10 +2093,12 @@ export function OperationHero({
 
 function SteamIntegrationButton({ gameId, gameTitle, storeMode }: { gameId: string, gameTitle: string, storeMode: 'local' | 'steam' }) {
   const [status, setStatus] = useState<boolean>(false)
+  const [luaState, setLuaState] = useState<LuaGameState | null>(null)
   const [loading, setLoading] = useState(false)
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(false)
   const [showRestartConfirm, setShowRestartConfirm] = useState(false)
   const [showEnableModePrompt, setShowEnableModePrompt] = useState(false)
+  const [sourceOperation, setSourceOperation] = useState<LuaSourceOperation | null>(null)
   const [autoInstall, setAutoInstall] = useState(() => localStorage.getItem('steamAutoInstall') !== 'false')
   const [skipConfirm, setSkipConfirm] = useState(() => localStorage.getItem('steamSkipRestartConfirm') === 'true')
   const { mapping } = useSteamAppIds()
@@ -2090,8 +2108,12 @@ function SteamIntegrationButton({ gameId, gameTitle, storeMode }: { gameId: stri
 
   const checkStatus = useCallback(async () => {
     try {
-      const isAdded = await invoke<boolean>('check_steam_status', { appid })
+      const [isAdded, state] = await Promise.all([
+        invoke<boolean>('check_steam_status', { appid }),
+        invoke<LuaGameState | null>('get_lua_game_state', { appid }),
+      ])
       setStatus(isAdded)
+      setLuaState(state)
     } catch (e) {
       console.error('Failed to check steam status', e)
     }
@@ -2103,6 +2125,22 @@ function SteamIntegrationButton({ gameId, gameTitle, storeMode }: { gameId: stri
     const timer = window.setTimeout(() => void checkStatus(), 0)
     return () => window.clearTimeout(timer)
   }, [appid, checkStatus])
+
+  useEffect(() => {
+    if (!appid) return
+    let active = true
+    let unlisten: (() => void) | undefined
+    void listen<LuaGameState>('launcher://lua-game-state', (event) => {
+      if (active && event.payload.appid === appid) setLuaState(event.payload)
+    }).then((stop) => {
+      if (active) unlisten = stop
+      else stop()
+    })
+    return () => {
+      active = false
+      unlisten?.()
+    }
+  }, [appid])
 
   // Hide in "local" mode
   if (storeMode === 'local') {
@@ -2148,45 +2186,7 @@ function SteamIntegrationButton({ gameId, gameTitle, storeMode }: { gameId: stri
       return
     }
 
-    setLoading(true)
-    try {
-      const checkResult = await invoke('check_steam_update', { appid }) as { needs_update: boolean, reason: string, is_missing: boolean }
-
-      let forceUpdate = false
-      if (checkResult.needs_update) {
-        if (checkResult.is_missing) {
-          showToast(t.library.addToSteam, `Creating config for ${gameTitle} (30-60s)...`, 'info')
-          forceUpdate = true
-        } else {
-          const { ask } = await import('@tauri-apps/plugin-dialog')
-          const shouldUpdate = await ask(`Update available.\nReason: ${checkResult.reason}\n\nFetch latest version?`, {
-            title: 'Data Update',
-            kind: 'info',
-          })
-
-          if (shouldUpdate) {
-            showToast(t.library.addToSteam, `Downloading update for ${gameTitle} (30-60s)...`, 'info')
-            forceUpdate = true
-          }
-        }
-      }
-
-      await invoke('add_to_steam', { appid, forceUpdate })
-      setStatus(true)
-      showToast(t.library.addToSteam, t.library.addToSteamSuccess, 'success')
-
-      // Dispatch event to show Lua-Game Mode tab
-      window.dispatchEvent(new CustomEvent('lua-game-mode-changed', {
-        detail: { gameId, added: true }
-      }))
-
-      // Show restart prompt (no auto-restart/kill)
-      setShowRestartConfirm(true)
-    } catch (e) {
-      console.error(e)
-      showToast(t.library.addToSteam, t.library.addToSteamError + ': ' + String(e), 'error')
-    }
-    setLoading(false)
+    setSourceOperation('add')
   }
 
   const handleRemove = async () => {
@@ -2200,8 +2200,10 @@ function SteamIntegrationButton({ gameId, gameTitle, storeMode }: { gameId: stri
 
     setLoading(true)
     try {
+      const requiresRestart = luaState?.requiresSteamRestart === true
       await invoke('remove_from_steam', { appid })
       setStatus(false)
+      setLuaState(null)
       showToast(t.library.removeFromSteam, t.library.removeFromSteamSuccess, 'success')
 
       // Dispatch event to hide Lua-Game Mode tab
@@ -2209,11 +2211,12 @@ function SteamIntegrationButton({ gameId, gameTitle, storeMode }: { gameId: stri
         detail: { gameId, added: false }
       }))
 
-      // Show restart prompt
-      if (localStorage.getItem('steamSkipRestartConfirm') === 'true') {
-        performRestart();
-      } else {
-        setShowRestartConfirm(true);
+      if (requiresRestart) {
+        if (localStorage.getItem('steamSkipRestartConfirm') === 'true') {
+          performRestart();
+        } else {
+          setShowRestartConfirm(true);
+        }
       }
     } catch (e) {
       console.error(e)
@@ -2228,6 +2231,66 @@ function SteamIntegrationButton({ gameId, gameTitle, storeMode }: { gameId: stri
       performRestart();
     } else {
       setShowRestartConfirm(true);
+    }
+  }
+
+  const handleSync = async () => {
+    if (!appid || luaState?.channel !== 'live') return
+    setSourceOperation(luaState.updateAvailable ? 'update' : 'sync')
+  }
+
+  const handleSourceConfirm = async (provider: LuaSourceProvider) => {
+    if (!appid || !sourceOperation) return
+    setLoading(true)
+    try {
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
+      const state = sourceOperation === 'add'
+        ? await invoke<LuaGameState>('install_lua_game_from_source', {
+            request: {
+              appid,
+              gameName: gameTitle,
+              channel: 'live',
+              buildId: null,
+              accessToken: null,
+              statSteamId: null,
+              conflictResolution: null,
+              provider,
+              requestId: crypto.randomUUID(),
+              timezone,
+            },
+          })
+        : await invoke<LuaGameState>(sourceOperation === 'update'
+          ? 'apply_lua_game_update'
+          : 'sync_lua_game_from_source', {
+            request: {
+              appid,
+              provider,
+              requestId: crypto.randomUUID(),
+              timezone,
+              conflictResolution: null,
+            },
+          })
+      setLuaState(state)
+      setStatus(true)
+      setSourceOperation(null)
+      showToast(
+        sourceOperation === 'add' ? t.library.addToSteam : t.luaShop.liveChannel,
+        sourceOperation === 'add'
+          ? t.library.addToSteamSuccess
+          : state.syncStatus === 'updated' ? t.luaShop.syncUpdated : t.luaShop.syncCurrent,
+        'success',
+      )
+      if (sourceOperation === 'add') {
+        window.dispatchEvent(new CustomEvent('lua-game-mode-changed', {
+          detail: { gameId, added: true }
+        }))
+      }
+      if (state.requiresSteamRestart) {
+        if (skipConfirm) void performRestart()
+        else setShowRestartConfirm(true)
+      }
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -2256,8 +2319,28 @@ function SteamIntegrationButton({ gameId, gameTitle, storeMode }: { gameId: stri
               disabled
             >
               <CheckCircle2 size={16} />
-              <span>{t.library.addedToSteam}</span>
+              <span>
+                {luaState?.channel === 'live'
+                  ? 'Live'
+                  : luaState?.channel === 'locked'
+                    ? `${t.luaShop.lockedChannel}${luaState.pinnedBuildId ? ` · ${luaState.pinnedBuildId}` : ''}`
+                    : t.library.addedToSteam}
+              </span>
             </button>
+            {luaState?.channel === 'live' && (
+              <button
+                type="button"
+                className="lua-integration-sync-button"
+                onClick={() => void handleSync()}
+                disabled={loading || luaState.syncStatus === 'checking'}
+                title={luaState.lastError || (luaState.lastSyncAt
+                  ? t.luaShop.syncedAt.replace('{time}', new Date(luaState.lastSyncAt).toLocaleString())
+                  : t.luaShop.syncNever)}
+              >
+                <RefreshCcw size={15} className={loading || luaState.syncStatus === 'checking' ? 'spin' : ''} />
+                <span>{t.luaShop.sync}</span>
+              </button>
+            )}
             <button
               style={{
                 display: 'flex', alignItems: 'center', gap: '6px', padding: '0 16px', height: '46px',
@@ -2302,6 +2385,17 @@ function SteamIntegrationButton({ gameId, gameTitle, storeMode }: { gameId: stri
           </button>
         )}
       </div>
+
+      {sourceOperation && (
+        <LuaSourcePickerDialog
+          appid={appid}
+          gameName={gameTitle}
+          operation={sourceOperation}
+          preferredProvider={sourceOperation === 'add' ? null : luaState?.selectedSource ?? null}
+          onClose={() => setSourceOperation(null)}
+          onConfirm={handleSourceConfirm}
+        />
+      )}
 
       {/* Remove Confirmation Dialog */}
       {showRemoveConfirm && (

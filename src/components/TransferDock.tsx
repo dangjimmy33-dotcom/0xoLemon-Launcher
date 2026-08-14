@@ -25,11 +25,11 @@ export function TransferDock({
   onOpen: () => void
 }) {
   const [collapsed, setCollapsed] = useState(false)
-  const logicalPercent = useSmoothNumber(
-    progress.logicalBytesTotal > 0
-      ? (progress.logicalBytesDone / progress.logicalBytesTotal) * 100
-      : progress.overallPercent,
+  const overallPercent = useSmoothNumber(progress.overallPercent)
+  const etaCandidates = [progress.etaSeconds, progress.applyEtaSeconds].filter(
+    (value): value is number => value != null,
   )
+  const completionEta = etaCandidates.length > 0 ? Math.max(...etaCandidates) : null
 
   return (
     <AnimatePresence>
@@ -49,8 +49,8 @@ export function TransferDock({
                   {gameArtwork ? <img src={gameArtwork} alt="" /> : <Download size={17} />}
                 </span>
                 <span className="transfer-dock-mini-copy">
-                  <strong>{Math.round(logicalPercent)}%</strong>
-                  <i style={{ width: `${logicalPercent}%` }} />
+                  <strong>{Math.round(overallPercent)}%</strong>
+                  <i style={{ width: `${overallPercent}%` }} />
                 </span>
               </button>
               <button type="button" className="transfer-dock-expand" onClick={() => setCollapsed(false)} aria-label="Expand transfer dock">
@@ -64,18 +64,18 @@ export function TransferDock({
                   {gameArtwork ? <img src={gameArtwork} alt="" /> : <Download size={18} />}
                 </span>
                 <span className="transfer-dock-copy">
-                  <span className="transfer-dock-title"><strong>{gameTitle}</strong><small>{logicalPercent.toFixed(1)}%</small></span>
-                  <span className="transfer-dock-state">{isPaused ? 'Paused' : progress.name} · {formatBytes(progress.logicalBytesDone)} / {formatBytes(progress.logicalBytesTotal)}</span>
-                  <span className="transfer-dock-track" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(logicalPercent)}>
-                    <i style={{ width: `${logicalPercent}%` }} />
+                  <span className="transfer-dock-title"><strong>{gameTitle}</strong><small>{overallPercent.toFixed(1)}%</small></span>
+                  <span className="transfer-dock-state">{progress.isCommitting ? 'Completing safe transaction' : isPaused ? 'Paused' : progress.name} · {formatBytes(progress.logicalBytesDone)} / {formatBytes(progress.logicalBytesTotal)}</span>
+                  <span className="transfer-dock-track" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(overallPercent)}>
+                    <i style={{ width: `${overallPercent}%` }} />
                   </span>
                   <span className="transfer-dock-meta">
-                    <span>{progress.isDownloading && progress.rateBytesPerSecond > 0 ? `${formatBytes(progress.rateBytesPerSecond)}/s` : progress.detail}</span>
-                    <span>{progress.etaSeconds != null ? formatDuration(progress.etaSeconds) : job.kind}</span>
+                    <span>{progress.rateBytesPerSecond > 0 ? `${formatBytes(progress.rateBytesPerSecond)}/s network` : progress.applyRateBytesPerSecond > 0 ? `${formatBytes(progress.applyRateBytesPerSecond)}/s disk` : progress.detail}</span>
+                    <span>{completionEta != null ? formatDuration(completionEta) : job.kind}</span>
                   </span>
                 </span>
               </button>
-              <button type="button" className="transfer-dock-control" onClick={onPause} aria-label={isPaused ? 'Resume transfer' : 'Pause transfer'}>
+              <button type="button" className="transfer-dock-control" onClick={onPause} aria-label={isPaused ? 'Resume transfer' : 'Pause transfer'} disabled={progress.isCommitting}>
                 {isPaused ? <Play size={16} fill="currentColor" /> : <Pause size={16} fill="currentColor" />}
               </button>
               <button type="button" className="transfer-dock-collapse" onClick={() => setCollapsed(true)} aria-label="Collapse transfer dock">

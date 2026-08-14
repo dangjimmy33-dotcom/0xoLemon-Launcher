@@ -5,23 +5,7 @@ import App from './App.tsx'
 import Overlay from './Overlay.tsx'
 import { Analytics } from '@vercel/analytics/react'
 import { LocaleProvider } from './context/LocaleContext'
-
-function isTauriRuntime() {
-  if (typeof window === 'undefined') return false
-
-  const tauriWindow = window as Window & {
-    __TAURI__?: unknown
-    __TAURI_INTERNALS__?: unknown
-  }
-
-  return Boolean(
-    tauriWindow.__TAURI__ ||
-    tauriWindow.__TAURI_INTERNALS__ ||
-    window.location.protocol === 'tauri:' ||
-    window.location.protocol === 'asset:' ||
-    window.location.hostname === 'tauri.localhost'
-  )
-}
+import { isTauriRuntime } from './lib/tauriRuntime'
 
 async function clearLegacyPwaStateInTauri() {
   if (!isTauriRuntime()) return
@@ -46,6 +30,17 @@ async function clearLegacyPwaStateInTauri() {
     }
   } catch (error) {
     console.warn('Unable to clear legacy PWA caches:', error)
+  }
+}
+
+async function registerPwaForWeb() {
+  if (isTauriRuntime() || !('serviceWorker' in navigator)) return
+
+  try {
+    const { registerSW } = await import('virtual:pwa-register')
+    registerSW({ immediate: true })
+  } catch (error) {
+    console.warn('Unable to register the web service worker:', error)
   }
 }
 
@@ -75,6 +70,7 @@ async function bootstrap() {
   // Never block first paint on legacy cache cleanup. Some damaged WebView2
   // profiles can leave service-worker/cache promises pending indefinitely.
   void clearLegacyPwaStateInTauri()
+  void registerPwaForWeb()
 
   // Show the Tauri window only after React has painted — prevents FOUC
   if (typeof window !== 'undefined' && window.__TAURI_INTERNALS__) {

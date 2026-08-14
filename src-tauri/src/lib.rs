@@ -9,6 +9,7 @@ pub mod cloud_save;
 pub mod depot_crypto;
 pub mod discord_auth;
 pub mod game_tags;
+pub mod install_discovery;
 pub mod job;
 pub mod launch;
 pub mod manifest;
@@ -32,6 +33,8 @@ pub mod achievement_watcher;
 pub mod save_paths;
 pub mod local_save_backup;
 pub mod shop_lua;
+pub mod lua_live;
+pub mod lua_sources;
 pub mod open_steam_tool;
 pub mod denuvo;
 
@@ -650,6 +653,11 @@ async fn refresh_cloud_save_map(
 }
 
 #[tauri::command]
+fn push_cloud_save_map(app: AppHandle, payload: String) -> Result<(), String> {
+    cloud_save::push_save_map_from_firestore(&app, &payload)
+}
+
+#[tauri::command]
 fn get_local_save_backups(
     game_id: String,
 ) -> Result<Vec<local_save_backup::SaveBackupSnapshot>, String> {
@@ -787,13 +795,74 @@ async fn get_game_install_state(app: AppHandle, game_id: String) -> Result<GameI
 #[tauri::command]
 async fn get_game_install_states(
     app: AppHandle,
+    state: State<'_, LauncherState>,
     game_ids: Vec<String>,
 ) -> Result<Vec<GameInstallState>, String> {
-    tauri::async_runtime::spawn_blocking(move || {
-        job::game_install_states_quick(&app, &game_ids).map_err(|err| err.to_string())
+    let discovery_generation = install_discovery::completed_generation_for(&game_ids);
+    let confirmed_game_ids = game_ids.clone();
+    let scan_app = app.clone();
+    let states = tauri::async_runtime::spawn_blocking(move || {
+        job::game_install_states_quick(&scan_app, &game_ids).map_err(|err| err.to_string())
     })
     .await
-    .map_err(|err| err.to_string())?
+    .map_err(|err| err.to_string())??;
+
+    if discovery_generation.is_some_and(|generation| {
+        install_discovery::activate_automatic_jobs(&confirmed_game_ids, generation).is_some()
+    }) {
+        job::start_post_discovery_scan(app, state.job_control.clone());
+    }
+
+    Ok(states)
+}
+
+#[tauri::command]
+async fn discover_game_installs(
+    app: AppHandle,
+    game_ids: Vec<String>,
+) -> Result<install_discovery::InstallDiscoveryReport, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        install_discovery::discover_game_installs(&app, game_ids)
+    })
+    .await
+    .map_err(|error| format!("Install discovery task failed: {error}"))?
+}
+
+#[tauri::command]
+async fn register_library_root(
+    path: String,
+) -> Result<install_discovery::LibraryRecoveryIndex, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        install_discovery::register_library_root(PathBuf::from(path).as_path())
+    })
+    .await
+    .map_err(|error| format!("Library registration task failed: {error}"))?
+}
+
+#[tauri::command]
+async fn forget_library_root(library_id: String) -> Result<(), String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        install_discovery::forget_library_root(&library_id)
+    })
+    .await
+    .map_err(|error| format!("Library removal task failed: {error}"))?
+}
+
+#[tauri::command]
+async fn resolve_install_conflict(
+    app: AppHandle,
+    game_id: String,
+    install_path: String,
+) -> Result<install_discovery::DiscoveredInstall, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        install_discovery::resolve_install_conflict(
+            &app,
+            &game_id,
+            PathBuf::from(install_path).as_path(),
+        )
+    })
+    .await
+    .map_err(|error| format!("Install conflict task failed: {error}"))?
 }
 
 #[tauri::command]
@@ -991,6 +1060,36 @@ fn start_repair_job(
 }
 
 #[tauri::command]
+async fn check_patch_available(
+    game_id: String,
+    version: String,
+) -> Result<Option<String>, String> {
+    tauri::async_runtime::spawn_blocking(move || job::check_patch_available(&game_id, &version))
+        .await
+        .map_err(|err| err.to_string())?
+}
+
+#[tauri::command]
+fn start_patch_job(
+    app: AppHandle,
+    state: State<'_, LauncherState>,
+    game_id: Option<String>,
+    install_path: String,
+    target_version: Option<String>,
+) -> Result<JobJournal, String> {
+    discord_auth::require_authorized_session()?;
+    state.job_control.reset();
+    job::spawn_patch_job(
+        app,
+        state.job_control.clone(),
+        install_path,
+        target_version,
+        game_id,
+    )
+    .map_err(|err| err.to_string())
+}
+
+#[tauri::command]
 fn pause_job(state: State<'_, LauncherState>) {
     state.job_control.pause();
 }
@@ -1002,17 +1101,19 @@ fn resume_job(app: AppHandle, state: State<'_, LauncherState>) -> Result<(), Str
         if let Ok(Some(journal)) = job::read_latest_journal(&app) {
             match journal.kind.as_str() {
                 "install" => {
-                    job::spawn_install_job(
-                        app,
-                        state.job_control.clone(),
-                        Some(journal.to_version),
-                        Some(journal.install_path),
-                        Some(journal.game_id),
-                    )
-                    .map_err(|e| e.to_string())?;
+                    job::resume_install_job(app, state.job_control.clone(), journal)
+                        .map_err(|e| e.to_string())?;
                 }
                 "update" => {
                     job::resume_update_job(app, state.job_control.clone(), journal)
+                        .map_err(|e| e.to_string())?;
+                }
+                "repair" => {
+                    job::resume_repair_job(app, state.job_control.clone(), journal)
+                        .map_err(|e| e.to_string())?;
+                }
+                "patch" => {
+                    job::resume_patch_job(app, state.job_control.clone(), journal)
                         .map_err(|e| e.to_string())?;
                 }
                 _ => {}
@@ -1181,6 +1282,7 @@ pub fn run() {
             pin_cloud_save_snapshot,
             export_cloud_save_snapshot,
             refresh_cloud_save_map,
+            push_cloud_save_map,
             get_local_save_backups,
             restore_local_save_backup,
             plan_install_update,
@@ -1195,6 +1297,10 @@ pub fn run() {
             asset_cache::clear_game_cache,
             get_game_install_state,
             get_game_install_states,
+            discover_game_installs,
+            register_library_root,
+            forget_library_root,
+            resolve_install_conflict,
             get_game_launch_config,
             launch_game,
             kill_game,
@@ -1207,6 +1313,8 @@ pub fn run() {
             translations::uninstall_translation,
             start_install_job,
             start_repair_job,
+            check_patch_available,
+            start_patch_job,
             pause_job,
             resume_job,
             cancel_job,
@@ -1301,6 +1409,31 @@ pub fn run() {
             shop_lua::lua_shop_get_patchnotes_rss,
             shop_lua::lua_shop_get_game_builds,
             shop_lua::lua_shop_install_game,
+            lua_live::install_lua_game,
+            lua_live::install_lua_game_from_source,
+            lua_live::get_lua_game_states,
+            lua_live::get_lua_game_state,
+            lua_live::get_lua_game_manager_state,
+            lua_live::resolve_lua_source,
+            lua_live::set_lua_game_channel,
+            lua_live::sync_lua_game,
+            lua_live::sync_lua_game_from_source,
+            lua_live::apply_lua_game_update,
+            lua_live::check_lua_game_update,
+            lua_live::check_all_lua_game_updates,
+            lua_live::sync_all_live_lua_games,
+            lua_live::resolve_legacy_lua_games,
+            lua_sources::get_lua_source_settings,
+            lua_sources::save_hubcap_api_key,
+            lua_sources::clear_hubcap_api_key,
+            lua_sources::refresh_hubcap_key_state,
+            lua_sources::set_lua_source_preferences,
+            lua_sources::scan_lua_sources,
+            lua_sources::search_lua_games,
+            lua_sources::probe_lua_source_availability,
+            lua_sources::get_lua_add_quota,
+            open_steam_tool::get_native_core_settings,
+            open_steam_tool::set_native_core_stats_api,
         ]);
 
     builder.setup(move |app| {
@@ -1450,7 +1583,9 @@ pub fn run() {
             platform::initialize(app.handle())
                 .map_err(|error| std::io::Error::new(std::io::ErrorKind::Other, error))?;
             debug_log::debug_log("platform::initialize complete.");
+            install_discovery::migrate_known_libraries(app.handle());
             steam_integration::start_pending_worker(app.handle().clone());
+            lua_live::start_live_scheduler(app.handle().clone());
             let job_control = app.state::<LauncherState>().job_control.clone();
             job::start_pending_update_recovery(app.handle().clone(), job_control.clone());
             job::start_auto_update_scheduler(app.handle().clone(), job_control);

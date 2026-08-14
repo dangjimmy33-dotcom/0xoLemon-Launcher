@@ -15,7 +15,7 @@ use once_cell::sync::Lazy;
 // ─── HuggingFace API helpers ──────────────────────────────────────────────────
 
 /// Load the HuggingFace access token from the embedded config.
-fn get_hf_token() -> String {
+pub(crate) fn get_hf_token() -> String {
     let json_str = include_str!("../huggingface-repos.json");
     let config: serde_json::Value = serde_json::from_str(json_str).unwrap_or_default();
     config["repositories"]
@@ -229,7 +229,7 @@ fn resolve_catalog_folder_name(
     }
 }
 
-fn catalog_blocking() -> Result<Vec<ShopGame>, String> {
+pub(crate) fn catalog_blocking() -> Result<Vec<ShopGame>, String> {
     let token = get_hf_token();
     let client = build_client()?;
     let url = format!("{}/Depotdownloader", api_tree_base());
@@ -427,6 +427,7 @@ fn builds_blocking(appid: u32, game_name: &str) -> Result<GameBuildsInfo, String
 /// Install a game: download manifests to depotcache/ and write the Lua config.
 #[tauri::command]
 pub async fn lua_shop_install_game(
+    app: tauri::AppHandle,
     appid: u32,
     game_name: String,
     build_id: String,
@@ -434,18 +435,28 @@ pub async fn lua_shop_install_game(
     stat_steam_id: Option<String>,
     skip_manifest_pin: Option<bool>,
 ) -> Result<(), String> {
-    tauri::async_runtime::spawn_blocking(move || {
-        install_game_blocking(
+    let live = skip_manifest_pin.unwrap_or(false);
+    crate::lua_live::install_lua_game(
+        app,
+        crate::lua_live::InstallLuaGameRequest {
             appid,
-            &game_name,
-            &build_id,
-            access_token.as_deref(),
-            stat_steam_id.as_deref(),
-            skip_manifest_pin.unwrap_or(false),
-        )
-    })
+            game_name,
+            channel: if live {
+                crate::lua_live::LuaGameChannel::Live
+            } else {
+                crate::lua_live::LuaGameChannel::Locked
+            },
+            build_id: if live { None } else { Some(build_id) },
+            access_token,
+            stat_steam_id,
+            conflict_resolution: None,
+            provider: None,
+            request_id: None,
+            timezone: None,
+        },
+    )
     .await
-    .map_err(|_| "Installation failed".to_string())?
+    .map(|_| ())
 }
 
 
@@ -571,6 +582,15 @@ fn has_lua_app_call(content: &str, function_name: &str, appid: u32) -> bool {
         .unwrap_or(false)
 }
 
+fn lua_string_literal(value: &str) -> String {
+    let escaped = value
+        .replace('\\', "\\\\")
+        .replace('"', "\\\"")
+        .replace('\r', "\\r")
+        .replace('\n', "\\n");
+    format!("\"{escaped}\"")
+}
+
 fn upsert_lua_string_call(content: &mut String, function_name: &str, appid: u32, value: &str) {
     let pattern = format!(
         r#"({}\s*\(\s*{}\s*,\s*)[\"'][^\"']*[\"']"#,
@@ -579,22 +599,27 @@ fn upsert_lua_string_call(content: &mut String, function_name: &str, appid: u32,
     );
     if let Ok(re) = regex::RegexBuilder::new(&pattern).case_insensitive(true).build() {
         if re.is_match(content) {
+            let literal = lua_string_literal(value);
             *content = re
-                .replace_all(content, format!(r#"${{1}}"{}""#, value))
+                .replace_all(content, |captures: &regex::Captures<'_>| {
+                    format!("{}{}", &captures[1], literal)
+                })
                 .to_string();
             return;
         }
     }
-    append_lua_line(content, &format!(r#"{}({}, "{}")"#, function_name, appid, value));
+    append_lua_line(
+        content,
+        &format!("{}({}, {})", function_name, appid, lua_string_literal(value)),
+    );
 }
 
-fn install_game_blocking(
+pub(crate) fn install_locked_game_blocking(
     appid: u32,
     game_name: &str,
     build_id: &str,
     access_token: Option<&str>,
     stat_steam_id: Option<&str>,
-    skip_manifest_pin: bool,
 ) -> Result<(), String> {
     let steam_path =
         crate::steam::get_steam_path().ok_or("Steam installation not found")?;
@@ -716,7 +741,13 @@ fn install_game_blocking(
     }
 
     // ── 4. Preserve the best available Lua base and patch only version data ──
-    let original_lua = choose_lua_base(&client, &token, &stplug_in_dir, &folder_name, appid);
+    let original_lua = choose_lua_base(
+        &client,
+        &token,
+        &stplug_in_dir,
+        &folder_name,
+        appid,
+    );
 
     let hf_token_rel = format!("Depotdownloader/{}/{}/{}.token", folder_name, appid, appid);
     let downloaded_token = fetch_text_rel(&client, &token, &hf_token_rel)
@@ -736,7 +767,7 @@ fn install_game_blocking(
         original_lua
     };
 
-    final_lua = patch_manifest_bindings(&final_lua, &manifest_entries, skip_manifest_pin)?;
+    final_lua = patch_manifest_bindings(&final_lua, &manifest_entries, false)?;
 
     // Keep unrelated Lua content byte-for-byte as much as possible. Only update
     // optional token/stat calls when the user explicitly supplied them. The
@@ -753,8 +784,7 @@ fn install_game_blocking(
 
     // ── 5. Write Lua to stplug-in/ ────────────────────────────────────────────
     let lua_file = stplug_in_dir.join(format!("{}.lua", appid));
-    std::fs::write(&lua_file, final_lua)
-        .map_err(|_| "Failed to write game configuration".to_string())?;
+    crate::lua_live::atomic_write_path(&lua_file, final_lua.as_bytes())?;
 
     // ── 6. Refresh .sync_state ────────────────────────────────────────────────
     update_sync_state(&stplug_in_dir)?;
@@ -801,6 +831,14 @@ mod lua_patch_tests {
         assert!(base.contains("AddToken(10, \"NEW\")"));
         assert_eq!(base.to_ascii_lowercase().matches("addtoken(").count(), 1);
         assert!(base.contains("customThing()"));
+    }
+
+    #[test]
+    fn upsert_optional_call_escapes_lua_control_characters() {
+        let mut base = "addappid(10)\n".to_string();
+        upsert_lua_string_call(&mut base, "addtoken", 10, "a\"b\\c$1\nnext");
+        assert!(base.contains("addtoken(10, \"a\\\"b\\\\c$1\\nnext\")"));
+        assert!(!base.contains("\nnext\n"));
     }
 }
 

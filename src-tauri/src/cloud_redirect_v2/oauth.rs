@@ -20,7 +20,8 @@ use super::upstream_config;
 // Public desktop OAuth clients used by the upstream project. They are not user
 // secrets; desktop clients cannot keep a client secret confidential. Keep these
 // values aligned with the vendored upstream OAuthService implementation.
-const GOOGLE_CLIENT_ID: &str = "1072944905499-vm2v2i5dvn0a0d2o4ca36i1vge8cvbn0.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID: &str =
+    "1072944905499-vm2v2i5dvn0a0d2o4ca36i1vge8cvbn0.apps.googleusercontent.com";
 const GOOGLE_CLIENT_SECRET: &str = "v6V3fKV_zWU7iw1DrpO1rknX";
 const GOOGLE_SCOPE: &str = "https://www.googleapis.com/auth/drive.file";
 const GOOGLE_AUTH_URL: &str = "https://accounts.google.com/o/oauth2/v2/auth";
@@ -176,7 +177,9 @@ fn handle_callback(stream: &mut TcpStream) {
                 .get("code")
                 .filter(|value| !value.is_empty())
                 .cloned()
-                .ok_or_else(|| "OAuth callback did not contain an authorization code".to_string())?;
+                .ok_or_else(|| {
+                    "OAuth callback did not contain an authorization code".to_string()
+                })?;
             let callback_state = query
                 .get("state")
                 .cloned()
@@ -274,7 +277,12 @@ pub async fn complete_oauth_flow(provider: &str, code: &str) -> Result<(), Strin
     }
 
     let (token_url, client_id, client_secret, scope) = if provider == "gdrive" {
-        (GOOGLE_TOKEN_URL, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, None)
+        (
+            GOOGLE_TOKEN_URL,
+            GOOGLE_CLIENT_ID,
+            GOOGLE_CLIENT_SECRET,
+            None,
+        )
     } else {
         (
             ONEDRIVE_TOKEN_URL,
@@ -389,8 +397,8 @@ pub async fn upload_to_google_drive(
     let folder_id = find_or_create_drive_folder(&client, &access_token, folder_name).await?;
 
     // Read file bytes
-    let file_bytes = std::fs::read(file_path)
-        .map_err(|e| format!("Cannot read file for upload: {e}"))?;
+    let file_bytes =
+        std::fs::read(file_path).map_err(|e| format!("Cannot read file for upload: {e}"))?;
 
     // Multipart metadata + binary upload
     let metadata = serde_json::json!({
@@ -422,9 +430,12 @@ pub async fn upload_to_google_drive(
         return Err(format!("Drive upload failed ({status}): {body}"));
     }
 
-    let file: serde_json::Value = serde_json::from_str(&body)
-        .map_err(|e| format!("Invalid Drive upload response: {e}"))?;
-    let id = file["id"].as_str().ok_or("Drive upload: no file ID in response")?.to_string();
+    let file: serde_json::Value =
+        serde_json::from_str(&body).map_err(|e| format!("Invalid Drive upload response: {e}"))?;
+    let id = file["id"]
+        .as_str()
+        .ok_or("Drive upload: no file ID in response")?
+        .to_string();
     Ok(id)
 }
 
@@ -461,8 +472,8 @@ pub async fn list_google_drive_backups(folder_name: &str) -> Result<Vec<DriveFil
         return Err(format!("Drive list failed ({status}): {body}"));
     }
 
-    let list: DriveFileListResponse = serde_json::from_str(&body)
-        .map_err(|e| format!("Invalid Drive list response: {e}"))?;
+    let list: DriveFileListResponse =
+        serde_json::from_str(&body).map_err(|e| format!("Invalid Drive list response: {e}"))?;
     Ok(list.files)
 }
 
@@ -494,7 +505,10 @@ pub async fn download_from_google_drive(
         return Err(format!("Drive download failed ({status}): {body}"));
     }
 
-    let bytes = response.bytes().await.map_err(|e| format!("Cannot read download: {e}"))?;
+    let bytes = response
+        .bytes()
+        .await
+        .map_err(|e| format!("Cannot read download: {e}"))?;
     std::fs::write(dest_path, &bytes).map_err(|e| format!("Cannot write download: {e}"))?;
     Ok(())
 }
@@ -505,16 +519,23 @@ async fn find_drive_folder(
     access_token: &str,
     name: &str,
 ) -> Result<Option<String>, String> {
-    let query = format!("mimeType='application/vnd.google-apps.folder' and name='{}' and trashed=false", name);
+    let query = format!(
+        "mimeType='application/vnd.google-apps.folder' and name='{}' and trashed=false",
+        name
+    );
     let url = format!(
         "https://www.googleapis.com/drive/v3/files?q={}&fields=files(id)&pageSize=1",
         urlencoding::encode(&query)
     );
-    let response = client.get(&url).bearer_auth(access_token).send().await
+    let response = client
+        .get(&url)
+        .bearer_auth(access_token)
+        .send()
+        .await
         .map_err(|e| format!("Drive folder search failed: {e}"))?;
     let body = response.text().await.unwrap_or_default();
-    let list: DriveFileListResponse = serde_json::from_str(&body)
-        .map_err(|e| format!("Invalid Drive folder response: {e}"))?;
+    let list: DriveFileListResponse =
+        serde_json::from_str(&body).map_err(|e| format!("Invalid Drive folder response: {e}"))?;
     Ok(list.files.into_iter().next().map(|f| f.id))
 }
 
@@ -544,8 +565,11 @@ async fn find_or_create_drive_folder(
     if !status.is_success() {
         return Err(format!("Drive folder create failed ({status}): {body}"));
     }
-    let file: serde_json::Value = serde_json::from_str(&body)
-        .map_err(|e| format!("Invalid Drive folder response: {e}"))?;
-    let id = file["id"].as_str().ok_or("Drive folder: no ID in response")?.to_string();
+    let file: serde_json::Value =
+        serde_json::from_str(&body).map_err(|e| format!("Invalid Drive folder response: {e}"))?;
+    let id = file["id"]
+        .as_str()
+        .ok_or("Drive folder: no ID in response")?
+        .to_string();
     Ok(id)
 }

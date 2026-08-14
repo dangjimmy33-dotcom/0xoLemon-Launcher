@@ -16,13 +16,16 @@ type Aes256CbcEnc = cbc::Encryptor<aes::Aes256>;
 pub fn aes_cbc_decrypt(ct: &[u8], key: &[u8; 32], iv: &[u8; 16]) -> Option<Vec<u8>> {
     let dec = Aes256CbcDec::new(key.into(), iv.into());
     let mut buf = ct.to_vec();
-    dec.decrypt_padded_mut::<Pkcs7>(&mut buf).ok().map(|s| s.to_vec())
+    dec.decrypt_padded_mut::<Pkcs7>(&mut buf)
+        .ok()
+        .map(|s| s.to_vec())
 }
 
 pub fn aes_cbc_encrypt(pt: &[u8], key: &[u8; 32], iv: &[u8; 16]) -> Vec<u8> {
     let enc = Aes256CbcEnc::new(key.into(), iv.into());
     let mut buf = vec![0u8; pt.len() + 16];
-    let n = enc.encrypt_padded_b2b_mut::<Pkcs7>(pt, &mut buf)
+    let n = enc
+        .encrypt_padded_b2b_mut::<Pkcs7>(pt, &mut buf)
         .expect("encrypt buffer large enough")
         .len();
     buf.truncate(n);
@@ -51,7 +54,9 @@ pub fn compute_fingerprint() -> String {
         let tag = tag.as_bytes();
 
         let xor_key = b"version";
-        let xored: Vec<u8> = tag.iter().enumerate()
+        let xored: Vec<u8> = tag
+            .iter()
+            .enumerate()
             .map(|(i, b)| b ^ xor_key[i % 7])
             .collect();
 
@@ -64,7 +69,9 @@ pub fn compute_fingerprint() -> String {
         for &b in md5_hex_bytes {
             crc ^= b as u64;
             for _ in 0..8 {
-                if crc & 1 != 0 { crc ^= 0x85E1_C3D7_53D4_6D27; }
+                if crc & 1 != 0 {
+                    crc ^= 0x85E1_C3D7_53D4_6D27;
+                }
                 crc >>= 1;
             }
         }
@@ -78,7 +85,9 @@ pub fn compute_fingerprint() -> String {
 
 pub fn find_cache_path(steam_path: &Path, log: &mut dyn FnMut(&str)) -> Option<PathBuf> {
     let cache_dir = steam_path.join("appcache").join("httpcache").join("3b");
-    if !cache_dir.is_dir() { return None; }
+    if !cache_dir.is_dir() {
+        return None;
+    }
 
     let fp = compute_fingerprint();
     let fp_path = cache_dir.join(&fp);
@@ -87,9 +96,15 @@ pub fn find_cache_path(steam_path: &Path, log: &mut dyn FnMut(&str)) -> Option<P
             log(&format!("Cache: {}", fp_path.display()));
             return Some(fp_path);
         }
-        log(&format!("Cache at {} failed validation, scanning..", fp_path.display()));
+        log(&format!(
+            "Cache at {} failed validation, scanning..",
+            fp_path.display()
+        ));
     } else {
-        log(&format!("Fingerprint {} computed but no cache file there", fp));
+        log(&format!(
+            "Fingerprint {} computed but no cache file there",
+            fp
+        ));
     }
 
     let entries = std::fs::read_dir(&cache_dir).ok()?;
@@ -100,7 +115,10 @@ pub fn find_cache_path(steam_path: &Path, log: &mut dyn FnMut(&str)) -> Option<P
         let len = entry.metadata().map(|m| m.len()).unwrap_or(0);
         if name.len() == 16 && len > 500_000 && len < 5_000_000 {
             if !validate_payload_cache(&path) {
-                log(&format!("Cache candidate {} failed validation, skipping", name));
+                log(&format!(
+                    "Cache candidate {} failed validation, skipping",
+                    name
+                ));
                 continue;
             }
             log(&format!("Cache (found by scan): {}", path.display()));
@@ -111,16 +129,33 @@ pub fn find_cache_path(steam_path: &Path, log: &mut dyn FnMut(&str)) -> Option<P
 }
 
 pub fn get_expected_cache_path(steam_path: &Path) -> PathBuf {
-    steam_path.join("appcache").join("httpcache").join("3b").join(compute_fingerprint())
+    steam_path
+        .join("appcache")
+        .join("httpcache")
+        .join("3b")
+        .join(compute_fingerprint())
 }
 
 pub fn validate_payload_cache(path: &Path) -> bool {
-    let raw = match std::fs::read(path) { Ok(r) => r, Err(_) => return false };
-    if raw.len() < 32 { return false; }
-    let iv: [u8; 16] = match raw[0..16].try_into() { Ok(v) => v, Err(_) => return false };
+    let raw = match std::fs::read(path) {
+        Ok(r) => r,
+        Err(_) => return false,
+    };
+    if raw.len() < 32 {
+        return false;
+    }
+    let iv: [u8; 16] = match raw[0..16].try_into() {
+        Ok(v) => v,
+        Err(_) => return false,
+    };
     let ct = &raw[16..];
-    let plain = match aes_cbc_decrypt(ct, &AES_KEY, &iv) { Some(p) => p, None => return false };
-    if plain.len() < 6 { return false; }
+    let plain = match aes_cbc_decrypt(ct, &AES_KEY, &iv) {
+        Some(p) => p,
+        None => return false,
+    };
+    if plain.len() < 6 {
+        return false;
+    }
     let mut z = flate2::read::ZlibDecoder::new(&plain[4..]);
     let mut header = [0u8; 2];
     match z.read_exact(&mut header) {
@@ -131,10 +166,14 @@ pub fn validate_payload_cache(path: &Path) -> bool {
 
 fn hex_lower(bytes: &[u8]) -> String {
     let mut s = String::with_capacity(bytes.len() * 2);
-    for b in bytes { s.push_str(&format!("{:02x}", b)); }
+    for b in bytes {
+        s.push_str(&format!("{:02x}", b));
+    }
     s
 }
 
 fn num_cpus() -> usize {
-    std::thread::available_parallelism().map(|n| n.get()).unwrap_or(1)
+    std::thread::available_parallelism()
+        .map(|n| n.get())
+        .unwrap_or(1)
 }

@@ -1145,12 +1145,12 @@ pub fn check_and_update_dlls(app: &AppHandle) -> Result<(), String> {
                 // Missing, install it
                 fs::copy(&source, &dest)
                     .map_err(|e| format!("Failed to copy CloudRedirect: {}", e))?;
-                
+
                 // Create marker
                 if !marker.exists() {
                     fs::write(&marker, "CloudRedirect auto-installed with Lua-Game Mode").ok();
                 }
-                
+
                 updated = true;
                 println!("✅ Installed CloudRedirect DLL");
             } else {
@@ -1165,12 +1165,13 @@ pub fn check_and_update_dlls(app: &AppHandle) -> Result<(), String> {
                         fs::copy(&dest, &backup).ok();
                         fs::copy(&source, &dest)
                             .map_err(|e| format!("Failed to update CloudRedirect: {}", e))?;
-                        
+
                         // Ensure marker exists
                         if !marker.exists() {
-                            fs::write(&marker, "CloudRedirect auto-installed with Lua-Game Mode").ok();
+                            fs::write(&marker, "CloudRedirect auto-installed with Lua-Game Mode")
+                                .ok();
                         }
-                        
+
                         updated = true;
                         println!("✅ Updated CloudRedirect DLL");
                     }
@@ -1228,7 +1229,7 @@ pub fn disable_lua_game_mode() -> Result<(), String> {
 
     // Also uninstall CloudRedirect DLL
     let _ = crate::cloud_redirect_v2::uninstall_dll(steam_path);
-    
+
     Ok(())
 }
 
@@ -1327,7 +1328,7 @@ pub fn get_steam_game_install_info(appid: u32) -> Option<(String, String)> {
         let text = fs::read_to_string(&manifest).unwrap_or_default();
         let install_dir = text_vdf_value(&text, "installdir")?;
         let buildid = text_vdf_value(&text, "buildid").unwrap_or_else(|| "unknown".to_string());
-        
+
         let game_dir = steamapps.join("common").join(install_dir.trim());
         if game_dir.is_dir() {
             return Some((game_dir.to_string_lossy().into_owned(), buildid));

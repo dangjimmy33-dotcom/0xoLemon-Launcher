@@ -57,6 +57,8 @@ namespace LuaLoader::Internal {
         void recordLibraryApp(AppId_t id);
         void recordStatsApp(AppId_t id);
         void recordStatSteamId(AppId_t id, uint64_t steamId);
+        void recordManifestOverride(AppId_t id, const ManifestOverride& manifest);
+        void recordManifestAutoUpdate(AppId_t id);
     };
 
     // Active session pointer, set by ParseFile, cleared at end-of-scope.
@@ -68,6 +70,12 @@ namespace LuaLoader::Internal {
     extern std::unordered_map<std::string, std::unordered_set<AppId_t>> g_fileLibraryApps;
     extern std::unordered_map<std::string, std::unordered_set<AppId_t>> g_fileStatsApps;
     extern std::unordered_map<std::string, std::unordered_map<AppId_t, uint64_t>> g_fileStatSteamIds;
+    extern std::unordered_map<std::string, std::unordered_map<uint64_t, ManifestOverride>>
+        g_fileManifestOverrides;
+    extern std::unordered_map<std::string, std::unordered_set<AppId_t>>
+        g_fileManifestAutoUpdate;
+    extern std::unordered_map<std::string, uint64_t> g_fileParseSequence;
+    extern uint64_t g_nextFileParseSequence;
     extern std::unordered_map<AppId_t, uint32_t> g_depotRefCount;
     extern std::unordered_map<AppId_t, uint32_t> g_libraryRefCount;
     extern std::unordered_map<AppId_t, uint32_t> g_statsRefCount;
@@ -75,8 +83,13 @@ namespace LuaLoader::Internal {
     extern std::vector<AppId_t> g_pendingAdditions;
     extern std::unordered_set<AppId_t> g_pendingLibraryRemovals;
     extern std::unordered_set<AppId_t> g_manifestDoneByLua;
-    extern std::unordered_set<AppId_t> g_manifestAutoUpdate;
     extern std::string g_eticketUrl;  // set via seteticketurl() Lua binding
+
+    // Rebuilds the effective process-wide override from the Lua files that
+    // still own one. The most recently parsed locked file wins; a Live file
+    // never suppresses a locked file that shares the same depot.
+    void RebuildManifestOverride(uint64_t depotId);
+    bool ActiveFileSkipsManifest(AppId_t depotId);
 
     constexpr uint64_t kDefaultStatSteamId = 76561198028121353ULL;
 

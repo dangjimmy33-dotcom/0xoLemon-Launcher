@@ -13,15 +13,11 @@ pub fn init_debug_log(log_path: PathBuf) {
 pub fn debug_log(message: &str) {
     // Also print to stderr for dev mode
     eprintln!("{}", message);
-    
+
     // Write to file if initialized
     if let Ok(guard) = LOG_FILE.lock() {
         if let Some(path) = guard.as_ref() {
-            if let Ok(mut file) = OpenOptions::new()
-                .create(true)
-                .append(true)
-                .open(path)
-            {
+            if let Ok(mut file) = OpenOptions::new().create(true).append(true).open(path) {
                 let _ = writeln!(file, "{}", message);
             }
         }

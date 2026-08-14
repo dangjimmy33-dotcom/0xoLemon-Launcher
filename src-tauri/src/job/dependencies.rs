@@ -34,9 +34,7 @@ enum DependencyDetect {
         require_flag: bool,
     },
     /// Check whether a specific file or directory exists on disk.
-    PathExists {
-        path: &'static str,
-    },
+    PathExists { path: &'static str },
 }
 
 /// Arguments to pass to the installer executable when running silently.
@@ -267,10 +265,7 @@ fn dependency_specs_for_game(game_id: &str) -> Vec<DependencySpec> {
         "ea-sports-fc-26" => vec![VC_REDIST_X64.clone(), EA_APP.clone()],
 
         // ── Meccha Chameleon ─────────────────────────────────
-        "Meccha-Chameleon" => vec![
-            VC_REDIST_X64.clone(),
-            DIRECTX_JUN2010.clone(),
-        ],
+        "Meccha-Chameleon" => vec![VC_REDIST_X64.clone(), DIRECTX_JUN2010.clone()],
 
         // ── Microsoft Flight Simulator 2020 40th Anniversary ─
         "microsoft-flight-simulator-2020-40th-anniversary-edition"
@@ -279,16 +274,10 @@ fn dependency_specs_for_game(game_id: &str) -> Vec<DependencySpec> {
         }
 
         // ── Octopath Traveler 0 ───────────────────────────────
-        "octopath-traveler-0" => vec![
-            VC_REDIST_X64.clone(),
-            DIRECTX_JUN2010.clone(),
-        ],
+        "octopath-traveler-0" => vec![VC_REDIST_X64.clone(), DIRECTX_JUN2010.clone()],
 
         // ── Persona 5 Royal ───────────────────────────────────
-        "persona-5-royal" => vec![
-            DIRECTX_JUN2010.clone(),
-            VC_REDIST_X64_2019.clone(),
-        ],
+        "persona-5-royal" => vec![DIRECTX_JUN2010.clone(), VC_REDIST_X64_2019.clone()],
 
         // ── Persona 3 Reload ──────────────────────────────────
         "persona-3-reload" => vec![
@@ -298,10 +287,7 @@ fn dependency_specs_for_game(game_id: &str) -> Vec<DependencySpec> {
         ],
 
         // ── Stellar Blade ─────────────────────────────────────
-        "stellar-blade" => vec![
-            DIRECTX_JUN2010.clone(),
-            VC_REDIST_X64.clone(),
-        ],
+        "stellar-blade" => vec![DIRECTX_JUN2010.clone(), VC_REDIST_X64.clone()],
 
         // ── Tom Clancy's Splinter Cell Blacklist ──────────────
         "tom-clancy-s-splinter-cell-blacklist" => vec![
@@ -317,16 +303,10 @@ fn dependency_specs_for_game(game_id: &str) -> Vec<DependencySpec> {
         "grand-theft-auto-san-andreas-2005" => vec![DIRECTX_JUN2010.clone()],
 
         // ── Heavy Rain ───────────────────────────────────────
-        "heavy-rain" => vec![
-            VC_REDIST_X64_2019.clone(),
-            DIRECTX_JUN2010.clone(),
-        ],
+        "heavy-rain" => vec![VC_REDIST_X64_2019.clone(), DIRECTX_JUN2010.clone()],
 
         // ── Yakuza: Like a Dragon ─────────────────────────────
-        "yakuza-like-a-dragon" => vec![
-            VC_REDIST_X64_2019.clone(),
-            DIRECTX_JUN2010.clone(),
-        ],
+        "yakuza-like-a-dragon" => vec![VC_REDIST_X64_2019.clone(), DIRECTX_JUN2010.clone()],
 
         // ── Total War: Three Kingdoms ─────────────────────────
         "total-war-three-kingdoms" => vec![
@@ -336,9 +316,7 @@ fn dependency_specs_for_game(game_id: &str) -> Vec<DependencySpec> {
         ],
 
         // ── Assassin's Creed IV: Black Flag (Resynced) ───────
-        "assassins-creed-black-flag-resynced" => vec![
-            VC_REDIST_X64.clone(),
-        ],
+        "assassins-creed-black-flag-resynced" => vec![VC_REDIST_X64.clone()],
 
         // ── Default: every game needs at minimum VC++ 2022 x64
         DEFAULT_GAME_ID | _ => vec![VC_REDIST_X64.clone()],
@@ -410,7 +388,7 @@ pub(super) fn ensure_game_dependencies(
     install_path: &Path,
 ) -> Result<Vec<String>, JobError> {
     let mut installed = Vec::new();
-    
+
     // First, try to load the dependencies dynamically from the installed manifest
     let mut specs = Vec::new();
     if let Ok(Some(manifest)) = super::read_installed_manifest(install_path) {
@@ -422,12 +400,12 @@ pub(super) fn ensure_game_dependencies(
             }
         }
     }
-    
+
     // Fallback to hardcoded list if the manifest didn't provide any dependencies
     if specs.is_empty() {
         specs = dependency_specs_for_game(&source.game_id);
     }
-    
+
     for spec in specs {
         if dependency_installed(&spec) {
             continue;
@@ -770,7 +748,10 @@ fn create_windows_game_shortcut(
     if !output.status.success() || !shortcut_path.is_file() {
         let stderr = String::from_utf8_lossy(&output.stderr).trim().to_string();
         return Err(JobError::Depot(if stderr.is_empty() {
-            format!("unable to create desktop shortcut: {}", shortcut_path.display())
+            format!(
+                "unable to create desktop shortcut: {}",
+                shortcut_path.display()
+            )
         } else {
             format!("unable to create desktop shortcut: {stderr}")
         }));
@@ -1019,10 +1000,7 @@ impl TrackedMainProcess {
 fn wait_for_elevated_process(pid: u32) -> Result<Option<i32>, JobError> {
     #[cfg(target_os = "windows")]
     {
-        let script = format!(
-            "Wait-Process -Id {} -ErrorAction SilentlyContinue",
-            pid
-        );
+        let script = format!("Wait-Process -Id {} -ErrorAction SilentlyContinue", pid);
         let status = hidden_command("powershell.exe")
             .args([
                 "-NoLogo",

@@ -3,9 +3,7 @@ use serde_json::{json, Map, Value};
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use super::models::{
-    ProviderConfigInput, ProviderConfigView, R2CredentialView, S3CredentialView,
-};
+use super::models::{ProviderConfigInput, ProviderConfigView, R2CredentialView, S3CredentialView};
 
 pub const PROVIDERS: [&str; 6] = ["gdrive", "onedrive", "r2", "s3", "folder", "local"];
 
@@ -108,13 +106,19 @@ pub fn read_config_value() -> Result<Value, String> {
 }
 
 pub fn provider_from_config() -> Option<String> {
-    read_config_value()
-        .ok()
-        .and_then(|value| value.get("provider").and_then(Value::as_str).map(ToString::to_string))
+    read_config_value().ok().and_then(|value| {
+        value
+            .get("provider")
+            .and_then(Value::as_str)
+            .map(ToString::to_string)
+    })
 }
 
 pub fn mode_from_settings() -> String {
-    let settings = settings_path().ok().map(|path| read_json_object(&path)).unwrap_or_default();
+    let settings = settings_path()
+        .ok()
+        .map(|path| read_json_object(&path))
+        .unwrap_or_default();
     settings
         .get("mode")
         .and_then(Value::as_str)
@@ -136,12 +140,18 @@ pub fn save_mode(mode: &str) -> Result<(), String> {
 
 pub fn save_provider(input: &ProviderConfigInput) -> Result<ProviderConfigView, String> {
     if !PROVIDERS.contains(&input.provider.as_str()) {
-        return Err(format!("Unsupported CloudRedirect provider: {}", input.provider));
+        return Err(format!(
+            "Unsupported CloudRedirect provider: {}",
+            input.provider
+        ));
     }
 
     let path = config_path()?;
     let mut config = read_json_object(&path);
-    config.insert("provider".to_string(), Value::String(input.provider.clone()));
+    config.insert(
+        "provider".to_string(),
+        Value::String(input.provider.clone()),
+    );
     config.insert(
         "upload_inflight_mb".to_string(),
         Value::from(input.upload_inflight_mb.unwrap_or(24).clamp(24, 64)),
@@ -149,7 +159,8 @@ pub fn save_provider(input: &ProviderConfigInput) -> Result<ProviderConfigView, 
 
     match input.provider.as_str() {
         "folder" => {
-            let sync_path = required_trimmed(input.sync_path.as_deref(), "A sync folder is required")?;
+            let sync_path =
+                required_trimmed(input.sync_path.as_deref(), "A sync folder is required")?;
             let sync_path = PathBuf::from(sync_path);
             config.insert(
                 "sync_path".to_string(),
@@ -185,8 +196,12 @@ pub fn save_provider(input: &ProviderConfigInput) -> Result<ProviderConfigView, 
             config.remove("sync_path");
         }
         "r2" => {
-            let credentials = input.r2.as_ref().ok_or_else(|| "R2 credentials are required".to_string())?;
-            let token_path = default_token_path("r2")?.ok_or_else(|| "R2 credential path is unavailable".to_string())?;
+            let credentials = input
+                .r2
+                .as_ref()
+                .ok_or_else(|| "R2 credentials are required".to_string())?;
+            let token_path = default_token_path("r2")?
+                .ok_or_else(|| "R2 credential path is unavailable".to_string())?;
             save_r2_credentials(&token_path, credentials)?;
             config.insert(
                 "token_path".to_string(),
@@ -196,8 +211,12 @@ pub fn save_provider(input: &ProviderConfigInput) -> Result<ProviderConfigView, 
             config.remove("sync_path");
         }
         "s3" => {
-            let credentials = input.s3.as_ref().ok_or_else(|| "S3 credentials are required".to_string())?;
-            let token_path = default_token_path("s3")?.ok_or_else(|| "S3 credential path is unavailable".to_string())?;
+            let credentials = input
+                .s3
+                .as_ref()
+                .ok_or_else(|| "S3 credentials are required".to_string())?;
+            let token_path = default_token_path("s3")?
+                .ok_or_else(|| "S3 credential path is unavailable".to_string())?;
             save_s3_credentials(&token_path, credentials)?;
             config.insert(
                 "token_path".to_string(),
@@ -243,11 +262,18 @@ fn write_secret_json(path: &Path, value: &Value) -> Result<(), String> {
 }
 
 fn old_secret(path: &Path) -> Option<String> {
-    read_secret_json(path)
-        .and_then(|value| value.get("secret_access_key").and_then(Value::as_str).map(ToString::to_string))
+    read_secret_json(path).and_then(|value| {
+        value
+            .get("secret_access_key")
+            .and_then(Value::as_str)
+            .map(ToString::to_string)
+    })
 }
 
-fn save_r2_credentials(path: &Path, input: &super::models::R2CredentialsInput) -> Result<(), String> {
+fn save_r2_credentials(
+    path: &Path,
+    input: &super::models::R2CredentialsInput,
+) -> Result<(), String> {
     let account_id = required_trimmed(Some(&input.account_id), "R2 account ID is required")?;
     let access_key_id = required_trimmed(Some(&input.access_key_id), "R2 access key is required")?;
     let bucket = required_trimmed(Some(&input.bucket), "R2 bucket is required")?;
@@ -265,16 +291,27 @@ fn save_r2_credentials(path: &Path, input: &super::models::R2CredentialsInput) -
         "secret_access_key": secret,
         "bucket": bucket,
     });
-    if let Some(value) = input.key_prefix.as_deref().filter(|value| !value.trim().is_empty()) {
+    if let Some(value) = input
+        .key_prefix
+        .as_deref()
+        .filter(|value| !value.trim().is_empty())
+    {
         object["key_prefix"] = Value::String(value.trim().to_string());
     }
-    if let Some(value) = input.endpoint.as_deref().filter(|value| !value.trim().is_empty()) {
+    if let Some(value) = input
+        .endpoint
+        .as_deref()
+        .filter(|value| !value.trim().is_empty())
+    {
         object["endpoint"] = Value::String(value.trim().to_string());
     }
     write_secret_json(path, &object)
 }
 
-fn save_s3_credentials(path: &Path, input: &super::models::S3CredentialsInput) -> Result<(), String> {
+fn save_s3_credentials(
+    path: &Path,
+    input: &super::models::S3CredentialsInput,
+) -> Result<(), String> {
     let access_key_id = required_trimmed(Some(&input.access_key_id), "S3 access key is required")?;
     let bucket = required_trimmed(Some(&input.bucket), "S3 bucket is required")?;
     let endpoint = required_trimmed(Some(&input.endpoint), "S3 endpoint is required")?;
@@ -294,10 +331,18 @@ fn save_s3_credentials(path: &Path, input: &super::models::S3CredentialsInput) -
         "endpoint": endpoint,
         "region": region,
     });
-    if let Some(value) = input.key_prefix.as_deref().filter(|value| !value.trim().is_empty()) {
+    if let Some(value) = input
+        .key_prefix
+        .as_deref()
+        .filter(|value| !value.trim().is_empty())
+    {
         object["key_prefix"] = Value::String(value.trim().to_string());
     }
-    if let Some(value) = input.ca_cert_path.as_deref().filter(|value| !value.trim().is_empty()) {
+    if let Some(value) = input
+        .ca_cert_path
+        .as_deref()
+        .filter(|value| !value.trim().is_empty())
+    {
         object["ca_cert_path"] = Value::String(value.trim().to_string());
     }
     if input.sign_payload {
@@ -319,12 +364,18 @@ pub fn save_oauth_tokens(
     expires_at: i64,
 ) -> Result<ProviderConfigView, String> {
     if !matches!(provider, "gdrive" | "onedrive") {
-        return Err(format!("OAuth tokens are not supported for provider: {provider}"));
+        return Err(format!(
+            "OAuth tokens are not supported for provider: {provider}"
+        ));
     }
     let token_path = default_token_path(provider)?
         .ok_or_else(|| format!("Token path is unavailable for {provider}"))?;
-    let previous_refresh = read_secret_json(&token_path)
-        .and_then(|value| value.get("refresh_token").and_then(Value::as_str).map(ToString::to_string));
+    let previous_refresh = read_secret_json(&token_path).and_then(|value| {
+        value
+            .get("refresh_token")
+            .and_then(Value::as_str)
+            .map(ToString::to_string)
+    });
     let refresh = refresh_token
         .filter(|value| !value.trim().is_empty())
         .map(ToString::to_string)
@@ -340,10 +391,14 @@ pub fn save_oauth_tokens(
     let path = config_path()?;
     let mut config = read_json_object(&path);
     config.insert("provider".to_string(), Value::String(provider.to_string()));
-    config.insert("token_path".to_string(), Value::String(token_path.to_string_lossy().into_owned()));
+    config.insert(
+        "token_path".to_string(),
+        Value::String(token_path.to_string_lossy().into_owned()),
+    );
     register_token_path(&mut config, provider, &token_path);
     config.remove("sync_path");
-    let bytes = serde_json::to_vec_pretty(&Value::Object(config)).map_err(|error| error.to_string())?;
+    let bytes =
+        serde_json::to_vec_pretty(&Value::Object(config)).map_err(|error| error.to_string())?;
     atomic_write(&path, &bytes)?;
     get_provider_view()
 }
@@ -353,7 +408,12 @@ pub fn oauth_token_is_readable(provider: &str) -> bool {
         .ok()
         .flatten()
         .and_then(|path| read_secret_json(&path))
-        .and_then(|value| value.get("refresh_token").and_then(Value::as_str).map(|value| !value.is_empty()))
+        .and_then(|value| {
+            value
+                .get("refresh_token")
+                .and_then(Value::as_str)
+                .map(|value| !value.is_empty())
+        })
         .unwrap_or(false)
 }
 
@@ -368,7 +428,9 @@ pub struct OAuthTokenData {
 /// Returns an error if the provider is not supported or the token file is missing/unreadable.
 pub fn load_oauth_tokens(provider: &str) -> Result<OAuthTokenData, String> {
     if !matches!(provider, "gdrive" | "onedrive") {
-        return Err(format!("OAuth tokens are not supported for provider: {provider}"));
+        return Err(format!(
+            "OAuth tokens are not supported for provider: {provider}"
+        ));
     }
     let token_path = default_token_path(provider)?
         .ok_or_else(|| format!("Token path is unavailable for {provider}"))?;
@@ -378,18 +440,21 @@ pub fn load_oauth_tokens(provider: &str) -> Result<OAuthTokenData, String> {
         .get("access_token")
         .and_then(Value::as_str)
         .filter(|s| !s.is_empty())
-        .ok_or_else(|| format!("OAuth token for {provider} is missing access_token. Please sign in again."))?
+        .ok_or_else(|| {
+            format!("OAuth token for {provider} is missing access_token. Please sign in again.")
+        })?
         .to_string();
     let refresh_token = value
         .get("refresh_token")
         .and_then(Value::as_str)
         .filter(|s| !s.is_empty())
         .map(ToString::to_string);
-    let expires_at = value
-        .get("expires_at")
-        .and_then(Value::as_i64)
-        .unwrap_or(0);
-    Ok(OAuthTokenData { access_token, refresh_token, expires_at })
+    let expires_at = value.get("expires_at").and_then(Value::as_i64).unwrap_or(0);
+    Ok(OAuthTokenData {
+        access_token,
+        refresh_token,
+        expires_at,
+    })
 }
 
 pub fn activate_provider(provider: &str) -> Result<ProviderConfigView, String> {
@@ -423,14 +488,21 @@ pub fn activate_provider(provider: &str) -> Result<ProviderConfigView, String> {
                 .or(default_token_path(provider)?)
                 .ok_or_else(|| format!("No token path is registered for {provider}"))?;
             if !token.is_file() {
-                return Err(format!("Provider credentials are not available: {}", token.display()));
+                return Err(format!(
+                    "Provider credentials are not available: {}",
+                    token.display()
+                ));
             }
-            config.insert("token_path".to_string(), Value::String(token.to_string_lossy().into_owned()));
+            config.insert(
+                "token_path".to_string(),
+                Value::String(token.to_string_lossy().into_owned()),
+            );
             register_token_path(&mut config, provider, &token);
             config.remove("sync_path");
         }
     }
-    let bytes = serde_json::to_vec_pretty(&Value::Object(config)).map_err(|error| error.to_string())?;
+    let bytes =
+        serde_json::to_vec_pretty(&Value::Object(config)).map_err(|error| error.to_string())?;
     atomic_write(&path, &bytes)?;
     get_provider_view()
 }
@@ -445,7 +517,12 @@ pub fn get_provider_view() -> Result<ProviderConfigView, String> {
     let token_path = config
         .as_object()
         .and_then(|object| provider_token_path(object, &provider))
-        .or_else(|| default_token_path(&provider).ok().flatten().map(|path| path.to_string_lossy().into_owned()));
+        .or_else(|| {
+            default_token_path(&provider)
+                .ok()
+                .flatten()
+                .map(|path| path.to_string_lossy().into_owned())
+        });
     let sync_path = config
         .get("sync_path")
         .and_then(Value::as_str)
@@ -496,8 +573,14 @@ pub fn get_provider_view() -> Result<ProviderConfigView, String> {
 
     let authenticated = match provider.as_str() {
         "local" => true,
-        "folder" => sync_path.as_deref().map(Path::new).is_some_and(Path::is_dir),
-        _ => token_path.as_deref().map(Path::new).is_some_and(Path::is_file),
+        "folder" => sync_path
+            .as_deref()
+            .map(Path::new)
+            .is_some_and(Path::is_dir),
+        _ => token_path
+            .as_deref()
+            .map(Path::new)
+            .is_some_and(Path::is_file),
     };
 
     Ok(ProviderConfigView {

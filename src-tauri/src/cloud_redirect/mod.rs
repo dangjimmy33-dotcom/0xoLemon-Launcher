@@ -43,10 +43,10 @@ pub struct StfixerResult {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CloudProviderConfig {
-    pub provider: String,         // "gdrive" | "onedrive" | "folder" | "" (not configured)
-    pub token_path: String,       // path to token file, empty if not set
-    pub authenticated: bool,      // whether token file exists and is non-empty
-    pub config_found: bool,       // whether config.json was found at all
+    pub provider: String,   // "gdrive" | "onedrive" | "folder" | "" (not configured)
+    pub token_path: String, // path to token file, empty if not set
+    pub authenticated: bool, // whether token file exists and is non-empty
+    pub config_found: bool, // whether config.json was found at all
 }
 
 /// Get current CloudRedirect / STFixer status.
@@ -54,7 +54,9 @@ pub struct CloudProviderConfig {
 pub async fn cloud_redirect_get_status() -> CloudRedirectStatus {
     let steam_path = find_steam_path();
     let steam_version = steam_path.as_ref().and_then(|p| get_steam_version(p));
-    let steam_version_supported = steam_version.map(is_supported_steam_version).unwrap_or(false);
+    let steam_version_supported = steam_version
+        .map(is_supported_steam_version)
+        .unwrap_or(false);
     let steam_running = is_steam_running();
 
     let (core_dll_present, cloud_redirect_dll_present, stfixer_applied) =
@@ -108,9 +110,10 @@ pub fn cloud_redirect_run_stfixer(install_core_if_missing: bool) -> StfixerResul
 
     match get_steam_version(&steam_path) {
         None => push("WARNING: Could not read Steam version -- continuing anyway."),
-        Some(v) if !is_supported_steam_version(v) => {
-            push(&format!("WARNING: Steam version {} not in whitelist -- continuing anyway.", v))
-        }
+        Some(v) if !is_supported_steam_version(v) => push(&format!(
+            "WARNING: Steam version {} not in whitelist -- continuing anyway.",
+            v
+        )),
         Some(v) => push(&format!("Steam version: {} (OK)", v)),
     }
 
@@ -119,7 +122,11 @@ pub fn cloud_redirect_run_stfixer(install_core_if_missing: bool) -> StfixerResul
         push("Steam is running -- shutting it down...");
         shutdown_steam(&steam_path);
         if is_steam_running() {
-            let result = collect_result(&log_ref, false, Some("Could not close Steam. Close it manually and retry.".to_string()));
+            let result = collect_result(
+                &log_ref,
+                false,
+                Some("Could not close Steam. Close it manually and retry.".to_string()),
+            );
             return result;
         }
         push("Steam closed.");
@@ -137,7 +144,11 @@ pub fn cloud_redirect_run_stfixer(install_core_if_missing: bool) -> StfixerResul
         } else {
             push("ERROR: SteamTools Core DLL not found.");
             push("Vui lòng check chọn 'Install SteamTools Core' nếu bạn muốn tự động cài đặt.");
-            return collect_result(&log_ref, false, Some("SteamTools Core DLL missing".to_string()));
+            return collect_result(
+                &log_ref,
+                false,
+                Some("SteamTools Core DLL missing".to_string()),
+            );
         }
     }
 
@@ -161,10 +172,16 @@ pub fn cloud_redirect_run_stfixer(install_core_if_missing: bool) -> StfixerResul
     push("Deploying cloud_redirect.dll...");
     let dll_dest = steam_path.join("cloud_redirect.dll");
     if let Some(err) = downloader::download_cloud_redirect_dll(&dll_dest) {
-        push(&format!("WARNING: Could not deploy cloud_redirect.dll: {}", err));
+        push(&format!(
+            "WARNING: Could not deploy cloud_redirect.dll: {}",
+            err
+        ));
         push("You can download it manually from https://github.com/Selectively11/CloudRedirect/releases");
     } else {
-        push(&format!("cloud_redirect.dll deployed to {}", dll_dest.display()));
+        push(&format!(
+            "cloud_redirect.dll deployed to {}",
+            dll_dest.display()
+        ));
     }
 
     // Enable auto-update config.
@@ -181,16 +198,23 @@ fn collect_result(
     error: Option<String>,
 ) -> StfixerResult {
     let log = log_ref.lock().map(|l| l.clone()).unwrap_or_default();
-    StfixerResult { succeeded, log, error }
+    StfixerResult {
+        succeeded,
+        log,
+        error,
+    }
 }
 
 fn enable_auto_update(steam_path: &std::path::Path) {
     let config_dir = steam_path.join("cloud_redirect");
     let config_path = config_dir.join("config.json");
-    if std::fs::create_dir_all(&config_dir).is_err() { return; }
+    if std::fs::create_dir_all(&config_dir).is_err() {
+        return;
+    }
     let json = if let Ok(existing) = std::fs::read_to_string(&config_path) {
-        if existing.contains("auto_update_dll") { existing }
-        else {
+        if existing.contains("auto_update_dll") {
+            existing
+        } else {
             let trimmed = existing.trim_end().trim_end_matches('}');
             format!("{},\n  \"auto_update_dll\": true\n}}", trimmed)
         }
@@ -205,13 +229,19 @@ fn enable_auto_update(steam_path: &std::path::Path) {
 fn find_cr_config_path() -> Option<std::path::PathBuf> {
     // 1) %APPDATA%/CloudRedirect/config.json
     if let Ok(appdata) = std::env::var("APPDATA") {
-        let p = std::path::PathBuf::from(&appdata).join("CloudRedirect").join("config.json");
-        if p.is_file() { return Some(p); }
+        let p = std::path::PathBuf::from(&appdata)
+            .join("CloudRedirect")
+            .join("config.json");
+        if p.is_file() {
+            return Some(p);
+        }
     }
     // 2) <steam>/cloud_redirect/config.json
     if let Some(steam) = find_steam_path() {
         let p = steam.join("cloud_redirect").join("config.json");
-        if p.is_file() { return Some(p); }
+        if p.is_file() {
+            return Some(p);
+        }
     }
     None
 }
@@ -221,37 +251,55 @@ fn find_cr_config_path() -> Option<std::path::PathBuf> {
 pub fn cloud_redirect_get_provider_config() -> CloudProviderConfig {
     let config_path = match find_cr_config_path() {
         Some(p) => p,
-        None => return CloudProviderConfig {
-            provider: String::new(),
-            token_path: String::new(),
-            authenticated: false,
-            config_found: false,
-        },
+        None => {
+            return CloudProviderConfig {
+                provider: String::new(),
+                token_path: String::new(),
+                authenticated: false,
+                config_found: false,
+            }
+        }
     };
 
     let json_str = match std::fs::read_to_string(&config_path) {
         Ok(s) => s,
-        Err(_) => return CloudProviderConfig {
-            provider: String::new(),
-            token_path: String::new(),
-            authenticated: false,
-            config_found: false,
-        },
+        Err(_) => {
+            return CloudProviderConfig {
+                provider: String::new(),
+                token_path: String::new(),
+                authenticated: false,
+                config_found: false,
+            }
+        }
     };
 
     let doc: serde_json::Value = match serde_json::from_str(&json_str) {
         Ok(v) => v,
-        Err(_) => return CloudProviderConfig {
-            provider: String::new(),
-            token_path: String::new(),
-            authenticated: false,
-            config_found: true,
-        },
+        Err(_) => {
+            return CloudProviderConfig {
+                provider: String::new(),
+                token_path: String::new(),
+                authenticated: false,
+                config_found: true,
+            }
+        }
     };
 
-    let provider = doc.get("provider").and_then(|v| v.as_str()).unwrap_or("").to_string();
-    let token_path = doc.get("token_path").and_then(|v| v.as_str()).unwrap_or("").to_string();
-    let sync_path = doc.get("sync_path").and_then(|v| v.as_str()).unwrap_or("").to_string();
+    let provider = doc
+        .get("provider")
+        .and_then(|v| v.as_str())
+        .unwrap_or("")
+        .to_string();
+    let token_path = doc
+        .get("token_path")
+        .and_then(|v| v.as_str())
+        .unwrap_or("")
+        .to_string();
+    let sync_path = doc
+        .get("sync_path")
+        .and_then(|v| v.as_str())
+        .unwrap_or("")
+        .to_string();
 
     let display_path = if !token_path.is_empty() {
         token_path.clone()
@@ -288,7 +336,11 @@ pub fn cloud_redirect_save_provider_config(
 
     // %APPDATA%/CloudRedirect/config.json
     if let Ok(appdata) = std::env::var("APPDATA") {
-        targets.push(std::path::PathBuf::from(&appdata).join("CloudRedirect").join("config.json"));
+        targets.push(
+            std::path::PathBuf::from(&appdata)
+                .join("CloudRedirect")
+                .join("config.json"),
+        );
     }
     // <steam>/cloud_redirect/config.json
     if let Some(steam) = find_steam_path() {
@@ -305,7 +357,8 @@ pub fn cloud_redirect_save_provider_config(
         }
 
         // Read existing config and merge (preserve auto_update_dll etc.)
-        let mut doc: serde_json::Value = if let Ok(existing) = std::fs::read_to_string(config_path) {
+        let mut doc: serde_json::Value = if let Ok(existing) = std::fs::read_to_string(config_path)
+        {
             serde_json::from_str(&existing).unwrap_or_else(|_| serde_json::json!({}))
         } else {
             serde_json::json!({})
@@ -323,20 +376,21 @@ pub fn cloud_redirect_save_provider_config(
         }
 
         let json_out = serde_json::to_string_pretty(&doc).map_err(|e| e.to_string())?;
-        std::fs::write(config_path, json_out).map_err(|e| format!("{}: {}", config_path.display(), e))?;
+        std::fs::write(config_path, json_out)
+            .map_err(|e| format!("{}: {}", config_path.display(), e))?;
     }
 
     Ok(())
 }
 
+use base64::engine::general_purpose::URL_SAFE_NO_PAD;
+use base64::Engine;
 use rand_core::{OsRng, RngCore};
 use sha2::{Digest, Sha256};
-use base64::engine::general_purpose::{URL_SAFE_NO_PAD};
-use base64::Engine;
-use std::net::TcpListener;
 use std::io::{Read, Write};
-use std::time::{Duration, Instant};
+use std::net::TcpListener;
 use std::thread;
+use std::time::{Duration, Instant};
 use url::Url;
 
 const DRIVE_SCOPE: &str = "https://www.googleapis.com/auth/drive.appdata";
@@ -353,18 +407,24 @@ fn random_urlsafe(length: usize) -> String {
 #[command]
 pub fn cloud_redirect_connect_google() -> Result<(), String> {
     let client_id = "745435850820-k7v8oqp0g640l8eed7p7nu6f7fd8njoh.apps.googleusercontent.com";
-    
+
     let listener = TcpListener::bind(("127.0.0.1", 0)).map_err(|error| error.to_string())?;
-    listener.set_nonblocking(true).map_err(|error| error.to_string())?;
-    let port = listener.local_addr().map_err(|error| error.to_string())?.port();
+    listener
+        .set_nonblocking(true)
+        .map_err(|error| error.to_string())?;
+    let port = listener
+        .local_addr()
+        .map_err(|error| error.to_string())?
+        .port();
     let redirect_uri = format!("http://127.0.0.1:{port}");
-    
+
     let verifier = random_urlsafe(64);
     let challenge = URL_SAFE_NO_PAD.encode(Sha256::digest(verifier.as_bytes()));
     let state = random_urlsafe(32);
-    
+
     let mut auth_url = Url::parse(AUTH_ENDPOINT).map_err(|error| error.to_string())?;
-    auth_url.query_pairs_mut()
+    auth_url
+        .query_pairs_mut()
         .append_pair("client_id", client_id)
         .append_pair("redirect_uri", &redirect_uri)
         .append_pair("response_type", "code")
@@ -374,7 +434,7 @@ pub fn cloud_redirect_connect_google() -> Result<(), String> {
         .append_pair("code_challenge", &challenge)
         .append_pair("code_challenge_method", "S256")
         .append_pair("state", &state);
-        
+
     #[cfg(target_os = "windows")]
     {
         std::process::Command::new("rundll32")
@@ -382,41 +442,62 @@ pub fn cloud_redirect_connect_google() -> Result<(), String> {
             .spawn()
             .map_err(|error| error.to_string())?;
     }
-    
+
     let deadline = Instant::now() + OAUTH_TIMEOUT;
     let mut authorization_code = None;
     while Instant::now() < deadline {
         match listener.accept() {
             Ok((mut stream, _)) => {
                 let mut request = [0_u8; 8192];
-                let read = stream.read(&mut request).map_err(|error| error.to_string())?;
+                let read = stream
+                    .read(&mut request)
+                    .map_err(|error| error.to_string())?;
                 let request = String::from_utf8_lossy(&request[..read]);
-                
-                let target = request.lines().next()
+
+                let target = request
+                    .lines()
+                    .next()
                     .and_then(|line| line.split_whitespace().nth(1))
                     .ok_or_else(|| "Google OAuth callback request was invalid".to_string())?;
-                let callback = Url::parse(&format!("http://127.0.0.1:{port}{target}")).map_err(|error| error.to_string())?;
-                
+                let callback = Url::parse(&format!("http://127.0.0.1:{port}{target}"))
+                    .map_err(|error| error.to_string())?;
+
                 let params = callback.query_pairs().into_owned().collect::<Vec<_>>();
-                let returned_state = params.iter().find(|(key, _)| key == "state").map(|(_, value)| value.as_str());
-                let error = params.iter().find(|(key, _)| key == "error").map(|(_, value)| value.clone());
-                let code = params.iter().find(|(key, _)| key == "code").map(|(_, value)| value.clone());
-                
-                let success = returned_state == Some(state.as_str()) && error.is_none() && code.is_some();
+                let returned_state = params
+                    .iter()
+                    .find(|(key, _)| key == "state")
+                    .map(|(_, value)| value.as_str());
+                let error = params
+                    .iter()
+                    .find(|(key, _)| key == "error")
+                    .map(|(_, value)| value.clone());
+                let code = params
+                    .iter()
+                    .find(|(key, _)| key == "code")
+                    .map(|(_, value)| value.clone());
+
+                let success =
+                    returned_state == Some(state.as_str()) && error.is_none() && code.is_some();
                 let body = if success {
                     "<html><body><h2>0xoLemon connected to Google Drive for STFixer.</h2><p>You can close this tab and return to the launcher.</p></body></html>"
                 } else {
                     "<html><body><h2>Google Drive authorization failed.</h2><p>Return to the launcher for details.</p></body></html>"
                 };
-                
+
                 let response = format!(
                     "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
                     body.len(), body
                 );
-                stream.write_all(response.as_bytes()).map_err(|error| error.to_string())?;
-                
-                if returned_state != Some(state.as_str()) { return Err("Google OAuth state validation failed".to_string()); }
-                if let Some(error) = error { return Err(format!("Google authorization was denied: {error}")); }
+                stream
+                    .write_all(response.as_bytes())
+                    .map_err(|error| error.to_string())?;
+
+                if returned_state != Some(state.as_str()) {
+                    return Err("Google OAuth state validation failed".to_string());
+                }
+                if let Some(error) = error {
+                    return Err(format!("Google authorization was denied: {error}"));
+                }
                 authorization_code = code;
                 break;
             }
@@ -426,11 +507,12 @@ pub fn cloud_redirect_connect_google() -> Result<(), String> {
             Err(error) => return Err(error.to_string()),
         }
     }
-    
+
     let code = authorization_code.ok_or_else(|| "Google Drive sign-in timed out".to_string())?;
-    
+
     let client = reqwest::blocking::Client::new();
-    let token_resp = client.post(TOKEN_ENDPOINT)
+    let token_resp = client
+        .post(TOKEN_ENDPOINT)
         .form(&[
             ("client_id", client_id),
             ("code", code.as_str()),
@@ -440,24 +522,31 @@ pub fn cloud_redirect_connect_google() -> Result<(), String> {
         ])
         .send()
         .map_err(|error| error.to_string())?;
-        
+
     let raw_json = token_resp.text().map_err(|error| error.to_string())?;
-    
-    let doc: serde_json::Value = serde_json::from_str(&raw_json).map_err(|error| error.to_string())?;
+
+    let doc: serde_json::Value =
+        serde_json::from_str(&raw_json).map_err(|error| error.to_string())?;
     if !doc.get("access_token").is_some() {
-        return Err(format!("Google did not return a valid access token: {}", raw_json));
+        return Err(format!(
+            "Google did not return a valid access token: {}",
+            raw_json
+        ));
     }
-    
+
     let encrypted = crate::secret_store::protect(raw_json.as_bytes())?;
-    
+
     let appdata = std::env::var("APPDATA").map_err(|_| "Could not find APPDATA".to_string())?;
     let cr_dir = std::path::PathBuf::from(&appdata).join("CloudRedirect");
     std::fs::create_dir_all(&cr_dir).map_err(|error| error.to_string())?;
-    
+
     let token_path = cr_dir.join("google_tokens.json");
     std::fs::write(&token_path, encrypted).map_err(|error| error.to_string())?;
-    
-    cloud_redirect_save_provider_config("gdrive".to_string(), token_path.to_string_lossy().to_string())?;
-    
+
+    cloud_redirect_save_provider_config(
+        "gdrive".to_string(),
+        token_path.to_string_lossy().to_string(),
+    )?;
+
     Ok(())
 }

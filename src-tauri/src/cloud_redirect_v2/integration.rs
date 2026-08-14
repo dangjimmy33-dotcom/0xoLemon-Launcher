@@ -9,15 +9,14 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use tauri::{command, AppHandle};
 
-use super::{backup, engine, manifest_pinning};
 use super::models::{
     DiagnosticItem, DiagnosticsReport, EngineStatus, LocalBackupInfo, ManifestPinConfig,
-    SteamRuntimeState,
     ManifestPinConfigInput, MigrationEvent, MigrationRequest, OperationResult, ProviderConfigInput,
-    ProviderConfigView, RemoteAppInfo, RemoteFileInfo, StatsEntry, ENGINE_SOURCE_COMMIT,
-    ENGINE_VERSION,
+    ProviderConfigView, RemoteAppInfo, RemoteFileInfo, StatsEntry, SteamRuntimeState,
+    ENGINE_SOURCE_COMMIT, ENGINE_VERSION,
 };
 use super::upstream_config;
+use super::{backup, engine, manifest_pinning};
 
 #[command]
 pub fn cloud_redirect_engine_get_status(app: AppHandle) -> Result<EngineStatus, String> {
@@ -27,19 +26,22 @@ pub fn cloud_redirect_engine_get_status(app: AppHandle) -> Result<EngineStatus, 
     let authenticated = match provider_view.provider.as_str() {
         "local" => true,
         "folder" => provider_view.authenticated,
-        provider if runtime.is_ok() => engine::run_cli_value(
-            &app,
-            &["auth-status".to_string(), provider.to_string()],
-        )
-        .ok()
-        .and_then(|value| value.get("authenticated").and_then(Value::as_bool))
-        .unwrap_or(false),
+        provider if runtime.is_ok() => {
+            engine::run_cli_value(&app, &["auth-status".to_string(), provider.to_string()])
+                .ok()
+                .and_then(|value| value.get("authenticated").and_then(Value::as_bool))
+                .unwrap_or(false)
+        }
         _ => false,
     };
-    let steam_path = steam.as_ref().map(|path| path.to_string_lossy().into_owned());
+    let steam_path = steam
+        .as_ref()
+        .map(|path| path.to_string_lossy().into_owned());
     let steam_process_ids = steam_process_ids();
     let steam_version = steam.as_ref().and_then(|path| get_steam_version(path));
-    let steam_version_supported = steam_version.map(is_supported_steam_version).unwrap_or(false);
+    let steam_version_supported = steam_version
+        .map(is_supported_steam_version)
+        .unwrap_or(false);
     let dll_installed = steam
         .as_ref()
         .is_some_and(|path| path.join("cloud_redirect.dll").is_file());
@@ -62,7 +64,9 @@ pub fn cloud_redirect_engine_get_status(app: AppHandle) -> Result<EngineStatus, 
         dll_installed,
         mode: upstream_config::mode_from_settings(),
         provider: Some(provider_view.provider.clone()),
-        provider_display_name: Some(upstream_config::provider_display_name(&provider_view.provider)),
+        provider_display_name: Some(upstream_config::provider_display_name(
+            &provider_view.provider,
+        )),
         authenticated,
         token_path: provider_view.token_path,
         sync_path: provider_view.sync_path,
@@ -110,7 +114,11 @@ pub fn cloud_redirect_engine_close_steam() -> Result<OperationResult, String> {
 #[command]
 pub fn cloud_redirect_engine_install(app: AppHandle) -> Result<OperationResult, String> {
     let path = engine::install_dll(&app)?;
-    Ok(result_message(format!("CloudRedirect {} installed at {}", ENGINE_VERSION, path.display())))
+    Ok(result_message(format!(
+        "CloudRedirect {} installed at {}",
+        ENGINE_VERSION,
+        path.display()
+    )))
 }
 
 #[command]
@@ -140,9 +148,7 @@ pub fn cloud_redirect_engine_run_required_patches(
     }
     let result = crate::cloud_redirect::cloud_redirect_run_stfixer(install_core_if_missing);
     if !result.succeeded {
-        return Err(result
-            .error
-            .unwrap_or_else(|| result.log.join("\n")));
+        return Err(result.error.unwrap_or_else(|| result.log.join("\n")));
     }
     let installed = engine::install_dll(&app)?;
     Ok(OperationResult {
@@ -169,13 +175,11 @@ pub fn cloud_redirect_engine_save_provider(
 ) -> Result<ProviderConfigView, String> {
     let view = upstream_config::save_provider(&input)?;
     if matches!(view.provider.as_str(), "gdrive" | "onedrive" | "r2" | "s3") {
-        let authenticated = engine::run_cli_value(
-            &app,
-            &["auth-status".to_string(), view.provider.clone()],
-        )
-        .ok()
-        .and_then(|value| value.get("authenticated").and_then(Value::as_bool))
-        .unwrap_or(false);
+        let authenticated =
+            engine::run_cli_value(&app, &["auth-status".to_string(), view.provider.clone()])
+                .ok()
+                .and_then(|value| value.get("authenticated").and_then(Value::as_bool))
+                .unwrap_or(false);
         let mut view = view;
         view.authenticated = authenticated;
         return Ok(view);
@@ -190,13 +194,18 @@ pub fn cloud_redirect_engine_set_mode(mode: String) -> Result<OperationResult, S
 }
 
 #[command]
-pub fn cloud_redirect_engine_test_provider(app: AppHandle, provider: String) -> Result<OperationResult, String> {
+pub fn cloud_redirect_engine_test_provider(
+    app: AppHandle,
+    provider: String,
+) -> Result<OperationResult, String> {
     if provider == "local" {
         return Ok(result_message("Local-only provider is ready"));
     }
     if provider == "folder" {
         let view = upstream_config::get_provider_view()?;
-        let path = view.sync_path.ok_or_else(|| "Sync folder is not configured".to_string())?;
+        let path = view
+            .sync_path
+            .ok_or_else(|| "Sync folder is not configured".to_string())?;
         if !Path::new(&path).is_dir() {
             return Err("Configured sync folder does not exist".to_string());
         }
@@ -215,17 +224,16 @@ pub fn cloud_redirect_engine_test_provider(app: AppHandle, provider: String) -> 
         if let Some(account_id) = discover_account_ids(&steam).into_iter().next() {
             raw = engine::run_cli_value(
                 &app,
-                &[
-                    "list-remote-apps".to_string(),
-                    provider.clone(),
-                    account_id,
-                ],
+                &["list-remote-apps".to_string(), provider.clone(), account_id],
             )?;
         }
     }
     Ok(OperationResult {
         success: true,
-        message: format!("{} connection verified", upstream_config::provider_display_name(&provider)),
+        message: format!(
+            "{} connection verified",
+            upstream_config::provider_display_name(&provider)
+        ),
         raw: Some(raw),
         ..OperationResult::default()
     })
@@ -405,12 +413,8 @@ pub fn cloud_redirect_engine_delete_app(
                 cloud_root.to_string_lossy().into_owned(),
             ],
         )?;
-        let safety_backup = backup::create_safety(
-            &app,
-            &account_id,
-            &app_id,
-            "before-remote-delete",
-        )?;
+        let safety_backup =
+            backup::create_safety(&app, &account_id, &app_id, "before-remote-delete")?;
         let value = engine::run_cli_value(
             &app,
             &[
@@ -431,7 +435,10 @@ pub fn cloud_redirect_engine_delete_app(
         );
     }
     Ok(OperationResult {
-        success: value.get("success").and_then(Value::as_bool).unwrap_or(false),
+        success: value
+            .get("success")
+            .and_then(Value::as_bool)
+            .unwrap_or(false),
         message: format!(
             "Remote app data deleted. Safety backup {} was retained locally.",
             safety_backup.id
@@ -528,18 +535,17 @@ pub fn cloud_redirect_engine_restore_backup(
 }
 
 #[command]
-pub fn cloud_redirect_engine_list_stats(app: AppHandle, provider: Option<String>) -> Result<Vec<StatsEntry>, String> {
+pub fn cloud_redirect_engine_list_stats(
+    app: AppHandle,
+    provider: Option<String>,
+) -> Result<Vec<StatsEntry>, String> {
     let provider = active_provider(provider)?;
-    let value = engine::run_cli_value(
-        &app,
-        &["list-all-stats".to_string(), provider],
-    )?;
+    let value = engine::run_cli_value(&app, &["list-all-stats".to_string(), provider])?;
     Ok(value
         .get("apps")
         .and_then(Value::as_array)
         .map(|apps| {
-            apps
-                .iter()
+            apps.iter()
                 .map(|entry| StatsEntry {
                     account_id: string_field(entry, "account_id"),
                     app_id: string_field(entry, "app_id"),
@@ -551,7 +557,10 @@ pub fn cloud_redirect_engine_list_stats(app: AppHandle, provider: Option<String>
 }
 
 #[command]
-pub fn cloud_redirect_engine_migrate(app: AppHandle, request: MigrationRequest) -> Result<MigrationEvent, String> {
+pub fn cloud_redirect_engine_migrate(
+    app: AppHandle,
+    request: MigrationRequest,
+) -> Result<MigrationEvent, String> {
     if request.source_provider == request.destination_provider {
         return Err("Source and destination providers must be different".to_string());
     }
@@ -708,7 +717,11 @@ pub fn cloud_redirect_engine_run_cloud760(
                 "persisted": *persisted == "1",
             })),
             ["DEL", _, result] => {
-                if *result == "OK" { deleted += 1 } else { failed += 1 }
+                if *result == "OK" {
+                    deleted += 1
+                } else {
+                    failed += 1
+                }
             }
             _ => {}
         }
@@ -739,32 +752,86 @@ pub fn cloud_redirect_engine_diagnostics(app: AppHandle) -> Result<DiagnosticsRe
     let mut items = Vec::new();
     let runtime = engine::ensure_runtime(&app);
     match &runtime {
-        Ok(path) => items.push(diagnostic("engine", "ok", "Engine ready", &path.display().to_string(), None)),
-        Err(error) => items.push(diagnostic("engine", "error", "Engine unavailable", error, Some("buildEngine"))),
+        Ok(path) => items.push(diagnostic(
+            "engine",
+            "ok",
+            "Engine ready",
+            &path.display().to_string(),
+            None,
+        )),
+        Err(error) => items.push(diagnostic(
+            "engine",
+            "error",
+            "Engine unavailable",
+            error,
+            Some("buildEngine"),
+        )),
     }
     let steam = find_steam_path();
     match &steam {
-        Some(path) => items.push(diagnostic("steam", "ok", "Steam detected", &path.display().to_string(), None)),
-        None => items.push(diagnostic("steam", "error", "Steam not detected", "The Steam installation could not be resolved.", None)),
+        Some(path) => items.push(diagnostic(
+            "steam",
+            "ok",
+            "Steam detected",
+            &path.display().to_string(),
+            None,
+        )),
+        None => items.push(diagnostic(
+            "steam",
+            "error",
+            "Steam not detected",
+            "The Steam installation could not be resolved.",
+            None,
+        )),
     }
     if is_steam_running() {
-        items.push(diagnostic("steam-running", "warning", "Steam is running", "Close Steam before applying patches or replacing the DLL.", Some("closeSteam")));
+        items.push(diagnostic(
+            "steam-running",
+            "warning",
+            "Steam is running",
+            "Close Steam before applying patches or replacing the DLL.",
+            Some("closeSteam"),
+        ));
     }
     let provider = upstream_config::get_provider_view()?;
     items.push(diagnostic(
         "provider",
-        if provider.authenticated { "ok" } else { "warning" },
+        if provider.authenticated {
+            "ok"
+        } else {
+            "warning"
+        },
         "Cloud provider",
-        &format!("{} ({})", upstream_config::provider_display_name(&provider.provider), if provider.authenticated { "configured" } else { "not verified" }),
-        if provider.authenticated { None } else { Some("configureProvider") },
+        &format!(
+            "{} ({})",
+            upstream_config::provider_display_name(&provider.provider),
+            if provider.authenticated {
+                "configured"
+            } else {
+                "not verified"
+            }
+        ),
+        if provider.authenticated {
+            None
+        } else {
+            Some("configureProvider")
+        },
     ));
     if let Some(path) = steam.as_ref().map(|steam| steam.join("cloud_redirect.dll")) {
         items.push(diagnostic(
             "dll",
             if path.is_file() { "ok" } else { "warning" },
             "Steam DLL deployment",
-            if path.is_file() { "cloud_redirect.dll is installed." } else { "cloud_redirect.dll is not installed." },
-            if path.is_file() { None } else { Some("installDll") },
+            if path.is_file() {
+                "cloud_redirect.dll is installed."
+            } else {
+                "cloud_redirect.dll is not installed."
+            },
+            if path.is_file() {
+                None
+            } else {
+                Some("installDll")
+            },
         ));
     }
     let log_tail = steam
@@ -813,8 +880,11 @@ fn discover_account_ids(steam: &Path) -> Vec<String> {
     ids
 }
 
-
-fn run_simple_cli(app: &AppHandle, args: Vec<String>, message: &str) -> Result<OperationResult, String> {
+fn run_simple_cli(
+    app: &AppHandle,
+    args: Vec<String>,
+    message: &str,
+) -> Result<OperationResult, String> {
     let value = engine::with_operation_lock(|| engine::run_cli_value(app, &args))?;
     Ok(OperationResult {
         success: true,

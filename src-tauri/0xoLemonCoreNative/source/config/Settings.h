@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <atomic>
 #include <string>
 #include <vector>
 #include <windows.h>
@@ -95,7 +96,7 @@ namespace Settings {
     // healthy first provider doesn't pay the budget of the slow ones.
     inline int manifestFetchTimeoutSec = 12;
     inline std::vector<std::string> manifestFetchTrustedHosts;
-    inline bool statsEnableApi = true;
+    inline std::atomic_bool statsEnableApi{true};
     inline bool processExtensionEnabled = false;
     inline std::string processExtensionX86;
     inline std::string processExtensionX64;
@@ -124,4 +125,3 @@ namespace Settings {
 
 
 }
-

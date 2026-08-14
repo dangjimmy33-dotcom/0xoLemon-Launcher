@@ -100,8 +100,11 @@ if ((-not $NoSyncMetadata) -and (-not (Test-Path -LiteralPath $SyncToolPath))) {
 }
 
 $toolsRoot = Split-Path -Parent $CargoManifest
+# depot_builder was moved to tools/launcher-tools (separate crate) to avoid bundling into Tauri NSIS
+$launcherToolsRoot = Join-Path (Split-Path -Parent $toolsRoot) "tools\launcher-tools"
+$launcherToolsManifest = Join-Path $launcherToolsRoot "Cargo.toml"
 $depotOut = Join-Path $DepotRoot $GameId
-$builder = Join-Path $toolsRoot "target\release\depot_builder.exe"
+$builder = Join-Path $launcherToolsRoot "target\release\depot_builder.exe"
 
 Write-Host "[SAFE] GameId        : $GameId"
 Write-Host "[SAFE] Version       : $Version"
@@ -144,9 +147,9 @@ if (-not $UploadOnly) {
 
   if (-not (Test-Path -LiteralPath $builder)) {
     Write-Host "[SAFE] Release depot_builder not found. Building release..."
-    Push-Location $toolsRoot
+    Push-Location $launcherToolsRoot
     try {
-      cargo build --release --manifest-path $CargoManifest --bin depot_builder
+      cargo build --release --manifest-path $launcherToolsManifest --bin depot_builder
     } finally {
       Pop-Location
     }
@@ -154,7 +157,7 @@ if (-not $UploadOnly) {
     Write-Host "[SAFE] Using release builder: $builder"
   }
 
-  Push-Location $toolsRoot
+  Push-Location $launcherToolsRoot
   try {
     $builderArgs = @(
       "build-version",

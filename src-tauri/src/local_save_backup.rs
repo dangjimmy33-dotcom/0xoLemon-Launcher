@@ -91,17 +91,23 @@ pub fn backup_after_exit_async(app: AppHandle, game_id: String, game_version: St
         let result = do_backup(&app, &game_id, &game_version);
         backup_flag().store(false, Ordering::Relaxed);
         // Notify frontend that close guard can be released
-        let _ = app.emit("launcher://save-backup-guard-released", serde_json::json!({ "gameId": &game_id }));
+        let _ = app.emit(
+            "launcher://save-backup-guard-released",
+            serde_json::json!({ "gameId": &game_id }),
+        );
 
         if let Err(e) = result {
-            emit_progress(&app, SaveBackupProgressEvent {
-                game_id,
-                state: "error".to_string(),
-                message: e,
-                files_copied: 0,
-                bytes_copied: 0,
-                snapshot_id: None,
-            });
+            emit_progress(
+                &app,
+                SaveBackupProgressEvent {
+                    game_id,
+                    state: "error".to_string(),
+                    message: e,
+                    files_copied: 0,
+                    bytes_copied: 0,
+                    snapshot_id: None,
+                },
+            );
         }
     });
 }
@@ -132,8 +138,7 @@ pub fn restore_snapshot(game_id: &str, snapshot_id: &str) -> Result<(), String> 
     let backup_dir = game_backup_dir(game_id)?.join(snapshot_id);
     let manifest_path = backup_dir.join(MANIFEST_FILE);
     let data = fs::read_to_string(&manifest_path).map_err(|e| e.to_string())?;
-    let snapshot: SaveBackupSnapshot =
-        serde_json::from_str(&data).map_err(|e| e.to_string())?;
+    let snapshot: SaveBackupSnapshot = serde_json::from_str(&data).map_err(|e| e.to_string())?;
 
     let source_roots: Vec<PathBuf> = snapshot.source_paths.iter().map(PathBuf::from).collect();
 
@@ -146,9 +151,7 @@ pub fn restore_snapshot(game_id: &str, snapshot_id: &str) -> Result<(), String> 
         let root_idx: usize = root_idx_component
             .and_then(|c| c.as_os_str().to_str())
             .and_then(|s| s.parse().ok())
-            .ok_or_else(|| {
-                format!("malformed path in manifest: {}", entry.relative_path)
-            })?;
+            .ok_or_else(|| format!("malformed path in manifest: {}", entry.relative_path))?;
 
         let source_root = source_roots
             .get(root_idx)
@@ -170,55 +173,66 @@ fn do_backup(app: &AppHandle, game_id: &str, game_version: &str) -> Result<(), S
     // ── 1. Resolve save paths for this version ────────────────────────────────
     let source_paths = resolve_save_paths(game_id, game_version);
     if source_paths.is_empty() {
-        emit_progress(app, SaveBackupProgressEvent {
-            game_id: game_id.to_string(),
-            state: "skipped".to_string(),
-            message: format!("No save path for {} @ {}", game_id, game_version),
-            files_copied: 0,
-            bytes_copied: 0,
-            snapshot_id: None,
-        });
+        emit_progress(
+            app,
+            SaveBackupProgressEvent {
+                game_id: game_id.to_string(),
+                state: "skipped".to_string(),
+                message: format!("No save path for {} @ {}", game_id, game_version),
+                files_copied: 0,
+                bytes_copied: 0,
+                snapshot_id: None,
+            },
+        );
         return Ok(());
     }
 
     let existing_sources: Vec<&PathBuf> = source_paths.iter().filter(|p| p.exists()).collect();
     if existing_sources.is_empty() {
-        emit_progress(app, SaveBackupProgressEvent {
-            game_id: game_id.to_string(),
-            state: "skipped".to_string(),
-            message: "Save folder does not exist yet (no saves?)".to_string(),
-            files_copied: 0,
-            bytes_copied: 0,
-            snapshot_id: None,
-        });
+        emit_progress(
+            app,
+            SaveBackupProgressEvent {
+                game_id: game_id.to_string(),
+                state: "skipped".to_string(),
+                message: "Save folder does not exist yet (no saves?)".to_string(),
+                files_copied: 0,
+                bytes_copied: 0,
+                snapshot_id: None,
+            },
+        );
         return Ok(());
     }
 
     // ── 2. Emit starting ──────────────────────────────────────────────────────
-    emit_progress(app, SaveBackupProgressEvent {
-        game_id: game_id.to_string(),
-        state: "starting".to_string(),
-        message: "Starting save backup…".to_string(),
-        files_copied: 0,
-        bytes_copied: 0,
-        snapshot_id: None,
-    });
+    emit_progress(
+        app,
+        SaveBackupProgressEvent {
+            game_id: game_id.to_string(),
+            state: "starting".to_string(),
+            message: "Starting save backup…".to_string(),
+            files_copied: 0,
+            bytes_copied: 0,
+            snapshot_id: None,
+        },
+    );
 
     // ── 3. Create snapshot directory ─────────────────────────────────────────
     let snapshot_id = timestamp_id();
     let backup_dir = game_backup_dir(game_id)?.join(&snapshot_id);
-    fs::create_dir_all(&backup_dir)
-        .map_err(|e| format!("Cannot create backup dir: {e}"))?;
+    fs::create_dir_all(&backup_dir).map_err(|e| format!("Cannot create backup dir: {e}"))?;
 
     // ── 4. Emit copying ──────────────────────────────────────────────────────
-    emit_progress(app, SaveBackupProgressEvent {
-        game_id: game_id.to_string(),
-        state: "copying".to_string(),
-        message: "Copying save files…".to_string(),
-        files_copied: 0,
-        bytes_copied: 0,
-        snapshot_id: Some(snapshot_id.clone()),
-    });
+    emit_progress(
+        app,
+        SaveBackupProgressEvent {
+            game_id: game_id.to_string(),
+            state: "copying".to_string(),
+            message: "Copying save files…".to_string(),
+            files_copied: 0,
+            bytes_copied: 0,
+            snapshot_id: Some(snapshot_id.clone()),
+        },
+    );
 
     // ── 5. Copy files ────────────────────────────────────────────────────────
     let mut entries: Vec<SaveBackupEntry> = Vec::new();
@@ -274,26 +288,35 @@ fn do_backup(app: &AppHandle, game_id: &str, game_version: &str) -> Result<(), S
     let _ = prune_snapshots(game_id);
 
     // ── 8. Emit local-done ────────────────────────────────────────────────────
-    emit_progress(app, SaveBackupProgressEvent {
-        game_id: game_id.to_string(),
-        state: "uploading".to_string(),
-        message: format!(
-            "Local backup done ({files_copied} files). Uploading to Google Drive…"
-        ),
-        files_copied,
-        bytes_copied: total_bytes,
-        snapshot_id: Some(snapshot_id.clone()),
-    });
+    emit_progress(
+        app,
+        SaveBackupProgressEvent {
+            game_id: game_id.to_string(),
+            state: "uploading".to_string(),
+            message: format!(
+                "Local backup done ({files_copied} files). Uploading to Google Drive…"
+            ),
+            files_copied,
+            bytes_copied: total_bytes,
+            snapshot_id: Some(snapshot_id.clone()),
+        },
+    );
 
     Ok(())
 }
 
 fn game_backup_dir(game_id: &str) -> Result<PathBuf, String> {
-    let local_app_data = std::env::var("LOCALAPPDATA")
-        .map_err(|_| "LOCALAPPDATA env var not set".to_string())?;
+    let local_app_data =
+        std::env::var("LOCALAPPDATA").map_err(|_| "LOCALAPPDATA env var not set".to_string())?;
     let safe_id: String = game_id
         .chars()
-        .map(|c| if c.is_alphanumeric() || c == '-' || c == '_' { c } else { '_' })
+        .map(|c| {
+            if c.is_alphanumeric() || c == '-' || c == '_' {
+                c
+            } else {
+                '_'
+            }
+        })
         .collect();
     Ok(PathBuf::from(local_app_data)
         .join(BACKUP_ROOT_NAME)

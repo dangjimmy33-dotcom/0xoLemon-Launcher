@@ -89,9 +89,11 @@ namespace {
 
 namespace RuntimeHttp {
 
-Response Get(std::string_view url,
-             const std::vector<std::string>& extraHeaders,
-             std::wstring_view userAgent) {
+Response GetLimited(std::string_view url,
+                    const std::vector<std::string>& extraHeaders,
+                    std::wstring_view userAgent,
+                    std::uint32_t timeoutMs,
+                    std::size_t bodyCap) {
     Response r;
     Url parsed;
     if (!Parse(url, parsed)) {
@@ -108,7 +110,10 @@ Response Get(std::string_view url,
         r.diagnostic = "WinHttpOpen failed";
         return r;
     }
-    WinHttpSetTimeouts(session, kTimeoutMs, kTimeoutMs, kTimeoutMs, kTimeoutMs);
+    const DWORD boundedTimeout = timeoutMs == 0 ? kTimeoutMs : timeoutMs;
+    const std::size_t boundedBodyCap = bodyCap == 0 ? kBodyCap : bodyCap;
+    WinHttpSetTimeouts(session, boundedTimeout, boundedTimeout,
+                       boundedTimeout, boundedTimeout);
 
     WinHandle conn(WinHttpConnect(session, parsed.host.c_str(), parsed.port, 0));
     if (!conn) {
@@ -180,7 +185,7 @@ Response Get(std::string_view url,
                 break;
             }
             if (got == 0) { avail = 0; break; }
-            if (r.body.size() + got > kBodyCap) {
+            if (r.body.size() + got > boundedBodyCap) {
                 r.diagnostic = "body cap reached";
                 r.body.clear();
                 r.networkError = true;
@@ -194,6 +199,13 @@ Response Get(std::string_view url,
     }
 
     return r;
+}
+
+Response Get(std::string_view url,
+             const std::vector<std::string>& extraHeaders,
+             std::wstring_view userAgent) {
+    return GetLimited(url, extraHeaders, userAgent,
+                      static_cast<std::uint32_t>(kTimeoutMs), kBodyCap);
 }
 
 Response Post(std::string_view url, std::string_view body,

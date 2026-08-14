@@ -13,6 +13,7 @@
 #ifndef OXOLEMONCORE_RUNTIME_HTTP_H
 #define OXOLEMONCORE_RUNTIME_HTTP_H
 
+#include <cstddef>
 #include <cstdint>
 #include <string>
 #include <string_view>
@@ -33,6 +34,15 @@ namespace RuntimeHttp {
     Response Get(std::string_view url,
                  const std::vector<std::string>& extraHeaders = {},
                  std::wstring_view userAgent = L"_0xoLemonCore-RuntimeHttp/1.0");
+
+    // Bounded variant for small control-plane lookups. It shares the same
+    // WinHTTP implementation while allowing callers to enforce tighter
+    // latency and response-size budgets than Lua package traffic.
+    Response GetLimited(std::string_view url,
+                        const std::vector<std::string>& extraHeaders,
+                        std::wstring_view userAgent,
+                        std::uint32_t timeoutMs,
+                        std::size_t bodyCap);
 
     // Single-shot HTTP/HTTPS POST. Same caps as GET.
     // extraHeaders are raw "Header: value" strings appended to the request.

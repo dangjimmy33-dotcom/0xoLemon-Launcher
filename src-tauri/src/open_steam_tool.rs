@@ -3,6 +3,7 @@ use std::path::{Path, PathBuf};
 use std::sync::{Mutex, OnceLock};
 use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::{AppHandle, Manager};
+use toml_edit::{value, DocumentMut};
 
 pub(crate) const STEAM_HOOK_DLLS: [&str; 4] = [
     "0xoCore.dll",
@@ -31,6 +32,72 @@ impl Default for OSTConfig {
             enable_inject: true,
         }
     }
+}
+
+#[derive(Debug, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NativeCoreSettingsState {
+    pub stats_api_enabled: bool,
+    pub config_exists: bool,
+}
+
+const NATIVE_CORE_CONFIG: &str = "_0xolemoncore.toml";
+
+fn native_core_config_path() -> Result<PathBuf, String> {
+    Ok(get_steam_root()?.join(NATIVE_CORE_CONFIG))
+}
+
+fn parse_native_core_config(text: &str) -> Result<DocumentMut, String> {
+    text.parse::<DocumentMut>()
+        .map_err(|error| format!("Native core settings are invalid: {error}"))
+}
+
+fn read_native_core_stats_setting(path: &Path) -> Result<bool, String> {
+    if !path.is_file() {
+        return Ok(true);
+    }
+    let text = fs::read_to_string(path).map_err(|error| io_error("read", path, error))?;
+    let document = parse_native_core_config(&text)?;
+    Ok(document["stats"]["enable_api"].as_bool().unwrap_or(true))
+}
+
+fn write_native_core_stats_setting(path: &Path, enabled: bool) -> Result<(), String> {
+    let mut document = if path.is_file() {
+        parse_native_core_config(
+            &fs::read_to_string(path).map_err(|error| io_error("read", path, error))?,
+        )?
+    } else {
+        DocumentMut::new()
+    };
+    document["stats"]["enable_api"] = value(enabled);
+    crate::lua_live::atomic_write_path(path, document.to_string().as_bytes())
+}
+
+#[tauri::command]
+pub async fn get_native_core_settings() -> Result<NativeCoreSettingsState, String> {
+    tauri::async_runtime::spawn_blocking(|| {
+        let path = native_core_config_path()?;
+        Ok(NativeCoreSettingsState {
+            stats_api_enabled: read_native_core_stats_setting(&path)?,
+            config_exists: path.is_file(),
+        })
+    })
+    .await
+    .map_err(|error| format!("Native core settings task failed: {error}"))?
+}
+
+#[tauri::command]
+pub async fn set_native_core_stats_api(enabled: bool) -> Result<NativeCoreSettingsState, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let path = native_core_config_path()?;
+        write_native_core_stats_setting(&path, enabled)?;
+        Ok(NativeCoreSettingsState {
+            stats_api_enabled: enabled,
+            config_exists: true,
+        })
+    })
+    .await
+    .map_err(|error| format!("Native core settings task failed: {error}"))?
 }
 
 pub fn get_steam_root() -> Result<PathBuf, String> {
@@ -269,10 +336,8 @@ mod tests {
     fn hook_install_and_remove_use_the_complete_four_file_package() {
         let (root, resources, steam) = test_directories("complete");
         for dll in STEAM_HOOK_DLLS {
-            fs::write(resources.join(dll), format!("new-{dll}"))
-                .expect("write source hook");
-            fs::write(steam.join(dll), format!("old-{dll}"))
-                .expect("write installed hook");
+            fs::write(resources.join(dll), format!("new-{dll}")).expect("write source hook");
+            fs::write(steam.join(dll), format!("old-{dll}")).expect("write installed hook");
         }
         fs::write(steam.join(LUA_GAME_MODE_MARKER), "enabled").expect("write mode marker");
 
@@ -296,11 +361,9 @@ mod tests {
         let (root, resources, steam) = test_directories("missing");
         for dll in STEAM_HOOK_DLLS {
             if dll != "0xoPayload.dll" {
-                fs::write(resources.join(dll), format!("new-{dll}"))
-                    .expect("write source hook");
+                fs::write(resources.join(dll), format!("new-{dll}")).expect("write source hook");
             }
-            fs::write(steam.join(dll), format!("old-{dll}"))
-                .expect("write installed hook");
+            fs::write(steam.join(dll), format!("old-{dll}")).expect("write installed hook");
         }
 
         let error = install_hook_files_from(&resources, &steam)
@@ -354,7 +417,7 @@ pub async fn ost_save_lua(app: AppHandle, appid: String, content: String) -> Res
     if !lua_dir.exists() {
         fs::create_dir_all(&lua_dir).map_err(|e| format!("Failed to create lua dir: {}", e))?;
     }
-    
+
     let file_path = lua_dir.join(format!("{}.lua", appid));
     fs::write(&file_path, content).map_err(|e| format!("Failed to write lua script: {}", e))?;
     Ok(())

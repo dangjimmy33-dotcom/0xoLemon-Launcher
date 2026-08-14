@@ -45,7 +45,18 @@ export type PhaseProgress = {
   sessionBaseBytes: number
   remainingBytes: number
   rateBytesPerSecond: number
+  applyRateBytesPerSecond: number
   etaSeconds: number | null
+  applyEtaSeconds: number | null
+  networkPercent: number
+  applyPercent: number
+  applyBytesDone: number
+  applyBytesTotal: number
+  durableBytes: number
+  currentFile: string
+  pipelineVersion: string
+  commitState: string
+  isCommitting: boolean
   isDownloading: boolean
 }
 
@@ -66,6 +77,14 @@ export type JobJournal = {
   logicalBytesTotal?: number
   /** Bytes already available before the current remaining-work session. */
   sessionBaseBytes?: number
+  /** Bytes durably written into verified staging. */
+  applyBytesDone?: number
+  applyBytesTotal?: number
+  durableBytes?: number
+  currentFile?: string
+  pipelineVersion?: string
+  commitState?: string
+  plannedFiles?: string[]
   retryCount: number
   resumable: boolean
   updatedAt: string
@@ -81,6 +100,13 @@ export type JobJournal = {
     peakInFlightBytes: number
     throughputP50BytesPerSecond: number
     throughputP95BytesPerSecond: number
+    diskReadBytes?: number
+    diskWriteBytes?: number
+    resumeRehashBytes?: number
+    syncWaitMs?: number
+    commitWaitMs?: number
+    allocationReservedBytes?: number
+    allocationFallbackReason?: string
   }
   /** Set when a patch job commits – lets the UI immediately clear the pending-patch badge. */
   appliedPatchId?: string
@@ -428,6 +454,152 @@ export type RestartSteamReport = {
   message: string
 }
 
+export type LuaGameChannel = 'live' | 'locked'
+
+export type LuaSyncStatus =
+  | 'idle'
+  | 'checking'
+  | 'upToDate'
+  | 'updated'
+  | 'updateAvailable'
+  | 'conflict'
+  | 'error'
+
+export type LuaMigrationState = 'managed' | 'reviewRequired'
+export type LuaRuntimeState = 'active' | 'missing' | 'conflict' | 'unknown'
+export type LuaRemoteSourceState = 'available' | 'unavailable' | 'updateAvailable' | 'error' | 'unknown'
+
+export type LuaGameState = {
+  appid: number
+  gameName: string
+  channel: LuaGameChannel
+  pinnedBuildId: string | null
+  sourceRevision: string | null
+  lastSyncAt: string | null
+  nextSyncAt: string | null
+  lastError: string | null
+  syncStatus: LuaSyncStatus
+  migrationState: LuaMigrationState
+  requiresSteamRestart: boolean
+  sharedDepotConflicts: number[]
+  runtimeState: LuaRuntimeState
+  sourceState: LuaRemoteSourceState
+  sourceErrorCode: string | null
+  sourceProvider: LuaPackageProvider | null
+  selectedSource: LuaSourceProvider | null
+  selectedVariant: LuaPackageProvider | null
+  installedRevision: string | null
+  installedModifiedAt: string | null
+  availableRevision: string | null
+  availableModifiedAt: string | null
+  lastCheckedAt: string | null
+  updateAvailable: boolean
+}
+
+export type LuaGameManagerState = {
+  game: LuaGameState
+  luaPath: string
+  fileExists: boolean
+  hasUserOverrides: boolean
+  canSwitchLive: boolean
+}
+
+export type HubcapUsageBucket = {
+  usage: number | null
+  limit: number | null
+  remaining: number | null
+}
+
+export type HubcapKeyState = {
+  configured: boolean
+  valid: boolean
+  maskedKey: string | null
+  expiresAt: string | null
+  expiryEstimated: boolean
+  expiringSoon: boolean
+  expired: boolean
+  serviceReady: boolean
+  daily: HubcapUsageBucket
+  single: HubcapUsageBucket
+  bundle: HubcapUsageBucket
+  workshop: HubcapUsageBucket
+  lastCheckedAt: string | null
+  lastError: string | null
+}
+
+export type LuaSourceSettingsState = {
+  hubcap: HubcapKeyState
+  sushiEnabled: boolean
+  ryuuEnabled: boolean
+}
+
+export type LuaPackageProvider = 'curated' | 'community' | 'hubcap' | 'sushi' | 'ryuu' | 'none'
+export type LuaSourceProvider = 'huggingFace' | 'hubcap' | 'sushi' | 'ryuu'
+export type LuaSourceOperation = 'add' | 'update' | 'sync'
+
+export type LuaSourceCandidate = {
+  provider: LuaSourceProvider
+  available: boolean
+  enabled: boolean
+  onDemand: boolean
+  requiresKey: boolean
+  keyReady: boolean
+  recommended: boolean
+  variant: LuaPackageProvider | null
+  revision: string | null
+  modifiedAt: string | null
+  errorCode: string | null
+}
+
+export type LuaSourceScanResult = {
+  appid: number
+  operation: LuaSourceOperation
+  sources: LuaSourceCandidate[]
+}
+
+export type LuaSourceAvailability = {
+  appid: number
+  curatedAvailable: boolean
+  communityAvailable: boolean
+  hubcapAvailable: boolean
+  sushiAvailable: boolean
+  ryuuAvailable: boolean
+  preferredProvider: LuaPackageProvider
+  revision: string | null
+  sourceModifiedAt: string | null
+  errorCode: string | null
+}
+
+export type LuaCatalogItem = {
+  appid: number
+  name: string
+  headerImage: string
+  installed: boolean
+  availability: LuaSourceAvailability
+}
+
+export type LuaCatalogSearchPage = {
+  items: LuaCatalogItem[]
+  nextCursor: string | null
+  totalEstimate: number | null
+}
+
+export type LuaAddQuotaState = {
+  limit: number
+  used: number
+  remaining: number
+  resetAt: string | null
+  serverTime: string | null
+  timezone: string | null
+  available: boolean
+  lastError: string | null
+}
+
+export type NativeCoreSettings = {
+  statsApiEnabled: boolean
+  configExists: boolean
+}
+
 export type DiscordAuthState =
   | 'checking'
   | 'notConfigured'
@@ -487,6 +659,40 @@ export type GameInstallState = {
   installPath: string
   launchExecutable: string
   appliedPatchId?: string
+  discoveryStatus?: 'recovering' | 'registered' | 'recovered' | 'conflict' | 'unavailable' | 'notFound' | string
+  candidatePaths?: string[]
+  libraryId?: string
+  unavailableReason?: string
+}
+
+export type LibraryRecoveryIndex = {
+  schemaVersion: number
+  libraryId: string
+  createdAt: string
+}
+
+export type DiscoveredInstall = {
+  gameId: string
+  installPath: string
+  version: string
+  launchExecutable: string
+  appliedPatchId?: string
+  libraryId?: string
+}
+
+export type InstallDiscoveryConflict = {
+  gameId: string
+  candidatePaths: string[]
+}
+
+export type InstallDiscoveryReport = {
+  recovered: DiscoveredInstall[]
+  conflicts: InstallDiscoveryConflict[]
+  rootsScanned: string[]
+  unavailableRoots: string[]
+  invalidCandidates: number
+  requiresLocateLibrary: boolean
+  durationMs: number
 }
 
 export type VerifyInstallReport = {

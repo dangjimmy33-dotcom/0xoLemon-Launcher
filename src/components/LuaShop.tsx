@@ -1,49 +1,58 @@
 import { useState, useEffect, useMemo, useRef, useCallback, memo } from 'react'
 import { createPortal } from 'react-dom'
 import { invoke } from '@tauri-apps/api/core'
-import { Search, ChevronLeft, ChevronRight, Plus, Trash2, RefreshCw, CheckCircle } from 'lucide-react'
+import { listen } from '@tauri-apps/api/event'
+import { Search, ChevronLeft, ChevronRight, Plus, Trash2, RefreshCw, CheckCircle, Settings } from 'lucide-react'
 import { useLocale } from '../context/locale'
 import {
   fetchSteamGameInfo,
   getCachedSteamGameInfo,
   seedSteamGameInfo,
   type SteamGameInfo,
-  type SteamStoreSearchItem,
 } from '../lib/steamGameInfo'
-import { mergeBuildHistory, parseSteamDbPatchRss } from '../lib/patchHistory'
 import './LuaShop.css'
-import { HelpButton } from './HelpSystem'
+import { LuaGameManagerDialog } from './LuaGameManagerDialog'
+import { LuaSourcePickerDialog } from './LuaSourcePickerDialog'
+import type {
+  LuaAddQuotaState,
+  LuaCatalogItem,
+  LuaCatalogSearchPage,
+  LuaGameState,
+  LuaSourceAvailability,
+  LuaSourceOperation,
+  LuaSourceProvider,
+  LuaSourceSettingsState,
+} from '../types'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
 
-type FilterTab = 'all' | 'installed' | 'notInstalled' | 'verified'
-const LATEST_PACKAGE_BUILD = '__latest_package__'
+type FilterTab = 'all' | 'installed' | 'notInstalled'
 
-export interface ShopGame {
-  name: string
+type LuaSourceActionIntent = {
   appid: number
+  gameName: string
+  operation: LuaSourceOperation
+  purpose: 'add' | 'update' | 'sync' | 'switchLive'
+  preferredProvider: LuaSourceProvider | null
 }
 
-export interface ManifestEntry {
-  depot_id: number
-  manifest_gid: string
+function luaChannelLabel(
+  state: LuaGameState | undefined,
+  lockedLabel: string,
+  installedLabel: string,
+) {
+  if (!state) return installedLabel
+  return state.channel === 'live'
+    ? 'Live'
+    : `${lockedLabel}${state.pinnedBuildId ? ` · ${state.pinnedBuildId}` : ''}`
 }
 
-export interface BuildInfo {
-  build_id: string
-  version: string | null
-  build_date?: string
-  manifests: ManifestEntry[]
-  patch_title?: string
-  manifest_available?: boolean
-  history_source?: 'custom' | 'steamdb_rss' | 'merged'
-}
-
-export interface GameBuildsInfo {
-  builds: BuildInfo[]
-  has_key: boolean
+function formatLuaSyncTime(value: string | null | undefined) {
+  if (!value) return ''
+  const timestamp = Date.parse(value)
+  return Number.isFinite(timestamp) ? new Date(timestamp).toLocaleString() : value
 }
 
 function emitLuaShopToast(
@@ -54,6 +63,50 @@ function emitLuaShopToast(
   window.dispatchEvent(new CustomEvent('0xo-toast', {
     detail: { category: 'launcher', severity, title, message, dedupeKey: 'lua-shop:' + title },
   }))
+}
+
+type ViewportListener = (visible: boolean) => void
+const viewportListeners = new Map<Element, ViewportListener>()
+let sharedCardObserver: IntersectionObserver | null = null
+let viewportFrame = 0
+let queuedViewportEntries: IntersectionObserverEntry[] = []
+
+function cardObserver() {
+  if (sharedCardObserver || typeof IntersectionObserver === 'undefined') return sharedCardObserver
+  sharedCardObserver = new IntersectionObserver((entries) => {
+    queuedViewportEntries.push(...entries)
+    if (viewportFrame) return
+    viewportFrame = window.requestAnimationFrame(() => {
+      const latest = new Map<Element, IntersectionObserverEntry>()
+      for (const entry of queuedViewportEntries) latest.set(entry.target, entry)
+      queuedViewportEntries = []
+      viewportFrame = 0
+      latest.forEach((entry, target) => {
+        viewportListeners.get(target)?.(entry.isIntersecting)
+      })
+    })
+  }, { root: null, rootMargin: '300px 0px', threshold: 0.01 })
+  return sharedCardObserver
+}
+
+function useCardViewport() {
+  const elementRef = useRef<HTMLDivElement>(null)
+  const [visible, setVisible] = useState(false)
+  useEffect(() => {
+    const element = elementRef.current
+    const observer = cardObserver()
+    if (!element || !observer) {
+      setVisible(true)
+      return
+    }
+    viewportListeners.set(element, setVisible)
+    observer.observe(element)
+    return () => {
+      observer.unobserve(element)
+      viewportListeners.delete(element)
+    }
+  }, [])
+  return { elementRef, visible }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -135,125 +188,6 @@ async function fetchGameInfo(appid: string): Promise<SteamGameInfo | null> {
 */
 
 
-const VerifiedGameImage = memo(function VerifiedGameImage({
-  appid,
-  name,
-}: {
-  appid: string
-  name: string
-}) {
-  const [info, setInfo] = useState<SteamGameInfo | null>(getCachedSteamGameInfo(appid) ?? null)
-  const [candidateIndex, setCandidateIndex] = useState(0)
-  const [failed, setFailed] = useState(false)
-
-  useEffect(() => {
-    if (info) return
-
-    let mounted = true
-    fetchSteamGameInfo(appid).then((result) => {
-      if (mounted && result) {
-        setCandidateIndex(0)
-        setFailed(false)
-        setInfo(result)
-      }
-    })
-    return () => { mounted = false }
-  }, [appid, info])
-
-  const candidates = useMemo(() => Array.from(new Set([
-    info?.header_image,
-    `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${appid}/header.jpg`,
-    `https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/header.jpg`,
-    `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${appid}/capsule_616x353.jpg`,
-  ].filter((value): value is string => Boolean(value)))), [appid, info?.header_image])
-
-  const src = candidates[Math.min(candidateIndex, Math.max(candidates.length - 1, 0))] ?? ''
-
-  if (!src || failed) {
-    return (
-      <div className="verified-game-image-fallback" aria-label={name}>
-        <span>{name}</span>
-        <small>AppID {appid}</small>
-      </div>
-    )
-  }
-
-  return (
-    <img
-      src={src}
-      alt={name}
-      loading="lazy"
-      decoding="async"
-      onError={() => {
-        if (candidateIndex < candidates.length - 1) {
-          setCandidateIndex((current) => current + 1)
-        } else {
-          setFailed(true)
-        }
-      }}
-    />
-  )
-})
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Module-level manifest cache
-// list_available_manifests is fetched ONCE per session, not on every remount
-// ─────────────────────────────────────────────────────────────────────────────
-
-let _manifestCache: string[] | null = null
-let _manifestPromise: Promise<string[]> | null = null
-let _manifestGeneration = 0
-
-async function getManifests(bust = false): Promise<string[]> {
-  if (bust) {
-    _manifestGeneration += 1
-    _manifestCache = null
-    _manifestPromise = null
-  }
-  if (_manifestCache !== null) return _manifestCache
-  if (_manifestPromise) return _manifestPromise
-  const generation = _manifestGeneration
-  const request = invoke<string[]>('list_available_manifests', { force: bust })
-    .then((ids) => {
-      const sorted = ids.sort((a, b) => parseInt(b) - parseInt(a))
-      if (generation === _manifestGeneration) {
-        _manifestCache = sorted
-        _manifestPromise = null
-      }
-      return sorted
-    })
-    .catch((error) => {
-      if (generation === _manifestGeneration) _manifestPromise = null
-      throw error
-    })
-  _manifestPromise = request
-  return request
-}
-
-let _catalogCache: ShopGame[] | null = null
-let _catalogPromise: Promise<ShopGame[]> | null = null
-
-async function getVerifiedCatalog(bust = false): Promise<ShopGame[]> {
-  if (bust) {
-    _catalogCache = null
-    _catalogPromise = null
-  }
-  if (_catalogCache !== null) return _catalogCache
-  if (_catalogPromise) return _catalogPromise
-  const request = invoke<ShopGame[]>('lua_shop_get_catalog')
-    .then((games) => {
-      _catalogCache = games
-      _catalogPromise = null
-      return games
-    })
-    .catch((error) => {
-      _catalogPromise = null
-      throw error
-    })
-  _catalogPromise = request
-  return request
-}
-
 function normalizeSearchText(value: string) {
   return value
     .normalize('NFKD')
@@ -268,40 +202,6 @@ function titleMatchesQuery(title: string, normalizedQuery: string) {
   if (normalizedTitle.includes(normalizedQuery)) return true
   const tokens = normalizedQuery.split(' ').filter(Boolean)
   return tokens.length > 0 && tokens.every((token) => normalizedTitle.includes(token))
-}
-
-function localLuaSearchMatches(appids: string[], normalizedQuery: string) {
-  return appids.filter((appid) => {
-    if (appid.includes(normalizedQuery)) return true
-    const cached = getCachedSteamGameInfo(appid)
-    return cached ? titleMatchesQuery(cached.name, normalizedQuery) : false
-  })
-}
-
-function mergeSearchResults(
-  normalizedQuery: string,
-  localMatches: string[],
-  remoteMatches: string[],
-) {
-  const remoteRank = new Map(remoteMatches.map((appid, index) => [appid, index]))
-  const merged = Array.from(new Set([...remoteMatches, ...localMatches]))
-  return merged.sort((a, b) => {
-    const aInfo = getCachedSteamGameInfo(a)
-    const bInfo = getCachedSteamGameInfo(b)
-    const aName = aInfo ? normalizeSearchText(aInfo.name) : ''
-    const bName = bInfo ? normalizeSearchText(bInfo.name) : ''
-    const rank = (appid: string, title: string) => {
-      if (appid === normalizedQuery) return 0
-      if (appid.startsWith(normalizedQuery)) return 1
-      if (title === normalizedQuery) return 2
-      if (title.startsWith(normalizedQuery)) return 3
-      if (title.includes(normalizedQuery)) return 4
-      return 5
-    }
-    const rankDelta = rank(a, aName) - rank(b, bName)
-    if (rankDelta !== 0) return rankDelta
-    return (remoteRank.get(a) ?? Number.MAX_SAFE_INTEGER) - (remoteRank.get(b) ?? Number.MAX_SAFE_INTEGER)
-  })
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -405,14 +305,22 @@ const LuaShopGameCard = memo(function LuaShopGameCard({
   appid,
   index,
   isInstalled,
+  gameState,
+  availability,
   onAdd,
   onRemove,
+  onSync,
+  onManage,
 }: {
   appid: string
   index: number
   isInstalled: boolean
+  gameState?: LuaGameState
+  availability?: LuaSourceAvailability
   onAdd: (appid: string) => void
   onRemove: (appid: string) => void
+  onSync: (appid: string) => Promise<void>
+  onManage: (appid: string) => void
 }) {
   // Initialise from module-level cache so cached cards render instantly
   const [info, setInfo] = useState<SteamGameInfo | null>(getCachedSteamGameInfo(appid) ?? null)
@@ -420,7 +328,7 @@ const LuaShopGameCard = memo(function LuaShopGameCard({
   const [imageLoaded, setImageLoaded] = useState(false)
   const [imageIndex, setImageIndex] = useState(0)
   const [imageFailed, setImageFailed] = useState(false)
-  const shouldLoad = true
+  const { elementRef, visible: shouldLoad } = useCardViewport()
   const appliedHeaderRef = useRef<string | null>(null)
   const { t } = useLocale()
 
@@ -429,10 +337,11 @@ const LuaShopGameCard = memo(function LuaShopGameCard({
     if (!shouldLoad) {
       return
     }
-    if (info) return
     let mounted = true
     fetchSteamGameInfo(appid).then((result) => {
-      if (mounted && result) {
+      if (mounted && result && (
+        result.name !== info?.name || result.header_image !== info?.header_image
+      )) {
         appliedHeaderRef.current = null
         setImageLoaded(false)
         setImageIndex(0)
@@ -441,13 +350,22 @@ const LuaShopGameCard = memo(function LuaShopGameCard({
       }
     })
     return () => { mounted = false }
-  }, [shouldLoad, appid, info])
+  }, [shouldLoad, appid, info?.name, info?.header_image])
 
   const handleAction = async () => {
     setIsProcessing(true)
     try {
       if (isInstalled) await onRemove(appid)
       else await onAdd(appid)
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handleSync = async () => {
+    setIsProcessing(true)
+    try {
+      await onSync(appid)
     } finally {
       setIsProcessing(false)
     }
@@ -464,6 +382,12 @@ const LuaShopGameCard = memo(function LuaShopGameCard({
     ? imageCandidates[Math.min(imageIndex, imageCandidates.length - 1)] ?? ''
     : ''
 
+  const sourceBadgeProvider = isInstalled && gameState
+    ? gameState.selectedSource === 'huggingFace'
+      ? gameState.selectedVariant ?? gameState.sourceProvider ?? 'none'
+      : gameState.selectedSource ?? gameState.sourceProvider ?? 'none'
+    : availability?.preferredProvider ?? 'none'
+
   useEffect(() => {
     const header = info?.header_image
     if (!header || appliedHeaderRef.current === header) return
@@ -474,13 +398,17 @@ const LuaShopGameCard = memo(function LuaShopGameCard({
   }, [imageUrl, info?.header_image])
 
   return (
-    <div className="lua-shop-card" style={{ animationDelay: `${Math.min(index, 23) * 30}ms` }}>
+    <div
+      ref={elementRef}
+      className={`lua-shop-card${isInstalled ? ' is-installed' : ''}`}
+      style={{ animationDelay: `${Math.min(index, 23) * 30}ms` }}
+    >
       {/* ── Thumbnail ── */}
       <div className={`lua-shop-card-image ${!imageLoaded && !imageFailed ? 'is-loading' : ''} ${imageFailed ? 'is-error' : ''}`}>
         {isInstalled && (
-          <div className="lua-shop-installed-badge">
+          <div className={`lua-shop-installed-badge channel-${gameState?.channel ?? 'legacy'}`}>
             <CheckCircle size={12} />
-            Installed
+            {luaChannelLabel(gameState, t.luaShop.lockedChannel, t.luaShop.installed)}
           </div>
         )}
         {shouldLoad && imageUrl && (
@@ -513,27 +441,102 @@ const LuaShopGameCard = memo(function LuaShopGameCard({
           {info?.name || `AppID ${appid}`}
         </div>
         <div className="lua-shop-card-appid">AppID: {appid}</div>
-        <button
-          className={`lua-shop-card-btn ${isInstalled ? 'remove' : 'add'}`}
-          onClick={handleAction}
-          disabled={isProcessing}
-        >
-          {isInstalled ? (
-            <>
-              <Trash2 size={16} />
-              {isProcessing
-                ? t.luaShop.removing || 'Đang xóa...'
-                : t.luaShop.removeFromSteam || 'Gỡ khỏi Steam'}
-            </>
+        {(availability || gameState) && (
+          <div className={`lua-shop-source-badge source-${sourceBadgeProvider}`}>
+            {sourceBadgeProvider === 'none'
+              ? t.luaShop.sourceOnDemand
+              : sourceBadgeProvider === 'community'
+                ? t.luaShop.sourceCommunity
+                : sourceBadgeProvider === 'curated'
+                  ? t.luaShop.sourceCurated
+                  : sourceBadgeProvider === 'hubcap'
+                    ? 'Hubcap'
+                    : sourceBadgeProvider === 'ryuu'
+                      ? 'Ryuu'
+                      : 'Sushi'}
+          </div>
+        )}
+        {gameState && (
+          <div className={`lua-shop-sync-summary status-${gameState.syncStatus}`}>
+            <span>
+              {gameState.runtimeState === 'active' && gameState.sourceState === 'unavailable'
+                ? `Live · ${t.luaShop.manager.sourceUnavailableActive}`
+                : gameState.lastError || (gameState.lastSyncAt
+                ? t.luaShop.syncedAt.replace('{time}', formatLuaSyncTime(gameState.lastSyncAt))
+                : t.luaShop.syncNever)}
+            </span>
+            {gameState.channel === 'live' && (
+              <button
+                type="button"
+                className="lua-shop-card-sync"
+                onClick={handleSync}
+                disabled={isProcessing || gameState.syncStatus === 'checking'}
+                title={t.luaShop.syncLive}
+              >
+                <RefreshCw size={13} className={gameState.syncStatus === 'checking' ? 'spin' : ''} />
+                <span>{t.luaShop.sync}</span>
+              </button>
+            )}
+          </div>
+        )}
+        <div className="lua-shop-card-actions">
+          {isInstalled && gameState?.updateAvailable ? (
+            <button
+              className="lua-shop-card-btn update"
+              onClick={handleSync}
+              disabled={isProcessing}
+            >
+              <RefreshCw size={16} className={isProcessing ? 'spin' : ''} />
+              {isProcessing ? t.luaShop.updating : t.luaShop.update}
+            </button>
           ) : (
-            <>
-              <Plus size={16} />
-              {isProcessing
-                ? t.luaShop.adding || 'Đang thêm...'
-                : t.luaShop.addToSteam || 'Thêm vào Steam'}
-            </>
+            <button
+              className={`lua-shop-card-btn ${isInstalled ? 'remove' : 'add'}`}
+              onClick={handleAction}
+              disabled={isProcessing}
+            >
+              {isInstalled ? (
+                <>
+                  <Trash2 size={16} />
+                  {isProcessing
+                    ? t.luaShop.removing || 'Đang xóa...'
+                    : t.luaShop.removeFromSteam || 'Gỡ khỏi Steam'}
+                </>
+              ) : (
+                <>
+                  <Plus size={16} />
+                  {isProcessing
+                    ? t.luaShop.adding || 'Đang thêm...'
+                    : t.luaShop.addToSteam || 'Thêm vào Steam'}
+                </>
+              )}
+            </button>
           )}
-        </button>
+          {isInstalled && gameState?.updateAvailable && (
+            <button
+              type="button"
+              className="lua-shop-card-remove-compact"
+              onClick={handleAction}
+              disabled={isProcessing}
+              title={t.luaShop.removeFromSteam}
+              aria-label={t.luaShop.removeFromSteam}
+            >
+              <Trash2 size={16} />
+            </button>
+          )}
+          {isInstalled && (
+            <button
+              type="button"
+              className="lua-shop-card-manage"
+              onClick={() => onManage(appid)}
+              disabled={isProcessing}
+              title={t.luaShop.manager.manage}
+              aria-label={t.luaShop.manager.manage}
+            >
+              <Settings size={16} />
+            </button>
+          )}
+        </div>
       </div>
     </div>
   )
@@ -544,263 +547,252 @@ const LuaShopGameCard = memo(function LuaShopGameCard({
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function LuaShop() {
-  const [allAppIds, setAllAppIds] = useState<string[]>(_manifestCache ?? [])
-  const [isLoading, setIsLoading] = useState(_manifestCache === null)
+  const [catalogItems, setCatalogItems] = useState<LuaCatalogItem[]>([])
+  const [catalogTotal, setCatalogTotal] = useState<number | null>(null)
+  const [nextCatalogCursor, setNextCatalogCursor] = useState<string | null>(null)
+  const [catalogCursor, setCatalogCursor] = useState<string | null>(null)
+  const [catalogCursorHistory, setCatalogCursorHistory] = useState<Array<string | null>>([])
+  const [catalogPageNumber, setCatalogPageNumber] = useState(1)
+  const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [isSearching, setIsSearching] = useState(false)
-  const [manifestError, setManifestError] = useState<string | null>(null)
-  const [searchResults, setSearchResults] = useState<string[]>([])
+  const [catalogError, setCatalogError] = useState<string | null>(null)
+  const [sourceSettings, setSourceSettings] = useState<LuaSourceSettingsState | null>(null)
+  const [addQuota, setAddQuota] = useState<LuaAddQuotaState | null>(null)
   const [filterTab, setFilterTab] = useState<FilterTab>('all')
   const [installedLuas, setInstalledLuas] = useState<Set<string>>(new Set())
+  const [installedCatalogItems, setInstalledCatalogItems] = useState<LuaCatalogItem[]>([])
+  const [isInstalledCatalogLoading, setIsInstalledCatalogLoading] = useState(false)
+  const [luaGameStates, setLuaGameStates] = useState<Record<string, LuaGameState>>({})
+  const luaGameStatesRef = useRef<Record<string, LuaGameState>>({})
   const [showRestartConfirm, setShowRestartConfirm] = useState(false)
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(false)
   const [removingAppId, setRemovingAppId] = useState<string | null>(null)
+  const [managedGame, setManagedGame] = useState<{ appid: number; name: string } | null>(null)
+  const [sourceAction, setSourceAction] = useState<LuaSourceActionIntent | null>(null)
   const [autoInstall, setAutoInstall] = useState(
     localStorage.getItem('steamAutoInstall') === 'true'
   )
   const [skipConfirm, setSkipConfirm] = useState(
     localStorage.getItem('steamSkipRestartConfirm') === 'true'
   )
-  const [pageState, setPageState] = useState({ scope: '', value: 1 })
   const ITEMS_PER_PAGE = 24
 
-  // Verified Catalog State
-  const [verifiedCatalog, setVerifiedCatalog] = useState<ShopGame[]>([])
-  const [isVerifiedLoading, setIsVerifiedLoading] = useState(true)
-  const [verifiedError, setVerifiedError] = useState<string | null>(null)
-  // Map of appid (string) → buildid currently installed in Steam
-  const [steamInstalledBuilds, setSteamInstalledBuilds] = useState<Record<string, string>>({})
-
-  // Detail Panel State
-  const [selectedVerifiedGame, setSelectedVerifiedGame] = useState<ShopGame | null>(null)
-  const [selectedGameBuilds, setSelectedGameBuilds] = useState<GameBuildsInfo | null>(null)
-  const [isBuildsLoading, setIsBuildsLoading] = useState(false)
-  const [selectedBuildId, setSelectedBuildId] = useState<string>('')
-  const [buildDropdownOpen, setBuildDropdownOpen] = useState(false)
-  const [selectedHasLatestPackage, setSelectedHasLatestPackage] = useState(false)
-  const [accessToken, setAccessToken] = useState('')
-  const [statSteamId, setStatSteamId] = useState('')
-  const [skipManifestPin, setSkipManifestPin] = useState(false)
-  const [isVerifiedInstalling, setIsVerifiedInstalling] = useState(false)
-  const [steamRunning, setSteamRunning] = useState(false)
-  const [installedBuildId, setInstalledBuildId] = useState<string | null>(null)
+  const upsertLuaGameState = useCallback((state: LuaGameState) => {
+    setLuaGameStates((current) => {
+      const next = { ...current, [String(state.appid)]: state }
+      luaGameStatesRef.current = next
+      return next
+    })
+  }, [])
 
   const { t } = useLocale()
 
-  const formatBuildDate = (value?: string) => {
-    if (!value) return ''
-    if (/^\d+$/.test(value)) {
-      const ts = Number(value)
-      if (!Number.isFinite(ts)) return ''
-      return new Date(ts * 1000).toLocaleDateString()
-    }
-    const parsed = Date.parse(value)
-    if (!Number.isFinite(parsed)) return ''
-    return new Date(parsed).toLocaleDateString()
-  }
   const gridRef = useRef<HTMLDivElement>(null)
-  const allAppIdsSetRef = useRef<Set<string>>(new Set(_manifestCache ?? []))
-  const manifestRequestRef = useRef(0)
-  const pageScope = search + '\u0001' + filterTab
-  const currentPage = pageState.scope === pageScope ? pageState.value : 1
-  const changePage = useCallback((update: (page: number) => number) => {
-    setPageState((current) => {
-      const page = current.scope === pageScope ? current.value : 1
-      return { scope: pageScope, value: update(page) }
-    })
-  }, [pageScope])
-
-  useEffect(() => {
-    if (!selectedVerifiedGame) return
-    let active = true
-    const check = async () => {
-      if (!active) return
-      try {
-        const running = await invoke<boolean>('is_steam_running').catch(() => false)
-        if (active) setSteamRunning(running)
-      } catch (e) {
-        console.error(e)
-      }
-      if (active) setTimeout(check, 2000)
-    }
-    check()
-    return () => { active = false }
-  }, [selectedVerifiedGame])
+  const catalogRequestRef = useRef(0)
+  const catalogLoadedRef = useRef(false)
 
   const fetchInstalledLuas = useCallback(async () => {
-    try {
-      const luas = await invoke<string[]>('list_installed_luas')
-      setInstalledLuas(new Set(luas))
-    } catch {
-      // A manifest refresh can still succeed when Steam is not available.
+    const [luasResult, statesResult] = await Promise.allSettled([
+      invoke<string[]>('list_installed_luas'),
+      invoke<LuaGameState[]>('get_lua_game_states'),
+    ])
+    const luas = luasResult.status === 'fulfilled' ? luasResult.value : []
+    const states = statesResult.status === 'fulfilled' ? statesResult.value : []
+    if (luasResult.status === 'fulfilled' || statesResult.status === 'fulfilled') {
+      setInstalledLuas(new Set([
+        ...luas,
+        ...states.map((state) => String(state.appid)),
+      ]))
+    }
+    if (statesResult.status === 'fulfilled') {
+      const next = Object.fromEntries(states.map((state) => [String(state.appid), state]))
+      luaGameStatesRef.current = next
+      setLuaGameStates(next)
     }
   }, [])
 
-  // ── Initial load ────────────────────────────────────────────────────────────
   useEffect(() => {
-    const installedTimer = window.setTimeout(() => {
-      void fetchInstalledLuas()
-    }, 0)
-    if (_manifestCache !== null) {
-      return () => window.clearTimeout(installedTimer)
-    }
-    const requestId = ++manifestRequestRef.current
-    getManifests()
-      .then((ids) => {
-        if (requestId !== manifestRequestRef.current) return
-        setAllAppIds(ids)
-        allAppIdsSetRef.current = new Set(ids)
-        setManifestError(null)
-      })
-      .catch((error) => {
-        if (requestId === manifestRequestRef.current) setManifestError(String(error))
-      })
-      .finally(() => {
-        if (requestId === manifestRequestRef.current) setIsLoading(false)
-      })
+    let active = true
+    let unlisten: (() => void) | undefined
+    void listen<LuaGameState>('launcher://lua-game-state', (event) => {
+      if (!active) return
+      upsertLuaGameState(event.payload)
+      setInstalledLuas((current) => new Set(current).add(String(event.payload.appid)))
+    }).then((stop) => {
+      if (active) unlisten = stop
+      else stop()
+    })
     return () => {
-      window.clearTimeout(installedTimer)
-      manifestRequestRef.current += 1
+      active = false
+      unlisten?.()
     }
-  }, [fetchInstalledLuas])
+  }, [upsertLuaGameState])
 
-  // ── Initial load: Verified Catalog & Hook Status ────────────────────────────
-  useEffect(() => {
-    // 1. Fetch Verified Catalog
-    getVerifiedCatalog()
-      .then((catalog) => {
-        setVerifiedCatalog(catalog)
-        setVerifiedError(null)
-      })
-      .catch((err) => {
-        setVerifiedError(String(err))
-      })
-      .finally(() => {
-        setIsVerifiedLoading(false)
-      })
-
-    // 2. Scan installed buildids from Steam ACF files
-    invoke<Record<string, string>>('scan_all_installed_buildids')
-      .then(setSteamInstalledBuilds)
-      .catch(() => {})
+  const refreshSourceOverview = useCallback(async () => {
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
+    const [settingsResult, quotaResult] = await Promise.allSettled([
+      invoke<LuaSourceSettingsState>('get_lua_source_settings'),
+      invoke<LuaAddQuotaState>('get_lua_add_quota', { timezone }),
+    ])
+    if (settingsResult.status === 'fulfilled') setSourceSettings(settingsResult.value)
+    if (quotaResult.status === 'fulfilled') setAddQuota(quotaResult.value)
   }, [])
 
-  // ── Manual refresh (busts manifest cache) ───────────────────────────────────
-  const handleRefresh = useCallback(async () => {
-    const requestId = ++manifestRequestRef.current
-    setIsRefreshing(true)
-    try {
-      const ids = await getManifests(true)
-      if (requestId !== manifestRequestRef.current) return
-      const previousCount = allAppIds.length
-      setAllAppIds(ids)
-      allAppIdsSetRef.current = new Set(ids)
-      setManifestError(null)
-      await fetchInstalledLuas()
-      const message = ids.length === previousCount
-        ? 'Manifest list is already current (' + ids.length + ')'
-        : 'Updated manifest list: ' + ids.length + ' entries (was ' + previousCount + ')'
-      emitLuaShopToast('Lua Shop refreshed', message, 'success')
-    } catch (error) {
-      if (requestId !== manifestRequestRef.current) return
-      const message = String(error)
-      setManifestError(message)
-      emitLuaShopToast('Lua Shop refresh failed', message, 'error')
-    } finally {
-      if (requestId === manifestRequestRef.current) setIsRefreshing(false)
-    }
-  }, [allAppIds.length, fetchInstalledLuas])
-
-  // ── Search: immediate local + debounced Steam Store API ─────────────────────
-  // Results are ALWAYS filtered to only show appids present in the manifest list.
+  // ── Initial local state ─────────────────────────────────────────────────────
   useEffect(() => {
-    let cancelled = false
-    const rawQuery = search.trim()
-    const q = normalizeSearchText(rawQuery)
-    if (!q) {
-      const resetTimer = window.setTimeout(() => {
-        if (cancelled) return
-        setSearchResults([])
-        setIsSearching(false)
-      }, 0)
-      return () => {
-        cancelled = true
-        window.clearTimeout(resetTimer)
-      }
-    }
-
-    const manifestSet = allAppIdsSetRef.current
-    const localMatches = localLuaSearchMatches(allAppIds, q)
-    const localTimer = window.setTimeout(() => {
-      if (cancelled) return
-      setSearchResults(localMatches)
-      setIsSearching(true)
+    const timer = window.setTimeout(() => {
+      void Promise.all([fetchInstalledLuas(), refreshSourceOverview()])
     }, 0)
+    return () => window.clearTimeout(timer)
+  }, [fetchInstalledLuas, refreshSourceOverview])
 
-    const timer = window.setTimeout(async () => {
-      try {
-        const items = await invoke<SteamStoreSearchItem[]>('search_steam_store', { term: rawQuery })
-        if (cancelled) return
-
-        items.forEach((item) => {
-          const appid = String(item.id)
-          if (manifestSet.has(appid) && item.name && !getCachedSteamGameInfo(appid)) {
-            seedSteamGameInfo(appid, {
-              name: item.name,
-              header_image: item.header_image || '',
-            })
-          }
-        })
-
-        const apiMatches = items
-          .map((item) => String(item.id))
-          .filter((appid) => manifestSet.has(appid))
-        const refreshedLocal = localLuaSearchMatches(allAppIds, q)
-
-        if (!cancelled) {
-          setSearchResults(mergeSearchResults(q, refreshedLocal, apiMatches))
+  useEffect(() => {
+    if (filterTab !== 'installed') return
+    const timer = window.setTimeout(() => {
+      const ids = [...installedLuas]
+        .filter((appid) => /^\d+$/.test(appid))
+        .map(Number)
+        .filter((appid) => Number.isSafeInteger(appid) && appid > 0)
+        .slice(0, 500)
+      const items = ids.map((appid) => {
+        const info = getCachedSteamGameInfo(String(appid))
+        const state = luaGameStates[String(appid)]
+        return {
+          appid,
+          name: info?.name || state?.gameName || `AppID ${appid}`,
+          headerImage: info?.header_image || '',
+          installed: true,
+          availability: {
+            appid,
+            curatedAvailable: state?.sourceProvider === 'curated',
+            communityAvailable: state?.sourceProvider === 'community',
+            hubcapAvailable: state?.sourceProvider === 'hubcap',
+            sushiAvailable: state?.sourceProvider === 'sushi',
+            ryuuAvailable: state?.sourceProvider === 'ryuu',
+            preferredProvider: (state?.sourceProvider || 'none') as LuaSourceAvailability['preferredProvider'],
+            revision: state?.availableRevision || state?.sourceRevision || null,
+            sourceModifiedAt: null,
+            errorCode: state?.sourceErrorCode || null,
+          },
         }
-      } catch (error) {
-        console.warn('Lua Shop search failed', error)
-      } finally {
-        if (!cancelled) setIsSearching(false)
-      }
-    }, /^\d+$/.test(q) ? 120 : 220)
-
+      })
+      setInstalledCatalogItems(items.sort((left, right) => left.name.localeCompare(right.name)))
+      setIsInstalledCatalogLoading(false)
+    }, 0)
     return () => {
-      cancelled = true
-      window.clearTimeout(localTimer)
       window.clearTimeout(timer)
     }
-  }, [search, allAppIds])
+  }, [filterTab, installedLuas, luaGameStates])
 
-  // ── Combined filter: search results + installed/not-installed tab ───────────
-  const filteredAppIds = useMemo(() => {
-    const base = search.trim() ? searchResults : allAppIds
+  // ── Search is server-paged; only the visible page is resolved and probed. ────
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setDebouncedSearch(search.trim())
+      setCatalogCursor(null)
+      setCatalogCursorHistory([])
+      setCatalogPageNumber(1)
+    }, 300)
+    return () => window.clearTimeout(timer)
+  }, [filterTab, search])
 
+  const loadCatalog = useCallback(async (): Promise<boolean> => {
+    const requestId = ++catalogRequestRef.current
+    if (!catalogLoadedRef.current) setIsLoading(true)
+    setIsSearching(Boolean(debouncedSearch))
+    try {
+      const page = await invoke<LuaCatalogSearchPage>('search_lua_games', {
+        request: {
+          query: debouncedSearch,
+          cursor: catalogCursor,
+          limit: ITEMS_PER_PAGE,
+        },
+      })
+      if (requestId !== catalogRequestRef.current) return false
+      page.items.forEach((item) => {
+        seedSteamGameInfo(String(item.appid), {
+          name: item.name,
+          header_image: item.headerImage,
+        })
+      })
+      setCatalogItems(page.items)
+      setCatalogTotal(page.totalEstimate)
+      setNextCatalogCursor(page.nextCursor)
+      setCatalogError(null)
+      catalogLoadedRef.current = true
+      return true
+    } catch (error) {
+      if (requestId === catalogRequestRef.current) setCatalogError(String(error))
+      return false
+    } finally {
+      if (requestId === catalogRequestRef.current) {
+        setIsLoading(false)
+        setIsSearching(false)
+      }
+    }
+  }, [catalogCursor, debouncedSearch])
+
+  useEffect(() => {
     if (filterTab === 'installed') {
-      return base.filter((id) => installedLuas.has(id))
+      catalogRequestRef.current += 1
+      return
+    }
+    const timer = window.setTimeout(() => {
+      void loadCatalog()
+    }, 0)
+    return () => window.clearTimeout(timer)
+  }, [filterTab, loadCatalog])
+
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true)
+    try {
+      const [catalogRefreshed] = await Promise.all([
+        loadCatalog(),
+        fetchInstalledLuas(),
+        refreshSourceOverview(),
+      ])
+      emitLuaShopToast(
+        t.luaShop.title,
+        catalogRefreshed ? t.luaShop.refreshCurrent : t.luaShop.refreshFailed,
+        catalogRefreshed ? 'success' : 'error',
+      )
+    } catch (error) {
+      emitLuaShopToast(t.luaShop.title, String(error), 'error')
+    } finally {
+      setIsRefreshing(false)
+    }
+  }, [fetchInstalledLuas, loadCatalog, refreshSourceOverview, t.luaShop.refreshCurrent, t.luaShop.refreshFailed, t.luaShop.title])
+
+  const filteredCatalogItems = useMemo(() => {
+    if (filterTab === 'installed') {
+      const query = normalizeSearchText(debouncedSearch)
+      return installedCatalogItems.filter((item) => (
+        !query
+        || String(item.appid).includes(query)
+        || titleMatchesQuery(item.name, query)
+      ))
     }
     if (filterTab === 'notInstalled') {
-      return base.filter((id) => !installedLuas.has(id))
+      return catalogItems.filter((item) => !installedLuas.has(String(item.appid)) && !item.installed)
     }
-    return base
-  }, [allAppIds, search, searchResults, filterTab, installedLuas])
+    return catalogItems
+  }, [catalogItems, debouncedSearch, filterTab, installedCatalogItems, installedLuas])
 
-  const totalPages = Math.ceil(filteredAppIds.length / ITEMS_PER_PAGE)
+  const installedTotalPages = Math.max(1, Math.ceil(filteredCatalogItems.length / ITEMS_PER_PAGE))
+  const displayedCatalogItems = filterTab === 'installed'
+    ? filteredCatalogItems.slice(
+        (catalogPageNumber - 1) * ITEMS_PER_PAGE,
+        catalogPageNumber * ITEMS_PER_PAGE,
+      )
+    : filteredCatalogItems
 
-  const paginatedAppIds = useMemo(() => {
-    const start = (currentPage - 1) * ITEMS_PER_PAGE
-    return filteredAppIds.slice(start, start + ITEMS_PER_PAGE)
-  }, [filteredAppIds, currentPage])
-
-  // Reset to page 1 when filters change
   // Scroll grid to top on page change (instant — no jank from smooth scroll)
   useEffect(() => {
     const el = gridRef.current
     if (el) el.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior })
-  }, [currentPage])
+  }, [catalogPageNumber])
 
   // ── Toast helper ────────────────────────────────────────────────────────────
   const showToast = useCallback((
@@ -821,91 +813,6 @@ export function LuaShop() {
       showToast('Error', String(e), 'error')
     }
   }, [autoInstall, showToast, t.library.restartSteamPrompt, t.settings.restartSteam])
-
-  // ── Version picker + Add ────────────────────────────────────────────────────
-  const loadGameBuilds = useCallback(async (game: ShopGame): Promise<GameBuildsInfo> => {
-    const base = await invoke<GameBuildsInfo>('lua_shop_get_game_builds', {
-      appid: game.appid,
-      gameName: game.name,
-    })
-
-    let rssRows: ReturnType<typeof parseSteamDbPatchRss> = []
-    try {
-      const xml = await invoke<string>('lua_shop_get_patchnotes_rss', { appid: game.appid })
-      rssRows = parseSteamDbPatchRss(xml)
-    } catch (error) {
-      // RSS is optional metadata. Never block the primary custom source.
-      console.warn('Patch history unavailable for', game.appid, error)
-    }
-
-    return {
-      ...base,
-      builds: mergeBuildHistory(base.builds, rssRows) as BuildInfo[],
-    }
-  }, [])
-
-  const openVersionPicker = useCallback(async (game: ShopGame) => {
-    setSelectedVerifiedGame(game)
-    setSelectedGameBuilds(null)
-    setSelectedBuildId('')
-    setInstalledBuildId(null)
-    const hasLatestPackage = allAppIdsSetRef.current.has(String(game.appid))
-    setSelectedHasLatestPackage(hasLatestPackage)
-    setIsBuildsLoading(true)
-
-    // Use cached buildid from the initial scan (avoids extra invoke round-trip)
-    const currentBuildId = steamInstalledBuilds[String(game.appid)] ?? null
-    setInstalledBuildId(currentBuildId)
-
-    try {
-      const info = await loadGameBuilds(game)
-      setSelectedGameBuilds(info)
-      // Auto-select installed build if found in list, else first available, else latest
-      const installedBuild = currentBuildId
-        ? info.builds.find((b) => b.build_id === currentBuildId && b.manifest_available !== false && b.manifests.length > 0)
-        : null
-      const firstExactBuild = info.builds.find((build) => build.manifest_available !== false && build.manifests.length > 0)
-      if (installedBuild) setSelectedBuildId(installedBuild.build_id)
-      else if (firstExactBuild) setSelectedBuildId(firstExactBuild.build_id)
-      else if (hasLatestPackage) setSelectedBuildId(LATEST_PACKAGE_BUILD)
-    } catch (err) {
-      if (hasLatestPackage) {
-        setSelectedGameBuilds({ builds: [], has_key: false })
-        setSelectedBuildId(LATEST_PACKAGE_BUILD)
-      } else {
-        showToast('Error fetching versions', String(err), 'error')
-        setSelectedVerifiedGame(null)
-      }
-    } finally {
-      setIsBuildsLoading(false)
-    }
-  }, [loadGameBuilds, showToast, steamInstalledBuilds])
-
-  const performLatestPackageInstall = useCallback(async (appid: number, gameName: string) => {
-    const checkResult = await invoke('check_steam_update', { appid }) as {
-      needs_update: boolean; reason: string; is_missing: boolean
-    }
-
-    let forceUpdate = false
-    if (checkResult.needs_update) {
-      if (checkResult.is_missing) {
-        showToast(t.library.addToSteam, `Creating config for ${gameName} (30-60s)...`, 'info')
-        forceUpdate = true
-      } else {
-        const { ask } = await import('@tauri-apps/plugin-dialog')
-        const shouldUpdate = await ask(
-          `Update available.\nReason: ${checkResult.reason}\n\nFetch latest version?`,
-          { title: 'Data Update', kind: 'info' }
-        )
-        if (shouldUpdate) {
-          showToast(t.library.addToSteam, `Downloading update for ${gameName} (30-60s)...`, 'info')
-          forceUpdate = true
-        }
-      }
-    }
-
-    await invoke('add_to_steam', { appid, forceUpdate })
-  }, [showToast, t.library.addToSteam])
 
   const handleAddToSteam = useCallback(async (appid: string) => {
     const normalizedAppid = appid.trim()
@@ -928,35 +835,137 @@ export function LuaShop() {
       return
     }
 
-    try {
-      await performLatestPackageInstall(numAppid, gameName)
-      setInstalledLuas((prev) => new Set([...prev, normalizedAppid]))
-      showToast(t.library.addToSteam, t.library.addToSteamSuccess, 'success')
-      if (skipConfirm) performRestart()
-      else setShowRestartConfirm(true)
-    } catch (err) {
-      showToast(t.library.addToSteam, t.library.addToSteamError + ': ' + String(err), 'error')
-    }
+    setSourceAction({
+      appid: numAppid,
+      gameName,
+      operation: 'add',
+      purpose: 'add',
+      preferredProvider: null,
+    })
   }, [
-    performLatestPackageInstall,
-    performRestart,
     showToast,
-    skipConfirm,
-    t.library.addToSteam,
-    t.library.addToSteamError,
-    t.library.addToSteamSuccess,
     t.luaShop.luaModeRequired,
   ])
 
   // ── Remove ──────────────────────────────────────────────────────────────────
+  const handleSyncLuaGame = useCallback(async (appid: string) => {
+    const current = luaGameStatesRef.current[appid]
+    const operation: LuaSourceOperation = current?.updateAvailable ? 'update' : 'sync'
+    setSourceAction({
+      appid: Number.parseInt(appid, 10),
+      gameName: current?.gameName || getCachedSteamGameInfo(appid)?.name || `AppID ${appid}`,
+      operation,
+      purpose: operation,
+      preferredProvider: current?.selectedSource ?? null,
+    })
+  }, [])
+
+  const handleSourceConfirm = useCallback(async (provider: LuaSourceProvider) => {
+    if (!sourceAction) return
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
+    let state: LuaGameState
+    if (sourceAction.purpose === 'add') {
+      state = await invoke<LuaGameState>('install_lua_game_from_source', {
+        request: {
+          appid: sourceAction.appid,
+          gameName: sourceAction.gameName,
+          channel: 'live',
+          buildId: null,
+          accessToken: null,
+          statSteamId: null,
+          conflictResolution: null,
+          provider,
+          requestId: crypto.randomUUID(),
+          timezone,
+        },
+      })
+    } else if (sourceAction.purpose === 'switchLive') {
+      state = await invoke<LuaGameState>('set_lua_game_channel', {
+        request: {
+          appid: sourceAction.appid,
+          channel: 'live',
+          buildId: null,
+          conflictResolution: 'restoreLive',
+          provider,
+        },
+      })
+    } else {
+      const command = sourceAction.purpose === 'update'
+        ? 'apply_lua_game_update'
+        : 'sync_lua_game_from_source'
+      state = await invoke<LuaGameState>(command, {
+        request: {
+          appid: sourceAction.appid,
+          provider,
+          requestId: crypto.randomUUID(),
+          timezone,
+          conflictResolution: null,
+        },
+      })
+    }
+    upsertLuaGameState(state)
+    setInstalledLuas((current) => new Set(current).add(String(sourceAction.appid)))
+    setSourceAction(null)
+    showToast(
+      sourceAction.purpose === 'add' ? t.library.addToSteam : t.luaShop.liveChannel,
+      sourceAction.purpose === 'add'
+        ? t.library.addToSteamSuccess
+        : state.syncStatus === 'updated' ? t.luaShop.syncUpdated : t.luaShop.syncCurrent,
+      'success',
+    )
+    if (state.requiresSteamRestart) {
+      if (skipConfirm) void performRestart()
+      else setShowRestartConfirm(true)
+    }
+    void refreshSourceOverview()
+  }, [
+    performRestart,
+    refreshSourceOverview,
+    showToast,
+    skipConfirm,
+    sourceAction,
+    t.library.addToSteam,
+    t.library.addToSteamSuccess,
+    t.luaShop.liveChannel,
+    t.luaShop.syncCurrent,
+    t.luaShop.syncUpdated,
+    upsertLuaGameState,
+  ])
+
   const handleRemove = useCallback((appid: string) => {
     setRemovingAppId(appid)
     setShowRemoveConfirm(true)
   }, [])
 
+  const handleManage = useCallback((appid: string) => {
+    setManagedGame({
+      appid: Number(appid),
+      name: getCachedSteamGameInfo(appid)?.name
+        || luaGameStatesRef.current[appid]?.gameName
+        || `AppID ${appid}`,
+    })
+  }, [])
+  const closeManagedGame = useCallback(() => setManagedGame(null), [])
+  const handleManagerSync = useCallback(async (appid: string) => {
+    setManagedGame(null)
+    await handleSyncLuaGame(appid)
+  }, [handleSyncLuaGame])
+  const handleManagerSwitchLive = useCallback(async (appid: string) => {
+    const current = luaGameStatesRef.current[appid]
+    setManagedGame(null)
+    setSourceAction({
+      appid: Number.parseInt(appid, 10),
+      gameName: current?.gameName || getCachedSteamGameInfo(appid)?.name || `AppID ${appid}`,
+      operation: 'sync',
+      purpose: 'switchLive',
+      preferredProvider: current?.selectedSource ?? null,
+    })
+  }, [])
+
   const confirmRemove = async () => {
     setShowRemoveConfirm(false)
     if (!removingAppId) return
+    const removedState = luaGameStates[removingAppId]
 
     try {
       await invoke('remove_from_steam', { appid: parseInt(removingAppId) })
@@ -965,10 +974,18 @@ export function LuaShop() {
         next.delete(removingAppId!)
         return next
       })
+      setLuaGameStates((prev) => {
+        const next = { ...prev }
+        delete next[removingAppId!]
+        luaGameStatesRef.current = next
+        return next
+      })
       showToast(t.library.removeFromSteam, t.library.removeFromSteamSuccess, 'success')
 
-      if (skipConfirm) performRestart()
-      else setShowRestartConfirm(true)
+      if (removedState?.requiresSteamRestart) {
+        if (skipConfirm) performRestart()
+        else setShowRestartConfirm(true)
+      }
     } catch (err) {
       showToast(
         t.library.removeFromSteam,
@@ -980,57 +997,12 @@ export function LuaShop() {
     }
   }
 
-  // ── Verified Catalog Handlers ───────────────────────────────────────────────
-  const handleVerifiedGameClick = async (game: ShopGame) => {
-    await openVersionPicker(game)
-  }
-
-  const handleVerifiedInstall = async () => {
-    if (!selectedVerifiedGame || !selectedBuildId) return
-    
-    const isSteamRunning = await invoke<boolean>('is_steam_running').catch(() => false)
-    if (isSteamRunning) {
-      showToast(t.luaShop.installBuild || 'Install', t.luaShop.closeSteamFirst || 'Vui lòng thoát hoàn toàn Steam trước khi cài đặt.', 'error')
-      return
-    }
-
-    setIsVerifiedInstalling(true)
-    try {
-      if (selectedBuildId === LATEST_PACKAGE_BUILD) {
-        await performLatestPackageInstall(selectedVerifiedGame.appid, selectedVerifiedGame.name)
-      } else {
-        const selectedBuild = selectedGameBuilds?.builds.find((build) => build.build_id === selectedBuildId)
-        if (!selectedBuild || selectedBuild.manifest_available === false || selectedBuild.manifests.length === 0) {
-          throw new Error('This BuildID is available as patch-history metadata, but exact depot manifests are not available from the configured source yet.')
-        }
-        await invoke('lua_shop_install_game', {
-          appid: selectedVerifiedGame.appid,
-          gameName: selectedVerifiedGame.name,
-          buildId: selectedBuildId,
-          accessToken: accessToken.trim() || null,
-          statSteamId: statSteamId.trim() || null,
-          skipManifestPin,
-        })
-      }
-      showToast(t.luaShop.installBuild || 'Install', (t.luaShop.installSuccess || '{name} installed successfully!').replace('{name}', selectedVerifiedGame.name), 'success')
-      setInstalledLuas((prev) => new Set([...prev, String(selectedVerifiedGame.appid)]))
-      setSelectedVerifiedGame(null)
-      if (skipConfirm) performRestart()
-      else setShowRestartConfirm(true)
-    } catch (err) {
-      showToast(t.luaShop.installBuild || 'Install', (t.luaShop.installError || 'Installation failed') + ': ' + String(err), 'error')
-    } finally {
-      setIsVerifiedInstalling(false)
-    }
-  }
-
   // ─────────────────────────────────────────────────────────────────────────────
   // Render
   // ─────────────────────────────────────────────────────────────────────────────
 
   const filterTabs: { id: FilterTab; label: string }[] = [
     { id: 'all', label: 'All' },
-    { id: 'verified', label: t.luaShop.verifiedTab || 'Verified' },
     { id: 'installed', label: t.luaShop.installed || 'Installed' },
     { id: 'notInstalled', label: 'Not Installed' },
   ]
@@ -1047,11 +1019,16 @@ export function LuaShop() {
           {!isLoading && (
             <>
               <span>
-                {t.luaShop.available}: <strong>{allAppIds.length}</strong>
+                {t.luaShop.available}: <strong>{catalogTotal ?? catalogItems.length}</strong>
               </span>
               <span>
                 {t.luaShop.installed}: <strong>{installedLuas.size}</strong>
               </span>
+              {addQuota && (
+                <span className={`lua-shop-quota quota-${addQuota.remaining <= 2 ? 'low' : addQuota.remaining <= 6 ? 'medium' : 'high'}`}>
+                  {t.luaShop.dailyAdds}: <strong>{addQuota.remaining}/{addQuota.limit}</strong>
+                </span>
+              )}
               <button
                 className="lua-shop-refresh-btn"
                 onClick={handleRefresh}
@@ -1065,6 +1042,29 @@ export function LuaShop() {
         </div>
       </header>
 
+      {sourceSettings && (!sourceSettings.hubcap.configured || sourceSettings.hubcap.expired || sourceSettings.hubcap.expiringSoon) && (
+        <div className={`lua-source-notice ${sourceSettings.hubcap.expired ? 'is-error' : 'is-warning'}`}>
+          <div>
+            <strong>{t.luaShop.hubcapRequiredTitle}</strong>
+            <span>
+              {!sourceSettings.hubcap.configured
+                ? t.luaShop.hubcapRequiredMessage
+                : sourceSettings.hubcap.expired
+                  ? t.luaShop.hubcapExpired
+                  : t.luaShop.hubcapExpiringSoon}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent('navigate-to-settings', {
+              detail: { section: 'lua-sources' },
+            }))}
+          >
+            {t.luaShop.configureSources}
+          </button>
+        </div>
+      )}
+
       {/* ── Controls: search + filter tabs ── */}
       <div className="lua-shop-controls">
         <div className="lua-shop-search">
@@ -1073,7 +1073,10 @@ export function LuaShop() {
             type="text"
             placeholder={t.luaShop.searchPlaceholder || 'Search by game name or AppID...'}
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value)
+              setIsSearching(filterTab !== 'installed' && Boolean(e.target.value.trim()))
+            }}
           />
           {isSearching && <div className="spinner" style={{ marginLeft: '8px' }} />}
         </div>
@@ -1083,7 +1086,17 @@ export function LuaShop() {
             <button
               key={tab.id}
               className={`lua-shop-filter-tab ${filterTab === tab.id ? 'active' : ''}`}
-              onClick={() => setFilterTab(tab.id)}
+              onClick={() => {
+                setFilterTab(tab.id)
+                setCatalogCursor(null)
+                setCatalogCursorHistory([])
+                setCatalogPageNumber(1)
+                setIsSearching(tab.id !== 'installed' && Boolean(search.trim()))
+                if (tab.id === 'installed') {
+                  catalogRequestRef.current += 1
+                  setIsLoading(false)
+                }
+              }}
             >
               {tab.label}
               {tab.id === 'installed' && installedLuas.size > 0 && (
@@ -1095,80 +1108,29 @@ export function LuaShop() {
       </div>
 
       {/* ── Body ── */}
-      {filterTab === 'verified' ? (
-        isVerifiedLoading ? (
-          <div className="lua-shop-loading">
-            <div className="spinner-large" />
-            <p>{t.luaShop.loadingCatalog || 'Loading verified catalog...'}</p>
-          </div>
-        ) : verifiedError && verifiedCatalog.length === 0 ? (
-          <div className="lua-shop-loading">
-            <p style={{ fontSize: '16px', color: 'rgba(255,255,255,0.6)' }}>{verifiedError}</p>
-          </div>
-        ) : verifiedCatalog.length === 0 ? (
-          <div className="lua-shop-loading">
-            <p style={{ fontSize: '16px', color: 'rgba(255,255,255,0.6)' }}>{t.luaShop.noVerifiedGames || 'No verified games available'}</p>
-          </div>
-        ) : (
-          <div className="lua-shop-grid verified-grid">
-            {verifiedCatalog
-              .filter(game => !search.trim() || titleMatchesQuery(game.name, normalizeSearchText(search)))
-              .map((game) => (
-              <div 
-                key={game.appid} 
-                className="verified-game-card"
-                onClick={() => handleVerifiedGameClick(game)}
-              >
-                <div className="verified-game-image">
-                  <VerifiedGameImage appid={String(game.appid)} name={game.name} />
-                  {installedLuas.has(String(game.appid)) && (
-                    <div className="lua-shop-installed-badge">
-                      <CheckCircle size={12} />
-                      {t.luaShop.installed || 'Installed'}
-                    </div>
-                  )}
-                  {steamInstalledBuilds[String(game.appid)] && (
-                    <div style={{
-                      position: 'absolute', bottom: 4, right: 4,
-                      background: 'rgba(0,0,0,0.75)', color: 'rgba(255,255,255,0.75)',
-                      fontSize: '10px', padding: '2px 6px', borderRadius: 4,
-                      backdropFilter: 'blur(4px)', fontFamily: 'monospace'
-                    }}>
-                      Build {steamInstalledBuilds[String(game.appid)]}
-                    </div>
-                  )}
-                </div>
-                <div className="verified-game-info">
-                  <div className="verified-game-title">{game.name}</div>
-                  <div className="verified-game-appid">AppID: {game.appid}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )
-      ) : isLoading ? (
+      {isLoading || (filterTab === 'installed' && isInstalledCatalogLoading) ? (
         <div className="lua-shop-loading">
           <div className="spinner-large" />
           <p>{t.luaShop.loading || 'Đang tải dữ liệu...'}</p>
         </div>
-      ) : manifestError && allAppIds.length === 0 ? (
+      ) : filterTab !== 'installed' && catalogError && catalogItems.length === 0 ? (
         <div className="lua-shop-loading">
-          <p style={{ fontSize: '16px', color: 'rgba(255,255,255,0.6)' }}>{manifestError}</p>
+          <p style={{ fontSize: '16px', color: 'rgba(255,255,255,0.6)' }}>{catalogError}</p>
         </div>
-      ) : search.trim() && filteredAppIds.length === 0 && isSearching ? (
+      ) : debouncedSearch && filteredCatalogItems.length === 0 && isSearching ? (
         <div className="lua-shop-loading">
           <div className="spinner" />
           <p style={{ fontSize: '16px', color: 'rgba(255,255,255,0.6)' }}>
             Searching Steam catalog...
           </p>
         </div>
-      ) : search.trim() && filteredAppIds.length === 0 ? (
+      ) : debouncedSearch && filteredCatalogItems.length === 0 ? (
         <div className="lua-shop-loading">
           <p style={{ fontSize: '16px', color: 'rgba(255,255,255,0.6)' }}>
             {t.luaShop.noResults || 'Không tìm thấy kết quả nào'}
           </p>
         </div>
-      ) : filteredAppIds.length === 0 ? (
+      ) : displayedCatalogItems.length === 0 ? (
         <div className="lua-shop-loading">
           <p style={{ fontSize: '16px', color: 'rgba(255,255,255,0.6)' }}>
             {filterTab === 'installed'
@@ -1177,37 +1139,71 @@ export function LuaShop() {
           </p>
         </div>
       ) : (
-        <>
-          <div className="lua-shop-grid" ref={gridRef}>
-            {paginatedAppIds.map((appid, index) => (
+        <div className="lua-shop-results" ref={gridRef}>
+          <div className="lua-shop-grid">
+            {displayedCatalogItems.map((item, index) => {
+              const appid = String(item.appid)
+              return (
               <LuaShopGameCard
-                key={`${appid}-${currentPage}-${filterTab}`}
+                key={`${appid}-${catalogPageNumber}-${filterTab}`}
                 appid={appid}
                 index={index}
                 isInstalled={installedLuas.has(appid)}
+                gameState={luaGameStates[appid]}
+                availability={item.availability}
                 onAdd={handleAddToSteam}
                 onRemove={handleRemove}
+                onSync={handleSyncLuaGame}
+                onManage={handleManage}
               />
-            ))}
+              )
+            })}
           </div>
 
           {/* ── Pagination ── */}
-          {totalPages > 1 && (
+          {(filterTab === 'installed'
+            ? installedTotalPages > 1
+            : catalogCursorHistory.length > 0 || Boolean(nextCatalogCursor)) && (
             <div className="lua-shop-pagination">
               <button
-                disabled={currentPage === 1}
-                onClick={() => changePage((page) => Math.max(1, page - 1))}
+                disabled={filterTab === 'installed'
+                  ? catalogPageNumber === 1
+                  : catalogCursorHistory.length === 0}
+                onClick={() => {
+                  if (filterTab === 'installed') {
+                    setCatalogPageNumber((page) => Math.max(1, page - 1))
+                    return
+                  }
+                  setCatalogCursorHistory((history) => {
+                    const next = [...history]
+                    setCatalogCursor(next.pop() ?? null)
+                    return next
+                  })
+                  setCatalogPageNumber((page) => Math.max(1, page - 1))
+                }}
                 className="pagination-btn"
               >
                 <ChevronLeft size={18} />
                 {t.luaShop.previous || 'Previous'}
               </button>
               <span className="pagination-info">
-                {t.luaShop.page || 'Page'} {currentPage} / {totalPages}
+                {t.luaShop.page || 'Page'} {catalogPageNumber}
+                {filterTab === 'installed' ? ` / ${installedTotalPages}` : ''}
               </span>
               <button
-                disabled={currentPage === totalPages}
-                onClick={() => changePage((page) => Math.min(totalPages, page + 1))}
+                disabled={filterTab === 'installed'
+                  ? catalogPageNumber >= installedTotalPages
+                  : !nextCatalogCursor}
+                onClick={() => {
+                  if (filterTab === 'installed') {
+                    setCatalogPageNumber((page) => Math.min(installedTotalPages, page + 1))
+                    return
+                  }
+                  if (!nextCatalogCursor) return
+                  setCatalogCursorHistory((history) => [...history, catalogCursor])
+                  setCatalogCursor(nextCatalogCursor)
+                  setCatalogPageNumber((page) => page + 1)
+                }}
                 className="pagination-btn"
               >
                 {t.luaShop.next || 'Next'}
@@ -1215,194 +1211,36 @@ export function LuaShop() {
               </button>
             </div>
           )}
-        </>
-      )}
-
-      {/* ── Verified Detail Panel Overlay ── */}
-      {selectedVerifiedGame && (
-        <div className="verified-detail-overlay" onClick={() => setSelectedVerifiedGame(null)}>
-          <div className="verified-detail-panel" onClick={e => e.stopPropagation()}>
-            <div className="detail-header">
-              <h2>{selectedVerifiedGame.name}</h2>
-              <span className="detail-appid">AppID: {selectedVerifiedGame.appid}</span>
-            </div>
-            
-            <div className="detail-body">
-              {isBuildsLoading ? (
-                <div className="detail-loading">
-                  <div className="spinner" />
-                  <p>Loading builds...</p>
-                </div>
-              ) : selectedGameBuilds ? (
-                <div className="detail-content">
-                  {selectedGameBuilds.has_key && (
-                    <div className="detail-badge success">
-                      <CheckCircle size={14} /> {t.luaShop.hasDepotKey || 'Depot Key Available'}
-                    </div>
-                  )}
-
-                  <div className="detail-section">
-                    <div className="lua-build-label-row">
-                      <label>{t.luaShop.selectBuild || 'Select Build'} ({selectedGameBuilds.builds.length + (selectedHasLatestPackage ? 1 : 0)} {t.luaShop.multipleBuilds || 'versions'})</label>
-                      <HelpButton
-                        title={t.help.conceptGuides.buildId.title}
-                        body={t.help.conceptGuides.buildId.body}
-                        bullets={[t.help.conceptGuides.manifest.body, t.help.conceptGuides.depotKey.body]}
-                      />
-                    </div>
-                    <div className={`version-dropdown${buildDropdownOpen ? ' open' : ''}`}>
-                      <button
-                        type="button"
-                        className="version-dropdown-trigger primary-control"
-                        onClick={() => setBuildDropdownOpen(!buildDropdownOpen)}
-                      >
-                        <div style={{ display: 'contents' }}>
-                          <span>
-                            <strong>
-                              {selectedBuildId === LATEST_PACKAGE_BUILD 
-                                ? (t.luaShop.latestCustomSource || 'Latest available | Custom source')
-                                : `${t.luaShop.buildId || 'Build ID'}: ${selectedBuildId}`
-                              }
-                            </strong>
-                            <small>
-                              {selectedBuildId !== LATEST_PACKAGE_BUILD 
-                                ? [
-                                    selectedGameBuilds.builds.find(b => b.build_id === selectedBuildId)?.version,
-                                    selectedGameBuilds.builds.find(b => b.build_id === selectedBuildId)?.build_date 
-                                      ? formatBuildDate(selectedGameBuilds.builds.find(b => b.build_id === selectedBuildId)!.build_date!) 
-                                      : null
-                                  ].filter(Boolean).join(' | ') 
-                                : ''
-                              }
-                            </small>
-                          </span>
-                        </div>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
-                      </button>
-
-                      {buildDropdownOpen && (
-                        <div className="version-dropdown-menu">
-                          {selectedHasLatestPackage && (
-                            <button
-                              type="button"
-                              className={`version-dropdown-option${selectedBuildId === LATEST_PACKAGE_BUILD ? ' active' : ''}`}
-                              onClick={() => {
-                                setSelectedBuildId(LATEST_PACKAGE_BUILD)
-                                setBuildDropdownOpen(false)
-                              }}
-                            >
-                              <span className="build-radio-indicator" aria-hidden="true" />
-                              <span className="version-option-copy">
-                                <strong>{t.luaShop.latestCustomSource || 'Latest available | Custom source'}</strong>
-                                <small>{t.luaShop.customSource || 'Custom source'}</small>
-                              </span>
-                              <span className="version-status-badge latest">{t.luaShop.latestBuild || 'Latest'}</span>
-                            </button>
-                          )}
-                          {selectedGameBuilds.builds.map((b) => {
-                            const canInstall = b.manifest_available !== false && b.manifests.length > 0
-                            const isInstalled = installedBuildId && b.build_id === installedBuildId
-                            return (
-                              <button
-                                key={b.build_id}
-                                type="button"
-                                className={`version-dropdown-option${selectedBuildId === b.build_id ? ' active' : ''}`}
-                                disabled={!canInstall}
-                                onClick={() => {
-                                  setSelectedBuildId(b.build_id)
-                                  setBuildDropdownOpen(false)
-                                }}
-                              >
-                                <span className="build-radio-indicator" aria-hidden="true" />
-                                <span className="version-option-copy">
-                                  <strong>{t.luaShop.buildId || 'Build ID'}: {b.build_id}</strong>
-                                  <small>
-                                    {[
-                                      b.version,
-                                      b.build_date ? formatBuildDate(b.build_date) : null,
-                                      b.patch_title
-                                    ].filter(Boolean).join(' · ')}
-                                  </small>
-                                </span>
-                                <span className="version-option-badges">
-                                  {isInstalled && <span className="version-status-badge installed">{t.luaShop.installed || 'Installed'}</span>}
-                                  {!canInstall && <span className="version-status-badge metadata">{t.luaShop.metadataOnly || 'Metadata only'}</span>}
-                                </span>
-                              </button>
-                            )
-                          })}
-                        </div>
-                      )}
-                    </div>
-                    {selectedGameBuilds.builds.some((b) => b.manifest_available === false) && (
-                      <small className="build-selector-hint">
-                        {t.luaShop.patchHistoryHint || 'Historical RSS builds are shown for completeness. A build becomes selectable only when the configured source has its exact depot manifests.'}
-                      </small>
-                    )}
-                  </div>
-
-                  <div className="detail-section">
-                    <label>{t.luaShop.advancedOptions || 'Advanced Options'}</label>
-                    <div className="advanced-inputs">
-                      <input 
-                        type="text" 
-                        placeholder={t.luaShop.accessTokenPlaceholder || 'Access Token (Optional)'} 
-                        value={accessToken}
-                        onChange={e => setAccessToken(e.target.value)}
-                      />
-                      <input 
-                        type="text" 
-                        placeholder={t.luaShop.achievementSteamIdPlaceholder || 'Achievement SteamID (Optional)'} 
-                        value={statSteamId}
-                        onChange={e => setStatSteamId(e.target.value)}
-                      />
-                      <label className="advanced-toggle-row">
-                        <input
-                          className="advanced-toggle-input"
-                          type="checkbox"
-                          checked={skipManifestPin}
-                          onChange={e => setSkipManifestPin(e.target.checked)}
-                        />
-                        <span className="advanced-toggle-track" aria-hidden="true"><span className="advanced-toggle-thumb" /></span>
-                        <span className="advanced-toggle-copy">
-                          <strong>{t.luaShop.skipManifestPin || 'Always update Depot (Do not pin version)'}</strong>
-                          <small>{t.luaShop.skipManifestPinHint || 'Leave the depot unpinned so Steam can follow newer manifests.'}</small>
-                        </span>
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <p>Failed to load builds.</p>
-              )}
-            </div>
-
-            <div className="detail-footer">
-              <button 
-                className="cancel-btn" 
-                onClick={() => setSelectedVerifiedGame(null)}
-              >
-                {t.install.cancel || 'Cancel'}
-              </button>
-              <button 
-                className="install-btn" 
-                disabled={isBuildsLoading || !selectedBuildId || isVerifiedInstalling || steamRunning}
-                onClick={handleVerifiedInstall}
-              >
-                {steamRunning 
-                  ? (t.luaShop.closeSteamFirst || 'Close Steam first') 
-                  : isVerifiedInstalling 
-                    ? (t.luaShop.installing || 'Installing...') 
-                    : installedBuildId
-                      ? (selectedBuildId === installedBuildId ? (t.luaShop.reinstall || 'Re-install') : (t.luaShop.changeVersion || 'Change Version'))
-                      : (t.luaShop.installBuild || 'Install')}
-              </button>
-            </div>
-          </div>
         </div>
       )}
 
       {/* ── Remove confirm dialog ── */}
+      {managedGame && (
+        <LuaGameManagerDialog
+          key={managedGame.appid}
+          appid={managedGame.appid}
+          gameName={managedGame.name}
+          onClose={closeManagedGame}
+          onState={upsertLuaGameState}
+          onSync={handleManagerSync}
+          onSwitchLive={handleManagerSwitchLive}
+          onRemove={handleRemove}
+          onRestartSteam={performRestart}
+        />
+      )}
+
+      {sourceAction && (
+        <LuaSourcePickerDialog
+          key={`${sourceAction.purpose}-${sourceAction.appid}`}
+          appid={sourceAction.appid}
+          gameName={sourceAction.gameName}
+          operation={sourceAction.operation}
+          preferredProvider={sourceAction.preferredProvider}
+          onClose={() => setSourceAction(null)}
+          onConfirm={handleSourceConfirm}
+        />
+      )}
+
       {showRemoveConfirm && removingAppId && (
         <ConfirmDialog
           title={t.library.confirmRemoveTitle}

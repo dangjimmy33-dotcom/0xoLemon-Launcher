@@ -320,6 +320,10 @@
         <input id="tenantId" value="0xolemon1" />
       </div>
     </div>
+    <div class="field">
+      <label>Admin Key (ACTIVATION_ADMIN_KEY)</label>
+      <input id="adminKey" type="password" value="23dvQ67zZ69ITl77GUtywME1AkKCx9ub" placeholder="Nhập admin key..." />
+    </div>
 
     <!-- Status display -->
     <div class="status-area" id="statusBox">
@@ -374,6 +378,7 @@
 
   function getUrl() { return document.getElementById('backendUrl').value.replace(/\/$/, ''); }
   function getTenant() { return document.getElementById('tenantId').value.trim(); }
+  function getAdminKey() { return document.getElementById('adminKey').value.trim(); }
 
   // ── Logging ──
   function log(msg, type = '') {
@@ -453,7 +458,7 @@
     setStatus('🗑️', `Đang xóa toàn bộ cache của tenant <b>${tenant}</b>...`, 'loading');
     log(`Clearing all cache for tenant: ${tenant}`, 'info');
     try {
-      const r = await fetch(`${getUrl()}/api/${tenant}/cache/clear`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+      const r = await fetch(`${getUrl()}/api/${tenant}/cache/clear`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-key': getAdminKey() } });
       const data = await r.json();
       setStatus('✅', `<b>Cache đã xóa!</b><br>${data.message}`, 'success');
       log(`Cleared — ${data.message}`, 'ok');
@@ -471,7 +476,7 @@
     try {
       const r = await fetch(`${getUrl()}/api/${tenant}/cache/clear`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-admin-key': getAdminKey() },
         body: JSON.stringify({ key })
       });
       const data = await r.json();
@@ -517,7 +522,7 @@
     try {
       // Step 1: Clear
       log(`[1/2] Clearing all cache for ${tenant}...`, 'info');
-      const clearRes = await fetch(`${getUrl()}/api/${tenant}/cache/clear`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+      const clearRes = await fetch(`${getUrl()}/api/${tenant}/cache/clear`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-key': getAdminKey() } });
       const clearData = await clearRes.json();
       log(`  ✓ ${clearData.message}`, 'ok');
 

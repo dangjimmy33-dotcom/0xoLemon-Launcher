@@ -5,21 +5,21 @@ use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use tauri::command;
 
-mod dll_manager;
-mod provider_config;
-mod oauth;
 mod backup;
+mod dll_manager;
 mod engine;
 mod integration;
 mod manifest_pinning;
 mod models;
+mod oauth;
+mod provider_config;
 mod upstream_config;
 
 pub use dll_manager::*;
-pub use provider_config::*;
-pub use oauth::*;
 pub use integration::*;
 pub use models::*;
+pub use oauth::*;
+pub use provider_config::*;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -139,10 +139,10 @@ fn detect_auto_cloud_games() -> Result<Vec<String>, String> {
 #[command]
 pub async fn cloud_redirect_enable() -> Result<(), String> {
     let steam_path = get_steam_path().ok_or("Steam not found")?;
-    
+
     // Get DLL from resources
     let dll_resource = get_dll_resource_path();
-    
+
     // Copy DLL to Steam directory
     dll_manager::install_dll(&dll_resource, &steam_path)?;
 
@@ -153,7 +153,7 @@ pub async fn cloud_redirect_enable() -> Result<(), String> {
 #[command]
 pub async fn cloud_redirect_disable() -> Result<(), String> {
     let steam_path = get_steam_path().ok_or("Steam not found")?;
-    
+
     dll_manager::uninstall_dll(&steam_path)?;
 
     Ok(())
@@ -180,13 +180,13 @@ pub async fn cloud_redirect_start_oauth(provider: String) -> Result<String, Stri
 #[command]
 pub async fn cloud_redirect_complete_oauth(provider: String, code: String) -> Result<(), String> {
     oauth::complete_oauth_flow(&provider, &code).await?;
-    
+
     // Update config
     let mut config = provider_config::load_config().unwrap_or_default();
     config.provider = Some(provider);
     config.authenticated = true;
     provider_config::save_config(&config)?;
-    
+
     Ok(())
 }
 
@@ -202,9 +202,9 @@ pub async fn cloud_redirect_trigger_sync() -> Result<(), String> {
 pub async fn cloud_redirect_get_sync_status() -> Result<SyncStatus, String> {
     // TODO: Query actual DLL status via IPC or shared memory
     // For now, return mock data
-    
+
     let _config = provider_config::load_config().unwrap_or_default();
-    
+
     Ok(SyncStatus {
         is_syncing: false,
         current_file: None,
@@ -254,7 +254,8 @@ pub fn cloud_redirect_list_game_saves() -> Result<Vec<GameSaveInfo>, String> {
                         continue;
                     }
 
-                    let app_id = app_path.file_name()
+                    let app_id = app_path
+                        .file_name()
                         .and_then(|n| n.to_str())
                         .unwrap_or("")
                         .to_string();
@@ -282,7 +283,9 @@ pub fn cloud_redirect_list_game_saves() -> Result<Vec<GameSaveInfo>, String> {
                         .ok()
                         .and_then(|m| m.modified().ok())
                         .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
-                        .map(|d| chrono::DateTime::<chrono::Utc>::from_timestamp(d.as_secs() as i64, 0))
+                        .map(|d| {
+                            chrono::DateTime::<chrono::Utc>::from_timestamp(d.as_secs() as i64, 0)
+                        })
                         .flatten()
                         .map(|dt| dt.format("%Y-%m-%d %H:%M:%S").to_string());
 
@@ -306,7 +309,10 @@ pub fn cloud_redirect_list_game_saves() -> Result<Vec<GameSaveInfo>, String> {
 
 /// Backup game save to cloud provider
 #[command]
-pub async fn cloud_redirect_backup_save(app_id: String, upload_to_cloud: bool) -> Result<String, String> {
+pub async fn cloud_redirect_backup_save(
+    app_id: String,
+    upload_to_cloud: bool,
+) -> Result<String, String> {
     let steam_path = get_steam_path().ok_or("Steam not found")?;
     let config = provider_config::load_config()?;
 
@@ -331,7 +337,7 @@ pub async fn cloud_redirect_backup_save(app_id: String, upload_to_cloud: bool) -
     let timestamp = chrono::Utc::now().format("%Y%m%d_%H%M%S");
     let backup_filename = format!("{}_backup_{}.zip", app_id, timestamp);
     let backup_zip = std::env::temp_dir().join(&backup_filename);
-    
+
     create_backup_zip(&save_path, &backup_zip)?;
 
     // Save local copy first
@@ -339,9 +345,9 @@ pub async fn cloud_redirect_backup_save(app_id: String, upload_to_cloud: bool) -
         .ok_or("Failed to get data dir")?
         .join("0xoLemon")
         .join("cloud_redirect_backups");
-    
+
     std::fs::create_dir_all(&backup_dir).map_err(|e| e.to_string())?;
-    
+
     let local_backup = backup_dir.join(&backup_filename);
     std::fs::copy(&backup_zip, &local_backup).map_err(|e| e.to_string())?;
 
@@ -354,8 +360,10 @@ pub async fn cloud_redirect_backup_save(app_id: String, upload_to_cloud: bool) -
                 match oauth::upload_to_google_drive(
                     &backup_zip,
                     &backup_filename,
-                    "0xoLemon_Backups"
-                ).await {
+                    "0xoLemon_Backups",
+                )
+                .await
+                {
                     Ok(file_id) => {
                         result_message.push_str(&format!("\nGoogle Drive backup: {}", file_id));
                     }
@@ -389,20 +397,21 @@ pub async fn cloud_redirect_reset_game(app_id: String) -> Result<(), String> {
         for entry in entries.flatten() {
             let user_path = entry.path();
             let app_path = user_path.join(&app_id);
-            
+
             if app_path.exists() && app_path.is_dir() {
                 // Create backup first
-                let backup_name = format!("reset_backup_{}_{}.zip",
+                let backup_name = format!(
+                    "reset_backup_{}_{}.zip",
                     app_id,
                     chrono::Utc::now().format("%Y%m%d_%H%M%S")
                 );
                 let backup_path = std::env::temp_dir().join(&backup_name);
-                
+
                 create_backup_zip(&app_path, &backup_path)?;
-                
+
                 // Delete save folder
                 std::fs::remove_dir_all(&app_path).map_err(|e| e.to_string())?;
-                
+
                 deleted = true;
             }
         }
@@ -420,9 +429,7 @@ fn calculate_folder_size(path: &Path) -> Result<u64, String> {
     let mut total_size = 0u64;
 
     if path.is_file() {
-        return Ok(std::fs::metadata(path)
-            .map(|m| m.len())
-            .unwrap_or(0));
+        return Ok(std::fs::metadata(path).map(|m| m.len()).unwrap_or(0));
     }
 
     if let Ok(entries) = std::fs::read_dir(path) {
@@ -431,9 +438,7 @@ fn calculate_folder_size(path: &Path) -> Result<u64, String> {
             if path.is_dir() {
                 total_size += calculate_folder_size(&path)?;
             } else {
-                total_size += std::fs::metadata(&path)
-                    .map(|m| m.len())
-                    .unwrap_or(0);
+                total_size += std::fs::metadata(&path).map(|m| m.len()).unwrap_or(0);
             }
         }
     }
@@ -454,13 +459,12 @@ fn create_backup_zip(source: &Path, dest: &Path) -> Result<(), String> {
 
     for entry in walkdir.into_iter().flatten() {
         let path = entry.path();
-        let name = path.strip_prefix(source)
-            .map_err(|e| e.to_string())?;
+        let name = path.strip_prefix(source).map_err(|e| e.to_string())?;
 
         if path.is_file() {
             zip.start_file(name.to_string_lossy().to_string(), options)
                 .map_err(|e| e.to_string())?;
-            
+
             let mut f = std::fs::File::open(path).map_err(|e| e.to_string())?;
             std::io::copy(&mut f, &mut zip).map_err(|e| e.to_string())?;
         } else if !name.as_os_str().is_empty() {
@@ -475,41 +479,46 @@ fn create_backup_zip(source: &Path, dest: &Path) -> Result<(), String> {
 
 /// List available backups (local + cloud)
 #[command]
-pub async fn cloud_redirect_list_backups(app_id: Option<String>) -> Result<Vec<BackupInfo>, String> {
+pub async fn cloud_redirect_list_backups(
+    app_id: Option<String>,
+) -> Result<Vec<BackupInfo>, String> {
     let mut backups = Vec::new();
-    
+
     // List local backups
     let backup_dir = dirs::data_local_dir()
         .ok_or("Failed to get data dir")?
         .join("0xoLemon")
         .join("cloud_redirect_backups");
-    
+
     if backup_dir.exists() {
         if let Ok(entries) = std::fs::read_dir(&backup_dir) {
             for entry in entries.flatten() {
                 let path = entry.path();
                 if path.extension().and_then(|s| s.to_str()) == Some("zip") {
-                    let filename = path.file_name()
+                    let filename = path
+                        .file_name()
                         .and_then(|n| n.to_str())
                         .unwrap_or("")
                         .to_string();
-                    
+
                     // Filter by app_id if specified
                     if let Some(ref filter_id) = app_id {
                         if !filename.starts_with(filter_id) {
                             continue;
                         }
                     }
-                    
+
                     let metadata = std::fs::metadata(&path).ok();
                     let size = metadata.as_ref().map(|m| m.len()).unwrap_or(0);
                     let modified = metadata
                         .and_then(|m| m.modified().ok())
                         .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
-                        .map(|d| chrono::DateTime::<chrono::Utc>::from_timestamp(d.as_secs() as i64, 0))
+                        .map(|d| {
+                            chrono::DateTime::<chrono::Utc>::from_timestamp(d.as_secs() as i64, 0)
+                        })
                         .flatten()
                         .map(|dt| dt.format("%Y-%m-%d %H:%M:%S").to_string());
-                    
+
                     backups.push(BackupInfo {
                         id: filename.clone(),
                         name: filename,
@@ -523,13 +532,14 @@ pub async fn cloud_redirect_list_backups(app_id: Option<String>) -> Result<Vec<B
             }
         }
     }
-    
+
     // List cloud backups if authenticated
     let config = provider_config::load_config().unwrap_or_default();
     if config.authenticated {
         match config.provider.as_deref() {
             Some("google_drive") => {
-                if let Ok(cloud_files) = oauth::list_google_drive_backups("0xoLemon_Backups").await {
+                if let Ok(cloud_files) = oauth::list_google_drive_backups("0xoLemon_Backups").await
+                {
                     for file in cloud_files {
                         // Filter by app_id if specified
                         if let Some(ref filter_id) = app_id {
@@ -537,7 +547,7 @@ pub async fn cloud_redirect_list_backups(app_id: Option<String>) -> Result<Vec<B
                                 continue;
                             }
                         }
-                        
+
                         backups.push(BackupInfo {
                             id: file.id.clone(),
                             name: file.name,
@@ -553,21 +563,24 @@ pub async fn cloud_redirect_list_backups(app_id: Option<String>) -> Result<Vec<B
             _ => {}
         }
     }
-    
+
     // Sort by created_at descending
     backups.sort_by(|a, b| b.created_at.cmp(&a.created_at));
-    
+
     Ok(backups)
 }
 
 /// Restore backup
 #[command]
-pub async fn cloud_redirect_restore_backup(backup_id: String, location: String) -> Result<(), String> {
+pub async fn cloud_redirect_restore_backup(
+    backup_id: String,
+    location: String,
+) -> Result<(), String> {
     let steam_path = get_steam_path().ok_or("Steam not found")?;
-    
+
     // Extract app_id from backup filename (format: {appid}_backup_{timestamp}.zip)
     let app_id = backup_id.split('_').next().ok_or("Invalid backup ID")?;
-    
+
     // Get backup file
     let backup_file = if location == "local" {
         let backup_dir = dirs::data_local_dir()
@@ -583,40 +596,40 @@ pub async fn cloud_redirect_restore_backup(backup_id: String, location: String) 
     } else {
         return Err("Unsupported backup location".to_string());
     };
-    
+
     if !backup_file.exists() {
         return Err("Backup file not found".to_string());
     }
-    
+
     // Find save directory
     let userdata_path = steam_path.join("userdata");
     let mut save_path: Option<PathBuf> = None;
-    
+
     if let Ok(entries) = std::fs::read_dir(&userdata_path) {
         for entry in entries.flatten() {
             let user_path = entry.path();
             let app_path = user_path.join(app_id);
-            
+
             // Create directory if it doesn't exist
             if !app_path.exists() {
                 std::fs::create_dir_all(&app_path).map_err(|e| e.to_string())?;
             }
-            
+
             save_path = Some(app_path);
             break;
         }
     }
-    
+
     let save_path = save_path.ok_or("Could not determine save path")?;
-    
+
     // Extract backup
     extract_backup_zip(&backup_file, &save_path)?;
-    
+
     // Cleanup downloaded file if from cloud
     if location != "local" {
         std::fs::remove_file(&backup_file).ok();
     }
-    
+
     Ok(())
 }
 
@@ -624,11 +637,11 @@ pub async fn cloud_redirect_restore_backup(backup_id: String, location: String) 
 fn extract_backup_zip(source: &Path, dest: &Path) -> Result<(), String> {
     let file = std::fs::File::open(source).map_err(|e| e.to_string())?;
     let mut archive = zip::ZipArchive::new(file).map_err(|e| e.to_string())?;
-    
+
     for i in 0..archive.len() {
         let mut file = archive.by_index(i).map_err(|e| e.to_string())?;
         let outpath = dest.join(file.name());
-        
+
         if file.is_dir() {
             std::fs::create_dir_all(&outpath).map_err(|e| e.to_string())?;
         } else {
@@ -639,7 +652,7 @@ fn extract_backup_zip(source: &Path, dest: &Path) -> Result<(), String> {
             std::io::copy(&mut file, &mut outfile).map_err(|e| e.to_string())?;
         }
     }
-    
+
     Ok(())
 }
 

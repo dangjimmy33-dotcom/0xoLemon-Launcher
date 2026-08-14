@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { collection, addDoc, serverTimestamp, doc, setDoc, increment } from 'firebase/firestore'
 import { db, socialDb } from './firebase'
 import { invoke } from '@tauri-apps/api/core'
@@ -14,7 +14,7 @@ import {
   sendNotification,
 } from '@tauri-apps/plugin-notification'
 import { MotionConfig, AnimatePresence } from 'motion/react'
-import { CircleAlert, Download, Heart, X } from 'lucide-react'
+import { CircleAlert, Download, FolderSearch, Heart, X } from 'lucide-react'
 import packageMetadata from '../package.json'
 import './App.css'
 import './premium.css'
@@ -27,6 +27,7 @@ import type {
   GameCatalog,
   GameDetail,
   GameInstallState,
+  InstallDiscoveryReport,
   GameRuntimeState,
   GameSummary,
   GameVersionInfo,
@@ -53,40 +54,50 @@ import type {
 import installCompleteSoundUrl from './assets/sounds/desktop_toast_default.wav?url'
 import donateImage from './assets/donate/donate.png'
 import { DEFAULT_GAME_ID, DEFAULT_STORE_ROOT, fallbackCatalog, fallbackInstall, fallbackSnapshot, gameFolderName, installMetadataForStoreRoot } from './lib/installPaths'
-import { assetUrlForId, collectAssetIds, contentServiceLabel, downloadPathForInstallRoot, fallbackDetailFromSummary, firstMediaUrl, isRemoteAssetId, isTauriRuntime, versionOptions } from './lib/gameMeta'
+import { assetUrlForId, collectAssetIds, contentServiceLabel, downloadPathForInstallRoot, fallbackDetailFromSummary, fetchWebAssetUrl, firstMediaUrl, isRemoteAssetId, isTauriRuntime, versionOptions } from './lib/gameMeta'
 import { createIdleJob, getPhaseProgress } from './lib/jobProgress'
 import { formatBytes } from './lib/format'
 import { gameHasTag } from './lib/gameTags'
 import { versionsEquivalent } from './lib/version'
 import { DEFAULT_LAUNCHER_PREFERENCES, loadLauncherPreferences, saveLauncherPreferences, type LauncherPreferences } from './lib/preferences'
-import {
-  ActiveView,
-  CloudSavesOverview,
-  CustomTitleBar,
-  DriveLibraryPickerModal,
-  DiscordAccessGate,
-  HomeView,
-  InstallOptionsDialog,
-  LaunchOptionsModal,
-  LaunchSplash,
-  IntroScreen,
-  NotificationToasts,
-  NvidiaToast,
-  Onboarding,
-  OperationHero,
-  SettingsView,
-  Sidebar,
-  UpdateBanner,
-  UpdateCenter,
-  TransferDock,
-  FirebaseRemoteControl,
-  ChangelogModal,
-  BigPictureView,
-  DefenderExclusionDialog,
-  AchievementToastOverlay,
-  HelpCenter,
-} from './components'
+import { AchievementToastOverlay } from './components/AchievementToast'
+import { ChangelogModal } from './components/ChangelogModal'
+import { CustomTitleBar } from './components/CustomTitleBar'
+import { DefenderExclusionDialog } from './components/DefenderExclusionDialog'
+import { DiscordAccessGate } from './components/DiscordAccessGate'
+import { FirebaseRemoteControl } from './components/FirebaseRemoteControl'
+import { HelpCenter } from './components/HelpSystem'
+import { InstallRecoveryDialog } from './components/InstallRecoveryDialog'
+import { DriveLibraryPickerModal, InstallOptionsDialog } from './components/install'
+import { IntroScreen } from './components/IntroScreen'
+import { LaunchOptionsModal } from './components/LaunchOptionsModal'
+import { LaunchSplash } from './components/LaunchSplash'
+import { OperationHero } from './components/library'
+import { Sidebar } from './components/layout'
+import { NotificationToasts } from './components/NotificationCenter'
+import { NvidiaToast } from './components/NvidiaToast'
+import { Onboarding } from './components/Onboarding'
+import { TransferDock } from './components/TransferDock'
+import { UpdateBanner, UpdateCenter } from './components/UpdateCenter'
 import { useLocale } from './context/locale'
+
+const ActiveView = lazy(() => import('./components/ActiveView').then((module) => ({ default: module.ActiveView })))
+const BigPictureView = lazy(() => import('./components/BigPictureView').then((module) => ({ default: module.BigPictureView })))
+const CloudSavesOverview = lazy(() => import('./components/CloudSavesOverview').then((module) => ({ default: module.CloudSavesOverview })))
+const HomeView = lazy(() => import('./components/HomeView').then((module) => ({ default: module.HomeView })))
+const SettingsView = lazy(() => import('./components/SettingsView').then((module) => ({ default: module.SettingsView })))
+
+function ViewChunkFallback() {
+  return (
+    <div className="view-chunk-skeleton" aria-hidden="true">
+      <div className="view-chunk-skeleton-title" />
+      <div className="view-chunk-skeleton-toolbar" />
+      <div className="view-chunk-skeleton-grid">
+        {Array.from({ length: 8 }, (_, index) => <div key={index} className="view-chunk-skeleton-card" />)}
+      </div>
+    </div>
+  )
+}
 
 const initialLauncherPreferences = loadLauncherPreferences()
 const emptyCatalog: GameCatalog = { defaultLocale: 'en-US', games: [] }
@@ -142,6 +153,7 @@ import { useRealtimeAssets } from './hooks/useRealtimeAssets'
 import { useFirestoreCatalog } from './hooks/useFirestoreCatalog'
 import { useGameStats } from './hooks/useGameStats'
 import { useOnlinePresence } from './hooks/useOnlinePresence'
+import { useCloudSaveMap } from './hooks/useCloudSaveMap'
 import { GameTurboModal } from './components/GameTurboModal'
 import { GlobalChatSync } from './components/GlobalChatSync'
 import { NoInternetView } from './components/NoInternetView'
@@ -219,6 +231,7 @@ export default function App() {
   const firestoreCatalog = useFirestoreCatalog(firestoreAssetVersion + backendVersionTagVersion)
   useSteamAppIds()
   useGameStats()
+  useCloudSaveMap()
 
   const defenderExclusion = useDefenderExclusion()
   const [snapshot, setSnapshot] = useState<Snapshot>(fallbackSnapshot)
@@ -264,6 +277,12 @@ export default function App() {
   const assetRequestRef = useRef<Set<string>>(new Set())
   const assetDelaySlotRef = useRef(0)
   const [installStates, setInstallStates] = useState<Record<string, GameInstallState>>({})
+  const [installDiscoveryReport, setInstallDiscoveryReport] = useState<InstallDiscoveryReport | null>(null)
+  const [installDiscoveryBusy, setInstallDiscoveryBusy] = useState(false)
+  const [showInstallRecovery, setShowInstallRecovery] = useState(false)
+  const [showLocateLibraryPrompt, setShowLocateLibraryPrompt] = useState(false)
+  const installDiscoveryRequestRef = useRef(0)
+  const installDiscoveryCatalogRef = useRef('')
   const [pendingPatches, setPendingPatches] = useState<Record<string, string>>({})
   const latestJobRef = useRef<JobJournal | null>(job)
   const preferencesRef = useRef<LauncherPreferences>(preferences)
@@ -271,7 +290,10 @@ export default function App() {
   const installCompleteSoundJobsRef = useRef<Set<string>>(new Set())
   const audibleInstallJobIdsRef = useRef<Set<string>>(new Set())
   const pendingCloudLaunchRef = useRef<{ optionId?: string; optionTitle?: string } | null>(null)
-  const downloadRateWindowRef = useRef<{ jobId: string; points: Array<{ bytesDone: number; at: number }> } | null>(null)
+  const downloadRateWindowRef = useRef<{
+    jobId: string
+    points: Array<{ bytesDone: number; applyBytesDone: number; at: number }>
+  } | null>(null)
   const canceledJobIdRef = useRef<string | null>(null)
   const autoResumeInFlightRef = useRef(false)
   const autoResumeJobIdRef = useRef<string | null>(null)
@@ -280,6 +302,7 @@ export default function App() {
   const versionPlanSequenceRef = useRef(0)
   const versionPlanTimerRef = useRef<number | null>(null)
   const [downloadRate, setDownloadRate] = useState(0)
+  const [applyRate, setApplyRate] = useState(0)
   const [verifyStatus, setVerifyStatus] = useState<VerifyUiStatus | null>(null)
   const [launchSplash, setLaunchSplash] = useState<LaunchSplashState | null>(null)
   const [showIntro, setShowIntro] = useState(true)
@@ -566,16 +589,15 @@ export default function App() {
   const publishNotification = useCallback(async (notification: NewNotification) => {
     // Block notifications during intro or Discord verification
     if (isBlockedState) {
-      console.log('[0xoToast] Blocked: intro or Discord check in progress')
+      if (import.meta.env.DEV) console.debug('[0xoToast] Blocked during startup access checks')
       return
     }
 
     const currentPreferences = preferencesRef.current
 
-    // Debug logging
-    console.log('[0xoToast] Publishing notification:', notification)
-    console.log('[0xoToast] Category enabled:', currentPreferences.notificationCategories[notification.category])
-    console.log('[0xoToast] In-app enabled:', currentPreferences.inAppNotifications)
+    if (import.meta.env.DEV) {
+      console.debug('[0xoToast] Publishing notification', notification.category, notification.severity)
+    }
 
     if (!currentPreferences.notificationCategories[notification.category]) return
     const result = isTauriRuntime()
@@ -595,10 +617,7 @@ export default function App() {
     const gameRunning = Object.values(playingGamesRef.current).some(Boolean)
     const suppressPopup = currentPreferences.doNotDisturbWhilePlaying && gameRunning
 
-    console.log('[0xoToast] Game running:', gameRunning, 'Suppress:', suppressPopup)
-
     if (currentPreferences.inAppNotifications && !suppressPopup) {
-      console.log('[0xoToast] Showing toast notification')
       setToastNotifications((current) => [result.record, ...current].slice(0, 3))
       window.setTimeout(() => {
         setToastNotifications((current) => current.filter((item) => item.id !== result.record.id))
@@ -790,9 +809,38 @@ export default function App() {
 
   useEffect(() => {
     if (!isTauriRuntime()) return
-    invoke<LauncherSettings>('get_launcher_settings')
-      .then(setLauncherSettings)
-      .catch((error) => setSettingsUpdateStatus(`Could not load downloader settings: ${String(error)}`))
+    let disposed = false
+    void (async () => {
+      try {
+        let settings = await invoke<LauncherSettings>('get_launcher_settings')
+        const migrationKey = '0xo_backend_library_migrated_v1'
+        const localRoot = preferencesRef.current.defaultLibraryRoot.trim().replace(/[\\/]+$/, '')
+        const backendRoot = settings.defaultLibrary.trim().replace(/[\\/]+$/, '')
+        if (
+          !localStorage.getItem(migrationKey)
+          && localRoot
+          && localRoot.toLowerCase() !== backendRoot.toLowerCase()
+          && backendRoot.toLowerCase() === DEFAULT_STORE_ROOT.toLowerCase()
+        ) {
+          settings = await invoke<LauncherSettings>('set_launcher_settings', {
+            settings: { ...settings, defaultLibrary: localRoot },
+          })
+        }
+        localStorage.setItem(migrationKey, '1')
+        if (disposed) return
+        setLauncherSettings(settings)
+        setPreferences((current) => (
+          current.defaultLibraryRoot === settings.defaultLibrary
+            ? current
+            : { ...current, defaultLibraryRoot: settings.defaultLibrary }
+        ))
+      } catch (error) {
+        if (!disposed) setSettingsUpdateStatus(`Could not load downloader settings: ${String(error)}`)
+      }
+    })()
+    return () => {
+      disposed = true
+    }
   }, [])
 
   const refreshRuntimeStates = useCallback(() => {
@@ -925,15 +973,13 @@ export default function App() {
             })
           } else {
             // Final fallback to the repository's raw web asset URL.
-            import('./lib/gameMeta').then(({ fetchWebAssetUrl }) => {
-              fetchWebAssetUrl(assetId).then((url) => {
-                if (url) {
-                  setAssetUrls((current) => {
-                    if (current[assetId]) return current
-                    return { ...current, [assetId]: url }
-                  })
-                }
-              })
+            fetchWebAssetUrl(assetId).then((url) => {
+              if (url) {
+                setAssetUrls((current) => {
+                  if (current[assetId]) return current
+                  return { ...current, [assetId]: url }
+                })
+              }
             })
           }
         })
@@ -1215,6 +1261,7 @@ export default function App() {
   const refreshPatchAvailability = useCallback(async (gameId: string, state: GameInstallState) => {
     if (
       !state.installed ||
+      ['recovering', 'conflict', 'unavailable'].includes(state.discoveryStatus ?? '') ||
       !state.currentVersion ||
       state.currentVersion === 'unknown' ||
       state.currentVersion === 'not installed' ||
@@ -1269,47 +1316,84 @@ export default function App() {
     void refreshPatchAvailability(gameId, state)
   }, [refreshPatchAvailability])
 
+  const runInstallDiscovery = useCallback(async (gameIds: string[]) => {
+    if (!isTauriRuntime() || gameIds.length === 0) return null
+    const requestId = ++installDiscoveryRequestRef.current
+    setInstallDiscoveryBusy(true)
+    try {
+      const report = await invoke<InstallDiscoveryReport>('discover_game_installs', { gameIds })
+      const states = await invoke<GameInstallState[]>('get_game_install_states', { gameIds })
+      if (requestId !== installDiscoveryRequestRef.current) return report
+
+      setInstallDiscoveryReport(report)
+      setInstallStates(Object.fromEntries(states.map((state) => [state.gameId, state])))
+      states.forEach((state, index) => {
+        window.setTimeout(() => {
+          if (requestId === installDiscoveryRequestRef.current) {
+            void refreshPatchAvailability(state.gameId, state)
+          }
+        }, index * 120)
+      })
+
+      if (report.recovered.length > 0) {
+        const recoveredCount = report.recovered.length
+        const recoveredMessage = recoveredCount === 1
+          ? t.installRecovery.recoveredOne
+          : t.installRecovery.recoveredMany
+        void publishNotification({
+          category: 'launcher',
+          severity: 'success',
+          title: t.installRecovery.recoveredTitle,
+          message: recoveredMessage.replace('{count}', String(recoveredCount)),
+          dedupeKey: `install-discovery:${report.recovered.map((item) => item.installPath).sort().join('|')}`,
+          entity: { kind: 'launcher', id: 'install-discovery' },
+          action: { kind: 'open-tab', tab: 'Library', gameId: null },
+        })
+      }
+
+      const locatePromptSeen = localStorage.getItem('0xo_install_recovery_prompt_v1') === '1'
+      setShowInstallRecovery(report.conflicts.length > 0)
+      setShowLocateLibraryPrompt(report.requiresLocateLibrary && !locatePromptSeen)
+      return report
+    } catch (error) {
+      if (requestId === installDiscoveryRequestRef.current) {
+        setScanStatus(`Installed game recovery failed: ${String(error)}`)
+      }
+      throw error
+    } finally {
+      if (requestId === installDiscoveryRequestRef.current) setInstallDiscoveryBusy(false)
+    }
+  }, [publishNotification, refreshPatchAvailability, t.installRecovery.recoveredMany, t.installRecovery.recoveredOne, t.installRecovery.recoveredTitle])
+
   useEffect(() => {
-    if (!isTauriRuntime() || catalog.games.length === 0) {
+    if (
+      !isTauriRuntime()
+      || catalogLoadState !== 'ready'
+      || catalog.games.length === 0
+      || !hasLauncherAccess
+      || showIntro
+    ) {
       return
     }
-
-    let disposed = false
     const gameIds = catalog.games.map((game) => game.id)
-    invoke<GameInstallState[]>('get_game_install_states', { gameIds })
-      .then((states) => {
-        if (disposed) return
-        const next: Record<string, GameInstallState> = {}
-        for (const state of states) {
-          next[state.gameId] = state
-        }
-        setInstallStates(next)
-        states.forEach((state, index) => {
-          window.setTimeout(() => {
-            if (!disposed) void refreshPatchAvailability(state.gameId, state)
-          }, index * 120)
-        })
-      })
-      .catch(() => {
-        // Compatibility fallback for older backends: stagger single calls so the
-        // WebView is not hammered by N simultaneous IPC requests at startup.
-        gameIds.forEach((gameId, index) => {
-          window.setTimeout(() => {
-            if (!disposed) void refreshInstallState(gameId).catch(() => undefined)
-          }, index * 120)
-        })
-      })
-
-    return () => {
-      disposed = true
-    }
-  }, [catalog.games, refreshInstallState, refreshPatchAvailability])
+    const signature = [...gameIds].sort().join('|')
+    if (installDiscoveryCatalogRef.current === signature) return
+    installDiscoveryCatalogRef.current = signature
+    void runInstallDiscovery(gameIds).catch(() => {
+      installDiscoveryCatalogRef.current = ''
+    })
+  }, [catalog.games, catalogLoadState, hasLauncherAccess, runInstallDiscovery, showIntro])
 
   const updateReadyGameIds = useMemo(() => {
     return catalog.games
       .filter((game) => {
         const state = installStates[game.id]
-        if (!state?.installed || state.currentVersion === 'unknown' || state.currentVersion === 'not installed') {
+        if (
+          !state?.installed
+          || ['recovering', 'conflict', 'unavailable'].includes(state.discoveryStatus ?? '')
+          || state.currentVersion === 'unknown'
+          || state.currentVersion === 'not installed'
+        ) {
           return false
         }
 
@@ -1334,6 +1418,10 @@ export default function App() {
       })
       .map((game) => game.id)
   }, [catalog.games, installStates, pendingPatches])
+  const installRecoveryTitles = useMemo(
+    () => Object.fromEntries(catalog.games.map((game) => [game.id, game.title])),
+    [catalog.games],
+  )
   const updatesCatalog = useMemo(
     () => ({ ...catalog, games: catalog.games.filter((game) => updateReadyGameIds.includes(game.id)) }),
     [catalog, updateReadyGameIds],
@@ -1963,6 +2051,8 @@ export default function App() {
       (activeJob.kind === 'patch' && activeJob.status === 'running' && activeJob.bytesTotal > 0)
     if (!isActiveDownload) {
       downloadRateWindowRef.current = null
+      setDownloadRate(0)
+      setApplyRate(0)
       return
     }
 
@@ -1983,8 +2073,18 @@ export default function App() {
       }
 
       const lastPoint = windowState.points[windowState.points.length - 1]
-      if (!lastPoint || current.bytesDone !== lastPoint.bytesDone || now - lastPoint.at >= 900) {
-        windowState.points.push({ bytesDone: current.bytesDone, at: now })
+      const currentApplyBytes = current.applyBytesDone ?? 0
+      if (
+        !lastPoint ||
+        current.bytesDone !== lastPoint.bytesDone ||
+        currentApplyBytes !== lastPoint.applyBytesDone ||
+        now - lastPoint.at >= 900
+      ) {
+        windowState.points.push({
+          bytesDone: current.bytesDone,
+          applyBytesDone: currentApplyBytes,
+          at: now,
+        })
       }
       windowState.points = windowState.points.filter((point) => now - point.at <= sampleWindowMs)
       if (windowState.points.length > 12) {
@@ -1996,7 +2096,11 @@ export default function App() {
       const last = windowState.points[windowState.points.length - 1]
       const elapsedMs = last && first ? last.at - first.at : 0
       const transferred = last && first ? Math.max(last.bytesDone - first.bytesDone, 0) : 0
+      const applied = last && first
+        ? Math.max(last.applyBytesDone - first.applyBytesDone, 0)
+        : 0
       setDownloadRate(elapsedMs >= 900 ? (transferred * 1000) / elapsedMs : 0)
+      setApplyRate(elapsedMs >= 900 ? (applied * 1000) / elapsedMs : 0)
     }
 
     tick()
@@ -2011,6 +2115,7 @@ export default function App() {
   const phaseProgress = getPhaseProgress(
     activeJob,
     (activeJob.status === 'downloading' || isPatchDownloading) ? downloadRate : 0,
+    applyRate,
   )
   const progress = phaseProgress.percent
   const hasVisibleJob =
@@ -2024,6 +2129,7 @@ export default function App() {
   const isDefaultGame = selectedGame?.id === DEFAULT_GAME_ID
   const selectedInstallState = selectedGame ? installStates[selectedGame.id] : undefined
   const selectedInstalled = Boolean(selectedInstallState?.installed)
+  const selectedInstallBlocked = ['recovering', 'conflict', 'unavailable'].includes(selectedInstallState?.discoveryStatus ?? '')
   const gameInstall = useMemo(
     () => installMetadataForStoreRoot(selectedGame, activeDetail?.install ?? selectedGame?.install ?? fallbackInstall, preferences.defaultLibraryRoot),
     [activeDetail?.install, preferences.defaultLibraryRoot, selectedGame],
@@ -2161,6 +2267,7 @@ export default function App() {
 
   const updateReady =
     selectedInstalled &&
+    !selectedInstallBlocked &&
     selectedCurrentVersion !== 'unknown' &&
     selectedCurrentVersion !== 'not installed' &&
     !isInstalledUnknownWithSingleVersion &&
@@ -2173,6 +2280,7 @@ export default function App() {
   const showVersionAction = selectedInstalled && hasVersionChoices
   const canUpdate =
     Boolean(selectedGame && activeDetail) &&
+    !selectedInstallBlocked &&
     !isRunning &&
     availableVersions.length > 0 &&
     targetVersion !== 'unknown' &&
@@ -2512,6 +2620,10 @@ export default function App() {
       if (typeof selected !== 'string') return
       const root = selected.trim().replace(/[\\/]+$/, '') || DEFAULT_STORE_ROOT
       updatePreference('defaultLibraryRoot', root)
+      await updateLauncherSetting('defaultLibrary', root)
+      if (isTauriRuntime()) {
+        await invoke('register_library_root', { path: root })
+      }
       setSettingsUpdateStatus(`Default library changed to ${root}`)
 
       const drive = root.match(/^([A-Za-z]:)/)?.[1]?.toUpperCase()
@@ -2527,6 +2639,50 @@ export default function App() {
     } catch (error) {
       setSettingsUpdateStatus(`Could not change library: ${String(error)}`)
     }
+  }
+
+  async function locateExistingLibrary() {
+    try {
+      const selected = await open({
+        directory: true,
+        multiple: false,
+        title: 'Locate an existing 0xoLemon library',
+        defaultPath: launcherSettings.defaultLibrary || preferences.defaultLibraryRoot,
+      })
+      if (typeof selected !== 'string') return
+      setInstallDiscoveryBusy(true)
+      await invoke('register_library_root', { path: selected })
+      localStorage.setItem('0xo_install_recovery_prompt_v1', '1')
+      setShowLocateLibraryPrompt(false)
+      installDiscoveryCatalogRef.current = ''
+      await runInstallDiscovery(catalog.games.map((game) => game.id))
+    } catch (error) {
+      setScanStatus(`Could not inspect the selected library: ${String(error)}`)
+    } finally {
+      setInstallDiscoveryBusy(false)
+    }
+  }
+
+  async function resolveInstallConflict(gameId: string, installPath: string) {
+    try {
+      setInstallDiscoveryBusy(true)
+      await invoke('resolve_install_conflict', { gameId, installPath })
+      installDiscoveryCatalogRef.current = ''
+      await runInstallDiscovery(catalog.games.map((game) => game.id))
+    } catch (error) {
+      setScanStatus(`Could not register ${installPath}: ${String(error)}`)
+    } finally {
+      setInstallDiscoveryBusy(false)
+    }
+  }
+
+  function closeInstallRecovery() {
+    setShowInstallRecovery(false)
+  }
+
+  function dismissLocateLibraryPrompt() {
+    localStorage.setItem('0xo_install_recovery_prompt_v1', '1')
+    setShowLocateLibraryPrompt(false)
   }
 
   async function openDefaultLibraryRoot() {
@@ -2860,6 +3016,10 @@ export default function App() {
       setScanStatus('Select a game first')
       return
     }
+    if (selectedInstallBlocked) {
+      setScanStatus(selectedInstallState?.unavailableReason || 'Resolve the existing install location before changing versions.')
+      return
+    }
 
     const isSteamGame = steamInstalledAppIds.includes(mapping[selectedGame.id])
     if (isSteamGame && !selectedInstalled) {
@@ -2884,6 +3044,10 @@ export default function App() {
   async function startUpdate() {
     if (!selectedGame || !activeDetail) {
       setScanStatus('Select a game first')
+      return
+    }
+    if (selectedInstallBlocked) {
+      setScanStatus(selectedInstallState?.unavailableReason || 'Resolve the existing install location before starting this job.')
       return
     }
     if (!installMode && targetVersion === selectedCurrentVersion) {
@@ -3019,6 +3183,10 @@ export default function App() {
     }
     if (!selectedInstalled) {
       setShowInstallOptions(true)
+      return
+    }
+    if (selectedInstallBlocked) {
+      setScanStatus(selectedInstallState?.unavailableReason || 'The installed library is currently unavailable.')
       return
     }
     if (!isTauriRuntime()) {
@@ -3267,6 +3435,10 @@ export default function App() {
       setScanStatus('Install the game before verify')
       return
     }
+    if (selectedInstallBlocked) {
+      setScanStatus(selectedInstallState?.unavailableReason || 'The installed library is currently unavailable.')
+      return
+    }
     if (!isTauriRuntime()) {
       setScanStatus('Browser preview cannot verify local game files')
       return
@@ -3348,6 +3520,10 @@ export default function App() {
 
   function uninstallSelectedGame() {
     if (!selectedGame || !selectedInstalled) {
+      return
+    }
+    if (selectedInstallBlocked) {
+      setScanStatus(selectedInstallState?.unavailableReason || 'Reconnect the installed library before uninstalling this game.')
       return
     }
     if (preferences.confirmBeforeUninstall) {
@@ -3547,7 +3723,7 @@ export default function App() {
   const enterBigPicture = () => {
     // Block big picture during intro or Discord verification
     if (isBlockedState) {
-      console.log('[BigPicture] Blocked: intro or Discord check in progress')
+      if (import.meta.env.DEV) console.debug('[BigPicture] Blocked during startup access checks')
       return
     }
     setIsBigPictureMode(true)
@@ -3561,36 +3737,38 @@ export default function App() {
     <MotionConfig reducedMotion={reducedMotion ? 'always' : 'never'}>
       {isBigPictureMode ? (
         <AnimatePresence>
-          <BigPictureView
-            games={catalog.games}
-            assetUrls={assetUrls}
-            onExit={exitBigPicture}
-            notifications={notifications}
-            notificationOpen={notificationOpen}
-            onToggleNotifications={() => setNotificationOpen((current) => !current)}
-            onCloseNotifications={() => setNotificationOpen(false)}
-            onOpenNotification={openNotificationRecord}
-            onMarkAllNotificationsRead={() => {
-              setNotifications((current) => current.map((item) => ({ ...item, read: true })))
-              if (isTauriRuntime()) {
-                void invoke<NotificationRecord[]>('mark_all_notifications_read').then(setNotifications).catch(() => undefined)
-              }
-            }}
-            onClearNotifications={() => {
-              setNotifications([])
-              if (isTauriRuntime()) {
-                void invoke<NotificationRecord[]>('clear_notifications').then(setNotifications).catch(() => undefined)
-              }
-            }}
-            onOpenNotificationSettings={() => {
-              setNotificationOpen(false)
-              setIsBigPictureMode(false)
-              setActiveTab('Settings')
-              window.setTimeout(() => {
-                document.getElementById('notification-settings')?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth' })
-              }, 80)
-            }}
-          />
+          <Suspense fallback={<ViewChunkFallback />}>
+            <BigPictureView
+              games={catalog.games}
+              assetUrls={assetUrls}
+              onExit={exitBigPicture}
+              notifications={notifications}
+              notificationOpen={notificationOpen}
+              onToggleNotifications={() => setNotificationOpen((current) => !current)}
+              onCloseNotifications={() => setNotificationOpen(false)}
+              onOpenNotification={openNotificationRecord}
+              onMarkAllNotificationsRead={() => {
+                setNotifications((current) => current.map((item) => ({ ...item, read: true })))
+                if (isTauriRuntime()) {
+                  void invoke<NotificationRecord[]>('mark_all_notifications_read').then(setNotifications).catch(() => undefined)
+                }
+              }}
+              onClearNotifications={() => {
+                setNotifications([])
+                if (isTauriRuntime()) {
+                  void invoke<NotificationRecord[]>('clear_notifications').then(setNotifications).catch(() => undefined)
+                }
+              }}
+              onOpenNotificationSettings={() => {
+                setNotificationOpen(false)
+                setIsBigPictureMode(false)
+                setActiveTab('Settings')
+                window.setTimeout(() => {
+                  document.getElementById('notification-settings')?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth' })
+                }, 80)
+              }}
+            />
+          </Suspense>
         </AnimatePresence>
       ) : (
         <div
@@ -3704,6 +3882,22 @@ export default function App() {
               className={`workspace premium-workspace${ptrProgress > 0 ? ' ptr-pulling' : ''}${activeTab === 'Lua Shop' ? ' lua-shop-workspace' : ''}`}
               style={ptrProgress > 0 ? { transform: `translateY(${Math.min(ptrProgress * 60, 60)}px)` } : undefined}
             >
+              {showLocateLibraryPrompt ? (
+                <aside className="install-recovery-prompt" aria-labelledby="install-recovery-prompt-title">
+                  <FolderSearch size={20} aria-hidden="true" />
+                  <div>
+                    <strong id="install-recovery-prompt-title">{t.installRecovery.locateTitle}</strong>
+                    <span>{t.installRecovery.locateDescription}</span>
+                  </div>
+                  <button type="button" className="secondary" onClick={() => void locateExistingLibrary()} disabled={installDiscoveryBusy}>
+                    <FolderSearch size={16} />
+                    {installDiscoveryBusy ? t.installRecovery.checking : t.installRecovery.chooseLibrary}
+                  </button>
+                  <button type="button" className="install-recovery-prompt-close" onClick={dismissLocateLibraryPrompt} aria-label={t.installRecovery.close}>
+                    <X size={16} />
+                  </button>
+                </aside>
+              ) : null}
               {['Updates', 'Downloads', 'Cache'].includes(activeTab) && selectedGame && activeDetail ? (
                 <OperationHero
                   game={selectedGame}
@@ -3733,8 +3927,9 @@ export default function App() {
                   activeTab === 'Lua Shop' ? 'lua-shop-tab-content' : '',
                 ].filter(Boolean).join(' ')}
               >
-                {/* Offline gate: tabs requiring internet show NoInternetView when offline */}
-                {!isOnline && !['Library', 'Settings'].includes(activeTab) ? (
+                <Suspense fallback={<ViewChunkFallback />}>
+                  {/* Offline gate: tabs requiring internet show NoInternetView when offline */}
+                  {!isOnline && !['Library', 'Settings'].includes(activeTab) ? (
                   <NoInternetView tabName={activeTab === 'Home' ? 'Home' : activeTab === 'Store' ? 'Store' : activeTab === "What's New!" ? "What's New" : activeTab === 'Downloads' ? 'Downloads' : activeTab === 'Updates' ? 'Updates' : activeTab === 'CloudRedirect' ? 'CloudRedirect' : activeTab === 'Translations' ? 'Translations' : undefined} />
                 ) : activeTab === 'Home' ? (
                   <HomeView
@@ -3889,7 +4084,8 @@ export default function App() {
                     onClearCache={() => void clearLauncherCache()}
                     discordUser={discordAuth.state === 'authorized' ? discordAuth.user : null}
                   />
-                )}
+                  )}
+                </Suspense>
               </div>
               {showInstallOptions && selectedGame && activeDetail ? (
                 <InstallOptionsDialog
@@ -3921,6 +4117,15 @@ export default function App() {
                   onClose={() => setShowDrivePicker(false)}
                 />
               ) : null}
+              <InstallRecoveryDialog
+                open={showInstallRecovery}
+                conflicts={installDiscoveryReport?.conflicts ?? []}
+                gameTitles={installRecoveryTitles}
+                busy={installDiscoveryBusy}
+                onResolve={(gameId, installPath) => void resolveInstallConflict(gameId, installPath)}
+                onLocate={() => void locateExistingLibrary()}
+                onClose={closeInstallRecovery}
+              />
               {launchOptions && selectedGame ? (
                 <LaunchOptionsModal
                   gameTitle={selectedGame.title}
@@ -4101,17 +4306,19 @@ export default function App() {
               setActiveTab(activeJob.kind === 'install' ? 'Downloads' : 'Updates')
             }}
           />
-          <UpdateCenter
-            open={showUpdateCenter}
-            update={launcherUpdate}
-            progress={launcherUpdateProgress}
-            speed={launcherUpdateSpeed}
-            eta={launcherUpdateEta}
-            onClose={() => setShowUpdateCenter(false)}
-            onStart={() => void applyLauncherUpdate()}
-            onRetry={() => void applyLauncherUpdate()}
-            onSkip={() => { setUpdateSkipped(true); setShowUpdateCenter(false) }}
-          />
+          <Suspense fallback={null}>
+            <UpdateCenter
+              open={showUpdateCenter}
+              update={launcherUpdate}
+              progress={launcherUpdateProgress}
+              speed={launcherUpdateSpeed}
+              eta={launcherUpdateEta}
+              onClose={() => setShowUpdateCenter(false)}
+              onStart={() => void applyLauncherUpdate()}
+              onRetry={() => void applyLauncherUpdate()}
+              onSkip={() => { setUpdateSkipped(true); setShowUpdateCenter(false) }}
+            />
+          </Suspense>
           <AchievementToastOverlay />
           <NotificationToasts
             notifications={toastNotifications}
@@ -4120,16 +4327,18 @@ export default function App() {
               setToastNotifications((current) => current.filter((item) => item.id !== notificationId))
             }
           />
-          <HelpCenter
-            key={`${activeTab}:${helpCenterOpen}`}
-            open={helpCenterOpen}
-            activeTab={activeTab}
-            onClose={() => setHelpCenterOpen(false)}
-            onReplayTour={() => {
-              updatePreference('onboardingCompleted', false)
-              setActiveTab('Home')
-            }}
-          />
+          <Suspense fallback={null}>
+            <HelpCenter
+              key={`${activeTab}:${helpCenterOpen}`}
+              open={helpCenterOpen}
+              activeTab={activeTab}
+              onClose={() => setHelpCenterOpen(false)}
+              onReplayTour={() => {
+                updatePreference('onboardingCompleted', false)
+                setActiveTab('Home')
+              }}
+            />
+          </Suspense>
           {shouldShowOnboarding ? (
             <Onboarding
               onComplete={() => updatePreference('onboardingCompleted', true)}

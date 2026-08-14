@@ -7,7 +7,7 @@ use std::sync::{Mutex, OnceLock};
 use std::thread;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-use chrono::{Datelike, DateTime, Utc};
+use chrono::{DateTime, Datelike, Utc};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use tauri::{AppHandle, Emitter, Manager};
@@ -51,7 +51,9 @@ impl SyncGuard {
         if !games.insert(game_id.to_string()) {
             return Err("Cloud Save đang đồng bộ game này.".to_string());
         }
-        Ok(Self { game_id: game_id.to_string() })
+        Ok(Self {
+            game_id: game_id.to_string(),
+        })
     }
 }
 
@@ -247,14 +249,28 @@ struct GameCloudRecord {
     max_stability_wait_ms: u64,
 }
 
-fn default_max_save_files() -> u64 { 10_000 }
-fn default_max_save_bytes() -> u64 { 5 * 1024 * 1024 * 1024 }
-fn default_max_save_file_bytes() -> u64 { 2 * 1024 * 1024 * 1024 }
-fn default_settle_time_ms() -> u64 { 2_000 }
-fn default_poll_interval_ms() -> u64 { 500 }
-fn default_stability_wait_ms() -> u64 { 30_000 }
+fn default_max_save_files() -> u64 {
+    10_000
+}
+fn default_max_save_bytes() -> u64 {
+    5 * 1024 * 1024 * 1024
+}
+fn default_max_save_file_bytes() -> u64 {
+    2 * 1024 * 1024 * 1024
+}
+fn default_settle_time_ms() -> u64 {
+    2_000
+}
+fn default_poll_interval_ms() -> u64 {
+    500
+}
+fn default_stability_wait_ms() -> u64 {
+    30_000
+}
 
-fn default_true_value() -> bool { true }
+fn default_true_value() -> bool {
+    true
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -394,7 +410,10 @@ pub fn sync_before_launch(app: &AppHandle, game_id: &str) -> Result<CloudSaveSta
         ));
     }
     if status.remote_newer_known
-        && matches!(status.state.as_str(), "offline" | "rate_limited" | "auth_required")
+        && matches!(
+            status.state.as_str(),
+            "offline" | "rate_limited" | "auth_required"
+        )
     {
         return Err(
             "CLOUD_SAVE_REMOTE_NEWER:Cloud có Save mới hơn nhưng hiện chưa thể tải xuống."
@@ -489,7 +508,9 @@ pub fn retry_pending_syncs(
             .iter()
             .filter(|(game_id, record)| {
                 record.pending_operations.iter().any(pending_retry_due)
-                    && only_game_id.map(|value| value == game_id.as_str()).unwrap_or(true)
+                    && only_game_id
+                        .map(|value| value == game_id.as_str())
+                        .unwrap_or(true)
             })
             .map(|(game_id, _)| game_id.clone())
             .collect::<Vec<_>>()
@@ -578,6 +599,10 @@ pub fn refresh_save_map(app: &AppHandle) -> Result<MapUpdateReport, String> {
     Ok(report)
 }
 
+/// Nhận CloudSaveMap JSON từ Firestore realtime listener (JS) và lưu vào LKG cache.
+pub fn push_save_map_from_firestore(app: &AppHandle, payload: &str) -> Result<(), String> {
+    save_map::push_map_from_firestore(app, payload)
+}
 
 fn update_google_message(
     app: &AppHandle,
@@ -614,10 +639,7 @@ pub fn sync_after_exit_async(app: AppHandle, game_id: String) {
         if let Err(error) = wait_for_local_stability(&app, &game_id) {
             match record_background_retry(&app, &game_id, &error) {
                 Ok(status) => {
-                    let _ = app.emit(
-                        "launcher://cloud-save",
-                        CloudSaveEvent { game_id, status },
-                    );
+                    let _ = app.emit("launcher://cloud-save", CloudSaveEvent { game_id, status });
                 }
                 Err(state_error) => {
                     let _ = app.emit(
@@ -707,11 +729,15 @@ fn wait_for_local_stability(app: &AppHandle, game_id: &str) -> Result<(), String
     Err("Game vẫn đang ghi Save. Launcher đã giữ bản cũ và sẽ tự thử lại ở nền.".to_string())
 }
 
-fn enforce_manifest_limits(record: &GameCloudRecord, manifest: &CloudManifest) -> Result<(), String> {
+fn enforce_manifest_limits(
+    record: &GameCloudRecord,
+    manifest: &CloudManifest,
+) -> Result<(), String> {
     if manifest.files.len() as u64 > record.max_files {
         return Err(format!(
             "Cloud Save map vượt giới hạn an toàn: {} file (tối đa {}).",
-            manifest.files.len(), record.max_files
+            manifest.files.len(),
+            record.max_files
         ));
     }
     let total = manifest_bytes(manifest);
@@ -775,7 +801,11 @@ pub fn resolve_conflict(
         if let Ok(_guard) = state_lock().lock() {
             if let Ok(mut state) = load_state_unlocked(app) {
                 let record = state.games.entry(game_id.to_string()).or_default();
-                if !record.conflicts.iter().any(|item| item.id == selected_conflict.id) {
+                if !record
+                    .conflicts
+                    .iter()
+                    .any(|item| item.id == selected_conflict.id)
+                {
                     record.conflicts.push(selected_conflict);
                 }
                 let _ = write_state_unlocked(app, &state);
@@ -824,12 +854,7 @@ pub fn restore_snapshot(
         // The real local branch may be newer than the local mirror. Preserve it
         // before replacing a single file so a mistaken restore remains reversible.
         let current_local = scan_local_roots(&expanded_roots, &record.include, &record.exclude)?;
-        snapshot_local(
-            &game_root,
-            record,
-            &expanded_roots,
-            &current_local,
-        )?;
+        snapshot_local(&game_root, record, &expanded_roots, &current_local)?;
         apply_cloud_manifest_to_local(
             &expanded_roots,
             &snapshot_root.join("files"),
@@ -1030,19 +1055,15 @@ fn sync_game(
                 snapshot_local(&game_root, &mut record, &expanded_roots, &local_manifest)?;
             }
             commit_local_to_cloud(&game_root, &expanded_roots, &local_manifest)?;
-            record.last_message = "Save trên máy đã được bảo vệ; đang cập nhật Google Drive.".to_string();
+            record.last_message =
+                "Save trên máy đã được bảo vệ; đang cập nhật Google Drive.".to_string();
             upload_required = !local_manifest.files.is_empty();
         }
         SyncAction::Pull => {
             if cloud_manifest.files.is_empty() {
                 record.last_message = "Google Drive chưa có Save cho game này.".to_string();
             } else {
-                snapshot_local(
-                    &game_root,
-                    &mut record,
-                    &expanded_roots,
-                    &local_manifest,
-                )?;
+                snapshot_local(&game_root, &mut record, &expanded_roots, &local_manifest)?;
                 apply_cloud_manifest_to_local(
                     &expanded_roots,
                     &cloud_files_root,
@@ -1052,7 +1073,8 @@ fn sync_game(
                 commit_local_to_cloud(&game_root, &expanded_roots, &cloud_manifest)?;
                 record.baseline = Some(cloud_manifest.clone());
                 record.google_drive_last_restore_count = cloud_manifest.files.len();
-                record.last_message = "Save mới nhất từ Google Drive đã sẵn sàng trên máy này.".to_string();
+                record.last_message =
+                    "Save mới nhất từ Google Drive đã sẵn sàng trên máy này.".to_string();
                 record.remote_newer_known = false;
             }
         }
@@ -1068,7 +1090,9 @@ fn sync_game(
                 &cloud_manifest,
             )?;
             record.cloud_state = "conflict".to_string();
-            record.last_message = "Hai bản Save đều đã thay đổi. Launcher đã giữ an toàn cả hai và cần bạn chọn.".to_string();
+            record.last_message =
+                "Hai bản Save đều đã thay đổi. Launcher đã giữ an toàn cả hai và cần bạn chọn."
+                    .to_string();
         }
         SyncAction::Baseline => {
             record.baseline = Some(local_manifest.clone());
@@ -1079,7 +1103,8 @@ fn sync_game(
         }
         SyncAction::Noop => {
             record.last_message = "Save đã được đồng bộ.".to_string();
-            upload_required = !record.pending_operations.is_empty() && !local_manifest.files.is_empty();
+            upload_required =
+                !record.pending_operations.is_empty() && !local_manifest.files.is_empty();
         }
     }
 
@@ -1116,7 +1141,8 @@ fn sync_game(
                     record.google_drive_last_backup_at = Some(Utc::now().to_rfc3339());
                     record.google_drive_message = "Đã đồng bộ với Google Drive.".to_string();
                     record.cloud_state = "synced".to_string();
-                    record.last_message = "Save đã được bảo vệ trên máy này và Google Drive.".to_string();
+                    record.last_message =
+                        "Save đã được bảo vệ trên máy này và Google Drive.".to_string();
                     // Remote retention is best-effort and intentionally amortized
                     // so thousands of users do not generate a full Drive listing
                     // after every short play session. Storage-full recovery still
@@ -1140,7 +1166,9 @@ fn sync_game(
                 "Cần kết nối Google Drive.",
             );
             record.cloud_state = "auth_required".to_string();
-            record.google_drive_message = "Save được bảo vệ trên máy này. Hãy kết nối Google Drive để đồng bộ đa thiết bị.".to_string();
+            record.google_drive_message =
+                "Save được bảo vệ trên máy này. Hãy kết nối Google Drive để đồng bộ đa thiết bị."
+                    .to_string();
         }
     } else if record.conflicts.is_empty() && google_drive::connected(app) {
         record.cloud_state = "synced".to_string();
@@ -1232,7 +1260,12 @@ fn apply_drive_failure(
     if error.kind == DriveFailureKind::RemoteChanged {
         record.remote_newer_known = true;
     }
-    if error.retryable || matches!(error.kind, DriveFailureKind::AuthRequired | DriveFailureKind::StorageFull) {
+    if error.retryable
+        || matches!(
+            error.kind,
+            DriveFailureKind::AuthRequired | DriveFailureKind::StorageFull
+        )
+    {
         queue_pending_upload(record, pending_bytes, &error.reason);
     }
     if error.kind == DriveFailureKind::StorageFull {
@@ -1298,7 +1331,6 @@ fn quota_status(quota: google_drive::DriveQuota) -> CloudQuotaStatus {
         state: state.to_string(),
     }
 }
-
 
 fn determine_sync_action(
     direction: SyncDirection,
@@ -1957,10 +1989,7 @@ fn trim_snapshots(game_root: &Path, record: &mut GameCloudRecord) -> Result<(), 
     Ok(())
 }
 
-fn retention_keep_set(
-    snapshots: &[CloudSnapshotSummary],
-    now: DateTime<Utc>,
-) -> HashSet<String> {
+fn retention_keep_set(snapshots: &[CloudSnapshotSummary], now: DateTime<Utc>) -> HashSet<String> {
     const RECENT: usize = 10;
     const DAILY_DAYS: i64 = 7;
     const WEEKLY_WEEKS: i64 = 4;
@@ -1997,7 +2026,10 @@ fn retention_keep_set(
         if snapshot.snapshot_class == "conflict" && age.num_days() <= CONFLICT_DAYS {
             keep.insert(snapshot.id.clone());
         }
-        if matches!(snapshot.source.as_str(), "restored" | "previous" | "current") {
+        if matches!(
+            snapshot.source.as_str(),
+            "restored" | "previous" | "current"
+        ) {
             keep.insert(snapshot.id.clone());
         }
     }
@@ -2082,9 +2114,8 @@ fn build_status(
 
 fn seed_metadata_defaults(app: &AppHandle, game_id: &str, state: &mut CloudStateFile) -> bool {
     let before = serde_json::to_vec(&state.games.get(game_id)).unwrap_or_default();
-    let (device_id, device_name) = device_identity(app).unwrap_or_else(|_| {
-        ("unknown-device".to_string(), "This PC".to_string())
-    });
+    let (device_id, device_name) = device_identity(app)
+        .unwrap_or_else(|_| ("unknown-device".to_string(), "This PC".to_string()));
     let record = state.games.entry(game_id.to_string()).or_default();
     if record.device_id.is_empty() {
         record.device_id = device_id;
@@ -2102,8 +2133,8 @@ fn seed_metadata_defaults(app: &AppHandle, game_id: &str, state: &mut CloudState
             &install.version,
         ) {
             Ok(resolved) => {
-                let legacy_expiry =
-                    Utc::now() + chrono::Duration::days(resolved.migration.legacy_retention_days as i64);
+                let legacy_expiry = Utc::now()
+                    + chrono::Duration::days(resolved.migration.legacy_retention_days as i64);
                 let mut active_roots = resolved
                     .roots
                     .into_iter()
@@ -2536,7 +2567,10 @@ fn copy_file_synced(source: &Path, target: &Path) -> Result<(), String> {
 
 fn copy_tree_safely(source: &Path, target: &Path) -> Result<(), String> {
     if is_reparse_or_symlink(source)? {
-        return Err(format!("refusing to copy linked folder: {}", source.display()));
+        return Err(format!(
+            "refusing to copy linked folder: {}",
+            source.display()
+        ));
     }
     fs::create_dir_all(target).map_err(|error| error.to_string())?;
     let mut walker = WalkDir::new(source).follow_links(false).into_iter();

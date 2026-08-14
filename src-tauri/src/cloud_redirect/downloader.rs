@@ -57,7 +57,12 @@ pub fn download_cloud_redirect_dll(dest: &Path) -> Option<String> {
     }
     match std::fs::write(dest, &dll_bytes) {
         Ok(()) => {
-            println!("Deployed {} ({} bytes) to {}", DLL_ASSET_NAME, dll_bytes.len(), dest.display());
+            println!(
+                "Deployed {} ({} bytes) to {}",
+                DLL_ASSET_NAME,
+                dll_bytes.len(),
+                dest.display()
+            );
             None
         }
         Err(e) => Some(format!("Failed to write {}: {}", DLL_ASSET_NAME, e)),

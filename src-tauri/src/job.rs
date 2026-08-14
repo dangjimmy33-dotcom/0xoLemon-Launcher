@@ -5,7 +5,7 @@ use std::fs::{self, File, OpenOptions};
 use std::io::{Read, Seek, SeekFrom, Write};
 use std::path::{Path, PathBuf};
 use std::process::Command;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{mpsc, Arc, Mutex, OnceLock};
 use std::thread;
 use std::time::{Duration, Instant};
@@ -93,7 +93,7 @@ fn long_path(path: &Path) -> PathBuf {
 const DEFAULT_LOCAL_DEPOT: &str = "E:\\007Launcher\\depot\\007-first-light";
 const DEFAULT_GAME_ID: &str = "007-first-light";
 const DEFAULT_GAME_DIR_NAME: &str = "007 First Light";
-const DEFAULT_STORE_ROOT: &str = "E:\\0xoLemonStore";
+const DEFAULT_STORE_ROOT: &str = crate::platform::DEFAULT_LIBRARY_ROOT;
 const INSTALL_MARKER_DIR: &str = ".0xolemon";
 const INSTALL_MARKER_FILE: &str = "state.0xo";
 const LEGACY_INSTALL_MARKER_FILE: &str = "install.json";
@@ -135,7 +135,10 @@ use dependencies::{
 use direct::DirectStagePlan;
 use paths::*;
 use progress::*;
-use sequential::{RecoveryOutcome, SequentialUpdateSession};
+use sequential::{
+    RecoveryOutcome, SequentialUpdateSession, TransactionCommitProof, VerifiedFileWriter,
+    VerifiedStageSession,
+};
 
 #[derive(Debug)]
 struct AdaptiveRangeState {
@@ -146,9 +149,15 @@ struct AdaptiveRangeState {
 
 static ADAPTIVE_RANGE_STATE: OnceLock<Mutex<AdaptiveRangeState>> = OnceLock::new();
 static RUNNING_GAMES: OnceLock<Mutex<std::collections::HashMap<String, u32>>> = OnceLock::new();
+static AUTOMATIC_SCAN_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+static LAST_POST_DISCOVERY_SCAN: AtomicU64 = AtomicU64::new(0);
 
 fn running_games() -> &'static Mutex<std::collections::HashMap<String, u32>> {
     RUNNING_GAMES.get_or_init(|| Mutex::new(std::collections::HashMap::new()))
+}
+
+fn automatic_scan_lock() -> &'static Mutex<()> {
+    AUTOMATIC_SCAN_LOCK.get_or_init(|| Mutex::new(()))
 }
 
 #[derive(Default)]
@@ -297,15 +306,17 @@ pub fn start_auto_update_scheduler(app: AppHandle, control: Arc<JobControl>) {
         // hotfix can complete, otherwise the user never sees its progress.
         thread::sleep(AUTO_PATCH_STARTUP_DELAY);
         loop {
-            if let Err(error) = auto_patch_tick(&patch_app, &patch_control, &mut last_attempts) {
-                let _ = patch_app.emit(
-                    "launcher://auto-update",
-                    AutoUpdateEvent {
-                        state: "error".to_string(),
-                        message: error,
-                        game_id: None,
-                    },
-                );
+            if let Ok(_scan_guard) = automatic_scan_lock().try_lock() {
+                if let Err(error) = auto_patch_tick(&patch_app, &patch_control, &mut last_attempts) {
+                    let _ = patch_app.emit(
+                        "launcher://auto-update",
+                        AutoUpdateEvent {
+                            state: "error".to_string(),
+                            message: error,
+                            game_id: None,
+                        },
+                    );
+                }
             }
             thread::sleep(AUTO_PATCH_POLL_INTERVAL);
         }
@@ -315,22 +326,76 @@ pub fn start_auto_update_scheduler(app: AppHandle, control: Arc<JobControl>) {
         let mut last_attempts = HashMap::<String, Instant>::new();
         thread::sleep(Duration::from_secs(20));
         loop {
-            if let Err(error) = auto_update_tick(&app, &control, &mut last_attempts) {
-                let _ = app.emit(
-                    "launcher://auto-update",
-                    AutoUpdateEvent {
-                        state: "error".to_string(),
-                        message: error,
-                        game_id: None,
-                    },
-                );
+            if let Ok(_scan_guard) = automatic_scan_lock().try_lock() {
+                if let Err(error) = auto_update_tick(&app, &control, &mut last_attempts) {
+                    let _ = app.emit(
+                        "launcher://auto-update",
+                        AutoUpdateEvent {
+                            state: "error".to_string(),
+                            message: error,
+                            game_id: None,
+                        },
+                    );
+                }
             }
             thread::sleep(Duration::from_secs(300));
         }
     });
 }
 
+pub fn start_post_discovery_scan(app: AppHandle, control: Arc<JobControl>) {
+    let Some(generation) = crate::install_discovery::automatic_jobs_generation() else {
+        return;
+    };
+    let mut scanned = LAST_POST_DISCOVERY_SCAN.load(Ordering::Acquire);
+    loop {
+        if scanned >= generation {
+            return;
+        }
+        match LAST_POST_DISCOVERY_SCAN.compare_exchange_weak(
+            scanned,
+            generation,
+            Ordering::AcqRel,
+            Ordering::Acquire,
+        ) {
+            Ok(_) => break,
+            Err(current) => scanned = current,
+        }
+    }
+    thread::spawn(move || {
+        let Ok(_scan_guard) = automatic_scan_lock().lock() else {
+            return;
+        };
+        let mut patch_attempts = HashMap::<String, (String, Instant)>::new();
+        if let Err(error) = auto_patch_tick(&app, &control, &mut patch_attempts) {
+            let _ = app.emit(
+                "launcher://auto-update",
+                AutoUpdateEvent {
+                    state: "error".to_string(),
+                    message: error,
+                    game_id: None,
+                },
+            );
+            return;
+        }
+        let mut update_attempts = HashMap::<String, Instant>::new();
+        if let Err(error) = auto_update_tick(&app, &control, &mut update_attempts) {
+            let _ = app.emit(
+                "launcher://auto-update",
+                AutoUpdateEvent {
+                    state: "error".to_string(),
+                    message: error,
+                    game_id: None,
+                },
+            );
+        }
+    });
+}
+
 fn automatic_job_can_start(app: &AppHandle, control: &Arc<JobControl>) -> Result<bool, String> {
+    if !crate::install_discovery::automatic_jobs_ready() {
+        return Ok(false);
+    }
     if control.is_running() {
         return Ok(false);
     }
@@ -356,7 +421,37 @@ fn automatic_job_can_start(app: &AppHandle, control: &Arc<JobControl>) -> Result
     {
         return Ok(false);
     }
+    if current_journal_has_pending_transaction(app).map_err(|error| error.to_string())? {
+        return Ok(false);
+    }
     Ok(true)
+}
+
+fn current_journal_has_pending_transaction(app: &AppHandle) -> Result<bool, JobError> {
+    let Some(journal) = read_latest_journal(app)? else {
+        return Ok(false);
+    };
+    if !matches!(
+        journal.kind.as_str(),
+        "install" | "update" | "repair" | "patch"
+    ) || journal.install_path.trim().is_empty()
+    {
+        return Ok(false);
+    }
+    let install_root = PathBuf::from(&journal.install_path);
+    let source = DepotSource::for_game(&journal.game_id);
+    let downloading_root = downloading_dir_for_install(&install_root, &source);
+    SequentialUpdateSession::has_pending_transaction(&downloading_root, &journal.id)
+}
+
+fn ensure_no_pending_file_transaction(app: &AppHandle) -> Result<(), JobError> {
+    if current_journal_has_pending_transaction(app)? {
+        return Err(JobError::Depot(
+            "A committed file transaction still owns rollback backups. Resume the current job before starting another install, update, repair, or patch."
+                .to_string(),
+        ));
+    }
+    Ok(())
 }
 
 fn patch_attempt_is_throttled(
@@ -388,14 +483,10 @@ fn auto_patch_tick(
     control: &Arc<JobControl>,
     last_attempts: &mut HashMap<String, (String, Instant)>,
 ) -> Result<(), String> {
-    let settings = crate::platform::current_settings();
-    if !automatic_updates_allowed_now(&settings) {
-        return Ok(());
-    }
-    let installs = reconciled_installs(app)?;
     if !automatic_job_can_start(app, control)? {
         return Ok(());
     }
+    let installs = reconciled_installs(app)?;
 
     for install in installs {
         let Some(version) = usable_installed_version(&install.marker.version) else {
@@ -472,10 +563,10 @@ fn auto_update_tick(
     if !automatic_updates_allowed_now(&settings) {
         return Ok(());
     }
-    let installs = reconciled_installs(app)?;
     if !automatic_job_can_start(app, control)? {
         return Ok(());
     }
+    let installs = reconciled_installs(app)?;
 
     for install in installs {
         if last_attempts
@@ -573,6 +664,22 @@ pub struct GameInstallState {
     pub install_path: String,
     pub launch_executable: String,
     pub applied_patch_id: Option<String>,
+    #[serde(default)]
+    pub discovery_status: String,
+    #[serde(default)]
+    pub candidate_paths: Vec<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub library_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub unavailable_reason: Option<String>,
+}
+
+#[derive(Debug, Clone)]
+pub(crate) struct DiscoverableInstallMarker {
+    pub game_id: String,
+    pub version: String,
+    pub launch_executable: String,
+    pub applied_patch_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -646,6 +753,21 @@ pub struct JobJournal {
     /// Bytes already available before the current remaining-work plan.
     #[serde(default)]
     pub session_base_bytes: u64,
+    /// Verified bytes durably written to the staging transaction.
+    #[serde(default)]
+    pub apply_bytes_done: u64,
+    #[serde(default)]
+    pub apply_bytes_total: u64,
+    #[serde(default)]
+    pub durable_bytes: u64,
+    #[serde(default)]
+    pub current_file: String,
+    #[serde(default)]
+    pub pipeline_version: String,
+    #[serde(default)]
+    pub commit_state: String,
+    #[serde(default)]
+    pub planned_files: Vec<String>,
     pub retry_count: u32,
     pub resumable: bool,
     pub updated_at: String,
@@ -671,6 +793,20 @@ pub struct DownloadMetrics {
     pub peak_in_flight_bytes: u64,
     pub throughput_p50_bytes_per_second: u64,
     pub throughput_p95_bytes_per_second: u64,
+    #[serde(default)]
+    pub disk_read_bytes: u64,
+    #[serde(default)]
+    pub disk_write_bytes: u64,
+    #[serde(default)]
+    pub resume_rehash_bytes: u64,
+    #[serde(default)]
+    pub sync_wait_ms: u64,
+    #[serde(default)]
+    pub commit_wait_ms: u64,
+    #[serde(default)]
+    pub allocation_reserved_bytes: u64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub allocation_fallback_reason: Option<String>,
     #[serde(skip)]
     throughput_samples: Vec<u64>,
 }
@@ -780,7 +916,10 @@ pub fn start_pending_update_recovery(app: AppHandle, control: Arc<JobControl>) {
     let Ok(Some(mut journal)) = read_latest_journal(&app) else {
         return;
     };
-    if journal.kind != "update" {
+    if !matches!(
+        journal.kind.as_str(),
+        "install" | "update" | "repair" | "patch"
+    ) {
         return;
     }
     let install_root = PathBuf::from(&journal.install_path);
@@ -808,7 +947,14 @@ pub fn start_pending_update_recovery(app: AppHandle, control: Arc<JobControl>) {
             match session.recover(&install_root, &journal.to_version)? {
                 RecoveryOutcome::AlreadyCommitted => {
                     journal.status = JobStatus::Committed;
-                    journal.phase = "Committed".to_string();
+                    journal.phase = if journal.kind == "patch" {
+                        "Patch applied".to_string()
+                    } else if journal.kind == "repair" {
+                        "Repair committed".to_string()
+                    } else {
+                        "Committed".to_string()
+                    };
+                    journal.commit_state = "committed".to_string();
                     journal.overall_progress = 1.0;
                     for step in &mut journal.steps {
                         step.status = StepStatus::Completed;
@@ -817,7 +963,7 @@ pub fn start_pending_update_recovery(app: AppHandle, control: Arc<JobControl>) {
                     append_log(
                         &mut journal,
                         "info",
-                        "Startup recovery completed the committed update cleanup",
+                        "Startup recovery completed committed transaction cleanup",
                     );
                     if let Err(error) = session.cleanup_session_files() {
                         append_log(
@@ -834,7 +980,7 @@ pub fn start_pending_update_recovery(app: AppHandle, control: Arc<JobControl>) {
                     append_log(
                         &mut journal,
                         "warning",
-                        "Startup recovery restored the complete base install; Resume can continue the update",
+                        "Startup recovery restored the complete previous install; Resume can continue safely",
                     );
                 }
             }
@@ -1014,6 +1160,7 @@ pub fn spawn_update_job(
     target_version: Option<String>,
     game_id: Option<String>,
 ) -> Result<JobJournal, JobError> {
+    ensure_no_pending_file_transaction(&app)?;
     let source = DepotSource::for_game(game_id.as_deref().unwrap_or(DEFAULT_GAME_ID));
     let catalog = source.load_catalog()?;
     let target_version = resolve_target_version(&catalog, target_version)?;
@@ -1043,6 +1190,7 @@ pub fn spawn_update_job(
         &target_version,
         0,
     );
+    journal.pipeline_version = "sequential-stage-v1+verified-patch-v2".to_string();
     journal.steps[0] = step(
         "Read install state",
         "Load .0xolemon state and the installed manifest",
@@ -1105,8 +1253,7 @@ fn spawn_update_journal(
         let canceled_job_id = initial.id.clone();
         let result =
             run_real_update_job(&app_for_thread, control_for_thread.clone(), initial.clone());
-        let canceled = control_for_thread.is_canceled();
-        if canceled || matches!(&result, Err(JobError::Canceled)) {
+        if matches!(&result, Err(JobError::Canceled)) {
             let install_root = PathBuf::from(&initial.install_path);
             let source = DepotSource::for_game(&initial.game_id);
             let downloading_root = downloading_dir_for_install(&install_root, &source);
@@ -1145,6 +1292,7 @@ pub fn spawn_install_job(
     install_path: Option<String>,
     game_id: Option<String>,
 ) -> Result<JobJournal, JobError> {
+    ensure_no_pending_file_transaction(&app)?;
     let source = DepotSource::for_game(game_id.as_deref().unwrap_or(DEFAULT_GAME_ID));
     let catalog = source.load_catalog()?;
     let target_version = resolve_target_version(&catalog, target_version)?;
@@ -1176,6 +1324,7 @@ pub fn spawn_install_job(
         &target_version,
         initial_bytes,
     );
+    journal.pipeline_version = "verified-stage-v2".to_string();
     journal.bytes_done = initial_in_flight
         .values()
         .copied()
@@ -1190,6 +1339,46 @@ pub fn spawn_install_job(
         install_root.display().to_string(),
     )?;
 
+    spawn_install_journal(app, control, journal)
+}
+
+pub fn resume_install_job(
+    app: AppHandle,
+    control: Arc<JobControl>,
+    mut journal: JobJournal,
+) -> Result<JobJournal, JobError> {
+    if journal.kind != "install" || journal.install_path.trim().is_empty() {
+        return Err(JobError::Depot(
+            "journal is not a resumable install".to_string(),
+        ));
+    }
+    journal.status = JobStatus::Planned;
+    journal.phase = "Resuming".to_string();
+    journal.commit_state = "idle".to_string();
+    for step in &mut journal.steps {
+        if matches!(
+            step.status,
+            StepStatus::Running | StepStatus::Paused | StepStatus::Failed
+        ) {
+            step.status = StepStatus::Waiting;
+        }
+    }
+    append_log(
+        &mut journal,
+        "info",
+        "Resuming the existing owned install session",
+    );
+    control.reset();
+    spawn_install_journal(app, control, journal)
+}
+
+fn spawn_install_journal(
+    app: AppHandle,
+    control: Arc<JobControl>,
+    journal: JobJournal,
+) -> Result<JobJournal, JobError> {
+    persist_and_emit(&app, &journal)?;
+
     let app_for_thread = app.clone();
     let initial = journal.clone();
     let return_journal = journal.clone();
@@ -1200,13 +1389,15 @@ pub fn spawn_install_job(
         let canceled_job_id = initial.id.clone();
         let result =
             run_real_install_job(&app_for_thread, control_for_thread.clone(), initial.clone());
-        let canceled = control_for_thread.is_canceled();
+        let canceled = matches!(&result, Err(JobError::Canceled));
         control_for_thread.set_running(false);
         if canceled {
             // Cleanup temporary download files on cancel
             let install_root = PathBuf::from(&initial.install_path);
             let source = DepotSource::for_game(&initial.game_id);
             let downloading_root = downloading_dir_for_install(&install_root, &source);
+            let _ =
+                VerifiedStageSession::cleanup_owned_session(&downloading_root, &canceled_job_id);
             if let Some(dl_root) = downloading_root.parent() {
                 cleanup_download_temp_files(dl_root);
             }
@@ -1222,6 +1413,10 @@ pub fn spawn_install_job(
                 let install_root = PathBuf::from(&initial.install_path);
                 let source = DepotSource::for_game(&initial.game_id);
                 let downloading_root = downloading_dir_for_install(&install_root, &source);
+                let _ = VerifiedStageSession::cleanup_owned_session(
+                    &downloading_root,
+                    &canceled_job_id,
+                );
                 if let Some(dl_root) = downloading_root.parent() {
                     cleanup_download_temp_files(dl_root);
                 }
@@ -1264,6 +1459,7 @@ pub fn spawn_repair_job(
     target_version: Option<String>,
     file_paths: Vec<String>,
 ) -> Result<JobJournal, JobError> {
+    ensure_no_pending_file_transaction(&app)?;
     let source = DepotSource::for_game(game_id);
     let install_root = PathBuf::from(install_path);
     let marker = read_install_marker(&install_root)?;
@@ -1341,6 +1537,8 @@ pub fn spawn_repair_job(
         &version,
         bytes_total,
     );
+    journal.pipeline_version = "verified-stage-v2".to_string();
+    journal.planned_files = repair_files.iter().map(|file| file.path.clone()).collect();
     journal.bytes_done = existing_partial_task_progress(&staged_chunks_root, &missing_chunks)
         .values()
         .copied()
@@ -1365,6 +1563,77 @@ pub fn spawn_repair_job(
         install_root.display().to_string(),
     )?;
 
+    spawn_repair_journal(app, control, journal, repair_files, target_manifest)
+}
+
+pub fn resume_repair_job(
+    app: AppHandle,
+    control: Arc<JobControl>,
+    mut journal: JobJournal,
+) -> Result<JobJournal, JobError> {
+    if journal.kind != "repair"
+        || journal.install_path.trim().is_empty()
+        || journal.planned_files.is_empty()
+    {
+        return Err(JobError::Depot(
+            "journal is not a resumable repair".to_string(),
+        ));
+    }
+    let source = DepotSource::for_game(&journal.game_id);
+    let install_root = PathBuf::from(&journal.install_path);
+    let marker = read_install_marker(&install_root)?;
+    let target_manifest = installed_manifest_for_version(
+        &source,
+        &install_root,
+        marker.as_ref(),
+        &journal.to_version,
+    )?;
+    let planned = journal
+        .planned_files
+        .iter()
+        .map(|path| manifest_file_key(path))
+        .collect::<HashSet<_>>();
+    let repair_files = target_manifest
+        .files
+        .iter()
+        .filter(|file| planned.contains(&manifest_file_key(&file.path)))
+        .cloned()
+        .collect::<Vec<_>>();
+    if repair_files.len() != planned.len() {
+        return Err(JobError::SessionMismatch(
+            "repair manifest changed since the journal was created".to_string(),
+        ));
+    }
+    journal.status = JobStatus::Planned;
+    journal.phase = "Resuming".to_string();
+    journal.commit_state = "idle".to_string();
+    for step in &mut journal.steps {
+        if matches!(
+            step.status,
+            StepStatus::Running | StepStatus::Paused | StepStatus::Failed
+        ) {
+            step.status = StepStatus::Waiting;
+        }
+    }
+    append_log(
+        &mut journal,
+        "info",
+        "Resuming the existing owned repair session",
+    );
+    control.reset();
+    spawn_repair_journal(app, control, journal, repair_files, target_manifest)
+}
+
+fn spawn_repair_journal(
+    app: AppHandle,
+    control: Arc<JobControl>,
+    journal: JobJournal,
+    repair_files: Vec<FileEntry>,
+    target_manifest: VersionManifest,
+) -> Result<JobJournal, JobError> {
+    persist_and_emit(&app, &journal)?;
+    let source = DepotSource::for_game(&journal.game_id);
+
     let app_for_thread = app.clone();
     let initial = journal.clone();
     let return_journal = journal.clone();
@@ -1379,13 +1648,15 @@ pub fn spawn_repair_job(
             repair_files,
             target_manifest,
         );
-        let canceled = control_for_thread.is_canceled();
+        let canceled = matches!(&result, Err(JobError::Canceled));
         control_for_thread.set_running(false);
         if canceled {
             // Cleanup temporary download files on cancel
             let install_root = PathBuf::from(&initial.install_path);
             let source = DepotSource::for_game(&initial.game_id);
             let downloading_root = downloading_dir_for_install(&install_root, &source);
+            let _ =
+                VerifiedStageSession::cleanup_owned_session(&downloading_root, &canceled_job_id);
             if let Some(dl_root) = downloading_root.parent() {
                 cleanup_download_temp_files(dl_root);
             }
@@ -1459,6 +1730,10 @@ fn install_root_candidates(app: &AppHandle, source: &DepotSource) -> Vec<PathBuf
         }
     }
 
+    for path in crate::install_discovery::discovered_candidate_paths(&source.game_id) {
+        push_unique_path(&mut candidates, path);
+    }
+
     push_unique_path(&mut candidates, source.default_common_game_dir());
 
     // Recover installs when the launcher is placed in the same directory as the game.
@@ -1467,28 +1742,6 @@ fn install_root_candidates(app: &AppHandle, source: &DepotSource) -> Vec<PathBuf
             push_unique_path(&mut candidates, parent.to_path_buf());
         }
     }
-    // Recover installs made before path persistence was enabled. Only direct
-    // children of known library/common directories are inspected.
-    let configured_library = crate::platform::current_settings().default_library;
-    let mut common_roots = vec![default_store_root().join("common")];
-    if !configured_library.trim().is_empty() {
-        common_roots.push(PathBuf::from(configured_library).join("common"));
-    }
-    common_roots.sort();
-    common_roots.dedup();
-
-    for common_root in common_roots {
-        let Ok(entries) = fs::read_dir(&common_root) else {
-            continue;
-        };
-        for entry in entries.filter_map(Result::ok) {
-            let path = entry.path();
-            if path.is_dir() {
-                push_unique_path(&mut candidates, path);
-            }
-        }
-    }
-
     candidates
 }
 
@@ -1523,6 +1776,14 @@ fn reconcile_registered_install(
     source: &DepotSource,
 ) -> Result<Option<(PathBuf, InstallMarker)>, JobError> {
     let record = crate::platform::install_record(app, &source.game_id).map_err(JobError::Depot)?;
+    let discovery = crate::install_discovery::game_discovery_view(&source.game_id);
+
+    // A removable/offline library is not an uninstall, and an ambiguous
+    // install must never be selected by an automatic job. Discovery owns the
+    // decision until the drive returns or the user resolves the conflict.
+    if record.is_some() && matches!(discovery.status.as_str(), "conflict" | "unavailable") {
+        return Ok(None);
+    }
 
     if let Some((install_root, marker)) = locate_registered_install(app, source) {
         let launch_executable = marker
@@ -1548,6 +1809,13 @@ fn reconcile_registered_install(
             .map_err(JobError::Depot)?;
         }
         return Ok(Some((install_root, marker)));
+    }
+
+    // Startup callers can request a state before bounded library discovery has
+    // classified offline drives and conflicts. Never turn that temporary gap
+    // into an uninstall; discovery will make the authoritative decision.
+    if record.is_some() && !crate::install_discovery::has_completed_discovery() {
+        return Ok(None);
     }
 
     if record.is_some() {
@@ -1673,6 +1941,42 @@ fn cleanup_completed_download_data_if_idle(
 
 pub fn game_install_state(app: &AppHandle, game_id: &str) -> Result<GameInstallState, JobError> {
     let source = DepotSource::for_game(game_id);
+    let discovery = crate::install_discovery::game_discovery_view(&source.game_id);
+    if matches!(discovery.status.as_str(), "conflict" | "unavailable") {
+        let record = crate::platform::install_record(app, &source.game_id)
+            .ok()
+            .flatten();
+        let install_path = record
+            .as_ref()
+            .map(|record| record.install_path.clone())
+            .or_else(|| discovery.candidate_paths.first().cloned())
+            .unwrap_or_else(|| source.default_common_game_dir().display().to_string());
+        let unavailable = discovery.status == "unavailable";
+        return Ok(GameInstallState {
+            game_id: source.game_id.clone(),
+            installed: unavailable,
+            current_version: if unavailable {
+                record
+                    .as_ref()
+                    .map(|record| record.version.clone())
+                    .filter(|version| !version.trim().is_empty())
+                    .unwrap_or_else(|| "unavailable".to_string())
+            } else {
+                "install conflict".to_string()
+            },
+            install_path,
+            launch_executable: record
+                .as_ref()
+                .map(|record| record.launch_executable.clone())
+                .filter(|executable| !executable.trim().is_empty())
+                .unwrap_or_else(|| default_launch_executable(&source.game_id)),
+            applied_patch_id: None,
+            discovery_status: discovery.status,
+            candidate_paths: discovery.candidate_paths,
+            library_id: discovery.library_id,
+            unavailable_reason: discovery.unavailable_reason,
+        });
+    }
     let resolved = reconcile_registered_install(app, &source)?;
 
     if let Some((install_root, marker)) = resolved {
@@ -1716,7 +2020,39 @@ pub fn game_install_state(app: &AppHandle, game_id: &str) -> Result<GameInstallS
             install_path: install_root.display().to_string(),
             launch_executable,
             applied_patch_id: marker.applied_patch_id.clone(),
+            discovery_status: if discovery.status.is_empty() {
+                "registered".to_string()
+            } else {
+                discovery.status
+            },
+            candidate_paths: if discovery.candidate_paths.is_empty() {
+                vec![install_root.display().to_string()]
+            } else {
+                discovery.candidate_paths
+            },
+            library_id: discovery.library_id,
+            unavailable_reason: None,
         });
+    }
+
+    if discovery.status.is_empty() && !crate::install_discovery::has_completed_discovery() {
+        if let Some(record) = crate::platform::install_record(app, &source.game_id)
+            .ok()
+            .flatten()
+        {
+            return Ok(GameInstallState {
+                game_id: source.game_id.clone(),
+                installed: true,
+                current_version: record.version,
+                install_path: record.install_path,
+                launch_executable: record.launch_executable,
+                applied_patch_id: None,
+                discovery_status: "recovering".to_string(),
+                candidate_paths: Vec::new(),
+                library_id: None,
+                unavailable_reason: None,
+            });
+        }
     }
 
     let install_root = source.default_common_game_dir();
@@ -1727,6 +2063,10 @@ pub fn game_install_state(app: &AppHandle, game_id: &str) -> Result<GameInstallS
         install_path: install_root.display().to_string(),
         launch_executable: default_launch_executable(&source.game_id),
         applied_patch_id: None,
+        discovery_status: "notFound".to_string(),
+        candidate_paths: Vec::new(),
+        library_id: None,
+        unavailable_reason: None,
     })
 }
 
@@ -1994,12 +2334,11 @@ pub fn launch_game(
                     | JobStatus::Assembling
                     | JobStatus::Verified
             );
-            let pending_update_transaction = active.kind == "update"
-                && SequentialUpdateSession::has_pending_transaction(
-                    &downloading_dir_for_install(install_path, &source),
-                    &active.id,
-                )?;
-            if mutating || pending_update_transaction {
+            let pending_install_transaction = SequentialUpdateSession::has_pending_transaction(
+                &downloading_dir_for_install(install_path, &source),
+                &active.id,
+            )?;
+            if mutating || pending_install_transaction {
                 return Err(JobError::Depot(
                     "The game cannot be launched while its install transaction is active or recovering"
                         .to_string(),
@@ -2091,22 +2430,17 @@ pub fn launch_game(
     }
 
     let dependencies_installed = ensure_game_dependencies(app, &source, install_path)?;
-    let shortcut_path = match create_game_shortcut(
-        app,
-        &source,
-        install_path,
-        &executable,
-        &main.path,
-    ) {
-        Ok(path) => path.map(|path| path.display().to_string()),
-        Err(error) => {
-            eprintln!(
-                "[shortcut] Could not refresh the desktop shortcut for {}: {}",
-                source.game_id, error
-            );
-            None
-        }
-    };
+    let shortcut_path =
+        match create_game_shortcut(app, &source, install_path, &executable, &main.path) {
+            Ok(path) => path.map(|path| path.display().to_string()),
+            Err(error) => {
+                eprintln!(
+                    "[shortcut] Could not refresh the desktop shortcut for {}: {}",
+                    source.game_id, error
+                );
+                None
+            }
+        };
     let _ = crate::steam_integration::ensure_game_shortcut(
         app,
         &source.game_id,
@@ -2170,10 +2504,7 @@ pub fn launch_game(
             ) {
                 Ok((exited_event, achievement_events)) => {
                     let _ = app_for_exit.emit("launcher://game-exited", exited_event);
-                    crate::platform::emit_achievement_events(
-                        &app_for_exit,
-                        &achievement_events,
-                    );
+                    crate::platform::emit_achievement_events(&app_for_exit, &achievement_events);
                 }
                 Err(error) => {
                     eprintln!(
@@ -2711,6 +3042,11 @@ fn run_real_update_job_once(
     configure_transfer_plan(&mut journal, transfer_total, 0);
     configure_download_metrics(&mut journal, &missing_chunks, false);
     journal.metrics.pipeline = "sequential-stage-v1".to_string();
+    if journal.pipeline_version.is_empty() {
+        // Journals created before verified patch staging stay pinned to the
+        // legacy patch implementation when they resume.
+        journal.pipeline_version = "sequential-stage-v1".to_string();
+    }
     let assembly_total = changed
         .iter()
         .map(|file| {
@@ -2723,6 +3059,10 @@ fn run_real_update_job_once(
             )
         })
         .sum::<u64>();
+    journal.apply_bytes_total = assembly_total;
+    journal.apply_bytes_done = session.total_durable_bytes(&changed);
+    journal.durable_bytes = journal.apply_bytes_done;
+    journal.commit_state = "staging".to_string();
     let planned_network = human_bytes(journal.bytes_total);
     append_log(
         &mut journal,
@@ -2768,9 +3108,8 @@ fn run_real_update_job_once(
 
     for (file_index, file) in changed.iter().enumerate() {
         wait_for_control(app, &control, &mut journal, 2)?;
-        if file_index == 0
-            || file_index.saturating_add(1) == changed.len()
-            || file_index % 64 == 0
+        journal.current_file = file.path.clone();
+        if file_index == 0 || file_index.saturating_add(1) == changed.len() || file_index % 64 == 0
         {
             append_log(
                 &mut journal,
@@ -2816,12 +3155,8 @@ fn run_real_update_job_once(
             } else {
                 vec![batch_file]
             };
-            let batch_missing = plan_missing_chunks(
-                &local_sources,
-                session.cache_root(),
-                &prefetch_files,
-                None,
-            )?;
+            let batch_missing =
+                plan_missing_chunks(&local_sources, session.cache_root(), &prefetch_files, None)?;
 
             if !batch_missing.is_empty() {
                 let assembled_snapshot = assembled;
@@ -2838,12 +3173,8 @@ fn run_real_update_job_once(
                     journal.bytes_done = downloaded
                         .saturating_add(active_bytes)
                         .min(journal.bytes_total);
-                    journal.steps[2].progress = streamed_update_progress(
-                        journal.bytes_done,
-                        journal.bytes_total,
-                        assembled_snapshot,
-                        assembly_total,
-                    );
+                    journal.steps[2].progress =
+                        streamed_journal_progress(&journal, assembled_snapshot, assembly_total);
                     journal.overall_progress = overall_progress(2, journal.steps[2].progress);
                     journal.steps[2].retry_count =
                         journal.steps[2].retry_count.max(progress.retry_count);
@@ -2876,14 +3207,12 @@ fn run_real_update_job_once(
                 if writer.checkpoint_due() {
                     session.checkpoint_writer(&mut writer, false)?;
                     session.release_checkpointed_chunks(&mut checkpointed_hashes)?;
+                    journal.apply_bytes_done = session.total_durable_bytes(&changed);
+                    journal.durable_bytes = journal.apply_bytes_done;
                 }
                 if last_ui_emit.elapsed() >= JOB_UI_EMIT_INTERVAL {
-                    journal.steps[2].progress = streamed_update_progress(
-                        journal.bytes_done,
-                        journal.bytes_total,
-                        assembled,
-                        assembly_total,
-                    );
+                    journal.steps[2].progress =
+                        streamed_journal_progress(&journal, assembled, assembly_total);
                     journal.overall_progress = overall_progress(2, journal.steps[2].progress);
                     touch(&mut journal);
                     publish_job_progress(
@@ -2904,6 +3233,9 @@ fn run_real_update_job_once(
 
         session.finish_writer(&mut writer, file)?;
         session.release_checkpointed_chunks(&mut checkpointed_hashes)?;
+        journal.apply_bytes_done = session.total_durable_bytes(&changed);
+        journal.durable_bytes = journal.apply_bytes_done;
+        merge_verified_writer_metrics(&mut journal, &writer);
         drop(writer);
         let stage = session.stage_path(file);
         for chunk in &file.chunks {
@@ -2931,20 +3263,24 @@ fn run_real_update_job_once(
                     pending_commit_files.len()
                 ),
             );
+            journal.commit_state = "committing".to_string();
+            let commit_started = Instant::now();
             committed_files = committed_files.saturating_add(commit_sequential_batch(
                 &mut session,
                 &install_root,
                 &mut pending_commit_files,
                 &mut local_sources,
             )?);
+            journal.metrics.commit_wait_ms = journal.metrics.commit_wait_ms.saturating_add(
+                commit_started
+                    .elapsed()
+                    .as_millis()
+                    .min(u128::from(u64::MAX)) as u64,
+            );
+            journal.commit_state = "staging".to_string();
             pending_commit_bytes = 0;
         }
-        journal.steps[2].progress = streamed_update_progress(
-            journal.bytes_done,
-            journal.bytes_total,
-            assembled,
-            assembly_total,
-        );
+        journal.steps[2].progress = streamed_journal_progress(&journal, assembled, assembly_total);
         journal.steps[3].progress = progress_fraction(committed_files, changed.len());
         journal.overall_progress = overall_progress(2, journal.steps[2].progress);
         touch(&mut journal);
@@ -2956,6 +3292,7 @@ fn run_real_update_job_once(
             file_index + 1 == changed.len(),
         )?;
     }
+    journal.current_file.clear();
     complete_step(app, &mut journal, 2)?;
 
     journal.steps[3].name = "Commit transaction".to_string();
@@ -2985,6 +3322,7 @@ fn run_real_update_job_once(
     complete_step(app, &mut journal, 3)?;
 
     set_step_running(app, &mut journal, 4, JobStatus::Running, "Finalize")?;
+    journal.commit_state = "metadata".to_string();
     write_install_marker(
         app,
         &install_root,
@@ -2993,28 +3331,10 @@ fn run_real_update_job_once(
         &target_version,
     )?;
     session.mark_marker_committed()?;
-    let cleanup_complete = match session.cleanup_committed(&install_root) {
-        Ok(()) => true,
-        Err(error) => {
-            append_log(
-                &mut journal,
-                "warning",
-                &format!("Update committed; backup cleanup remains pending: {error}"),
-            );
-            false
-        }
-    };
-    if cleanup_complete {
-        if let Err(error) = session.cleanup_session_files() {
-            append_log(
-                &mut journal,
-                "warning",
-                &format!("Update committed; session cleanup remains pending: {error}"),
-            );
-        }
-    }
+    finish_committed_transaction_cleanup(app, &mut journal, &mut session, &install_root, "Update")?;
     journal.status = JobStatus::Committed;
     journal.phase = "Committed".to_string();
+    journal.commit_state = "committed".to_string();
     journal.overall_progress = 1.0;
     journal.bytes_done = journal.bytes_total;
     complete_step(app, &mut journal, 4)?;
@@ -3118,9 +3438,7 @@ fn sequential_prefetch_files(
             }
         }
 
-        if candidate_bytes > 0
-            && network_bytes.saturating_add(candidate_bytes) > queue_budget
-        {
+        if candidate_bytes > 0 && network_bytes.saturating_add(candidate_bytes) > queue_budget {
             break;
         }
 
@@ -3184,6 +3502,302 @@ fn commit_sequential_batch(
     Ok(committed)
 }
 
+fn merge_verified_writer_metrics(journal: &mut JobJournal, writer: &VerifiedFileWriter) {
+    let metrics = writer.metrics();
+    journal.metrics.disk_read_bytes = journal
+        .metrics
+        .disk_read_bytes
+        .saturating_add(metrics.disk_read_bytes);
+    journal.metrics.disk_write_bytes = journal
+        .metrics
+        .disk_write_bytes
+        .saturating_add(metrics.disk_write_bytes);
+    journal.metrics.resume_rehash_bytes = journal
+        .metrics
+        .resume_rehash_bytes
+        .saturating_add(metrics.resume_rehash_bytes);
+    journal.metrics.sync_wait_ms = journal
+        .metrics
+        .sync_wait_ms
+        .saturating_add(metrics.sync_wait_ms);
+    journal.metrics.allocation_reserved_bytes = journal
+        .metrics
+        .allocation_reserved_bytes
+        .saturating_add(metrics.allocation_reserved_bytes);
+    if journal.metrics.allocation_fallback_reason.is_none() {
+        journal.metrics.allocation_fallback_reason = metrics.allocation_fallback_reason.clone();
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+fn stage_verified_manifest_files(
+    app: &AppHandle,
+    control: &Arc<JobControl>,
+    journal: &mut JobJournal,
+    source: &DepotSource,
+    session: &mut VerifiedStageSession,
+    files: &[FileEntry],
+    local_sources: &mut HashMap<String, LocalChunkSource>,
+    target_version: &str,
+    step_index: usize,
+) -> Result<(), JobError> {
+    session.reconcile_chunk_references(files)?;
+    let remaining_files = files
+        .iter()
+        .map(|file| {
+            let mut remaining = file.clone();
+            remaining.chunks = file.chunks[session.durable_chunks(file)..].to_vec();
+            remaining
+        })
+        .collect::<Vec<_>>();
+    let missing_chunks =
+        plan_missing_chunks(local_sources, session.cache_root(), &remaining_files, None)?;
+    let transfer_total = download_transfer_bytes(&missing_chunks);
+    let resumed_in_flight = existing_partial_task_progress(session.cache_root(), &missing_chunks);
+    let resumed_bytes = resumed_in_flight
+        .values()
+        .copied()
+        .sum::<u64>()
+        .min(transfer_total);
+    configure_transfer_plan(journal, transfer_total, resumed_bytes);
+    configure_download_metrics(journal, &missing_chunks, false);
+    journal.metrics.pipeline = "verified-stage-v2".to_string();
+    journal.pipeline_version = "verified-stage-v2".to_string();
+    journal.apply_bytes_total = files.iter().map(|file| file.size).sum();
+    journal.apply_bytes_done = session.total_durable_bytes(files);
+    journal.durable_bytes = journal.apply_bytes_done;
+    journal.commit_state = "staging".to_string();
+
+    let queue_budget = crate::platform::current_settings()
+        .download_queue_mb
+        .max(8)
+        .saturating_mul(1024 * 1024);
+    let mut downloaded = 0_u64;
+    let mut in_flight = resumed_in_flight;
+    let mut last_ui_emit = Instant::now();
+    let mut last_journal_persist = Instant::now();
+
+    for (file_index, file) in files.iter().enumerate() {
+        wait_for_control(app, control, journal, step_index)?;
+        journal.current_file = file.path.clone();
+        if let Some(step) = journal.steps.get_mut(step_index) {
+            step.detail = format!(
+                "Writing verified file {}/{}: {}",
+                file_index.saturating_add(1),
+                files.len(),
+                file.path
+            );
+        }
+        let mut writer = session.open_writer(file)?;
+        let mut checkpointed_hashes = Vec::<String>::new();
+
+        while writer.next_chunk() < file.chunks.len() {
+            wait_for_control(app, control, journal, step_index)?;
+            let batch_start = writer.next_chunk();
+            let batch_end = sequential_batch_end(
+                file,
+                batch_start,
+                local_sources,
+                session.cache_root(),
+                queue_budget,
+            )?;
+            let mut batch = file.clone();
+            batch.chunks = file.chunks[batch_start..batch_end].to_vec();
+            let batch_missing =
+                plan_missing_chunks(local_sources, session.cache_root(), &[batch], None)?;
+
+            if !batch_missing.is_empty() {
+                let durable_snapshot = journal.apply_bytes_done;
+                let mut progress_callback = |progress: DownloadProgress| {
+                    if progress.clear_in_flight {
+                        in_flight.remove(&progress.task_id);
+                    } else {
+                        in_flight.insert(progress.task_id.clone(), progress.in_flight_bytes);
+                    }
+                    downloaded = downloaded.saturating_add(progress.committed_bytes);
+                    wait_for_control(app, control, journal, step_index)?;
+                    let active_bytes = in_flight.values().copied().sum::<u64>();
+                    observe_download_progress(journal, &progress, active_bytes);
+                    journal.bytes_done = downloaded
+                        .saturating_add(active_bytes)
+                        .min(journal.bytes_total);
+                    journal.steps[step_index].progress = streamed_journal_progress(
+                        journal,
+                        durable_snapshot,
+                        journal.apply_bytes_total,
+                    );
+                    journal.overall_progress =
+                        overall_progress(step_index, journal.steps[step_index].progress);
+                    journal.steps[step_index].retry_count = journal.steps[step_index]
+                        .retry_count
+                        .max(progress.retry_count);
+                    touch(journal);
+                    publish_job_progress(
+                        app,
+                        journal,
+                        &mut last_ui_emit,
+                        &mut last_journal_persist,
+                        false,
+                    )
+                };
+                source.download_chunks_to_store_parallel(
+                    session.cache_root(),
+                    &batch_missing,
+                    Some(target_version),
+                    Arc::clone(control),
+                    &mut progress_callback,
+                )?;
+            }
+
+            while writer.next_chunk() < batch_end {
+                wait_for_control(app, control, journal, step_index)?;
+                let chunk = &file.chunks[writer.next_chunk()];
+                let data = read_chunk_bytes(chunk, local_sources, session.cache_root())?;
+                journal.metrics.disk_read_bytes = journal
+                    .metrics
+                    .disk_read_bytes
+                    .saturating_add(data.len() as u64);
+                writer.append(chunk, &data)?;
+                checkpointed_hashes.push(chunk.hash.clone());
+
+                if writer.checkpoint_due() {
+                    session.checkpoint_writer(&mut writer, false)?;
+                    session.release_checkpointed_chunks(&mut checkpointed_hashes)?;
+                    journal.apply_bytes_done = session.total_durable_bytes(files);
+                    journal.durable_bytes = journal.apply_bytes_done;
+                }
+                if last_ui_emit.elapsed() >= JOB_UI_EMIT_INTERVAL {
+                    journal.steps[step_index].progress = streamed_journal_progress(
+                        journal,
+                        journal.apply_bytes_done,
+                        journal.apply_bytes_total,
+                    );
+                    journal.overall_progress =
+                        overall_progress(step_index, journal.steps[step_index].progress);
+                    touch(journal);
+                    publish_job_progress(
+                        app,
+                        journal,
+                        &mut last_ui_emit,
+                        &mut last_journal_persist,
+                        false,
+                    )?;
+                }
+            }
+        }
+
+        session.finish_writer(&mut writer, file)?;
+        session.release_checkpointed_chunks(&mut checkpointed_hashes)?;
+        journal.apply_bytes_done = session.total_durable_bytes(files);
+        journal.durable_bytes = journal.apply_bytes_done;
+        merge_verified_writer_metrics(journal, &writer);
+        drop(writer);
+
+        let stage = session.stage_path(file);
+        for chunk in &file.chunks {
+            local_sources.insert(
+                chunk.hash.clone(),
+                LocalChunkSource {
+                    path: stage.clone(),
+                    offset: chunk.file_offset,
+                    size: chunk.uncompressed_size,
+                },
+            );
+        }
+        journal.steps[step_index].progress =
+            streamed_journal_progress(journal, journal.apply_bytes_done, journal.apply_bytes_total);
+        journal.overall_progress = overall_progress(step_index, journal.steps[step_index].progress);
+        touch(journal);
+        publish_job_progress(
+            app,
+            journal,
+            &mut last_ui_emit,
+            &mut last_journal_persist,
+            file_index.saturating_add(1) == files.len(),
+        )?;
+    }
+
+    journal.current_file.clear();
+    Ok(())
+}
+
+fn commit_verified_manifest_files(
+    app: &AppHandle,
+    journal: &mut JobJournal,
+    session: &mut VerifiedStageSession,
+    install_root: &Path,
+    files: &[FileEntry],
+    step_index: usize,
+) -> Result<(), JobError> {
+    journal.commit_state = "preparing".to_string();
+    journal.phase = "Preparing safe transaction".to_string();
+    persist_and_emit(app, journal)?;
+    session.sync_staged_files(files)?;
+    session.prepare_commit_batch(install_root, files)?;
+
+    journal.commit_state = "committing".to_string();
+    journal.phase = "Completing safe transaction".to_string();
+    if let Some(step) = journal.steps.get_mut(step_index) {
+        step.detail = "Installing verified files; pause and cancel are deferred".to_string();
+    }
+    persist_and_emit(app, journal)?;
+    let commit_started = Instant::now();
+    let mut last_emit = Instant::now();
+    for (index, file) in files.iter().enumerate() {
+        journal.current_file = file.path.clone();
+        session.commit_file(install_root, file)?;
+        if let Some(step) = journal.steps.get_mut(step_index) {
+            step.progress = progress_fraction(index.saturating_add(1), files.len());
+        }
+        if last_emit.elapsed() >= JOB_UI_EMIT_INTERVAL || index.saturating_add(1) == files.len() {
+            journal.overall_progress =
+                overall_progress(step_index, journal.steps[step_index].progress);
+            touch(journal);
+            persist_and_emit(app, journal)?;
+            last_emit = Instant::now();
+        }
+    }
+    journal.metrics.commit_wait_ms = journal.metrics.commit_wait_ms.saturating_add(
+        commit_started
+            .elapsed()
+            .as_millis()
+            .min(u128::from(u64::MAX)) as u64,
+    );
+    journal.current_file.clear();
+    journal.commit_state = "filesInstalled".to_string();
+    Ok(())
+}
+
+fn finish_committed_transaction_cleanup(
+    app: &AppHandle,
+    journal: &mut JobJournal,
+    session: &mut VerifiedStageSession,
+    install_root: &Path,
+    label: &str,
+) -> Result<(), JobError> {
+    journal.commit_state = "cleanup".to_string();
+    persist_and_emit(app, journal)?;
+    if let Err(error) = session.cleanup_committed(install_root) {
+        append_log(
+            journal,
+            "warning",
+            &format!(
+                "{label} files are committed, but transaction cleanup must resume before another file operation: {error}"
+            ),
+        );
+        let _ = persist_and_emit(app, journal);
+        return Err(error);
+    }
+    if let Err(error) = session.cleanup_session_files() {
+        append_log(
+            journal,
+            "warning",
+            &format!("{label} committed; inert session cleanup remains pending: {error}"),
+        );
+    }
+    Ok(())
+}
+
 fn streamed_update_progress(
     network_done: u64,
     network_total: u64,
@@ -3197,8 +3811,24 @@ fn streamed_update_progress(
     network_done.saturating_add(assembled_done).min(total) as f32 / total as f32
 }
 
+fn streamed_journal_progress(
+    journal: &JobJournal,
+    assembled_done: u64,
+    assembly_total: u64,
+) -> f32 {
+    let logical_total = journal.logical_bytes_total.max(
+        journal
+            .session_base_bytes
+            .saturating_add(journal.bytes_total),
+    );
+    let logical_done = current_logical_transfer_done(journal).min(logical_total);
+    streamed_update_progress(logical_done, logical_total, assembled_done, assembly_total)
+}
+
 fn filesystem_path_key(path: &Path) -> String {
-    path.to_string_lossy().replace('/', "\\").to_ascii_lowercase()
+    path.to_string_lossy()
+        .replace('/', "\\")
+        .to_ascii_lowercase()
 }
 
 fn same_filesystem_path(left: &Path, right: &Path) -> bool {
@@ -3628,6 +4258,187 @@ fn run_legacy_update_job(
 fn run_real_install_job(
     app: &AppHandle,
     control: Arc<JobControl>,
+    journal: JobJournal,
+) -> Result<JobJournal, JobError> {
+    if journal.pipeline_version == "verified-stage-v2" {
+        run_verified_install_job(app, control, journal)
+    } else {
+        run_legacy_install_job(app, control, journal)
+    }
+}
+
+fn run_verified_install_job(
+    app: &AppHandle,
+    control: Arc<JobControl>,
+    mut journal: JobJournal,
+) -> Result<JobJournal, JobError> {
+    let install_root = PathBuf::from(&journal.install_path);
+    let source = DepotSource::for_game(&journal.game_id);
+    let downloading_root = downloading_dir_for_install(&install_root, &source);
+    append_log(&mut journal, "info", "Verified streaming install started");
+
+    set_step_running(app, &mut journal, 0, JobStatus::Running, "Prepare store")?;
+    fs::create_dir_all(&install_root)?;
+    fs::create_dir_all(&downloading_root)?;
+    journal.install_path = install_root.display().to_string();
+    write_download_session_marker(
+        &downloading_root,
+        &journal,
+        "preparing",
+        install_root.display().to_string(),
+    )?;
+    complete_step(app, &mut journal, 0)?;
+
+    set_step_running(app, &mut journal, 1, JobStatus::Running, "Verify manifests")?;
+    let catalog = source.load_catalog()?;
+    let target_version = resolve_target_version(&catalog, Some(journal.to_version.clone()))?;
+    journal.to_version = target_version.clone();
+    let target_manifest = source.load_manifest(&catalog, &target_version)?;
+    let mut session = VerifiedStageSession::prepare_with_commit_proof(
+        &downloading_root,
+        &journal,
+        &journal.from_version,
+        &target_version,
+        &install_root,
+        &target_manifest.files,
+        TransactionCommitProof::InstalledVersion,
+    )?;
+    if session.recover(&install_root, &target_version)? == RecoveryOutcome::AlreadyCommitted {
+        for step in journal.steps.iter_mut().take(5) {
+            step.status = StepStatus::Completed;
+            step.progress = 1.0;
+        }
+        journal.status = JobStatus::Committed;
+        journal.phase = "Committed".to_string();
+        journal.commit_state = "committed".to_string();
+        journal.overall_progress = 1.0;
+        if let Err(error) = session.cleanup_session_files() {
+            append_log(
+                &mut journal,
+                "warning",
+                &format!("Committed install cleanup remains pending: {error}"),
+            );
+        }
+        persist_and_emit(app, &journal)?;
+        let version = journal.to_version.clone();
+        try_apply_patch_fix(
+            app,
+            &mut journal,
+            &source,
+            &install_root,
+            &version,
+            &control,
+            false,
+        )?;
+        return Ok(journal);
+    }
+
+    let mut changed = filter_already_assembled(
+        app,
+        &mut journal,
+        &install_root,
+        target_manifest.files.clone(),
+        &control,
+    )?;
+    let (mut local_sources, discovered_count) =
+        discover_local_chunks(&install_root, &changed, &control)?;
+    if discovered_count > 0 {
+        append_log(
+            &mut journal,
+            "info",
+            &format!("Discovered {discovered_count} reusable verified chunks"),
+        );
+    }
+    changed.sort_by(|left, right| left.path.cmp(&right.path));
+    append_log(
+        &mut journal,
+        "info",
+        &format!("{} file(s) require verified staging", changed.len()),
+    );
+    complete_step(app, &mut journal, 1)?;
+
+    journal.steps[2].name = "Download and apply".to_string();
+    set_step_running(
+        app,
+        &mut journal,
+        2,
+        JobStatus::Downloading,
+        "Download and write verified chunks",
+    )?;
+    stage_verified_manifest_files(
+        app,
+        &control,
+        &mut journal,
+        &source,
+        &mut session,
+        &changed,
+        &mut local_sources,
+        &target_version,
+        2,
+    )?;
+    complete_step(app, &mut journal, 2)?;
+
+    journal.steps[3].name = "Commit transaction".to_string();
+    set_step_running(
+        app,
+        &mut journal,
+        3,
+        JobStatus::Assembling,
+        "Commit verified install files",
+    )?;
+    commit_verified_manifest_files(app, &mut journal, &mut session, &install_root, &changed, 3)?;
+    complete_step(app, &mut journal, 3)?;
+
+    set_step_running(app, &mut journal, 4, JobStatus::Running, "Finalize install")?;
+    journal.commit_state = "metadata".to_string();
+    write_install_marker(
+        app,
+        &install_root,
+        &target_manifest,
+        &source,
+        &target_version,
+    )?;
+    session.mark_marker_committed()?;
+    finish_committed_transaction_cleanup(
+        app,
+        &mut journal,
+        &mut session,
+        &install_root,
+        "Install",
+    )?;
+    journal.status = JobStatus::Committed;
+    journal.phase = "Committed".to_string();
+    journal.commit_state = "committed".to_string();
+    journal.overall_progress = 1.0;
+    journal.bytes_done = journal.bytes_total;
+    journal.apply_bytes_done = journal.apply_bytes_total;
+    journal.durable_bytes = journal.apply_bytes_done;
+    complete_step(app, &mut journal, 4)?;
+    write_download_session_marker(
+        &downloading_root,
+        &journal,
+        "committed",
+        install_root.display().to_string(),
+    )?;
+    append_log(&mut journal, "info", "Verified streaming install committed");
+    persist_and_emit(app, &journal)?;
+
+    let version = journal.to_version.clone();
+    try_apply_patch_fix(
+        app,
+        &mut journal,
+        &source,
+        &install_root,
+        &version,
+        &control,
+        false,
+    )?;
+    Ok(journal)
+}
+
+fn run_legacy_install_job(
+    app: &AppHandle,
+    control: Arc<JobControl>,
     mut journal: JobJournal,
 ) -> Result<JobJournal, JobError> {
     let install_root = PathBuf::from(&journal.install_path);
@@ -3904,6 +4715,168 @@ fn run_real_install_job(
 }
 
 fn run_real_repair_job(
+    app: &AppHandle,
+    control: Arc<JobControl>,
+    journal: JobJournal,
+    repair_files: Vec<FileEntry>,
+    target_manifest: VersionManifest,
+) -> Result<JobJournal, JobError> {
+    if journal.pipeline_version == "verified-stage-v2" {
+        run_verified_repair_job(app, control, journal, repair_files, target_manifest)
+    } else {
+        run_legacy_repair_job(app, control, journal, repair_files, target_manifest)
+    }
+}
+
+fn run_verified_repair_job(
+    app: &AppHandle,
+    control: Arc<JobControl>,
+    mut journal: JobJournal,
+    repair_files: Vec<FileEntry>,
+    target_manifest: VersionManifest,
+) -> Result<JobJournal, JobError> {
+    let install_root = PathBuf::from(&journal.install_path);
+    let source = DepotSource::for_game(&journal.game_id);
+    let downloading_root = downloading_dir_for_install(&install_root, &source);
+    append_log(&mut journal, "info", "Verified streaming repair started");
+
+    set_step_running(app, &mut journal, 0, JobStatus::Running, "Prepare repair")?;
+    fs::create_dir_all(&install_root)?;
+    fs::create_dir_all(&downloading_root)?;
+    complete_step(app, &mut journal, 0)?;
+
+    set_step_running(app, &mut journal, 1, JobStatus::Running, "Plan repair")?;
+    let target_version = journal.to_version.clone();
+    let mut session = VerifiedStageSession::prepare_with_commit_proof(
+        &downloading_root,
+        &journal,
+        &journal.from_version,
+        &target_version,
+        &install_root,
+        &repair_files,
+        TransactionCommitProof::TransactionPhase,
+    )?;
+    if session.recover(&install_root, &target_version)? == RecoveryOutcome::AlreadyCommitted {
+        for step in journal.steps.iter_mut().take(5) {
+            step.status = StepStatus::Completed;
+            step.progress = 1.0;
+        }
+        journal.status = JobStatus::Committed;
+        journal.phase = "Repair committed".to_string();
+        journal.commit_state = "committed".to_string();
+        journal.overall_progress = 1.0;
+        if let Err(error) = session.cleanup_session_files() {
+            append_log(
+                &mut journal,
+                "warning",
+                &format!("Committed repair cleanup remains pending: {error}"),
+            );
+        }
+        persist_and_emit(app, &journal)?;
+        return Ok(journal);
+    }
+    append_log(
+        &mut journal,
+        "info",
+        &format!(
+            "{} corrupt or missing file(s) require repair",
+            repair_files.len()
+        ),
+    );
+    complete_step(app, &mut journal, 1)?;
+
+    journal.steps[2].name = "Download and repair".to_string();
+    set_step_running(
+        app,
+        &mut journal,
+        2,
+        JobStatus::Downloading,
+        "Download and write repaired files",
+    )?;
+    let (mut local_sources, discovered_count) =
+        discover_local_chunks(&install_root, &repair_files, &control)?;
+    if discovered_count > 0 {
+        append_log(
+            &mut journal,
+            "info",
+            &format!(
+                "Reusing {discovered_count} verified chunk(s) from the existing damaged files"
+            ),
+        );
+    }
+    stage_verified_manifest_files(
+        app,
+        &control,
+        &mut journal,
+        &source,
+        &mut session,
+        &repair_files,
+        &mut local_sources,
+        &target_version,
+        2,
+    )?;
+    complete_step(app, &mut journal, 2)?;
+
+    journal.steps[3].name = "Commit repair".to_string();
+    set_step_running(
+        app,
+        &mut journal,
+        3,
+        JobStatus::Assembling,
+        "Commit repaired files",
+    )?;
+    commit_verified_manifest_files(
+        app,
+        &mut journal,
+        &mut session,
+        &install_root,
+        &repair_files,
+        3,
+    )?;
+    complete_step(app, &mut journal, 3)?;
+
+    set_step_running(app, &mut journal, 4, JobStatus::Running, "Finalize repair")?;
+    journal.commit_state = "metadata".to_string();
+    let existing_marker = read_install_marker(&install_root)?;
+    session.backup_metadata_file(
+        &install_root,
+        &format!("{INSTALL_MARKER_DIR}/{INSTALL_MARKER_FILE}"),
+    )?;
+    if existing_marker.as_ref().is_some_and(|marker| {
+        install_marker_matches_source(marker, &source) && marker.version == journal.to_version
+    }) {
+        write_install_marker_file(&install_root, existing_marker.as_ref().unwrap())?;
+    } else {
+        write_install_marker(
+            app,
+            &install_root,
+            &target_manifest,
+            &source,
+            &journal.to_version,
+        )?;
+    }
+    session.mark_marker_committed()?;
+    finish_committed_transaction_cleanup(app, &mut journal, &mut session, &install_root, "Repair")?;
+    journal.status = JobStatus::Committed;
+    journal.phase = "Repair committed".to_string();
+    journal.commit_state = "committed".to_string();
+    journal.overall_progress = 1.0;
+    journal.bytes_done = journal.bytes_total;
+    journal.apply_bytes_done = journal.apply_bytes_total;
+    journal.durable_bytes = journal.apply_bytes_done;
+    complete_step(app, &mut journal, 4)?;
+    write_download_session_marker(
+        &downloading_root,
+        &journal,
+        "committed",
+        install_root.display().to_string(),
+    )?;
+    append_log(&mut journal, "info", "Verified streaming repair committed");
+    persist_and_emit(app, &journal)?;
+    Ok(journal)
+}
+
+fn run_legacy_repair_job(
     app: &AppHandle,
     control: Arc<JobControl>,
     mut journal: JobJournal,
@@ -6407,6 +7380,12 @@ pub fn abort_and_clean_job(
     app: &AppHandle,
     _requested_game_id: Option<&str>,
 ) -> Result<(), JobError> {
+    if current_journal_has_pending_transaction(app)? {
+        return Err(JobError::Depot(
+            "This journal owns rollback backups and cannot be cleared yet. Resume it to complete the safe transaction cleanup."
+                .to_string(),
+        ));
+    }
     let active_journal = read_latest_journal(app).ok().flatten();
     let canceled_job_id = active_journal.as_ref().map(|journal| journal.id.clone());
     if let Some(job_id) = canceled_job_id.as_deref() {
@@ -6730,6 +7709,52 @@ fn read_install_marker(install_root: &Path) -> Result<Option<InstallMarker>, Job
     write_state_file(&install_marker_path(install_root), &marker)?;
     let _ = fs::remove_file(path);
     Ok(Some(marker))
+}
+
+pub(crate) fn inspect_discoverable_install(
+    install_root: &Path,
+    game_ids: &[String],
+) -> Result<Option<DiscoverableInstallMarker>, String> {
+    let marker = read_install_marker(install_root).map_err(|error| error.to_string())?;
+    let Some(marker) = marker else {
+        return Ok(None);
+    };
+    let marker_compact = compact_game_id(&marker.game_id);
+    let game_id = game_ids.iter().find(|game_id| {
+        marker_compact == compact_game_id(game_id)
+            || marker_compact
+                == compact_game_id(&crate::remote_paths::install_dir_name_for_game_id(game_id))
+    });
+    let Some(game_id) = game_id else {
+        return Err(format!(
+            "Install marker at {} belongs to an unknown game",
+            install_root.display()
+        ));
+    };
+    let version = usable_installed_version(&marker.version).ok_or_else(|| {
+        format!(
+            "Install marker at {} does not contain a usable version",
+            install_root.display()
+        )
+    })?;
+    let launch_executable = marker
+        .launch_executable
+        .clone()
+        .unwrap_or_else(|| default_launch_executable(game_id));
+    let executable = safe_join(install_root, &launch_executable)
+        .ok_or_else(|| format!("Install executable path is unsafe: {launch_executable}"))?;
+    if !executable.is_file() {
+        return Err(format!(
+            "Installed executable is missing: {}",
+            executable.display()
+        ));
+    }
+    Ok(Some(DiscoverableInstallMarker {
+        game_id: game_id.clone(),
+        version,
+        launch_executable,
+        applied_patch_id: marker.applied_patch_id,
+    }))
 }
 
 fn write_install_marker(
@@ -7148,6 +8173,13 @@ fn write_state_file<T: Serialize>(path: &Path, value: &T) -> Result<(), JobError
         }
         return Err(error.into());
     }
+    // Keep the recovery copy until the state is durable under its final name.
+    // The marker is the commit proof used after a crash or power loss.
+    OpenOptions::new()
+        .read(true)
+        .write(true)
+        .open(long_path(path))?
+        .sync_all()?;
     if long_path(&recovery).exists() {
         fs::remove_file(long_path(&recovery))?;
     }
@@ -7458,6 +8490,13 @@ fn default_journal(
         logical_bytes_done: 0,
         logical_bytes_total: bytes_total,
         session_base_bytes: 0,
+        apply_bytes_done: 0,
+        apply_bytes_total: 0,
+        durable_bytes: 0,
+        current_file: String::new(),
+        pipeline_version: String::new(),
+        commit_state: "idle".to_string(),
+        planned_files: Vec::new(),
         retry_count: 0,
         resumable: true,
         updated_at: now.clone(),
@@ -7505,9 +8544,11 @@ fn append_log(journal: &mut JobJournal, level: &str, message: &str) {
 fn touch(journal: &mut JobJournal) {
     // Keep the serialized user-facing counters current throughout the job,
     // while bytes_done/bytes_total remain scoped to the active transfer plan.
-    let logical_total = journal
-        .logical_bytes_total
-        .max(journal.session_base_bytes.saturating_add(journal.bytes_total));
+    let logical_total = journal.logical_bytes_total.max(
+        journal
+            .session_base_bytes
+            .saturating_add(journal.bytes_total),
+    );
     let logical_done = current_logical_transfer_done(journal).min(logical_total);
     journal.logical_bytes_total = logical_total;
     journal.logical_bytes_done = logical_done;
@@ -7587,6 +8628,38 @@ mod downloader_v2_tests {
         assert_eq!(journal.session_base_bytes, 3 * gib);
         assert_eq!(journal.logical_bytes_done, 3 * gib);
         assert_eq!(journal.logical_bytes_total, 8 * gib);
+    }
+
+    #[test]
+    fn repeated_resume_keeps_original_logical_total_and_monotonic_done_bytes() {
+        let gib = 1024_u64 * 1024 * 1024;
+        let mut journal = default_journal(
+            "large-game",
+            "install",
+            r"E:\0xoLemon store\common\Large Game".to_string(),
+            "not installed",
+            "1.0.0",
+            67 * gib,
+        );
+        journal.bytes_done = 34 * gib;
+
+        configure_transfer_plan(&mut journal, 33 * gib, 0);
+        assert_eq!(journal.bytes_done, 0);
+        assert_eq!(journal.bytes_total, 33 * gib);
+        assert_eq!(journal.session_base_bytes, 34 * gib);
+        assert_eq!(journal.logical_bytes_done, 34 * gib);
+        assert_eq!(journal.logical_bytes_total, 67 * gib);
+
+        journal.bytes_done = 6 * gib;
+        touch(&mut journal);
+        assert_eq!(journal.logical_bytes_done, 40 * gib);
+
+        configure_transfer_plan(&mut journal, 27 * gib, 0);
+        assert_eq!(journal.bytes_done, 0);
+        assert_eq!(journal.bytes_total, 27 * gib);
+        assert_eq!(journal.session_base_bytes, 40 * gib);
+        assert_eq!(journal.logical_bytes_done, 40 * gib);
+        assert_eq!(journal.logical_bytes_total, 67 * gib);
     }
 
     #[cfg(target_os = "windows")]
@@ -8074,6 +9147,7 @@ fn default_patch_journal(
     if let Some(log) = journal.logs.first_mut() {
         log.message = "Ready to download and apply a resumable patch".to_string();
     }
+    journal.pipeline_version = "verified-stage-v2".to_string();
     journal
 }
 
@@ -8084,12 +9158,51 @@ pub fn spawn_patch_job(
     target_version: Option<String>,
     game_id: Option<String>,
 ) -> Result<JobJournal, JobError> {
+    ensure_no_pending_file_transaction(&app)?;
     let source = DepotSource::for_game(game_id.as_deref().unwrap_or(DEFAULT_GAME_ID));
     let install_root = PathBuf::from(&install_path);
     let target_version = resolve_patch_target_version(&source, &install_root, target_version)?;
 
     let journal = default_patch_journal(&source, install_path, &target_version);
 
+    spawn_patch_journal(app, control, journal)
+}
+
+pub fn resume_patch_job(
+    app: AppHandle,
+    control: Arc<JobControl>,
+    mut journal: JobJournal,
+) -> Result<JobJournal, JobError> {
+    if journal.kind != "patch" || journal.install_path.trim().is_empty() {
+        return Err(JobError::Depot(
+            "journal is not a resumable patch".to_string(),
+        ));
+    }
+    journal.status = JobStatus::Planned;
+    journal.phase = "Resuming".to_string();
+    journal.commit_state = "idle".to_string();
+    for step in &mut journal.steps {
+        if matches!(
+            step.status,
+            StepStatus::Running | StepStatus::Paused | StepStatus::Failed
+        ) {
+            step.status = StepStatus::Waiting;
+        }
+    }
+    append_log(
+        &mut journal,
+        "info",
+        "Resuming the existing owned patch session",
+    );
+    control.reset();
+    spawn_patch_journal(app, control, journal)
+}
+
+fn spawn_patch_journal(
+    app: AppHandle,
+    control: Arc<JobControl>,
+    journal: JobJournal,
+) -> Result<JobJournal, JobError> {
     persist_and_emit(&app, &journal)?;
     let app_for_thread = app.clone();
     let initial = journal.clone();
@@ -8106,9 +9219,14 @@ pub fn spawn_patch_job(
         thread::sleep(Duration::from_millis(300));
         let result =
             run_real_patch_job(&app_for_thread, control_for_thread.clone(), initial.clone());
-        let canceled = control_for_thread.is_canceled();
+        let canceled = matches!(&result, Err(JobError::Canceled));
         control_for_thread.set_running(false);
         if canceled {
+            let install_root = PathBuf::from(&initial.install_path);
+            let source = DepotSource::for_game(&initial.game_id);
+            let downloading_root = downloading_dir_for_install(&install_root, &source);
+            let _ =
+                VerifiedStageSession::cleanup_owned_session(&downloading_root, &canceled_job_id);
             let _ = clear_current_journal_if_matches(&app_for_thread, &canceled_job_id);
             return;
         }
@@ -8168,6 +9286,352 @@ fn patch_transfer_bytes(manifest: &VersionManifest) -> u64 {
 }
 
 fn try_apply_patch_fix(
+    app: &AppHandle,
+    journal: &mut JobJournal,
+    source: &DepotSource,
+    install_root: &Path,
+    version: &str,
+    control: &Arc<JobControl>,
+    manifest_errors_are_fatal: bool,
+) -> Result<(), JobError> {
+    if matches!(
+        journal.pipeline_version.as_str(),
+        "verified-stage-v2" | "sequential-stage-v1+verified-patch-v2"
+    ) {
+        try_apply_patch_fix_verified(
+            app,
+            journal,
+            source,
+            install_root,
+            version,
+            control,
+            manifest_errors_are_fatal,
+        )
+    } else {
+        try_apply_patch_fix_legacy(
+            app,
+            journal,
+            source,
+            install_root,
+            version,
+            control,
+            manifest_errors_are_fatal,
+        )
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+fn try_apply_patch_fix_verified(
+    app: &AppHandle,
+    journal: &mut JobJournal,
+    source: &DepotSource,
+    install_root: &Path,
+    version: &str,
+    control: &Arc<JobControl>,
+    manifest_errors_are_fatal: bool,
+) -> Result<(), JobError> {
+    let standalone_patch = journal.kind == "patch";
+    let patch_step_index = if standalone_patch { 1 } else { 5 };
+    let patch_manifest: VersionManifest = match load_patch_manifest(source, version) {
+        Ok(Some(manifest)) => manifest,
+        Ok(None) => {
+            append_log(
+                journal,
+                "info",
+                &format!("[Patch fix] No patch for {version} - skipping"),
+            );
+            for step in journal.steps.iter_mut().skip(patch_step_index) {
+                step.status = StepStatus::Completed;
+                step.detail = "No patch required for this version".to_string();
+                step.progress = 1.0;
+            }
+            journal.overall_progress = 1.0;
+            journal.phase = if standalone_patch {
+                "No patch required".to_string()
+            } else {
+                "Committed".to_string()
+            };
+            journal.status = JobStatus::Committed;
+            journal.commit_state = "committed".to_string();
+            persist_and_emit(app, journal)?;
+            return Ok(());
+        }
+        Err(error) => {
+            if manifest_errors_are_fatal {
+                if let Some(step) = journal.steps.get_mut(patch_step_index) {
+                    step.status = StepStatus::Failed;
+                    step.detail = "Patch manifest unavailable".to_string();
+                }
+                journal.phase = "Failed".to_string();
+                journal.status = JobStatus::Failed;
+                append_log(
+                    journal,
+                    "error",
+                    &format!("[Patch fix] Could not load patch manifest: {error}"),
+                );
+                persist_and_emit(app, journal)?;
+                return Err(error);
+            }
+            append_log(
+                journal,
+                "warning",
+                &format!("[Patch fix] Could not load patch manifest: {error} - skipping"),
+            );
+            if let Some(step) = journal.steps.get_mut(patch_step_index) {
+                step.status = StepStatus::Completed;
+                step.detail = "Skipped (patch manifest unavailable)".to_string();
+                step.progress = 1.0;
+            }
+            journal.overall_progress = 1.0;
+            journal.phase = "Committed".to_string();
+            journal.status = JobStatus::Committed;
+            persist_and_emit(app, journal)?;
+            return Ok(());
+        }
+    };
+
+    let marker = read_install_marker(install_root)?.ok_or_else(|| {
+        JobError::Depot(format!(
+            "{} is missing .0xolemon/state.0xo before patching",
+            source.game_dir_name
+        ))
+    })?;
+    patch_target_version_from_marker(source, &marker, Some(version.to_string()))?;
+    let patch_id = patch_manifest.created_at.clone();
+    let downloading_root = downloading_dir_for_install(install_root, source);
+    fs::create_dir_all(&downloading_root)?;
+    let mut session = VerifiedStageSession::prepare_with_commit_proof(
+        &downloading_root,
+        journal,
+        version,
+        version,
+        install_root,
+        &patch_manifest.files,
+        TransactionCommitProof::AppliedPatchId(patch_id.clone()),
+    )?;
+    if session.recover(install_root, version)? == RecoveryOutcome::AlreadyCommitted {
+        for step in journal.steps.iter_mut().skip(patch_step_index) {
+            step.status = StepStatus::Completed;
+            step.progress = 1.0;
+        }
+        journal.applied_patch_id = Some(patch_id);
+        journal.status = JobStatus::Committed;
+        journal.phase = "Patch applied".to_string();
+        journal.commit_state = "committed".to_string();
+        journal.overall_progress = 1.0;
+        if let Err(error) = session.cleanup_session_files() {
+            append_log(
+                journal,
+                "warning",
+                &format!("Committed patch cleanup remains pending: {error}"),
+            );
+        }
+        persist_and_emit(app, journal)?;
+        return Ok(());
+    }
+
+    let (mut local_sources, discovered_count) =
+        discover_local_chunks(install_root, &patch_manifest.files, control)?;
+    if discovered_count > 0 {
+        append_log(
+            journal,
+            "info",
+            &format!(
+                "[Patch fix] Reusing {discovered_count} verified chunk(s) from installed files"
+            ),
+        );
+    }
+    let missing_chunks = plan_missing_chunks(
+        &local_sources,
+        session.cache_root(),
+        &patch_manifest.files,
+        None,
+    )?;
+    configure_transfer_plan(journal, patch_transfer_bytes_for_chunks(&missing_chunks), 0);
+    configure_download_metrics(journal, &missing_chunks, false);
+    journal.metrics.pipeline = "verified-patch-stage-v2".to_string();
+    journal.apply_bytes_total = patch_manifest.files.iter().map(|file| file.size).sum();
+    journal.apply_bytes_done = session.total_durable_bytes(&patch_manifest.files);
+    journal.durable_bytes = journal.apply_bytes_done;
+    journal.commit_state = "staging".to_string();
+    session.reconcile_chunk_references(&patch_manifest.files)?;
+    set_step_running(
+        app,
+        journal,
+        patch_step_index,
+        JobStatus::Downloading,
+        "Download and stage patch",
+    )?;
+
+    let mut downloaded = 0_u64;
+    let mut in_flight = HashMap::<String, u64>::new();
+    for (file_index, file) in patch_manifest.files.iter().enumerate() {
+        wait_for_control(app, control, journal, patch_step_index)?;
+        journal.current_file = file.path.clone();
+        if let Some(step) = journal.steps.get_mut(patch_step_index) {
+            step.detail = format!(
+                "Writing patch file {}/{}: {}",
+                file_index.saturating_add(1),
+                patch_manifest.files.len(),
+                file.path
+            );
+        }
+        let mut writer = session.open_writer(file)?;
+        let mut checkpointed_hashes = Vec::<String>::new();
+        while writer.next_chunk() < file.chunks.len() {
+            let chunk = &file.chunks[writer.next_chunk()];
+            let cache_path = staged_chunk_path_from(session.cache_root(), &chunk.hash);
+            if !local_sources.contains_key(&chunk.hash)
+                && !compressed_chunk_file_valid(&cache_path, chunk)?
+            {
+                let pack_relative = format!("patches/{version}/packs/{}.bin", chunk.pack_id);
+                let task_id = format!("patch-{version}-{}", chunk.hash);
+                let partial_path = session
+                    .cache_root()
+                    .join(format!("{}.range.partial", chunk.hash));
+                let transport = fetch_patch_pack_span_with_journal_progress(
+                    app,
+                    journal,
+                    source,
+                    chunk,
+                    pack_relative,
+                    task_id,
+                    partial_path,
+                    control,
+                    patch_step_index,
+                    &mut downloaded,
+                    &mut in_flight,
+                )?;
+                verify_compressed_chunk_bytes(chunk, &transport)?;
+                write_chunk_file(&cache_path, &transport)?;
+            }
+            let plain = read_chunk_bytes(chunk, &local_sources, session.cache_root())?;
+            journal.metrics.disk_read_bytes = journal
+                .metrics
+                .disk_read_bytes
+                .saturating_add(plain.len() as u64);
+            writer.append(chunk, &plain)?;
+            checkpointed_hashes.push(chunk.hash.clone());
+            if writer.checkpoint_due() {
+                session.checkpoint_writer(&mut writer, false)?;
+                session.release_checkpointed_chunks(&mut checkpointed_hashes)?;
+                journal.apply_bytes_done = session.total_durable_bytes(&patch_manifest.files);
+                journal.durable_bytes = journal.apply_bytes_done;
+                journal.steps[patch_step_index].progress = streamed_journal_progress(
+                    journal,
+                    journal.apply_bytes_done,
+                    journal.apply_bytes_total,
+                );
+                journal.overall_progress =
+                    overall_progress(patch_step_index, journal.steps[patch_step_index].progress);
+                persist_and_emit(app, journal)?;
+            }
+        }
+        session.finish_writer(&mut writer, file)?;
+        session.release_checkpointed_chunks(&mut checkpointed_hashes)?;
+        journal.apply_bytes_done = session.total_durable_bytes(&patch_manifest.files);
+        journal.durable_bytes = journal.apply_bytes_done;
+        merge_verified_writer_metrics(journal, &writer);
+        drop(writer);
+        let stage = session.stage_path(file);
+        for chunk in &file.chunks {
+            local_sources.insert(
+                chunk.hash.clone(),
+                LocalChunkSource {
+                    path: stage.clone(),
+                    offset: chunk.file_offset,
+                    size: chunk.uncompressed_size,
+                },
+            );
+        }
+        journal.steps[patch_step_index].progress =
+            streamed_journal_progress(journal, journal.apply_bytes_done, journal.apply_bytes_total);
+        journal.overall_progress =
+            overall_progress(patch_step_index, journal.steps[patch_step_index].progress);
+        persist_and_emit(app, journal)?;
+    }
+    journal.current_file.clear();
+
+    if standalone_patch {
+        complete_step(app, journal, 1)?;
+        set_step_running(app, journal, 2, JobStatus::Running, "Verify patch")?;
+        complete_step(app, journal, 2)?;
+        set_step_running(app, journal, 3, JobStatus::Assembling, "Commit patch")?;
+    } else {
+        journal.status = JobStatus::Assembling;
+    }
+    commit_verified_manifest_files(
+        app,
+        journal,
+        &mut session,
+        install_root,
+        &patch_manifest.files,
+        if standalone_patch {
+            3
+        } else {
+            patch_step_index
+        },
+    )?;
+    if standalone_patch {
+        complete_step(app, journal, 3)?;
+        set_step_running(app, journal, 4, JobStatus::Running, "Record patch")?;
+    }
+
+    journal.commit_state = "metadata".to_string();
+    session.backup_metadata_file(
+        install_root,
+        &format!("{INSTALL_MARKER_DIR}/{APPLIED_PATCH_MANIFEST_FILE}"),
+    )?;
+    session.backup_metadata_file(
+        install_root,
+        &format!("{INSTALL_MARKER_DIR}/{INSTALL_MARKER_FILE}"),
+    )?;
+    write_applied_patch_manifest(install_root, &patch_manifest)?;
+    let mut committed_marker = marker;
+    committed_marker.applied_patch_id = Some(patch_id.clone());
+    write_install_marker_file(install_root, &committed_marker)?;
+    session.mark_marker_committed()?;
+    finish_committed_transaction_cleanup(app, journal, &mut session, install_root, "Patch")?;
+    if standalone_patch {
+        complete_step(app, journal, 4)?;
+        set_step_running(app, journal, 5, JobStatus::Running, "Finalize patch")?;
+        complete_step(app, journal, 5)?;
+    } else if let Some(step) = journal.steps.get_mut(patch_step_index) {
+        step.status = StepStatus::Completed;
+        step.progress = 1.0;
+        step.detail = format!(
+            "Applied {} verified patch file(s)",
+            patch_manifest.files.len()
+        );
+    }
+    journal.applied_patch_id = Some(patch_id);
+    journal.apply_bytes_done = journal.apply_bytes_total;
+    journal.durable_bytes = journal.apply_bytes_done;
+    journal.bytes_done = journal.bytes_total;
+    journal.overall_progress = 1.0;
+    journal.phase = if standalone_patch {
+        "Patch applied".to_string()
+    } else {
+        "Committed".to_string()
+    };
+    journal.status = JobStatus::Committed;
+    journal.commit_state = "committed".to_string();
+    append_log(
+        journal,
+        "info",
+        &format!(
+            "[Patch fix] Applied {} verified file(s)",
+            patch_manifest.files.len()
+        ),
+    );
+    persist_and_emit(app, journal)
+}
+
+fn patch_transfer_bytes_for_chunks(chunks: &[ChunkRef]) -> u64 {
+    chunks.iter().map(|chunk| chunk.compressed_size).sum()
+}
+
+fn try_apply_patch_fix_legacy(
     app: &AppHandle,
     journal: &mut JobJournal,
     source: &DepotSource,

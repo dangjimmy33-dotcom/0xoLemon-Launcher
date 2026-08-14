@@ -1,6 +1,5 @@
 // Removed log use
 use std::fs;
-use std::io::{Cursor, Read, Write};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::os::windows::process::CommandExt;
@@ -10,33 +9,13 @@ use once_cell::sync::Lazy;
 
 static DOWNLOADING_APPS: Lazy<Mutex<HashSet<u32>>> = Lazy::new(|| Mutex::new(HashSet::new()));
 
-use tauri::{command, Manager};
+use tauri::{command, AppHandle, Manager};
 use winreg::enums::*;
 use winreg::RegKey;
 use reqwest::blocking::Client;
-use zip::ZipArchive;
 use serde::{Deserialize, Serialize};
-use regex::Regex;
-use chrono::{DateTime, Utc, NaiveDateTime};
-use base64::{Engine as _, engine::general_purpose};
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct LuaVersionInfo {
-    pub hf_date: Option<String>,
-    pub hubcap_date: Option<String>,
-    pub needs_update: bool,
-    pub reason: String,
-}
-
-#[derive(Deserialize)]
-struct HubcapStatus {
-    manifest_file_exists: Option<bool>,
-    file_size: Option<u64>,
-    file_modified: Option<String>,
-    file_age_days: Option<f64>,
-    needs_update: Option<bool>,
-    game_name: Option<String>,
-}
+use chrono::Utc;
+use base64::Engine as _;
 
 #[derive(Serialize)]
 pub struct UpdateCheckResult {
@@ -55,8 +34,6 @@ struct RepoConfig {
 #[derive(Deserialize)]
 struct ReposConfig {
     repositories: Vec<RepoConfig>,
-    #[serde(default)]
-    hubcap_keys: Vec<String>,
 }
 
 fn get_hf_token() -> Option<String> {
@@ -85,7 +62,7 @@ pub fn check_steam_status(appid: u32) -> Result<bool, String> {
 }
 
 #[command]
-pub fn remove_from_steam(appid: u32) -> Result<(), String> {
+pub fn remove_from_steam(app: AppHandle, appid: u32) -> Result<(), String> {
     let steam_path = get_steam_path().ok_or("Steam not found")?;
     
     // 1. Remove .lua file and update .sync_state
@@ -162,6 +139,7 @@ pub fn remove_from_steam(appid: u32) -> Result<(), String> {
         }
     }
     
+    crate::lua_live::forget_lua_game(&app, appid)?;
     Ok(())
 }
 
@@ -187,7 +165,10 @@ pub fn list_installed_luas() -> Result<Vec<String>, String> {
 }
 
 #[command]
-pub fn force_restart_steam(post_restart_action: Option<String>) -> Result<(), String> {
+pub fn force_restart_steam(
+    app: AppHandle,
+    post_restart_action: Option<String>,
+) -> Result<(), String> {
     println!("Restarting steam...");
     let _ = Command::new("taskkill")
         .args(&["/F", "/IM", "steam.exe"])
@@ -196,6 +177,10 @@ pub fn force_restart_steam(post_restart_action: Option<String>) -> Result<(), St
     
     // Đợi 2.5 giây để Steam cũ chết hẳn (tránh bị lỗi single-instance mutex làm steam mới exit ngay lập tức)
     std::thread::sleep(std::time::Duration::from_millis(2500));
+
+    // Steam is fully stopped at this boundary, so a matching installed core
+    // will be the one loaded by the process started below.
+    let _ = crate::lua_live::reconcile_core_readiness(&app);
 
     let steam_path = get_steam_path().ok_or("Steam not found")?;
     let steam_exe = steam_path.join("steam.exe");
@@ -215,79 +200,6 @@ pub fn force_restart_steam(post_restart_action: Option<String>) -> Result<(), St
 
 
 
-
-const ACN_BASE_URL: &str = "https://acn-m7nc.onrender.com";
-
-#[derive(Deserialize)]
-struct CommunityKeyResponse {
-    ok: bool,
-    key: String,
-}
-
-fn fetch_community_api_key(client: &Client) -> Result<String, String> {
-    let url = format!("{}/api/hubcap/key", ACN_BASE_URL);
-    let resp = client.get(&url)
-        .header("User-Agent", "Mozilla/5.0")
-        .header("Cache-Control", "no-cache")
-        .timeout(std::time::Duration::from_secs(10))
-        .send()
-        .map_err(|e| e.to_string())?;
-
-    if resp.status().is_success() {
-        if let Ok(data) = resp.json::<CommunityKeyResponse>() {
-            if data.ok && !data.key.is_empty() {
-                return Ok(data.key.trim().to_string());
-            }
-        }
-    }
-    Err("Failed to fetch community API key".into())
-}
-
-fn hubcap_api_call(client: &Client, endpoint: &str) -> Result<reqwest::blocking::Response, String> {
-    let url = format!("https://hubcapmanifest.com{}", endpoint);
-    
-    for _ in 0..5 {
-        let key = fetch_community_api_key(client)?;
-        let resp = client.get(&url)
-            .header("Authorization", format!("Bearer {}", key))
-            .timeout(std::time::Duration::from_secs(120))
-            .send()
-            .map_err(|e| e.to_string())?;
-
-        if resp.status().is_success() {
-            return Ok(resp);
-        } else if resp.status().as_u16() == 401 || resp.status().as_u16() == 403 || resp.status().as_u16() == 429 {
-            println!("Hubcap key expired/rate-limited, rotating via backend...");
-            continue;
-        } else {
-            return Err(format!("Hubcap API error: {}", resp.status()));
-        }
-    }
-    Err("All Hubcap API keys failed (401/403/429)".into())
-}
-
-fn parse_hf_date(text: &str) -> Option<DateTime<Utc>> {
-    let re_bot = Regex::new(r"--\s*Bot Last Updated:\s*(.+)").unwrap();
-    let re_created = Regex::new(r"--\s*Created:\s*(.+)").unwrap();
-    
-    let date_str = if let Some(caps) = re_bot.captures(text) {
-        caps.get(1).map(|m| m.as_str().trim())
-    } else if let Some(caps) = re_created.captures(text) {
-        caps.get(1).map(|m| m.as_str().trim())
-    } else {
-        None
-    };
-    
-    if let Some(ds) = date_str {
-        if let Ok(dt) = NaiveDateTime::parse_from_str(ds, "%Y-%m-%d %H:%M:%S") {
-            return Some(DateTime::from_naive_utc_and_offset(dt, Utc));
-        }
-        if let Ok(dt) = NaiveDateTime::parse_from_str(ds, "%Y-%m-%d %H:%M") {
-            return Some(DateTime::from_naive_utc_and_offset(dt, Utc));
-        }
-    }
-    None
-}
 
 #[allow(dead_code)]
 fn check_steam_update_blocking(appid: u32) -> Result<UpdateCheckResult, String> {
@@ -317,14 +229,23 @@ fn check_steam_update_blocking(appid: u32) -> Result<UpdateCheckResult, String> 
 }
 
 #[command]
-pub async fn check_steam_update(appid: u32) -> Result<UpdateCheckResult, String> {
-    tauri::async_runtime::spawn_blocking(move || check_steam_update_blocking(appid))
+pub async fn check_steam_update(app: AppHandle, appid: u32) -> Result<UpdateCheckResult, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let (needs_update, reason, is_missing) =
+            crate::lua_live::compatibility_update_state(&app, appid)?;
+        Ok(UpdateCheckResult {
+            needs_update,
+            reason,
+            is_missing,
+        })
+    })
         .await
         .map_err(|e| e.to_string())?
 }
 
 #[command]
-pub async fn add_to_steam(appid: u32, force_update: bool) -> Result<(), String> {
+pub async fn add_to_steam(app: AppHandle, appid: u32, force_update: bool) -> Result<(), String> {
+    let _ = force_update;
     {
         let mut apps = DOWNLOADING_APPS.lock().unwrap();
         if !apps.insert(appid) {
@@ -332,7 +253,9 @@ pub async fn add_to_steam(appid: u32, force_update: bool) -> Result<(), String> 
         }
     }
 
-    let result = tauri::async_runtime::spawn_blocking(move || add_to_steam_internal(appid, force_update))
+    let result = tauri::async_runtime::spawn_blocking(move || {
+        crate::lua_live::install_live_compat(app, appid).map(|_| ())
+    })
         .await
         .map_err(|e| e.to_string())?;
 
@@ -344,7 +267,12 @@ pub async fn add_to_steam(appid: u32, force_update: bool) -> Result<(), String> 
     result
 }
 
+#[allow(dead_code)]
 fn add_to_steam_internal(appid: u32, force_update: bool) -> Result<(), String> {
+    use std::io::Cursor;
+    use zip::ZipArchive;
+
+    let _ = force_update;
     let steam_path = get_steam_path().ok_or("Steam not found")?;
     let client = Client::builder().timeout(std::time::Duration::from_secs(120)).build().map_err(|e| e.to_string())?;
     
@@ -464,37 +392,6 @@ fn update_sync_state(stplug_in_dir: &Path) -> Result<(), String> {
     
     println!("Updated .sync_state with {} lua files", lua_files.len());
     Ok(())
-}
-
-fn quoted_fields(line: &str) -> Vec<String> {
-    let mut fields = Vec::new();
-    let mut current = String::new();
-    let mut in_quote = false;
-    let mut escaped = false;
-    for character in line.chars() {
-        if escaped {
-            current.push(character);
-            escaped = false;
-            continue;
-        }
-        if in_quote && character == '\\' {
-            escaped = true;
-            current.push(character);
-            continue;
-        }
-        if character == '"' {
-            if in_quote {
-                fields.push(current.clone());
-                current.clear();
-            }
-            in_quote = !in_quote;
-            continue;
-        }
-        if in_quote {
-            current.push(character);
-        }
-    }
-    fields
 }
 
 #[command]
@@ -1138,19 +1035,6 @@ pub fn run_depot_patch(
     }
 }
 
-/// Decode the XOR-obfuscated Steam Web API key at runtime.
-/// Key: C8389A6AE249466D0A5234DC9D2D23C6  XOR mask: 0x5A
-fn steam_api_key() -> String {
-    const MASK: u8 = 0x5A;
-    const ENC: &[u8] = &[
-        0x19, 0x62, 0x69, 0x62, 0x63, 0x1B, 0x6C, 0x1B,
-        0x1F, 0x68, 0x6E, 0x63, 0x6E, 0x6C, 0x6C, 0x1E,
-        0x6A, 0x1B, 0x6F, 0x68, 0x69, 0x6E, 0x1E, 0x19,
-        0x63, 0x1E, 0x68, 0x1E, 0x68, 0x69, 0x19, 0x6C,
-    ];
-    ENC.iter().map(|b| (b ^ MASK) as char).collect()
-}
-
 #[derive(Serialize)]
 pub struct SteamGameInfo {
     pub name: String,
@@ -1238,16 +1122,23 @@ fn search_steam_store_blocking(term: &str) -> Result<Vec<SteamStoreSearchItem>, 
     Ok(results)
 }
 
-#[command]
-pub fn fetch_steam_game_name(appid: u32) -> Result<SteamGameInfo, String> {
+fn fetch_steam_game_info_blocking(appid: u32) -> Result<SteamGameInfo, String> {
     let client = Client::builder()
-        .timeout(std::time::Duration::from_secs(8))
-        .user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) 0xoLauncher/1.0")
+        .timeout(std::time::Duration::from_secs(25))
+        .user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) 0xoAssetBuilderLocal/1.0")
         .default_headers({
             let mut headers = reqwest::header::HeaderMap::new();
             headers.insert(
                 reqwest::header::COOKIE,
                 reqwest::header::HeaderValue::from_static("birthtime=568022401; lastagecheckage=1-January-1988; mature_content=1")
+            );
+            headers.insert(
+                reqwest::header::ACCEPT,
+                reqwest::header::HeaderValue::from_static("application/json,text/plain,*/*")
+            );
+            headers.insert(
+                reqwest::header::ACCEPT_LANGUAGE,
+                reqwest::header::HeaderValue::from_static("en-US,en;q=0.9")
             );
             headers
         })
@@ -1304,16 +1195,21 @@ pub fn fetch_steam_game_name(appid: u32) -> Result<SteamGameInfo, String> {
 
         let header_image = data.get("header_image")
             .and_then(|v| v.as_str())
-            .unwrap_or(&format!(
-                "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/{}/header.jpg",
-                appid
-            ))
+            .filter(|value| value.starts_with("https://") || value.starts_with("http://"))
+            .unwrap_or_default()
             .to_string();
 
         return Ok(SteamGameInfo { name, header_image });
     }
 
     Err(format!("Could not fetch info for {}: {}", appid, last_error))
+}
+
+#[command]
+pub async fn fetch_steam_game_name(appid: u32) -> Result<SteamGameInfo, String> {
+    tauri::async_runtime::spawn_blocking(move || fetch_steam_game_info_blocking(appid))
+        .await
+        .map_err(|error| format!("Steam metadata task failed: {error}"))?
 }
 
 

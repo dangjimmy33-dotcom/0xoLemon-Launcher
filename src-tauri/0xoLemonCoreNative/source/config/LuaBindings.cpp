@@ -17,6 +17,7 @@
 #include "runtime/Logger.h"
 #include "runtime/Ticket.h"
 #include "runtime/RuntimeHttp.h"
+#include "runtime/StatsClient.h"
 #include "hooks/client/DecryptionKeyHook.h"
 #include "config/Settings.h"
 
@@ -385,7 +386,12 @@ int Bind_fetchManifestCodeEx(lua_State* L) {
             return luaL_error(L, "setManifestid: gid must be a decimal uint64");
         }
 
-        ManifestOverrides[depotId] = { parsedGid, 0 };
+        const ManifestOverride manifest{ parsedGid, 0 };
+        if (g_activeSession) {
+            g_activeSession->recordManifestOverride(depotIdRaw, manifest);
+        } else {
+            ManifestOverrides[depotId] = manifest;
+        }
         g_manifestDoneByLua.insert(depotIdRaw);
         LOG_LUA_INFO("setManifestid: depot={} gid={}", depotId, parsedGid);
         return 0;
@@ -445,6 +451,7 @@ int Bind_fetchManifestCodeEx(lua_State* L) {
 
         if (argc < 2 || lua_isnil(L, 2)) {
             LOG_LUA_DEBUG("setStat: app {} marked for auto stats pool", appId);
+            StatsClient::Schedule(appId);
             return 0;
         }
 
@@ -581,7 +588,12 @@ int Bind_fetchManifestCodeEx(lua_State* L) {
     int Bind_skipManifestPin(lua_State* L) {
         if (lua_gettop(L) < 1) return 0;
         AppId_t id = CheckAppId(L, 1, "skipManifestPin");
-        if (id) g_manifestAutoUpdate.insert(id);
+        if (!id) return 0;
+        if (g_activeSession) {
+            g_activeSession->recordManifestAutoUpdate(id);
+        } else {
+            ManifestOverrides.erase(static_cast<uint64_t>(id));
+        }
         return 0;
     }
 

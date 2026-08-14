@@ -1,8 +1,8 @@
+use base64::{engine::general_purpose::STANDARD, Engine as _};
+use serde::Serialize;
+use std::fs;
 use std::path::PathBuf;
 use tauri::{AppHandle, Manager};
-use std::fs;
-use serde::Serialize;
-use base64::{engine::general_purpose::STANDARD, Engine as _};
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -37,7 +37,8 @@ pub async fn cache_remote_asset(
     let cache_dir = get_cache_dir(&app)?;
     let game_cache_dir = cache_dir.join(&game_id);
     if !game_cache_dir.exists() {
-        fs::create_dir_all(&game_cache_dir).map_err(|e| format!("Failed to create game cache dir: {}", e))?;
+        fs::create_dir_all(&game_cache_dir)
+            .map_err(|e| format!("Failed to create game cache dir: {}", e))?;
     }
 
     let file_path = game_cache_dir.join(sanitize_asset_id(&asset_id));
@@ -48,7 +49,7 @@ pub async fn cache_remote_asset(
     let response = reqwest::get(&url)
         .await
         .map_err(|e| format!("Request failed: {}", e))?;
-    
+
     let content_type = response
         .headers()
         .get("content-type")
@@ -86,7 +87,7 @@ pub fn get_cached_asset(
 
     let data = fs::read(&file_path).map_err(|e| format!("Failed to read cache file: {}", e))?;
     let split_idx = data.iter().position(|&b| b == b'\n').unwrap_or(0);
-    
+
     let mime_type = String::from_utf8_lossy(&data[..split_idx]).to_string();
     let image_data = &data[split_idx + 1..];
 

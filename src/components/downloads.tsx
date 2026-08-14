@@ -39,6 +39,8 @@ function statusLabel(job: JobJournal, phaseProgress: PhaseProgress) {
   if (job.status === 'failed') return 'Transfer failed'
   if (job.status === 'canceled') return 'Transfer canceled'
   if (job.status === 'paused') return 'Paused — progress is safely saved'
+  if (phaseProgress.isCommitting) return 'Completing the safe file transaction'
+  if (phaseProgress.isDownloading && phaseProgress.applyBytesTotal > 0) return 'Downloading and writing verified data'
   if (phaseProgress.isDownloading) return 'Downloading missing byte ranges'
   return phaseProgress.detail || phaseProgress.name
 }
@@ -86,11 +88,7 @@ export function DownloadQueuePanel({
   onResume?: () => void
   isResuming?: boolean
 }) {
-  const logicalPercent = useSmoothNumber(
-    phaseProgress.logicalBytesTotal > 0
-      ? (phaseProgress.logicalBytesDone / phaseProgress.logicalBytesTotal) * 100
-      : phaseProgress.percent,
-  )
+  const overallPercent = useSmoothNumber(phaseProgress.overallPercent)
   const failed = job.status === 'failed'
   const canceled = job.status === 'canceled'
 
@@ -139,8 +137,8 @@ export function DownloadQueuePanel({
               <span>{jobLabel(job)}</span>
             </div>
             <div className="transfer-percent-block">
-              <strong>{logicalPercent.toFixed(1)}%</strong>
-              <span>total data ready</span>
+              <strong>{overallPercent.toFixed(1)}%</strong>
+              <span>overall progress</span>
             </div>
           </div>
 
@@ -152,9 +150,9 @@ export function DownloadQueuePanel({
             aria-label={`${gameTitle} total transfer progress`}
             aria-valuemin={0}
             aria-valuemax={100}
-            aria-valuenow={Math.round(logicalPercent)}
+            aria-valuenow={Math.round(overallPercent)}
           >
-            <i style={{ width: `${logicalPercent}%` }} />
+            <i style={{ width: `${overallPercent}%` }} />
           </div>
 
           <div className="transfer-byte-line">
@@ -162,6 +160,13 @@ export function DownloadQueuePanel({
             <span>/ {formatBytes(phaseProgress.logicalBytesTotal)}</span>
             <small>{phaseProgress.isDownloading && phaseProgress.rateBytesPerSecond > 0 ? `${formatBytes(phaseProgress.rateBytesPerSecond)}/s` : phaseProgress.name}</small>
           </div>
+
+          {phaseProgress.applyBytesTotal > 0 ? (
+            <div className="transfer-io-lanes">
+              <IoLane label="Network" done={phaseProgress.logicalBytesDone} total={phaseProgress.logicalBytesTotal} percent={phaseProgress.networkPercent} rate={phaseProgress.rateBytesPerSecond} />
+              <IoLane label="Apply" done={phaseProgress.applyBytesDone} total={phaseProgress.applyBytesTotal} percent={phaseProgress.applyPercent} rate={phaseProgress.applyRateBytesPerSecond} />
+            </div>
+          ) : null}
 
           <div className="transfer-metric-grid">
             <div>
@@ -195,11 +200,11 @@ export function DownloadQueuePanel({
             </button>
           ) : isRunning ? (
             <>
-              <button className="transfer-action-primary" type="button" onClick={onPause}>
+              <button className="transfer-action-primary" type="button" onClick={onPause} disabled={phaseProgress.isCommitting}>
                 {isPaused ? <Play size={16} fill="currentColor" /> : <Pause size={16} fill="currentColor" />}
-                {isPaused ? 'Resume' : 'Pause'}
+                {phaseProgress.isCommitting ? 'Finishing' : isPaused ? 'Resume' : 'Pause'}
               </button>
-              <button className="transfer-action-danger" type="button" onClick={onCancel} aria-label="Cancel download">
+              <button className="transfer-action-danger" type="button" onClick={onCancel} aria-label="Cancel download" disabled={phaseProgress.isCommitting}>
                 <X size={17} />
               </button>
             </>
@@ -236,8 +241,12 @@ export function JobCenter({
 }) {
   const displayOverall = useSmoothNumber(phaseProgress.overallPercent)
   const phasePercent = useSmoothNumber(phaseProgress.percent)
-  const canControl = hasJob && ['running', 'downloading', 'assembling', 'paused'].includes(job.status)
+  const canControl = hasJob && !phaseProgress.isCommitting && ['running', 'downloading', 'assembling', 'paused'].includes(job.status)
   const title = gameTitle || 'Selected game'
+  const etaCandidates = [phaseProgress.etaSeconds, phaseProgress.applyEtaSeconds].filter(
+    (value): value is number => value != null,
+  )
+  const completionEta = etaCandidates.length > 0 ? Math.max(...etaCandidates) : null
 
   return (
     <section className="panel transfer-job-panel">
@@ -267,10 +276,21 @@ export function JobCenter({
 
       <div className="transfer-job-metrics">
         <div><Gauge size={16} /><span>Current phase</span><strong>{phaseProgress.name}</strong></div>
-        <div><Download size={16} /><span>Data ready</span><strong>{formatBytes(phaseProgress.logicalBytesDone)} / {formatBytes(phaseProgress.logicalBytesTotal)}</strong></div>
-        <div><Gauge size={16} /><span>Speed</span><strong>{phaseProgress.isDownloading && phaseProgress.rateBytesPerSecond > 0 ? `${formatBytes(phaseProgress.rateBytesPerSecond)}/s` : '—'}</strong></div>
-        <div><Clock3 size={16} /><span>ETA</span><strong>{formatDuration(phaseProgress.etaSeconds)}</strong></div>
+        <div><Gauge size={16} /><span>Network</span><strong>{phaseProgress.rateBytesPerSecond > 0 ? `${formatBytes(phaseProgress.rateBytesPerSecond)}/s` : '—'}</strong></div>
+        <div><HardDrive size={16} /><span>Disk write</span><strong>{phaseProgress.applyRateBytesPerSecond > 0 ? `${formatBytes(phaseProgress.applyRateBytesPerSecond)}/s` : '—'}</strong></div>
+        <div><Clock3 size={16} /><span>ETA</span><strong>{formatDuration(completionEta)}</strong></div>
       </div>
+
+      {phaseProgress.applyBytesTotal > 0 ? (
+        <div className="transfer-io-lanes is-job-center">
+          <IoLane label="Network" done={phaseProgress.logicalBytesDone} total={phaseProgress.logicalBytesTotal} percent={phaseProgress.networkPercent} rate={phaseProgress.rateBytesPerSecond} />
+          <IoLane label="Apply (durable)" done={phaseProgress.durableBytes} total={phaseProgress.applyBytesTotal} percent={phaseProgress.applyPercent} rate={phaseProgress.applyRateBytesPerSecond} />
+          <div className="transfer-current-file">
+            <span>{phaseProgress.isCommitting ? 'Safe transaction' : 'Current file'}</span>
+            <strong>{phaseProgress.isCommitting ? 'Pause and cancel are deferred until commit completes' : phaseProgress.currentFile || phaseProgress.pipelineVersion}</strong>
+          </div>
+        </div>
+      ) : null}
 
       <div className="transfer-phase-summary">
         <div>
@@ -301,11 +321,38 @@ export function JobCenter({
               <span className="transfer-resume-note">Progress is saved and can resume after launcher restart.</span>
             </>
           ) : (
-            <span className="transfer-resume-note">No running download, assemble, or repair job.</span>
+            <span className="transfer-resume-note">{phaseProgress.isCommitting ? 'Completing the safe transaction. Controls return after this boundary.' : 'No running download, assemble, or repair job.'}</span>
           )}
         </footer>
       ) : null}
     </section>
+  )
+}
+
+function IoLane({
+  label,
+  done,
+  total,
+  percent,
+  rate,
+}: {
+  label: string
+  done: number
+  total: number
+  percent: number
+  rate: number
+}) {
+  return (
+    <div className="transfer-io-lane">
+      <div>
+        <span>{label}</span>
+        <strong>{formatBytes(done)} / {formatBytes(total)}</strong>
+        <small>{rate > 0 ? `${formatBytes(rate)}/s` : '—'}</small>
+      </div>
+      <div className="transfer-secondary-track" role="progressbar" aria-label={`${label} progress`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(percent)}>
+        <i style={{ width: `${percent}%` }} />
+      </div>
+    </div>
   )
 }
 

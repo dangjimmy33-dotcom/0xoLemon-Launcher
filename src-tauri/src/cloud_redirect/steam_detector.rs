@@ -2,8 +2,8 @@
 use std::path::{Path, PathBuf};
 
 pub const SUPPORTED_STEAM_VERSIONS: [i64; 9] = [
-    1782866176, 1782344391, 1782257239, 1781041600, 1780352834,
-    1779918128, 1779486452, 1778281814, 1778003620,
+    1782866176, 1782344391, 1782257239, 1781041600, 1780352834, 1779918128, 1779486452, 1778281814,
+    1778003620,
 ];
 
 pub fn is_supported_steam_version(version: i64) -> bool {
@@ -28,17 +28,23 @@ fn try_registry() -> Option<PathBuf> {
 
     if let Ok(key) = hklm.open_subkey(r"SOFTWARE\Wow6432Node\Valve\Steam") {
         if let Ok(path) = key.get_value::<String, _>("InstallPath") {
-            if dir_exists(&path) { return Some(PathBuf::from(path)); }
+            if dir_exists(&path) {
+                return Some(PathBuf::from(path));
+            }
         }
     }
     if let Ok(key) = hklm.open_subkey(r"SOFTWARE\Valve\Steam") {
         if let Ok(path) = key.get_value::<String, _>("InstallPath") {
-            if dir_exists(&path) { return Some(PathBuf::from(path)); }
+            if dir_exists(&path) {
+                return Some(PathBuf::from(path));
+            }
         }
     }
     if let Ok(key) = hkcu.open_subkey(r"SOFTWARE\Valve\Steam") {
         if let Ok(path) = key.get_value::<String, _>("SteamPath") {
-            if dir_exists(&path) { return Some(PathBuf::from(path)); }
+            if dir_exists(&path) {
+                return Some(PathBuf::from(path));
+            }
         }
     }
     None
@@ -55,7 +61,9 @@ fn try_known_paths() -> Option<PathBuf> {
     if let Ok(pf86) = std::env::var("ProgramFiles(x86)") {
         candidates.push(PathBuf::from(pf86).join("Steam"));
     }
-    candidates.into_iter().find(|p| p.is_dir() && p.join("steam.exe").is_file())
+    candidates
+        .into_iter()
+        .find(|p| p.is_dir() && p.join("steam.exe").is_file())
 }
 
 /// Return exact process IDs for running Steam client processes.
@@ -157,15 +165,21 @@ mod tests {
 
 /// Read the installed Steam client version from the package manifest.
 pub fn get_steam_version(steam_path: &Path) -> Option<i64> {
-    let manifest = steam_path.join("package").join("steam_client_win64.manifest");
+    let manifest = steam_path
+        .join("package")
+        .join("steam_client_win64.manifest");
     let text = std::fs::read_to_string(manifest).ok()?;
     for line in text.lines() {
         let trimmed = line.trim();
-        if !trimmed.starts_with("\"version\"") { continue; }
+        if !trimmed.starts_with("\"version\"") {
+            continue;
+        }
         let last = trimmed.rfind('"')?;
         let second_last = trimmed[..last].rfind('"')?;
         let val = &trimmed[second_last + 1..last];
-        if let Ok(v) = val.parse::<i64>() { return Some(v); }
+        if let Ok(v) = val.parse::<i64>() {
+            return Some(v);
+        }
     }
     None
 }
@@ -181,12 +195,12 @@ pub fn shutdown_steam(steam_path: &Path) {
     }
     for _ in 0..30 {
         std::thread::sleep(std::time::Duration::from_millis(500));
-        if !is_steam_running() { return; }
+        if !is_steam_running() {
+            return;
+        }
     }
     let mut kill_cmd = std::process::Command::new("taskkill");
     kill_cmd.creation_flags(0x08000000);
-    let _ = kill_cmd
-        .args(["/F", "/IM", "steam.exe"])
-        .output();
+    let _ = kill_cmd.args(["/F", "/IM", "steam.exe"]).output();
     std::thread::sleep(std::time::Duration::from_millis(1000));
 }

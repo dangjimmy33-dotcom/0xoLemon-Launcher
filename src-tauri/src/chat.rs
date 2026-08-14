@@ -1,6 +1,6 @@
+use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
-use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Manager};
 
 const HF_REPO: &str = "Chat-stories/Chat-stories";
@@ -30,7 +30,10 @@ pub struct ChatMessage {
 }
 
 fn get_chat_file_path(app: &AppHandle, game_id: &str) -> PathBuf {
-    let app_dir = app.path().app_data_dir().unwrap_or_else(|_| PathBuf::from("."));
+    let app_dir = app
+        .path()
+        .app_data_dir()
+        .unwrap_or_else(|_| PathBuf::from("."));
     let chat_dir = app_dir.join("chats");
     if !chat_dir.exists() {
         let _ = fs::create_dir_all(&chat_dir);
@@ -52,7 +55,11 @@ pub fn load_chat_history(app: AppHandle, game_id: String) -> Result<Vec<ChatMess
 }
 
 #[tauri::command]
-pub fn save_chat_message(app: AppHandle, game_id: String, message: ChatMessage) -> Result<(), String> {
+pub fn save_chat_message(
+    app: AppHandle,
+    game_id: String,
+    message: ChatMessage,
+) -> Result<(), String> {
     let file_path = get_chat_file_path(&app, &game_id);
     let mut history = if file_path.exists() {
         let data = fs::read_to_string(&file_path).unwrap_or_default();
@@ -64,7 +71,7 @@ pub fn save_chat_message(app: AppHandle, game_id: String, message: ChatMessage) 
     } else {
         Vec::new()
     };
-    
+
     if history.iter().any(|m| m.id == message.id) {
         return Ok(());
     }
@@ -78,31 +85,44 @@ pub fn save_chat_message(app: AppHandle, game_id: String, message: ChatMessage) 
 }
 
 #[tauri::command]
-pub fn delete_chat_message(app: AppHandle, game_id: String, message_id: String) -> Result<(), String> {
+pub fn delete_chat_message(
+    app: AppHandle,
+    game_id: String,
+    message_id: String,
+) -> Result<(), String> {
     let file_path = get_chat_file_path(&app, &game_id);
     if !file_path.exists() {
         return Ok(());
     }
     let data = fs::read_to_string(&file_path).unwrap_or_default();
-    if data.trim().is_empty() { return Ok(()); }
-    
+    if data.trim().is_empty() {
+        return Ok(());
+    }
+
     let mut history = serde_json::from_str::<Vec<ChatMessage>>(&data).unwrap_or_default();
     history.retain(|m| m.id != message_id);
-    
+
     let json = serde_json::to_string_pretty(&history).map_err(|e| e.to_string())?;
     fs::write(&file_path, json).map_err(|e| e.to_string())?;
     Ok(())
 }
 
 #[tauri::command]
-pub fn edit_chat_message(app: AppHandle, game_id: String, message_id: String, new_text: String) -> Result<(), String> {
+pub fn edit_chat_message(
+    app: AppHandle,
+    game_id: String,
+    message_id: String,
+    new_text: String,
+) -> Result<(), String> {
     let file_path = get_chat_file_path(&app, &game_id);
     if !file_path.exists() {
         return Ok(());
     }
     let data = fs::read_to_string(&file_path).unwrap_or_default();
-    if data.trim().is_empty() { return Ok(()); }
-    
+    if data.trim().is_empty() {
+        return Ok(());
+    }
+
     let mut history = serde_json::from_str::<Vec<ChatMessage>>(&data).unwrap_or_default();
     if let Some(msg) = history.iter_mut().find(|m| m.id == message_id) {
         msg.text = new_text;
@@ -124,10 +144,16 @@ pub fn clear_chat_history(app: AppHandle, game_id: String) -> Result<(), String>
 #[tauri::command]
 pub fn download_from_huggingface(app: AppHandle, game_id: String) -> Result<(), String> {
     let file_path = get_chat_file_path(&app, &game_id);
-    let url = format!("https://huggingface.co/datasets/{}/resolve/main/chats/{}.json", HF_REPO, game_id);
+    let url = format!(
+        "https://huggingface.co/datasets/{}/resolve/main/chats/{}.json",
+        HF_REPO, game_id
+    );
     let hf_token = crate::remote_paths::token_for_repo(HF_REPO);
-    
-    let client = reqwest::blocking::Client::builder().timeout(std::time::Duration::from_secs(10)).build().map_err(|e| e.to_string())?;
+
+    let client = reqwest::blocking::Client::builder()
+        .timeout(std::time::Duration::from_secs(10))
+        .build()
+        .map_err(|e| e.to_string())?;
     let mut request = client.get(&url);
     if let Some(token) = hf_token.as_deref() {
         request = request.header("Authorization", format!("Bearer {token}"));
@@ -147,7 +173,7 @@ pub fn download_from_huggingface(app: AppHandle, game_id: String) -> Result<(), 
                     } else {
                         Vec::new()
                     };
-                    
+
                     let mut added = false;
                     for rm in remote_history {
                         if !history.iter().any(|m| m.id == rm.id) {
@@ -175,10 +201,10 @@ pub fn sync_to_huggingface(app: AppHandle, game_id: String) -> Result<(), String
         return Ok(());
     }
     let data = fs::read_to_string(&file_path).map_err(|e| e.to_string())?;
-    
+
     use base64::Engine;
     let b64 = base64::engine::general_purpose::STANDARD.encode(&data);
-    
+
     let payload = serde_json::json!({
         "operations": [
             {
@@ -191,23 +217,30 @@ pub fn sync_to_huggingface(app: AppHandle, game_id: String) -> Result<(), String
         "summary": format!("Sync {}", game_id)
     });
 
-    let url = format!("https://huggingface.co/api/datasets/{}/commit/main", HF_REPO);
-    let client = reqwest::blocking::Client::builder().timeout(std::time::Duration::from_secs(30)).build().map_err(|e| e.to_string())?;
-    
+    let url = format!(
+        "https://huggingface.co/api/datasets/{}/commit/main",
+        HF_REPO
+    );
+    let client = reqwest::blocking::Client::builder()
+        .timeout(std::time::Duration::from_secs(30))
+        .build()
+        .map_err(|e| e.to_string())?;
+
     let hf_token = required_hf_media_token()?;
 
-    let res = client.post(&url)
+    let res = client
+        .post(&url)
         .header("Authorization", format!("Bearer {}", hf_token))
         .json(&payload)
         .send()
         .map_err(|e| e.to_string())?;
-        
+
     if !res.status().is_success() {
         let status = res.status();
         let body = res.text().unwrap_or_default();
         return Err(format!("HF Sync failed: {} - {}", status, body));
     }
-    
+
     Ok(())
 }
 
@@ -233,9 +266,31 @@ pub async fn upload_chat_media(filename: String, data: Vec<u8>) -> Result<String
     let ext = safe_name.split('.').last().unwrap_or("").to_lowercase();
     let is_lfs = matches!(
         ext.as_str(),
-        "jpg" | "jpeg" | "png" | "gif" | "webp" | "bmp" | "tiff" |
-        "mp4" | "webm" | "mp3" | "wav" | "ogg" | "flac" | "aac" |
-        "zip" | "rar" | "7z" | "tar" | "gz" | "bz2" | "xz" | "pdf" | "bin" | "dat" | "exe"
+        "jpg"
+            | "jpeg"
+            | "png"
+            | "gif"
+            | "webp"
+            | "bmp"
+            | "tiff"
+            | "mp4"
+            | "webm"
+            | "mp3"
+            | "wav"
+            | "ogg"
+            | "flac"
+            | "aac"
+            | "zip"
+            | "rar"
+            | "7z"
+            | "tar"
+            | "gz"
+            | "bz2"
+            | "xz"
+            | "pdf"
+            | "bin"
+            | "dat"
+            | "exe"
     );
 
     let client = reqwest::Client::builder()
@@ -254,7 +309,10 @@ pub async fn upload_chat_media(filename: String, data: Vec<u8>) -> Result<String
         hasher.update(&data);
         let sha256_hash = hex::encode(hasher.finalize());
 
-        let batch_url = format!("https://huggingface.co/datasets/{}.git/info/lfs/objects/batch", HF_REPO);
+        let batch_url = format!(
+            "https://huggingface.co/datasets/{}.git/info/lfs/objects/batch",
+            HF_REPO
+        );
         let batch_payload = serde_json::json!({
             "operation": "upload",
             "transfers": ["basic", "multipart"],
@@ -266,7 +324,8 @@ pub async fn upload_chat_media(filename: String, data: Vec<u8>) -> Result<String
             ]
         });
 
-        let batch_res = client.post(&batch_url)
+        let batch_res = client
+            .post(&batch_url)
             .header("Authorization", format!("Bearer {}", token))
             .header("Accept", "application/vnd.git-lfs+json")
             .header("Content-Type", "application/vnd.git-lfs+json")
@@ -282,7 +341,7 @@ pub async fn upload_chat_media(filename: String, data: Vec<u8>) -> Result<String
         }
 
         let batch_json: serde_json::Value = batch_res.json().await.map_err(|e| e.to_string())?;
-        
+
         if let Some(objects) = batch_json.get("objects").and_then(|o| o.as_array()) {
             if let Some(obj) = objects.first() {
                 if let Some(error) = obj.get("error") {
@@ -299,7 +358,10 @@ pub async fn upload_chat_media(filename: String, data: Vec<u8>) -> Result<String
                                     }
                                 }
                             }
-                            let put_res = put_req.send().await.map_err(|e| format!("LFS upload failed: {}", e))?;
+                            let put_res = put_req
+                                .send()
+                                .await
+                                .map_err(|e| format!("LFS upload failed: {}", e))?;
                             if !put_res.status().is_success() {
                                 let status = put_res.status();
                                 let body = put_res.text().await.unwrap_or_default();
@@ -315,7 +377,6 @@ pub async fn upload_chat_media(filename: String, data: Vec<u8>) -> Result<String
             "{{\"key\": \"lfsFile\", \"value\": {{\"path\": \"{}\", \"algo\": \"sha256\", \"oid\": \"{}\", \"size\": {}}}}}\n",
             upload_path, sha256_hash, size
         ));
-
     } else {
         use base64::Engine;
         let b64_content = base64::engine::general_purpose::STANDARD.encode(&data);
@@ -325,7 +386,10 @@ pub async fn upload_chat_media(filename: String, data: Vec<u8>) -> Result<String
         ));
     }
 
-    let url = format!("https://huggingface.co/api/datasets/{}/commit/main", HF_REPO);
+    let url = format!(
+        "https://huggingface.co/api/datasets/{}/commit/main",
+        HF_REPO
+    );
     let res = client
         .post(&url)
         .header("Authorization", format!("Bearer {}", token))
@@ -349,9 +413,12 @@ pub async fn upload_chat_media(filename: String, data: Vec<u8>) -> Result<String
 }
 
 #[tauri::command]
-pub async fn upload_chat_media_from_path(filename: String, filepath: String) -> Result<String, String> {
-    let metadata = std::fs::metadata(&filepath)
-        .map_err(|e| format!("Failed to read file metadata: {}", e))?;
+pub async fn upload_chat_media_from_path(
+    filename: String,
+    filepath: String,
+) -> Result<String, String> {
+    let metadata =
+        std::fs::metadata(&filepath).map_err(|e| format!("Failed to read file metadata: {}", e))?;
     let max_size = 100 * 1024 * 1024;
     if metadata.len() > max_size {
         return Err(format!(
@@ -370,7 +437,9 @@ pub async fn delete_chat_media(url: String) -> Result<(), String> {
         return Ok(());
     }
     let filename = url.split('/').last().unwrap_or_default();
-    if filename.is_empty() { return Ok(()); }
+    if filename.is_empty() {
+        return Ok(());
+    }
     let token = required_hf_media_token()?;
     let delete_path = format!("{}/{}", HF_MEDIA_PATH_PREFIX, filename);
     let ndjson = format!(
@@ -378,13 +447,17 @@ pub async fn delete_chat_media(url: String) -> Result<(), String> {
         filename, delete_path
     );
 
-    let hf_url = format!("https://huggingface.co/api/datasets/{}/commit/main", HF_REPO);
+    let hf_url = format!(
+        "https://huggingface.co/api/datasets/{}/commit/main",
+        HF_REPO
+    );
     let client = reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(30))
         .build()
         .map_err(|e| e.to_string())?;
 
-    let _res = client.post(&hf_url)
+    let _res = client
+        .post(&hf_url)
         .header("Authorization", format!("Bearer {}", token))
         .header("Content-Type", "application/x-ndjson")
         .body(ndjson)
@@ -401,19 +474,28 @@ pub async fn download_chat_media_to_disk(url: String, filepath: String) -> Resul
         .build()
         .map_err(|e| format!("Failed to build client: {}", e))?;
 
-    let mut response = client.get(&url).send().await.map_err(|e| format!("Failed to download: {}", e))?;
-    
+    let mut response = client
+        .get(&url)
+        .send()
+        .await
+        .map_err(|e| format!("Failed to download: {}", e))?;
+
     if !response.status().is_success() {
-        return Err(format!("Download failed with status: {}", response.status()));
+        return Err(format!(
+            "Download failed with status: {}",
+            response.status()
+        ));
     }
 
-    let mut file = std::fs::File::create(&filepath).map_err(|e| format!("Failed to create file: {}", e))?;
-    
+    let mut file =
+        std::fs::File::create(&filepath).map_err(|e| format!("Failed to create file: {}", e))?;
+
     use std::io::Write;
     while let Some(chunk) = response.chunk().await.map_err(|e| e.to_string())? {
-        file.write_all(&chunk).map_err(|e| format!("Failed to write to file: {}", e))?;
+        file.write_all(&chunk)
+            .map_err(|e| format!("Failed to write to file: {}", e))?;
     }
-    
+
     Ok(())
 }
 
@@ -441,7 +523,7 @@ pub async fn get_chat_media_base64(url: String) -> Result<String, String> {
     }
 
     let res = req.send().await.map_err(|e| e.to_string())?;
-    
+
     if !res.status().is_success() {
         return Err(format!("Failed to fetch media: {}", res.status()));
     }

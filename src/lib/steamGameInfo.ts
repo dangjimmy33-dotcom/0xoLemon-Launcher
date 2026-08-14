@@ -12,16 +12,21 @@ export type SteamStoreSearchItem = {
 }
 
 const MAX_CONCURRENT_REQUESTS = 4
-const MAX_CACHE_ENTRIES = 250
+const MAX_CACHE_ENTRIES = 500
+const SUCCESS_TTL_MS = 10 * 60_000
+const FAILURE_TTL_MS = 2 * 60_000
 
-const cache = new Map<string, SteamGameInfo>()
+type CacheEntry = { info: SteamGameInfo; expiresAt: number; verified: boolean }
+const cache = new Map<string, CacheEntry>()
+const failedUntil = new Map<string, number>()
 const pending = new Map<string, Promise<SteamGameInfo | null>>()
 const queue: Array<{ appid: string; resolve: (info: SteamGameInfo | null) => void }> = []
 let activeRequests = 0
 
-function cacheInfo(appid: string, info: SteamGameInfo) {
+function cacheInfo(appid: string, info: SteamGameInfo, verified = true) {
   cache.delete(appid)
-  cache.set(appid, info)
+  cache.set(appid, { info, expiresAt: Date.now() + SUCCESS_TTL_MS, verified })
+  failedUntil.delete(appid)
   while (cache.size > MAX_CACHE_ENTRIES) {
     const oldest = cache.keys().next().value
     if (oldest === undefined) break
@@ -30,16 +35,26 @@ function cacheInfo(appid: string, info: SteamGameInfo) {
 }
 
 export function getCachedSteamGameInfo(appid: string) {
-  const info = cache.get(appid)
-  if (!info) return undefined
+  const entry = cache.get(appid)
+  if (!entry) return undefined
+  if (entry.expiresAt <= Date.now()) {
+    cache.delete(appid)
+    return undefined
+  }
   cache.delete(appid)
-  cache.set(appid, info)
-  return info
+  cache.set(appid, entry)
+  return entry.info
 }
 
 export function seedSteamGameInfo(appid: string, info: SteamGameInfo) {
   if (!info.name) return
-  cacheInfo(appid, info)
+  const current = cache.get(appid)
+  if (current?.verified && current.expiresAt > Date.now()) return
+  const guessedHeader = steamHeaderImageUrl(appid)
+  cacheInfo(appid, {
+    ...info,
+    header_image: info.header_image === guessedHeader ? '' : info.header_image,
+  }, false)
 }
 
 export function steamHeaderImageUrl(appid: string) {
@@ -51,6 +66,7 @@ export function steamCapsuleImageUrl(appid: string) {
 }
 
 async function loadSteamGameInfo(appid: string): Promise<SteamGameInfo | null> {
+  if ((failedUntil.get(appid) ?? 0) > Date.now()) return null
   try {
     const result = await invoke<SteamGameInfo>('fetch_steam_game_name', { appid: Number(appid) })
     if (result?.name) {
@@ -66,11 +82,17 @@ async function loadSteamGameInfo(appid: string): Promise<SteamGameInfo | null> {
       'https://store.steampowered.com/api/appdetails?appids=' + encodeURIComponent(appid) + '&filters=basic',
       { signal: AbortSignal.timeout(6000) },
     )
-    if (!response.ok) return null
+    if (!response.ok) {
+      failedUntil.set(appid, Date.now() + FAILURE_TTL_MS)
+      return null
+    }
 
     const data = await response.json()
     const entry = data?.[appid]
-    if (!entry?.success || !entry?.data?.name) return null
+    if (!entry?.success || !entry?.data?.name) {
+      failedUntil.set(appid, Date.now() + FAILURE_TTL_MS)
+      return null
+    }
 
     const info: SteamGameInfo = {
       name: entry.data.name,
@@ -81,11 +103,13 @@ async function loadSteamGameInfo(appid: string): Promise<SteamGameInfo | null> {
     cacheInfo(appid, info)
     return info
   } catch {
+    failedUntil.set(appid, Date.now() + FAILURE_TTL_MS)
     return null
   }
 }
 
 function drainQueue() {
+  if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return
   while (activeRequests < MAX_CONCURRENT_REQUESTS && queue.length > 0) {
     const next = queue.shift()
     if (!next) return
@@ -101,9 +125,16 @@ function drainQueue() {
   }
 }
 
+if (typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') drainQueue()
+  })
+}
+
 export function fetchSteamGameInfo(appid: string): Promise<SteamGameInfo | null> {
+  const cachedEntry = cache.get(appid)
   const cached = getCachedSteamGameInfo(appid)
-  if (cached) return Promise.resolve(cached)
+  if (cached && cachedEntry?.verified) return Promise.resolve(cached)
 
   const inFlight = pending.get(appid)
   if (inFlight) return inFlight

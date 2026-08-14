@@ -25,8 +25,7 @@ pub fn install_dll(dll_source: &Path, steam_path: &Path) -> Result<(), String> {
         .map_err(|e| format!("Failed to copy CloudRedirect DLL: {}", e))?;
 
     // Create marker file
-    fs::write(&marker_file, "")
-        .map_err(|e| format!("Failed to create marker file: {}", e))?;
+    fs::write(&marker_file, "").map_err(|e| format!("Failed to create marker file: {}", e))?;
 
     Ok(())
 }
@@ -51,8 +50,7 @@ pub fn uninstall_dll(steam_path: &Path) -> Result<(), String> {
 
     // Remove backup file if exists (don't restore it)
     if backup.exists() {
-        fs::remove_file(&backup)
-            .map_err(|e| format!("Failed to remove backup file: {}", e))?;
+        fs::remove_file(&backup).map_err(|e| format!("Failed to remove backup file: {}", e))?;
     }
 
     Ok(())

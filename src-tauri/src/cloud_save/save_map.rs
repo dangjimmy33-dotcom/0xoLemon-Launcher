@@ -601,7 +601,10 @@ pub(super) fn remote_repository_configured() -> bool {
     remote_repository_base_url().is_some()
 }
 
-pub(super) fn refresh_remote_map(app: &AppHandle, device_id: &str) -> Result<MapUpdateReport, String> {
+pub(super) fn refresh_remote_map(
+    app: &AppHandle,
+    device_id: &str,
+) -> Result<MapUpdateReport, String> {
     let base_url = remote_repository_base_url()
         .ok_or_else(|| "Remote save-map repository chưa được cấu hình.".to_string())?;
     let trusted_root = load_trusted_root(app)?;
@@ -617,21 +620,31 @@ pub(super) fn refresh_remote_map(app: &AppHandle, device_id: &str) -> Result<Map
         .build()
         .map_err(|error| error.to_string())?;
 
-    let timestamp_bytes = fetch_bytes(&client, &format!("{}/timestamp.json", base_url.trim_end_matches('/')))?;
-    let timestamp_env: SignedEnvelope = serde_json::from_slice(&timestamp_bytes).map_err(|error| error.to_string())?;
+    let timestamp_bytes = fetch_bytes(
+        &client,
+        &format!("{}/timestamp.json", base_url.trim_end_matches('/')),
+    )?;
+    let timestamp_env: SignedEnvelope =
+        serde_json::from_slice(&timestamp_bytes).map_err(|error| error.to_string())?;
     verify_signed_metadata(&trusted_root, "timestamp", &timestamp_env)?;
-    let timestamp: TimestampSigned = serde_json::from_value(timestamp_env.signed.clone()).map_err(|error| error.to_string())?;
+    let timestamp: TimestampSigned =
+        serde_json::from_value(timestamp_env.signed.clone()).map_err(|error| error.to_string())?;
     validate_expiry(&timestamp.expires, "timestamp.json")?;
     let snapshot_desc = timestamp
         .meta
         .get("snapshot.json")
         .ok_or_else(|| "timestamp.json thiếu snapshot.json".to_string())?;
 
-    let snapshot_bytes = fetch_bytes(&client, &format!("{}/snapshot.json", base_url.trim_end_matches('/')))?;
+    let snapshot_bytes = fetch_bytes(
+        &client,
+        &format!("{}/snapshot.json", base_url.trim_end_matches('/')),
+    )?;
     verify_description(&snapshot_bytes, snapshot_desc, "snapshot.json")?;
-    let snapshot_env: SignedEnvelope = serde_json::from_slice(&snapshot_bytes).map_err(|error| error.to_string())?;
+    let snapshot_env: SignedEnvelope =
+        serde_json::from_slice(&snapshot_bytes).map_err(|error| error.to_string())?;
     verify_signed_metadata(&trusted_root, "snapshot", &snapshot_env)?;
-    let snapshot: SnapshotSigned = serde_json::from_value(snapshot_env.signed.clone()).map_err(|error| error.to_string())?;
+    let snapshot: SnapshotSigned =
+        serde_json::from_value(snapshot_env.signed.clone()).map_err(|error| error.to_string())?;
     validate_expiry(&snapshot.expires, "snapshot.json")?;
     if snapshot.version != snapshot_desc.version {
         return Err("snapshot.json version không khớp timestamp.json".to_string());
@@ -641,11 +654,16 @@ pub(super) fn refresh_remote_map(app: &AppHandle, device_id: &str) -> Result<Map
         .get("targets.json")
         .ok_or_else(|| "snapshot.json thiếu targets.json".to_string())?;
 
-    let targets_bytes = fetch_bytes(&client, &format!("{}/targets.json", base_url.trim_end_matches('/')))?;
+    let targets_bytes = fetch_bytes(
+        &client,
+        &format!("{}/targets.json", base_url.trim_end_matches('/')),
+    )?;
     verify_description(&targets_bytes, targets_desc, "targets.json")?;
-    let targets_env: SignedEnvelope = serde_json::from_slice(&targets_bytes).map_err(|error| error.to_string())?;
+    let targets_env: SignedEnvelope =
+        serde_json::from_slice(&targets_bytes).map_err(|error| error.to_string())?;
     verify_signed_metadata(&trusted_root, "targets", &targets_env)?;
-    let targets: TargetsSigned = serde_json::from_value(targets_env.signed.clone()).map_err(|error| error.to_string())?;
+    let targets: TargetsSigned =
+        serde_json::from_value(targets_env.signed.clone()).map_err(|error| error.to_string())?;
     validate_expiry(&targets.expires, "targets.json")?;
     if targets.version != targets_desc.version {
         return Err("targets.json version không khớp snapshot.json".to_string());
@@ -670,9 +688,13 @@ pub(super) fn refresh_remote_map(app: &AppHandle, device_id: &str) -> Result<Map
         }
     }
 
-    let target_bytes = fetch_bytes(&client, &format!("{}/{}", base_url.trim_end_matches('/'), target_name))?;
+    let target_bytes = fetch_bytes(
+        &client,
+        &format!("{}/{}", base_url.trim_end_matches('/'), target_name),
+    )?;
     verify_target(&target_bytes, target_desc, target_name)?;
-    let map: CloudSaveMap = serde_json::from_slice(&target_bytes).map_err(|error| error.to_string())?;
+    let map: CloudSaveMap =
+        serde_json::from_slice(&target_bytes).map_err(|error| error.to_string())?;
     validate_map_header(&map)?;
     for (game_id, game) in &map.games {
         validate_game_map(game_id, game, &map.defaults)?;
@@ -726,16 +748,25 @@ pub(super) fn validate_game_map(
         if root.candidates.is_empty() {
             return Err(format!("{game_id}/{}: chưa có path candidate", root.id));
         }
-        if !matches!(root.match_policy.as_str(), "allExisting" | "firstExisting" | "highestPriority") {
+        if !matches!(
+            root.match_policy.as_str(),
+            "allExisting" | "firstExisting" | "highestPriority"
+        ) {
             return Err(format!("{game_id}/{}: matchPolicy không hợp lệ", root.id));
         }
         if root.follow_reparse_points || defaults.follow_reparse_points {
-            return Err(format!("{game_id}/{}: followReparsePoints không được phép", root.id));
+            return Err(format!(
+                "{game_id}/{}: followReparsePoints không được phép",
+                root.id
+            ));
         }
         for pattern in root.include.iter().chain(root.exclude.iter()) {
             validate_pattern(pattern)?;
         }
-        let limits = merge_limits(&defaults.limits, root.limits.as_ref().or(game.limits.as_ref()));
+        let limits = merge_limits(
+            &defaults.limits,
+            root.limits.as_ref().or(game.limits.as_ref()),
+        );
         validate_limits(&limits)?;
         for candidate in &root.candidates {
             validate_candidate(game_id, candidate)?;
@@ -786,7 +817,10 @@ pub(super) fn resolve_game_roots(
         };
         if selected.is_empty() {
             if root.required {
-                warnings.push(format!("Không tìm thấy root bắt buộc: {}", root.label_or_id()));
+                warnings.push(format!(
+                    "Không tìm thấy root bắt buộc: {}",
+                    root.label_or_id()
+                ));
             }
             continue;
         }
@@ -809,13 +843,16 @@ pub(super) fn resolve_game_roots(
                 if report.files > limits.max_files || report.bytes > limits.max_total_bytes {
                     return Err(format!(
                         "{} vượt giới hạn Cloud Save an toàn ({} file, {} byte)",
-                        path.display(), report.files, report.bytes
+                        path.display(),
+                        report.files,
+                        report.bytes
                     ));
                 }
                 if report.suspicious_files > 0 {
                     warnings.push(format!(
                         "{} có {} file giống dữ liệu game/cache; hãy kiểm tra map.",
-                        root.label_or_id(), report.suspicious_files
+                        root.label_or_id(),
+                        report.suspicious_files
                     ));
                 }
             } else {
@@ -824,7 +861,8 @@ pub(super) fn resolve_game_roots(
                     root.label_or_id()
                 ));
             }
-            let fingerprint = root_fingerprint(game_id, &root.id, &path, &root.include, &root.exclude);
+            let fingerprint =
+                root_fingerprint(game_id, &root.id, &path, &root.include, &root.exclude);
             resolved.push(ResolvedSaveRoot {
                 id: root.id.clone(),
                 label: root.label_or_id(),
@@ -870,7 +908,11 @@ fn dry_run_root(path: &Path, root: &MapRoot, limits: &MapLimits) -> Result<DryRu
     }
     let walker = WalkDir::new(path)
         .follow_links(false)
-        .max_depth(if root.recursive { root.profile_discovery.max_depth as usize + 32 } else { 1 });
+        .max_depth(if root.recursive {
+            root.profile_discovery.max_depth as usize + 32
+        } else {
+            1
+        });
     for entry in walker.into_iter().filter_map(Result::ok) {
         if !entry.file_type().is_file() {
             continue;
@@ -886,7 +928,10 @@ fn dry_run_root(path: &Path, root: &MapRoot, limits: &MapLimits) -> Result<DryRu
         }
         let metadata = entry.metadata().map_err(|error| error.to_string())?;
         if metadata.len() > limits.max_file_bytes {
-            return Err(format!("{} vượt giới hạn kích thước file", entry.path().display()));
+            return Err(format!(
+                "{} vượt giới hạn kích thước file",
+                entry.path().display()
+            ));
         }
         report.files += 1;
         report.bytes = report.bytes.saturating_add(metadata.len());
@@ -919,6 +964,27 @@ fn load_active_map(app: &AppHandle) -> Result<(CloudSaveMap, String), String> {
     read_map(&builtin).map(|map| (map, "built-in".to_string()))
 }
 
+/// Nhận CloudSaveMap JSON từ JS (Firestore realtime listener) và lưu vào LKG cache.
+/// Được gọi tự động mỗi khi Firestore cập nhật — không cần user thao tác.
+pub(super) fn push_map_from_firestore(app: &AppHandle, payload: &str) -> Result<(), String> {
+    let map: CloudSaveMap =
+        serde_json::from_str(payload).map_err(|e| format!("parse cloud save map: {e}"))?;
+    validate_map_header(&map)?;
+    for (game_id, game) in &map.games {
+        validate_game_map(game_id, game, &map.defaults)?;
+    }
+    let lkg_path = lkg_map_path(app)?;
+    let bytes =
+        serde_json::to_vec(&map).map_err(|e| format!("serialize cloud save map: {e}"))?;
+    write_atomic(&lkg_path, &bytes)?;
+    eprintln!(
+        "[CloudSaveMap] LKG updated from Firestore — version={} games={}",
+        map.map_version,
+        map.games.len()
+    );
+    Ok(())
+}
+
 fn read_map(path: &Path) -> Result<CloudSaveMap, String> {
     let bytes = fs::read(path).map_err(|error| format!("{}: {error}", path.display()))?;
     serde_json::from_slice(&bytes).map_err(|error| format!("{}: {error}", path.display()))
@@ -926,7 +992,10 @@ fn read_map(path: &Path) -> Result<CloudSaveMap, String> {
 
 fn validate_map_header(map: &CloudSaveMap) -> Result<(), String> {
     if map.schema_version != 1 {
-        return Err(format!("Cloud Save map schema {} không được hỗ trợ", map.schema_version));
+        return Err(format!(
+            "Cloud Save map schema {} không được hỗ trợ",
+            map.schema_version
+        ));
     }
     if !map.platform.eq_ignore_ascii_case("windows") {
         return Err("Cloud Save map không dành cho Windows.".to_string());
@@ -942,10 +1011,14 @@ fn validate_limits(limits: &MapLimits) -> Result<(), String> {
         return Err(format!("maxFiles phải nằm trong 1..={HARD_MAX_FILES}"));
     }
     if limits.max_total_bytes == 0 || limits.max_total_bytes > HARD_MAX_TOTAL_BYTES {
-        return Err(format!("maxTotalBytes phải nằm trong 1..={HARD_MAX_TOTAL_BYTES}"));
+        return Err(format!(
+            "maxTotalBytes phải nằm trong 1..={HARD_MAX_TOTAL_BYTES}"
+        ));
     }
     if limits.max_file_bytes == 0 || limits.max_file_bytes > HARD_MAX_FILE_BYTES {
-        return Err(format!("maxFileBytes phải nằm trong 1..={HARD_MAX_FILE_BYTES}"));
+        return Err(format!(
+            "maxFileBytes phải nằm trong 1..={HARD_MAX_FILE_BYTES}"
+        ));
     }
     if limits.max_file_bytes > limits.max_total_bytes {
         return Err("maxFileBytes không được lớn hơn maxTotalBytes".to_string());
@@ -991,7 +1064,10 @@ fn validate_candidate(game_id: &str, candidate: &PathCandidate) -> Result<(), St
     if candidate.base != "AbsolutePath" && path.is_absolute() {
         return Err("candidate path phải tương đối với base".to_string());
     }
-    if path.components().any(|component| matches!(component, Component::ParentDir)) {
+    if path
+        .components()
+        .any(|component| matches!(component, Component::ParentDir))
+    {
         return Err("candidate path không được chứa ..".to_string());
     }
     Ok(())
@@ -1008,7 +1084,8 @@ fn validate_pattern(pattern: &str) -> Result<(), String> {
 }
 
 fn candidate_applies(candidate: &PathCandidate, version: &str) -> bool {
-    if !candidate.platform.trim().is_empty() && !candidate.platform.eq_ignore_ascii_case("windows") {
+    if !candidate.platform.trim().is_empty() && !candidate.platform.eq_ignore_ascii_case("windows")
+    {
         return false;
     }
     if !candidate.min_game_version.trim().is_empty()
@@ -1024,7 +1101,10 @@ fn candidate_applies(candidate: &PathCandidate, version: &str) -> bool {
     true
 }
 
-fn resolve_candidate(candidate: &PathCandidate, install_path: &Path) -> Result<Option<PathBuf>, String> {
+fn resolve_candidate(
+    candidate: &PathCandidate,
+    install_path: &Path,
+) -> Result<Option<PathBuf>, String> {
     let base = match candidate.base.as_str() {
         "KnownFolder.LocalAppData" => known_folder_path(KnownFolderKind::LocalAppData)?,
         "KnownFolder.LocalAppDataLow" => known_folder_path(KnownFolderKind::LocalAppDataLow)?,
@@ -1050,7 +1130,10 @@ fn safe_join(base: &Path, relative: &str) -> Result<PathBuf, String> {
     let relative = Path::new(relative);
     if relative.is_absolute()
         || relative.components().any(|component| {
-            matches!(component, Component::ParentDir | Component::RootDir | Component::Prefix(_))
+            matches!(
+                component,
+                Component::ParentDir | Component::RootDir | Component::Prefix(_)
+            )
         })
     {
         return Err("Cloud Save map path escaped its base.".to_string());
@@ -1059,7 +1142,10 @@ fn safe_join(base: &Path, relative: &str) -> Result<PathBuf, String> {
 }
 
 fn reject_broad_root(path: &Path) -> Result<(), String> {
-    let normalized = path.to_string_lossy().trim_end_matches(['\\', '/']).to_ascii_lowercase();
+    let normalized = path
+        .to_string_lossy()
+        .trim_end_matches(['\\', '/'])
+        .to_ascii_lowercase();
     if normalized.len() <= 3 || normalized.ends_with(":") {
         return Err("Không được dùng toàn bộ ổ đĩa làm Save root.".to_string());
     }
@@ -1067,10 +1153,21 @@ fn reject_broad_root(path: &Path) -> Result<(), String> {
     if protected.iter().any(|name| normalized.ends_with(name)) {
         return Err("Save root trỏ vào thư mục hệ thống và đã bị chặn.".to_string());
     }
-    for kind in [KnownFolderKind::UserProfile, KnownFolderKind::LocalAppData, KnownFolderKind::RoamingAppData] {
+    for kind in [
+        KnownFolderKind::UserProfile,
+        KnownFolderKind::LocalAppData,
+        KnownFolderKind::RoamingAppData,
+    ] {
         if let Ok(folder) = known_folder_path(kind) {
-            if normalized == folder.to_string_lossy().trim_end_matches(['\\', '/']).to_ascii_lowercase() {
-                return Err("Save root quá rộng và có thể đọc toàn bộ dữ liệu người dùng.".to_string());
+            if normalized
+                == folder
+                    .to_string_lossy()
+                    .trim_end_matches(['\\', '/'])
+                    .to_ascii_lowercase()
+            {
+                return Err(
+                    "Save root quá rộng và có thể đọc toàn bộ dữ liệu người dùng.".to_string(),
+                );
             }
         }
     }
@@ -1082,7 +1179,8 @@ fn merge_limits(base: &MapLimits, override_value: Option<&MapLimits>) -> MapLimi
 }
 
 fn selected(path: &str, include: &[String], exclude: &[String]) -> bool {
-    let included = include.is_empty() || include.iter().any(|pattern| wildcard_match(pattern, path));
+    let included =
+        include.is_empty() || include.iter().any(|pattern| wildcard_match(pattern, path));
     included && !exclude.iter().any(|pattern| wildcard_match(pattern, path))
 }
 
@@ -1123,7 +1221,13 @@ fn is_suspicious_extension(path: &Path) -> bool {
     )
 }
 
-fn root_fingerprint(game_id: &str, root_id: &str, path: &Path, include: &[String], exclude: &[String]) -> String {
+fn root_fingerprint(
+    game_id: &str,
+    root_id: &str,
+    path: &Path,
+    include: &[String],
+    exclude: &[String],
+) -> String {
     let mut hasher = Sha256::new();
     hasher.update(game_id.as_bytes());
     hasher.update([0]);
@@ -1141,7 +1245,11 @@ fn root_fingerprint(game_id: &str, root_id: &str, path: &Path, include: &[String
     format!("{:x}", hasher.finalize())
 }
 
-fn verify_signed_metadata(root: &TrustedRoot, role_name: &str, envelope: &SignedEnvelope) -> Result<(), String> {
+fn verify_signed_metadata(
+    root: &TrustedRoot,
+    role_name: &str,
+    envelope: &SignedEnvelope,
+) -> Result<(), String> {
     let role = root
         .signed
         .roles
@@ -1189,7 +1297,11 @@ fn canonical_json(value: &Value) -> Result<Vec<u8>, String> {
     serde_json::to_vec(&normalize(value)).map_err(|error| error.to_string())
 }
 
-fn verify_description(bytes: &[u8], description: &MetaDescription, name: &str) -> Result<(), String> {
+fn verify_description(
+    bytes: &[u8],
+    description: &MetaDescription,
+    name: &str,
+) -> Result<(), String> {
     if let Some(length) = description.length {
         if bytes.len() as u64 != length {
             return Err(format!("{name} length không khớp metadata"));
@@ -1235,7 +1347,10 @@ fn fetch_bytes(client: &Client, url: &str) -> Result<Vec<u8>, String> {
     if !response.status().is_success() {
         return Err(format!("Save-map server HTTP {}", response.status()));
     }
-    response.bytes().map(|bytes| bytes.to_vec()).map_err(|error| error.to_string())
+    response
+        .bytes()
+        .map(|bytes| bytes.to_vec())
+        .map_err(|error| error.to_string())
 }
 
 fn device_in_rollout(device_id: &str, rollout: &Rollout) -> bool {
@@ -1393,13 +1508,48 @@ fn known_folder_path(kind: KnownFolderKind) -> Result<PathBuf, String> {
         fn CoTaskMemFree(memory: *mut c_void);
     }
 
-    const LOCAL_APP_DATA: Guid = Guid { data1: 0xF1B32785, data2: 0x6FBA, data3: 0x4FCF, data4: [0x9D, 0x55, 0x7B, 0x8E, 0x7F, 0x15, 0x70, 0x91] };
-    const LOCAL_APP_DATA_LOW: Guid = Guid { data1: 0xA520A1A4, data2: 0x1780, data3: 0x4FF6, data4: [0xBD, 0x18, 0x16, 0x73, 0x43, 0xC5, 0xAF, 0x16] };
-    const ROAMING_APP_DATA: Guid = Guid { data1: 0x3EB685DB, data2: 0x65F9, data3: 0x4CF6, data4: [0xA0, 0x3A, 0xE3, 0xEF, 0x65, 0x72, 0x9F, 0x3D] };
-    const DOCUMENTS: Guid = Guid { data1: 0xFDD39AD0, data2: 0x238F, data3: 0x46AF, data4: [0xAD, 0xB4, 0x6C, 0x85, 0x48, 0x03, 0x69, 0xC7] };
-    const PUBLIC_DOCUMENTS: Guid = Guid { data1: 0xED4824AF, data2: 0xDCE4, data3: 0x45A8, data4: [0x81, 0xE2, 0xFC, 0x79, 0x65, 0x08, 0x36, 0x34] };
-    const SAVED_GAMES: Guid = Guid { data1: 0x4C5C32FF, data2: 0xBB9D, data3: 0x43B0, data4: [0xBF, 0x9C, 0x4A, 0x39, 0xA0, 0xA5, 0xA1, 0xB0] };
-    const PROFILE: Guid = Guid { data1: 0x5E6C858F, data2: 0x0E22, data3: 0x4760, data4: [0x9A, 0xFE, 0xEA, 0x33, 0x17, 0xB6, 0x71, 0x73] };
+    const LOCAL_APP_DATA: Guid = Guid {
+        data1: 0xF1B32785,
+        data2: 0x6FBA,
+        data3: 0x4FCF,
+        data4: [0x9D, 0x55, 0x7B, 0x8E, 0x7F, 0x15, 0x70, 0x91],
+    };
+    const LOCAL_APP_DATA_LOW: Guid = Guid {
+        data1: 0xA520A1A4,
+        data2: 0x1780,
+        data3: 0x4FF6,
+        data4: [0xBD, 0x18, 0x16, 0x73, 0x43, 0xC5, 0xAF, 0x16],
+    };
+    const ROAMING_APP_DATA: Guid = Guid {
+        data1: 0x3EB685DB,
+        data2: 0x65F9,
+        data3: 0x4CF6,
+        data4: [0xA0, 0x3A, 0xE3, 0xEF, 0x65, 0x72, 0x9F, 0x3D],
+    };
+    const DOCUMENTS: Guid = Guid {
+        data1: 0xFDD39AD0,
+        data2: 0x238F,
+        data3: 0x46AF,
+        data4: [0xAD, 0xB4, 0x6C, 0x85, 0x48, 0x03, 0x69, 0xC7],
+    };
+    const PUBLIC_DOCUMENTS: Guid = Guid {
+        data1: 0xED4824AF,
+        data2: 0xDCE4,
+        data3: 0x45A8,
+        data4: [0x81, 0xE2, 0xFC, 0x79, 0x65, 0x08, 0x36, 0x34],
+    };
+    const SAVED_GAMES: Guid = Guid {
+        data1: 0x4C5C32FF,
+        data2: 0xBB9D,
+        data3: 0x43B0,
+        data4: [0xBF, 0x9C, 0x4A, 0x39, 0xA0, 0xA5, 0xA1, 0xB0],
+    };
+    const PROFILE: Guid = Guid {
+        data1: 0x5E6C858F,
+        data2: 0x0E22,
+        data3: 0x4760,
+        data4: [0x9A, 0xFE, 0xEA, 0x33, 0x17, 0xB6, 0x71, 0x73],
+    };
 
     let guid = match kind {
         KnownFolderKind::LocalAppData => &LOCAL_APP_DATA,
@@ -1413,7 +1563,10 @@ fn known_folder_path(kind: KnownFolderKind) -> Result<PathBuf, String> {
     let mut raw: *mut u16 = std::ptr::null_mut();
     let result = unsafe { SHGetKnownFolderPath(guid, 0, std::ptr::null_mut(), &mut raw) };
     if result < 0 || raw.is_null() {
-        return Err(format!("SHGetKnownFolderPath failed: 0x{:08X}", result as u32));
+        return Err(format!(
+            "SHGetKnownFolderPath failed: 0x{:08X}",
+            result as u32
+        ));
     }
     let mut len = 0usize;
     unsafe {
@@ -1431,10 +1584,13 @@ fn known_folder_path(kind: KnownFolderKind) -> Result<PathBuf, String> {
     let variable = match kind {
         KnownFolderKind::LocalAppData | KnownFolderKind::LocalAppDataLow => "LOCALAPPDATA",
         KnownFolderKind::RoamingAppData => "APPDATA",
-        KnownFolderKind::UserProfile | KnownFolderKind::Documents | KnownFolderKind::SavedGames => "USERPROFILE",
+        KnownFolderKind::UserProfile | KnownFolderKind::Documents | KnownFolderKind::SavedGames => {
+            "USERPROFILE"
+        }
         KnownFolderKind::PublicDocuments => "PUBLIC",
     };
-    let base = PathBuf::from(std::env::var(variable).map_err(|_| format!("{variable} chưa được đặt"))?);
+    let base =
+        PathBuf::from(std::env::var(variable).map_err(|_| format!("{variable} chưa được đặt"))?);
     Ok(match kind {
         KnownFolderKind::Documents => base.join("Documents"),
         KnownFolderKind::PublicDocuments => base.join("Documents"),
@@ -1495,7 +1651,13 @@ mod tests {
 
     #[test]
     fn rollout_is_stable_for_device_and_seed() {
-        let rollout = Rollout { percentage: 50, seed: "map-42".to_string() };
-        assert_eq!(device_in_rollout("device-a", &rollout), device_in_rollout("device-a", &rollout));
+        let rollout = Rollout {
+            percentage: 50,
+            seed: "map-42".to_string(),
+        };
+        assert_eq!(
+            device_in_rollout("device-a", &rollout),
+            device_in_rollout("device-a", &rollout)
+        );
     }
 }

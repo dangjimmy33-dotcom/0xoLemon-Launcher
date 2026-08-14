@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.20)
 project(OxoLemon VERSION 1.0.0 LANGUAGES C CXX)
 
+option(OXOLEMONCORE_BUILD_TESTS "Build portable native core tests" OFF)
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_C_STANDARD 11)
@@ -99,6 +101,7 @@ add_library(OxoCore SHARED
     runtime/Diagnostics.cpp
     runtime/VehUtil.cpp
     runtime/RuntimeHttp.cpp
+    runtime/StatsClient.cpp
     runtime/ManifestFetch.cpp
     runtime/ProtectionProbe.cpp
     runtime/RemoteTools.cpp
@@ -236,3 +239,14 @@ install(TARGETS OxoCore OxoPayload dwmapi xinput1_4
     RUNTIME DESTINATION .
     COMPONENT CoreRuntime
 )
+
+if(OXOLEMONCORE_BUILD_TESTS)
+    enable_testing()
+    add_executable(OxoStatsResponseTests
+        ${CMAKE_CURRENT_SOURCE_DIR}/../tests/stats_response_tests.cpp
+    )
+    target_include_directories(OxoStatsResponseTests PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+    add_test(NAME OxoStatsResponseTests COMMAND OxoStatsResponseTests)
+endif()

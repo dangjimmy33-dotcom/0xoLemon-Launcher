@@ -11,6 +11,10 @@ const STATE_PERSIST_INTERVAL: Duration = Duration::from_secs(2);
 const STATE_PERSIST_BYTES: u64 = 64 * 1024 * 1024;
 const STAGE_SYNC_WORKERS: usize = 8;
 const FILE_IO_RETRIES: usize = 12;
+#[cfg(not(test))]
+const FILE_ALLOCATION_MIN_BYTES: u64 = 1024 * 1024 * 1024;
+#[cfg(test)]
+const FILE_ALLOCATION_MIN_BYTES: u64 = u64::MAX;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(super) enum RecoveryOutcome {
@@ -57,6 +61,19 @@ enum TransactionPhase {
     Complete,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+#[serde(tag = "kind", content = "value", rename_all = "camelCase")]
+pub(super) enum TransactionCommitProof {
+    /// Backward-compatible proof used by update and fresh-install sessions.
+    #[default]
+    InstalledVersion,
+    /// Repair keeps the same installed version, so its explicit durable
+    /// transaction phase is the only valid commit proof.
+    TransactionPhase,
+    /// A patch is committed only after the marker records this exact ID.
+    AppliedPatchId(String),
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 enum TransactionFilePhase {
@@ -72,6 +89,8 @@ struct TransactionFile {
     relative_path: String,
     had_original: bool,
     obsolete: bool,
+    #[serde(default)]
+    metadata: bool,
     phase: TransactionFilePhase,
 }
 
@@ -81,8 +100,20 @@ struct UpdateTransaction {
     schema_version: u32,
     job_id: String,
     target_version: String,
+    #[serde(default)]
+    commit_proof: TransactionCommitProof,
     phase: TransactionPhase,
     files: Vec<TransactionFile>,
+}
+
+#[derive(Debug, Clone, Default)]
+pub(super) struct StageIoMetrics {
+    pub(super) disk_read_bytes: u64,
+    pub(super) disk_write_bytes: u64,
+    pub(super) resume_rehash_bytes: u64,
+    pub(super) sync_wait_ms: u64,
+    pub(super) allocation_reserved_bytes: u64,
+    pub(super) allocation_fallback_reason: Option<String>,
 }
 
 pub(super) struct SequentialFileWriter {
@@ -92,13 +123,24 @@ pub(super) struct SequentialFileWriter {
     hasher: Sha256,
     next_chunk: usize,
     durable_bytes: u64,
+    checkpointed_bytes: u64,
     uncheckpointed_bytes: u64,
     last_checkpoint: Instant,
+    metrics: StageIoMetrics,
 }
 
 impl SequentialFileWriter {
     pub(super) fn next_chunk(&self) -> usize {
         self.next_chunk
+    }
+
+    #[cfg(test)]
+    pub(super) fn checkpointed_bytes(&self) -> u64 {
+        self.checkpointed_bytes
+    }
+
+    pub(super) fn metrics(&self) -> &StageIoMetrics {
+        &self.metrics
     }
 
     pub(super) fn append(&mut self, chunk: &ChunkRef, data: &[u8]) -> Result<(), JobError> {
@@ -116,6 +158,10 @@ impl SequentialFileWriter {
         self.next_chunk = self.next_chunk.saturating_add(1);
         self.durable_bytes = self.durable_bytes.saturating_add(data.len() as u64);
         self.uncheckpointed_bytes = self.uncheckpointed_bytes.saturating_add(data.len() as u64);
+        self.metrics.disk_write_bytes = self
+            .metrics
+            .disk_write_bytes
+            .saturating_add(data.len() as u64);
         Ok(())
     }
 
@@ -124,6 +170,12 @@ impl SequentialFileWriter {
             || self.last_checkpoint.elapsed() >= CHECKPOINT_INTERVAL
     }
 }
+
+// Rollout name for the shared, verified staging primitive. Existing update
+// code keeps its established type name while install/repair/patch use this
+// alias, so old sessions remain pinned to the same schema and implementation.
+pub(super) type VerifiedStageSession = SequentialUpdateSession;
+pub(super) type VerifiedFileWriter = SequentialFileWriter;
 
 pub(super) struct SequentialUpdateSession {
     downloading_root: PathBuf,
@@ -165,27 +217,35 @@ impl SequentialUpdateSession {
                 continue;
             }
             let expected_fingerprint = full_hash(&normalized_filesystem_path(install_root));
+            let transaction_path = session_root.join(TRANSACTION_FILE);
+            let Some(transaction) = read_json_recovering::<UpdateTransaction>(&transaction_path)?
+            else {
+                continue;
+            };
+            if transaction.phase == TransactionPhase::Complete {
+                continue;
+            }
+            let expected_from_version = match &transaction.commit_proof {
+                TransactionCommitProof::AppliedPatchId(_) => journal.to_version.as_str(),
+                _ => journal.from_version.as_str(),
+            };
             if state.schema_version != SEQUENTIAL_STAGE_SCHEMA
                 || state.game_id != journal.game_id
                 || state.install_path_fingerprint != expected_fingerprint
-                || state.from_version != journal.from_version
+                || state.from_version != expected_from_version
                 || state.target_version != journal.to_version
             {
                 return Err(JobError::SessionMismatch(
                     "startup recovery ownership does not match the update journal".to_string(),
                 ));
             }
-            let transaction_path = session_root.join(TRANSACTION_FILE);
-            let Some(transaction) = read_json_recovering::<UpdateTransaction>(&transaction_path)?
-            else {
-                return Ok(None);
-            };
             if transaction.job_id != journal.id || transaction.target_version != journal.to_version
             {
                 return Err(JobError::SessionMismatch(
                     "startup recovery transaction belongs to another update".to_string(),
                 ));
             }
+            ensure_same_volume(&session_root, install_root)?;
             return Ok(Some(Self {
                 downloading_root: downloading_root.to_path_buf(),
                 install_root: install_root.to_path_buf(),
@@ -214,6 +274,27 @@ impl SequentialUpdateSession {
         install_root: &Path,
         files: &[FileEntry],
     ) -> Result<Self, JobError> {
+        Self::prepare_with_commit_proof(
+            downloading_root,
+            journal,
+            from_version,
+            target_version,
+            install_root,
+            files,
+            TransactionCommitProof::InstalledVersion,
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub(super) fn prepare_with_commit_proof(
+        downloading_root: &Path,
+        journal: &JobJournal,
+        from_version: &str,
+        target_version: &str,
+        install_root: &Path,
+        files: &[FileEntry],
+        commit_proof: TransactionCommitProof,
+    ) -> Result<Self, JobError> {
         let expected_state =
             new_stage_state(journal, from_version, target_version, install_root, files);
         let (job_key, session_root) = (0_u8..32)
@@ -238,6 +319,7 @@ impl SequentialUpdateSession {
                         Ok(Some(transaction)) => {
                             transaction.job_id == journal.id
                                 && transaction.target_version == target_version
+                                && transaction.commit_proof == commit_proof
                         }
                         Ok(None) => true,
                         Err(_) => false,
@@ -253,6 +335,7 @@ impl SequentialUpdateSession {
         let cache_root = session_root.join(CACHE_DIRECTORY);
         fs::create_dir_all(&stage_root)?;
         fs::create_dir_all(&cache_root)?;
+        ensure_same_volume(&stage_root, install_root)?;
 
         let state_path = session_root.join(STATE_FILE);
         let transaction_path = session_root.join(TRANSACTION_FILE);
@@ -270,6 +353,11 @@ impl SequentialUpdateSession {
                 if transaction.job_id == journal.id
                     && transaction.target_version == target_version =>
             {
+                if transaction.commit_proof != commit_proof {
+                    return Err(JobError::SessionMismatch(
+                        "staging session commit proof changed".to_string(),
+                    ));
+                }
                 transaction
             }
             Some(_) => {
@@ -282,6 +370,7 @@ impl SequentialUpdateSession {
                 schema_version: SEQUENTIAL_STAGE_SCHEMA,
                 job_id: journal.id.clone(),
                 target_version: target_version.to_string(),
+                commit_proof,
                 phase: TransactionPhase::Prepared,
                 files: Vec::new(),
             },
@@ -323,6 +412,18 @@ impl SequentialUpdateSession {
             .get(&manifest_path_hash(&file.path))
             .map(|state| state.durable_chunks.min(file.chunks.len()))
             .unwrap_or(0)
+    }
+
+    pub(super) fn durable_bytes(&self, file: &FileEntry) -> u64 {
+        self.state
+            .files
+            .get(&manifest_path_hash(&file.path))
+            .map(|state| state.durable_bytes.min(file.size))
+            .unwrap_or(0)
+    }
+
+    pub(super) fn total_durable_bytes(&self, files: &[FileEntry]) -> u64 {
+        files.iter().map(|file| self.durable_bytes(file)).sum()
     }
 
     pub(super) fn remove_cached_chunk(&self, hash: &str) -> Result<(), JobError> {
@@ -372,9 +473,23 @@ impl SequentialUpdateSession {
             return Ok(RecoveryOutcome::Ready);
         }
 
-        let marker_committed = read_install_marker(install_root)?
-            .and_then(|marker| usable_installed_version(&marker.version))
-            .is_some_and(|version| version == target_version);
+        let marker = read_install_marker(install_root)?;
+        let marker_committed = match &self.transaction.commit_proof {
+            TransactionCommitProof::InstalledVersion => marker
+                .as_ref()
+                .and_then(|marker| usable_installed_version(&marker.version))
+                .is_some_and(|version| version == target_version),
+            TransactionCommitProof::TransactionPhase => matches!(
+                self.transaction.phase,
+                TransactionPhase::MarkerCommitted
+                    | TransactionPhase::CleanupPending
+                    | TransactionPhase::Complete
+            ),
+            TransactionCommitProof::AppliedPatchId(expected) => marker
+                .as_ref()
+                .and_then(|marker| marker.applied_patch_id.as_deref())
+                .is_some_and(|actual| actual == expected),
+        };
 
         if marker_committed {
             // The install marker is the commit point. Any later transaction or
@@ -399,6 +514,25 @@ impl SequentialUpdateSession {
                     return Err(JobError::Depot(format!(
                         "committed update file is invalid: {}",
                         file.relative_path
+                    )));
+                }
+            }
+            for record in self
+                .transaction
+                .files
+                .iter()
+                .filter(|record| record.metadata)
+            {
+                let target = safe_join(install_root, &record.relative_path).ok_or_else(|| {
+                    JobError::Depot(format!(
+                        "unsafe committed metadata path: {}",
+                        record.relative_path
+                    ))
+                })?;
+                if !long_path(&target).is_file() {
+                    return Err(JobError::Depot(format!(
+                        "committed transaction metadata is missing: {}",
+                        record.relative_path
                     )));
                 }
             }
@@ -481,6 +615,9 @@ impl SequentialUpdateSession {
             self.persist_state_now()?;
         }
 
+        let allocation =
+            try_reserve_file_allocation(&handle, &stage_path, file.size, FILE_ALLOCATION_MIN_BYTES);
+
         handle.seek(SeekFrom::Start(durable_bytes))?;
         Ok(SequentialFileWriter {
             path_hash,
@@ -489,8 +626,16 @@ impl SequentialUpdateSession {
             hasher,
             next_chunk: durable_chunks,
             durable_bytes,
+            checkpointed_bytes: durable_bytes,
             uncheckpointed_bytes: 0,
             last_checkpoint: Instant::now(),
+            metrics: StageIoMetrics {
+                disk_read_bytes: verified_bytes,
+                resume_rehash_bytes: verified_bytes,
+                allocation_reserved_bytes: allocation.reserved_bytes,
+                allocation_fallback_reason: allocation.fallback_reason,
+                ..StageIoMetrics::default()
+            },
         })
     }
 
@@ -499,10 +644,15 @@ impl SequentialUpdateSession {
         writer: &mut SequentialFileWriter,
         complete: bool,
     ) -> Result<(), JobError> {
+        let sync_started = Instant::now();
         writer
             .file
             .sync_data()
             .map_err(|error| classify_file_io(error, &writer.path, "checkpoint staging file"))?;
+        writer.metrics.sync_wait_ms = writer
+            .metrics
+            .sync_wait_ms
+            .saturating_add(sync_started.elapsed().as_millis().min(u128::from(u64::MAX)) as u64);
         self.update_progress(
             &writer.path_hash,
             writer.next_chunk,
@@ -513,6 +663,7 @@ impl SequentialUpdateSession {
         // metadata now; finish_writer uses the debounced path and is made
         // durable in batches immediately before commit.
         self.persist_state_now()?;
+        writer.checkpointed_bytes = writer.durable_bytes;
         writer.uncheckpointed_bytes = 0;
         writer.last_checkpoint = Instant::now();
         Ok(())
@@ -542,25 +693,45 @@ impl SequentialUpdateSession {
                 file.path
             )));
         }
+        let sync_started = Instant::now();
+        writer
+            .file
+            .sync_data()
+            .map_err(|error| classify_file_io(error, &writer.path, "finalize staging file"))?;
+        writer.metrics.sync_wait_ms = writer
+            .metrics
+            .sync_wait_ms
+            .saturating_add(sync_started.elapsed().as_millis().min(u128::from(u64::MAX)) as u64);
         self.update_progress(
             &writer.path_hash,
             writer.next_chunk,
             writer.durable_bytes,
             true,
         )?;
-        self.persist_state_if_due(false)
+        self.persist_state_now()?;
+        writer.checkpointed_bytes = writer.durable_bytes;
+        Ok(())
     }
 
     pub(super) fn sync_staged_files(&self, files: &[FileEntry]) -> Result<(), JobError> {
         if files.is_empty() {
             return Ok(());
         }
-        let queue = Arc::new(Mutex::new(VecDeque::from(
-            files
-                .iter()
-                .map(|file| self.stage_path(file))
-                .collect::<Vec<_>>(),
-        )));
+        let pending = files
+            .iter()
+            .filter(|file| {
+                !self
+                    .state
+                    .files
+                    .get(&manifest_path_hash(&file.path))
+                    .is_some_and(|state| state.complete)
+            })
+            .map(|file| self.stage_path(file))
+            .collect::<Vec<_>>();
+        if pending.is_empty() {
+            return Ok(());
+        }
+        let queue = Arc::new(Mutex::new(VecDeque::from(pending)));
         let (tx, rx) = mpsc::channel::<Result<(), (PathBuf, std::io::Error)>>();
         let worker_count = files.len().min(STAGE_SYNC_WORKERS).max(1);
 
@@ -605,7 +776,9 @@ impl SequentialUpdateSession {
         let mut pending = Vec::new();
         for file in files {
             if self.transaction.files.iter().any(|record| {
-                !record.obsolete && record.relative_path.eq_ignore_ascii_case(&file.path)
+                !record.obsolete
+                    && !record.metadata
+                    && record.relative_path.eq_ignore_ascii_case(&file.path)
             }) {
                 continue;
             }
@@ -622,6 +795,7 @@ impl SequentialUpdateSession {
                 relative_path: file.path.clone(),
                 had_original: long_path(&target).exists(),
                 obsolete: false,
+                metadata: false,
                 phase: TransactionFilePhase::Prepared,
             });
         }
@@ -644,9 +818,8 @@ impl SequentialUpdateSession {
             }) {
                 continue;
             }
-            let target = safe_join(install_root, relative_path).ok_or_else(|| {
-                JobError::Depot(format!("unsafe manifest path: {relative_path}"))
-            })?;
+            let target = safe_join(install_root, relative_path)
+                .ok_or_else(|| JobError::Depot(format!("unsafe manifest path: {relative_path}")))?;
             if !long_path(&target).exists() {
                 continue;
             }
@@ -660,6 +833,7 @@ impl SequentialUpdateSession {
                 relative_path: relative_path.clone(),
                 had_original: true,
                 obsolete: true,
+                metadata: false,
                 phase: TransactionFilePhase::Prepared,
             });
         }
@@ -676,7 +850,9 @@ impl SequentialUpdateSession {
         file: &FileEntry,
     ) -> Result<Option<(PathBuf, PathBuf)>, JobError> {
         if !self.transaction.files.iter().any(|record| {
-            !record.obsolete && record.relative_path.eq_ignore_ascii_case(&file.path)
+            !record.obsolete
+                && !record.metadata
+                && record.relative_path.eq_ignore_ascii_case(&file.path)
         }) {
             self.prepare_commit_batch(install_root, std::slice::from_ref(file))?;
         }
@@ -694,10 +870,14 @@ impl SequentialUpdateSession {
             .iter()
             .rev()
             .find(|record| {
-                !record.obsolete && record.relative_path.eq_ignore_ascii_case(&file.path)
+                !record.obsolete
+                    && !record.metadata
+                    && record.relative_path.eq_ignore_ascii_case(&file.path)
             })
             .map(|record| record.had_original)
-            .ok_or_else(|| JobError::Depot(format!("missing transaction intent for {}", file.path)))?;
+            .ok_or_else(|| {
+                JobError::Depot(format!("missing transaction intent for {}", file.path))
+            })?;
 
         if long_path(&backup).exists() {
             return Err(JobError::SessionMismatch(format!(
@@ -714,10 +894,7 @@ impl SequentialUpdateSession {
                 )));
             }
             rename_with_retry(&target, &backup, "back up installed file")?;
-            self.set_transaction_file_phase_in_memory(
-                &file.path,
-                TransactionFilePhase::BackedUp,
-            )?;
+            self.set_transaction_file_phase_in_memory(&file.path, TransactionFilePhase::BackedUp)?;
         } else if long_path(&target).exists() {
             return Err(JobError::SessionMismatch(format!(
                 "new target appeared before commit: {}",
@@ -735,6 +912,46 @@ impl SequentialUpdateSession {
         self.transaction.phase = TransactionPhase::FilesInstalled;
 
         Ok(had_original.then_some((target, backup)))
+    }
+
+    /// Persist rollback ownership before moving metadata out of the way. The
+    /// caller may then atomically write the new metadata; recovery restores
+    /// the previous file if the job-specific commit proof was not reached.
+    pub(super) fn backup_metadata_file(
+        &mut self,
+        install_root: &Path,
+        relative_path: &str,
+    ) -> Result<(), JobError> {
+        if self.transaction.files.iter().any(|record| {
+            record.metadata && record.relative_path.eq_ignore_ascii_case(relative_path)
+        }) {
+            return Ok(());
+        }
+        let target = safe_join(install_root, relative_path)
+            .ok_or_else(|| JobError::Depot(format!("unsafe metadata path: {relative_path}")))?;
+        let had_original = long_path(&target).exists();
+        let backup = transaction_backup_path(&target, &self.job_key)?;
+        if long_path(&backup).exists() {
+            return Err(JobError::SessionMismatch(format!(
+                "unexpected metadata backup already exists for {relative_path}"
+            )));
+        }
+        self.transaction.files.push(TransactionFile {
+            relative_path: relative_path.to_string(),
+            had_original,
+            obsolete: false,
+            metadata: true,
+            phase: TransactionFilePhase::Prepared,
+        });
+        self.persist_transaction()?;
+        if had_original {
+            rename_with_retry(&target, &backup, "back up transaction metadata")?;
+            self.set_transaction_file_phase_in_memory(
+                relative_path,
+                TransactionFilePhase::BackedUp,
+            )?;
+        }
+        Ok(())
     }
 
     pub(super) fn backup_obsolete_file(
@@ -766,12 +983,39 @@ impl SequentialUpdateSession {
     }
 
     pub(super) fn mark_marker_committed(&mut self) -> Result<(), JobError> {
-        // write_install_marker has already committed the target at this point.
-        // Disarm first so a txn.json write failure cannot roll files back while
-        // leaving a target-version marker behind.
-        self.rollback_armed = false;
+        let previous_phase = self.transaction.phase.clone();
         self.transaction.phase = TransactionPhase::MarkerCommitted;
-        self.persist_transaction()?;
+        if self.transaction.commit_proof == TransactionCommitProof::TransactionPhase {
+            // For repair, txn.json is itself the durable commit proof. Keep
+            // rollback armed until that proof reaches disk and can be read
+            // back. A failed write must not leave only the in-memory phase
+            // looking committed to Drop.
+            match self.persist_transaction() {
+                Ok(()) => self.rollback_armed = false,
+                Err(error) => {
+                    let proof_is_durable =
+                        read_json_recovering::<UpdateTransaction>(&self.transaction_path)
+                            .ok()
+                            .flatten()
+                            .is_some_and(|transaction| {
+                                transaction.job_id == self.transaction.job_id
+                                    && transaction.phase == TransactionPhase::MarkerCommitted
+                            });
+                    if proof_is_durable {
+                        self.rollback_armed = false;
+                    } else {
+                        self.transaction.phase = previous_phase;
+                        return Err(error);
+                    }
+                }
+            }
+        } else {
+            // Install/update/patch already wrote an independently durable
+            // marker. Never roll their files back solely because persisting
+            // the advisory transaction phase failed afterward.
+            self.rollback_armed = false;
+            self.persist_transaction()?;
+        }
         Ok(())
     }
 
@@ -1025,12 +1269,24 @@ impl SequentialUpdateSession {
 impl Drop for SequentialUpdateSession {
     fn drop(&mut self) {
         if self.rollback_armed && !self.transaction.files.is_empty() {
-            let marker_is_target = read_install_marker(&self.install_root)
-                .ok()
-                .flatten()
-                .and_then(|marker| usable_installed_version(&marker.version))
-                .is_some_and(|version| version == self.transaction.target_version);
-            if marker_is_target {
+            let marker = read_install_marker(&self.install_root).ok().flatten();
+            let committed = match &self.transaction.commit_proof {
+                TransactionCommitProof::InstalledVersion => marker
+                    .as_ref()
+                    .and_then(|marker| usable_installed_version(&marker.version))
+                    .is_some_and(|version| version == self.transaction.target_version),
+                TransactionCommitProof::TransactionPhase => matches!(
+                    self.transaction.phase,
+                    TransactionPhase::MarkerCommitted
+                        | TransactionPhase::CleanupPending
+                        | TransactionPhase::Complete
+                ),
+                TransactionCommitProof::AppliedPatchId(expected) => marker
+                    .as_ref()
+                    .and_then(|marker| marker.applied_patch_id.as_deref())
+                    .is_some_and(|actual| actual == expected),
+            };
+            if committed {
                 return;
             }
             let install_root = self.install_root.clone();
@@ -1155,6 +1411,212 @@ fn transaction_backup_path(target: &Path, job_key: &str) -> Result<PathBuf, JobE
     sibling_path(target, &format!("007launcher.bak.{job_key}"))
 }
 
+#[derive(Debug, Default)]
+struct AllocationOutcome {
+    reserved_bytes: u64,
+    fallback_reason: Option<String>,
+}
+
+#[cfg(target_os = "windows")]
+#[derive(Debug)]
+struct WindowsVolumeInfo {
+    root: String,
+    filesystem: String,
+    remote: bool,
+}
+
+#[cfg(target_os = "windows")]
+fn windows_volume_info(path: &Path) -> Result<WindowsVolumeInfo, std::io::Error> {
+    use std::os::windows::ffi::OsStrExt;
+    use std::ptr::null_mut;
+    use winapi::um::fileapi::{GetDriveTypeW, GetVolumeInformationW, GetVolumePathNameW};
+    use winapi::um::winbase::DRIVE_REMOTE;
+
+    let path = long_path(path);
+    let path_wide = path
+        .as_os_str()
+        .encode_wide()
+        .chain(std::iter::once(0))
+        .collect::<Vec<_>>();
+    let mut root = vec![0_u16; 32_768];
+    let root_ok =
+        unsafe { GetVolumePathNameW(path_wide.as_ptr(), root.as_mut_ptr(), root.len() as u32) };
+    if root_ok == 0 {
+        return Err(std::io::Error::last_os_error());
+    }
+    let root_len = root
+        .iter()
+        .position(|value| *value == 0)
+        .unwrap_or(root.len());
+    root.truncate(root_len.saturating_add(1));
+
+    let mut filesystem = vec![0_u16; 64];
+    let info_ok = unsafe {
+        GetVolumeInformationW(
+            root.as_ptr(),
+            null_mut(),
+            0,
+            null_mut(),
+            null_mut(),
+            null_mut(),
+            filesystem.as_mut_ptr(),
+            filesystem.len() as u32,
+        )
+    };
+    if info_ok == 0 {
+        return Err(std::io::Error::last_os_error());
+    }
+    let fs_len = filesystem
+        .iter()
+        .position(|value| *value == 0)
+        .unwrap_or(filesystem.len());
+    let root_text = String::from_utf16_lossy(&root[..root.len().saturating_sub(1)]);
+    let filesystem = String::from_utf16_lossy(&filesystem[..fs_len]);
+    let drive_type = unsafe { GetDriveTypeW(root.as_ptr()) };
+    Ok(WindowsVolumeInfo {
+        root: root_text.to_ascii_lowercase(),
+        filesystem,
+        remote: drive_type == DRIVE_REMOTE,
+    })
+}
+
+#[cfg(target_os = "windows")]
+fn ensure_same_volume(stage_root: &Path, install_root: &Path) -> Result<(), JobError> {
+    let stage = windows_volume_info(stage_root).map_err(|error| {
+        JobError::Depot(format!(
+            "cannot identify staging volume '{}': {error}",
+            stage_root.display()
+        ))
+    })?;
+    let install = windows_volume_info(install_root).map_err(|error| {
+        JobError::Depot(format!(
+            "cannot identify install volume '{}': {error}",
+            install_root.display()
+        ))
+    })?;
+    if stage.root != install.root {
+        return Err(JobError::Depot(format!(
+            "verified staging and install target must be on the same volume ({} != {})",
+            stage.root, install.root
+        )));
+    }
+    Ok(())
+}
+
+#[cfg(not(target_os = "windows"))]
+fn ensure_same_volume(_stage_root: &Path, _install_root: &Path) -> Result<(), JobError> {
+    Ok(())
+}
+
+#[cfg(target_os = "windows")]
+fn try_reserve_file_allocation(
+    file: &File,
+    path: &Path,
+    target_size: u64,
+    minimum_size: u64,
+) -> AllocationOutcome {
+    use std::mem::{size_of, zeroed};
+    use std::os::windows::io::AsRawHandle;
+    use winapi::um::fileapi::{SetFileInformationByHandle, FILE_ALLOCATION_INFO};
+    use winapi::um::minwinbase::FileAllocationInfo;
+    use winapi::um::winnt::HANDLE;
+
+    if target_size < minimum_size || target_size > i64::MAX as u64 {
+        return AllocationOutcome::default();
+    }
+    let volume = match windows_volume_info(path) {
+        Ok(volume) => volume,
+        Err(error) => {
+            return AllocationOutcome {
+                fallback_reason: Some(format!("volume query failed: {error}")),
+                ..AllocationOutcome::default()
+            }
+        }
+    };
+    if volume.remote {
+        return AllocationOutcome {
+            fallback_reason: Some("network volume".to_string()),
+            ..AllocationOutcome::default()
+        };
+    }
+    if !volume.filesystem.eq_ignore_ascii_case("NTFS")
+        && !volume.filesystem.eq_ignore_ascii_case("ReFS")
+    {
+        return AllocationOutcome {
+            fallback_reason: Some(format!("unsupported filesystem: {}", volume.filesystem)),
+            ..AllocationOutcome::default()
+        };
+    }
+
+    let original_eof = match file.metadata() {
+        Ok(metadata) => metadata.len(),
+        Err(error) => {
+            return AllocationOutcome {
+                fallback_reason: Some(format!("metadata query failed: {error}")),
+                ..AllocationOutcome::default()
+            }
+        }
+    };
+    let mut info: FILE_ALLOCATION_INFO = unsafe { zeroed() };
+    unsafe {
+        *info.AllocationSize.QuadPart_mut() = target_size as i64;
+    }
+    let result = unsafe {
+        SetFileInformationByHandle(
+            file.as_raw_handle() as HANDLE,
+            FileAllocationInfo,
+            &mut info as *mut FILE_ALLOCATION_INFO as *mut _,
+            size_of::<FILE_ALLOCATION_INFO>() as u32,
+        )
+    };
+    if result == 0 {
+        return AllocationOutcome {
+            fallback_reason: Some(format!(
+                "FileAllocationInfo failed: {}",
+                std::io::Error::last_os_error()
+            )),
+            ..AllocationOutcome::default()
+        };
+    }
+    match file.metadata() {
+        Ok(metadata) if metadata.len() == original_eof => AllocationOutcome {
+            reserved_bytes: target_size.saturating_sub(original_eof),
+            fallback_reason: None,
+        },
+        Ok(metadata) => {
+            let observed = metadata.len();
+            let _ = file.set_len(original_eof);
+            AllocationOutcome {
+                fallback_reason: Some(format!(
+                    "allocation unexpectedly changed EOF from {original_eof} to {observed}"
+                )),
+                ..AllocationOutcome::default()
+            }
+        }
+        Err(error) => AllocationOutcome {
+            fallback_reason: Some(format!("EOF verification failed: {error}")),
+            ..AllocationOutcome::default()
+        },
+    }
+}
+
+#[cfg(not(target_os = "windows"))]
+fn try_reserve_file_allocation(
+    _file: &File,
+    _path: &Path,
+    target_size: u64,
+    minimum_size: u64,
+) -> AllocationOutcome {
+    if target_size >= minimum_size {
+        AllocationOutcome {
+            fallback_reason: Some("allocation hint is only available on Windows".to_string()),
+            ..AllocationOutcome::default()
+        }
+    } else {
+        AllocationOutcome::default()
+    }
+}
+
 fn classify_file_io(error: std::io::Error, path: &Path, operation: &str) -> JobError {
     match error.raw_os_error() {
         Some(2 | 3) => JobError::StageMissing(format!("{operation}: {}", path.display())),
@@ -1232,6 +1694,15 @@ fn write_json_atomic<T: Serialize>(path: &Path, value: &T) -> Result<(), JobErro
         }
         return Err(error.into());
     }
+    // The temporary file was already flushed, but reopen and flush the final
+    // name before dropping the recovery copy. This keeps transaction intent
+    // durable at the path recovery scans after a power loss.
+    OpenOptions::new()
+        .read(true)
+        .write(true)
+        .open(path)?
+        .sync_all()
+        .map_err(|error| classify_file_io(error, path, "flush committed transaction state"))?;
     remove_file_if_exists(&recovery)?;
     Ok(())
 }
@@ -1315,6 +1786,28 @@ mod tests {
     }
 
     #[test]
+    fn allocation_hint_never_changes_logical_eof() {
+        let root = env::temp_dir().join(format!(
+            "0xolemon-allocation-eof-{}",
+            Utc::now().timestamp_nanos_opt().unwrap_or_default()
+        ));
+        fs::create_dir_all(&root).unwrap();
+        let path = root.join("allocation.stage");
+        let file = OpenOptions::new()
+            .create(true)
+            .read(true)
+            .write(true)
+            .open(&path)
+            .unwrap();
+        let outcome = try_reserve_file_allocation(&file, &path, 1024 * 1024, 1);
+        assert_eq!(file.metadata().unwrap().len(), 0);
+        assert!(outcome.reserved_bytes > 0 || outcome.fallback_reason.is_some());
+        drop(file);
+        fs::remove_file(&path).unwrap();
+        fs::remove_dir(&root).unwrap();
+    }
+
+    #[test]
     fn session_paths_are_short_and_stage_is_not_preallocated() {
         let root = env::temp_dir().join(format!(
             "0xolemon-sequential-{}",
@@ -1348,6 +1841,7 @@ mod tests {
         assert!(writer.path.to_string_lossy().len() < 180);
         writer.append(&file.chunks[0], first).unwrap();
         session.checkpoint_writer(&mut writer, false).unwrap();
+        assert_eq!(writer.checkpointed_bytes(), first.len() as u64);
         assert_eq!(writer.file.metadata().unwrap().len(), first.len() as u64);
 
         drop(writer);
@@ -1625,19 +2119,10 @@ mod tests {
         ];
         let job = journal(&install);
         {
-            let mut session = SequentialUpdateSession::prepare(
-                &downloading,
-                &job,
-                "v1",
-                "v2",
-                &install,
-                &files,
-            )
-            .unwrap();
-            for (file, bytes) in files
-                .iter()
-                .zip([&first_target[..], &second_target[..]])
-            {
+            let mut session =
+                SequentialUpdateSession::prepare(&downloading, &job, "v1", "v2", &install, &files)
+                    .unwrap();
+            for (file, bytes) in files.iter().zip([&first_target[..], &second_target[..]]) {
                 let mut writer = session.open_writer(file).unwrap();
                 writer.append(&file.chunks[0], bytes).unwrap();
                 session.finish_writer(&mut writer, file).unwrap();
@@ -1664,6 +2149,390 @@ mod tests {
         SequentialUpdateSession::cleanup_owned_session(&downloading, &job.id).unwrap();
         fs::remove_file(install.join("first.bin")).unwrap();
         fs::remove_file(install.join("second.bin")).unwrap();
+        fs::remove_dir(&install).unwrap();
+        fs::remove_dir(install.parent().unwrap()).unwrap();
+        fs::remove_dir(downloading.parent().unwrap()).unwrap();
+        fs::remove_dir(&root).unwrap();
+    }
+
+    #[test]
+    fn repair_commit_proof_does_not_trust_an_unchanged_version_marker() {
+        let root = env::temp_dir().join(format!(
+            "0xolemon-repair-proof-{}",
+            Utc::now().timestamp_nanos_opt().unwrap_or_default()
+        ));
+        let downloading = root.join("dl").join("123456");
+        let install = root.join("common").join("Game");
+        fs::create_dir_all(&install).unwrap();
+        let base = b"known-good-base";
+        let repaired = b"repaired-target";
+        let target_path = install.join("game.bin");
+        fs::write(&target_path, base).unwrap();
+        let file = FileEntry {
+            path: "game.bin".to_string(),
+            size: repaired.len() as u64,
+            sha256: sha256_bytes(repaired),
+            chunks: vec![chunk(0, repaired)],
+            executable: false,
+            delta_patches: None,
+            preserve: false,
+        };
+        let mut job = journal(&install);
+        job.kind = "repair".to_string();
+        job.from_version = "v2".to_string();
+        write_install_marker_file(
+            &install,
+            &InstallMarker {
+                game_id: job.game_id.clone(),
+                version: "v2".to_string(),
+                installed_at: Utc::now().to_rfc3339(),
+                launch_executable: None,
+                applied_patch_id: None,
+            },
+        )
+        .unwrap();
+        let original_marker = fs::read(install_marker_path(&install)).unwrap();
+        {
+            let mut session = SequentialUpdateSession::prepare_with_commit_proof(
+                &downloading,
+                &job,
+                "v2",
+                "v2",
+                &install,
+                std::slice::from_ref(&file),
+                TransactionCommitProof::TransactionPhase,
+            )
+            .unwrap();
+            let mut writer = session.open_writer(&file).unwrap();
+            writer.append(&file.chunks[0], repaired).unwrap();
+            session.finish_writer(&mut writer, &file).unwrap();
+            drop(writer);
+            session.commit_file(&install, &file).unwrap();
+            session
+                .backup_metadata_file(
+                    &install,
+                    &format!("{INSTALL_MARKER_DIR}/{INSTALL_MARKER_FILE}"),
+                )
+                .unwrap();
+            write_install_marker_file(
+                &install,
+                &InstallMarker {
+                    game_id: job.game_id.clone(),
+                    version: "v2".to_string(),
+                    installed_at: "replacement-marker".to_string(),
+                    launch_executable: None,
+                    applied_patch_id: Some("temporary".to_string()),
+                },
+            )
+            .unwrap();
+            assert_eq!(fs::read(&target_path).unwrap(), repaired);
+        }
+        assert_eq!(fs::read(&target_path).unwrap(), base);
+        assert_eq!(
+            fs::read(install_marker_path(&install)).unwrap(),
+            original_marker
+        );
+        SequentialUpdateSession::cleanup_owned_session(&downloading, &job.id).unwrap();
+        fs::remove_file(&target_path).unwrap();
+        fs::remove_file(install_marker_path(&install)).unwrap();
+        fs::remove_dir(install.join(INSTALL_MARKER_DIR)).unwrap();
+        fs::remove_dir(&install).unwrap();
+        fs::remove_dir(install.parent().unwrap()).unwrap();
+        fs::remove_dir(downloading.parent().unwrap()).unwrap();
+        fs::remove_dir(&root).unwrap();
+    }
+
+    #[test]
+    fn repair_commit_proof_failure_keeps_rollback_armed() {
+        let root = env::temp_dir().join(format!(
+            "0xolemon-repair-proof-failure-{}",
+            Utc::now().timestamp_nanos_opt().unwrap_or_default()
+        ));
+        let downloading = root.join("dl").join("123456");
+        let install = root.join("common").join("Game");
+        fs::create_dir_all(&install).unwrap();
+        let base = b"base";
+        let repaired = b"repaired";
+        let target_path = install.join("game.bin");
+        fs::write(&target_path, base).unwrap();
+        let file = FileEntry {
+            path: "game.bin".to_string(),
+            size: repaired.len() as u64,
+            sha256: sha256_bytes(repaired),
+            chunks: vec![chunk(0, repaired)],
+            executable: false,
+            delta_patches: None,
+            preserve: false,
+        };
+        let mut job = journal(&install);
+        job.kind = "repair".to_string();
+        {
+            let mut session = SequentialUpdateSession::prepare_with_commit_proof(
+                &downloading,
+                &job,
+                "v2",
+                "v2",
+                &install,
+                std::slice::from_ref(&file),
+                TransactionCommitProof::TransactionPhase,
+            )
+            .unwrap();
+            let mut writer = session.open_writer(&file).unwrap();
+            writer.append(&file.chunks[0], repaired).unwrap();
+            session.finish_writer(&mut writer, &file).unwrap();
+            drop(writer);
+            session.commit_file(&install, &file).unwrap();
+
+            let blocker = root.join("not-a-directory");
+            fs::write(&blocker, b"block").unwrap();
+            let transaction_path = session.transaction_path.clone();
+            session.transaction_path = blocker.join(TRANSACTION_FILE);
+            assert!(session.mark_marker_committed().is_err());
+            assert!(session.rollback_armed);
+            session.transaction_path = transaction_path;
+        }
+        assert_eq!(fs::read(&target_path).unwrap(), base);
+
+        SequentialUpdateSession::cleanup_owned_session(&downloading, &job.id).unwrap();
+        fs::remove_file(root.join("not-a-directory")).unwrap();
+        fs::remove_file(&target_path).unwrap();
+        fs::remove_dir(&install).unwrap();
+        fs::remove_dir(install.parent().unwrap()).unwrap();
+        fs::remove_dir(downloading.parent().unwrap()).unwrap();
+        fs::remove_dir(&root).unwrap();
+    }
+
+    #[test]
+    fn patch_recovery_accepts_an_update_journal_version_transition() {
+        let root = env::temp_dir().join(format!(
+            "0xolemon-update-patch-recovery-{}",
+            Utc::now().timestamp_nanos_opt().unwrap_or_default()
+        ));
+        let downloading = root.join("dl").join("123456");
+        let install = root.join("common").join("Game");
+        fs::create_dir_all(&install).unwrap();
+        let data = b"patch";
+        let file = FileEntry {
+            path: "patch.dll".to_string(),
+            size: data.len() as u64,
+            sha256: sha256_bytes(data),
+            chunks: vec![chunk(0, data)],
+            executable: false,
+            delta_patches: None,
+            preserve: false,
+        };
+        let job = journal(&install);
+        let session = SequentialUpdateSession::prepare_with_commit_proof(
+            &downloading,
+            &job,
+            "v2",
+            "v2",
+            &install,
+            std::slice::from_ref(&file),
+            TransactionCommitProof::AppliedPatchId("patch-v2".to_string()),
+        )
+        .unwrap();
+        drop(session);
+
+        let recovered =
+            SequentialUpdateSession::open_owned_for_recovery(&downloading, &job, &install)
+                .unwrap()
+                .expect("patch session should belong to the update journal");
+        recovered.cleanup_session_files().unwrap();
+        fs::remove_dir(&install).unwrap();
+        fs::remove_dir(install.parent().unwrap()).unwrap();
+        fs::remove_dir(downloading.parent().unwrap()).unwrap();
+        fs::remove_dir(&root).unwrap();
+    }
+
+    #[test]
+    fn recovery_skips_a_completed_update_session_for_its_pending_patch() {
+        let root = env::temp_dir().join(format!(
+            "0xolemon-update-patch-collision-{}",
+            Utc::now().timestamp_nanos_opt().unwrap_or_default()
+        ));
+        let downloading = root.join("dl").join("123456");
+        let install = root.join("common").join("Game");
+        fs::create_dir_all(&install).unwrap();
+        let base = b"base";
+        let updated = b"updated";
+        let update_path = install.join("game.bin");
+        fs::write(&update_path, base).unwrap();
+        let update_file = FileEntry {
+            path: "game.bin".to_string(),
+            size: updated.len() as u64,
+            sha256: sha256_bytes(updated),
+            chunks: vec![chunk(0, updated)],
+            executable: false,
+            delta_patches: None,
+            preserve: false,
+        };
+        let patch_file = FileEntry {
+            path: "patch.dll".to_string(),
+            size: 5,
+            sha256: sha256_bytes(b"patch"),
+            chunks: vec![chunk(0, b"patch")],
+            executable: false,
+            delta_patches: None,
+            preserve: false,
+        };
+        let job = journal(&install);
+        let mut completed_update = SequentialUpdateSession::prepare(
+            &downloading,
+            &job,
+            "v1",
+            "v2",
+            &install,
+            std::slice::from_ref(&update_file),
+        )
+        .unwrap();
+        let mut writer = completed_update.open_writer(&update_file).unwrap();
+        writer.append(&update_file.chunks[0], updated).unwrap();
+        completed_update
+            .finish_writer(&mut writer, &update_file)
+            .unwrap();
+        drop(writer);
+        completed_update
+            .commit_file(&install, &update_file)
+            .unwrap();
+        write_install_marker_file(
+            &install,
+            &InstallMarker {
+                game_id: job.game_id.clone(),
+                version: "v2".to_string(),
+                installed_at: Utc::now().to_rfc3339(),
+                launch_executable: None,
+                applied_patch_id: None,
+            },
+        )
+        .unwrap();
+        completed_update.mark_marker_committed().unwrap();
+        completed_update.cleanup_committed(&install).unwrap();
+
+        let mut pending_patch = SequentialUpdateSession::prepare_with_commit_proof(
+            &downloading,
+            &job,
+            "v2",
+            "v2",
+            &install,
+            std::slice::from_ref(&patch_file),
+            TransactionCommitProof::AppliedPatchId("patch-v2".to_string()),
+        )
+        .unwrap();
+        pending_patch
+            .prepare_commit_batch(&install, std::slice::from_ref(&patch_file))
+            .unwrap();
+        assert_ne!(completed_update.job_key, pending_patch.job_key);
+
+        let mut recovered =
+            SequentialUpdateSession::open_owned_for_recovery(&downloading, &job, &install)
+                .unwrap()
+                .expect("pending patch transaction should be selected");
+        assert_eq!(recovered.job_key, pending_patch.job_key);
+        assert_eq!(
+            recovered.transaction.commit_proof,
+            TransactionCommitProof::AppliedPatchId("patch-v2".to_string())
+        );
+        recovered.rollback(&install).unwrap();
+        recovered.cleanup_session_files().unwrap();
+        pending_patch.rollback_armed = false;
+        completed_update.cleanup_session_files().unwrap();
+
+        fs::remove_file(&update_path).unwrap();
+        fs::remove_file(install_marker_path(&install)).unwrap();
+        fs::remove_dir(install.join(INSTALL_MARKER_DIR)).unwrap();
+        fs::remove_dir(&install).unwrap();
+        fs::remove_dir(install.parent().unwrap()).unwrap();
+        fs::remove_dir(downloading.parent().unwrap()).unwrap();
+        fs::remove_dir(&root).unwrap();
+    }
+
+    #[test]
+    fn patch_file_and_metadata_roll_back_together_before_marker_commit() {
+        let root = env::temp_dir().join(format!(
+            "0xolemon-patch-proof-{}",
+            Utc::now().timestamp_nanos_opt().unwrap_or_default()
+        ));
+        let downloading = root.join("dl").join("123456");
+        let install = root.join("common").join("Game");
+        let marker_dir = install.join(INSTALL_MARKER_DIR);
+        fs::create_dir_all(&marker_dir).unwrap();
+        let base = b"old-patched-file";
+        let patched = b"new-patched-file";
+        let target_path = install.join("game.dll");
+        fs::write(&target_path, base).unwrap();
+        let old_patch_manifest = b"old-patch-metadata";
+        let patch_manifest_path = applied_patch_manifest_path(&install);
+        fs::write(&patch_manifest_path, old_patch_manifest).unwrap();
+        let file = FileEntry {
+            path: "game.dll".to_string(),
+            size: patched.len() as u64,
+            sha256: sha256_bytes(patched),
+            chunks: vec![chunk(0, patched)],
+            executable: false,
+            delta_patches: None,
+            preserve: false,
+        };
+        let mut job = journal(&install);
+        job.kind = "patch".to_string();
+        let old_patch_id = "patch-old".to_string();
+        let new_patch_id = "patch-new".to_string();
+        write_install_marker_file(
+            &install,
+            &InstallMarker {
+                game_id: job.game_id.clone(),
+                version: "v2".to_string(),
+                installed_at: Utc::now().to_rfc3339(),
+                launch_executable: None,
+                applied_patch_id: Some(old_patch_id.clone()),
+            },
+        )
+        .unwrap();
+        {
+            let mut session = SequentialUpdateSession::prepare_with_commit_proof(
+                &downloading,
+                &job,
+                "v2",
+                "v2",
+                &install,
+                std::slice::from_ref(&file),
+                TransactionCommitProof::AppliedPatchId(new_patch_id),
+            )
+            .unwrap();
+            let mut writer = session.open_writer(&file).unwrap();
+            writer.append(&file.chunks[0], patched).unwrap();
+            session.finish_writer(&mut writer, &file).unwrap();
+            drop(writer);
+            session.commit_file(&install, &file).unwrap();
+            session
+                .backup_metadata_file(
+                    &install,
+                    &format!("{INSTALL_MARKER_DIR}/{APPLIED_PATCH_MANIFEST_FILE}"),
+                )
+                .unwrap();
+            session
+                .backup_metadata_file(
+                    &install,
+                    &format!("{INSTALL_MARKER_DIR}/{INSTALL_MARKER_FILE}"),
+                )
+                .unwrap();
+            fs::write(&patch_manifest_path, b"new-patch-metadata").unwrap();
+            assert_eq!(fs::read(&target_path).unwrap(), patched);
+        }
+        assert_eq!(fs::read(&target_path).unwrap(), base);
+        assert_eq!(fs::read(&patch_manifest_path).unwrap(), old_patch_manifest);
+        assert_eq!(
+            read_install_marker(&install)
+                .unwrap()
+                .unwrap()
+                .applied_patch_id,
+            Some(old_patch_id)
+        );
+        SequentialUpdateSession::cleanup_owned_session(&downloading, &job.id).unwrap();
+        fs::remove_file(&target_path).unwrap();
+        fs::remove_file(&patch_manifest_path).unwrap();
+        fs::remove_file(install_marker_path(&install)).unwrap();
+        fs::remove_dir(&marker_dir).unwrap();
         fs::remove_dir(&install).unwrap();
         fs::remove_dir(install.parent().unwrap()).unwrap();
         fs::remove_dir(downloading.parent().unwrap()).unwrap();
@@ -1710,6 +2579,7 @@ mod tests {
                 relative_path: file.path.clone(),
                 had_original: false,
                 obsolete: false,
+                metadata: false,
                 phase: TransactionFilePhase::Prepared,
             });
             session.persist_transaction().unwrap();
@@ -1898,6 +2768,156 @@ mod tests {
         assert!(!cached.exists());
 
         session.cleanup_session_files().unwrap();
+        fs::remove_dir(&install).unwrap();
+        fs::remove_dir(install.parent().unwrap()).unwrap();
+        fs::remove_dir(downloading.parent().unwrap()).unwrap();
+        fs::remove_dir(&root).unwrap();
+    }
+
+    #[test]
+    fn full_file_hash_mismatch_never_reaches_the_install_target() {
+        let root = env::temp_dir().join(format!(
+            "0xolemon-sequential-hash-mismatch-{}",
+            Utc::now().timestamp_nanos_opt().unwrap_or_default()
+        ));
+        let downloading = root.join("dl").join("123456");
+        let install = root.join("common").join("Game");
+        fs::create_dir_all(&install).unwrap();
+        let data = b"verified-chunk-with-wrong-file-hash";
+        let file = FileEntry {
+            path: "large.pak".to_string(),
+            size: data.len() as u64,
+            sha256: "0".repeat(64),
+            chunks: vec![chunk(0, data)],
+            executable: false,
+            delta_patches: None,
+            preserve: false,
+        };
+        let mut session = SequentialUpdateSession::prepare(
+            &downloading,
+            &journal(&install),
+            "v1",
+            "v2",
+            &install,
+            std::slice::from_ref(&file),
+        )
+        .unwrap();
+        let mut writer = session.open_writer(&file).unwrap();
+        writer.append(&file.chunks[0], data).unwrap();
+        let error = session.finish_writer(&mut writer, &file).unwrap_err();
+        assert!(matches!(
+            error,
+            JobError::Depot(message) if message.contains("staging hash mismatch")
+        ));
+        assert!(!install.join(&file.path).exists());
+
+        drop(writer);
+        session.cleanup_session_files().unwrap();
+        fs::remove_dir(&install).unwrap();
+        fs::remove_dir(install.parent().unwrap()).unwrap();
+        fs::remove_dir(downloading.parent().unwrap()).unwrap();
+        fs::remove_dir(&root).unwrap();
+    }
+
+    #[test]
+    fn committed_recovery_keeps_metadata_backup_when_replacement_is_missing() {
+        let root = env::temp_dir().join(format!(
+            "0xolemon-sequential-metadata-recovery-{}",
+            Utc::now().timestamp_nanos_opt().unwrap_or_default()
+        ));
+        let downloading = root.join("dl").join("123456");
+        let install = root.join("common").join("Game");
+        fs::create_dir_all(install.join(INSTALL_MARKER_DIR)).unwrap();
+        let original = b"damaged";
+        let repaired = b"repaired";
+        let target_path = install.join("game.bin");
+        fs::write(&target_path, original).unwrap();
+        let file = FileEntry {
+            path: "game.bin".to_string(),
+            size: repaired.len() as u64,
+            sha256: sha256_bytes(repaired),
+            chunks: vec![chunk(0, repaired)],
+            executable: false,
+            delta_patches: None,
+            preserve: false,
+        };
+        let mut job = journal(&install);
+        job.kind = "repair".to_string();
+        job.from_version = "v2".to_string();
+        let marker_path = install_marker_path(&install);
+        write_install_marker_file(
+            &install,
+            &InstallMarker {
+                game_id: job.game_id.clone(),
+                version: "v2".to_string(),
+                installed_at: "original-marker".to_string(),
+                launch_executable: None,
+                applied_patch_id: None,
+            },
+        )
+        .unwrap();
+
+        let backup_path;
+        {
+            let mut session = SequentialUpdateSession::prepare_with_commit_proof(
+                &downloading,
+                &job,
+                "v2",
+                "v2",
+                &install,
+                std::slice::from_ref(&file),
+                TransactionCommitProof::TransactionPhase,
+            )
+            .unwrap();
+            let mut writer = session.open_writer(&file).unwrap();
+            writer.append(&file.chunks[0], repaired).unwrap();
+            session.finish_writer(&mut writer, &file).unwrap();
+            drop(writer);
+            session.commit_file(&install, &file).unwrap();
+            session
+                .backup_metadata_file(
+                    &install,
+                    &format!("{INSTALL_MARKER_DIR}/{INSTALL_MARKER_FILE}"),
+                )
+                .unwrap();
+            backup_path = transaction_backup_path(&marker_path, &session.job_key).unwrap();
+            write_install_marker_file(
+                &install,
+                &InstallMarker {
+                    game_id: job.game_id.clone(),
+                    version: "v2".to_string(),
+                    installed_at: "repaired-marker".to_string(),
+                    launch_executable: None,
+                    applied_patch_id: None,
+                },
+            )
+            .unwrap();
+            session.mark_marker_committed().unwrap();
+        }
+
+        fs::remove_file(&marker_path).unwrap();
+        let mut recovered =
+            SequentialUpdateSession::open_owned_for_recovery(&downloading, &job, &install)
+                .unwrap()
+                .unwrap();
+        let error = recovered.recover(&install, "v2").unwrap_err();
+        assert!(matches!(
+            error,
+            JobError::Depot(message) if message.contains("transaction metadata is missing")
+        ));
+        assert!(backup_path.is_file());
+        assert_eq!(fs::read(&target_path).unwrap(), repaired);
+
+        // Restore the pre-transaction state so the test leaves no owned files.
+        recovered.transaction.phase = TransactionPhase::FilesInstalled;
+        recovered.rollback_armed = true;
+        recovered.rollback(&install).unwrap();
+        recovered.cleanup_session_files().unwrap();
+        assert_eq!(fs::read(&target_path).unwrap(), original);
+        assert!(marker_path.is_file());
+        fs::remove_file(&target_path).unwrap();
+        fs::remove_file(&marker_path).unwrap();
+        fs::remove_dir(install.join(INSTALL_MARKER_DIR)).unwrap();
         fs::remove_dir(&install).unwrap();
         fs::remove_dir(install.parent().unwrap()).unwrap();
         fs::remove_dir(downloading.parent().unwrap()).unwrap();

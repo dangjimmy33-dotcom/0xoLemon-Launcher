@@ -1,6 +1,8 @@
 import type { GameDetail, GameInstallMetadata, GameMedia, GameSummary, Snapshot } from '../types'
 import { CUSTOM_DOWNLOADING_RELATIVE, fallbackInstall } from './installPaths'
 
+export { isTauriRuntime } from './tauriRuntime'
+
 
 export function isRemoteAssetId(assetId: string | null | undefined) {
   return Boolean(assetId?.startsWith('remote64:') || assetId?.startsWith('remote:'))
@@ -245,10 +247,6 @@ export function downloadPathForInstallRoot(root: string, install: GameInstallMet
   }
 
   return `${normalizedRoot}\\${CUSTOM_DOWNLOADING_RELATIVE}`
-}
-
-export function isTauriRuntime() {
-  return typeof window !== 'undefined' && Boolean(window.__TAURI_INTERNALS__)
 }
 
 export function contentServiceLabel(value: string) {

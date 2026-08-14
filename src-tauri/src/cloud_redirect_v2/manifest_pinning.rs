@@ -116,7 +116,10 @@ pub fn save(input: ManifestPinConfigInput) -> Result<ManifestPinConfig, String> 
     Ok(ManifestPinConfig {
         enabled: input.enabled,
         auto_comment: input.auto_comment,
-        pinned_apps: pinned_apps.into_iter().map(|value| value.to_string()).collect(),
+        pinned_apps: pinned_apps
+            .into_iter()
+            .map(|value| value.to_string())
+            .collect(),
         path: path.to_string_lossy().into_owned(),
         restart_required: is_steam_running(),
     })

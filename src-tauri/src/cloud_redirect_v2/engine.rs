@@ -67,7 +67,11 @@ fn engine_resource_candidates(app: &AppHandle) -> Vec<PathBuf> {
 }
 
 pub fn source_engine_dir(app: &AppHandle) -> Result<PathBuf, String> {
-    let required = ["0xoCloudRedirect.dll", "cloud_redirect_cli.exe", "cloud760_tool.exe"];
+    let required = [
+        "0xoCloudRedirect.dll",
+        "cloud_redirect_cli.exe",
+        "cloud760_tool.exe",
+    ];
     for candidate in engine_resource_candidates(app) {
         if required.iter().all(|name| candidate.join(name).is_file()) {
             return Ok(candidate);
@@ -111,7 +115,10 @@ fn atomic_copy(source: &Path, destination: &Path) -> Result<(), String> {
     let had_destination = destination.is_file();
     if had_destination {
         fs::rename(destination, &rollback).map_err(|error| {
-            format!("Cannot prepare rollback for {}: {error}", destination.display())
+            format!(
+                "Cannot prepare rollback for {}: {error}",
+                destination.display()
+            )
         })?;
     }
 
@@ -134,7 +141,10 @@ fn atomic_copy(source: &Path, destination: &Path) -> Result<(), String> {
 }
 
 pub fn runtime_engine_dir(app: &AppHandle) -> Result<PathBuf, String> {
-    let app_data = app.path().app_data_dir().map_err(|error| error.to_string())?;
+    let app_data = app
+        .path()
+        .app_data_dir()
+        .map_err(|error| error.to_string())?;
     Ok(app_data
         .join("cloud_redirect")
         .join("engine")
@@ -150,7 +160,11 @@ pub fn ensure_runtime(app: &AppHandle) -> Result<PathBuf, String> {
     fs::create_dir_all(&runtime)
         .map_err(|error| format!("Cannot create engine directory: {error}"))?;
 
-    for name in ["0xoCloudRedirect.dll", "cloud_redirect_cli.exe", "cloud760_tool.exe"] {
+    for name in [
+        "0xoCloudRedirect.dll",
+        "cloud_redirect_cli.exe",
+        "cloud760_tool.exe",
+    ] {
         let source_file = source.join(name);
         let destination = runtime.join(name);
         let must_copy = match (fs::metadata(&source_file), fs::metadata(&destination)) {
@@ -160,7 +174,10 @@ pub fn ensure_runtime(app: &AppHandle) -> Result<PathBuf, String> {
             }
             (Ok(_), Err(_)) => true,
             (Err(error), _) => {
-                return Err(format!("Missing engine artifact {}: {error}", source_file.display()))
+                return Err(format!(
+                    "Missing engine artifact {}: {error}",
+                    source_file.display()
+                ))
             }
         };
         if must_copy {
@@ -177,9 +194,12 @@ pub fn ensure_runtime(app: &AppHandle) -> Result<PathBuf, String> {
 pub fn install_dll(app: &AppHandle) -> Result<PathBuf, String> {
     with_operation_lock(|| {
         if is_steam_running() {
-            return Err("Steam is running. Close Steam before installing CloudRedirect.".to_string());
+            return Err(
+                "Steam is running. Close Steam before installing CloudRedirect.".to_string(),
+            );
         }
-        let steam = find_steam_path().ok_or_else(|| "Steam installation was not found".to_string())?;
+        let steam =
+            find_steam_path().ok_or_else(|| "Steam installation was not found".to_string())?;
         let runtime = ensure_runtime(app)?;
         let destination = steam.join("0xoCloudRedirect.dll");
         atomic_copy(&runtime.join("0xoCloudRedirect.dll"), &destination)?;
@@ -192,7 +212,8 @@ pub fn uninstall_dll() -> Result<(), String> {
         if is_steam_running() {
             return Err("Steam is running. Close Steam before removing CloudRedirect.".to_string());
         }
-        let steam = find_steam_path().ok_or_else(|| "Steam installation was not found".to_string())?;
+        let steam =
+            find_steam_path().ok_or_else(|| "Steam installation was not found".to_string())?;
         let dll = steam.join("0xoCloudRedirect.dll");
         if dll.exists() {
             fs::remove_file(&dll)
@@ -227,12 +248,21 @@ pub fn run_cli_value(app: &AppHandle, args: &[String]) -> Result<Value, String> 
     let success = value
         .get("success")
         .and_then(Value::as_bool)
-        .unwrap_or_else(|| value.get("authenticated").and_then(Value::as_bool).unwrap_or(false));
+        .unwrap_or_else(|| {
+            value
+                .get("authenticated")
+                .and_then(Value::as_bool)
+                .unwrap_or(false)
+        });
     if !output.status.success() && !success {
         let message = value
             .get("error")
             .and_then(Value::as_str)
-            .unwrap_or(if stderr.is_empty() { "CloudRedirect operation failed" } else { &stderr });
+            .unwrap_or(if stderr.is_empty() {
+                "CloudRedirect operation failed"
+            } else {
+                &stderr
+            });
         return Err(message.to_string());
     }
     Ok(value)
@@ -319,7 +349,10 @@ pub fn run_migration(
 }
 
 fn string_field(value: &Value, key: &str) -> Option<String> {
-    value.get(key).and_then(Value::as_str).map(ToString::to_string)
+    value
+        .get(key)
+        .and_then(Value::as_str)
+        .map(ToString::to_string)
 }
 
 fn u64_field(value: &Value, key: &str) -> Option<u64> {

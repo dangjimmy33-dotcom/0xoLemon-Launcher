@@ -21,10 +21,21 @@ import {
   CircleAlert,
   CircleHelp,
   TriangleAlert,
+  Database,
+  ExternalLink,
+  KeyRound,
+  Loader2,
 } from 'lucide-react'
 import { invoke } from '@tauri-apps/api/core'
+import { openUrl } from '@tauri-apps/plugin-opener'
 import type { LauncherPreferences, NotificationCategory } from '../lib/preferences'
-import type { LauncherSettings, SteamEnvironmentInfo } from '../types'
+import type {
+  HubcapKeyState,
+  LauncherSettings,
+  LuaSourceSettingsState,
+  NativeCoreSettings,
+  SteamEnvironmentInfo,
+} from '../types'
 import { ConfirmDialog } from './ConfirmDialog'
 
 function CustomSelect<T extends string>({
@@ -366,6 +377,220 @@ function SteamAutoInstallSettings() {
   )
 }
 
+function LuaSourcesSettings() {
+  const { t } = useLocale()
+  const keyInputRef = useRef<HTMLInputElement>(null)
+  const [sources, setSources] = useState<LuaSourceSettingsState | null>(null)
+  const [nativeCore, setNativeCore] = useState<NativeCoreSettings | null>(null)
+  const [busy, setBusy] = useState<string | null>('load')
+  const [message, setMessage] = useState<string | null>(null)
+
+  const reload = useCallback(async () => {
+    setBusy('load')
+    try {
+      const [sourceState, coreState] = await Promise.all([
+        invoke<LuaSourceSettingsState>('get_lua_source_settings'),
+        invoke<NativeCoreSettings>('get_native_core_settings'),
+      ])
+      setSources(sourceState)
+      setNativeCore(coreState)
+      setMessage(null)
+    } catch (error) {
+      setMessage(String(error))
+    } finally {
+      setBusy(null)
+    }
+  }, [])
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      void reload()
+    }, 0)
+    return () => window.clearTimeout(timer)
+  }, [reload])
+
+  const saveKey = async () => {
+    const rawKey = keyInputRef.current?.value.trim() || ''
+    if (!rawKey) {
+      setMessage(t.settings.hubcapKeyRequired)
+      return
+    }
+    setBusy('save-key')
+    try {
+      const hubcap = await invoke<HubcapKeyState>('save_hubcap_api_key', { apiKey: rawKey })
+      if (keyInputRef.current) keyInputRef.current.value = ''
+      setSources((current) => current ? { ...current, hubcap } : current)
+      setMessage(t.settings.hubcapKeySaved)
+    } catch (error) {
+      setMessage(String(error))
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  const testKey = async () => {
+    setBusy('test-key')
+    try {
+      const hubcap = await invoke<HubcapKeyState>('refresh_hubcap_key_state')
+      setSources((current) => current ? { ...current, hubcap } : current)
+      setMessage(hubcap.valid ? t.settings.hubcapKeyValid : hubcap.lastError || t.settings.hubcapKeyInvalid)
+    } catch (error) {
+      setMessage(String(error))
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  const clearKey = async () => {
+    setBusy('clear-key')
+    try {
+      await invoke('clear_hubcap_api_key')
+      if (keyInputRef.current) keyInputRef.current.value = ''
+      await reload()
+      setMessage(t.settings.hubcapKeyCleared)
+    } catch (error) {
+      setMessage(String(error))
+      setBusy(null)
+    }
+  }
+
+  const setSourcePreference = async (key: 'sushiEnabled' | 'ryuuEnabled', value: boolean) => {
+    if (!sources) return
+    const request = { ...sources, [key]: value }
+    setBusy(key)
+    try {
+      const next = await invoke<LuaSourceSettingsState>('set_lua_source_preferences', {
+        request: {
+          sushiEnabled: request.sushiEnabled,
+          ryuuEnabled: request.ryuuEnabled,
+        },
+      })
+      setSources(next)
+      setMessage(null)
+    } catch (error) {
+      setMessage(String(error))
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  const setStatsLookup = async (enabled: boolean) => {
+    setBusy('stats')
+    try {
+      setNativeCore(await invoke<NativeCoreSettings>('set_native_core_stats_api', { enabled }))
+      setMessage(null)
+    } catch (error) {
+      setMessage(String(error))
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  const hubcap = sources?.hubcap
+  return (
+    <section className="settings-group" id="lua-sources">
+      <header>
+        <KeyRound size={18} />
+        <div>
+          <strong>{t.settings.luaSources}</strong>
+          <span>{t.settings.luaSourcesDesc}</span>
+        </div>
+      </header>
+      <div className="settings-group-body">
+        <div className="lua-source-key-panel">
+          <div className="lua-source-key-heading">
+            <div>
+              <strong>{t.settings.hubcapApiKey}</strong>
+              <span>{t.settings.hubcapApiKeyDesc}</span>
+            </div>
+            <span className={`settings-status-pill ${hubcap?.valid ? 'is-online' : ''}`}>
+              {busy === 'load'
+                ? t.settings.steamChecking
+                : hubcap?.configured
+                  ? hubcap.maskedKey || t.settings.hubcapConfigured
+                  : t.settings.hubcapNotConfigured}
+            </span>
+          </div>
+          <div className="lua-source-key-input">
+            <input
+              ref={keyInputRef}
+              type="password"
+              autoComplete="off"
+              spellCheck={false}
+              placeholder={t.settings.hubcapKeyPlaceholder}
+              aria-label={t.settings.hubcapApiKey}
+            />
+            <button type="button" onClick={() => void saveKey()} disabled={Boolean(busy)}>
+              {busy === 'save-key' ? <Loader2 size={14} className="spin" /> : null}
+              {t.settings.saveKey}
+            </button>
+          </div>
+          <div className="settings-action-row">
+            <button type="button" className="settings-secondary-button" onClick={() => void testKey()} disabled={!hubcap?.configured || Boolean(busy)}>
+              <RefreshCcw size={14} />
+              {t.settings.testKey}
+            </button>
+            <button type="button" className="settings-secondary-button" onClick={() => void clearKey()} disabled={!hubcap?.configured || Boolean(busy)}>
+              {t.settings.clearKey}
+            </button>
+            <button type="button" className="settings-secondary-button" onClick={() => void openUrl('https://hubcapmanifest.com/')}>
+              <ExternalLink size={14} />
+              {t.settings.openHubcap}
+            </button>
+          </div>
+          {hubcap?.configured && (
+            <div className="lua-source-usage-grid">
+              <span>{t.settings.dailyHubcapQuota}<strong>{hubcap.daily.remaining ?? '-'}/{hubcap.daily.limit ?? '-'}</strong></span>
+              <span>{t.settings.singleManifestQuota}<strong>{hubcap.single.remaining ?? '-'}/{hubcap.single.limit ?? '-'}</strong></span>
+              <span>{t.settings.bundleQuota}<strong>{hubcap.bundle.remaining ?? '-'}/{hubcap.bundle.limit ?? '-'}</strong></span>
+              <span>{t.settings.workshopQuota}<strong>{hubcap.workshop.remaining ?? '-'}/{hubcap.workshop.limit ?? '-'}</strong></span>
+              <span>{t.settings.serviceStatus}<strong>{hubcap.serviceReady ? t.settings.ready : t.settings.unavailable}</strong></span>
+              <span>{t.settings.keyExpiry}<strong>{hubcap.expiresAt ? new Date(hubcap.expiresAt).toLocaleString() : t.settings.unknown}</strong></span>
+            </div>
+          )}
+          <div className="lua-source-security">
+            <ShieldCheck size={16} />
+            <div>
+              <strong>{t.settings.securityBestPractices}</strong>
+              <span>{t.settings.securityNeverShare}</span>
+              <span>{t.settings.securityStoreSecurely}</span>
+              <span>{t.settings.securityExpiry}</span>
+              <span>{t.settings.securityRevoke}</span>
+            </div>
+          </div>
+          {message && <div className="lua-source-message">{message}</div>}
+        </div>
+
+        <SettingRow title={t.settings.statsLookup} description={t.settings.statsLookupDesc}>
+          <Toggle
+            checked={nativeCore?.statsApiEnabled ?? true}
+            onChange={(checked) => void setStatsLookup(checked)}
+            label={t.settings.statsLookup}
+          />
+        </SettingRow>
+        <SettingRow title={t.settings.sushiFallback} description={t.settings.sushiFallbackDesc}>
+          <Toggle
+            checked={sources?.sushiEnabled ?? true}
+            onChange={(checked) => void setSourcePreference('sushiEnabled', checked)}
+            label={t.settings.sushiFallback}
+          />
+        </SettingRow>
+        <SettingRow title={t.settings.ryuuFallback} description={t.settings.ryuuFallbackDesc}>
+          <Toggle
+            checked={sources?.ryuuEnabled ?? false}
+            onChange={(checked) => void setSourcePreference('ryuuEnabled', checked)}
+            label={t.settings.ryuuFallback}
+          />
+        </SettingRow>
+        <div className="lua-source-risk-note">
+          <Database size={15} />
+          <span>{t.settings.communitySourceWarning}</span>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 export function SettingsView({
   preferences,
   launcherSettings,
@@ -629,6 +854,8 @@ export function SettingsView({
             />
           </div>
         </section>
+
+        <LuaSourcesSettings />
 
 
         <section className="settings-group">

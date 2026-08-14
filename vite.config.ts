@@ -9,6 +9,10 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      // Registration is performed explicitly in main.tsx so the Vercel/PWA
+      // build keeps offline support while the Tauri WebView never registers a
+      // service worker on its localhost origin.
+      injectRegister: false,
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,ttf}'],
         runtimeCaching: [
@@ -47,6 +51,21 @@ export default defineConfig({
     })
   ],
   clearScreen: false,
+  build: {
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [
+            {
+              name: 'firebase',
+              test: /node_modules[\\/](?:@firebase|firebase)[\\/]/,
+              priority: 20,
+            },
+          ],
+        },
+      },
+    },
+  },
   optimizeDeps: {
     exclude: [],
     entries: ['src/**/*.{ts,tsx,html}'],

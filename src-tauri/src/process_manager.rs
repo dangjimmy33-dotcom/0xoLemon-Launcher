@@ -90,23 +90,36 @@ impl ProcessManager {
             ("steam_api.dll", "steam_api.dll")
         };
         let arch_dir = if exe_is_64 { "x64" } else { "x86" };
-        
+
         // resource_dir() already IS the "resources" folder, don't double-add it
         let emu_dll = if let Ok(res_dir) = app.path().resource_dir() {
             let candidate = res_dir.join("emu").join(arch_dir).join(src_dll_name);
-            eprintln!("[steam_emu] resource_dir candidate: {}", candidate.display());
+            eprintln!(
+                "[steam_emu] resource_dir candidate: {}",
+                candidate.display()
+            );
             candidate
         } else {
             let candidate = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-                .join("resources").join("emu").join(arch_dir).join(src_dll_name);
-            eprintln!("[steam_emu] CARGO_MANIFEST_DIR candidate: {}", candidate.display());
+                .join("resources")
+                .join("emu")
+                .join(arch_dir)
+                .join(src_dll_name);
+            eprintln!(
+                "[steam_emu] CARGO_MANIFEST_DIR candidate: {}",
+                candidate.display()
+            );
             candidate
         };
 
         if emu_dll.exists() {
             let dest = game_dir.join(dst_dll_name);
             match std::fs::copy(&emu_dll, &dest) {
-                Ok(_) => eprintln!("[steam_emu] Copied {} -> {}", emu_dll.display(), dest.display()),
+                Ok(_) => eprintln!(
+                    "[steam_emu] Copied {} -> {}",
+                    emu_dll.display(),
+                    dest.display()
+                ),
                 Err(e) => eprintln!("[steam_emu] Failed to copy DLL: {}", e),
             }
         } else {
@@ -136,20 +149,15 @@ impl ProcessManager {
         let mut child = command.spawn().map_err(|error| error.to_string())?;
         let pid = child.id();
         let started = Instant::now();
-        let (started_event, achievement_events) = match platform::begin_game_session(
-            &app,
-            &game_id,
-            pid,
-            install_path,
-            executable,
-        ) {
-            Ok(session) => session,
-            Err(error) => {
-                let _ = child.kill();
-                let _ = child.wait();
-                return Err(error);
-            }
-        };
+        let (started_event, achievement_events) =
+            match platform::begin_game_session(&app, &game_id, pid, install_path, executable) {
+                Ok(session) => session,
+                Err(error) => {
+                    let _ = child.kill();
+                    let _ = child.wait();
+                    return Err(error);
+                }
+            };
         let running_info = RunningGameInfo {
             game_id: game_id.clone(),
             pid,
@@ -177,13 +185,7 @@ impl ProcessManager {
                 }
             }
             crate::cloud_save::mark_game_running(&game_id, false);
-            match platform::end_game_session(
-                &app,
-                &game_id,
-                pid,
-                session_seconds,
-                exit_code,
-            ) {
+            match platform::end_game_session(&app, &game_id, pid, session_seconds, exit_code) {
                 Ok((event, achievement_events)) => {
                     let _ = app.emit("launcher://game-exited", event);
                     platform::emit_achievement_events(&app, &achievement_events);
@@ -233,17 +235,27 @@ impl ProcessManager {
 /// Returns true for AMD64/x64, false for x86 or on any read error (safe fallback).
 pub fn is_pe64(path: &Path) -> bool {
     use std::io::{Read, Seek, SeekFrom};
-    let Ok(mut f) = std::fs::File::open(path) else { return true };
+    let Ok(mut f) = std::fs::File::open(path) else {
+        return true;
+    };
     // Read DOS header magic "MZ"
     let mut dos = [0u8; 64];
-    if f.read_exact(&mut dos).is_err() || &dos[0..2] != b"MZ" { return true; }
+    if f.read_exact(&mut dos).is_err() || &dos[0..2] != b"MZ" {
+        return true;
+    }
     // e_lfanew is at offset 0x3C
-    let e_lfanew = u32::from_le_bytes(dos[0x3C..0x40].try_into().unwrap_or([0;4]));
-    if f.seek(SeekFrom::Start(e_lfanew as u64)).is_err() { return true; }
+    let e_lfanew = u32::from_le_bytes(dos[0x3C..0x40].try_into().unwrap_or([0; 4]));
+    if f.seek(SeekFrom::Start(e_lfanew as u64)).is_err() {
+        return true;
+    }
     // Read PE signature + machine type (4 + 2 bytes)
     let mut pe = [0u8; 6];
-    if f.read_exact(&mut pe).is_err() { return true; }
-    if &pe[0..4] != b"PE\0\0" { return true; }
+    if f.read_exact(&mut pe).is_err() {
+        return true;
+    }
+    if &pe[0..4] != b"PE\0\0" {
+        return true;
+    }
     let machine = u16::from_le_bytes([pe[4], pe[5]]);
     // IMAGE_FILE_MACHINE_AMD64 = 0x8664
     machine == 0x8664

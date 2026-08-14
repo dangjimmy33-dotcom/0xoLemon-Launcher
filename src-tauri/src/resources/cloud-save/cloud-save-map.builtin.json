@@ -1,11 +1,11 @@
 {
   "$schema": "./cloud-save-map.schema.json",
   "schemaVersion": 1,
-  "mapVersion": "2026.08.06.1",
+  "mapVersion": "builtin-fallback",
   "platform": "windows",
   "minimumLauncherVersion": "0.1.1",
-  "publishedAt": "2026-08-06T00:00:00Z",
-  "expiresAt": "2028-08-06T00:00:00Z",
+  "publishedAt": "2026-08-12T00:00:00Z",
+  "expiresAt": "2099-01-01T00:00:00Z",
   "defaults": {
     "syncMode": "automatic",
     "syncBeforeLaunch": true,
@@ -32,63 +32,5 @@
       "legacyRetentionDays": 30
     }
   },
-  "games": {
-    "007-first-light": {
-      "enabled": true,
-      "displayName": "007 First Light",
-      "supportedInstallModes": [
-        "local"
-      ],
-      "roots": [
-        {
-          "id": "main-save",
-          "label": "Game progress",
-          "purpose": "save",
-          "required": false,
-          "matchPolicy": "allExisting",
-          "candidates": [
-            {
-              "base": "KnownFolder.RoamingAppData",
-              "path": "GSE Saves\\3768760\\remote",
-              "priority": 100,
-              "maxGameVersion": "v1.0.1"
-            },
-            {
-              "base": "KnownFolder.PublicDocuments",
-              "path": "Steam\\RUNE\\3768760",
-              "priority": 90,
-              "minGameVersion": "v1.1.0"
-            },
-            {
-              "base": "GameInstall",
-              "path": "0xoLemon\\saves",
-              "priority": 80
-            }
-          ],
-          "include": [
-            "**/*"
-          ],
-          "exclude": [
-            "**/*.log",
-            "**/*.tmp",
-            "**/Cache/**",
-            "**/CrashReports/**",
-            "**/Logs/**"
-          ],
-          "recursive": true,
-          "followReparsePoints": false,
-          "profileDiscovery": {
-            "strategy": "all",
-            "maxProfiles": 32,
-            "maxDepth": 8
-          },
-          "restore": {
-            "createMissingDirectories": true,
-            "backupBeforeOverwrite": true,
-            "atomicReplace": true
-          }
-        }
-      ]
-    }
-  }
+  "games": {}
 }
