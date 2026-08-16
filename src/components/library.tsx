@@ -1,7 +1,7 @@
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState, memo } from 'react'
 import type { ReactElement } from 'react'
 import { doc, setDoc, increment } from 'firebase/firestore'
-import { db } from '../firebase'
+import { contentDb as db } from '../firebase'
 import { createPortal } from 'react-dom'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
@@ -486,6 +486,9 @@ function HoverCardPopup({
   )
 }
 
+// Global tracker to ensure only one hover popup stays open
+let activeHoverSetter: ((val: boolean) => void) | null = null
+
 function GameHoverCard({
   game,
   assets,
@@ -503,7 +506,13 @@ function GameHoverCard({
 
   useEffect(() => {
     if (!hovered) return
-    const timer = setTimeout(() => setShow(true), 600)
+    const timer = setTimeout(() => {
+      if (activeHoverSetter && activeHoverSetter !== setShow) {
+        activeHoverSetter(false)
+      }
+      activeHoverSetter = setShow
+      setShow(true)
+    }, 600)
     return () => clearTimeout(timer)
   }, [hovered])
 
@@ -930,7 +939,7 @@ export function StoreLibraryView({
   const itemsPerPage = viewLayout === 'list' ? 70 : 50
   const paginatedGames = visibleGames.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
   const totalPages = Math.ceil(visibleGames.length / itemsPerPage)
-  const newestGameIdForSash = catalog.games.length > 0 ? catalog.games[catalog.games.length - 1].id : null
+  const newestGameIdsForSash = catalog.newestGameIds || (catalog.games.length > 0 ? [catalog.games[catalog.games.length - 1].id] : [])
 
   const actionDockRef = useRef<HTMLDivElement>(null)
   const [stickyVisible, setStickyVisible] = useState(false)
@@ -1175,7 +1184,7 @@ export function StoreLibraryView({
             variant={variant}
             onRequestAsset={onRequestAsset}
           />
-          {game.id === newestGameIdForSash ? (
+          {newestGameIdsForSash.includes(game.id) ? (
             <div className="game-card-new-sash">NEW!</div>
           ) : tags.some(t => t.id === 'demo bypass' || t.tone === 'demo') ? (
             <div className="game-card-demo-sash">DEMO</div>

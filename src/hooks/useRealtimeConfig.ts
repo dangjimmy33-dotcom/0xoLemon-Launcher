@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
-import { doc, onSnapshot } from 'firebase/firestore'
-import { db } from '../firebase'
+import { fetchWithRetry } from '../lib/fetchWithRetry'
 
 export interface AppConfig {
   launcherVersion?: {
@@ -20,18 +19,26 @@ export function useRealtimeConfig() {
   const [config, setConfig] = useState<AppConfig>({})
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(
-      doc(db, 'config', 'appSettings'),
-      (docSnap) => {
-        if (docSnap.exists()) {
-          setConfig(docSnap.data() as AppConfig)
+    let mounted = true
+    const fetchConfig = async () => {
+      try {
+        const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://zeroxolemon-launcher.onrender.com'
+        const response = await fetchWithRetry(`${BACKEND_URL}/api/0xolemon/app-settings`)
+        if (!mounted) return
+        if (response.ok) {
+          const data = await response.json()
+          setConfig(data as AppConfig)
         }
-      },
-      (error) => {
+      } catch (error) {
+        if (!mounted) return
         console.error("Lỗi đồng bộ appSettings:", error)
       }
-    )
-    return () => unsubscribe()
+    }
+
+    fetchConfig()
+    return () => {
+      mounted = false
+    }
   }, [])
 
   return config

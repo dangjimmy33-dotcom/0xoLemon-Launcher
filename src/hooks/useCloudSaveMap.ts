@@ -9,9 +9,8 @@
  */
 
 import { useEffect, useRef } from 'react'
-import { doc, onSnapshot } from 'firebase/firestore'
 import { invoke } from '@tauri-apps/api/core'
-import { contentDb } from '../firebase'
+import { fetchWithRetry } from '../lib/fetchWithRetry'
 import { isTauriRuntime } from '../lib/tauriRuntime'
 
 export function useCloudSaveMap(): void {
@@ -21,13 +20,15 @@ export function useCloudSaveMap(): void {
   useEffect(() => {
     if (!isTauriRuntime()) return
 
-    const unsubscribe = onSnapshot(
-      doc(contentDb, 'config', 'cloudSaveMap'),
-      async (snap) => {
-        if (!snap.exists()) return
-        const data = snap.data()
-        if (!data) return
-
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://zeroxolemon-launcher.onrender.com'
+    
+    let mounted = true
+    const fetchMap = async () => {
+      try {
+        const res = await fetchWithRetry(`${BACKEND_URL}/api/0xolemon/cloud-save-map`)
+        if (!mounted || !res.ok) return
+        
+        const data = await res.json()
         const mapVersion: string = data.mapVersion ?? ''
         if (mapVersion && mapVersion === lastVersionRef.current) return
 
@@ -35,16 +36,17 @@ export function useCloudSaveMap(): void {
           await invoke('push_cloud_save_map', { payload: JSON.stringify(data) })
           lastVersionRef.current = mapVersion
         } catch (err) {
-          // Rust logs internally; no user-facing noise needed
           console.error('[CloudSaveMap] push failed:', err)
         }
-      },
-      (err) => {
-        // Offline / network error — Rust falls back to LKG cache automatically
-        console.warn('[CloudSaveMap] snapshot error:', err.code)
+      } catch (err) {
+        console.warn('[CloudSaveMap] fetch error:', err)
       }
-    )
+    }
 
-    return () => unsubscribe()
+    fetchMap()
+
+    return () => {
+      mounted = false
+    }
   }, [])
 }

@@ -290,6 +290,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\runtime\Diagnostics.cpp" />
     <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\runtime\VehUtil.cpp" />
     <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\runtime\RuntimeHttp.cpp" />
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\runtime\StatsClient.cpp" />
     <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\runtime\ManifestFetch.cpp" />
     <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\runtime\ProtectionProbe.cpp" />
     <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\runtime\RemoteTools.cpp" />

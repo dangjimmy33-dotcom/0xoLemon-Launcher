@@ -122,6 +122,10 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </ProjectReference>
+    <ProjectReference Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\build\OxoStatsResponseTests.vcxproj">
+      <Project>{075EDDA9-0E0A-3278-BF55-3E831E4C899F}</Project>
+      <Name>OxoStatsResponseTests</Name>
+    </ProjectReference>
     <ProjectReference Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\build\detours.vcxproj">
       <Project>{25F8DF5F-60B2-38FE-B858-5DA7B70F0FB1}</Project>
       <Name>detours</Name>

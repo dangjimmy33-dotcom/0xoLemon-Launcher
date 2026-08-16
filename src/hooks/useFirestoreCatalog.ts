@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
-import { doc, onSnapshot } from 'firebase/firestore'
-import { contentDb as db } from '../firebase'
 import type { GameCatalog, GameSummary, GameInstallMetadata, CloudSaveMetadata } from '../types'
 import { globalAssetsOverride } from './useRealtimeAssets'
 import { normalizeGameVersions } from '../lib/catalogVersions'
+import { fetchWithRetry } from '../lib/fetchWithRetry'
 
 const DEFAULT_CLOUD_SAVE: CloudSaveMetadata = {
   enabled: false,
@@ -74,30 +73,32 @@ export function useFirestoreCatalog(assetOverrideVersion?: number): GameCatalog 
 
   useEffect(() => {
     let mounted = true
-    const unsubscribe = onSnapshot(
-      doc(db, 'config', 'gameCatalog'),
-      (snap) => {
+    const fetchCatalog = async () => {
+      try {
+        const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://zeroxolemon-launcher.onrender.com'
+        const response = await fetchWithRetry(`${BACKEND_URL}/api/0xolemon/catalog`)
         if (!mounted) return
-        if (!snap.exists()) {
+        if (!response.ok) {
+          console.error('[useFirestoreCatalog] Backend error:', response.status)
           setRawGames([])
           setLoaded(true)
           return
         }
-        const data = snap.data() as Record<string, unknown>
-        setLocale((data.defaultLocale as string) || 'en-US')
-        setRawGames((data.games as Record<string, unknown>[]) || [])
+        const data = await response.json()
+        setLocale(data.defaultLocale || 'en-US')
+        setRawGames(data.games || [])
         setLoaded(true)
-      },
-      (error) => {
+      } catch (error) {
         if (!mounted) return
-        console.error('[useFirestoreCatalog] Firestore error:', error)
+        console.error('[useFirestoreCatalog] Fetch error:', error)
         setLoaded(true)
-      },
-    )
+      }
+    }
+
+    fetchCatalog()
 
     return () => {
       mounted = false
-      unsubscribe()
     }
   }, [])
 

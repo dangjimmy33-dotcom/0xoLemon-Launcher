@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
-import { doc, onSnapshot } from 'firebase/firestore'
-import { contentDb as db } from '../firebase'
 import type { GameDetail } from '../types'
+import { fetchWithRetry } from '../lib/fetchWithRetry'
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://zeroxolemon-launcher.onrender.com'
 const TENANT_ID = import.meta.env.VITE_TENANT_ID || '0xolemon1'
@@ -19,38 +18,35 @@ export function useFirestoreDetail(gameId: string | null): GameDetail | null {
     console.log('[useFirestoreDetail] fetching details for', gameId)
     let mounted = true
     
-    // First, subscribe to Firestore (default tenant / 0xolemon)
-    const unsub = onSnapshot(
-      doc(db, 'gameDetails', gameId),
-      async (snap) => {
-        if (!mounted) return
-        if (snap.exists()) {
-          const data = snap.data() as GameDetail
-          setDetail(data)
-        } else {
-          // If not found in default Firestore, try fetching from backend (0xolemon1)
-          try {
-            const res = await fetch(`${BACKEND_URL}/api/${TENANT_ID}/game-details/${gameId}`)
-            if (res.ok) {
-              const data = await res.json()
-              if (mounted) setDetail(data)
-            } else {
-              if (mounted) setDetail(null)
-            }
-          } catch (e) {
-            console.error('[useFirestoreDetail] backend fetch failed:', e)
-            if (mounted) setDetail(null)
-          }
+    const fetchDetails = async () => {
+      try {
+        // Try default tenant (0xolemon) first
+        const res = await fetchWithRetry(`${BACKEND_URL}/api/0xolemon/game-details/${gameId}`)
+        if (res.ok) {
+          const data = await res.json()
+          if (mounted) setDetail(data)
+          return
         }
-      },
-      (error) => {
-        if (!mounted) return
-        console.error('[useFirestoreDetail] firestore error:', error)
-      },
-    )
+        
+        // If not found, try fallback tenant (0xolemon1)
+        const fallbackRes = await fetchWithRetry(`${BACKEND_URL}/api/${TENANT_ID}/game-details/${gameId}`)
+        if (fallbackRes.ok) {
+          const data = await fallbackRes.json()
+          if (mounted) setDetail(data)
+          return
+        }
+        
+        if (mounted) setDetail(null)
+      } catch (e) {
+        console.error('[useFirestoreDetail] fetch failed:', e)
+        if (mounted) setDetail(null)
+      }
+    }
+    
+    fetchDetails()
+
     return () => {
       mounted = false
-      unsub()
     }
   }, [gameId])
 

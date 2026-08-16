@@ -1,10 +1,10 @@
 // shop_lua.rs — 0xoLemon Lua Shop backend
-// Fetches game catalog from HuggingFace Depotdownloader dataset,
-// parses build/manifest structure, downloads manifests, and writes
+// Fetches the curated Lua catalog from HuggingFace and keeps the legacy
+// Depotdownloader tree for build/manifest metadata, downloads manifests, and writes
 // properly-formatted Lua scripts for the SteamPlugin system.
 
 use std::path::Path;
-use std::collections::HashMap;
+use std::collections::{BTreeSet, HashMap};
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
 use serde::{Deserialize, Serialize};
@@ -84,7 +84,7 @@ struct HfNode {
     path: String,
 }
 
-/// A game available in the Depotdownloader catalog.
+/// A game available from the curated Lua catalog.
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ShopGame {
     pub name: String,
@@ -174,7 +174,7 @@ fn patchnotes_rss_blocking(appid: u32) -> Result<String, String> {
     Ok(xml)
 }
 
-/// Return the list of all games available in the Depotdownloader catalog.
+/// Return the list of all games available in the curated flat Lua catalog.
 #[tauri::command]
 pub async fn lua_shop_get_catalog() -> Result<Vec<ShopGame>, String> {
     tauri::async_runtime::spawn_blocking(catalog_blocking)
@@ -229,10 +229,46 @@ fn resolve_catalog_folder_name(
     }
 }
 
+fn flat_lua_catalog_from_nodes(nodes: Vec<HfNode>) -> Vec<ShopGame> {
+    let mut appids = BTreeSet::new();
+
+    for node in nodes {
+        if node.node_type != "file" {
+            continue;
+        }
+        let filename = node.path.rsplit('/').next().unwrap_or("");
+        let Some(stem) = filename.strip_suffix(".lua") else {
+            continue;
+        };
+        let Ok(appid) = stem.parse::<u32>() else {
+            continue;
+        };
+        if appid > 0 {
+            appids.insert(appid);
+        }
+    }
+
+    appids
+        .into_iter()
+        .map(|appid| ShopGame {
+            // The card resolves the real Steam title lazily from AppID. Keeping
+            // the fallback catalog independent of Depotdownloader prevents the
+            // browse list from being truncated to the small legacy folder set.
+            name: format!("AppID {}", appid),
+            appid,
+        })
+        .collect()
+}
+
 pub(crate) fn catalog_blocking() -> Result<Vec<ShopGame>, String> {
     let token = get_hf_token();
     let client = build_client()?;
-    let url = format!("{}/Depotdownloader", api_tree_base());
+    // The actual curated source is the flat lua/<appid>.lua directory. The old
+    // code listed Depotdownloader/ instead, so a backend fallback exposed only
+    // the handful of legacy game folders even though hundreds of Lua files
+    // were available. 1000 comfortably covers the current catalog and matches
+    // Hugging Face's non-expanded tree page size.
+    let url = format!("{}/lua?limit=1000", api_tree_base());
 
     let resp = client
         .get(&url)
@@ -247,27 +283,9 @@ pub(crate) fn catalog_blocking() -> Result<Vec<ShopGame>, String> {
     let nodes: Vec<HfNode> = resp
         .json()
         .map_err(|_| "Service temporarily unavailable".to_string())?;
-
-    let mut games = Vec::new();
-    for node in nodes {
-        if node.node_type != "directory" {
-            continue;
-        }
-        // Folder names look like  "Depotdownloader/Game Name (12345)"
-        let folder = node.path.split('/').last().unwrap_or("");
-        if let Some(paren_start) = folder.rfind('(') {
-            if let Some(paren_end) = folder.rfind(')') {
-                let name = folder[..paren_start].trim().to_string();
-                if let Ok(appid) = folder[paren_start + 1..paren_end].trim().parse::<u32>() {
-                    if !name.is_empty() {
-                        if let Ok(mut cache) = CATALOG_FOLDER_CACHE.lock() {
-                            cache.insert(appid, folder.to_string());
-                        }
-                        games.push(ShopGame { name, appid });
-                    }
-                }
-            }
-        }
+    let games = flat_lua_catalog_from_nodes(nodes);
+    if games.is_empty() {
+        return Err("Lua catalog is temporarily unavailable".to_string());
     }
     Ok(games)
 }
@@ -796,6 +814,34 @@ pub(crate) fn install_locked_game_blocking(
 #[cfg(test)]
 mod lua_patch_tests {
     use super::*;
+
+    #[test]
+    fn flat_lua_catalog_reads_all_curated_files_instead_of_depotdownloader_dirs() {
+        let mut nodes = (1..=302)
+            .map(|index| HfNode {
+                node_type: "file".to_string(),
+                path: format!("lua/{}.lua", 1_000_000 + index),
+            })
+            .collect::<Vec<_>>();
+        nodes.push(HfNode {
+            node_type: "file".to_string(),
+            path: "lua/README.md".to_string(),
+        });
+        nodes.push(HfNode {
+            node_type: "directory".to_string(),
+            path: "lua/9999999.lua".to_string(),
+        });
+        nodes.push(HfNode {
+            node_type: "file".to_string(),
+            path: "lua/1000001.lua".to_string(),
+        });
+
+        let games = flat_lua_catalog_from_nodes(nodes);
+
+        assert_eq!(games.len(), 302);
+        assert_eq!(games.first().map(|game| game.appid), Some(1_000_001));
+        assert_eq!(games.last().map(|game| game.appid), Some(1_000_302));
+    }
 
     #[test]
     fn patches_manifest_case_insensitively_and_preserves_other_lines() {

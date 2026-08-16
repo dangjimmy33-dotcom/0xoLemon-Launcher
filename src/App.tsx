@@ -1100,11 +1100,20 @@ export default function App() {
     })
 
     const mergedGames = Array.from(mergedGamesMap.values())
+    const newestGameIds: string[] = []
+
+    if (firestoreGames.length > 0) {
+      newestGameIds.push(firestoreGames[firestoreGames.length - 1].id)
+    }
+    if (backendGames.length > 0) {
+      newestGameIds.push(backendGames[backendGames.length - 1].id)
+    }
 
     if (mergedGames.length > 0) {
       setCatalog({
         defaultLocale: backendCatalog?.defaultLocale || firestoreCatalog?.defaultLocale || 'en-US',
-        games: mergedGames
+        games: mergedGames,
+        newestGameIds
       })
       setCatalogLoadState('ready')
 

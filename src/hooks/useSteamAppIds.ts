@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
-import { doc, onSnapshot } from 'firebase/firestore'
-import { contentDb as db } from '../firebase'
+import { fetchWithRetry } from '../lib/fetchWithRetry'
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://zeroxolemon-launcher.onrender.com'
 const TENANT_ID = import.meta.env.VITE_TENANT_ID || '0xolemon1'
@@ -33,18 +32,25 @@ export function useSteamAppIds() {
 
     fetchBackendMapping()
 
-    // Listen to default firestore
-    const unsub = onSnapshot(doc(db, 'config', 'steam_appids'), (snap) => {
-      if (!mounted) return
-      const data = snap.exists() ? (snap.data() as Record<string, number>) : {}
-      cachedMapping = { ...cachedMapping, ...data }
-      setMapping(cachedMapping)
-      listeners.forEach(fn => fn(cachedMapping!))
-    })
+    const fetchMainMapping = async () => {
+      try {
+        const res = await fetchWithRetry(`${BACKEND_URL}/api/0xolemon/steam-appids`)
+        if (res.ok && mounted) {
+          const data = await res.json()
+          cachedMapping = { ...cachedMapping, ...data }
+          setMapping(cachedMapping!)
+          listeners.forEach(fn => fn(cachedMapping!))
+        }
+      } catch (e) {
+        if (!mounted) return
+        console.error('Failed to fetch main steam-appids', e)
+      }
+    }
+
+    fetchMainMapping()
 
     return () => {
       mounted = false
-      unsub()
     }
   }, [])
 

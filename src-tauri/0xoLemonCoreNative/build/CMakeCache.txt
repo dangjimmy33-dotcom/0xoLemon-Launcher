@@ -310,6 +310,9 @@ FETCHCONTENT_UPDATES_DISCONNECTED_TOMLPLUSPLUS:BOOL=OFF
 //Git command line client
 GIT_EXECUTABLE:FILEPATH=C:/Program Files/Git/cmd/git.exe
 
+//Build portable native core tests
+OXOLEMONCORE_BUILD_TESTS:BOOL=ON
+
 //Value Computed by CMake
 OxoLemon_BINARY_DIR:STATIC=E:/007Launcher/src-tauri/0xoLemonCoreNative/build
 

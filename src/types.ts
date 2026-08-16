@@ -297,6 +297,7 @@ export type CloudProviderConfig = {
 export type GameCatalog = {
   defaultLocale: string
   games: GameSummary[]
+  newestGameIds?: string[]
 }
 
 export type GameSummary = {

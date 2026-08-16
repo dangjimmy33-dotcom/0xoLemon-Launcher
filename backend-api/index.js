@@ -523,6 +523,74 @@ app.post('/api/:tenant/search-events', searchWriteLimiter, validateTenant, async
 });
 
 /**
+ * GET /api/:tenant/app-settings
+ * Returns app settings for specified tenant
+ */
+app.get('/api/:tenant/app-settings', validateTenant, async (req, res) => {
+  try {
+    const tenantId = req.params.tenant;
+    const cacheKey = `${tenantId}:app-settings`;
+    let data = cache.get(cacheKey);
+
+    if (!data) {
+      console.log(`📡 [${tenantId}] Fetching app settings from Firestore...`);
+      const db = getTenantDb(tenantId);
+      const docRef = db.collection('config').doc('appSettings');
+      const doc = await docRef.get();
+
+      if (!doc.exists) {
+        return res.status(404).json({ error: 'App settings not found' });
+      }
+
+      data = doc.data();
+      cache.set(cacheKey, data);
+      console.log(`✅ [${tenantId}] App settings cached`);
+    } else {
+      console.log(`💾 [${tenantId}] Serving app settings from cache`);
+    }
+
+    res.json(data);
+  } catch (error) {
+    console.error(`❌ [${req.params.tenant}] Error fetching app settings:`, error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * GET /api/:tenant/cloud-save-map
+ * Returns cloud save map for specified tenant
+ */
+app.get('/api/:tenant/cloud-save-map', validateTenant, async (req, res) => {
+  try {
+    const tenantId = req.params.tenant;
+    const cacheKey = `${tenantId}:cloud-save-map`;
+    let data = cache.get(cacheKey);
+
+    if (!data) {
+      console.log(`📡 [${tenantId}] Fetching cloud save map from Firestore...`);
+      const db = getTenantDb(tenantId);
+      const docRef = db.collection('config').doc('cloudSaveMap');
+      const doc = await docRef.get();
+
+      if (!doc.exists) {
+        return res.status(404).json({ error: 'Cloud save map not found' });
+      }
+
+      data = doc.data();
+      cache.set(cacheKey, data);
+      console.log(`✅ [${tenantId}] Cloud save map cached`);
+    } else {
+      console.log(`💾 [${tenantId}] Serving cloud save map from cache`);
+    }
+
+    res.json(data);
+  } catch (error) {
+    console.error(`❌ [${req.params.tenant}] Error fetching cloud save map:`, error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
  * GET /api/:tenant/steam-appids
  * Returns Steam AppIDs mapping for specified tenant
  */

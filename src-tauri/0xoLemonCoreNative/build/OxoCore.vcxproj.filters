@@ -28,6 +28,9 @@
     <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\runtime\RuntimeHttp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\runtime\StatsClient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="E:\007Launcher\src-tauri\0xoLemonCoreNative\source\runtime\ManifestFetch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

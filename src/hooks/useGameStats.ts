@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
-import { doc, onSnapshot } from 'firebase/firestore'
-import { contentDb as db } from '../firebase'
+import { fetchWithRetry } from '../lib/fetchWithRetry'
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://zeroxolemon-launcher.onrender.com'
 const TENANT_ID = import.meta.env.VITE_TENANT_ID || '0xolemon1'
@@ -39,26 +38,26 @@ export function useGameStats(): GameStats {
 
     fetchBackendStats()
 
-    const unsubscribe = onSnapshot(
-      doc(db, 'config', 'gameStats'),
-      (snap) => {
-        if (!mounted) return
-        if (snap.exists()) {
-          const data = snap.data() as Record<string, unknown>
+    const fetchMainStats = async () => {
+      try {
+        const res = await fetchWithRetry(`${BACKEND_URL}/api/0xolemon/game-stats`)
+        if (res.ok && mounted) {
+          const data = await res.json()
           updateStats({
             downloads: (data.downloads as Record<string, number>) || {},
             likes: (data.likes as Record<string, number>) || {},
           })
         }
-      },
-      (error) => {
+      } catch (e) {
         if (!mounted) return
-        console.warn('[useGameStats] Could not load firestore stats:', error)
+        console.warn('[useGameStats] Could not load main stats:', e)
       }
-    )
+    }
+
+    fetchMainStats()
+
     return () => {
       mounted = false
-      unsubscribe()
     }
   }, [])
 

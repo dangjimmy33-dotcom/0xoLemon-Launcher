@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
-import { doc, onSnapshot } from 'firebase/firestore'
-import { contentDb as db } from '../firebase'
+import { fetchWithRetry } from '../lib/fetchWithRetry'
 import { invoke } from '@tauri-apps/api/core'
 
 /**
@@ -98,57 +97,55 @@ export function useRealtimeAssets() {
 
     let isInitialLoad = true
 
-    // Data lives in Firestore at: config/assets_override (document, not collection)
-    const unsubscribe = onSnapshot(
-      doc(db, 'config', 'assets_override'),
-      (snap) => {
-        if (!mounted) return
-        if (!snap.exists()) return
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://zeroxolemon-launcher.onrender.com'
 
-        const parsed = parseFlatOverride(snap.data() as Record<string, string>)
+    const fetchAssetsAndTags = async () => {
+      try {
+        const [assetsRes, tagsRes] = await Promise.all([
+          fetchWithRetry(`${BACKEND_URL}/api/0xolemon/assets`),
+          fetchWithRetry(`${BACKEND_URL}/api/0xolemon/tags`)
+        ])
         
-        const changedGames = Object.keys(parsed).filter(gameId => {
-           return JSON.stringify(parsed[gameId]) !== JSON.stringify(globalAssetsOverride[gameId])
-        })
-
-        globalAssetsOverride = parsed
-        setAssetVersion((v) => v + 1)
-
-        // Clear per-game local cache so new URLs are fetched ONLY for changed games
-        if (!isInitialLoad) {
-          changedGames.forEach((gameId) => {
-            invoke('clear_game_cache', { gameId }).catch(() => {})
-          })
-        }
-        isInitialLoad = false
-      },
-      (error) => {
-        console.error('[useRealtimeAssets] Firestore error:', error)
-      },
-    )
-
-    const unsubscribeTags = onSnapshot(
-      doc(db, 'config', 'version_tags'),
-      (snap) => {
         if (!mounted) return
-        if (snap.exists()) {
-          globalVersionTags = parseFlatVersionTags(snap.data() as Record<string, string[]>)
+
+        if (assetsRes.ok) {
+          const data = await assetsRes.json()
+          const parsed = parseFlatOverride(data)
+          const changedGames = Object.keys(parsed).filter(gameId => {
+             return JSON.stringify(parsed[gameId]) !== JSON.stringify(globalAssetsOverride[gameId])
+          })
+          globalAssetsOverride = parsed
+          
+          if (!isInitialLoad && changedGames.length > 0) {
+            changedGames.forEach((gameId) => {
+              invoke('clear_game_cache', { gameId }).catch(() => {})
+            })
+          }
+        }
+
+        if (tagsRes.ok) {
+          const data = await tagsRes.json()
+          globalVersionTags = parseFlatVersionTags(data)
           if (typeof window !== 'undefined') {
             if (!window.globalVersionTags) window.globalVersionTags = {}
             Object.assign(window.globalVersionTags, globalVersionTags)
           }
-          setAssetVersion((v) => v + 1)
         }
-      },
-      (error) => {
-        console.error('[useRealtimeAssets] version_tags error:', error)
+
+        if (assetsRes.ok || tagsRes.ok) {
+          setAssetVersion((v) => v + 1)
+          isInitialLoad = false
+        }
+      } catch (error) {
+        if (!mounted) return
+        console.error('[useRealtimeAssets] Fetch error:', error)
       }
-    )
+    }
+
+    fetchAssetsAndTags()
 
     return () => {
       mounted = false
-      unsubscribe()
-      unsubscribeTags()
     }
   }, [])
 
