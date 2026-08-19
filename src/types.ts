@@ -503,6 +503,7 @@ export type LuaGameManagerState = {
   fileExists: boolean
   hasUserOverrides: boolean
   canSwitchLive: boolean
+  canSwitchLocked: boolean
 }
 
 export type HubcapUsageBucket = {
@@ -530,12 +531,24 @@ export type HubcapKeyState = {
 
 export type LuaSourceSettingsState = {
   hubcap: HubcapKeyState
+  manifesthubKey: string | null
+  manifesthubConfigured: boolean
+  ryuuKey: string | null
+  ryuuConfigured: boolean
+  depotboxKey: string | null
+  depotboxConfigured: boolean
   sushiEnabled: boolean
+  githubMirrorsEnabled: boolean
+  openluaEnabled: boolean
+  steamtoolsEnabled: boolean
   ryuuEnabled: boolean
+  luieEnabled: boolean
+  twentyTwoCloudEnabled: boolean
+  skyflareEnabled: boolean
 }
 
-export type LuaPackageProvider = 'curated' | 'community' | 'hubcap' | 'sushi' | 'ryuu' | 'none'
-export type LuaSourceProvider = 'huggingFace' | 'hubcap' | 'sushi' | 'ryuu'
+export type LuaPackageProvider = 'curated' | 'community' | 'hubcap' | 'sushi' | 'githubMirrors' | 'openLua' | 'steamTools' | 'ryuu' | 'luie' | 'twentyTwoCloud' | 'skyflare' | 'none'
+export type LuaSourceProvider = 'huggingFace' | 'hubcap' | 'sushi' | 'githubMirrors' | 'openLua' | 'steamTools' | 'ryuu' | 'luie' | 'twentyTwoCloud' | 'skyflare'
 export type LuaSourceOperation = 'add' | 'update' | 'sync'
 
 export type LuaSourceCandidate = {

@@ -4,6 +4,8 @@ import subprocess
 import threading
 import os
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 PROJECTS = {
     "0xoLemon (xolemon-b360e)": {
         "detail":  "upload_single_detail.mjs",
@@ -124,8 +126,8 @@ class App:
         self.log(f"    Catalog: {proj['catalog']}")
 
     def browse_folder(self):
-        assets_dir = os.path.join(os.getcwd(), "src", "assets")
-        initial = assets_dir if os.path.exists(assets_dir) else os.getcwd()
+        assets_dir = os.path.join(BASE_DIR, "src", "assets")
+        initial = assets_dir if os.path.exists(assets_dir) else BASE_DIR
         path = filedialog.askdirectory(initialdir=initial,
                                        title="Chọn thư mục game (bên trong src/assets)")
         if path:
@@ -146,8 +148,13 @@ class App:
         proj_name = self.project_var.get()
         self.root.after(0, self.log, f"\n--- [{proj_name}] Chạy: {script_name} ---")
         try:
+            script_path = os.path.join(BASE_DIR, script_name)
+            if not os.path.isfile(script_path):
+                self.root.after(0, self.log, f"Lỗi: Không tìm thấy script: {script_path}")
+                return False
             process = subprocess.Popen(
-                ["node", script_name, game_id, folder],
+                ["node", script_path, game_id, folder],
+                cwd=BASE_DIR,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,
@@ -158,9 +165,14 @@ class App:
                 if line:
                     self.root.after(0, self.log, line.strip())
             process.wait()
+            if process.returncode != 0:
+                self.root.after(0, self.log, f"--- THẤT BẠI ({process.returncode}): {script_name} ---")
+                return False
             self.root.after(0, self.log, f"--- Hoàn tất: {script_name} ---")
+            return True
         except Exception as e:
             self.root.after(0, self.log, f"Lỗi không thể chạy: {str(e)}")
+            return False
 
     def run_script(self, script_name):
         game_id = self.entry_game_id.get().strip()
@@ -183,8 +195,20 @@ class App:
         proj = PROJECTS[self.project_var.get()]
 
         def task():
-            self.run_command_thread(proj["detail"],  game_id, folder)
-            self.run_command_thread(proj["catalog"], game_id, folder)
+            detail_ok = self.run_command_thread(proj["detail"], game_id, folder)
+            if not detail_ok:
+                self.root.after(0, lambda: messagebox.showerror(
+                    "Upload thất bại",
+                    f"Detail upload thất bại cho [{game_id}]. Catalog chưa được chạy để tránh publish trạng thái dở dang."
+                ))
+                return
+            catalog_ok = self.run_command_thread(proj["catalog"], game_id, folder)
+            if not catalog_ok:
+                self.root.after(0, lambda: messagebox.showerror(
+                    "Upload thất bại",
+                    f"Catalog upload thất bại cho [{game_id}]. Kiểm tra log trước khi refresh cache."
+                ))
+                return
             self.root.after(0, lambda: messagebox.showinfo(
                 "Thành công",
                 f"✅ Upload xong Detail + Catalog cho [{game_id}]\n"

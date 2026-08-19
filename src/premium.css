@@ -1,11 +1,11 @@
 :root {
-  --premium-bg: #070a0f;
-  --premium-surface: rgba(17, 22, 29, 0.86);
-  --premium-surface-strong: rgba(22, 28, 36, 0.96);
-  --premium-border: rgba(255, 255, 255, 0.085);
-  --premium-gold: #e3b55f;
-  --premium-gold-soft: rgba(227, 181, 95, 0.15);
-  --premium-blue: #70a8ff;
+  --premium-bg: var(--launcher-page-bg, #070a0f);
+  --premium-surface: var(--theme-card-bg, rgba(17, 22, 29, 0.86));
+  --premium-surface-strong: var(--theme-elevated-bg, rgba(22, 28, 36, 0.96));
+  --premium-border: var(--line, rgba(255, 255, 255, 0.085));
+  --premium-gold: var(--theme-accent, #e3b55f);
+  --premium-gold-soft: color-mix(in oklab, transparent 84%, var(--theme-accent, #e3b55f) 16%);
+  --premium-blue: var(--theme-accent-strong, #70a8ff);
   --premium-shadow: 0 24px 70px rgba(0, 0, 0, 0.48);
 
   /* â”€â”€ Google Antigravity easing curves â”€â”€ */
@@ -28,7 +28,7 @@
 .premium-titlebar {
   height: 44px;
   align-items: stretch;
-  background: var(--launcher-chrome-bg, #070b0f);
+  background: var(--launcher-frame-bg, var(--launcher-chrome-bg, #070b0f));
   border-bottom: 0;
 }
 
@@ -61,8 +61,8 @@
   display: block;
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, #c99238, #f2ca7a);
-  box-shadow: 0 0 10px rgba(233, 188, 99, 0.5);
+  background: linear-gradient(90deg, var(--theme-accent-deep), var(--theme-accent-strong));
+  box-shadow: 0 0 10px color-mix(in oklab, transparent 48%, var(--theme-accent) 52%);
   transition: width 220ms cubic-bezier(0.2, 0, 0, 1);
 }
 
@@ -103,7 +103,7 @@
 }
 
 .titlebar-status-icon.has-task {
-  color: var(--premium-gold);
+  color: var(--theme-accent-strong);
   background: rgba(227, 181, 95, 0.08);
 }
 
@@ -232,7 +232,7 @@
 
 .premium-shell {
   --launcher-sidebar-track: 218px;
-  background: var(--launcher-chrome-bg, #070b0f);
+  background: var(--launcher-frame-bg, var(--launcher-sidebar-bg, #070b0f));
   /* Override default 198px grid track from App.css so sidebar fits perfectly */
   grid-template-columns: 218px minmax(0, 1fr);
 }
@@ -243,11 +243,11 @@
 }
 
 .premium-shell > .sidebar {
-  /* Let the grid manage width, remove fixed width that causes overflow */
-  border-right-color: rgba(255, 255, 255, 0.075);
-  background:
-    linear-gradient(180deg, rgba(9, 14, 19, 0.98), rgba(6, 10, 14, 0.995)),
-    var(--launcher-chrome-bg, #070b0f);
+  /* ChatGPT-style frame continuity: sidebar and titlebar are one uninterrupted
+     painted surface. The sidebar must not add its own tint/gradient layer; only
+     the workspace top-left corner draws the visible junction curve. */
+  border-right-color: var(--line);
+  background: var(--launcher-frame-bg, var(--launcher-sidebar-bg));
 }
 
 .premium-shell > .sidebar.sidebar-collapsed {
@@ -275,13 +275,13 @@
 
 .premium-shell .nav-item:hover {
   color: #f4f6f8;
-  background: rgba(255, 255, 255, 0.045);
+  background: var(--theme-hover-bg);
 }
 
 .premium-shell .nav-item.active {
   color: #fff;
-  border-color: rgba(120, 168, 200, 0.2);
-  background: rgba(109, 151, 185, 0.15);
+  border-color: color-mix(in oklab, transparent 72%, var(--theme-accent-strong) 28%);
+  background: var(--theme-selected-bg);
 }
 
 .premium-shell .nav-item.active::before {
@@ -291,7 +291,7 @@
   bottom: -1px;
   left: -1px;
   width: 3px;
-  background-color: #78a8c8;
+  background-color: var(--theme-accent-strong);
   border-top-left-radius: 6px;
   border-bottom-left-radius: 6px;
 }
@@ -299,7 +299,7 @@
 /* Collapsed navigation keeps the same muted blue active state. */
 .premium-shell.sidebar-collapsed-shell .nav-item.active {
   border-color: transparent;
-  background: rgba(109, 151, 185, 0.15) !important;
+  background: var(--theme-selected-bg) !important;
   /* The normal left indicator is hidden in the compact icon-only rail. */
   background-image: none !important;
 }
@@ -309,19 +309,21 @@
 }
 
 .premium-shell.sidebar-collapsed-shell .nav-item:hover {
-  background: rgba(255, 255, 255, 0.06) !important;
+  background: var(--theme-hover-bg) !important;
 }
 
 .premium-shell .sidebar-status {
-  background: rgba(4, 8, 11, 0.5);
+  background: color-mix(in oklab, var(--launcher-sidebar-bg) 88%, black 12%);
 }
 
 .premium-workspace {
-  background: rgba(7, 10, 15, 0.98);
+  background: var(--launcher-page-bg);
   background-image:
-    linear-gradient(180deg, rgba(10, 14, 20, 0.98), rgba(7, 10, 15, 0.99)),
-    radial-gradient(circle at 76% 0%, rgba(64, 77, 100, 0.035), transparent 42%);
-  border-top-left-radius: var(--launcher-content-radius, 18px);
+    linear-gradient(180deg, var(--launcher-page-bg-soft), var(--launcher-page-bg) 32%),
+    radial-gradient(circle at 76% 0%, color-mix(in oklab, transparent 90%, var(--theme-accent-strong) 10%), transparent 42%);
+  /* Radius is inherited from the base .workspace rule; do not add a second
+     junction radius here. */
+  background-clip: padding-box;
   backdrop-filter: blur(18px) saturate(112%);
   -webkit-backdrop-filter: blur(18px) saturate(112%);
 }
@@ -474,7 +476,7 @@
   place-items: center;
   border: 1px solid rgba(227, 181, 95, 0.27);
   border-radius: 12px;
-  color: var(--premium-gold);
+  color: var(--theme-accent-strong);
   background: var(--premium-gold-soft);
 }
 
@@ -535,7 +537,7 @@
 }
 
 .update-center-phase strong {
-  color: var(--premium-gold);
+  color: var(--theme-accent-strong);
   font: 700 12px var(--mono);
 }
 
@@ -636,7 +638,7 @@
 
 .update-center-steps li.is-current > span {
   border-color: rgba(227, 181, 95, 0.34);
-  color: var(--premium-gold);
+  color: var(--theme-accent-strong);
 }
 
 .update-center-steps li.is-complete {
@@ -775,7 +777,7 @@
   align-items: center;
   gap: 6px;
   border: 0;
-  color: var(--premium-gold);
+  color: var(--theme-accent-strong);
   background: transparent;
   font: 700 11px var(--sans);
   cursor: pointer;
@@ -789,7 +791,7 @@
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: 17px;
-  background: #11161d;
+  background: var(--theme-card-bg-soft);
   box-shadow: 0 20px 54px rgba(0, 0, 0, 0.34);
 }
 
@@ -809,7 +811,7 @@
 .home-hero-art-placeholder {
   background:
     radial-gradient(circle at 75% 30%, rgba(79, 99, 136, 0.42), transparent 30%),
-    linear-gradient(135deg, #18212c, #0d1117);
+    linear-gradient(135deg, var(--theme-elevated-bg), var(--launcher-page-bg));
 }
 
 .home-hero-shade {
@@ -829,7 +831,7 @@
 }
 
 .home-overline {
-  color: var(--premium-gold);
+  color: var(--theme-accent-strong);
   font-size: 10px;
   font-weight: 800;
   text-transform: uppercase;
@@ -942,11 +944,11 @@
   text-align: center;
   background:
     radial-gradient(circle at 50% 30%, rgba(72, 91, 127, 0.22), transparent 35%),
-    linear-gradient(135deg, #121820, #090d12);
+    linear-gradient(135deg, var(--theme-card-bg-soft), var(--launcher-page-bg));
 }
 
 .home-hero-empty svg {
-  color: var(--premium-gold);
+  color: var(--theme-accent-strong);
 }
 
 .home-hero-empty h2 {
@@ -1051,7 +1053,7 @@
   aspect-ratio: 0.69;
   display: block;
   object-fit: cover;
-  background: linear-gradient(145deg, #202a36, #11171e);
+  background: linear-gradient(145deg, var(--theme-elevated-bg), var(--theme-card-bg-soft));
 }
 
 .home-game-card > span {
@@ -1102,7 +1104,7 @@
   align-items: center;
   gap: 8px;
   margin-bottom: 13px;
-  color: var(--premium-gold);
+  color: var(--theme-accent-strong);
 }
 
 .home-side-card > strong,
@@ -1150,7 +1152,7 @@
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: var(--premium-gold);
+  background: var(--theme-accent-strong);
 }
 
 .home-side-card > small {
@@ -1270,7 +1272,7 @@
 .notification-popover header span {
   padding: 2px 6px;
   border-radius: 99px;
-  color: var(--premium-gold);
+  color: var(--theme-accent-strong);
   background: var(--premium-gold-soft);
   font-size: 8px;
 }
@@ -1314,7 +1316,7 @@
 
 .notification-toolbar button:hover:not(:disabled) {
   color: #fff;
-  background: rgba(255, 255, 255, 0.045);
+  background: var(--theme-hover-bg);
 }
 
 .notification-toolbar button:disabled {
@@ -1358,7 +1360,7 @@
   place-items: center;
   border: 1px solid rgba(255, 255, 255, 0.075);
   border-radius: 9px;
-  color: var(--premium-gold);
+  color: var(--theme-accent-strong);
   background: rgba(255, 255, 255, 0.025);
 }
 
@@ -1397,7 +1399,7 @@
   height: 5px;
   margin-top: 5px;
   border-radius: 50%;
-  background: var(--premium-gold);
+  background: var(--theme-accent-strong);
 }
 
 .notification-empty {
@@ -1430,7 +1432,7 @@
 }
 
 .notification-popover footer button {
-  color: var(--premium-gold);
+  color: var(--theme-accent-strong);
 }
 
 .notification-toast-stack {
@@ -1613,7 +1615,7 @@
 .cloud-mode-icon.stfixer-icon {
   background: rgba(229, 183, 91, 0.1);
   color: var(--gold, #e5b75b);
-  border: 1px solid rgba(229, 183, 91, 0.2);
+  border: 1px solid color-mix(in oklab, transparent 80%, var(--theme-accent) 20%);
 }
 
 .cloud-mode-card h3 {
@@ -1720,7 +1722,7 @@
   height: 58px;
   border-radius: 7px;
   object-fit: cover;
-  background: #18202a;
+  background: var(--theme-elevated-bg);
 }
 
 .cloud-overview-list button > span {
@@ -1790,7 +1792,7 @@
   display: grid;
   place-items: center;
   padding: 20px;
-  background: rgba(2, 5, 8, 0.76);
+  background: var(--theme-overlay-bg, rgba(2, 5, 8, 0.76));
   backdrop-filter: blur(10px);
 }
 
@@ -1803,12 +1805,12 @@
   grid-template-columns: 0.9fr 1.1fr;
   grid-template-rows: 1fr auto auto;
   gap: 20px 30px;
-  border: 1px solid rgba(255, 255, 255, 0.11);
+  border: 1px solid var(--line);
   border-radius: 19px;
   color: var(--text);
   background:
-    radial-gradient(circle at 14% 12%, rgba(227, 181, 95, 0.12), transparent 32%),
-    linear-gradient(145deg, #19212b, #0d1218);
+    radial-gradient(circle at 14% 12%, var(--theme-accent-surface-strong), transparent 32%),
+    linear-gradient(145deg, var(--theme-modal-bg-strong), var(--theme-modal-bg));
   box-shadow: 0 30px 90px rgba(0, 0, 0, 0.58);
 }
 
@@ -1843,8 +1845,8 @@
   justify-items: center;
   gap: 13px;
   background:
-    radial-gradient(circle at 50% 38%, rgba(227, 181, 95, 0.2), transparent 28%),
-    rgba(255, 255, 255, 0.025);
+    radial-gradient(circle at 50% 38%, var(--theme-accent-surface-strong), transparent 28%),
+    color-mix(in oklab, var(--theme-card-bg) 92%, var(--theme-accent) 8%);
   box-shadow: inset 0 1px rgba(255, 255, 255, 0.04);
 }
 
@@ -1853,10 +1855,10 @@
   height: 78px;
   display: grid;
   place-items: center;
-  border: 1px solid rgba(227, 181, 95, 0.28);
+  border: 1px solid color-mix(in oklab, transparent 68%, var(--theme-accent) 32%);
   border-radius: 23px;
-  color: var(--premium-gold);
-  background: rgba(227, 181, 95, 0.09);
+  color: var(--theme-accent-strong);
+  background: var(--theme-accent-surface);
 }
 
 .onboarding-visual i {
@@ -1875,7 +1877,7 @@
 }
 
 .onboarding-copy > span {
-  color: var(--premium-gold);
+  color: var(--theme-accent-strong);
   font-size: 9px;
   font-weight: 800;
   text-transform: uppercase;
@@ -1919,7 +1921,7 @@
 
 .onboarding-dots i.is-active {
   width: 34px;
-  background: var(--premium-gold);
+  background: var(--theme-accent-strong);
 }
 
 .onboarding-card footer {
@@ -1941,9 +1943,9 @@
 }
 
 .onboarding-primary {
-  border: 0;
-  color: #241a0c;
-  background: linear-gradient(180deg, #f0ca7e, #dca94d);
+  border: 1px solid color-mix(in oklab, transparent 58%, var(--theme-accent-strong) 42%);
+  color: color-mix(in oklab, #05070a 82%, var(--theme-accent-deep) 18%);
+  background: linear-gradient(180deg, var(--theme-accent-strong), var(--theme-accent));
 }
 
 .onboarding-secondary {
@@ -1969,7 +1971,7 @@
   border: 1px solid rgba(255, 255, 255, 0.11);
   border-radius: 18px;
   color: var(--text);
-  background: #11171e;
+  background: var(--theme-card-bg-soft);
   box-shadow: var(--premium-shadow);
 }
 
@@ -2210,7 +2212,7 @@
   color: white;
   border: none;
   font-weight: 600;
-  transition: background-color 0.2s;
+  transition: filter 0.2s, transform 0.2s;
 }
 
 .community-card.discord-widget button:hover {
@@ -2227,19 +2229,19 @@
   padding: 28px;
   overflow: auto;
   background:
-    radial-gradient(circle at 50% 35%, rgba(88, 101, 242, 0.16), transparent 35%),
-    rgba(4, 7, 11, 0.91);
+    radial-gradient(circle at 50% 35%, var(--theme-accent-surface-strong), transparent 35%),
+    var(--theme-overlay-bg, rgba(4, 7, 11, 0.91));
   backdrop-filter: blur(18px) saturate(105%);
 }
 
 .discord-access-card {
   width: min(500px, 100%);
   padding: 28px;
-  border: 1px solid rgba(255, 255, 255, 0.11);
+  border: 1px solid var(--line);
   border-radius: 20px;
-  color: #f4f6fa;
+  color: var(--text-strong);
   background:
-    linear-gradient(145deg, rgba(25, 31, 43, 0.98), rgba(12, 16, 23, 0.98));
+    linear-gradient(145deg, var(--theme-modal-bg-strong), var(--theme-modal-bg));
   box-shadow: 0 34px 100px rgba(0, 0, 0, 0.62);
 }
 
@@ -2254,10 +2256,10 @@
   height: 42px;
   display: grid;
   place-items: center;
-  border: 1px solid rgba(227, 181, 95, 0.25);
+  border: 1px solid color-mix(in oklab, transparent 66%, var(--theme-accent) 34%);
   border-radius: 12px;
-  color: #f0c675;
-  background: rgba(227, 181, 95, 0.1);
+  color: var(--theme-accent-strong);
+  background: var(--theme-accent-surface);
 }
 
 .discord-access-brand div {
@@ -2284,11 +2286,11 @@
   margin: 34px auto 18px;
   display: grid;
   place-items: center;
-  border: 1px solid rgba(112, 126, 255, 0.28);
+  border: 1px solid color-mix(in oklab, transparent 66%, var(--theme-accent-strong) 34%);
   border-radius: 22px;
-  color: #afb8ff;
-  background: linear-gradient(145deg, rgba(88, 101, 242, 0.2), rgba(88, 101, 242, 0.07));
-  box-shadow: 0 16px 45px rgba(50, 60, 180, 0.18);
+  color: var(--theme-accent-strong);
+  background: linear-gradient(145deg, var(--theme-accent-surface-strong), var(--theme-accent-surface));
+  box-shadow: 0 16px 45px color-mix(in oklab, transparent 78%, var(--theme-accent-deep) 22%);
 }
 
 .discord-access-icon svg {
@@ -2355,10 +2357,10 @@
 .discord-access-policy {
   margin: 12px 0;
   padding: 11px 13px;
-  border: 1px solid rgba(227, 181, 95, 0.17);
+  border: 1px solid color-mix(in oklab, transparent 76%, var(--theme-accent) 24%);
   border-radius: 10px;
-  color: rgba(230, 220, 199, 0.77);
-  background: rgba(227, 181, 95, 0.065);
+  color: color-mix(in oklab, var(--text) 82%, var(--theme-accent-strong) 18%);
+  background: var(--theme-accent-surface);
   font-size: 10px;
   line-height: 1.55;
 }
@@ -2395,10 +2397,10 @@
 }
 
 .discord-primary {
-  border: 1px solid rgba(142, 152, 255, 0.45);
-  color: #fff;
-  background: linear-gradient(135deg, #6875f5, #5865f2);
-  box-shadow: 0 12px 30px rgba(88, 101, 242, 0.22);
+  border: 1px solid color-mix(in oklab, transparent 54%, var(--theme-accent-strong) 46%);
+  color: color-mix(in oklab, #05070a 82%, var(--theme-accent-deep) 18%);
+  background: linear-gradient(135deg, var(--theme-accent-strong), var(--theme-accent));
+  box-shadow: 0 12px 30px color-mix(in oklab, transparent 74%, var(--theme-accent) 26%);
 }
 
 .discord-primary:hover:not(:disabled) {
@@ -2408,7 +2410,7 @@
 .discord-secondary {
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: rgba(235, 239, 245, 0.82);
-  background: rgba(255, 255, 255, 0.045);
+  background: var(--theme-hover-bg);
 }
 
 .discord-secondary:hover:not(:disabled) {
@@ -2467,7 +2469,7 @@
 }
 
 .oauth-primary-btn {
-  background-color: #2F54EB;
+  background: linear-gradient(135deg, var(--theme-accent-strong), var(--theme-accent));
   color: white;
   border: none;
   padding: 12px;
@@ -2479,12 +2481,12 @@
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: filter 0.2s, transform 0.2s;
   margin-bottom: 20px;
 }
 
 .oauth-primary-btn:hover:not(:disabled) {
-  background-color: #1D39C4;
+  filter: brightness(1.08);
 }
 
 .oauth-manual-section label {
@@ -2502,8 +2504,8 @@
 
 .oauth-copy-box input, .oauth-paste-box input {
   flex: 1;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px dashed rgba(255, 255, 255, 0.2);
+  background: var(--theme-control-bg);
+  border: 1px dashed var(--line-strong);
   border-radius: 6px;
   padding: 8px 12px;
   color: #fff;
@@ -2513,12 +2515,12 @@
 
 .oauth-copy-box input:focus, .oauth-paste-box input:focus {
   outline: none;
-  border-color: #2F54EB;
+  border-color: var(--theme-accent-strong);
 }
 
 .oauth-copy-box button, .oauth-paste-box button {
-  background: rgba(255, 255, 255, 0.1);
-  border: none;
+  background: var(--theme-control-bg);
+  border: 1px solid var(--line);
   color: #fff;
   padding: 0 12px;
   border-radius: 6px;
@@ -2531,11 +2533,11 @@
 }
 
 .oauth-copy-box button:hover, .oauth-paste-box button:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--theme-control-hover-bg);
 }
 
 .oauth-paste-box button {
-  background: #595959;
+  background: var(--theme-control-bg);
 }
 
 .oauth-paste-box button:disabled {
@@ -2937,10 +2939,10 @@ html, body, #root {
   -webkit-text-fill-color: transparent;
   background-image: radial-gradient(
     circle at 50% -20%,
-    #ffd687 0%,
-    #e3b55f 35%,
-    #c8953f 65%,
-    #a8742a 100%
+    color-mix(in oklab, white 28%, var(--theme-accent) 72%) 0%,
+    var(--theme-accent) 35%,
+    var(--theme-accent-deep) 65%,
+    color-mix(in oklab, black 25%, var(--theme-accent-deep) 75%) 100%
   );
   will-change: background-position;
 }
@@ -2954,7 +2956,7 @@ html, body, #root {
   will-change: transform, opacity;
   transform-origin: 50% 50%;
   opacity: 0.4;
-  background: radial-gradient(50% 50% at 50% 50%, rgba(227, 181, 95, 0.18) 0%, transparent 100%);
+  background: radial-gradient(50% 50% at 50% 50%, color-mix(in oklab, transparent 82%, var(--theme-accent) 18%) 0%, transparent 100%);
   border-radius: 100%;
   width: 120vmax;
   height: 120vmax;
@@ -3124,8 +3126,8 @@ html, body, #root {
 }
 
 .cr-badge.warning {
-  background: rgba(229, 183, 91, 0.2);
-  color: #e5b75b;
+  background: color-mix(in oklab, transparent 80%, var(--theme-accent) 20%);
+  color: var(--theme-accent);
 }
 
 .cr-badge.error {
@@ -3391,6 +3393,6 @@ html, body, #root {
   align-items: center;
   gap: 6px;
 }
-  
- 
- 
+ 
+
+

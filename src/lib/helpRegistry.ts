@@ -44,8 +44,9 @@ export type HelpConceptId =
   | 'cache'
   | 'cloudSave'
   | 'luaMode'
+  | 'luaSources'
   | 'offlineActivation'
 
 export const HELP_CONCEPT_ORDER: HelpConceptId[] = [
-  'buildId', 'manifest', 'depotKey', 'verify', 'cache', 'cloudSave', 'luaMode', 'offlineActivation',
+  'buildId', 'manifest', 'depotKey', 'verify', 'cache', 'cloudSave', 'luaMode', 'luaSources', 'offlineActivation',
 ]

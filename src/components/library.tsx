@@ -11,7 +11,7 @@ import { TutorialModal } from './TutorialModal'
 import { useLocale } from '../context/locale'
 import { useSteamAppIds } from '../hooks/useSteamAppIds'
 import { useLuaUpdateCheck } from '../hooks/useLuaUpdateCheck'
-import type { CloudSaveStatus, GameAchievement, GameCatalog, GameDetail, GameMedia, GameSummary, GameInstallState, GameVersionInfo, LuaGameState, LuaSourceOperation, LuaSourceProvider, VerifyUiStatus } from '../types'
+import type { CloudSaveStatus, GameAchievement, GameCatalog, GameDetail, GameMedia, GameSummary, GameInstallState, GameVersionInfo, LuaGameChannel, LuaGameState, LuaSourceOperation, LuaSourceProvider, VerifyUiStatus } from '../types'
 import { assetUrlForId, firstMediaUrl, isCarouselMedia, mediaPriority, processDescriptionHtml, thumbnailUrlForMedia, isTauriRuntime } from '../lib/gameMeta'
 import { formatBytes } from '../lib/format'
 import { getGameTags, gameHasTag } from '../lib/gameTags'
@@ -1833,7 +1833,7 @@ export function StoreLibraryView({
               <div style={{
                 marginTop: '16px',
                 padding: '20px',
-                background: 'rgba(0,0,0,0.2)',
+                background: 'var(--theme-control-bg)',
                 borderRadius: '8px',
                 border: '1px solid rgba(255,255,255,0.1)',
                 textAlign: 'left'
@@ -2248,20 +2248,20 @@ function SteamIntegrationButton({ gameId, gameTitle, storeMode }: { gameId: stri
     setSourceOperation(luaState.updateAvailable ? 'update' : 'sync')
   }
 
-  const handleSourceConfirm = async (provider: LuaSourceProvider) => {
+  const handleSourceConfirm = async (provider: LuaSourceProvider, statSteamId: string | null, channel: LuaGameChannel) => {
     if (!appid || !sourceOperation) return
     setLoading(true)
     try {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
-      const state = sourceOperation === 'add'
+      const state = sourceOperation === 'add' || channel === 'locked'
         ? await invoke<LuaGameState>('install_lua_game_from_source', {
             request: {
               appid,
               gameName: gameTitle,
-              channel: 'live',
+              channel,
               buildId: null,
               accessToken: null,
-              statSteamId: null,
+              statSteamId,
               conflictResolution: null,
               provider,
               requestId: crypto.randomUUID(),
@@ -2276,6 +2276,7 @@ function SteamIntegrationButton({ gameId, gameTitle, storeMode }: { gameId: stri
               provider,
               requestId: crypto.randomUUID(),
               timezone,
+              statSteamId,
               conflictResolution: null,
             },
           })
@@ -2294,7 +2295,7 @@ function SteamIntegrationButton({ gameId, gameTitle, storeMode }: { gameId: stri
           detail: { gameId, added: true }
         }))
       }
-      if (state.requiresSteamRestart) {
+      if (state.requiresSteamRestart || sourceOperation === 'add') {
         if (skipConfirm) void performRestart()
         else setShowRestartConfirm(true)
       }
@@ -2401,6 +2402,7 @@ function SteamIntegrationButton({ gameId, gameTitle, storeMode }: { gameId: stri
           gameName={gameTitle}
           operation={sourceOperation}
           preferredProvider={sourceOperation === 'add' ? null : luaState?.selectedSource ?? null}
+          preferredChannel={sourceOperation === 'add' ? null : luaState?.channel ?? null}
           onClose={() => setSourceOperation(null)}
           onConfirm={handleSourceConfirm}
         />
@@ -2436,15 +2438,15 @@ function SteamIntegrationButton({ gameId, gameTitle, storeMode }: { gameId: stri
           <div style={{
             marginTop: '20px',
             padding: '12px 16px',
-            background: 'rgba(0,0,0,0.2)',
+            background: 'var(--theme-control-bg)',
             borderRadius: '8px',
-            border: '1px solid rgba(255,255,255,0.05)',
+            border: '1px solid var(--line)',
             display: 'flex',
             flexDirection: 'column',
             gap: '12px'
           }}>
             {/* Auto Install toggle — uses the same settings-toggle CSS class */}
-            <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', margin: 0, paddingBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', margin: 0, paddingBottom: '12px', borderBottom: '1px solid var(--line)' }}>
               <button
                 type="button"
                 className={autoInstall ? 'settings-toggle is-on' : 'settings-toggle'}
@@ -2459,7 +2461,7 @@ function SteamIntegrationButton({ gameId, gameTitle, storeMode }: { gameId: stri
               >
                 <span />
               </button>
-              <span style={{ flex: 1, fontSize: '14px', color: autoInstall ? '#fff' : 'rgba(255,255,255,0.6)' }}>
+              <span style={{ flex: 1, fontSize: '14px', color: autoInstall ? 'var(--text-strong)' : 'var(--muted)' }}>
                 {t.library.autoInstallAfterRestart}
               </span>
             </label>
@@ -2479,7 +2481,7 @@ function SteamIntegrationButton({ gameId, gameTitle, storeMode }: { gameId: stri
               >
                 <span />
               </button>
-              <span style={{ flex: 1, fontSize: '13px', color: 'rgba(255,255,255,0.5)' }}>
+              <span style={{ flex: 1, fontSize: '13px', color: 'var(--muted)' }}>
                 {t.library.rememberThisChoice}
               </span>
             </label>

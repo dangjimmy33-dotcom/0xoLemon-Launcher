@@ -119,7 +119,7 @@ export function DiscordAccessGate({
 
         {networkOffline && (
           <>
-            <div className="discord-access-icon" aria-hidden="true" style={{ color: '#f59e0b' }}>
+            <div className="discord-access-icon" aria-hidden="true" style={{ color: 'var(--theme-accent-strong)' }}>
               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="1" y1="1" x2="23" y2="23" />
                 <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55" />
@@ -131,10 +131,10 @@ export function DiscordAccessGate({
               </svg>
             </div>
             <h1 id="discord-access-title" style={{ marginBottom: 8 }}>No internet connection</h1>
-            <p style={{ color: '#a0a0a0', fontSize: '0.9rem', marginBottom: 4 }}>
+            <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: 4 }}>
               Can't verify your Discord access right now.
             </p>
-            <p style={{ color: '#6b7280', fontSize: '0.82rem' }}>
+            <p style={{ color: 'var(--subtle)', fontSize: '0.82rem' }}>
               You can enter Offline Mode to access your library,<br />or retry when your connection is restored.
             </p>
           </>
@@ -158,7 +158,7 @@ export function DiscordAccessGate({
 
         {notConfigured ? (
           <div className="discord-access-policy" style={{ textAlign: 'center' }}>
-            <p style={{ marginBottom: '16px', color: '#ccc' }}>
+            <p style={{ marginBottom: '16px', color: 'var(--text)' }}>
               To remote control your PC, please enter your Discord User ID below.
               You can find this by right-clicking your profile in Discord and selecting "Copy User ID".
             </p>
@@ -166,7 +166,7 @@ export function DiscordAccessGate({
               type="text" 
               id="manual-discord-id"
               placeholder="e.g. 123456789012345678" 
-              style={{ padding: '10px', width: '100%', borderRadius: '4px', border: '1px solid #444', background: '#222', color: '#fff', marginBottom: '12px' }}
+              style={{ padding: '10px', width: '100%', borderRadius: '4px', border: '1px solid var(--line)', background: 'var(--theme-control-bg)', color: 'var(--text-strong)', marginBottom: '12px' }}
             />
             <button 
               type="button" 
@@ -216,7 +216,7 @@ export function DiscordAccessGate({
             </>
           ) : networkOffline ? (
             <>
-              <button type="button" className="discord-primary" style={{ background: '#f59e0b', color: '#000' }} onClick={onEnterOfflineMode}>
+              <button type="button" className="discord-primary" style={{ background: 'linear-gradient(135deg, var(--theme-accent-strong), var(--theme-accent))', color: 'color-mix(in oklab, #05070a 82%, var(--theme-accent-deep) 18%)' }} onClick={onEnterOfflineMode}>
                 Enter Offline Mode
               </button>
               <button type="button" className="discord-secondary" disabled={busy} onClick={onRefresh} style={{ marginTop: 8 }}>
@@ -228,13 +228,13 @@ export function DiscordAccessGate({
             <div className="oauth-fallback-container">
               <div style={{ textAlign: 'center', marginBottom: 24 }}>
                 {/* Discord Logo SVG */}
-                <div style={{ width: 72, height: 72, background: '#5865F2', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                <div style={{ width: 72, height: 72, background: 'linear-gradient(135deg, var(--theme-accent-strong), var(--theme-accent))', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', boxShadow: '0 12px 34px color-mix(in oklab, transparent 70%, var(--theme-accent) 30%)' }}>
                   <svg width="40" height="40" viewBox="0 0 71 55" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M60.105 4.898A58.55 58.55 0 0 0 45.653.415a.22.22 0 0 0-.233.11 40.784 40.784 0 0 0-1.8 3.697c-5.456-.817-10.886-.817-16.23 0a37.398 37.398 0 0 0-1.827-3.697.229.229 0 0 0-.233-.11A58.393 58.393 0 0 0 10.883 4.898a.208.208 0 0 0-.096.082C1.58 18.55-.944 31.817.293 44.916a.244.244 0 0 0 .093.166c6.073 4.46 11.956 7.167 17.729 8.962a.231.231 0 0 0 .249-.082 42.08 42.08 0 0 0 3.627-5.9.225.225 0 0 0-.123-.312 38.772 38.772 0 0 1-5.539-2.638.228.228 0 0 1-.022-.378c.372-.279.744-.569 1.1-.862a.22.22 0 0 1 .23-.03c11.621 5.305 24.199 5.305 35.68 0a.219.219 0 0 1 .232.027c.356.293.728.586 1.103.865a.228.228 0 0 1-.02.378 36.384 36.384 0 0 1-5.54 2.635.225.225 0 0 0-.12.315 47.249 47.249 0 0 0 3.624 5.897.228.228 0 0 0 .249.084c5.801-1.795 11.684-4.502 17.757-8.962a.229.229 0 0 0 .093-.163c1.48-15.315-2.48-28.47-10.495-40.024a.18.18 0 0 0-.093-.084ZM23.725 37.033c-3.497 0-6.38-3.211-6.38-7.156s2.827-7.157 6.38-7.157c3.583 0 6.437 3.24 6.38 7.157 0 3.945-2.827 7.156-6.38 7.156Zm23.593 0c-3.498 0-6.381-3.211-6.381-7.156s2.826-7.157 6.381-7.157c3.582 0 6.436 3.24 6.38 7.157 0 3.945-2.798 7.156-6.38 7.156Z" fill="white"/>
                   </svg>
                 </div>
                 <h1 id="discord-access-title" style={{ marginBottom: 8 }}>Sign in to continue</h1>
-                <p style={{ color: '#a0a0a0', fontSize: '0.9rem' }}>Sign in with Discord to access 0xoLemon.</p>
+                <p style={{ color: 'var(--muted)', fontSize: '0.9rem' }}>Sign in with Discord to access 0xoLemon.</p>
               </div>
 
               <button type="button" className="oauth-primary-btn" disabled={busy && !authUrl} onClick={onLogin}>
@@ -253,7 +253,7 @@ export function DiscordAccessGate({
                     </button>
                   </div>
 
-                  <label style={{ marginTop: 20, fontSize: '0.75rem', fontWeight: 'bold', color: '#888', textTransform: 'uppercase' }}>
+                  <label style={{ marginTop: 20, fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--muted)', textTransform: 'uppercase' }}>
                     Browser did not redirect automatically? Paste the callback link or auth code here:
                   </label>
                   <div className="oauth-paste-box">
@@ -271,7 +271,7 @@ export function DiscordAccessGate({
               )}
               {status.state === 'error' ? (
                 <div style={{ color: '#ff6b6b', fontSize: '0.85rem', marginTop: '12px', textAlign: 'center' }}>
-                  Sign-in failed. <button type="button" style={{ background: 'none', border: 'none', color: '#9fa6ff', cursor: 'pointer', textDecoration: 'underline', padding: 0, fontSize: 'inherit' }} onClick={onRefresh}>Try again</button>
+                  Sign-in failed. <button type="button" style={{ background: 'none', border: 'none', color: 'var(--theme-accent-strong)', cursor: 'pointer', textDecoration: 'underline', padding: 0, fontSize: 'inherit' }} onClick={onRefresh}>Try again</button>
                 </div>
               ) : null}
             </div>

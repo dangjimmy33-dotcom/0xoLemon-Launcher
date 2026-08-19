@@ -411,11 +411,23 @@ mod tests {
 }
 
 #[tauri::command]
-pub async fn ost_save_lua(app: AppHandle, appid: String, content: String) -> Result<(), String> {
+pub async fn ost_save_lua(
+    _app: AppHandle,
+    appid: String,
+    mut content: String,
+    donor_steamid64: Option<String>,
+) -> Result<(), String> {
     let steam_root = get_steam_root()?;
     let lua_dir = steam_root.join("config").join("lua");
     if !lua_dir.exists() {
         fs::create_dir_all(&lua_dir).map_err(|e| format!("Failed to create lua dir: {}", e))?;
+    }
+
+    if let Some(steamid) = donor_steamid64 {
+        let steamid = steamid.trim();
+        if !steamid.is_empty() {
+            content.push_str(&format!("\nsetStat({}, \"{}\")\n", appid, steamid));
+        }
     }
 
     let file_path = lua_dir.join(format!("{}.lua", appid));

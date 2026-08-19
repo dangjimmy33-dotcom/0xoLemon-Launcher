@@ -16,7 +16,7 @@ import {
   doc,
   setDoc,
   deleteDoc,
-  getDocs,
+  getCountFromServer,
   query,
   where,
   Timestamp,
@@ -24,8 +24,8 @@ import {
 import { socialDb } from '../firebase'
 
 const PRESENCE_COLLECTION = 'launcher_presence'
-const HEARTBEAT_INTERVAL_MS = 2 * 60 * 1000   // 2 phút
-const ONLINE_WINDOW_MS      = 5 * 60 * 1000   // user được coi là online nếu lastSeen < 5 phút trước
+const HEARTBEAT_INTERVAL_MS = 10 * 60 * 1000  // 10 phút (giảm 80% tần suất ghi)
+const ONLINE_WINDOW_MS      = 15 * 60 * 1000  // 15 phút
 
 /** Tạo hoặc lấy client ID ẩn danh (persistent qua sessions) */
 function getClientId(): string {
@@ -73,16 +73,16 @@ export function useOnlinePresence(
           clientId: clientId.current,
         }, { merge: true })
 
-        // Đếm users online trong window 5 phút
+        // Đếm users online trong window 15 phút dùng getCountFromServer (chỉ tính 1 read duy nhất)
         const cutoff = Timestamp.fromMillis(Date.now() - ONLINE_WINDOW_MS)
         const q = query(
           collection(socialDb, PRESENCE_COLLECTION),
           where('lastSeen', '>=', cutoff),
           where('online', '==', true),
         )
-        const snap = await getDocs(q)
+        const snap = await getCountFromServer(q)
         if (mounted) {
-          setOnlineCount(Math.max(snap.size, 1)) // ít nhất là 1 (chính mình)
+          setOnlineCount(Math.max(snap.data().count, 1)) // ít nhất là 1 (chính mình)
           setLoading(false)
         }
       } catch (err) {

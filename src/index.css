@@ -10,24 +10,81 @@
   --sans: 'ContL', 'Arya', Inter, ui-sans-serif, 'Segoe UI', Arial, sans-serif;
 }
 
+
+@property --theme-runtime-hue {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 82;
+}
+
+@keyframes launcher-hue-cycle {
+  from { --theme-runtime-hue: var(--theme-hue-start, 82); }
+  to { --theme-runtime-hue: calc(var(--theme-hue-start, 82) + 360); }
+}
+
+html[data-theme-dynamic='true'][data-theme-motion='full'],
+html[data-theme-dynamic='true'][data-theme-motion='system'] {
+  animation: launcher-hue-cycle var(--theme-cycle-duration, 97s) linear infinite;
+}
+
+html[data-theme-dynamic='true'][data-theme-motion='reduced'] {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-theme-dynamic='true'][data-theme-motion='system'] {
+    animation: none;
+  }
+}
+
 :root {
-  --bg: #080c0f;
-  --surface: #10171c;
-  --surface-strong: #151e24;
-  --launcher-chrome-bg: #070b0f;
-  --launcher-chrome-bg-strong: #05080b;
-  --launcher-page-bg: #070a0f;
-  --launcher-page-bg-soft: #090d13;
+  --theme-hue-start: 82;
+  --theme-runtime-hue: 82;
+  --theme-accent: oklch(73% 0.083 var(--theme-runtime-hue));
+  --theme-accent-strong: oklch(81% 0.078 var(--theme-runtime-hue));
+  --theme-accent-deep: oklch(56% 0.073 var(--theme-runtime-hue));
+  --theme-accent-hue: 82;
+  --theme-accent-chroma: 56;
+  --theme-intensity: 64;
+  --theme-contrast: 58;
+  --theme-cycle-duration: 97s;
+  --launcher-page-bg: color-mix(in oklab, #080b10 75%, var(--theme-accent-deep) 25%);
+  --launcher-page-bg-soft: color-mix(in oklab, #0b1016 71%, var(--theme-accent) 29%);
+  --launcher-sidebar-bg: color-mix(in oklab, #070a0e 69%, var(--theme-accent-deep) 31%);
+  --launcher-frame-bg: var(--launcher-sidebar-bg);
+  --launcher-corner-bg: var(--launcher-frame-bg);
+  --launcher-chrome-bg: color-mix(in oklab, #070a0e 72%, var(--theme-accent-deep) 28%);
+  --launcher-chrome-bg-strong: color-mix(in oklab, #05070a 76%, var(--theme-accent-deep) 24%);
+  --theme-card-bg: color-mix(in oklab, #10171c 64%, var(--theme-accent-deep) 36%);
+  --theme-card-bg-soft: color-mix(in oklab, #0d1318 70%, var(--theme-accent-deep) 30%);
+  --theme-elevated-bg: color-mix(in oklab, #182129 57%, var(--theme-accent) 43%);
+  --theme-control-bg: color-mix(in oklab, var(--theme-card-bg) 84%, var(--theme-accent) 16%);
+  --theme-control-hover-bg: color-mix(in oklab, var(--theme-card-bg) 76%, var(--theme-accent) 24%);
+  --theme-modal-bg: color-mix(in oklab, var(--theme-card-bg) 84%, var(--launcher-page-bg) 16%);
+  --theme-modal-bg-strong: color-mix(in oklab, var(--theme-elevated-bg) 58%, var(--theme-card-bg) 42%);
+  --theme-overlay-bg: color-mix(in oklab, rgba(2, 5, 8, 0.78) 78%, var(--theme-accent-deep) 22%);
+  --theme-accent-surface: color-mix(in oklab, transparent 84%, var(--theme-accent) 16%);
+  --theme-accent-surface-strong: color-mix(in oklab, transparent 72%, var(--theme-accent) 28%);
+  --bg: var(--launcher-chrome-bg);
+  --surface: var(--theme-card-bg);
+  --surface-strong: var(--theme-elevated-bg);
+  --theme-selected-bg: color-mix(in oklab, transparent 72%, var(--theme-accent) 28%);
+  --theme-hover-bg: color-mix(in oklab, transparent 85%, var(--theme-accent) 15%);
+  --theme-scrollbar: color-mix(in oklab, transparent 62%, var(--theme-accent) 38%);
+  --theme-glow-1: color-mix(in oklab, transparent 66%, var(--theme-accent) 34%);
+  --theme-glow-2: color-mix(in oklab, transparent 74%, var(--theme-accent-strong) 26%);
+  --theme-glow-3: color-mix(in oklab, transparent 79%, var(--theme-accent-deep) 21%);
   --launcher-content-radius: 18px;
   --launcher-content-soft-line: rgba(142, 163, 179, 0.055);
-  --line: rgba(232, 196, 120, 0.16);
-  --line-strong: rgba(232, 196, 120, 0.34);
+  --line: color-mix(in oklab, transparent 78%, var(--theme-accent) 22%);
+  --line-strong: color-mix(in oklab, transparent 58%, var(--theme-accent-strong) 42%);
   --text: #c7ced3;
   --text-strong: #f3f4f2;
   --muted: #8a949d;
   --subtle: #68737c;
-  --gold: #e5b75b;
-  --gold-strong: #f1cc76;
+  --gold: var(--theme-accent);
+  --gold-strong: var(--theme-accent-strong);
+  --primary-accent: var(--theme-accent);
   --success: #69d66f;
   --danger: #ef6f6c;
   --mono: 'Cascadia Mono', 'Segoe UI Mono', Consolas, monospace;

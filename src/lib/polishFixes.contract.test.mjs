@@ -7,7 +7,7 @@ const offline = fs.readFileSync(new URL('../components/OfflineActivation.tsx', i
 const luaShop = fs.readFileSync(new URL('../components/LuaShop.tsx', import.meta.url), 'utf8')
 const luaCss = fs.readFileSync(new URL('../components/LuaShop.css', import.meta.url), 'utf8')
 
-assert.match(appCss, /\.workspace\s*\{[\s\S]*background:\s*rgba\(/, 'workspace must use translucent dark background')
+assert.match(appCss, /\.workspace\s*\{[\s\S]*background:\s*var\(--launcher-page-bg/, 'workspace must use semantic themed background')
 assert.match(premiumCss, /\.premium-workspace\s*\{[\s\S]*backdrop-filter:/, 'premium workspace must blur ambient backdrop')
 assert.match(appCss, /ambient-drift/, 'ambient animation must remain present')
 

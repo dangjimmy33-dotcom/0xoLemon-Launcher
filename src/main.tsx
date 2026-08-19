@@ -1,4 +1,4 @@
-import { StrictMode } from 'react'
+import { Component, StrictMode, type ErrorInfo, type ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
@@ -46,6 +46,38 @@ async function registerPwaForWeb() {
 
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
 
+type LauncherErrorBoundaryState = { error: Error | null }
+
+class LauncherErrorBoundary extends Component<{ children: ReactNode }, LauncherErrorBoundaryState> {
+  state: LauncherErrorBoundaryState = { error: null }
+
+  static getDerivedStateFromError(error: Error): LauncherErrorBoundaryState {
+    return { error }
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error('Launcher render failed:', error, info.componentStack)
+  }
+
+  render() {
+    if (!this.state.error) return this.props.children
+    return (
+      <main style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: '#080d12', color: '#f5f7fa', padding: 32, boxSizing: 'border-box', fontFamily: 'Inter, Segoe UI, sans-serif' }}>
+        <section style={{ width: 'min(720px, 100%)', border: '1px solid #34404b', background: '#0e151c', padding: 24, borderRadius: 12 }}>
+          <h1 style={{ margin: '0 0 12px', fontSize: 20 }}>Launcher UI error / Lỗi giao diện Launcher</h1>
+          <p style={{ margin: '0 0 14px', lineHeight: 1.6, color: '#b9c3cc' }}>
+            A remote catalog entry or UI component failed to render. The launcher stayed open so the error can be diagnosed instead of showing a black window.
+          </p>
+          <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', color: '#ffb4a9', background: '#090e13', padding: 12, borderRadius: 6, margin: 0 }}>
+            {this.state.error.stack || this.state.error.message}
+          </pre>
+        </section>
+      </main>
+    )
+  }
+}
+
+
 async function bootstrap() {
   let isOverlay = false;
   try {
@@ -60,10 +92,12 @@ async function bootstrap() {
 
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
+      <LauncherErrorBoundary>
       <LocaleProvider>
         {isOverlay ? <Overlay /> : <App />}
         <Analytics />
       </LocaleProvider>
+      </LauncherErrorBoundary>
     </StrictMode>,
   )
 

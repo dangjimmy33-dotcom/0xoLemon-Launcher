@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent, ReactNode } from 'react'
 import { useCallback, useState, useEffect, useRef } from 'react'
 import { useLocale, type Locale } from '../context/locale'
 import {
@@ -28,7 +28,8 @@ import {
 } from 'lucide-react'
 import { invoke } from '@tauri-apps/api/core'
 import { openUrl } from '@tauri-apps/plugin-opener'
-import type { LauncherPreferences, NotificationCategory } from '../lib/preferences'
+import { DEFAULT_LAUNCHER_PREFERENCES, type LauncherPreferences, type NotificationCategory } from '../lib/preferences'
+import { launcherAccent } from '../lib/theme'
 import type {
   HubcapKeyState,
   LauncherSettings,
@@ -104,6 +105,252 @@ function Toggle({
     >
       <span />
     </button>
+  )
+}
+
+
+
+function ThemeRange({
+  label,
+  value,
+  min = 0,
+  max = 100,
+  step = 1,
+  suffix = '%',
+  onChange,
+}: {
+  label: string
+  value: number
+  min?: number
+  max?: number
+  step?: number
+  suffix?: string
+  onChange: (value: number) => void
+}) {
+  const safeValue = Math.min(max, Math.max(min, Number(value) || 0))
+  const progress = ((safeValue - min) / Math.max(1, max - min)) * 100
+  return (
+    <label className="theme-range-row">
+      <span className="theme-range-label">{label}<b>{Math.round(safeValue)}{suffix}</b></span>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={safeValue}
+        style={{ '--range-progress': `${progress}%` } as CSSProperties}
+        onChange={(event) => onChange(Number(event.currentTarget.value))}
+      />
+    </label>
+  )
+}
+
+const ACCENT_PRESETS = [
+  { hue: 82, label: 'Amber' },
+  { hue: 35, label: 'Coral' },
+  { hue: 155, label: 'Mint' },
+  { hue: 195, label: 'Teal' },
+  { hue: 235, label: 'Blue' },
+  { hue: 275, label: 'Violet' },
+  { hue: 315, label: 'Rose' },
+] as const
+
+function AccentTonePicker({
+  hue,
+  chroma,
+  themeIntensity,
+  themeContrast,
+  dynamicTheme,
+  dynamicThemeSpeed,
+  onHueChange,
+  onChromaChange,
+  onThemeIntensityChange,
+  onThemeContrastChange,
+  onDynamicThemeChange,
+  onDynamicThemeSpeedChange,
+  labels,
+}: {
+  hue: number
+  chroma: number
+  themeIntensity: number
+  themeContrast: number
+  dynamicTheme: boolean
+  dynamicThemeSpeed: number
+  onHueChange: (value: number) => void
+  onChromaChange: (value: number) => void
+  onThemeIntensityChange: (value: number) => void
+  onThemeContrastChange: (value: number) => void
+  onDynamicThemeChange: (value: boolean) => void
+  onDynamicThemeSpeedChange: (value: number) => void
+  labels: {
+    hue: string
+    saturation: string
+    intensity: string
+    contrast: string
+    dynamic: string
+    dynamicDesc: string
+    speed: string
+    default: string
+    preview: string
+  }
+}) {
+  const wheelRef = useRef<HTMLDivElement>(null)
+  const safeHue = ((Number(hue) % 360) + 360) % 360
+  const safeChroma = Math.min(100, Math.max(0, Number(chroma) || 0))
+  const accent = launcherAccent({ accentHue: safeHue, accentChroma: safeChroma })
+  const radians = (safeHue * Math.PI) / 180
+  const radius = safeChroma / 100
+  const thumbX = 50 + Math.cos(radians) * radius * 47
+  const thumbY = 50 + Math.sin(radians) * radius * 47
+
+  const updateFromPoint = useCallback((clientX: number, clientY: number) => {
+    const wheel = wheelRef.current
+    if (!wheel) return
+    const rect = wheel.getBoundingClientRect()
+    const cx = rect.left + rect.width / 2
+    const cy = rect.top + rect.height / 2
+    const dx = clientX - cx
+    const dy = clientY - cy
+    const maxRadius = Math.max(1, Math.min(rect.width, rect.height) / 2)
+    const normalizedRadius = Math.min(1, Math.hypot(dx, dy) / maxRadius)
+    const nextHue = (Math.atan2(dy, dx) * 180 / Math.PI + 360) % 360
+    onHueChange(Math.round(nextHue * 10) / 10)
+    onChromaChange(Math.round(normalizedRadius * 1000) / 10)
+  }, [onHueChange, onChromaChange])
+
+  const onPointerDown = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
+    event.currentTarget.setPointerCapture(event.pointerId)
+    updateFromPoint(event.clientX, event.clientY)
+  }, [updateFromPoint])
+
+  const onPointerMove = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
+    if (!event.currentTarget.hasPointerCapture(event.pointerId)) return
+    updateFromPoint(event.clientX, event.clientY)
+  }, [updateFromPoint])
+
+  const onPointerUp = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId)
+    }
+  }, [])
+
+  const onWheelKeyDown = useCallback((event: ReactKeyboardEvent<HTMLDivElement>) => {
+    const hueStep = event.shiftKey ? 10 : 2
+    const chromaStep = event.shiftKey ? 5 : 2
+    if (event.key === 'ArrowLeft') {
+      event.preventDefault()
+      onHueChange((safeHue - hueStep + 360) % 360)
+    } else if (event.key === 'ArrowRight') {
+      event.preventDefault()
+      onHueChange((safeHue + hueStep) % 360)
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault()
+      onChromaChange(Math.min(100, safeChroma + chromaStep))
+    } else if (event.key === 'ArrowDown') {
+      event.preventDefault()
+      onChromaChange(Math.max(0, safeChroma - chromaStep))
+    } else if (event.key === 'Home') {
+      event.preventDefault()
+      onChromaChange(0)
+    } else if (event.key === 'End') {
+      event.preventDefault()
+      onChromaChange(100)
+    }
+  }, [onChromaChange, onHueChange, safeChroma, safeHue])
+
+  return (
+    <div
+      className="accent-tone-picker color-studio"
+      style={{
+        '--accent-preview': accent.base,
+        '--wheel-x': `${thumbX}%`,
+        '--wheel-y': `${thumbY}%`,
+      } as CSSProperties}
+    >
+      <div className="accent-tone-preview">
+        <span aria-hidden="true" />
+        <div>
+          <strong>0xoLemon</strong>
+          <small>{labels.preview}</small>
+        </div>
+        <code className="accent-color-hex">{accent.hex}</code>
+      </div>
+
+      <div className="accent-color-wheel-wrap">
+        <div
+          ref={wheelRef}
+          className="accent-color-wheel"
+          role="slider"
+          tabIndex={0}
+          aria-label="Launcher color wheel"
+          aria-valuemin={0}
+          aria-valuemax={360}
+          aria-valuenow={Math.round(safeHue)}
+          aria-valuetext={`${Math.round(safeHue)} degrees, ${Math.round(safeChroma)} percent saturation`}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerUp}
+          onKeyDown={onWheelKeyDown}
+        >
+          <span className="accent-color-wheel-thumb" aria-hidden="true" />
+        </div>
+        <div className="accent-color-wheel-readout">
+          <span>{labels.hue} <b>{Math.round(safeHue)}°</b></span>
+          <span>{labels.saturation} <b>{Math.round(safeChroma)}%</b></span>
+        </div>
+      </div>
+
+      <div className="accent-tone-presets" aria-label="Accent presets">
+        {ACCENT_PRESETS.map((preset) => (
+          <button
+            key={preset.hue}
+            type="button"
+            className={Math.abs(safeHue - preset.hue) < 2 ? 'is-active' : ''}
+            style={{ '--swatch-hue': preset.hue } as CSSProperties}
+            aria-label={preset.label}
+            title={preset.label}
+            onClick={() => onHueChange(preset.hue)}
+          />
+        ))}
+      </div>
+
+      <div className="theme-range-grid">
+        <ThemeRange label={labels.hue} value={safeHue} max={360} suffix="°" onChange={onHueChange} />
+        <ThemeRange label={labels.saturation} value={safeChroma} onChange={onChromaChange} />
+        <ThemeRange label={labels.intensity} value={themeIntensity} onChange={onThemeIntensityChange} />
+        <ThemeRange label={labels.contrast} value={themeContrast} onChange={onThemeContrastChange} />
+      </div>
+
+      <div className="dynamic-theme-panel">
+        <div>
+          <strong>{labels.dynamic}</strong>
+          <span>{labels.dynamicDesc}</span>
+        </div>
+        <Toggle checked={dynamicTheme} onChange={onDynamicThemeChange} label={labels.dynamic} />
+      </div>
+
+      {dynamicTheme && (
+        <div className="dynamic-theme-speed">
+          <ThemeRange label={labels.speed} value={dynamicThemeSpeed} onChange={onDynamicThemeSpeedChange} />
+        </div>
+      )}
+
+      <button
+        type="button"
+        className="accent-tone-reset"
+        onClick={() => {
+          onHueChange(DEFAULT_LAUNCHER_PREFERENCES.accentHue)
+          onChromaChange(DEFAULT_LAUNCHER_PREFERENCES.accentChroma)
+          onThemeIntensityChange(DEFAULT_LAUNCHER_PREFERENCES.themeIntensity)
+          onThemeContrastChange(DEFAULT_LAUNCHER_PREFERENCES.themeContrast)
+          onDynamicThemeChange(DEFAULT_LAUNCHER_PREFERENCES.dynamicTheme)
+          onDynamicThemeSpeedChange(DEFAULT_LAUNCHER_PREFERENCES.dynamicThemeSpeed)
+        }}
+      >
+        <RotateCcw size={13} /> {labels.default || 'Default'}
+      </button>
+    </div>
   )
 }
 
@@ -380,10 +627,17 @@ function SteamAutoInstallSettings() {
 function LuaSourcesSettings() {
   const { t } = useLocale()
   const keyInputRef = useRef<HTMLInputElement>(null)
+  const ryuuInputRef = useRef<HTMLInputElement>(null)
+  const depotboxInputRef = useRef<HTMLInputElement>(null)
+  const manifesthubInputRef = useRef<HTMLInputElement>(null)
   const [sources, setSources] = useState<LuaSourceSettingsState | null>(null)
   const [nativeCore, setNativeCore] = useState<NativeCoreSettings | null>(null)
   const [busy, setBusy] = useState<string | null>('load')
-  const [message, setMessage] = useState<string | null>(null)
+  const [hubcapMessage, setHubcapMessage] = useState<string | null>(null)
+  const [ryuuMessage, setRyuuMessage] = useState<string | null>(null)
+  const [depotboxMessage, setDepotboxMessage] = useState<string | null>(null)
+  const [manifesthubMessage, setManifesthubMessage] = useState<string | null>(null)
+  const [preferenceMessage, setPreferenceMessage] = useState<string | null>(null)
 
   const reload = useCallback(async () => {
     setBusy('load')
@@ -394,9 +648,12 @@ function LuaSourcesSettings() {
       ])
       setSources(sourceState)
       setNativeCore(coreState)
-      setMessage(null)
+      setHubcapMessage(null)
+      setRyuuMessage(null)
+      setDepotboxMessage(null)
+      setManifesthubMessage(null)
     } catch (error) {
-      setMessage(String(error))
+      setPreferenceMessage(String(error))
     } finally {
       setBusy(null)
     }
@@ -412,7 +669,7 @@ function LuaSourcesSettings() {
   const saveKey = async () => {
     const rawKey = keyInputRef.current?.value.trim() || ''
     if (!rawKey) {
-      setMessage(t.settings.hubcapKeyRequired)
+      setHubcapMessage(t.settings.hubcapKeyRequired)
       return
     }
     setBusy('save-key')
@@ -420,9 +677,9 @@ function LuaSourcesSettings() {
       const hubcap = await invoke<HubcapKeyState>('save_hubcap_api_key', { apiKey: rawKey })
       if (keyInputRef.current) keyInputRef.current.value = ''
       setSources((current) => current ? { ...current, hubcap } : current)
-      setMessage(t.settings.hubcapKeySaved)
+      setHubcapMessage(t.settings.hubcapKeySaved)
     } catch (error) {
-      setMessage(String(error))
+      setHubcapMessage(String(error))
     } finally {
       setBusy(null)
     }
@@ -433,9 +690,9 @@ function LuaSourcesSettings() {
     try {
       const hubcap = await invoke<HubcapKeyState>('refresh_hubcap_key_state')
       setSources((current) => current ? { ...current, hubcap } : current)
-      setMessage(hubcap.valid ? t.settings.hubcapKeyValid : hubcap.lastError || t.settings.hubcapKeyInvalid)
+      setHubcapMessage(hubcap.valid ? t.settings.hubcapKeyValid : hubcap.lastError || t.settings.hubcapKeyInvalid)
     } catch (error) {
-      setMessage(String(error))
+      setHubcapMessage(String(error))
     } finally {
       setBusy(null)
     }
@@ -447,14 +704,128 @@ function LuaSourcesSettings() {
       await invoke('clear_hubcap_api_key')
       if (keyInputRef.current) keyInputRef.current.value = ''
       await reload()
-      setMessage(t.settings.hubcapKeyCleared)
+      setHubcapMessage(t.settings.hubcapKeyCleared)
     } catch (error) {
-      setMessage(String(error))
+      setHubcapMessage(String(error))
       setBusy(null)
     }
   }
 
-  const setSourcePreference = async (key: 'sushiEnabled' | 'ryuuEnabled', value: boolean) => {
+  const saveRyuuKey = async () => {
+    const rawKey = ryuuInputRef.current?.value.trim() || ''
+    if (!rawKey) {
+      setRyuuMessage(t.settings.ryuuKeyPlaceholder)
+      return
+    }
+    setBusy('save-ryuu-key')
+    try {
+      const next = await invoke<LuaSourceSettingsState>('save_ryuu_auth_key', { apiKey: rawKey })
+      if (ryuuInputRef.current) ryuuInputRef.current.value = ''
+      setSources(next)
+      setRyuuMessage(t.settings.ryuuKeySaved)
+    } catch (error) {
+      setRyuuMessage(String(error))
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  const clearRyuuKey = async () => {
+    setBusy('clear-ryuu-key')
+    try {
+      const next = await invoke<LuaSourceSettingsState>('clear_ryuu_auth_key')
+      if (ryuuInputRef.current) ryuuInputRef.current.value = ''
+      setSources(next)
+      setRyuuMessage(t.settings.ryuuKeyCleared)
+    } catch (error) {
+      setRyuuMessage(String(error))
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  const saveDepotboxKey = async () => {
+    const rawKey = depotboxInputRef.current?.value.trim() || ''
+    if (!rawKey) {
+      setDepotboxMessage(t.settings.depotboxKeyRequired)
+      return
+    }
+    setBusy('save-depotbox-key')
+    try {
+      const next = await invoke<LuaSourceSettingsState>('save_depotbox_api_key', { apiKey: rawKey })
+      if (depotboxInputRef.current) depotboxInputRef.current.value = ''
+      setSources(next)
+      setDepotboxMessage(t.settings.depotboxKeySaved)
+    } catch (error) {
+      setDepotboxMessage(String(error))
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  const clearDepotboxKey = async () => {
+    setBusy('clear-depotbox-key')
+    try {
+      const next = await invoke<LuaSourceSettingsState>('clear_depotbox_api_key')
+      if (depotboxInputRef.current) depotboxInputRef.current.value = ''
+      setSources(next)
+      setDepotboxMessage(t.settings.depotboxKeyCleared)
+    } catch (error) {
+      setDepotboxMessage(String(error))
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  const saveManifestHubKey = async () => {
+    const rawKey = manifesthubInputRef.current?.value.trim() ?? ''
+    if (!rawKey) {
+      setManifesthubMessage(t.settings.manifesthubPlaceholder)
+      return
+    }
+    setBusy('save-manifesthub-key')
+    try {
+      const next = await invoke<LuaSourceSettingsState>('save_manifesthub_api_key', { apiKey: rawKey })
+      if (manifesthubInputRef.current) manifesthubInputRef.current.value = ''
+      setSources(next)
+      setManifesthubMessage(t.settings.manifesthubSuccess)
+    } catch (error) {
+      setManifesthubMessage(String(error))
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  const testManifestHubKey = async () => {
+    setBusy('test-manifesthub-key')
+    try {
+      const ok = await invoke<boolean>('test_manifesthub_api_key')
+      setManifesthubMessage(ok ? t.settings.manifesthubSuccess : t.settings.manifesthubFailed)
+    } catch (error) {
+      setManifesthubMessage(t.settings.manifesthubFailed)
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  const clearManifestHubKey = async () => {
+    setBusy('clear-manifesthub-key')
+    try {
+      const next = await invoke<LuaSourceSettingsState>('clear_manifesthub_api_key')
+      if (manifesthubInputRef.current) manifesthubInputRef.current.value = ''
+      setSources(next)
+      setManifesthubMessage(t.settings.hubcapKeyCleared)
+    } catch (error) {
+      setManifesthubMessage(String(error))
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  const setSourcePreference = async (
+    key: 'sushiEnabled' | 'githubMirrorsEnabled' | 'openluaEnabled' | 'steamtoolsEnabled' | 'ryuuEnabled' | 'luieEnabled' | 'twentyTwoCloudEnabled' | 'skyflareEnabled',
+    value: boolean
+  ) => {
     if (!sources) return
     const request = { ...sources, [key]: value }
     setBusy(key)
@@ -462,13 +833,19 @@ function LuaSourcesSettings() {
       const next = await invoke<LuaSourceSettingsState>('set_lua_source_preferences', {
         request: {
           sushiEnabled: request.sushiEnabled,
+          githubMirrorsEnabled: request.githubMirrorsEnabled,
+          openluaEnabled: request.openluaEnabled,
+          steamtoolsEnabled: request.steamtoolsEnabled,
           ryuuEnabled: request.ryuuEnabled,
+          luieEnabled: request.luieEnabled,
+          twentyTwoCloudEnabled: request.twentyTwoCloudEnabled,
+          skyflareEnabled: request.skyflareEnabled,
         },
       })
       setSources(next)
-      setMessage(null)
+      setPreferenceMessage(null)
     } catch (error) {
-      setMessage(String(error))
+      setPreferenceMessage(String(error))
     } finally {
       setBusy(null)
     }
@@ -478,9 +855,9 @@ function LuaSourcesSettings() {
     setBusy('stats')
     try {
       setNativeCore(await invoke<NativeCoreSettings>('set_native_core_stats_api', { enabled }))
-      setMessage(null)
+      setPreferenceMessage(null)
     } catch (error) {
-      setMessage(String(error))
+      setPreferenceMessage(String(error))
     } finally {
       setBusy(null)
     }
@@ -558,7 +935,144 @@ function LuaSourcesSettings() {
               <span>{t.settings.securityRevoke}</span>
             </div>
           </div>
-          {message && <div className="lua-source-message">{message}</div>}
+          {hubcapMessage && <div className="lua-source-message">{hubcapMessage}</div>}
+        </div>
+
+        <div className="lua-source-key-panel" style={{ marginTop: '12px' }}>
+          <div className="lua-source-key-heading">
+            <div>
+              <strong>{t.settings.ryuuApiKey}</strong>
+              <span>{t.settings.ryuuApiKeyDesc}</span>
+            </div>
+            <span className={`settings-status-pill ${sources?.ryuuConfigured ? 'is-online' : ''}`}>
+              {sources?.ryuuConfigured ? sources.ryuuKey || t.settings.hubcapConfigured : t.settings.hubcapNotConfigured}
+            </span>
+          </div>
+          <div className="lua-source-key-input">
+            <input
+              ref={ryuuInputRef}
+              type="password"
+              autoComplete="off"
+              spellCheck={false}
+              placeholder={t.settings.ryuuKeyPlaceholder}
+              aria-label={t.settings.ryuuApiKey}
+            />
+            <button type="button" onClick={() => void saveRyuuKey()} disabled={Boolean(busy)}>
+              {busy === 'save-ryuu-key' ? <Loader2 size={14} className="spin" /> : null}
+              {t.settings.saveKey}
+            </button>
+          </div>
+          <div className="settings-action-row">
+            <button type="button" className="settings-secondary-button" onClick={() => void clearRyuuKey()} disabled={!sources?.ryuuConfigured || Boolean(busy)}>
+              {t.settings.clearKey}
+            </button>
+            <button type="button" className="settings-secondary-button" onClick={() => void openUrl('https://generator.ryuu.lol/api')}>
+              <ExternalLink size={14} />
+              {t.settings.openRyuuApi}
+            </button>
+          </div>
+          {ryuuMessage && <div className="lua-source-message">{ryuuMessage}</div>}
+        </div>
+
+        <div className="lua-source-key-panel" style={{ marginTop: '12px' }}>
+          <div className="lua-source-key-heading">
+            <div>
+              <strong>{t.settings.depotboxApiKey}</strong>
+              <span>{t.settings.depotboxApiKeyDesc}</span>
+            </div>
+            <span className={`settings-status-pill ${sources?.depotboxConfigured ? 'is-online' : ''}`}>
+              {sources?.depotboxConfigured
+                ? `${t.settings.depotboxDirectApi}: ${sources.depotboxKey || t.settings.hubcapConfigured}`
+                : t.settings.depotboxFreeWeb}
+            </span>
+          </div>
+          <div className="lua-source-key-input">
+            <input
+              ref={depotboxInputRef}
+              type="password"
+              autoComplete="off"
+              spellCheck={false}
+              placeholder={t.settings.depotboxKeyPlaceholder}
+              aria-label={t.settings.depotboxApiKey}
+            />
+            <button type="button" onClick={() => void saveDepotboxKey()} disabled={Boolean(busy)}>
+              {busy === 'save-depotbox-key' ? <Loader2 size={14} className="spin" /> : null}
+              {t.settings.saveKey}
+            </button>
+          </div>
+          <div className="settings-action-row">
+            <button type="button" className="settings-secondary-button" onClick={() => void clearDepotboxKey()} disabled={!sources?.depotboxConfigured || Boolean(busy)}>
+              {t.settings.clearKey}
+            </button>
+            <button type="button" className="settings-secondary-button" onClick={() => void openUrl('https://depotbox.org/pricing')}>
+              <ExternalLink size={14} />
+              {t.settings.depotboxPricing}
+            </button>
+            <button type="button" className="settings-secondary-button" onClick={() => void openUrl('https://depotbox.org/api-docs')}>
+              <ExternalLink size={14} />
+              {t.settings.depotboxApiDocs}
+            </button>
+          </div>
+          <div className="lua-source-message">
+            {sources?.depotboxConfigured ? t.settings.depotboxDirectApiHelp : t.settings.depotboxFreeWebHelp}
+          </div>
+          {depotboxMessage && <div className="lua-source-message">{depotboxMessage}</div>}
+        </div>
+
+        <div className="lua-source-key-panel" style={{ marginTop: '12px' }}>
+          <div className="lua-source-key-heading">
+            <div>
+              <strong>{t.settings.manifesthubTitle}</strong>
+              <span>{t.settings.manifesthubDesc}</span>
+            </div>
+            <span className={`settings-status-pill ${sources?.manifesthubConfigured ? 'is-online' : ''}`}>
+              {sources?.manifesthubConfigured
+                ? sources.manifesthubKey || t.settings.manifesthubConfigured
+                : t.settings.manifesthubNotConfigured}
+            </span>
+          </div>
+          <div className="lua-source-key-input">
+            <input
+              ref={manifesthubInputRef}
+              type="password"
+              autoComplete="off"
+              spellCheck={false}
+              placeholder={t.settings.manifesthubPlaceholder}
+              aria-label={t.settings.manifesthubTitle}
+            />
+            <button type="button" onClick={() => void saveManifestHubKey()} disabled={Boolean(busy)}>
+              {busy === 'save-manifesthub-key' ? <Loader2 size={14} className="spin" /> : null}
+              {t.settings.manifesthubSave}
+            </button>
+          </div>
+          <div className="settings-action-row">
+            <button
+              type="button"
+              className="settings-secondary-button"
+              onClick={() => void testManifestHubKey()}
+              disabled={!sources?.manifesthubConfigured || Boolean(busy)}
+            >
+              <RefreshCcw size={14} />
+              {t.settings.manifesthubTest}
+            </button>
+            <button
+              type="button"
+              className="settings-secondary-button"
+              onClick={() => void clearManifestHubKey()}
+              disabled={!sources?.manifesthubConfigured || Boolean(busy)}
+            >
+              {t.settings.manifesthubClear}
+            </button>
+            <button
+              type="button"
+              className="settings-secondary-button"
+              onClick={() => void openUrl('https://manifesthub2.filegear-sg.me/')}
+            >
+              <ExternalLink size={14} />
+              {t.settings.manifesthubGetKey}
+            </button>
+          </div>
+          {manifesthubMessage && <div className="lua-source-message">{manifesthubMessage}</div>}
         </div>
 
         <SettingRow title={t.settings.statsLookup} description={t.settings.statsLookupDesc}>
@@ -575,6 +1089,27 @@ function LuaSourcesSettings() {
             label={t.settings.sushiFallback}
           />
         </SettingRow>
+        <SettingRow title={t.settings.githubMirrorsFallback} description={t.settings.githubMirrorsFallbackDesc}>
+          <Toggle
+            checked={sources?.githubMirrorsEnabled ?? true}
+            onChange={(checked) => void setSourcePreference('githubMirrorsEnabled', checked)}
+            label={t.settings.githubMirrorsFallback}
+          />
+        </SettingRow>
+        <SettingRow title={t.settings.openluaFallback} description={t.settings.openluaFallbackDesc}>
+          <Toggle
+            checked={sources?.openluaEnabled ?? true}
+            onChange={(checked) => void setSourcePreference('openluaEnabled', checked)}
+            label={t.settings.openluaFallback}
+          />
+        </SettingRow>
+        <SettingRow title={t.settings.steamtoolsFallback} description={t.settings.steamtoolsFallbackDesc}>
+          <Toggle
+            checked={sources?.steamtoolsEnabled ?? true}
+            onChange={(checked) => void setSourcePreference('steamtoolsEnabled', checked)}
+            label={t.settings.steamtoolsFallback}
+          />
+        </SettingRow>
         <SettingRow title={t.settings.ryuuFallback} description={t.settings.ryuuFallbackDesc}>
           <Toggle
             checked={sources?.ryuuEnabled ?? false}
@@ -582,10 +1117,32 @@ function LuaSourcesSettings() {
             label={t.settings.ryuuFallback}
           />
         </SettingRow>
+        <SettingRow title={t.settings.luieSource} description={t.settings.luieSourceDesc}>
+          <Toggle
+            checked={sources?.luieEnabled ?? true}
+            onChange={(checked) => void setSourcePreference('luieEnabled', checked)}
+            label={t.settings.luieSource}
+          />
+        </SettingRow>
+        <SettingRow title={t.settings.twentyTwoCloudSource} description={t.settings.twentyTwoCloudSourceDesc}>
+          <Toggle
+            checked={sources?.twentyTwoCloudEnabled ?? true}
+            onChange={(checked) => void setSourcePreference('twentyTwoCloudEnabled', checked)}
+            label={t.settings.twentyTwoCloudSource}
+          />
+        </SettingRow>
+        <SettingRow title={t.settings.skyflareSource} description={t.settings.skyflareSourceDesc}>
+          <Toggle
+            checked={sources?.skyflareEnabled ?? true}
+            onChange={(checked) => void setSourcePreference('skyflareEnabled', checked)}
+            label={t.settings.skyflareSource}
+          />
+        </SettingRow>
         <div className="lua-source-risk-note">
           <Database size={15} />
           <span>{t.settings.communitySourceWarning}</span>
         </div>
+        {preferenceMessage && <div className="lua-source-message">{preferenceMessage}</div>}
       </div>
     </section>
   )
@@ -1007,6 +1564,33 @@ export function SettingsView({
                   { value: 'en-US', label: 'English' },
                   { value: 'vi-VN', label: 'Tiếng Việt' },
                 ]}
+              />
+            </SettingRow>
+            <SettingRow title={t.settings.accentTone || 'Accent tone'} description={t.settings.accentToneDesc || 'Customize the launcher accent while keeping contrast and surfaces subdued.'}>
+              <AccentTonePicker
+                hue={preferences.accentHue}
+                chroma={preferences.accentChroma}
+                themeIntensity={preferences.themeIntensity}
+                themeContrast={preferences.themeContrast}
+                dynamicTheme={preferences.dynamicTheme}
+                dynamicThemeSpeed={preferences.dynamicThemeSpeed}
+                onHueChange={(value) => onChange('accentHue', value)}
+                onChromaChange={(value) => onChange('accentChroma', value)}
+                onThemeIntensityChange={(value) => onChange('themeIntensity', value)}
+                onThemeContrastChange={(value) => onChange('themeContrast', value)}
+                onDynamicThemeChange={(value) => onChange('dynamicTheme', value)}
+                onDynamicThemeSpeedChange={(value) => onChange('dynamicThemeSpeed', value)}
+                labels={{
+                  hue: t.settings.themeHue || 'Hue',
+                  saturation: t.settings.themeSaturation || 'Saturation',
+                  intensity: t.settings.themeIntensity || 'Theme intensity',
+                  contrast: t.settings.themeContrast || 'Contrast',
+                  dynamic: t.settings.dynamicTheme || 'Dynamic theme',
+                  dynamicDesc: t.settings.dynamicThemeDesc || 'Smoothly cycle the launcher palette through the color wheel.',
+                  speed: t.settings.dynamicThemeSpeed || 'Cycle speed',
+                  default: t.settings.defaultAccent || 'Default',
+                  preview: t.settings.themePreview || 'Launcher palette preview',
+                }}
               />
             </SettingRow>
             <SettingRow title={t.settings.motion} description={t.settings.motionDesc}>

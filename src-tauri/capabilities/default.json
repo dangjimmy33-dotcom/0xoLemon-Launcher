@@ -26,6 +26,8 @@
     "core:window:allow-set-position",
     "core:window:allow-is-maximized",
     "core:window:allow-is-minimized",
+    "core:window:allow-set-fullscreen",
+    "core:window:allow-is-fullscreen",
     "core:window:allow-outer-size",
     "core:window:allow-inner-size",
     "dialog:default",

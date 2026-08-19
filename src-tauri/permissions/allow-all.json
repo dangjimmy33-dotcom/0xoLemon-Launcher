@@ -194,6 +194,10 @@
           "save_hubcap_api_key",
           "clear_hubcap_api_key",
           "refresh_hubcap_key_state",
+          "save_ryuu_auth_key",
+          "clear_ryuu_auth_key",
+          "save_depotbox_api_key",
+          "clear_depotbox_api_key",
           "set_lua_source_preferences",
           "scan_lua_sources",
           "search_lua_games",
@@ -221,7 +225,11 @@
           "kill_process_by_name",
           "set_process_priority",
           "cloud_redirect_engine_get_steam_state",
-          "cloud_redirect_engine_close_steam"
+          "cloud_redirect_engine_close_steam",
+          "fetch_donor_steamid",
+          "clear_manifesthub_api_key",
+          "save_manifesthub_api_key",
+          "test_manifesthub_api_key"
         ],
         "deny": []
       }

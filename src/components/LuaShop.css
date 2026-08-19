@@ -779,7 +779,7 @@
   display: grid;
   place-items: center;
   padding: 24px;
-  background: rgba(2, 5, 9, 0.74);
+  background: var(--theme-overlay-bg);
   backdrop-filter: blur(12px);
   animation: lua-modal-fade-in 160ms ease-out both;
 }
@@ -790,10 +790,10 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  border: 1px solid var(--line);
   border-radius: 8px;
-  color: #eef1f4;
-  background: #11151a;
+  color: var(--text-strong);
+  background: var(--theme-card-bg);
   box-shadow: 0 28px 80px rgba(0, 0, 0, 0.58);
   animation: lua-modal-panel-in 190ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
@@ -846,10 +846,10 @@
   height: 36px;
   display: grid;
   place-items: center;
-  border: 1px solid rgba(105, 181, 222, 0.24);
+  border: 1px solid var(--line-strong);
   border-radius: 6px;
-  color: #8dc8e8;
-  background: rgba(52, 118, 154, 0.13);
+  color: var(--theme-accent-strong);
+  background: var(--theme-accent-surface);
 }
 
 .lua-manager-header > button {
@@ -944,9 +944,9 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   margin-top: 12px;
   padding: 3px;
-  border: 1px solid rgba(148, 163, 184, 0.16);
+  border: 1px solid var(--line);
   border-radius: 6px;
-  background: #0d1115;
+  background: var(--theme-card-bg-soft);
 }
 
 .lua-manager-segments button {
@@ -960,9 +960,9 @@
 }
 
 .lua-manager-segments button.active {
-  color: #edf5f9;
-  background: #202a32;
-  box-shadow: inset 0 0 0 1px rgba(119, 184, 219, 0.2);
+  color: var(--text-strong);
+  background: var(--theme-selected-bg);
+  box-shadow: inset 0 0 0 1px var(--line-strong);
 }
 
 .lua-manager-build-select {
@@ -980,19 +980,19 @@
   align-items: center;
   gap: 12px;
   padding: 9px 11px;
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  border: 1px solid var(--line);
   border-radius: 6px;
-  color: #edf1f4;
+  color: var(--text-strong);
   text-align: left;
-  background: #151a20;
+  background: var(--theme-control-bg);
   cursor: pointer;
   transition: border-color 160ms ease, background 160ms ease;
 }
 
 .lua-manager-build-trigger:hover,
 .lua-manager-build-trigger[aria-expanded='true'] {
-  border-color: rgba(105, 181, 222, 0.42);
-  background: #192129;
+  border-color: var(--line-strong);
+  background: var(--theme-control-hover-bg);
 }
 
 .lua-manager-build-trigger > svg {
@@ -1038,9 +1038,9 @@
   gap: 4px;
   overflow-y: auto;
   padding: 6px;
-  border: 1px solid rgba(135, 154, 168, 0.2);
+  border: 1px solid var(--line);
   border-radius: 7px;
-  background: #090e12;
+  background: var(--theme-modal-bg);
   box-shadow: 0 22px 54px rgba(0, 0, 0, 0.48);
   animation: lua-build-menu-in 140ms ease-out both;
 }
@@ -1068,13 +1068,13 @@
 
 .lua-manager-build-option:hover,
 .lua-manager-build-option:focus-visible {
-  border-color: rgba(115, 150, 174, 0.2);
-  background: rgba(67, 104, 128, 0.12);
+  border-color: var(--line);
+  background: var(--theme-hover-bg);
 }
 
 .lua-manager-build-option.active {
-  border-color: rgba(89, 151, 187, 0.38);
-  background: rgba(39, 94, 124, 0.18);
+  border-color: var(--line-strong);
+  background: var(--theme-selected-bg);
 }
 
 .lua-manager-build-option > span:last-child {
@@ -1092,7 +1092,7 @@
 
 .lua-manager-build-option strong { font-size: 11px; }
 .lua-manager-build-option small { color: #758691; font-size: 9px; }
-.lua-manager-build-check { width: 16px; color: #72b8da; }
+.lua-manager-build-check { width: 16px; color: var(--theme-accent-strong); }
 
 .lua-manager-build-empty {
   padding: 14px;
@@ -1105,10 +1105,10 @@
   min-height: 36px;
   margin-top: 12px;
   padding: 0 14px;
-  border: 1px solid rgba(105, 181, 222, 0.35);
+  border: 1px solid var(--line-strong);
   border-radius: 5px;
-  color: #bfe6fa;
-  background: rgba(54, 118, 154, 0.16);
+  color: var(--text-strong);
+  background: var(--theme-accent-surface);
   font-weight: 700;
 }
 
@@ -1159,8 +1159,8 @@
   gap: 12px;
   align-items: center;
   padding: 12px 20px;
-  border-top: 1px solid rgba(148, 163, 184, 0.14);
-  background: #0d1115;
+  border-top: 1px solid var(--line);
+  background: var(--theme-card-bg-soft);
 }
 
 .lua-manager-footer > div {
@@ -1175,18 +1175,18 @@
   justify-content: center;
   gap: 7px;
   padding: 0 12px;
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  border: 1px solid var(--line);
   border-radius: 5px;
-  color: #dce1e6;
-  background: #181d23;
+  color: var(--text-strong);
+  background: var(--theme-control-bg);
   font-size: 11px;
   font-weight: 700;
 }
 
 .lua-manager-footer button.primary {
-  border-color: rgba(105, 181, 222, 0.42);
-  color: #dff3fd;
-  background: #1d3948;
+  border-color: var(--line-strong);
+  color: var(--text-strong);
+  background: var(--theme-accent-surface-strong);
 }
 
 .lua-manager-footer button.danger {
@@ -1212,7 +1212,7 @@
   display: grid;
   place-items: center;
   padding: 24px;
-  background: rgba(2, 5, 8, 0.76);
+  background: var(--theme-overlay-bg);
   backdrop-filter: blur(10px);
   animation: lua-manager-fade-in 160ms ease-out;
 }
@@ -1223,10 +1223,10 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border: 1px solid rgba(148, 163, 184, 0.22);
+  border: 1px solid var(--line);
   border-radius: 7px;
-  color: #dce3e8;
-  background: #0c1116;
+  color: var(--text-strong);
+  background: var(--theme-card-bg);
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
   animation: lua-manager-enter 180ms ease-out;
 }
@@ -1252,10 +1252,10 @@
   height: 34px;
   display: grid;
   place-items: center;
-  border: 1px solid rgba(112, 183, 220, 0.25);
+  border: 1px solid var(--line-strong);
   border-radius: 5px;
-  color: #9fd4ef;
-  background: rgba(53, 112, 143, 0.14);
+  color: var(--theme-accent-strong);
+  background: var(--theme-accent-surface);
 }
 
 .lua-source-picker-body {
@@ -1284,64 +1284,256 @@
 .lua-source-picker-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 12px;
 }
 
-.lua-source-option {
-  min-height: 122px;
-  display: grid;
-  grid-template-columns: 32px minmax(0, 1fr);
-  gap: 10px;
+.lua-source-option-card {
+  min-height: 136px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   position: relative;
   padding: 14px;
-  border: 1px solid rgba(148, 163, 184, 0.17);
-  border-radius: 6px;
-  color: #d6dde2;
-  background: #12181e;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text-strong);
+  background: var(--theme-card-bg-soft);
   text-align: left;
-  transition: border-color 150ms ease, background-color 150ms ease, transform 150ms ease;
+  cursor: pointer;
+  user-select: none;
+  transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.lua-source-option:not(:disabled):hover {
-  border-color: rgba(108, 184, 224, 0.42);
-  background: #162129;
-  transform: translateY(-1px);
+.lua-source-option-card:not(.is-disabled):hover {
+  border-color: var(--line-strong);
+  background: var(--theme-control-hover-bg);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
 }
 
-.lua-source-option.is-selected {
-  border-color: rgba(104, 191, 236, 0.64);
-  background: #172833;
-  box-shadow: inset 3px 0 0 #6abce6;
+.lua-source-option-card.is-selected {
+  border-color: var(--theme-accent-strong);
+  background: var(--theme-selected-bg);
+  box-shadow: inset 3px 0 0 var(--theme-accent-strong), 0 4px 20px color-mix(in oklab, transparent 78%, var(--theme-accent) 22%);
 }
 
-.lua-source-option:disabled { opacity: 0.48; cursor: not-allowed; }
-.lua-source-option-icon { color: #86c5e6; }
-.lua-source-option-copy { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
-.lua-source-option-copy strong { font-size: 12px; }
-.lua-source-option-copy small { color: #84939d; font-size: 9px; line-height: 1.35; }
-.lua-source-option-copy code { overflow: hidden; color: #6f8998; font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+.lua-source-option-card.is-disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+  filter: grayscale(0.4);
+}
 
-.lua-source-option-flags {
-  position: absolute;
-  top: 10px;
-  right: 10px;
+.lua-source-option-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 24px;
+}
+
+.lua-source-option-icon {
+  color: var(--theme-accent-strong);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.lua-source-option-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #f1f5f9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lua-source-option-head-actions {
+  margin-left: auto;
   display: flex;
   align-items: center;
   gap: 6px;
+  flex-shrink: 0;
 }
 
-.lua-source-option-flags em,
-.lua-source-option-flags span {
+.lua-source-info-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 150ms ease;
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+
+.lua-source-info-btn:hover {
+  color: var(--theme-accent-strong);
+  transform: scale(1.1);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.lua-source-option-head-actions .flag-recommended {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 3px 6px;
+  padding: 2px 7px;
   border-radius: 4px;
-  color: #acdff8;
-  background: rgba(60, 128, 164, 0.2);
-  font-size: 8px;
+  color: var(--text-strong);
+  background: var(--theme-accent-surface-strong);
+  border: 1px solid var(--line-strong);
+  font-size: 9px;
   font-style: normal;
   font-weight: 700;
+}
+
+.lua-source-option-head-actions .flag-selected {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  color: #d1fae5;
+  background: rgba(16, 185, 129, 0.25);
+  border: 1px solid rgba(52, 211, 153, 0.4);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.lua-source-option-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.lua-source-type-pill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.lua-source-type-pill.live {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #34d399;
+}
+
+.lua-source-type-pill.locked {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #fbbf24;
+}
+
+.lua-source-type-pill.hybrid {
+  background: rgba(139, 92, 246, 0.15);
+  border: 1px solid rgba(139, 92, 246, 0.35);
+  color: #c084fc;
+}
+
+.live-dot {
+  width: 6px;
+  height: 6px;
+  background: #10b981;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: liveDotPulse 1.6s infinite cubic-bezier(0.4, 0, 0.6, 1);
+  margin-right: 5px;
+}
+
+@keyframes liveDotPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.8);
+    transform: scale(0.95);
+  }
+  70% {
+    box-shadow: 0 0 0 5px rgba(16, 185, 129, 0);
+    transform: scale(1.15);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    transform: scale(0.95);
+  }
+}
+
+.locked-icon {
+  font-size: 9px;
+  margin-right: 4px;
+}
+
+.lua-source-stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: #f59e0b;
+}
+
+.lua-source-stars .star-filled {
+  fill: #f59e0b;
+}
+
+.lua-source-stars .star-half {
+  fill: rgba(245, 158, 11, 0.5);
+  opacity: 0.8;
+}
+
+.lua-source-stars .star-empty {
+  color: #475569;
+}
+
+.lua-source-stars-text {
+  font-size: 10px;
+  font-weight: 700;
+  color: #fbbf24;
+  margin-left: 3px;
+}
+
+.lua-source-option-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.lua-source-status-text {
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.lua-source-quota-text {
+  color: #64748b;
+  font-size: 9px;
+  line-height: 1.3;
+}
+
+.lua-source-option-copy code {
+  overflow: hidden;
+  color: #475569;
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lua-source-error-code {
+  color: #f87171 !important;
+}
+
+.lua-source-picker-warning {
+  margin-top: 10px;
+  padding: 10px 14px;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 6px;
+  color: #fbbf24;
+  background: rgba(245, 158, 11, 0.1);
+  font-size: 11px;
 }
 
 .lua-source-picker-error {
@@ -1354,6 +1546,75 @@
   font-size: 10px;
 }
 
+.lua-source-picker-steamid {
+  margin-top: 14px;
+}
+
+.lua-source-picker-steamid-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.lua-source-picker-steamid-header label {
+  color: #a4b4c0;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.lua-source-picker-steamid-autofetch {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #e5e7eb;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.lua-source-picker-steamid-autofetch:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
+.lua-source-picker-steamid-autofetch:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.lua-source-picker-steamid-input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 6px;
+  background: var(--theme-control-bg);
+  border: 1px solid var(--line);
+  color: #fff;
+  font-size: 13px;
+  outline: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.lua-source-picker-steamid-input:focus {
+  border-color: var(--line-strong);
+  background: var(--theme-control-hover-bg);
+}
+
+.lua-source-picker-steamid-input::placeholder {
+  color: rgba(135, 154, 168, 0.4);
+}
+
+.lua-source-picker-steamid-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .lua-source-picker-footer {
   min-height: 62px;
   display: flex;
@@ -1361,8 +1622,8 @@
   align-items: center;
   gap: 8px;
   padding: 12px 18px;
-  border-top: 1px solid rgba(148, 163, 184, 0.14);
-  background: #0d1115;
+  border-top: 1px solid var(--line);
+  background: var(--theme-card-bg-soft);
 }
 
 .lua-source-picker-footer button {
@@ -1373,24 +1634,401 @@
   justify-content: center;
   gap: 7px;
   padding: 0 14px;
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  border: 1px solid var(--line);
   border-radius: 5px;
-  color: #dce1e6;
-  background: #181d23;
+  color: var(--text-strong);
+  background: var(--theme-control-bg);
   font-size: 10px;
   font-weight: 700;
+  cursor: pointer;
+  transition: all 150ms ease;
 }
 
 .lua-source-picker-footer button.primary {
-  border-color: rgba(105, 181, 222, 0.42);
-  color: #dff3fd;
-  background: #1d3948;
+  border-color: var(--line-strong);
+  color: var(--text-strong);
+  background: var(--theme-accent-surface-strong);
 }
 
-.lua-source-picker-footer button:disabled { opacity: 0.45; }
+.lua-source-picker-footer button.primary:hover:not(:disabled) {
+  background: var(--theme-control-hover-bg);
+  border-color: var(--theme-accent-strong);
+}
+
+.lua-source-picker-footer button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Source Info Modal */
+.lua-source-info-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  z-index: 50;
+  animation: fadeIn 150ms ease;
+}
+
+.lua-source-info-modal {
+  width: 100%;
+  max-width: 440px;
+  background: #121820;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 10px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: scaleUp 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.lua-source-info-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+  background: #0e1319;
+}
+
+.lua-source-info-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.lua-source-info-title-row h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.lua-source-info-rank-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lua-source-info-rank {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--theme-accent-strong);
+}
+
+.lua-source-info-modal-header button {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lua-source-info-modal-header button:hover {
+  color: #f1f5f9;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.lua-source-info-modal-body {
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+.lua-source-info-section h4 {
+  margin: 0 0 5px 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.lua-source-info-section p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #cbd5e1;
+}
+
+.lua-source-info-subtext {
+  margin-top: 5px !important;
+  color: #94a3b8 !important;
+  font-size: 11px !important;
+}
+
+.lua-source-info-highlight {
+  color: #38bdf8 !important;
+  font-weight: 500;
+}
+
+.lua-source-info-modal-footer {
+  padding: 12px 18px;
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+  background: #0e1319;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.lua-source-info-modal-footer button.primary {
+  min-width: 104px;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 14px;
+  border-radius: 5px;
+  border: 1px solid rgba(105, 181, 222, 0.42);
+  color: #dff3fd;
+  background: #1d3948;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.lua-source-info-modal-footer button.primary:hover {
+  background: var(--theme-control-hover-bg);
+  border-color: var(--theme-accent-strong);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleUp {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
 
 @media (max-width: 680px) {
   .lua-source-picker-backdrop { align-items: end; padding: 10px; }
   .lua-source-picker { max-height: calc(100vh - 20px); }
   .lua-source-picker-grid { grid-template-columns: 1fr; }
 }
+
+/* ===== Store-style Lua Shop toolbar ===== */
+.lua-shop-primary-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  min-width: 0;
+}
+
+.lua-shop-primary-toolbar .store-sort-dropdown { flex: 0 0 auto; }
+.lua-shop-primary-toolbar .sort-toggle-btn { height: 36px; }
+
+.lua-shop-layout-toggle {
+  flex: 0 0 auto;
+  min-height: 36px;
+  align-items: center;
+}
+
+.lua-shop-grid-density {
+  display: flex;
+  gap: 2px;
+  padding: 0 7px 0 2px;
+  margin-right: 3px;
+  border-right: 1px solid rgba(255,255,255,.08);
+}
+
+.lua-shop-grid-density button {
+  width: auto;
+  min-width: 27px;
+  padding: 0 4px;
+  font-size: 10px;
+  font-family: var(--mono);
+}
+
+.lua-shop-command-search {
+  flex: 1 1 360px;
+  width: auto;
+  max-width: 460px;
+  min-width: 240px;
+}
+
+.lua-shop-search-clear {
+  flex: 0 0 26px;
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+}
+.lua-shop-search-clear:hover { color: var(--text-strong); background: rgba(255,255,255,.07); }
+
+/* ===== Responsive grid density / list view ===== */
+.lua-shop-results { position: relative; }
+.lua-shop-results[data-layout='grid'] .lua-shop-grid {
+  grid-template-columns: repeat(var(--lua-shop-grid-cols, 4), minmax(0, 1fr));
+  grid-auto-rows: minmax(270px, auto);
+  gap: clamp(10px, 1.25vw, 20px);
+}
+
+.lua-shop-results[data-layout='grid'] .lua-shop-card { min-width: 0; }
+.lua-shop-results.is-grid[style*="--lua-shop-grid-cols: 6"] .lua-shop-card-content,
+.lua-shop-results.is-grid[style*="--lua-shop-grid-cols: 8"] .lua-shop-card-content { padding: 11px; }
+.lua-shop-results.is-grid[style*="--lua-shop-grid-cols: 8"] .lua-shop-card-title { font-size: 12px; }
+.lua-shop-results.is-grid[style*="--lua-shop-grid-cols: 8"] .lua-shop-card-actions { gap: 5px; }
+
+.lua-shop-results[data-layout='list'] .lua-shop-grid {
+  grid-template-columns: 1fr;
+  grid-auto-rows: auto;
+  gap: 9px;
+}
+.lua-shop-results[data-layout='list'] .lua-shop-card {
+  min-height: 116px;
+  height: auto;
+  grid-template-columns: 196px minmax(0, 1fr);
+  grid-template-rows: none;
+}
+.lua-shop-results[data-layout='list'] .lua-shop-card-image {
+  height: 100%;
+  min-height: 116px;
+  aspect-ratio: auto;
+}
+.lua-shop-results[data-layout='list'] .lua-shop-card-content {
+  min-height: 116px;
+  grid-template-columns: minmax(180px, 1.15fr) 110px minmax(130px, .8fr) minmax(120px, 1fr) minmax(180px, auto);
+  grid-template-rows: 1fr;
+  align-items: center;
+  gap: 12px;
+}
+.lua-shop-results[data-layout='list'] .lua-shop-card-title,
+.lua-shop-results[data-layout='list'] .lua-shop-card-appid,
+.lua-shop-results[data-layout='list'] .lua-shop-source-badge,
+.lua-shop-results[data-layout='list'] .lua-shop-sync-summary,
+.lua-shop-results[data-layout='list'] .lua-shop-card-actions { grid-row: 1; }
+.lua-shop-results[data-layout='list'] .lua-shop-card-title { grid-column: 1; }
+.lua-shop-results[data-layout='list'] .lua-shop-card-appid { grid-column: 2; }
+.lua-shop-results[data-layout='list'] .lua-shop-source-badge { grid-column: 3; }
+.lua-shop-results[data-layout='list'] .lua-shop-sync-summary { grid-column: 4; }
+.lua-shop-results[data-layout='list'] .lua-shop-card-actions { grid-column: 5; align-self: center; }
+
+/* ===== Query/page transition feedback ===== */
+.lua-shop-transition-overlay {
+  position: sticky;
+  top: 8px;
+  z-index: 20;
+  height: 0;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+.lua-shop-transition-card {
+  transform: translateY(8px);
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in oklab, var(--theme-accent) 24%, rgba(255,255,255,.08));
+  background: color-mix(in oklab, rgba(8,12,16,.92) 92%, var(--theme-accent) 8%);
+  color: var(--text);
+  box-shadow: 0 12px 32px rgba(0,0,0,.36);
+  backdrop-filter: blur(14px);
+  animation: lua-shop-transition-in .16s ease-out both;
+}
+.lua-shop-transition-card span { font-size: 11px; font-weight: 600; }
+.lua-shop-results[data-transitioning='true'] .lua-shop-grid {
+  opacity: .46;
+  filter: saturate(.72);
+  transition: opacity .18s ease, filter .18s ease;
+}
+@keyframes lua-shop-transition-in {
+  from { opacity: 0; transform: translateY(3px) scale(.98); }
+  to { opacity: 1; transform: translateY(8px) scale(1); }
+}
+
+@media (max-width: 1280px) {
+  .lua-shop-primary-toolbar { flex-wrap: wrap; justify-content: flex-start; }
+  .lua-shop-command-search { order: -1; flex-basis: 100%; max-width: none; }
+  .lua-shop-results[data-layout='grid'] .lua-shop-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+@media (max-width: 900px) {
+  .lua-shop-results[data-layout='grid'] .lua-shop-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lua-shop-results[data-layout='list'] .lua-shop-card { grid-template-columns: 150px minmax(0, 1fr); }
+  .lua-shop-results[data-layout='list'] .lua-shop-card-content { grid-template-columns: 1fr auto; grid-template-rows: repeat(3, auto); }
+  .lua-shop-results[data-layout='list'] .lua-shop-card-title { grid-column: 1; grid-row: 1; }
+  .lua-shop-results[data-layout='list'] .lua-shop-card-appid { grid-column: 2; grid-row: 1; }
+  .lua-shop-results[data-layout='list'] .lua-shop-source-badge { grid-column: 1; grid-row: 2; }
+  .lua-shop-results[data-layout='list'] .lua-shop-sync-summary { grid-column: 1 / -1; grid-row: 3; }
+  .lua-shop-results[data-layout='list'] .lua-shop-card-actions { grid-column: 2; grid-row: 2 / 4; }
+}
+
+
+.lua-source-channel-choice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px;
+  margin-top: 12px;
+  border: 1px solid var(--launcher-border, rgba(148, 163, 184, 0.22));
+  border-radius: 10px;
+  background: var(--launcher-surface, rgba(15, 23, 42, 0.72));
+}
+.lua-source-channel-choice-copy { display: grid; gap: 3px; min-width: 0; }
+.lua-source-channel-choice-copy strong { font-size: 12px; }
+.lua-source-channel-choice-copy small { color: rgba(148, 163, 184, 0.9); font-size: 10px; line-height: 1.35; }
+.lua-source-channel-choice-buttons { display: flex; gap: 8px; flex-shrink: 0; }
+.lua-source-channel-choice-buttons button {
+  display: inline-flex; align-items: center; gap: 6px; min-width: 92px; justify-content: center;
+  border: 1px solid rgba(148, 163, 184, 0.24); border-radius: 8px; padding: 8px 10px;
+  background: rgba(15, 23, 42, 0.6); color: #cbd5e1; font-size: 11px; font-weight: 700; cursor: pointer;
+}
+.lua-source-channel-choice-buttons button.is-active.live { border-color: rgba(16, 185, 129, 0.62); background: rgba(16, 185, 129, 0.12); color: #6ee7b7; }
+.lua-source-channel-choice-buttons button.is-active.locked { border-color: rgba(245, 158, 11, 0.62); background: rgba(245, 158, 11, 0.12); color: #fbbf24; }
+@media (max-width: 720px) { .lua-source-channel-choice { align-items: stretch; flex-direction: column; } .lua-source-channel-choice-buttons button { flex: 1; } }
+
+/* Source picker step 2: hybrid channel selection lives after source selection. */
+.lua-source-channel-step {
+  display: grid;
+  gap: 14px;
+  min-height: 220px;
+  align-content: start;
+  padding: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.34);
+}
+.lua-source-channel-step-heading { display: grid; gap: 5px; }
+.lua-source-channel-step-heading strong { font-size: 14px; }
+.lua-source-channel-step-heading small { color: rgba(148, 163, 184, 0.92); line-height: 1.45; }
+.lua-source-channel-step-source {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 12px 14px;
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  border-radius: 10px;
+  background: rgba(14, 116, 144, 0.08);
+}
+.lua-source-channel-step-source > span:nth-child(2) { font-weight: 700; flex: 1; }
+.lua-source-channel-step-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.lua-source-channel-step-buttons button { min-height: 46px; justify-content: center; }

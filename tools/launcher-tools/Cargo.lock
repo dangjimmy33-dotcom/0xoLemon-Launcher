@@ -1780,7 +1780,7 @@ checksum = "26b73573e6edcd2af0cdf47bd6cb58f0b3839491263c314eaad1ccf24430e1de"
 
 [[package]]
 name = "first-light-smart-launcher"
-version = "2.0.48"
+version = "2.0.49"
 dependencies = [
  "aes 0.8.4",
  "aes-gcm",

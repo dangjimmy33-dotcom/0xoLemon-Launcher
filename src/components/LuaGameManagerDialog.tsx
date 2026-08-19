@@ -184,15 +184,29 @@ export function LuaGameManagerDialog({
   const applyChannel = async () => {
     if (!appid || !manager) return
     const reviewingLegacy = manager.game.migrationState === 'reviewRequired'
-    if (selectedChannel === 'locked' && !selectedBuildId && !reviewingLegacy) {
-      setError(managerText.chooseBuildError)
-      return
-    }
     setBusyAction('channel')
     setError(null)
     try {
       if (selectedChannel === 'live') {
-        await onSwitchLive(String(appid))
+        const provider = manager.game.selectedSource
+        if (!provider) {
+          await onSwitchLive(String(appid))
+          return
+        }
+        const state = await invoke<LuaGameState>('set_lua_game_channel', {
+          request: {
+            appid,
+            channel: 'live',
+            buildId: null,
+            conflictResolution: 'restoreLive',
+            provider,
+          },
+        })
+        onState(state)
+        await reload()
+        if (state.requiresSteamRestart) {
+          await onRestartSteam()
+        }
         return
       }
       if (reviewingLegacy && selectedChannel === 'locked' && !selectedBuildId) {
@@ -208,13 +222,16 @@ export function LuaGameManagerDialog({
         request: {
           appid,
           channel: selectedChannel,
-          buildId: selectedChannel === 'locked' ? selectedBuildId : null,
+          buildId: selectedChannel === 'locked' && selectedBuildId ? selectedBuildId : null,
           conflictResolution: null,
           provider: null,
         },
       })
       onState(state)
       await reload()
+      if (state.requiresSteamRestart) {
+        await onRestartSteam()
+      }
     } catch (reason) {
       setError(String(reason))
     } finally {
@@ -301,7 +318,13 @@ export function LuaGameManagerDialog({
                 >
                   {t.luaShop.liveChannel}
                 </button>
-                <button type="button" className={selectedChannel === 'locked' ? 'active' : ''} onClick={() => setSelectedChannel('locked')}>
+                <button
+                  type="button"
+                  className={selectedChannel === 'locked' ? 'active' : ''}
+                  disabled={!manager.canSwitchLocked && game?.channel !== 'locked'}
+                  title={!manager.canSwitchLocked && game?.channel !== 'locked' ? 'Selected source is Live-only.' : undefined}
+                  onClick={() => setSelectedChannel('locked')}
+                >
                   {t.luaShop.lockedChannel}
                 </button>
               </div>
@@ -317,16 +340,44 @@ export function LuaGameManagerDialog({
                     onClick={() => setBuildMenuOpen((open) => !open)}
                   >
                     <span className="lua-manager-build-trigger-copy">
-                      <strong>{selectedBuild ? selectedBuild.version || `Build ${selectedBuild.build_id}` : managerText.chooseBuild}</strong>
-                      <small>{selectedBuild ? `BuildID ${selectedBuild.build_id}${formatBuildMetadata(selectedBuild) ? ` · ${formatBuildMetadata(selectedBuild)}` : ''}` : managerText.chooseBuild}</small>
+                      <strong>
+                        {selectedBuild
+                          ? selectedBuild.version || `Build ${selectedBuild.build_id}`
+                          : selectedBuildId
+                            ? `Build ${selectedBuildId}`
+                            : (managerText.currentVersion || 'Current version (Pinned)')}
+                      </strong>
+                      <small>
+                        {selectedBuild
+                          ? `BuildID ${selectedBuild.build_id}${formatBuildMetadata(selectedBuild) ? ` · ${formatBuildMetadata(selectedBuild)}` : ''}`
+                          : selectedBuildId
+                            ? `BuildID ${selectedBuildId}`
+                            : (managerText.currentVersionDescription || 'Lock manifests at current version')}
+                      </small>
                     </span>
                     <ChevronDown size={17} className={buildMenuOpen ? 'is-open' : ''} aria-hidden="true" />
                   </button>
                   {buildMenuOpen && (
                     <div id="lua-manager-build-options" className="lua-manager-build-menu" role="listbox" aria-label="BuildID">
-                      {compatibleBuilds.length === 0 ? (
-                        <div className="lua-manager-build-empty">{managerText.chooseBuildError}</div>
-                      ) : compatibleBuilds.map((build) => {
+                      <button
+                        type="button"
+                        role="option"
+                        aria-selected={!selectedBuildId}
+                        className={`lua-manager-build-option${!selectedBuildId ? ' active' : ''}`}
+                        onClick={() => {
+                          setSelectedBuildId('')
+                          setBuildMenuOpen(false)
+                        }}
+                      >
+                        <span className="lua-manager-build-check" aria-hidden="true">
+                          {!selectedBuildId ? <CheckCircle2 size={15} /> : null}
+                        </span>
+                        <span>
+                          <strong>{managerText.currentVersion || 'Current version (Pinned)'}</strong>
+                          <small>{managerText.currentVersionDescription || 'Lock manifests at current version'}</small>
+                        </span>
+                      </button>
+                      {compatibleBuilds.map((build) => {
                         const active = build.build_id === selectedBuildId
                         return (
                           <button

@@ -4,8 +4,6 @@ import { fetchWithRetry } from '../lib/fetchWithRetry'
 import { normalizeGameVersions } from '../lib/catalogVersions'
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://zeroxolemon-launcher.onrender.com'
-// 0xolemon1 = overflow/secondary project (FIFA 23, future games not in 0xolemon)
-// App.tsx merges this with firestoreCatalog (0xolemon) to get full game list
 const TENANT_ID = import.meta.env.VITE_TENANT_ID || '0xolemon1'
 
 const DEFAULT_CLOUD_SAVE: CloudSaveMetadata = {
@@ -15,6 +13,33 @@ const DEFAULT_CLOUD_SAVE: CloudSaveMetadata = {
   exclude: [],
 }
 
+function stringValue(value: unknown): string {
+  if (typeof value === 'string') return value
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value)
+  return ''
+}
+
+function recordValue(value: unknown): Record<string, unknown> | undefined {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : undefined
+}
+
+function stringArray(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === 'string') : []
+}
+
+function normalizeCloudSave(value: unknown): CloudSaveMetadata {
+  const raw = recordValue(value)
+  if (!raw) return DEFAULT_CLOUD_SAVE
+  return {
+    enabled: raw.enabled === true,
+    saveRoots: stringArray(raw.saveRoots),
+    include: stringArray(raw.include),
+    exclude: stringArray(raw.exclude),
+  }
+}
+
 function buildInstall(gameId: string, title: string, raw?: Record<string, unknown>): GameInstallMetadata {
   const storeRoot = 'E:\\0xoLemon store'
   const folderName = title.replace(/[<>:"/\\|?*]/g, ' ').replace(/\s+/g, ' ').trim() || gameId
@@ -22,55 +47,65 @@ function buildInstall(gameId: string, title: string, raw?: Record<string, unknow
     defaultStoreRoot: storeRoot,
     defaultInstallFolder: `${storeRoot}\\common\\${folderName}`,
     defaultDownloadingFolder: `${storeRoot}\\downloading\\${folderName}`,
-    storageLabel: (raw?.storageLabel as string) || 'SSD',
-    supportsResume: (raw?.supportsResume as boolean) ?? true,
-    launchExecutable: (raw?.launchExecutable as string) || `${folderName}.exe`,
+    storageLabel: stringValue(raw?.storageLabel) || 'SSD',
+    supportsResume: typeof raw?.supportsResume === 'boolean' ? raw.supportsResume : true,
+    launchExecutable: stringValue(raw?.launchExecutable) || `${folderName}.exe`,
   }
 }
 
 function normalizeSummary(raw: Record<string, unknown>): GameSummary {
-  const gameId = (raw.id as string) || ''
-  const title = (raw.title as string) || gameId
+  const gameId = stringValue(raw.id).trim()
+  const title = stringValue(raw.title).trim() || gameId
 
-  // Access globalAssetsOverride set by useBackendAssets
   const globalAssetsOverride = (typeof window !== 'undefined' && window.globalAssetsOverride) || {}
   const globalVersionTags = (typeof window !== 'undefined' && window.globalVersionTags) || {}
-
-  // Build asset keys
   const assetOverride = {
     grid: globalAssetsOverride[`${gameId}-grid`],
     hero: globalAssetsOverride[`${gameId}-hero`],
     logo: globalAssetsOverride[`${gameId}-logo`],
-    icon: globalAssetsOverride[`${gameId}-icon`]
+    icon: globalAssetsOverride[`${gameId}-icon`],
   }
-
   const versionTags = globalVersionTags[gameId] ?? {}
 
   return {
     id: gameId,
     title,
-    subtitle: (raw.subtitle as string) || '',
-    developer: (raw.developer as string) || '',
-    publisher: (raw.publisher as string) || '',
-    latestVersion: (raw.latestVersion as string) || '',
+    subtitle: stringValue(raw.subtitle),
+    developer: stringValue(raw.developer),
+    publisher: stringValue(raw.publisher),
+    latestVersion: stringValue(raw.latestVersion),
     availableVersions: normalizeGameVersions(raw.availableVersions, versionTags),
-    // Prefer assets_override CDN links over catalog values
-    gridAssetId: (assetOverride.grid as string) || (raw.gridAssetId as string) || '',
-    heroAssetId: (assetOverride.hero as string) || (raw.heroAssetId as string) || '',
-    logoAssetId: (assetOverride.logo as string) || (raw.logoAssetId as string) || '',
-    iconAssetId: (assetOverride.icon as string) || (raw.iconAssetId as string) || '',
-    install: buildInstall(gameId, title, raw.install as Record<string, unknown>),
-    cloudSave: (raw.cloudSave as CloudSaveMetadata) || DEFAULT_CLOUD_SAVE,
-    assetPackPath: (raw.assetPackPath as string) || `assets/games/${gameId}/core.0xo`,
+    gridAssetId: stringValue(assetOverride.grid) || stringValue(raw.gridAssetId),
+    heroAssetId: stringValue(assetOverride.hero) || stringValue(raw.heroAssetId),
+    logoAssetId: stringValue(assetOverride.logo) || stringValue(raw.logoAssetId),
+    iconAssetId: stringValue(assetOverride.icon) || stringValue(raw.iconAssetId),
+    install: buildInstall(gameId, title, recordValue(raw.install)),
+    cloudSave: normalizeCloudSave(raw.cloudSave),
+    assetPackPath: stringValue(raw.assetPackPath) || `assets/games/${gameId}/core.0xo`,
   }
 }
 
-/**
- * Fetches game catalog from backend API and normalizes with assets_override.
- * Re-normalizes when assetOverrideVersion changes (assets loaded/updated).
- */
+function safeNormalizeSummary(raw: unknown, index: number): GameSummary | null {
+  const record = recordValue(raw)
+  if (!record) {
+    console.error(`[useBackendCatalog] Skipping invalid game at index ${index}: expected object`, raw)
+    return null
+  }
+  try {
+    const game = normalizeSummary(record)
+    if (!game.id) {
+      console.error(`[useBackendCatalog] Skipping invalid game at index ${index}: missing id`, record)
+      return null
+    }
+    return game
+  } catch (error) {
+    console.error(`[useBackendCatalog] Skipping malformed game at index ${index}:`, error, record)
+    return null
+  }
+}
+
 export function useBackendCatalog(assetOverrideVersion?: number): GameCatalog | null {
-  const [rawGames, setRawGames] = useState<Record<string, unknown>[]>([])
+  const [rawGames, setRawGames] = useState<unknown[]>([])
   const [locale, setLocale] = useState('en-US')
   const [loaded, setLoaded] = useState(false)
 
@@ -94,12 +129,15 @@ export function useBackendCatalog(assetOverrideVersion?: number): GameCatalog | 
           throw new Error(`Backend error: ${response.status}`)
         }
 
-        const data = await response.json()
-
+        const data: unknown = await response.json()
         if (!mounted) return
-
-        setLocale(data.defaultLocale || 'en-US')
-        setRawGames(data.games || [])
+        const payload = recordValue(data)
+        const games = Array.isArray(payload?.games) ? payload.games : []
+        if (!Array.isArray(payload?.games)) {
+          console.error('[useBackendCatalog] Invalid catalog payload: games must be an array', data)
+        }
+        setLocale(stringValue(payload?.defaultLocale) || 'en-US')
+        setRawGames(games)
         setLoaded(true)
       } catch (error) {
         console.error('[useBackendCatalog] Failed to fetch:', error)
@@ -109,8 +147,6 @@ export function useBackendCatalog(assetOverrideVersion?: number): GameCatalog | 
     }
 
     fetchCatalog()
-
-    // Poll every 1 hour to get updates, avoiding Render free tier rate limits
     const interval = setInterval(fetchCatalog, 60 * 60 * 1000)
 
     return () => {
@@ -119,12 +155,14 @@ export function useBackendCatalog(assetOverrideVersion?: number): GameCatalog | 
     }
   }, [])
 
-  // Re-compute when raw games OR asset override changes (assetOverrideVersion dependency)
   const catalog = useMemo<GameCatalog | null>(() => {
     if (!loaded) return null
+    const games = rawGames
+      .map((raw, index) => safeNormalizeSummary(raw, index))
+      .filter((game): game is GameSummary => game !== null)
     return {
       defaultLocale: locale,
-      games: rawGames.map(normalizeSummary),
+      games,
     }
     // assetOverrideVersion is intentionally used as cache-busting dep
     // eslint-disable-next-line react-hooks/exhaustive-deps

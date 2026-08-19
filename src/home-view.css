@@ -3,17 +3,17 @@
 
 /* tokens local to home */
 .home-view {
-  --hv-amber: #ff7a45;
-  --hv-amber-soft: rgba(255, 122, 69, .16);
+  --hv-amber: var(--theme-accent, #ff7a45);
+  --hv-amber-soft: color-mix(in oklab, transparent 84%, var(--theme-accent, #ff7a45) 16%);
   --hv-teal: #3ddc97;
   --hv-teal-soft: rgba(61, 220, 151, .16);
   --hv-violet: #8b7bff;
   --hv-violet-soft: rgba(139, 123, 255, .16);
-  --hv-surface: #121622;
-  --hv-surface-2: #1a1f2c;
-  --hv-elevated: #222838;
-  --hv-border: rgba(255, 255, 255, .07);
-  --hv-border-strong: rgba(255, 255, 255, .14);
+  --hv-surface: var(--theme-card-bg-soft);
+  --hv-surface-2: var(--theme-card-bg);
+  --hv-elevated: var(--theme-elevated-bg);
+  --hv-border: var(--line);
+  --hv-border-strong: var(--line-strong);
   --hv-text-1: #eef1f6;
   --hv-text-2: #9aa1b4;
   --hv-text-3: #5c6275;
@@ -49,7 +49,7 @@
   overflow: hidden;
   height: min(56vh, 420px);
   border: 1px solid var(--hv-border);
-  background: #0d1018;
+  background: var(--launcher-page-bg-soft);
 }
 
 .hv-hero-slide {

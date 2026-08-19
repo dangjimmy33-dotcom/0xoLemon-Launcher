@@ -25,6 +25,12 @@ export type LauncherPreferences = {
   confirmBeforeCloudRestore: boolean
   motionMode: MotionMode
   glassEffects: boolean
+  accentHue: number
+  accentChroma: number
+  themeIntensity: number
+  themeContrast: number
+  dynamicTheme: boolean
+  dynamicThemeSpeed: number
   scrollEffects: boolean
   hoverHints: boolean
   showContinuePlaying: boolean
@@ -71,6 +77,12 @@ export const DEFAULT_LAUNCHER_PREFERENCES: LauncherPreferences = {
   confirmBeforeCloudRestore: true,
   motionMode: 'system',
   glassEffects: true,
+  accentHue: 82,
+  accentChroma: 56,
+  themeIntensity: 64,
+  themeContrast: 58,
+  dynamicTheme: false,
+  dynamicThemeSpeed: 46,
   scrollEffects: true,
   hoverHints: true,
   showContinuePlaying: true,
@@ -134,6 +146,11 @@ function booleanValue(value: unknown, fallback: boolean) {
   return typeof value === 'boolean' ? value : fallback
 }
 
+function numberInRange(value: unknown, fallback: number, min: number, max: number) {
+  const parsed = typeof value === 'number' ? value : Number(value)
+  return Number.isFinite(parsed) ? Math.min(max, Math.max(min, parsed)) : fallback
+}
+
 function normalizeCategories(value: unknown): NotificationCategoryPreferences {
   const parsed =
     value && typeof value === 'object'
@@ -158,7 +175,7 @@ export function loadLauncherPreferences(): LauncherPreferences {
     const legacyRaw = currentRaw || previousRaw ? null : window.localStorage.getItem(LEGACY_STORAGE_KEY)
     const raw = currentRaw ?? previousRaw ?? legacyRaw
     if (!raw) return DEFAULT_LAUNCHER_PREFERENCES
-    const parsed = JSON.parse(raw) as Partial<LauncherPreferences> & { reduceMotion?: boolean }
+    const parsed = JSON.parse(raw) as Partial<LauncherPreferences> & { reduceMotion?: boolean; accentSoftness?: number }
     const migratedStartupPage =
       legacyRaw && parsed.startupPage === 'Library'
         ? 'Store'
@@ -185,6 +202,19 @@ export function loadLauncherPreferences(): LauncherPreferences {
       confirmBeforeCloudRestore: booleanValue(parsed.confirmBeforeCloudRestore, true),
       motionMode: migratedMotionMode,
       glassEffects: booleanValue(parsed.glassEffects, true),
+      accentHue: numberInRange(parsed.accentHue, DEFAULT_LAUNCHER_PREFERENCES.accentHue, 0, 360),
+      accentChroma: numberInRange(
+        parsed.accentChroma,
+        parsed.accentSoftness == null
+          ? DEFAULT_LAUNCHER_PREFERENCES.accentChroma
+          : numberInRange(((0.125 - (numberInRange(parsed.accentSoftness, 64, 0, 100) / 100) * 0.065) - 0.025) / 0.105 * 100, DEFAULT_LAUNCHER_PREFERENCES.accentChroma, 0, 100),
+        0,
+        100,
+      ),
+      themeIntensity: numberInRange(parsed.themeIntensity, DEFAULT_LAUNCHER_PREFERENCES.themeIntensity, 0, 100),
+      themeContrast: numberInRange(parsed.themeContrast, DEFAULT_LAUNCHER_PREFERENCES.themeContrast, 0, 100),
+      dynamicTheme: booleanValue(parsed.dynamicTheme, DEFAULT_LAUNCHER_PREFERENCES.dynamicTheme),
+      dynamicThemeSpeed: numberInRange(parsed.dynamicThemeSpeed, DEFAULT_LAUNCHER_PREFERENCES.dynamicThemeSpeed, 0, 100),
       scrollEffects: booleanValue(parsed.scrollEffects, true),
       hoverHints: booleanValue(parsed.hoverHints, true),
       showContinuePlaying: booleanValue(parsed.showContinuePlaying, true),

@@ -1425,13 +1425,21 @@ pub fn run() {
             lua_live::resolve_legacy_lua_games,
             lua_sources::get_lua_source_settings,
             lua_sources::save_hubcap_api_key,
+            lua_sources::save_ryuu_auth_key,
+            lua_sources::clear_ryuu_auth_key,
+            lua_sources::save_depotbox_api_key,
+            lua_sources::clear_depotbox_api_key,
             lua_sources::clear_hubcap_api_key,
             lua_sources::refresh_hubcap_key_state,
+            lua_sources::save_manifesthub_api_key,
+            lua_sources::clear_manifesthub_api_key,
+            lua_sources::test_manifesthub_api_key,
             lua_sources::set_lua_source_preferences,
             lua_sources::scan_lua_sources,
             lua_sources::search_lua_games,
             lua_sources::probe_lua_source_availability,
             lua_sources::get_lua_add_quota,
+            lua_sources::fetch_donor_steamid,
             open_steam_tool::get_native_core_settings,
             open_steam_tool::set_native_core_stats_api,
         ]);
@@ -1479,6 +1487,9 @@ pub fn run() {
                     eprintln!("Failed to check/update DLLs: {}", e);
                 }
             });
+
+            // Keep the Render free tier backend awake
+            lua_sources::start_backend_keepalive();
 
             asset_cache::perform_ttl_cleanup(app.handle());
             let quit_i =

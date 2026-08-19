@@ -105,7 +105,7 @@
       color: var(--text-dim);
       font-weight: 500;
     }
-    .field input {
+    .field input, .field select {
       background: var(--surface2);
       border: 1px solid var(--border);
       border-radius: 8px;
@@ -116,7 +116,7 @@
       outline: none;
       transition: border-color 0.2s, box-shadow 0.2s;
     }
-    .field input:focus {
+    .field input:focus, .field select:focus {
       border-color: var(--accent);
       box-shadow: 0 0 0 3px var(--accent-glow);
     }
@@ -317,7 +317,10 @@
       </div>
       <div class="field">
         <label>Tenant ID</label>
-        <input id="tenantId" value="0xolemon1" />
+        <select id="tenantId">
+          <option value="0xolemon">0xoLemon — primary (xolemon-b360e)</option>
+          <option value="0xolemon1">0xoLemon-1 — secondary (xolemon-1)</option>
+        </select>
       </div>
     </div>
     <div class="field">
@@ -355,6 +358,7 @@
       <button class="btn btn-ghost" onclick="clearSingle('tags')">🏷️ Tags</button>
       <button class="btn btn-ghost" onclick="clearSingle('game-tags')">🎮 Game Tags</button>
     </div>
+    <button class="btn btn-ghost btn-full" id="btnValidateCatalog" onclick="validateCatalog()">🧪 Kiểm tra schema catalog</button>
     <button class="btn btn-primary btn-full" id="btnRefreshAll" onclick="refreshAll()">
       <span class="btn-icon">⚡</span>
       <div class="spinner"></div>
@@ -379,6 +383,80 @@
   function getUrl() { return document.getElementById('backendUrl').value.replace(/\/$/, ''); }
   function getTenant() { return document.getElementById('tenantId').value.trim(); }
   function getAdminKey() { return document.getElementById('adminKey').value.trim(); }
+
+
+  async function responseJsonOrThrow(response, label) {
+    const text = await response.text();
+    let data = null;
+    try { data = text ? JSON.parse(text) : null; } catch (_) {}
+    if (!response.ok) {
+      const detail = data?.error || data?.message || text || response.statusText;
+      throw new Error(`${label}: HTTP ${response.status} — ${detail}`);
+    }
+    if (data == null) throw new Error(`${label}: response is not valid JSON`);
+    return data;
+  }
+
+  function valueType(value) {
+    if (Array.isArray(value)) return 'array';
+    if (value === null) return 'null';
+    return typeof value;
+  }
+
+  function validateCatalogPayload(data) {
+    if (!data || typeof data !== 'object') throw new Error('Catalog payload must be an object');
+    if (!Array.isArray(data.games)) throw new Error(`Catalog games must be an array, got ${valueType(data.games)}`);
+
+    const problems = [];
+    data.games.forEach((game, index) => {
+      if (!game || typeof game !== 'object' || Array.isArray(game)) {
+        problems.push(`games[${index}] must be an object, got ${valueType(game)}`);
+        return;
+      }
+      const label = game.id ? `games[${index}] (${game.id})` : `games[${index}]`;
+      if (typeof game.id !== 'string' || !game.id.trim()) problems.push(`${label}: id must be a non-empty string`);
+      for (const field of ['title', 'subtitle', 'developer', 'publisher', 'latestVersion', 'gridAssetId', 'heroAssetId', 'logoAssetId', 'iconAssetId', 'assetPackPath']) {
+        if (game[field] != null && typeof game[field] !== 'string') {
+          problems.push(`${label}: ${field} must be string, got ${valueType(game[field])}`);
+        }
+      }
+      if (game.availableVersions != null && !Array.isArray(game.availableVersions)) {
+        problems.push(`${label}: availableVersions must be array, got ${valueType(game.availableVersions)}`);
+      }
+      if (game.install != null && (typeof game.install !== 'object' || Array.isArray(game.install))) {
+        problems.push(`${label}: install must be object, got ${valueType(game.install)}`);
+      }
+      if (game.cloudSave != null && (typeof game.cloudSave !== 'object' || Array.isArray(game.cloudSave))) {
+        problems.push(`${label}: cloudSave must be object, got ${valueType(game.cloudSave)}`);
+      }
+    });
+    return { gameCount: data.games.length, problems };
+  }
+
+  async function validateCatalog() {
+    setLoading('btnValidateCatalog', true);
+    const tenant = getTenant();
+    setStatus('🧪', `Đang kiểm tra schema catalog của <b>${tenant}</b>...`, 'loading');
+    log(`Validating catalog schema for ${tenant}...`, 'info');
+    try {
+      const response = await fetch(`${getUrl()}/api/${tenant}/catalog`, { cache: 'no-store' });
+      const data = await responseJsonOrThrow(response, 'catalog');
+      const result = validateCatalogPayload(data);
+      if (result.problems.length) {
+        const preview = result.problems.slice(0, 8);
+        preview.forEach((problem) => log(`  ✗ ${problem}`, 'err'));
+        if (result.problems.length > preview.length) log(`  … ${result.problems.length - preview.length} lỗi khác`, 'err');
+        setStatus('❌', `<b>Catalog có ${result.problems.length} lỗi schema.</b><br>Games: ${result.gameCount}. Xem log để biết entry/field bị lỗi.`, 'error');
+      } else {
+        setStatus('✅', `<b>Catalog hợp lệ.</b><br>${result.gameCount} games · không phát hiện field sai kiểu.`, 'success');
+        log(`Catalog valid — ${result.gameCount} games`, 'ok');
+      }
+    } catch (e) {
+      setStatus('❌', `<b>Không kiểm tra được catalog.</b><br>${e.message}`, 'error');
+      log(`CATALOG VALIDATION ERROR — ${e.message}`, 'err');
+    }
+    setLoading('btnValidateCatalog', false);
+  }
 
   // ── Logging ──
   function log(msg, type = '') {
@@ -440,7 +518,7 @@
     log('Checking health endpoint...', 'info');
     try {
       const r = await fetch(`${getUrl()}/health`);
-      const data = await r.json();
+      const data = await responseJsonOrThrow(r, 'health');
       renderChips(data);
       setStatus('✅', `<b>Backend đang chạy tốt!</b><br>Uptime: ${Math.floor((data.uptime||0)/60)}m · ${data.cache_keys ?? 0} cache key đang giữ`, 'success');
       log(`OK — ${data.cache_keys} cache keys, uptime ${Math.floor((data.uptime||0)/60)}m`, 'ok');
@@ -459,7 +537,7 @@
     log(`Clearing all cache for tenant: ${tenant}`, 'info');
     try {
       const r = await fetch(`${getUrl()}/api/${tenant}/cache/clear`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-key': getAdminKey() } });
-      const data = await r.json();
+      const data = await responseJsonOrThrow(r, 'cache clear');
       setStatus('✅', `<b>Cache đã xóa!</b><br>${data.message}`, 'success');
       log(`Cleared — ${data.message}`, 'ok');
     } catch (e) {
@@ -479,7 +557,7 @@
         headers: { 'Content-Type': 'application/json', 'x-admin-key': getAdminKey() },
         body: JSON.stringify({ key })
       });
-      const data = await r.json();
+      const data = await responseJsonOrThrow(r, `cache clear ${key}`);
       log(`OK [${key}] — ${data.message}`, 'ok');
     } catch (e) {
       log(`ERROR [${key}] — ${e.message}`, 'err');
@@ -501,8 +579,15 @@
     let ok = 0, fail = 0;
     for (const ep of endpoints) {
       try {
-        await fetch(`${url}${ep.path}`);
-        log(`  ✓ Warmed up: ${ep.label}`, 'ok');
+        const response = await fetch(`${url}${ep.path}`, { cache: 'no-store' });
+        const data = await responseJsonOrThrow(response, ep.label);
+        if (ep.label === 'catalog') {
+          const result = validateCatalogPayload(data);
+          if (result.problems.length) throw new Error(`catalog schema invalid: ${result.problems.slice(0, 3).join(' | ')}`);
+          log(`  ✓ Warmed up: catalog (${result.gameCount} games)`, 'ok');
+        } else {
+          log(`  ✓ Warmed up: ${ep.label}`, 'ok');
+        }
         ok++;
       } catch (e) {
         log(`  ✗ Failed warm-up: ${ep.label} — ${e.message}`, 'err');
@@ -523,7 +608,7 @@
       // Step 1: Clear
       log(`[1/2] Clearing all cache for ${tenant}...`, 'info');
       const clearRes = await fetch(`${getUrl()}/api/${tenant}/cache/clear`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-key': getAdminKey() } });
-      const clearData = await clearRes.json();
+      const clearData = await responseJsonOrThrow(clearRes, 'cache clear');
       log(`  ✓ ${clearData.message}`, 'ok');
 
       // Step 2: Warm up

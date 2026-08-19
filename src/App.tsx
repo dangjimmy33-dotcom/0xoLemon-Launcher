@@ -60,6 +60,8 @@ import { formatBytes } from './lib/format'
 import { gameHasTag } from './lib/gameTags'
 import { versionsEquivalent } from './lib/version'
 import { DEFAULT_LAUNCHER_PREFERENCES, loadLauncherPreferences, saveLauncherPreferences, type LauncherPreferences } from './lib/preferences'
+import { applyLauncherTheme } from './lib/theme'
+import { enterNativeBigPictureFullscreen, restoreNativeBigPictureFullscreen, type BigPictureFullscreenSession } from './lib/bigPictureMode'
 import { AchievementToastOverlay } from './components/AchievementToast'
 import { ChangelogModal } from './components/ChangelogModal'
 import { CustomTitleBar } from './components/CustomTitleBar'
@@ -155,7 +157,6 @@ import { useGameStats } from './hooks/useGameStats'
 import { useOnlinePresence } from './hooks/useOnlinePresence'
 import { useCloudSaveMap } from './hooks/useCloudSaveMap'
 import { GameTurboModal } from './components/GameTurboModal'
-import { GlobalChatSync } from './components/GlobalChatSync'
 import { NoInternetView } from './components/NoInternetView'
 import { SaveCloseGuardModal } from './components/SaveCloseGuardModal'
 
@@ -270,7 +271,11 @@ export default function App() {
     return null
   })
   const [detail, setDetail] = useState<GameDetail | null>(null)
-  const [isBigPictureMode, setIsBigPictureMode] = useState(false)
+  const [bigPicturePhase, setBigPicturePhase] = useState<'closed' | 'entering' | 'active' | 'exiting'>('closed')
+  const bigPicturePhaseRef = useRef<'closed' | 'entering' | 'active' | 'exiting'>('closed')
+  const isBigPictureMode = bigPicturePhase !== 'closed'
+  const bigPictureFullscreenSessionRef = useRef<BigPictureFullscreenSession | null>(null)
+  const bigPictureTransitionRef = useRef(0)
   const [assetUrls, setAssetUrls] = useState<Record<string, string>>({})
   const assetUrlsRef = useRef<Record<string, string>>({})
   const catalogRef = useRef<GameCatalog>(catalog)
@@ -416,6 +421,7 @@ export default function App() {
   useEffect(() => {
     preferencesRef.current = preferences
     saveLauncherPreferences(preferences)
+    applyLauncherTheme(preferences)
   }, [preferences])
 
   useEffect(() => {
@@ -3730,17 +3736,59 @@ export default function App() {
   }
 
   const enterBigPicture = () => {
-    // Block big picture during intro or Discord verification
+    // Block Big Picture during intro or Discord verification.
     if (isBlockedState) {
       if (import.meta.env.DEV) console.debug('[BigPicture] Blocked during startup access checks')
       return
     }
-    setIsBigPictureMode(true)
+    if (bigPicturePhaseRef.current !== 'closed') return
+
+    const transitionId = ++bigPictureTransitionRef.current
+    bigPicturePhaseRef.current = 'entering'
+    setNotificationOpen(false)
+    setBigPicturePhase('entering')
+
+    void enterNativeBigPictureFullscreen().then((session) => {
+      if (transitionId !== bigPictureTransitionRef.current) {
+        void restoreNativeBigPictureFullscreen(session)
+        return
+      }
+      bigPictureFullscreenSessionRef.current = session
+      window.setTimeout(() => {
+        if (transitionId === bigPictureTransitionRef.current) {
+          bigPicturePhaseRef.current = 'active'
+          setBigPicturePhase('active')
+        }
+      }, reducedMotion ? 0 : 180)
+    })
   }
 
-  const exitBigPicture = () => {
-    setIsBigPictureMode(false)
+  const exitBigPicture = async () => {
+    if (bigPicturePhaseRef.current === 'closed' || bigPicturePhaseRef.current === 'exiting') return
+
+    const transitionId = ++bigPictureTransitionRef.current
+    bigPicturePhaseRef.current = 'exiting'
+    setNotificationOpen(false)
+    setBigPicturePhase('exiting')
+
+    await new Promise<void>((resolve) => window.setTimeout(resolve, reducedMotion ? 40 : 420))
+    const session = bigPictureFullscreenSessionRef.current
+    bigPictureFullscreenSessionRef.current = null
+    await restoreNativeBigPictureFullscreen(session)
+
+    if (transitionId === bigPictureTransitionRef.current) {
+      bigPicturePhaseRef.current = 'closed'
+      setBigPicturePhase('closed')
+    }
   }
+
+  useEffect(() => () => {
+    bigPictureTransitionRef.current += 1
+    bigPicturePhaseRef.current = 'closed'
+    const session = bigPictureFullscreenSessionRef.current
+    bigPictureFullscreenSessionRef.current = null
+    void restoreNativeBigPictureFullscreen(session)
+  }, [])
 
   return (
     <MotionConfig reducedMotion={reducedMotion ? 'always' : 'never'}>
@@ -3750,7 +3798,13 @@ export default function App() {
             <BigPictureView
               games={catalog.games}
               assetUrls={assetUrls}
-              onExit={exitBigPicture}
+              phase={bigPicturePhase}
+              reducedMotion={reducedMotion}
+              onExit={() => void exitBigPicture()}
+              onPlayGame={(gameId) => {
+                playHomeGame(gameId)
+                void exitBigPicture()
+              }}
               notifications={notifications}
               notificationOpen={notificationOpen}
               onToggleNotifications={() => setNotificationOpen((current) => !current)}
@@ -3770,11 +3824,12 @@ export default function App() {
               }}
               onOpenNotificationSettings={() => {
                 setNotificationOpen(false)
-                setIsBigPictureMode(false)
-                setActiveTab('Settings')
-                window.setTimeout(() => {
-                  document.getElementById('notification-settings')?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth' })
-                }, 80)
+                void exitBigPicture().then(() => {
+                  setActiveTab('Settings')
+                  window.setTimeout(() => {
+                    document.getElementById('notification-settings')?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth' })
+                  }, 80)
+                })
               }}
             />
           </Suspense>
@@ -3810,7 +3865,6 @@ export default function App() {
             />
           )}
 
-          <GlobalChatSync catalog={catalog} />
           <CustomTitleBar
             closeBehavior={preferences.closeBehavior}
             job={job}
@@ -3887,10 +3941,11 @@ export default function App() {
               isSidebarCollapsed={isSidebarCollapsed}
               onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
             />
-            <section
-              className={`workspace premium-workspace${ptrProgress > 0 ? ' ptr-pulling' : ''}${activeTab === 'Lua Shop' ? ' lua-shop-workspace' : ''}`}
-              style={ptrProgress > 0 ? { transform: `translateY(${Math.min(ptrProgress * 60, 60)}px)` } : undefined}
-            >
+            <div className="workspace-corner-clip">
+              <section
+                className={`workspace premium-workspace${ptrProgress > 0 ? ' ptr-pulling' : ''}${activeTab === 'Lua Shop' ? ' lua-shop-workspace' : ''}`}
+                style={ptrProgress > 0 ? { transform: `translateY(${Math.min(ptrProgress * 60, 60)}px)` } : undefined}
+              >
               {showLocateLibraryPrompt ? (
                 <aside className="install-recovery-prompt" aria-labelledby="install-recovery-prompt-title">
                   <FolderSearch size={20} aria-hidden="true" />
@@ -4295,7 +4350,8 @@ export default function App() {
                   </section>
                 </div>
               )}
-            </section>
+              </section>
+            </div>
           </main>
           <TransferDock
             visible={showTransferDock}

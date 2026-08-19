@@ -1,8 +1,8 @@
-import { useState, useEffect, useMemo, useRef, useCallback, memo } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback, memo, type CSSProperties } from 'react'
 import { createPortal } from 'react-dom'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
-import { Search, ChevronLeft, ChevronRight, Plus, Trash2, RefreshCw, CheckCircle, Settings } from 'lucide-react'
+import { Search, ChevronLeft, ChevronRight, Plus, Trash2, RefreshCw, CheckCircle, Settings, SlidersHorizontal, X } from 'lucide-react'
 import { useLocale } from '../context/locale'
 import {
   fetchSteamGameInfo,
@@ -14,14 +14,15 @@ import './LuaShop.css'
 import { LuaGameManagerDialog } from './LuaGameManagerDialog'
 import { LuaSourcePickerDialog } from './LuaSourcePickerDialog'
 import type {
-  LuaAddQuotaState,
   LuaCatalogItem,
   LuaCatalogSearchPage,
+  LuaGameChannel,
   LuaGameState,
   LuaSourceAvailability,
   LuaSourceOperation,
   LuaSourceProvider,
   LuaSourceSettingsState,
+  HubcapKeyState,
 } from '../types'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -29,6 +30,8 @@ import type {
 // ─────────────────────────────────────────────────────────────────────────────
 
 type FilterTab = 'all' | 'installed' | 'notInstalled'
+type LuaShopSort = 'az' | 'za' | 'appidAsc' | 'appidDesc'
+type LuaShopLayout = 'grid' | 'list'
 
 type LuaSourceActionIntent = {
   appid: number
@@ -36,6 +39,7 @@ type LuaSourceActionIntent = {
   operation: LuaSourceOperation
   purpose: 'add' | 'update' | 'sync' | 'switchLive'
   preferredProvider: LuaSourceProvider | null
+  preferredChannel: LuaGameChannel | null
 }
 
 function luaChannelLabel(
@@ -235,18 +239,26 @@ function ConfirmDialog({
   if (!mounted) return null
 
   const accentColor =
-    variant === 'warning' ? '#ffa500' : variant === 'error' ? '#ff4d4d' : '#4ade80'
+    variant === 'warning' ? '#fbbf24' : variant === 'error' ? '#f87171' : 'var(--theme-accent-strong)'
   const accentBg =
-    variant === 'warning' ? 'rgba(255,165,0,.2)' : variant === 'error' ? 'rgba(255,0,0,.2)' : 'rgba(74,222,128,.2)'
+    variant === 'warning'
+      ? 'color-mix(in oklab, transparent 82%, #f59e0b 18%)'
+      : variant === 'error'
+        ? 'color-mix(in oklab, transparent 82%, #ef4444 18%)'
+        : 'var(--theme-accent-surface)'
   const accentBorder =
-    variant === 'warning' ? '1px solid rgba(255,165,0,.4)' : variant === 'error' ? '1px solid rgba(255,0,0,.4)' : '1px solid rgba(74,222,128,.4)'
+    variant === 'warning'
+      ? '1px solid color-mix(in oklab, transparent 58%, #f59e0b 42%)'
+      : variant === 'error'
+        ? '1px solid color-mix(in oklab, transparent 58%, #ef4444 42%)'
+        : '1px solid color-mix(in oklab, transparent 52%, var(--theme-accent-strong) 48%)'
 
   return createPortal(
     <div
       className="dialog-backdrop"
       onClick={onCancel}
       style={{
-        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
+        position: 'fixed', inset: 0, background: 'var(--theme-overlay-bg)',
         zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}
     >
@@ -254,16 +266,16 @@ function ConfirmDialog({
         className="dialog-box"
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: 'linear-gradient(135deg, rgba(30,30,40,.98), rgba(20,20,30,.98))',
-          border: '1px solid rgba(255,255,255,.1)', borderRadius: '12px',
+          background: 'var(--theme-modal-bg)',
+          border: '1px solid color-mix(in oklab, transparent 68%, var(--theme-accent) 32%)', borderRadius: '12px',
           padding: '24px', maxWidth: '480px', width: '90%',
-          boxShadow: '0 20px 60px rgba(0,0,0,.5)',
+          boxShadow: '0 20px 60px rgba(0,0,0,.5), 0 18px 50px color-mix(in oklab, transparent 86%, var(--theme-accent-deep) 14%)',
         }}
       >
         <h3 style={{ margin: '0 0 12px', fontSize: '18px', fontWeight: 700, color: accentColor }}>
           {title}
         </h3>
-        <p style={{ margin: '0 0 20px', color: '#ccc', fontSize: '14px', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
+        <p style={{ margin: '0 0 20px', color: 'var(--text)', fontSize: '14px', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
           {message}
         </p>
         {children}
@@ -272,8 +284,8 @@ function ConfirmDialog({
             onClick={onCancel}
             style={{
               flex: 1, padding: '10px 16px', borderRadius: '6px',
-              background: 'rgba(255,255,255,.1)', border: '1px solid rgba(255,255,255,.2)',
-              color: '#fff', fontWeight: 600, cursor: 'pointer',
+              background: 'var(--theme-control-bg)', border: '1px solid var(--line)',
+              color: 'var(--text-strong)', fontWeight: 600, cursor: 'pointer',
             }}
           >
             {cancelText}
@@ -558,9 +570,19 @@ export function LuaShop() {
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [isSearching, setIsSearching] = useState(false)
+  const [isCatalogTransitioning, setIsCatalogTransitioning] = useState(false)
+  const [luaShopSort, setLuaShopSort] = useState<LuaShopSort>(() => {
+    const saved = localStorage.getItem('luaShopSort')
+    return saved === 'za' || saved === 'appidAsc' || saved === 'appidDesc' ? saved : 'az'
+  })
+  const [sortOpen, setSortOpen] = useState(false)
+  const [viewLayout, setViewLayout] = useState<LuaShopLayout>(() => localStorage.getItem('luaShopLayout') === 'list' ? 'list' : 'grid')
+  const [gridCols, setGridCols] = useState<4 | 6 | 8>(() => {
+    const saved = Number(localStorage.getItem('luaShopGridCols'))
+    return saved === 6 || saved === 8 ? saved : 4
+  })
   const [catalogError, setCatalogError] = useState<string | null>(null)
   const [sourceSettings, setSourceSettings] = useState<LuaSourceSettingsState | null>(null)
-  const [addQuota, setAddQuota] = useState<LuaAddQuotaState | null>(null)
   const [filterTab, setFilterTab] = useState<FilterTab>('all')
   const [installedLuas, setInstalledLuas] = useState<Set<string>>(new Set())
   const [installedCatalogItems, setInstalledCatalogItems] = useState<LuaCatalogItem[]>([])
@@ -591,6 +613,7 @@ export function LuaShop() {
   const { t } = useLocale()
 
   const gridRef = useRef<HTMLDivElement>(null)
+  const searchInputRef = useRef<HTMLInputElement>(null)
   const catalogRequestRef = useRef(0)
   const catalogLoadedRef = useRef(false)
 
@@ -631,23 +654,42 @@ export function LuaShop() {
     }
   }, [upsertLuaGameState])
 
-  const refreshSourceOverview = useCallback(async () => {
-    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
-    const [settingsResult, quotaResult] = await Promise.allSettled([
-      invoke<LuaSourceSettingsState>('get_lua_source_settings'),
-      invoke<LuaAddQuotaState>('get_lua_add_quota', { timezone }),
-    ])
-    if (settingsResult.status === 'fulfilled') setSourceSettings(settingsResult.value)
-    if (quotaResult.status === 'fulfilled') setAddQuota(quotaResult.value)
+  const refreshSourceOverview = useCallback(async (refreshHubcapUsage = false) => {
+    try {
+      let settings = await invoke<LuaSourceSettingsState>('get_lua_source_settings')
+      if (refreshHubcapUsage && settings.hubcap.configured) {
+        try {
+          const hubcap = await invoke<HubcapKeyState>('refresh_hubcap_key_state')
+          settings = { ...settings, hubcap }
+        } catch (error) {
+          console.warn('Hubcap quota refresh failed:', error)
+        }
+      }
+      setSourceSettings(settings)
+    } catch (error) {
+      console.warn('Lua source overview refresh failed:', error)
+    }
   }, [])
 
   // ── Initial local state ─────────────────────────────────────────────────────
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      void Promise.all([fetchInstalledLuas(), refreshSourceOverview()])
+      void Promise.all([fetchInstalledLuas(), refreshSourceOverview(true)])
     }, 0)
     return () => window.clearTimeout(timer)
   }, [fetchInstalledLuas, refreshSourceOverview])
+
+  useEffect(() => {
+    const handleSearchShortcut = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault()
+        searchInputRef.current?.focus()
+        searchInputRef.current?.select()
+      }
+    }
+    window.addEventListener('keydown', handleSearchShortcut)
+    return () => window.removeEventListener('keydown', handleSearchShortcut)
+  }, [])
 
   useEffect(() => {
     if (filterTab !== 'installed') return
@@ -689,6 +731,7 @@ export function LuaShop() {
 
   // ── Search is server-paged; only the visible page is resolved and probed. ────
   useEffect(() => {
+    if (filterTab !== 'installed' && search.trim() !== debouncedSearch) setIsCatalogTransitioning(true)
     const timer = window.setTimeout(() => {
       setDebouncedSearch(search.trim())
       setCatalogCursor(null)
@@ -701,6 +744,7 @@ export function LuaShop() {
   const loadCatalog = useCallback(async (): Promise<boolean> => {
     const requestId = ++catalogRequestRef.current
     if (!catalogLoadedRef.current) setIsLoading(true)
+    setIsCatalogTransitioning(true)
     setIsSearching(Boolean(debouncedSearch))
     try {
       const page = await invoke<LuaCatalogSearchPage>('search_lua_games', {
@@ -730,6 +774,7 @@ export function LuaShop() {
       if (requestId === catalogRequestRef.current) {
         setIsLoading(false)
         setIsSearching(false)
+        setIsCatalogTransitioning(false)
       }
     }
   }, [catalogCursor, debouncedSearch])
@@ -737,6 +782,7 @@ export function LuaShop() {
   useEffect(() => {
     if (filterTab === 'installed') {
       catalogRequestRef.current += 1
+      setIsCatalogTransitioning(false)
       return
     }
     const timer = window.setTimeout(() => {
@@ -751,7 +797,7 @@ export function LuaShop() {
       const [catalogRefreshed] = await Promise.all([
         loadCatalog(),
         fetchInstalledLuas(),
-        refreshSourceOverview(),
+        refreshSourceOverview(true),
       ])
       emitLuaShopToast(
         t.luaShop.title,
@@ -780,13 +826,40 @@ export function LuaShop() {
     return catalogItems
   }, [catalogItems, debouncedSearch, filterTab, installedCatalogItems, installedLuas])
 
-  const installedTotalPages = Math.max(1, Math.ceil(filteredCatalogItems.length / ITEMS_PER_PAGE))
+  const sortedCatalogItems = useMemo(() => {
+    const items = [...filteredCatalogItems]
+    items.sort((left, right) => {
+      if (luaShopSort === 'za') return right.name.localeCompare(left.name)
+      if (luaShopSort === 'appidAsc') return left.appid - right.appid
+      if (luaShopSort === 'appidDesc') return right.appid - left.appid
+      return left.name.localeCompare(right.name)
+    })
+    return items
+  }, [filteredCatalogItems, luaShopSort])
+
+  const installedTotalPages = Math.max(1, Math.ceil(sortedCatalogItems.length / ITEMS_PER_PAGE))
   const displayedCatalogItems = filterTab === 'installed'
-    ? filteredCatalogItems.slice(
+    ? sortedCatalogItems.slice(
         (catalogPageNumber - 1) * ITEMS_PER_PAGE,
         catalogPageNumber * ITEMS_PER_PAGE,
       )
-    : filteredCatalogItems
+    : sortedCatalogItems
+
+  const setShopSort = useCallback((value: LuaShopSort) => {
+    setLuaShopSort(value)
+    localStorage.setItem('luaShopSort', value)
+    setSortOpen(false)
+  }, [])
+
+  const setShopLayout = useCallback((value: LuaShopLayout) => {
+    setViewLayout(value)
+    localStorage.setItem('luaShopLayout', value)
+  }, [])
+
+  const setShopGridCols = useCallback((value: 4 | 6 | 8) => {
+    setGridCols(value)
+    localStorage.setItem('luaShopGridCols', String(value))
+  }, [])
 
   // Scroll grid to top on page change (instant — no jank from smooth scroll)
   useEffect(() => {
@@ -841,6 +914,7 @@ export function LuaShop() {
       operation: 'add',
       purpose: 'add',
       preferredProvider: null,
+      preferredChannel: null,
     })
   }, [
     showToast,
@@ -857,29 +931,15 @@ export function LuaShop() {
       operation,
       purpose: operation,
       preferredProvider: current?.selectedSource ?? null,
+      preferredChannel: current?.channel ?? null,
     })
   }, [])
 
-  const handleSourceConfirm = useCallback(async (provider: LuaSourceProvider) => {
+  const handleSourceConfirm = useCallback(async (provider: LuaSourceProvider, statSteamId: string | null, channel: LuaGameChannel) => {
     if (!sourceAction) return
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
     let state: LuaGameState
-    if (sourceAction.purpose === 'add') {
-      state = await invoke<LuaGameState>('install_lua_game_from_source', {
-        request: {
-          appid: sourceAction.appid,
-          gameName: sourceAction.gameName,
-          channel: 'live',
-          buildId: null,
-          accessToken: null,
-          statSteamId: null,
-          conflictResolution: null,
-          provider,
-          requestId: crypto.randomUUID(),
-          timezone,
-        },
-      })
-    } else if (sourceAction.purpose === 'switchLive') {
+    if (sourceAction.purpose === 'switchLive') {
       state = await invoke<LuaGameState>('set_lua_game_channel', {
         request: {
           appid: sourceAction.appid,
@@ -887,6 +947,21 @@ export function LuaShop() {
           buildId: null,
           conflictResolution: 'restoreLive',
           provider,
+        },
+      })
+    } else if (sourceAction.purpose === 'add' || channel === 'locked') {
+      state = await invoke<LuaGameState>('install_lua_game_from_source', {
+        request: {
+          appid: sourceAction.appid,
+          gameName: sourceAction.gameName,
+          channel,
+          buildId: null,
+          accessToken: null,
+          statSteamId,
+          conflictResolution: null,
+          provider,
+          requestId: crypto.randomUUID(),
+          timezone,
         },
       })
     } else {
@@ -899,6 +974,7 @@ export function LuaShop() {
           provider,
           requestId: crypto.randomUUID(),
           timezone,
+          statSteamId,
           conflictResolution: null,
         },
       })
@@ -913,11 +989,11 @@ export function LuaShop() {
         : state.syncStatus === 'updated' ? t.luaShop.syncUpdated : t.luaShop.syncCurrent,
       'success',
     )
-    if (state.requiresSteamRestart) {
+    if (state.requiresSteamRestart || sourceAction.purpose === 'add') {
       if (skipConfirm) void performRestart()
       else setShowRestartConfirm(true)
     }
-    void refreshSourceOverview()
+    void refreshSourceOverview(provider === 'hubcap')
   }, [
     performRestart,
     refreshSourceOverview,
@@ -959,6 +1035,7 @@ export function LuaShop() {
       operation: 'sync',
       purpose: 'switchLive',
       preferredProvider: current?.selectedSource ?? null,
+      preferredChannel: 'live',
     })
   }, [])
 
@@ -1001,6 +1078,11 @@ export function LuaShop() {
   // Render
   // ─────────────────────────────────────────────────────────────────────────────
 
+  const hubcapQuotaLimit = sourceSettings?.hubcap.daily.limit ?? 25
+  const hubcapQuotaRemaining = sourceSettings?.hubcap.daily.remaining ?? hubcapQuotaLimit
+  const hubcapQuotaRatio = hubcapQuotaLimit > 0 ? hubcapQuotaRemaining / hubcapQuotaLimit : 0
+  const hubcapQuotaTone = hubcapQuotaRatio <= 0.2 ? 'low' : hubcapQuotaRatio <= 0.5 ? 'medium' : 'high'
+
   const filterTabs: { id: FilterTab; label: string }[] = [
     { id: 'all', label: 'All' },
     { id: 'installed', label: t.luaShop.installed || 'Installed' },
@@ -1024,9 +1106,9 @@ export function LuaShop() {
               <span>
                 {t.luaShop.installed}: <strong>{installedLuas.size}</strong>
               </span>
-              {addQuota && (
-                <span className={`lua-shop-quota quota-${addQuota.remaining <= 2 ? 'low' : addQuota.remaining <= 6 ? 'medium' : 'high'}`}>
-                  {t.luaShop.dailyAdds}: <strong>{addQuota.remaining}/{addQuota.limit}</strong>
+              {sourceSettings?.hubcap.configured && (
+                <span className={`lua-shop-quota quota-${hubcapQuotaTone}`}>
+                  {t.luaShop.dailyAdds}: <strong>{hubcapQuotaRemaining}/{hubcapQuotaLimit}</strong>
                 </span>
               )}
               <button
@@ -1065,20 +1147,75 @@ export function LuaShop() {
         </div>
       )}
 
-      {/* ── Controls: search + filter tabs ── */}
+      {/* ── Controls: Store-style search + sort + layout + filter tabs ── */}
       <div className="lua-shop-controls">
-        <div className="lua-shop-search">
-          <Search size={16} />
-          <input
-            type="text"
-            placeholder={t.luaShop.searchPlaceholder || 'Search by game name or AppID...'}
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value)
-              setIsSearching(filterTab !== 'installed' && Boolean(e.target.value.trim()))
-            }}
-          />
-          {isSearching && <div className="spinner" style={{ marginLeft: '8px' }} />}
+        <div className="lua-shop-primary-toolbar">
+          <div className="store-sort-dropdown">
+            <button
+              type="button"
+              className="sort-toggle-btn"
+              onClick={() => setSortOpen((value) => !value)}
+              onBlur={() => window.setTimeout(() => setSortOpen(false), 180)}
+            >
+              <SlidersHorizontal size={14} />
+              <span>{luaShopSort === 'az' ? 'A → Z' : luaShopSort === 'za' ? 'Z → A' : luaShopSort === 'appidAsc' ? 'AppID ↑' : 'AppID ↓'}</span>
+            </button>
+            {sortOpen && (
+              <div className="sort-dropdown-menu">
+                <button type="button" className={luaShopSort === 'az' ? 'active' : ''} onClick={() => setShopSort('az')}>A → Z</button>
+                <button type="button" className={luaShopSort === 'za' ? 'active' : ''} onClick={() => setShopSort('za')}>Z → A</button>
+                <button type="button" className={luaShopSort === 'appidAsc' ? 'active' : ''} onClick={() => setShopSort('appidAsc')}>AppID ↑</button>
+                <button type="button" className={luaShopSort === 'appidDesc' ? 'active' : ''} onClick={() => setShopSort('appidDesc')}>AppID ↓</button>
+              </div>
+            )}
+          </div>
+
+          <div className="view-layout-toggle lua-shop-layout-toggle">
+            {viewLayout === 'grid' && (
+              <div className="lua-shop-grid-density">
+                <button type="button" className={gridCols === 4 ? 'active' : ''} onClick={() => setShopGridCols(4)} title="4 Columns">4x</button>
+                <button type="button" className={gridCols === 6 ? 'active' : ''} onClick={() => setShopGridCols(6)} title="6 Columns">6x</button>
+                <button type="button" className={gridCols === 8 ? 'active' : ''} onClick={() => setShopGridCols(8)} title="8 Columns">8x</button>
+              </div>
+            )}
+            <button type="button" className={viewLayout === 'grid' ? 'active' : ''} onClick={() => setShopLayout('grid')} title="Grid view">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect width="7" height="7" x="3" y="3" rx="1" /><rect width="7" height="7" x="14" y="3" rx="1" /><rect width="7" height="7" x="14" y="14" rx="1" /><rect width="7" height="7" x="3" y="14" rx="1" /></svg>
+            </button>
+            <button type="button" className={viewLayout === 'list' ? 'active' : ''} onClick={() => setShopLayout('list')} title="List view">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect width="7" height="7" x="3" y="3" rx="1" /><rect width="7" height="7" x="3" y="14" rx="1" /><path d="M14 6h7" /><path d="M14 10h7" /><path d="M14 14h7" /><path d="M14 18h7" /></svg>
+            </button>
+          </div>
+
+          <label className="store-search lua-shop-command-search">
+            <Search size={16} />
+            <input
+              ref={searchInputRef}
+              type="text"
+              placeholder={t.luaShop.searchPlaceholder || 'Search by game name or AppID...'}
+              value={search}
+              onChange={(event) => {
+                const value = event.target.value
+                setSearch(value)
+                if (filterTab !== 'installed') setIsCatalogTransitioning(value.trim() !== debouncedSearch)
+                setIsSearching(filterTab !== 'installed' && Boolean(value.trim()))
+              }}
+            />
+            {search ? (
+              <button
+                type="button"
+                className="lua-shop-search-clear"
+                title="Clear search"
+                onClick={(event) => {
+                  event.preventDefault()
+                  setSearch('')
+                  if (filterTab !== 'installed') setIsCatalogTransitioning(Boolean(debouncedSearch))
+                  searchInputRef.current?.focus()
+                }}
+              >
+                <X size={14} />
+              </button>
+            ) : <kbd>Ctrl K</kbd>}
+          </label>
         </div>
 
         <div className="lua-shop-filter-tabs">
@@ -1092,9 +1229,11 @@ export function LuaShop() {
                 setCatalogCursorHistory([])
                 setCatalogPageNumber(1)
                 setIsSearching(tab.id !== 'installed' && Boolean(search.trim()))
+                setIsCatalogTransitioning(tab.id !== 'installed')
                 if (tab.id === 'installed') {
                   catalogRequestRef.current += 1
                   setIsLoading(false)
+                  setIsCatalogTransitioning(false)
                 }
               }}
             >
@@ -1139,7 +1278,20 @@ export function LuaShop() {
           </p>
         </div>
       ) : (
-        <div className="lua-shop-results" ref={gridRef}>
+        <div className="lua-shop-results" ref={gridRef}
+          data-layout={viewLayout}
+          data-transitioning={isCatalogTransitioning ? 'true' : 'false'}
+          aria-busy={isCatalogTransitioning}
+          style={{ '--lua-shop-grid-cols': gridCols } as CSSProperties}
+        >
+          {isCatalogTransitioning && (
+            <div className="lua-shop-transition-overlay" role="status" aria-live="polite">
+              <div className="lua-shop-transition-card">
+                <div className="spinner" />
+                <span>{search.trim() ? 'Updating search results…' : 'Loading Lua catalog…'}</span>
+              </div>
+            </div>
+          )}
           <div className="lua-shop-grid">
             {displayedCatalogItems.map((item, index) => {
               const appid = String(item.appid)
@@ -1236,6 +1388,8 @@ export function LuaShop() {
           gameName={sourceAction.gameName}
           operation={sourceAction.operation}
           preferredProvider={sourceAction.preferredProvider}
+          preferredChannel={sourceAction.preferredChannel}
+          forcedChannel={sourceAction.purpose === 'switchLive' ? 'live' : null}
           onClose={() => setSourceAction(null)}
           onConfirm={handleSourceConfirm}
         />
@@ -1274,9 +1428,9 @@ export function LuaShop() {
             style={{
               marginTop: '20px',
               padding: '12px 16px',
-              background: 'rgba(0,0,0,.2)',
+              background: 'var(--theme-control-bg)',
               borderRadius: '8px',
-              border: '1px solid rgba(255,255,255,.05)',
+              border: '1px solid var(--line)',
               display: 'flex',
               flexDirection: 'column',
               gap: '12px',
@@ -1287,7 +1441,7 @@ export function LuaShop() {
               style={{
                 display: 'flex', alignItems: 'center', gap: '10px',
                 cursor: 'pointer', margin: 0,
-                paddingBottom: '12px', borderBottom: '1px solid rgba(255,255,255,.05)',
+                paddingBottom: '12px', borderBottom: '1px solid var(--line)',
               }}
             >
               <button
@@ -1304,7 +1458,7 @@ export function LuaShop() {
               >
                 <span />
               </button>
-              <span style={{ flex: 1, fontSize: '14px', color: autoInstall ? '#fff' : 'rgba(255,255,255,.6)' }}>
+              <span style={{ flex: 1, fontSize: '14px', color: autoInstall ? 'var(--text-strong)' : 'var(--muted)' }}>
                 {t.library.autoInstallAfterRestart}
               </span>
             </label>
@@ -1325,7 +1479,7 @@ export function LuaShop() {
               >
                 <span />
               </button>
-              <span style={{ flex: 1, fontSize: '13px', color: 'rgba(255,255,255,.5)' }}>
+              <span style={{ flex: 1, fontSize: '13px', color: 'var(--muted)' }}>
                 {t.library.rememberThisChoice}
               </span>
             </label>
