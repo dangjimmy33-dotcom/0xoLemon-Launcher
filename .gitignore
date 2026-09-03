@@ -100,3 +100,11 @@ backend-api/*.env.*.txt
 !src-tauri/resources/emu/OXO_PATCH_PROVENANCE.json
 !src-tauri/resources/emu/SOURCE_PROVENANCE.json
 !latest.json
+
+src-tauri/0xoLemonCoreNative/.deps/
+src-tauri/0xoLemonCoreNative/build/
+native/.deps/
+native/steam_emu/third-party/
+CloudRedirect-new/
+src-tauri/DepotDownloaderMod-src/
+src-tauri/.gse-core-venv/

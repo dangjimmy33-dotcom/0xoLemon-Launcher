@@ -393,10 +393,10 @@ Assert-NativeCommandSucceeded "Creating release tag $newVersion"
 Write-Host "Committed and tagged $newVersion." -ForegroundColor Green
 
 Write-Host "`n=== STEP 6: PUSH BRANCH AND RELEASE TAG ===" -ForegroundColor Cyan
-git push
+git push --no-recurse-submodules
 Assert-NativeCommandSucceeded "Pushing the current branch"
 
-git push origin $newVersion
+git push --no-recurse-submodules origin $newVersion
 Assert-NativeCommandSucceeded "Pushing release tag $newVersion"
 
 Write-Host "`n=== COMPLETE ===" -ForegroundColor Green

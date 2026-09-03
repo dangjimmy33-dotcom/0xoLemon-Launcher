@@ -1,5 +1,13 @@
 ﻿[
     {
+        "version":  "2.0.56",
+        "date":  "2026-09-04",
+        "changes":  [
+                        "Disable GSE/UC Setup and Depot Downloader tabs (Coming Soon)",
+                        "Hide Runtime and Compatibility section from Lua Shop settings"
+                    ]
+    },
+    {
         "version":  "2.0.55",
         "date":  "2026-09-03",
         "changes":  [
