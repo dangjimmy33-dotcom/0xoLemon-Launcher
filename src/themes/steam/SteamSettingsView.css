@@ -1,0 +1,325 @@
+html[data-ui-theme='steam'] .tab-content.settings-tab-content {
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  padding: 12px;
+  background: var(--steam-shell-content);
+}
+
+html[data-ui-theme='steam'] .steam-settings-view {
+  width: min(1120px, 100%);
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  max-height: 100%;
+  margin: 0 auto;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  grid-template-rows: 34px 70px minmax(0, 1fr);
+  align-content: stretch;
+  overflow: hidden;
+  border: 1px solid var(--steam-shell-line);
+  border-radius: 0;
+  background: var(--steam-shell-panel);
+  box-shadow: var(--steam-shell-shadow);
+}
+
+html[data-ui-theme='steam'] .steam-settings-view > .steam-settings-window-title {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  min-width: 0;
+  height: 34px;
+  padding: 0 7px 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--steam-shell-line);
+  background: var(--steam-shell-chrome-2);
+  color: var(--text-strong);
+  font-size: 10px;
+  letter-spacing: .04em;
+}
+
+html[data-ui-theme='steam'] .steam-settings-view > .steam-settings-window-title button {
+  width: 30px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+html[data-ui-theme='steam'] .steam-settings-view > .steam-settings-window-title button:hover {
+  color: var(--text-strong);
+  background: var(--ui-hover-bg);
+}
+
+html[data-ui-theme='steam'] .steam-settings-view > .settings-page-header {
+  grid-column: 2;
+  grid-row: 2;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: 70px;
+  margin: 0;
+  padding: 0 18px;
+  border-bottom: 1px solid var(--steam-shell-line-soft);
+  background: color-mix(in oklab, var(--steam-shell-panel) 82%, var(--steam-shell-chrome) 18%);
+}
+
+html[data-ui-theme='steam'] .steam-settings-view .settings-page-icon {
+  display: none;
+}
+
+html[data-ui-theme='steam'] .steam-settings-view .settings-page-header h1 {
+  font-size: 18px;
+}
+
+html[data-ui-theme='steam'] .steam-settings-view .settings-page-header p {
+  max-width: 58ch;
+  margin-top: 3px;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+html[data-ui-theme='steam'] .steam-settings-view .settings-reset {
+  flex: 0 0 auto;
+  border-radius: 1px;
+}
+
+html[data-ui-theme='steam'] .steam-settings-view > .settings-pane-nav {
+  grid-column: 1;
+  grid-row: 2 / 4;
+  position: static;
+  z-index: 1;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: auto;
+  margin: 0;
+  padding: 8px 0 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow: hidden;
+  border: 0;
+  border-right: 1px solid var(--steam-shell-line-soft);
+  border-radius: 0;
+  background: color-mix(in oklab, var(--steam-shell-panel-soft) 84%, black 16%);
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+html[data-ui-theme='steam'] .steam-settings-view > .settings-pane-nav button {
+  flex: 0 0 42px;
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  justify-content: flex-start;
+  gap: 9px;
+  padding: 0 15px;
+  border: 0;
+  border-left: 3px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+html[data-ui-theme='steam'] .steam-settings-view > .settings-pane-nav button:hover {
+  color: var(--text-strong);
+  background: var(--theme-hover-bg);
+}
+
+html[data-ui-theme='steam'] .steam-settings-view > .settings-pane-nav button.is-active {
+  border-left-color: var(--theme-accent-strong);
+  color: var(--text-strong);
+  background: linear-gradient(90deg, var(--theme-selected-bg), transparent 94%);
+  box-shadow: none;
+}
+
+html[data-ui-theme='steam'] .steam-settings-view > .settings-sections {
+  grid-column: 2;
+  grid-row: 3;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  margin: 0;
+  padding: 14px 18px 24px;
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+html[data-ui-theme='steam'] .steam-settings-view .settings-group {
+  width: 100%;
+  min-width: 0;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+html[data-ui-theme='steam'] .steam-settings-view .settings-group > header {
+  min-height: 48px;
+  padding: 8px 0 10px;
+  border: 0;
+  border-bottom: 1px solid var(--steam-shell-line-soft);
+  background: transparent;
+}
+
+html[data-ui-theme='steam'] .steam-settings-view .settings-group > header svg {
+  color: var(--theme-accent-strong);
+}
+
+html[data-ui-theme='steam'] .steam-settings-view .settings-group-body {
+  min-width: 0;
+  padding: 0;
+}
+
+html[data-ui-theme='steam'] .steam-settings-view .settings-row {
+  width: 100%;
+  min-width: 0;
+  min-height: 60px;
+  grid-template-columns: minmax(220px, 1fr) minmax(210px, 42%);
+  gap: 18px;
+  padding: 10px 12px;
+  border-bottom: 1px solid color-mix(in oklab, transparent 88%, var(--theme-accent) 12%);
+  background: color-mix(in oklab, var(--theme-card-bg-soft) 66%, transparent);
+}
+
+html[data-ui-theme='steam'] .steam-settings-view .settings-row:hover {
+  background: color-mix(in oklab, var(--theme-card-bg) 84%, var(--theme-accent) 16%);
+}
+
+html[data-ui-theme='steam'] .steam-settings-view :where(.settings-row-copy, .settings-row-control) {
+  min-width: 0;
+}
+
+html[data-ui-theme='steam'] .steam-settings-view .settings-row-copy span {
+  overflow-wrap: anywhere;
+}
+
+html[data-ui-theme='steam'] .steam-settings-view .settings-row-control {
+  width: 100%;
+  max-width: 100%;
+}
+
+html[data-ui-theme='steam'] .steam-settings-view :where(.cs-wrap, .settings-select, .ui-theme-selection-stack) {
+  width: min(100%, 360px);
+  max-width: 100%;
+}
+
+html[data-ui-theme='steam'] .steam-settings-view :where(.cs-trigger, .cs-dropdown, .cs-option, .settings-toggle) {
+  border-radius: 1px;
+}
+
+html[data-ui-theme='steam'] .steam-settings-view .settings-path-control {
+  width: 100%;
+  max-width: 100%;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+}
+
+html[data-ui-theme='steam'] .steam-settings-view .settings-path-control > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+html[data-ui-theme='steam'] .steam-settings-view :where(.settings-action-row, .lua-source-key-heading) {
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+html[data-ui-theme='steam'] .steam-settings-view .lua-source-key-input {
+  width: 100%;
+  max-width: 100%;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+html[data-ui-theme='steam'] .steam-settings-view .lua-source-usage-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+html[data-ui-theme='steam'] .steam-settings-view .ui-theme-picker {
+  width: 100%;
+  max-width: 100%;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+html[data-ui-theme='steam'] .theme-settings-loading {
+  width: min(1120px, calc(100% - 24px));
+  height: calc(100% - 24px);
+  margin: 12px auto;
+  padding: 56px 32px;
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  border: 1px solid var(--steam-shell-line-soft);
+  background: var(--steam-shell-panel);
+}
+
+html[data-ui-theme='steam'] .theme-settings-loading span {
+  height: 52px;
+  background: var(--steam-shell-row);
+  animation: steam-settings-pulse 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes steam-settings-pulse {
+  from { opacity: .42; }
+  to { opacity: .82; }
+}
+
+@media (max-width: 900px) {
+  html[data-ui-theme='steam'] .tab-content.settings-tab-content {
+    padding: 8px;
+  }
+
+  html[data-ui-theme='steam'] .steam-settings-view {
+    grid-template-columns: 184px minmax(0, 1fr);
+  }
+
+  html[data-ui-theme='steam'] .steam-settings-view .settings-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  html[data-ui-theme='steam'] .steam-settings-view .settings-row-control {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 720px) {
+  html[data-ui-theme='steam'] .steam-settings-view {
+    grid-template-columns: 164px minmax(0, 1fr);
+  }
+
+  html[data-ui-theme='steam'] .steam-settings-view > .settings-pane-nav button {
+    padding: 0 10px;
+  }
+
+  html[data-ui-theme='steam'] .steam-settings-view > .settings-sections {
+    padding-inline: 12px;
+  }
+
+  html[data-ui-theme='steam'] .steam-settings-view .ui-theme-picker,
+  html[data-ui-theme='steam'] .steam-settings-view .lua-source-usage-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -57,10 +57,23 @@ unsigned int file_size_(const std::string &full_path);
 
 void set_whitelist_ips(uint32_t *from, uint32_t *to, unsigned num_ips);
 
+inline int get_old_interface_ver(const char *interface_name)
+{
+    size_t len = strlen(interface_name);
+    if (len < 3)
+        return 0;
+
+    return atoi(interface_name + (len - 3));
+}
+
 
 #if defined(EMU_EXPERIMENTAL_BUILD) && defined(__WINDOWS__)
 bool crack_SteamAPI_RestartAppIfNecessary(uint32 unOwnAppID);
 bool crack_SteamAPI_Init();
+#endif
+
+#if defined(EMU_EXPERIMENTAL_BUILD)
+void append_renderer_info();
 #endif
 
 

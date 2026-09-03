@@ -13,6 +13,7 @@ use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use std::time::Duration;
 use tauri::{AppHandle, Emitter, Manager};
+use tauri_plugin_dialog::DialogExt;
 use zip::ZipArchive;
 
 const REGISTRY_SCHEMA: u32 = 4;
@@ -123,6 +124,8 @@ pub struct LuaGameState {
     #[serde(default)]
     managed_hash: Option<String>,
     #[serde(default)]
+    managed_file_sha256: Option<String>,
+    #[serde(default)]
     source_etag: Option<String>,
     #[serde(default)]
     retry_count: u32,
@@ -157,6 +160,7 @@ impl LuaGameState {
             update_available: false,
             depot_ids: Vec::new(),
             managed_hash: None,
+            managed_file_sha256: None,
             source_etag: None,
             retry_count: 0,
         }
@@ -169,6 +173,7 @@ pub struct LuaGameManagerState {
     pub game: LuaGameState,
     pub lua_path: String,
     pub file_exists: bool,
+    pub active_sha256: Option<String>,
     pub has_user_overrides: bool,
     pub can_switch_live: bool,
     pub can_switch_locked: bool,
@@ -199,6 +204,54 @@ pub enum LuaConflictResolution {
     RestoreLive,
 }
 
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub enum LuaDriftResolution {
+    CaptureExternalAndApply,
+    KeepExternal,
+    RestoreManagedAndApply,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LuaDriftResolutionRequest {
+    pub app_id: u32,
+    pub resolution: LuaDriftResolution,
+    #[serde(default)]
+    pub provider: Option<crate::lua_sources::LuaSourceProvider>,
+    #[serde(default)]
+    pub request_id: Option<String>,
+    #[serde(default)]
+    pub timezone: Option<String>,
+    #[serde(default)]
+    pub stat_steam_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LuaFileDriftReport {
+    pub app_id: u32,
+    pub path: String,
+    pub file_exists: bool,
+    pub baseline_available: bool,
+    pub expected_sha256: Option<String>,
+    pub actual_sha256: Option<String>,
+    pub drifted: bool,
+    pub encoding_status: String,
+    pub valid_lua: bool,
+    pub managed_revision: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LuaDriftResolutionResult {
+    pub resolution: LuaDriftResolution,
+    pub before: LuaFileDriftReport,
+    pub captured: Option<crate::lua_variant_vault::LuaVariantEntry>,
+    pub applied: bool,
+    pub game: LuaGameState,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SetLuaGameChannelRequest {
@@ -208,6 +261,8 @@ pub struct SetLuaGameChannelRequest {
     pub conflict_resolution: Option<LuaConflictResolution>,
     #[serde(default)]
     pub provider: Option<crate::lua_sources::LuaSourceProvider>,
+    #[serde(default)]
+    pub restart_steam_if_needed: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -361,19 +416,6 @@ fn read_registry(app: &AppHandle) -> Result<LuaRegistry, String> {
     load_registry_unlocked(app)
 }
 
-fn remember_pending_add(
-    registry: &mut LuaRegistry,
-    reservation: &crate::lua_sources::LuaAddReservation,
-) {
-    registry.pending_add_settlements.insert(
-        reservation.request_id.clone(),
-        PendingLuaAddSettlement {
-            request_id: reservation.request_id.clone(),
-            appid: reservation.appid,
-        },
-    );
-}
-
 fn clear_pending_add(app: &AppHandle, request_id: &str) -> Result<(), String> {
     with_registry(app, |registry| {
         registry.pending_add_settlements.remove(request_id);
@@ -499,7 +541,7 @@ fn steam_lua_dir() -> Result<PathBuf, String> {
         .ok_or_else(|| "Steam installation not found".to_string())
 }
 
-fn lua_path(appid: u32) -> Result<PathBuf, String> {
+pub(crate) fn lua_path(appid: u32) -> Result<PathBuf, String> {
     Ok(steam_lua_dir()?.join(format!("{appid}.lua")))
 }
 
@@ -552,12 +594,13 @@ fn copy_snapshot_manifests_to_depotcache(snapshot_dir: &Path) -> Result<(), Stri
         .flatten()
     {
         let path = entry.path();
-        if !path.is_file()
-            || path.extension().and_then(|value| value.to_str()) != Some("manifest")
+        if !path.is_file() || path.extension().and_then(|value| value.to_str()) != Some("manifest")
         {
             continue;
         }
-        let Some(name) = path.file_name() else { continue };
+        let Some(name) = path.file_name() else {
+            continue;
+        };
         let bytes = fs::read(&path)
             .map_err(|error| format!("Could not read Lua source manifest backup: {error}"))?;
         atomic_write_path(&depotcache.join(name), &bytes)?;
@@ -565,17 +608,21 @@ fn copy_snapshot_manifests_to_depotcache(snapshot_dir: &Path) -> Result<(), Stri
     Ok(())
 }
 
-fn manifest_refs_from_lua(source: &str) -> Result<Vec<String>, String> {
-    let call_re = Regex::new(
-        r#"(?is)^\s*setmanifestid\s*\(\s*(\d+)\s*,\s*["'](\d+)["']"#,
-    )
-    .map_err(|_| "Could not prepare manifest backup parser".to_string())?;
+pub(crate) fn manifest_refs_from_lua(source: &str) -> Result<Vec<String>, String> {
+    let call_re = Regex::new(r#"(?is)^\s*setmanifestid\s*\(\s*(\d+)\s*,\s*["'](\d+)["']"#)
+        .map_err(|_| "Could not prepare manifest backup parser".to_string())?;
     let mut refs = BTreeSet::new();
     for (start, end) in global_call_ranges(source, &["setmanifestid"])? {
         let call = &source[start..end];
         if let Some(captures) = call_re.captures(call) {
-            let depot = captures.get(1).map(|value| value.as_str()).unwrap_or_default();
-            let gid = captures.get(2).map(|value| value.as_str()).unwrap_or_default();
+            let depot = captures
+                .get(1)
+                .map(|value| value.as_str())
+                .unwrap_or_default();
+            let gid = captures
+                .get(2)
+                .map(|value| value.as_str())
+                .unwrap_or_default();
             if !depot.is_empty() && !gid.is_empty() {
                 refs.insert(format!("{depot}_{gid}.manifest"));
             }
@@ -609,10 +656,7 @@ fn snapshot_installed_source(
 
     let manifests_dir = dir.join("manifests");
     if let Some(package) = package {
-        if manifests_dir.exists() {
-            fs::remove_dir_all(&manifests_dir)
-                .map_err(|error| format!("Could not refresh Lua manifest backup: {error}"))?;
-        }
+        clear_owned_manifest_backup(&manifests_dir)?;
         fs::create_dir_all(&manifests_dir)
             .map_err(|error| format!("Could not prepare Lua manifest backup: {error}"))?;
         for manifest in &package.manifests {
@@ -648,6 +692,187 @@ fn snapshot_installed_source(
     atomic_write_path(&dir.join("state.json"), &bytes)
 }
 
+fn clear_owned_manifest_backup(manifests_dir: &Path) -> Result<(), String> {
+    if !manifests_dir.exists() {
+        return Ok(());
+    }
+    let metadata = fs::symlink_metadata(manifests_dir)
+        .map_err(|error| format!("Could not inspect Lua manifest backup: {error}"))?;
+    if !metadata.is_dir() || metadata.file_type().is_symlink() {
+        return Err("Lua manifest backup path is not a regular directory".to_string());
+    }
+    for entry in fs::read_dir(manifests_dir)
+        .map_err(|error| format!("Could not inspect Lua manifest backup: {error}"))?
+    {
+        let entry =
+            entry.map_err(|error| format!("Could not inspect Lua manifest entry: {error}"))?;
+        let path = entry.path();
+        let metadata = fs::symlink_metadata(&path)
+            .map_err(|error| format!("Could not inspect Lua manifest entry: {error}"))?;
+        let owned_manifest = metadata.file_type().is_file()
+            && path.extension().and_then(|value| value.to_str()) == Some("manifest");
+        if owned_manifest {
+            fs::remove_file(&path)
+                .map_err(|error| format!("Could not remove owned Lua manifest backup: {error}"))?;
+        } else {
+            return Err(format!(
+                "Refusing to clean an unowned Lua backup entry: {}",
+                path.display()
+            ));
+        }
+    }
+    fs::remove_dir(manifests_dir)
+        .map_err(|error| format!("Could not remove empty Lua manifest backup directory: {error}"))
+}
+
+fn lua_variant_validation(
+    appid: u32,
+    bytes: &[u8],
+) -> crate::lua_variant_vault::LuaVariantValidationStatus {
+    match std::str::from_utf8(bytes) {
+        Ok(source) if validate_live_source(appid, source).is_ok() => {
+            crate::lua_variant_vault::LuaVariantValidationStatus::Valid
+        }
+        _ => crate::lua_variant_vault::LuaVariantValidationStatus::RecoveryOnly,
+    }
+}
+
+fn enum_name<T: Serialize>(value: &T) -> Option<String> {
+    serde_json::to_value(value)
+        .ok()
+        .and_then(|value| value.as_str().map(str::to_string))
+}
+
+fn manifest_snapshot_identity(
+    app: &AppHandle,
+    state: &LuaGameState,
+    bytes: &[u8],
+) -> Result<Option<String>, String> {
+    let Ok(source) = std::str::from_utf8(bytes) else {
+        return Ok(None);
+    };
+    let refs = manifest_refs_from_lua(source)?;
+    if refs.is_empty() {
+        return Ok(None);
+    }
+    let provider = state
+        .selected_source
+        .ok_or_else(|| "Locked Lua variant has no provider identity".to_string())?;
+    let dir = source_backup_dir(app, state.appid, provider)?.join("manifests");
+    let mut hasher = Sha256::new();
+    hasher.update(provider.cache_name().as_bytes());
+    for name in refs {
+        let path = dir.join(&name);
+        let metadata = match fs::symlink_metadata(&path) {
+            Ok(metadata) => metadata,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
+            Err(error) => {
+                return Err(format!(
+                    "Could not inspect paired Lua manifest {}: {error}",
+                    path.display()
+                ))
+            }
+        };
+        if !metadata.file_type().is_file() || metadata.file_type().is_symlink() {
+            return Ok(None);
+        }
+        hasher.update(name.as_bytes());
+        hasher.update(fs::read(&path).map_err(|error| {
+            format!(
+                "Could not hash paired Lua manifest {}: {error}",
+                path.display()
+            )
+        })?);
+    }
+    Ok(Some(format!(
+        "{}:{}",
+        provider.cache_name(),
+        hex::encode(hasher.finalize())
+    )))
+}
+
+fn capture_active_variant(
+    app: &AppHandle,
+    state: &LuaGameState,
+    reason: crate::lua_variant_vault::LuaVariantCaptureReason,
+) -> Result<Option<crate::lua_variant_vault::LuaVariantEntry>, String> {
+    let path = lua_path(state.appid)?;
+    let bytes = match fs::read(&path) {
+        Ok(bytes) => bytes,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
+        Err(error) => {
+            return Err(format!(
+                "Could not read active Lua for vault capture: {error}"
+            ))
+        }
+    };
+    let validation_status = lua_variant_validation(state.appid, &bytes);
+    let manifest_snapshot_identity = if validation_status
+        == crate::lua_variant_vault::LuaVariantValidationStatus::Valid
+        && state.channel == LuaGameChannel::Locked
+    {
+        manifest_snapshot_identity(app, state, &bytes)?
+    } else {
+        None
+    };
+    crate::lua_variant_vault::capture_bytes(
+        app,
+        state.appid,
+        &bytes,
+        crate::lua_variant_vault::CaptureMetadata {
+            origin: crate::lua_variant_vault::LuaVariantOrigin::Active,
+            reason,
+            provider: state
+                .selected_source
+                .map(|provider| provider.cache_name().to_string()),
+            source: state.source_provider.as_ref().and_then(enum_name),
+            channel: enum_name(&state.channel),
+            build_id: state.pinned_build_id.clone(),
+            revision: state
+                .installed_revision
+                .clone()
+                .or_else(|| state.source_revision.clone()),
+            validation_status,
+            manifest_snapshot_identity,
+        },
+    )
+    .map(Some)
+}
+
+fn capture_unmanaged_variant(
+    app: &AppHandle,
+    appid: u32,
+    reason: crate::lua_variant_vault::LuaVariantCaptureReason,
+) -> Result<Option<crate::lua_variant_vault::LuaVariantEntry>, String> {
+    let path = lua_path(appid)?;
+    let bytes = match fs::read(&path) {
+        Ok(bytes) => bytes,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
+        Err(error) => {
+            return Err(format!(
+                "Could not read unmanaged Lua for vault capture: {error}"
+            ))
+        }
+    };
+    crate::lua_variant_vault::capture_bytes(
+        app,
+        appid,
+        &bytes,
+        crate::lua_variant_vault::CaptureMetadata {
+            origin: crate::lua_variant_vault::LuaVariantOrigin::Imported,
+            reason,
+            provider: None,
+            source: None,
+            channel: None,
+            build_id: None,
+            revision: None,
+            validation_status: lua_variant_validation(appid, &bytes),
+            manifest_snapshot_identity: None,
+        },
+    )
+    .map(Some)
+}
+
 fn restore_live_source_snapshot(
     app: &AppHandle,
     appid: u32,
@@ -674,6 +899,13 @@ fn restore_live_source_snapshot(
     if metadata.appid != appid || metadata.provider != provider {
         return Err("Lua source backup identity does not match the requested provider".to_string());
     }
+    if let Some(current) = read_registry(app)?.games.get(&appid.to_string()).cloned() {
+        capture_active_variant(
+            app,
+            &current,
+            crate::lua_variant_vault::LuaVariantCaptureReason::BeforeProviderSwitch,
+        )?;
+    }
     copy_snapshot_manifests_to_depotcache(&dir)?;
     let destination = lua_path(appid)?;
     atomic_write_path(&destination, source.as_bytes())?;
@@ -694,8 +926,9 @@ fn restore_live_source_snapshot(
     state.available_revision = None;
     state.available_modified_at = None;
     state.managed_hash = Some(managed_hash(&source));
-    state.requires_steam_restart = crate::steam_integration::is_steam_running()
-        && !current_hot_reload_ready(app)?;
+    state.managed_file_sha256 = Some(sha256_bytes(source.as_bytes()));
+    state.requires_steam_restart =
+        crate::steam_integration::is_steam_running() && !current_hot_reload_ready(app)?;
     Ok(Some(state))
 }
 
@@ -725,6 +958,11 @@ fn restore_locked_payload_from_snapshot(
             ));
         }
     }
+    capture_active_variant(
+        app,
+        state,
+        crate::lua_variant_vault::LuaVariantCaptureReason::BeforeChannelSwitch,
+    )?;
     copy_snapshot_manifests_to_depotcache(&dir)?;
     let destination = lua_path(state.appid)?;
     atomic_write_path(&destination, raw.as_bytes())?;
@@ -732,9 +970,7 @@ fn restore_locked_payload_from_snapshot(
     Ok(Some(raw))
 }
 
-fn install_package_manifests(
-    package: &crate::lua_sources::CanonicalPackage,
-) -> Result<(), String> {
+fn install_package_manifests(package: &crate::lua_sources::CanonicalPackage) -> Result<(), String> {
     if package.manifests.is_empty() {
         return Ok(());
     }
@@ -1052,6 +1288,10 @@ fn sha256_text(text: &str) -> String {
     hex::encode(hasher.finalize())
 }
 
+fn sha256_bytes(bytes: &[u8]) -> String {
+    hex::encode(Sha256::digest(bytes))
+}
+
 fn managed_hash(text: &str) -> String {
     sha256_text(&normalize_for_compare(text))
 }
@@ -1226,6 +1466,55 @@ fn remove_global_calls(source: &str, function_names: &[&str]) -> Result<String, 
     Ok(output)
 }
 
+pub(crate) fn replace_manifest_bindings_exact(
+    source: &str,
+    manifests: &[(u32, String)],
+) -> Result<String, String> {
+    let mut exact = BTreeMap::<u32, String>::new();
+    for (depot_id, manifest_gid) in manifests {
+        if *depot_id == 0
+            || manifest_gid.is_empty()
+            || !manifest_gid.chars().all(|value| value.is_ascii_digit())
+            || manifest_gid.parse::<u64>().is_err()
+        {
+            return Err("Exact BuildID contains an invalid depot manifest identity".to_string());
+        }
+        if let Some(previous) = exact.insert(*depot_id, manifest_gid.clone()) {
+            if previous != *manifest_gid {
+                return Err(format!(
+                    "Exact BuildID contains conflicting manifests for depot {depot_id}"
+                ));
+            }
+        }
+    }
+    if exact.is_empty() {
+        return Err("Exact BuildID contains no depot manifests".to_string());
+    }
+
+    // A locked version must own the complete pin set. Remove every active pin
+    // and auto-update escape from the previous payload, then render the target
+    // map in deterministic depot order. Comments, provider metadata, strings,
+    // keys, tickets and user-specific calls remain byte-for-byte unchanged.
+    let mut output = remove_global_calls(source, &["setmanifestid", "skipmanifestpin"])?;
+    let newline = if source.contains("\r\n") {
+        "\r\n"
+    } else {
+        "\n"
+    };
+    while output.ends_with('\n') || output.ends_with('\r') {
+        output.pop();
+    }
+    if !output.is_empty() {
+        output.push_str(newline);
+    }
+    for (depot_id, manifest_gid) in exact {
+        output.push_str(&format!(
+            "setManifestid({depot_id}, \"{manifest_gid}\"){newline}"
+        ));
+    }
+    Ok(output)
+}
+
 fn extract_call_text(source: &str, function_name: &str, appid: u32) -> Option<String> {
     let mask = mask_lua_non_code(source);
     let app_pattern = Regex::new(&format!(
@@ -1262,7 +1551,7 @@ fn extract_appids(source: &str, function_name: &str) -> Vec<u32> {
     ids.into_iter().collect()
 }
 
-fn validate_live_source(appid: u32, source: &str) -> Result<(), String> {
+pub(crate) fn validate_live_source(appid: u32, source: &str) -> Result<(), String> {
     if source.is_empty() || source.len() > MAX_LUA_BYTES {
         return Err("Lua source is empty or too large".to_string());
     }
@@ -1287,6 +1576,7 @@ fn lua_quote(value: &str) -> String {
     format!("\"{escaped}\"")
 }
 
+#[cfg(test)]
 fn prepare_user_override(
     existing: Option<&str>,
     appid: u32,
@@ -1377,7 +1667,11 @@ fn upsert_explicit_app_string_call(
     }
 
     let mut output = source.to_string();
-    let newline = if source.contains("\r\n") { "\r\n" } else { "\n" };
+    let newline = if source.contains("\r\n") {
+        "\r\n"
+    } else {
+        "\n"
+    };
     if !output.is_empty() && !output.ends_with('\n') {
         output.push_str(newline);
     }
@@ -1411,6 +1705,7 @@ fn prepare_live_provider_source(
     Ok(output)
 }
 
+#[cfg(test)]
 fn render_live_file(managed: &str, user: &str) -> String {
     let mut output = String::new();
     output.push_str(managed.trim());
@@ -1521,46 +1816,6 @@ fn source_candidate_identity(candidate: &crate::lua_sources::LuaSourceCandidate)
         })
 }
 
-
-struct LuaFileRollbackGuard {
-    path: PathBuf,
-    prior: Option<Vec<u8>>,
-    active: bool,
-}
-
-impl LuaFileRollbackGuard {
-    fn capture(path: &Path) -> Self {
-        Self {
-            path: path.to_path_buf(),
-            prior: fs::read(path).ok(),
-            active: true,
-        }
-    }
-
-    fn disarm(&mut self) {
-        self.active = false;
-    }
-}
-
-impl Drop for LuaFileRollbackGuard {
-    fn drop(&mut self) {
-        if !self.active {
-            return;
-        }
-        match self.prior.as_ref() {
-            Some(bytes) => {
-                if let Some(parent) = self.path.parent() {
-                    let _ = fs::create_dir_all(parent);
-                }
-                let _ = fs::write(&self.path, bytes);
-            }
-            None => {
-                let _ = fs::remove_file(&self.path);
-            }
-        }
-    }
-}
-
 fn install_live_blocking(
     app: &AppHandle,
     request: &InstallLuaGameRequest,
@@ -1578,6 +1833,22 @@ fn install_live_blocking(
             .games
             .get(&request.appid.to_string())
             .cloned();
+        if let Some(previous) = prior_state.as_ref() {
+            let reason = if previous.selected_source != Some(selected_source) {
+                crate::lua_variant_vault::LuaVariantCaptureReason::BeforeProviderSwitch
+            } else if previous.channel != LuaGameChannel::Live {
+                crate::lua_variant_vault::LuaVariantCaptureReason::BeforeChannelSwitch
+            } else {
+                crate::lua_variant_vault::LuaVariantCaptureReason::BeforeUpdate
+            };
+            capture_active_variant(app, previous, reason)?;
+        } else {
+            capture_unmanaged_variant(
+                app,
+                request.appid,
+                crate::lua_variant_vault::LuaVariantCaptureReason::BeforeImport,
+            )?;
+        }
         let source_changed = prior_state.as_ref().is_some_and(|state| {
             state.channel == LuaGameChannel::Live
                 && state.selected_source.is_some()
@@ -1664,8 +1935,7 @@ fn install_live_blocking(
         validate_live_source(request.appid, &source)?;
 
         let same_live_source = prior_state.as_ref().is_some_and(|state| {
-            state.channel == LuaGameChannel::Live
-                && state.selected_source == Some(selected_source)
+            state.channel == LuaGameChannel::Live && state.selected_source == Some(selected_source)
         });
         if same_live_source {
             ensure_existing_managed_unchanged(
@@ -1731,17 +2001,13 @@ fn install_live_blocking(
         state.next_sync_at = Some(next_sync_string(SYNC_INTERVAL_MINUTES));
         state.sync_status = LuaSyncStatus::Updated;
         state.managed_hash = Some(managed_hash(&rendered));
+        state.managed_file_sha256 = Some(sha256_bytes(rendered.as_bytes()));
         state.depot_ids = extract_appids(&source, "setmanifestid");
         state.requires_steam_restart = steam_running && !hot_reload_ready;
 
         // Snapshot while the staged Live representation is still active so the
         // provider can later return Locked -> Live in one Apply Channel action.
-        snapshot_installed_source(
-            app,
-            &state,
-            Some(&source),
-            package_for_snapshot.as_ref(),
-        )?;
+        snapshot_installed_source(app, &state, Some(&source), package_for_snapshot.as_ref())?;
         let saved = with_registry(app, |registry| {
             registry
                 .games
@@ -1763,7 +2029,6 @@ fn install_live_blocking(
     }
 }
 
-
 fn install_locked_blocking(
     app: &AppHandle,
     request: &InstallLuaGameRequest,
@@ -1776,7 +2041,23 @@ fn install_locked_blocking(
         .games
         .get(&request.appid.to_string())
         .cloned();
-    if let Some(prior) = prior_state.as_ref().filter(|state| state.channel == LuaGameChannel::Live) {
+    if let Some(previous) = prior_state.as_ref() {
+        capture_active_variant(
+            app,
+            previous,
+            crate::lua_variant_vault::LuaVariantCaptureReason::BeforeChannelSwitch,
+        )?;
+    } else {
+        capture_unmanaged_variant(
+            app,
+            request.appid,
+            crate::lua_variant_vault::LuaVariantCaptureReason::BeforeImport,
+        )?;
+    }
+    if let Some(prior) = prior_state
+        .as_ref()
+        .filter(|state| state.channel == LuaGameChannel::Live)
+    {
         snapshot_installed_source(app, prior, None, None)?;
     }
 
@@ -1845,6 +2126,11 @@ fn pin_current_blocking(
 
     // Preserve the exact Live payload before restoring the provider's original
     // package Lua (which still contains setManifestid declarations).
+    capture_active_variant(
+        app,
+        &state,
+        crate::lua_variant_vault::LuaVariantCaptureReason::BeforeChannelSwitch,
+    )?;
     snapshot_installed_source(app, &state, None, None)?;
     let locked_source = restore_locked_payload_from_snapshot(app, &state)?
         .ok_or_else(|| {
@@ -1860,6 +2146,7 @@ fn pin_current_blocking(
     state.installed_revision = state.source_revision.clone();
     state.depot_ids = extract_appids(&locked_source, "setmanifestid");
     state.managed_hash = None;
+    state.managed_file_sha256 = Some(sha256_bytes(locked_source.as_bytes()));
     state.last_sync_at = Some(now_string());
     state.last_checked_at = state.last_sync_at.clone();
     state.sync_status = LuaSyncStatus::Updated;
@@ -1867,7 +2154,9 @@ fn pin_current_blocking(
     state.requires_steam_restart = true;
 
     let saved = with_registry(app, |registry| {
-        registry.games.insert(request.appid.to_string(), state.clone());
+        registry
+            .games
+            .insert(request.appid.to_string(), state.clone());
         Ok(state.clone())
     })?;
     emit_state(app, &saved);
@@ -1897,6 +2186,20 @@ fn install_locked_source_blocking(
         .games
         .get(&request.appid.to_string())
         .cloned();
+    if let Some(previous) = prior_state.as_ref() {
+        let reason = if previous.selected_source != Some(selected_source) {
+            crate::lua_variant_vault::LuaVariantCaptureReason::BeforeProviderSwitch
+        } else {
+            crate::lua_variant_vault::LuaVariantCaptureReason::BeforeChannelSwitch
+        };
+        capture_active_variant(app, previous, reason)?;
+    } else {
+        capture_unmanaged_variant(
+            app,
+            request.appid,
+            crate::lua_variant_vault::LuaVariantCaptureReason::BeforeImport,
+        )?;
+    }
     if let Some(previous) = prior_state
         .as_ref()
         .filter(|state| state.channel == LuaGameChannel::Live)
@@ -1985,17 +2288,18 @@ fn install_locked_source_blocking(
     live_snapshot_state.installed_modified_at = source_before.modified_at.clone();
     live_snapshot_state.source_etag = etag.clone();
     live_snapshot_state.managed_hash = Some(managed_hash(&live_rendered));
+    live_snapshot_state.managed_file_sha256 = Some(sha256_bytes(live_rendered.as_bytes()));
     live_snapshot_state.depot_ids = extract_appids(&source, "setmanifestid");
     live_snapshot_state.runtime_state = LuaRuntimeState::Active;
     live_snapshot_state.source_state = LuaRemoteSourceState::Available;
-    snapshot_installed_source(
-        app,
-        &live_snapshot_state,
-        Some(&source),
-        Some(&package),
-    )?;
+    snapshot_installed_source(app, &live_snapshot_state, Some(&source), Some(&package))?;
 
     // Locked mode keeps the provider-authored pinned Lua verbatim.
+    capture_active_variant(
+        app,
+        &live_snapshot_state,
+        crate::lua_variant_vault::LuaVariantCaptureReason::BeforeChannelSwitch,
+    )?;
     atomic_write_path(&path, source.as_bytes())?;
     update_sync_state(path.parent().unwrap_or(Path::new(".")))?;
 
@@ -2009,6 +2313,7 @@ fn install_locked_source_blocking(
     state.next_sync_at = None;
     state.sync_status = LuaSyncStatus::Updated;
     state.managed_hash = None;
+    state.managed_file_sha256 = Some(sha256_bytes(source.as_bytes()));
     state.requires_steam_restart = true;
 
     let saved = with_registry(app, |registry| {
@@ -2040,7 +2345,11 @@ fn install_lua_game_blocking(
             install_live_blocking(app, request)
         }
         LuaGameChannel::Locked => {
-            if request.build_id.as_deref().is_some_and(|value| !value.trim().is_empty()) {
+            if request
+                .build_id
+                .as_deref()
+                .is_some_and(|value| !value.trim().is_empty())
+            {
                 install_locked_blocking(app, request)
             } else if request.provider.is_some() {
                 install_locked_source_blocking(app, request)
@@ -2466,34 +2775,595 @@ pub async fn get_lua_game_manager_state(
     tauri::async_runtime::spawn_blocking(move || {
         let game = get_lua_game_state_blocking(&app, appid)?;
         let path = lua_path(appid)?;
-        let content = fs::read_to_string(&path).ok();
-        let has_user_overrides = content
+        let active_bytes = fs::read(&path).ok();
+        let active_sha256 = active_bytes
             .as_deref()
-            .is_some_and(|content| {
-                extract_call_text(content, "addtoken", appid).is_some()
-                    || extract_call_text(content, "setstat", appid).is_some()
-            });
-        let source_allows_live = game.selected_source.map(|source| source.supports_live()).unwrap_or(true);
-        let source_allows_locked = game.selected_source.map(|source| source.supports_locked()).unwrap_or(true);
-        let can_switch_live = source_allows_live && (content.as_deref().is_some_and(|source| {
-            live_source_from_existing(source)
-                .and_then(|managed| validate_live_source(appid, &managed))
-                .is_ok()
-        }) || matches!(
-            game.source_state,
-            LuaRemoteSourceState::Available | LuaRemoteSourceState::UpdateAvailable
-        ));
+            .map(|bytes| hex::encode(Sha256::digest(bytes)));
+        let content = active_bytes
+            .as_deref()
+            .and_then(|bytes| std::str::from_utf8(bytes).ok())
+            .map(str::to_string);
+        let has_user_overrides = content.as_deref().is_some_and(|content| {
+            extract_call_text(content, "addtoken", appid).is_some()
+                || extract_call_text(content, "setstat", appid).is_some()
+        });
+        let source_allows_live = game
+            .selected_source
+            .map(|source| source.supports_live())
+            .unwrap_or(true);
+        let source_allows_locked = game
+            .selected_source
+            .map(|source| source.supports_locked())
+            .unwrap_or(true);
+        let has_hugging_face_build_channel =
+            game.selected_source == Some(crate::lua_sources::LuaSourceProvider::HuggingFace);
+        let can_switch_live = source_allows_live
+            && (content.as_deref().is_some_and(|source| {
+                live_source_from_existing(source)
+                    .and_then(|managed| validate_live_source(appid, &managed))
+                    .is_ok()
+            }) || matches!(
+                game.source_state,
+                LuaRemoteSourceState::Available | LuaRemoteSourceState::UpdateAvailable
+            ));
         Ok(LuaGameManagerState {
             game,
             lua_path: path.display().to_string(),
             file_exists: path.is_file(),
+            active_sha256,
             has_user_overrides,
             can_switch_live,
-            can_switch_locked: source_allows_locked,
+            // Curated historical BuildIDs are installed by the dedicated HF
+            // BuildID pipeline, not by the generic source-backed Locked path.
+            can_switch_locked: source_allows_locked || has_hugging_face_build_channel,
         })
     })
     .await
     .map_err(|error| format!("Lua manager task failed: {error}"))?
+}
+
+fn expected_managed_file_sha256(
+    app: &AppHandle,
+    state: &LuaGameState,
+) -> Result<Option<String>, String> {
+    if let Some(expected) = state
+        .managed_file_sha256
+        .as_deref()
+        .filter(|value| value.len() == 64 && value.chars().all(|character| character.is_ascii_hexdigit()))
+    {
+        return Ok(Some(expected.to_ascii_lowercase()));
+    }
+    let Some(provider) = state.selected_source else {
+        return Ok(None);
+    };
+    let name = if state.channel == LuaGameChannel::Locked {
+        "raw.lua"
+    } else {
+        "live.lua"
+    };
+    let candidate = source_backup_dir(app, state.appid, provider)?.join(name);
+    match fs::symlink_metadata(&candidate) {
+        Ok(metadata)
+            if metadata.file_type().is_file()
+                && !metadata.file_type().is_symlink()
+                && metadata.len() <= MAX_LUA_BYTES as u64 =>
+        {
+            Ok(Some(sha256_bytes(
+                &fs::read(&candidate).map_err(|error| {
+                    format!("Could not read managed Lua baseline: {error}")
+                })?,
+            )))
+        }
+        Ok(_) => Ok(None),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(None),
+        Err(error) => Err(format!("Could not inspect managed Lua baseline: {error}")),
+    }
+}
+
+fn inspect_lua_file_drift(
+    app: &AppHandle,
+    app_id: u32,
+) -> Result<LuaFileDriftReport, String> {
+    let state = get_lua_game_state_blocking(app, app_id)?;
+    let path = lua_path(app_id)?;
+    let bytes = match fs::symlink_metadata(&path) {
+        Ok(metadata) => {
+            if !metadata.file_type().is_file() || metadata.file_type().is_symlink() {
+                return Err("Active Lua path is not a regular file".to_string());
+            }
+            if metadata.len() > MAX_LUA_BYTES as u64 {
+                return Err(format!(
+                    "Active Lua exceeds the {} byte safety limit",
+                    MAX_LUA_BYTES
+                ));
+            }
+            Some(fs::read(&path).map_err(|error| format!("Could not read active Lua: {error}"))?)
+        }
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => None,
+        Err(error) => return Err(format!("Could not inspect active Lua: {error}")),
+    };
+    let actual_sha256 = bytes.as_deref().map(sha256_bytes);
+    let expected_sha256 = expected_managed_file_sha256(app, &state)?;
+    let normalized_drift = state.managed_hash.as_deref().is_some_and(|expected| {
+        bytes
+            .as_deref()
+            .and_then(|value| std::str::from_utf8(value).ok())
+            .map(|value| managed_hash(value) != expected)
+            .unwrap_or(true)
+    });
+    let drifted = expected_sha256
+        .as_ref()
+        .map(|expected| actual_sha256.as_ref() != Some(expected))
+        .unwrap_or(normalized_drift);
+    let encoding_status = match bytes.as_deref() {
+        Some(value) if value.starts_with(&[0xEF, 0xBB, 0xBF]) && std::str::from_utf8(&value[3..]).is_ok() => {
+            "utf8Bom"
+        }
+        Some(value) if std::str::from_utf8(value).is_ok() => "utf8",
+        Some(_) => "nonUtf8",
+        None => "missing",
+    }
+    .to_string();
+    let valid_lua = bytes.as_deref().is_some_and(|value| {
+        let value = value.strip_prefix(&[0xEF, 0xBB, 0xBF]).unwrap_or(value);
+        std::str::from_utf8(value)
+            .ok()
+            .is_some_and(|source| validate_live_source(app_id, source).is_ok())
+    });
+    Ok(LuaFileDriftReport {
+        app_id,
+        path: path.display().to_string(),
+        file_exists: bytes.is_some(),
+        baseline_available: expected_sha256.is_some() || state.managed_hash.is_some(),
+        expected_sha256,
+        actual_sha256,
+        drifted,
+        encoding_status,
+        valid_lua,
+        managed_revision: state
+            .installed_revision
+            .clone()
+            .or_else(|| state.source_revision.clone()),
+    })
+}
+
+#[tauri::command]
+pub async fn check_lua_file_drift(
+    app: AppHandle,
+    app_id: u32,
+) -> Result<LuaFileDriftReport, String> {
+    tauri::async_runtime::spawn_blocking(move || inspect_lua_file_drift(&app, app_id))
+        .await
+        .map_err(|error| format!("Lua drift check failed: {error}"))?
+}
+
+fn resolve_lua_drift_blocking(
+    app: &AppHandle,
+    request: LuaDriftResolutionRequest,
+) -> Result<LuaDriftResolutionResult, String> {
+    let before = inspect_lua_file_drift(app, request.app_id)?;
+    if !before.drifted {
+        return Err("The active Lua file does not differ from its managed baseline".to_string());
+    }
+    let current = get_lua_game_state_blocking(app, request.app_id)?;
+    let captured = capture_active_variant(
+        app,
+        &current,
+        crate::lua_variant_vault::LuaVariantCaptureReason::BeforeUpdate,
+    )?;
+
+    if request.resolution == LuaDriftResolution::KeepExternal {
+        let _sync = acquire_app_sync(request.app_id)?;
+        let actual_bytes = fs::read(lua_path(request.app_id)?)
+            .map_err(|error| format!("Could not re-read external Lua: {error}"))?;
+        let actual_sha256 = sha256_bytes(&actual_bytes);
+        if before.actual_sha256.as_deref() != Some(actual_sha256.as_str()) {
+            return Err("Active Lua changed again during drift resolution; run Check again".to_string());
+        }
+        let valid_source = actual_bytes
+            .strip_prefix(&[0xEF, 0xBB, 0xBF])
+            .and_then(|bytes| std::str::from_utf8(bytes).ok())
+            .or_else(|| std::str::from_utf8(&actual_bytes).ok())
+            .filter(|source| validate_live_source(request.app_id, source).is_ok());
+        let game = update_state(app, request.app_id, |state| {
+            state.managed_file_sha256 = Some(actual_sha256.clone());
+            state.managed_hash = valid_source.map(managed_hash);
+            state.installed_revision = Some(format!("external:{actual_sha256}"));
+            state.available_revision = None;
+            state.available_modified_at = None;
+            state.update_available = false;
+            state.last_checked_at = Some(now_string());
+            state.runtime_state = if valid_source.is_some() {
+                LuaRuntimeState::Active
+            } else {
+                LuaRuntimeState::Conflict
+            };
+            state.sync_status = if valid_source.is_some() {
+                LuaSyncStatus::UpToDate
+            } else {
+                LuaSyncStatus::Conflict
+            };
+            state.last_error = (!valid_source.is_some()).then(|| {
+                "External Lua was preserved and vaulted, but is invalid and will not be applied automatically."
+                    .to_string()
+            });
+        })?;
+        return Ok(LuaDriftResolutionResult {
+            resolution: request.resolution,
+            before,
+            captured,
+            applied: false,
+            game,
+        });
+    }
+
+    let provider = request
+        .provider
+        .or(current.selected_source)
+        .ok_or_else(|| "SOURCE_SELECTION_REQUIRED".to_string())?;
+    let game = apply_source_action_blocking(
+        app,
+        &LuaSourceActionRequest {
+            appid: request.app_id,
+            provider,
+            request_id: request.request_id,
+            timezone: request.timezone,
+            conflict_resolution: Some(LuaConflictResolution::RestoreLive),
+            stat_steam_id: request.stat_steam_id,
+        },
+    )?;
+    Ok(LuaDriftResolutionResult {
+        resolution: request.resolution,
+        before,
+        captured,
+        applied: true,
+        game,
+    })
+}
+
+#[tauri::command]
+pub async fn resolve_lua_drift(
+    app: AppHandle,
+    request: LuaDriftResolutionRequest,
+) -> Result<LuaDriftResolutionResult, String> {
+    tauri::async_runtime::spawn_blocking(move || resolve_lua_drift_blocking(&app, request))
+        .await
+        .map_err(|error| format!("Lua drift resolution failed: {error}"))?
+}
+
+fn source_provider_from_cache_name(value: &str) -> Option<crate::lua_sources::LuaSourceProvider> {
+    use crate::lua_sources::LuaSourceProvider as Provider;
+    [
+        Provider::HuggingFace,
+        Provider::Hubcap,
+        Provider::Sushi,
+        Provider::GitHubMirrors,
+        Provider::OpenLua,
+        Provider::SteamTools,
+        Provider::Ryuu,
+        Provider::Luie,
+        Provider::TwentyTwoCloud,
+        Provider::Skyflare,
+    ]
+    .into_iter()
+    .find(|provider| provider.cache_name() == value)
+}
+
+fn index_legacy_lua_variants(app: &AppHandle, state: &LuaGameState) -> Result<(), String> {
+    let existing = crate::lua_variant_vault::list(app, state.appid)?;
+    let backup_root = app
+        .path()
+        .app_data_dir()
+        .map_err(|error| format!("Could not resolve legacy Lua backup directory: {error}"))?
+        .join("lua-source-backups")
+        .join(state.appid.to_string());
+    let root_metadata = match fs::symlink_metadata(&backup_root) {
+        Ok(metadata) => metadata,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(()),
+        Err(error) => return Err(format!("Could not inspect legacy Lua backups: {error}")),
+    };
+    if !root_metadata.is_dir() || root_metadata.file_type().is_symlink() {
+        return Err("Legacy Lua backup root is not a regular directory".to_string());
+    }
+
+    for entry in fs::read_dir(&backup_root)
+        .map_err(|error| format!("Could not inspect legacy Lua backups: {error}"))?
+    {
+        let entry =
+            entry.map_err(|error| format!("Could not inspect legacy Lua backup: {error}"))?;
+        let provider_dir = entry.path();
+        let metadata = fs::symlink_metadata(&provider_dir)
+            .map_err(|error| format!("Could not inspect legacy Lua provider backup: {error}"))?;
+        if !metadata.is_dir() || metadata.file_type().is_symlink() {
+            continue;
+        }
+        let provider_name = entry.file_name().to_string_lossy().to_string();
+        let Some(provider) = source_provider_from_cache_name(&provider_name) else {
+            continue;
+        };
+        for (file_name, origin, channel) in [
+            (
+                "live.lua",
+                crate::lua_variant_vault::LuaVariantOrigin::ProviderLive,
+                LuaGameChannel::Live,
+            ),
+            (
+                "raw.lua",
+                crate::lua_variant_vault::LuaVariantOrigin::ProviderRaw,
+                LuaGameChannel::Locked,
+            ),
+        ] {
+            let path = provider_dir.join(file_name);
+            let bytes = match fs::read(&path) {
+                Ok(bytes) => bytes,
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => continue,
+                Err(error) => {
+                    return Err(format!(
+                        "Could not read legacy Lua backup {}: {error}",
+                        path.display()
+                    ))
+                }
+            };
+            let sha256 = hex::encode(Sha256::digest(&bytes));
+            if existing.iter().any(|item| {
+                item.sha256 == sha256
+                    && item.origin == origin
+                    && item.provider.as_deref() == Some(provider_name.as_str())
+            }) {
+                continue;
+            }
+            let validation_status = lua_variant_validation(state.appid, &bytes);
+            let mut legacy_state = state.clone();
+            legacy_state.selected_source = Some(provider);
+            legacy_state.channel = channel;
+            let manifest_snapshot_identity = if channel == LuaGameChannel::Locked
+                && validation_status == crate::lua_variant_vault::LuaVariantValidationStatus::Valid
+            {
+                manifest_snapshot_identity(app, &legacy_state, &bytes)?
+            } else {
+                None
+            };
+            crate::lua_variant_vault::capture_bytes(
+                app,
+                state.appid,
+                &bytes,
+                crate::lua_variant_vault::CaptureMetadata {
+                    origin,
+                    reason: crate::lua_variant_vault::LuaVariantCaptureReason::LegacyMigration,
+                    provider: Some(provider_name.clone()),
+                    source: None,
+                    channel: enum_name(&channel),
+                    build_id: legacy_state.pinned_build_id.clone(),
+                    revision: legacy_state
+                        .installed_revision
+                        .clone()
+                        .or_else(|| legacy_state.source_revision.clone()),
+                    validation_status,
+                    manifest_snapshot_identity,
+                },
+            )?;
+        }
+    }
+    Ok(())
+}
+
+fn capture_lua_variant_blocking(
+    app: &AppHandle,
+    appid: u32,
+    reason: crate::lua_variant_vault::LuaVariantCaptureReason,
+) -> Result<crate::lua_variant_vault::LuaVariantEntry, String> {
+    let state = get_lua_game_state_blocking(app, appid)?;
+    capture_active_variant(app, &state, reason)?
+        .ok_or_else(|| "Active Lua file does not exist".to_string())
+}
+
+#[tauri::command]
+pub async fn list_lua_variants(
+    app: AppHandle,
+    app_id: u32,
+) -> Result<Vec<crate::lua_variant_vault::LuaVariantEntry>, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let state = get_lua_game_state_blocking(&app, app_id)?;
+        index_legacy_lua_variants(&app, &state)?;
+        crate::lua_variant_vault::list(&app, app_id)
+    })
+    .await
+    .map_err(|error| format!("Lua variant list task failed: {error}"))?
+}
+
+#[tauri::command]
+pub async fn capture_lua_variant(
+    app: AppHandle,
+    app_id: u32,
+    reason: crate::lua_variant_vault::LuaVariantCaptureReason,
+) -> Result<crate::lua_variant_vault::LuaVariantEntry, String> {
+    tauri::async_runtime::spawn_blocking(move || capture_lua_variant_blocking(&app, app_id, reason))
+        .await
+        .map_err(|error| format!("Lua variant capture task failed: {error}"))?
+}
+
+fn restore_lua_variant_blocking(
+    app: &AppHandle,
+    request: crate::lua_variant_vault::LuaVariantRestoreRequest,
+) -> Result<LuaGameState, String> {
+    let _sync = acquire_app_sync(request.app_id)?;
+    let entry = crate::lua_variant_vault::find(app, request.app_id, &request.sha256)?;
+    if entry.validation_status != crate::lua_variant_vault::LuaVariantValidationStatus::Valid {
+        return Err(
+            "RECOVERY_ONLY_VARIANT: export this exact object for manual recovery; automatic apply is disabled"
+                .to_string(),
+        );
+    }
+    let object = crate::lua_variant_vault::object_path(app, &entry.sha256)?;
+    let bytes =
+        fs::read(&object).map_err(|error| format!("Could not read Lua variant object: {error}"))?;
+    if hex::encode(Sha256::digest(&bytes)) != entry.sha256 {
+        return Err("Lua variant object hash does not match its identity".to_string());
+    }
+    let source = std::str::from_utf8(&bytes).map_err(|_| {
+        "Lua variant is not valid UTF-8 and cannot be applied automatically".to_string()
+    })?;
+    validate_live_source(request.app_id, source)?;
+
+    let mut state = get_lua_game_state_blocking(app, request.app_id)?;
+    capture_active_variant(
+        app,
+        &state,
+        crate::lua_variant_vault::LuaVariantCaptureReason::BeforeRestore,
+    )?;
+
+    let lua_target = lua_path(request.app_id)?;
+    let lua_root = lua_target
+        .parent()
+        .ok_or_else(|| "Steam Lua directory is invalid".to_string())?
+        .to_path_buf();
+    fs::create_dir_all(&lua_root)
+        .map_err(|error| format!("Could not prepare Steam Lua directory: {error}"))?;
+    let mut specs = vec![crate::managed_file_transaction::ManagedFileSpec {
+        source: object,
+        target: lua_target.clone(),
+        allowed_source_root: crate::lua_variant_vault::objects_root(app)?,
+        allowed_target_root: lua_root,
+        expected_sha256: entry.sha256.clone(),
+    }];
+
+    let locked = entry.channel.as_deref() == Some("locked") || has_manifest_pin(source);
+    if locked {
+        let identity = entry.manifest_snapshot_identity.as_deref().ok_or_else(|| {
+            "LOCKED_MANIFEST_PAIR_REQUIRED: this variant has no complete manifest snapshot identity"
+                .to_string()
+        })?;
+        let provider_name = entry
+            .provider
+            .as_deref()
+            .ok_or_else(|| "Locked Lua variant has no provider identity".to_string())?;
+        let provider = source_provider_from_cache_name(provider_name)
+            .ok_or_else(|| "Locked Lua variant provider identity is invalid".to_string())?;
+        let mut identity_state = state.clone();
+        identity_state.selected_source = Some(provider);
+        identity_state.channel = LuaGameChannel::Locked;
+        let actual_identity = manifest_snapshot_identity(app, &identity_state, &bytes)?
+            .ok_or_else(|| "Locked Lua variant manifest snapshot is incomplete".to_string())?;
+        if actual_identity != identity {
+            return Err("Locked Lua variant manifest snapshot identity has drifted".to_string());
+        }
+        let manifests_root = source_backup_dir(app, request.app_id, provider)?.join("manifests");
+        let depotcache = depotcache_dir()?;
+        fs::create_dir_all(&depotcache)
+            .map_err(|error| format!("Could not prepare Steam depotcache: {error}"))?;
+        for name in manifest_refs_from_lua(source)? {
+            let manifest = manifests_root.join(&name);
+            specs.push(crate::managed_file_transaction::ManagedFileSpec {
+                expected_sha256: crate::managed_file_transaction::sha256_file(&manifest)?,
+                source: manifest,
+                target: depotcache.join(name),
+                allowed_source_root: manifests_root.clone(),
+                allowed_target_root: depotcache.clone(),
+            });
+        }
+        state.channel = LuaGameChannel::Locked;
+        state.selected_source = Some(provider);
+        state.pinned_build_id = entry.build_id.clone();
+        state.managed_hash = None;
+        state.managed_file_sha256 = Some(entry.sha256.clone());
+    } else {
+        state.channel = LuaGameChannel::Live;
+        state.pinned_build_id = None;
+        state.managed_hash = Some(managed_hash(source));
+        state.managed_file_sha256 = Some(entry.sha256.clone());
+        if let Some(provider) = entry
+            .provider
+            .as_deref()
+            .and_then(source_provider_from_cache_name)
+        {
+            state.selected_source = Some(provider);
+        }
+    }
+
+    crate::managed_file_transaction::apply_files(app, "restore-lua-variant", specs)?;
+    update_sync_state(lua_target.parent().unwrap_or(Path::new(".")))?;
+    state.source_revision = entry
+        .revision
+        .clone()
+        .or_else(|| Some(entry.sha256.clone()));
+    state.installed_revision = entry
+        .revision
+        .clone()
+        .or_else(|| Some(entry.sha256.clone()));
+    state.last_sync_at = Some(now_string());
+    state.last_checked_at = state.last_sync_at.clone();
+    state.sync_status = LuaSyncStatus::Updated;
+    state.runtime_state = LuaRuntimeState::Active;
+    state.last_error = None;
+    state.requires_steam_restart = crate::steam_integration::is_steam_running()
+        && (state.channel == LuaGameChannel::Locked || !current_hot_reload_ready(app)?);
+    let saved = with_registry(app, |registry| {
+        registry
+            .games
+            .insert(request.app_id.to_string(), state.clone());
+        Ok(state.clone())
+    })?;
+    emit_state(app, &saved);
+    Ok(saved)
+}
+
+#[tauri::command]
+pub async fn restore_lua_variant(
+    app: AppHandle,
+    request: crate::lua_variant_vault::LuaVariantRestoreRequest,
+) -> Result<LuaGameState, String> {
+    tauri::async_runtime::spawn_blocking(move || restore_lua_variant_blocking(&app, request))
+        .await
+        .map_err(|error| format!("Lua variant restore task failed: {error}"))?
+}
+
+#[tauri::command]
+pub async fn pin_lua_variant(
+    app: AppHandle,
+    app_id: u32,
+    sha256: String,
+    pinned: bool,
+) -> Result<Vec<crate::lua_variant_vault::LuaVariantEntry>, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        crate::lua_variant_vault::pin(&app, app_id, &sha256, pinned)
+    })
+    .await
+    .map_err(|error| format!("Lua variant pin task failed: {error}"))?
+}
+
+#[tauri::command]
+pub async fn export_lua_variant(
+    app: AppHandle,
+    app_id: u32,
+    sha256: String,
+) -> Result<Option<String>, String> {
+    let entry = crate::lua_variant_vault::find(&app, app_id, &sha256)?;
+    let Some(selected) = app
+        .dialog()
+        .file()
+        .set_title("Export exact Lua variant")
+        .set_file_name(format!("{app_id}-{}.lua", &entry.sha256[..12]))
+        .add_filter("Steam Lua", &["lua"])
+        .blocking_save_file()
+    else {
+        return Ok(None);
+    };
+    let destination = selected
+        .into_path()
+        .map_err(|error| format!("LUA_VARIANT_EXPORT_PATH_INVALID: {error}"))?;
+    tauri::async_runtime::spawn_blocking(move || {
+        let object = crate::lua_variant_vault::object_path(&app, &entry.sha256)?;
+        let bytes = fs::read(&object)
+            .map_err(|error| format!("Could not read Lua variant object: {error}"))?;
+        if hex::encode(Sha256::digest(&bytes)) != entry.sha256 {
+            return Err("Lua variant object hash does not match its identity".to_string());
+        }
+        atomic_write_path(&destination, &bytes)?;
+        Ok(destination.display().to_string())
+    })
+    .await
+    .map_err(|error| format!("Lua variant export task failed: {error}"))?
+    .map(Some)
 }
 
 #[tauri::command]
@@ -2532,6 +3402,57 @@ pub async fn resolve_lua_source(
     .map_err(|error| format!("Lua source resolution task failed: {error}"))?
 }
 
+fn channel_provider_plan(
+    channel: LuaGameChannel,
+    build_id: Option<&str>,
+    requested_provider: Option<crate::lua_sources::LuaSourceProvider>,
+    prior_provider: Option<crate::lua_sources::LuaSourceProvider>,
+) -> Result<
+    (
+        crate::lua_sources::LuaSourceProvider,
+        Option<crate::lua_sources::LuaSourceProvider>,
+        bool,
+    ),
+    String,
+> {
+    let exact_build_requested =
+        channel == LuaGameChannel::Locked && build_id.is_some_and(|value| !value.trim().is_empty());
+    if exact_build_requested {
+        if requested_provider
+            .is_some_and(|provider| provider != crate::lua_sources::LuaSourceProvider::HuggingFace)
+        {
+            return Err("EXACT_BUILD_REQUIRES_HUGGING_FACE".to_string());
+        }
+        // BuildIDs exposed by lua_shop_get_game_builds are identities from the
+        // curated HF Depotdownloader tree. Selecting one is itself an explicit
+        // source choice, even for older frontends that omitted `provider`.
+        let selected_source = crate::lua_sources::LuaSourceProvider::HuggingFace;
+        return Ok((selected_source, Some(selected_source), true));
+    }
+
+    let selected_source = requested_provider
+        .or(prior_provider)
+        .ok_or_else(|| "SOURCE_SELECTION_REQUIRED".to_string())?;
+    match channel {
+        LuaGameChannel::Live if !selected_source.supports_live() => {
+            return Err("SOURCE_CHANNEL_LIVE_UNSUPPORTED".to_string());
+        }
+        LuaGameChannel::Locked
+            if requested_provider.is_some() && !selected_source.supports_locked() =>
+        {
+            return Err("SOURCE_CHANNEL_LOCKED_UNSUPPORTED".to_string());
+        }
+        _ => {}
+    }
+    let install_provider = match channel {
+        LuaGameChannel::Live => Some(selected_source),
+        // No explicit source means "pin the currently installed payload".
+        // Keeping this as None makes the pin_current branch reachable.
+        LuaGameChannel::Locked => requested_provider,
+    };
+    Ok((selected_source, install_provider, exact_build_requested))
+}
+
 #[tauri::command]
 pub async fn set_lua_game_channel(
     app: AppHandle,
@@ -2539,17 +3460,13 @@ pub async fn set_lua_game_channel(
 ) -> Result<LuaGameState, String> {
     tauri::async_runtime::spawn_blocking(move || {
         let prior = get_lua_game_state_blocking(&app, request.appid)?;
-        let selected_source = request.provider.or(prior.selected_source)
-            .ok_or_else(|| "SOURCE_SELECTION_REQUIRED".to_string())?;
-        match request.channel {
-            LuaGameChannel::Live if !selected_source.supports_live() => {
-                return Err("SOURCE_CHANNEL_LIVE_UNSUPPORTED".to_string());
-            }
-            LuaGameChannel::Locked if !selected_source.supports_locked() => {
-                return Err("SOURCE_CHANNEL_LOCKED_UNSUPPORTED".to_string());
-            }
-            _ => {}
-        }
+        let requested_provider = request.provider;
+        let (_, install_provider, _) = channel_provider_plan(
+            request.channel,
+            request.build_id.as_deref(),
+            requested_provider,
+            prior.selected_source,
+        )?;
         let install = InstallLuaGameRequest {
             appid: request.appid,
             game_name: prior.game_name,
@@ -2558,11 +3475,53 @@ pub async fn set_lua_game_channel(
             access_token: None,
             stat_steam_id: None,
             conflict_resolution: request.conflict_resolution,
-            provider: Some(selected_source),
+            provider: install_provider,
             request_id: None,
             timezone: None,
         };
-        install_lua_game_blocking(&app, &install)
+        let manage_steam =
+            request.restart_steam_if_needed && request.channel == LuaGameChannel::Locked;
+        let stopped = if manage_steam && crate::steam_integration::is_steam_running() {
+            Some(crate::steam_integration::stop_steam_for_maintenance()?)
+        } else {
+            None
+        };
+
+        let install_result = install_lua_game_blocking(&app, &install);
+        if let Some(stopped) = stopped {
+            // Restart Steam even when installation fails, so a failed channel
+            // change never leaves the user's client closed.
+            let _ = reconcile_core_readiness(&app);
+            let restart_result = if stopped.was_running {
+                crate::steam_integration::start_steam_after_maintenance(None)
+            } else {
+                Ok(())
+            };
+            return match (install_result, restart_result) {
+                (Ok(_), Ok(())) => update_state(&app, request.appid, |state| {
+                    state.requires_steam_restart = false;
+                    state.last_error = None;
+                }),
+                (Ok(_), Err(restart_error)) => update_state(&app, request.appid, |state| {
+                    state.requires_steam_restart = true;
+                    state.last_error = Some(format!("STEAM_RESTART_FAILED:{restart_error}"));
+                }),
+                (Err(install_error), Ok(())) => Err(install_error),
+                (Err(install_error), Err(restart_error)) => Err(format!(
+                    "{install_error}; Steam also failed to restart: {restart_error}"
+                )),
+            };
+        }
+
+        match install_result {
+            Ok(_) if manage_steam => update_state(&app, request.appid, |state| {
+                // Steam was already closed, so the next launch will load the
+                // newly selected manifests without another restart cycle.
+                state.requires_steam_restart = false;
+                state.last_error = None;
+            }),
+            other => other,
+        }
     })
     .await
     .map_err(|error| format!("Lua channel task failed: {error}"))?
@@ -2582,7 +3541,11 @@ fn register_legacy_game(
     error: Option<String>,
 ) -> Result<LuaGameState, String> {
     let is_locked = has_manifest_pin(content) || error.is_some();
-    let channel = if is_locked { LuaGameChannel::Locked } else { LuaGameChannel::Live };
+    let channel = if is_locked {
+        LuaGameChannel::Locked
+    } else {
+        LuaGameChannel::Live
+    };
     let mut state = LuaGameState::new(appid, format!("AppID {appid}"), channel);
     state.pinned_build_id = crate::steam_integration::get_steam_game_buildid(appid);
     state.migration_state = LuaMigrationState::ReviewRequired;
@@ -2810,6 +3773,61 @@ mod tests {
     use super::*;
 
     #[test]
+    fn exact_hugging_face_build_uses_verified_build_pipeline() {
+        let (_, install_provider, exact) = channel_provider_plan(
+            LuaGameChannel::Locked,
+            Some("19641208"),
+            Some(crate::lua_sources::LuaSourceProvider::HuggingFace),
+            Some(crate::lua_sources::LuaSourceProvider::Hubcap),
+        )
+        .unwrap();
+        assert!(exact);
+        assert_eq!(
+            install_provider,
+            Some(crate::lua_sources::LuaSourceProvider::HuggingFace)
+        );
+    }
+
+    #[test]
+    fn exact_build_identity_selects_hugging_face_for_legacy_frontends() {
+        let (selected, install_provider, exact) = channel_provider_plan(
+            LuaGameChannel::Locked,
+            Some("19641208"),
+            None,
+            Some(crate::lua_sources::LuaSourceProvider::Hubcap),
+        )
+        .unwrap();
+        assert!(exact);
+        assert_eq!(selected, crate::lua_sources::LuaSourceProvider::HuggingFace);
+        assert_eq!(install_provider, Some(selected));
+    }
+
+    #[test]
+    fn exact_build_rejects_an_explicit_non_hugging_face_provider() {
+        let error = channel_provider_plan(
+            LuaGameChannel::Locked,
+            Some("19641208"),
+            Some(crate::lua_sources::LuaSourceProvider::Hubcap),
+            Some(crate::lua_sources::LuaSourceProvider::Hubcap),
+        )
+        .unwrap_err();
+        assert_eq!(error, "EXACT_BUILD_REQUIRES_HUGGING_FACE");
+    }
+
+    #[test]
+    fn pin_current_keeps_provider_empty_for_the_local_snapshot_path() {
+        let (_, install_provider, exact) = channel_provider_plan(
+            LuaGameChannel::Locked,
+            None,
+            None,
+            Some(crate::lua_sources::LuaSourceProvider::HuggingFace),
+        )
+        .unwrap();
+        assert!(!exact);
+        assert_eq!(install_provider, None);
+    }
+
+    #[test]
     fn provider_live_transform_preserves_header_and_only_removes_manifest_pins() {
         let source = "-- 289650's Lua and Manifest Created by Hubcap Manifest\r\n-- Assassin's Creed Unity\r\n-- Created: July 01, 2026 at 04:35:09 EDT\r\n-- Website: https://hubcapmanifest.com/\r\n-- Total Depots: 7\r\naddappid(289650, 1, \"root-key\")\r\nsetManifestid(289651, \"123456789\")\r\nskipManifestPin(289650)\r\naddtoken(289650, \"keep-me\")\r\nsetStat(289650, \"76561198000000000\")\r\n";
         let rendered = prepare_live_provider_source(source, 289650, None, None).unwrap();
@@ -2825,17 +3843,15 @@ mod tests {
 
     #[test]
     fn openlua_backup_is_namespaced_by_appid_and_provider() {
-        let openlua = source_backup_relative_dir(
-            289650,
-            crate::lua_sources::LuaSourceProvider::OpenLua,
-        );
-        let hubcap = source_backup_relative_dir(
-            289650,
-            crate::lua_sources::LuaSourceProvider::Hubcap,
-        );
+        let openlua =
+            source_backup_relative_dir(289650, crate::lua_sources::LuaSourceProvider::OpenLua);
+        let hubcap =
+            source_backup_relative_dir(289650, crate::lua_sources::LuaSourceProvider::Hubcap);
         assert_eq!(
             openlua,
-            PathBuf::from("lua-source-backups").join("289650").join("open-lua")
+            PathBuf::from("lua-source-backups")
+                .join("289650")
+                .join("open-lua")
         );
         assert_ne!(openlua, hubcap);
     }
@@ -2843,8 +3859,12 @@ mod tests {
     #[test]
     fn locked_detection_is_based_on_manifest_pin_not_generic_set_calls() {
         assert!(!has_manifest_pin("addappid(10)\nsetStat(10, \"7656\")\n"));
-        assert!(!has_manifest_pin("addappid(10)\nsetAppTicket(10, \"ticket\")\n"));
-        assert!(has_manifest_pin("addappid(10)\nsetManifestid(11, \"123\")\n"));
+        assert!(!has_manifest_pin(
+            "addappid(10)\nsetAppTicket(10, \"ticket\")\n"
+        ));
+        assert!(has_manifest_pin(
+            "addappid(10)\nsetManifestid(11, \"123\")\n"
+        ));
     }
 
     #[test]
@@ -2865,13 +3885,12 @@ addappid(12)
     }
 
     #[test]
-    fn live_render_preserves_user_override_outside_managed_hash() {
+    fn live_render_preserves_provider_then_user_override_order() {
         let managed = "addappid(10)\naddappid(11, 0, \"key\")";
         let rendered = render_live_file(managed, "setStat(10, \"7656\")");
-        let (parsed_managed, parsed_user) = managed_sections(&rendered).unwrap();
-        assert_eq!(parsed_managed, managed);
-        assert!(parsed_user.contains("setStat"));
-        assert!(!parsed_managed.contains("setStat"));
+        assert!(rendered.starts_with(managed));
+        assert!(rendered.contains("\n\nsetStat(10, \"7656\")\n"));
+        assert_eq!(rendered.matches("setStat").count(), 1);
     }
 
     #[test]

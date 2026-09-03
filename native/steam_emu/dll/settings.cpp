@@ -172,6 +172,16 @@ const std::string& Settings::get_supported_languages() const
     return this->supported_languages;
 }
 
+std::chrono::system_clock::time_point Settings::get_purchase_date()
+{
+    return purchase_date;
+}
+
+void Settings::set_purchase_date(std::chrono::system_clock::time_point purchase_date)
+{
+    this->purchase_date = purchase_date;
+}
+
 void Settings::set_game_id(CGameID game_id)
 {
     this->game_id = game_id;

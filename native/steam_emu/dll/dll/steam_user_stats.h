@@ -21,6 +21,7 @@
 #include <limits>
 #include "base.h"
 #include "overlay/steam_overlay.h"
+#include "oxo_achievement_pipe_adapter.h"
 
 struct Steam_Leaderboard_Entry {
     CSteamID steam_id{};
@@ -85,6 +86,7 @@ private:
     template<typename T>
     struct InternalSetResult {
         bool success = false;
+        bool changed = false;
         bool notify_server = false;
         std::string internal_name{};
         T current_val{};
@@ -102,11 +104,22 @@ private:
 
     nlohmann::json defined_achievements{};
     nlohmann::json user_achievements{};
+    std::unordered_map<std::string, std::string> stat_name_to_gid{}; // stat API name -> VDF group ID (for write_ugs_bin)
+    std::unordered_map<std::string, uint32_t>     ugs_stat_cache{};   // VDF group ID -> raw u32 data (loaded from UGS bin at startup)
+    std::unordered_map<std::string, std::unordered_map<int, uint32_t>> ugs_ach_times_cache{}; // VDF group ID -> (bit -> earned timestamp)
+    std::unordered_map<std::string, uint32_t>     ugs_group_state{};  // VDF group ID -> "state" field value from original bin (only present if original had it)
+    std::unordered_map<std::string, uint32_t>     ugs_group_pendingbits{}; // VDF group ID -> "pendingbits" from original bin
+    uint32_t                                      ugs_root_pending_changes{0}; // root "PendingChanges" from original bin
+    uint32_t                                      ugs_orig_crc{0};             // "crc" field from original bin (carried forward; 0 for new bins)
     std::vector<std::string> sorted_achievement_names{};
     size_t last_loaded_ach_icon{};
 
     std::map<std::string, int32> stats_cache_int{};
     std::map<std::string, float> stats_cache_float{};
+    std::unique_ptr<OxoAchievementPipeAdapter> oxo_achievement_pipe{};
+    // avgrate accumulator: persisted in stats.json alongside the average value
+    std::unordered_map<std::string, float>  avgrate_count_cache{};          // running flCountThisSession sum
+    std::unordered_map<std::string, double> avgrate_sessionlength_cache{};  // running dSessionLength sum
 
     std::map<std::string, std::vector<achievement_trigger>> achievement_stat_trigger{};
     
@@ -121,7 +134,12 @@ private:
 
     void load_achievements_db();
     void load_achievements();
+    void load_user_stats_json();
     void save_achievements();
+    void write_ugs_bin();
+    void write_user_stats_json();
+    nlohmann::json oxo_runtime_state();
+    nlohmann::json oxo_execute_command(const nlohmann::json &command);
 
     int load_ach_icon(nlohmann::json &defined_ach, bool achieved);
 
@@ -174,6 +192,130 @@ private:
     static void steam_user_stats_run_every_runcb(void *object);
 
 public:
+    // global achievement percentages fetched from Steam Web API (public for overlay access)
+    std::map<std::string, float> global_achievement_percentages{};
+    std::vector<std::pair<std::string, float>> sorted_global_achievement_percentages{}; // sorted descending by percent
+    bool global_achievement_percentages_populated{false};
+    bool global_achievement_percentages_fetching{false};
+    bool global_achievement_percentages_overlay_sorted{false}; // whether the overlay sort has already been applied
+
+    // SteamHunters data (achievement groups + supplemental global %) fetched once per launch
+    struct SteamHunters_AchievementGroup {
+        std::string name{};                             // optional sub-group name (e.g. "Gwent")
+        int         dlcAppId{};                         // DLC App ID (0 = base game)
+        std::string dlcAppName{};                       // DLC display name (empty = base game)
+        std::vector<std::string> achievementApiNames{}; // ordered list of achievement API names
+    };
+    // Per-achievement metadata from SteamHunters /api/apps/{id}/achievements
+    struct SteamHunters_AchievementData {
+        float steamPercentage{-1.0f};  // same as Steam global %
+        float localPercentage{-1.0f};  // SH community hunters % (more accurate for hunters)
+        int   points{};                // SH rarity score
+        int   steamPoints{};           // Steam point value
+        // obtainability: 0=normal, 1=missable, 2=deprecated/glitched, 3=online-only, etc.
+        int   obtainability{};
+    };
+    std::vector<SteamHunters_AchievementGroup> steamhunters_achievement_groups{};
+    std::map<std::string, SteamHunters_AchievementData> steamhunters_achievement_data{}; // keyed by apiName
+    bool steamhunters_data_populated{false};
+    bool steamhunters_data_fetching{false};
+
+    static constexpr const auto steamhunters_cache_file = "achievements_sh.json";
+    static constexpr const auto steam_ach_percentages_cache_file = "achievements_st.json";
+    static constexpr const auto steamcardexchange_cache_file      = "steamcardexchange_sce.html";
+    static constexpr const auto steamcardexchange_json_cache_file = "steamcardexchange_sce.json";
+
+    std::string sce_html{};
+    bool sce_data_populated{false};
+    bool sce_data_fetching{false};
+
+    // Parsed item catalog from the SteamCardExchange game page
+    enum class SceItemType {
+        TradingCard, FoilCard, BoosterPack,
+        Badge, FoilBadge,
+        Emoticon,
+        Background, AnimatedBackground, AnimatedMiniBackground,
+        Profile, AvatarFrame, AnimatedAvatar,
+        AnimatedSticker,
+        StartupMovie
+    };
+    struct SceItem {
+        std::string name{};
+        SceItemType type{SceItemType::TradingCard};
+        int         series{0};
+        int         slot{0};             // card/bg position N-of-M (1-based, 0=N/A)
+        int         total{0};            // total count M (0=N/A)
+        std::string icon_url{};          // primary thumbnail/economy image full URL
+        std::string wallpaper_url{};     // full-res wallpaper URL (cards, backgrounds)
+        std::string animated_url{};      // emoticon animated preview URL
+        std::string market_hash_name{};  // e.g. "2989180-Darwin"
+        std::string price_text{};        // "$0.26", "NA", "Last seen: $X.XX"
+        int         badge_level{0};      // badge craft level (0=N/A)
+        int         badge_xp{0};         // badge XP value (0=N/A)
+        std::string emoticon_name{};     // without surrounding colons, e.g. "DPalien"
+        std::string rarity{};            // "Unknown", "Common", "Uncommon", "Rare", ""
+        // animated items (animated backgrounds, mini-backgrounds, avatar frames, animated avatars)
+        std::string video_webm_url{};    // .webm source URL
+        std::string video_mp4_url{};     // .mp4 source URL  (or .gif for animated avatars)
+        std::string static_img_url{};    // static thumbnail/frame URL
+        // profile page items (Profiles, AvatarFrames)
+        std::string points_price{};      // e.g. "10.000" (Steam Points cost, empty if N/A)
+        std::string preview_url{};       // SCE background-viewer or Steam profile preview URL
+    };
+    struct SceSeries {
+        int                  series_number{0};
+        std::string          series_name{};
+        std::vector<SceItem> items{};
+    };
+    struct SceGameData {
+        uint32               appid{0};
+        std::vector<SceSeries> series{};
+    };
+    SceGameData sce_game_data{};
+    static SceGameData ParseSteamCardExchangeHtml(const std::string &html, uint32 app_id);
+
+    // Per-item-type download progress (index = (int)SceItemType, 14 types)
+    static constexpr int SCE_NUM_TYPES = 14;
+    static constexpr const char* SCE_TYPE_LABELS[SCE_NUM_TYPES] = {
+        "Cards", "Foil Cards", "Booster Packs",
+        "Badges", "Foil Badges",
+        "Emoticons",
+        "Backgrounds", "Animated Backgrounds", "Animated Mini Backgrounds",
+        "Profiles", "Avatar Frames", "Animated Avatars",
+        "Animated Stickers",
+        "Startup Movies"
+    };
+    struct SceTypeProgress {
+        std::atomic<uint32_t> total{0};
+        std::atomic<uint32_t> downloaded{0};
+        std::atomic<uint32_t> skipped{0};
+        std::atomic<uint32_t> current{0}; // "X of total" counter (downloaded+skipped so far)
+    };
+    // Non-copyable atomics require a fixed array, not a vector
+    SceTypeProgress         sce_type_progress[SCE_NUM_TYPES]{};
+    std::atomic<bool>       sce_assets_downloading{false};
+    std::atomic<uint32_t>   sce_assets_downloaded{0};   // grand total fetched this run
+    std::atomic<uint32_t>   sce_assets_skipped{0};      // grand total skipped
+    std::atomic<uint32_t>   sce_assets_total{0};        // grand total unique URLs
+    static constexpr const auto sce_assets_folder = "sce_assets";
+
+    // Trigger an async fetch of SteamHunters achievement groups + global percentages.
+    // Safe to call multiple times; will only fire once per object lifetime.
+    void RequestSteamHuntersData();
+
+    // Trigger an async fetch + disk cache of the SteamCardExchange game page HTML.
+    // Raw HTML is stored in sce_html once complete. Same TTL as other caches.
+    void RequestSteamCardExchangeData();
+
+    // Trigger async download of all image/video assets referenced in sce_game_data.
+    // Already-cached assets (file exists on disk) are skipped.
+    // Calls overlay->NotifySceAssetsReady() when done (or if nothing to do).
+    void RequestSceAssetDownload();
+
+    // After global percentages are populated, write "global_percent" into each user_achievement entry
+    // and persist achievements.json to disk.  Safe to call under global_mutex.
+    void update_user_achievements_with_global_percent();
+
     Steam_User_Stats(Settings *settings, class Networking *network, Local_Storage *local_storage, class SteamCallResults *callback_results, class SteamCallBacks *callbacks, class RunEveryRunCB *run_every_runcb, Steam_Overlay* overlay);
     ~Steam_User_Stats();
 

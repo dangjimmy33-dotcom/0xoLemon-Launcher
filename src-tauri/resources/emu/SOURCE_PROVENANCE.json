@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "upstream": "Detanup01/gbe_fork",
+  "importedFrom": "E:\\Compressed\\gse_fork-dev\\gse_fork-dev",
+  "importedAt": "2026-08-28T15:32:42.5831083Z",
+  "license": "LGPL-3.0",
+  "sourceFileCount": 4738,
+  "sourceManifest": "SOURCE_MANIFEST.sha256",
+  "sourceManifestSha256": "0c5a3b0ed39e0a9e93023fc75b54286e70a0bb9a9feb5a1ace3c64f7dd762d72",
+  "exclusions": [
+    "build/ (generated build output)",
+    "BUILD_GSE_FULL_V6.bat (machine-local helper with unsafe cleanup commands)"
+  ],
+  "synchronization": "Overlay copy. Existing dependency cache files not present in the snapshot are retained and are not part of the source manifest."
+}

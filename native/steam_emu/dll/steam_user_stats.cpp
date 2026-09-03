@@ -16,6 +16,7 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include "dll/steam_user_stats.h"
+#include <cmath>
 #include <random>
 
 
@@ -124,10 +125,27 @@ Steam_User_Stats::Steam_User_Stats(Settings *settings, class Networking *network
     this->network->setCallback(CALLBACK_ID_USER_STATS, settings->get_local_steam_id(), &Steam_User_Stats::steam_user_stats_network_stats, this);
     this->network->setCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_User_Stats::steam_user_stats_network_low_level, this);
     this->run_every_runcb->add(&Steam_User_Stats::steam_user_stats_run_every_runcb, this);
+
+    // Proactively start fetching Steam global achievement percentages and SteamHunters data
+    // at construction time so cache is warm before the game or overlay ever requests it.
+    RequestGlobalAchievementPercentages();
+    RequestSteamHuntersData();
+    RequestSteamCardExchangeData();
+
+    oxo_achievement_pipe = OxoAchievementPipeAdapter::create(
+        settings->get_local_game_id().AppID(),
+        oxo_runtime_state(),
+        [this](const nlohmann::json &command) {
+            return oxo_execute_command(command);
+        });
 }
 
 Steam_User_Stats::~Steam_User_Stats()
 {
+    // Join the adapter before any dependency captured by its command callback
+    // starts being torn down.
+    oxo_achievement_pipe.reset();
+
     if (!settings->disable_sharing_stats_with_gameserver) {
         this->network->rmCallback(CALLBACK_ID_GAMESERVER_STATS, settings->get_local_steam_id(), &Steam_User_Stats::steam_user_stats_network_stats, this);
     }
@@ -137,6 +155,185 @@ Steam_User_Stats::~Steam_User_Stats()
     this->network->rmCallback(CALLBACK_ID_USER_STATS, settings->get_local_steam_id(), &Steam_User_Stats::steam_user_stats_network_stats, this);
     this->network->rmCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_User_Stats::steam_user_stats_network_low_level, this);
     this->run_every_runcb->remove(&Steam_User_Stats::steam_user_stats_run_every_runcb, this);
+}
+
+nlohmann::json Steam_User_Stats::oxo_runtime_state()
+{
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
+    nlohmann::json schema = nlohmann::json::array();
+    for (const auto &defined : defined_achievements) {
+        try {
+            const auto id = defined.value("name", std::string{});
+            if (id.empty()) continue;
+
+            bool hidden = false;
+            const auto hidden_it = defined.find("hidden");
+            if (hidden_it != defined.end()) {
+                if (hidden_it->is_boolean()) {
+                    hidden = hidden_it->get<bool>();
+                } else if (hidden_it->is_number_integer()) {
+                    hidden = hidden_it->get<int64_t>() != 0;
+                } else if (hidden_it->is_string()) {
+                    const auto value = common_helpers::to_lower(hidden_it->get<std::string>());
+                    hidden = value == "1" || value == "true";
+                }
+            }
+
+            uint64_t target = 0;
+            const auto progress_it = defined.find("progress");
+            if (progress_it != defined.end() && progress_it->is_object()) {
+                const auto max_it = progress_it->find("max_val");
+                if (max_it != progress_it->end()) {
+                    if (max_it->is_number_unsigned()) {
+                        target = max_it->get<uint64_t>();
+                    } else if (max_it->is_number_integer()) {
+                        const auto value = max_it->get<int64_t>();
+                        if (value > 0) target = static_cast<uint64_t>(value);
+                    } else if (max_it->is_string()) {
+                        target = std::stoull(max_it->get<std::string>());
+                    }
+                }
+            }
+            if (!target) {
+                const auto user_it = user_achievements.find(id);
+                if (user_it != user_achievements.end()) {
+                    target = user_it->value("max_progress", uint64_t{});
+                }
+            }
+
+            schema.push_back({
+                {"id", id},
+                {"name", defined.value("displayName", id)},
+                {"description", defined.value("description", std::string{})},
+                {"hidden", hidden},
+                {"target", target},
+            });
+        } catch (...) {
+            // A malformed optional schema field must not disable transport for
+            // otherwise valid achievements.
+        }
+    }
+
+    nlohmann::json achievements = nlohmann::json::object();
+    if (user_achievements.is_object()) achievements = user_achievements;
+
+    nlohmann::json stats = nlohmann::json::object();
+    for (const auto &[name, value] : stats_cache_int) stats[name] = value;
+    for (const auto &[name, value] : stats_cache_float) stats[name] = value;
+
+    return {
+        {"schema", std::move(schema)},
+        {"achievements", std::move(achievements)},
+        {"stats", std::move(stats)},
+    };
+}
+
+nlohmann::json Steam_User_Stats::oxo_execute_command(const nlohmann::json &command)
+{
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
+    const auto fail = [](const std::string &error) {
+        return nlohmann::json{{"ok", false}, {"error", error}};
+    };
+    const auto succeed = [](nlohmann::json result = nlohmann::json::object()) {
+        return nlohmann::json{{"ok", true}, {"result", std::move(result)}};
+    };
+    const auto valid_id = [](const std::string &value) {
+        return !value.empty() && value.size() <= 512 &&
+            std::none_of(value.begin(), value.end(), [](unsigned char ch) {
+                return std::iscntrl(ch) != 0;
+            });
+    };
+
+    if (!command.is_object()) return fail("Command must be a JSON object");
+    const auto type = command.value("type", std::string{});
+
+    if (type == "queryState") {
+        auto state = oxo_runtime_state();
+        if (oxo_achievement_pipe) {
+            auto event = state;
+            event["type"] = "schemaReady";
+            oxo_achievement_pipe->emit_event(std::move(event));
+        }
+        return succeed(std::move(state));
+    }
+
+    if (type == "flush") {
+        return StoreStats() ? succeed({{"stored", true}}) : fail("GSE rejected StoreStats");
+    }
+
+    if (type == "unlock" || type == "clear" || type == "setProgress") {
+        const auto achievement_id = command.value("achievementId", std::string{});
+        if (!valid_id(achievement_id)) return fail("Invalid achievementId");
+
+        if (type == "unlock") {
+            return SetAchievement(achievement_id.c_str())
+                ? succeed({{"achievementId", achievement_id}, {"unlocked", true}})
+                : fail("GSE could not unlock the achievement");
+        }
+        if (type == "clear") {
+            return ClearAchievement(achievement_id.c_str())
+                ? succeed({{"achievementId", achievement_id}, {"unlocked", false}})
+                : fail("GSE could not clear the achievement");
+        }
+
+        uint64_t current = 0;
+        uint64_t target = 0;
+        try {
+            current = command.at("current").get<uint64_t>();
+            target = command.at("target").get<uint64_t>();
+        } catch (...) {
+            return fail("Progress values must be unsigned integers");
+        }
+        if (!target || current > target || target > UINT32_MAX) {
+            return fail("Progress must satisfy 0 <= current <= target <= UINT32_MAX");
+        }
+        const bool applied = current == target
+            ? SetAchievement(achievement_id.c_str())
+            : IndicateAchievementProgress(
+                achievement_id.c_str(),
+                static_cast<uint32>(current),
+                static_cast<uint32>(target));
+        return applied
+            ? succeed({{"achievementId", achievement_id}, {"current", current}, {"target", target}})
+            : fail("GSE could not update achievement progress");
+    }
+
+    if (type == "setStat") {
+        const auto stat_id = command.value("statId", std::string{});
+        if (!valid_id(stat_id)) return fail("Invalid statId");
+
+        double value = 0.0;
+        try {
+            value = command.at("value").get<double>();
+        } catch (...) {
+            return fail("Stat value must be numeric");
+        }
+        if (!std::isfinite(value)) return fail("Stat value must be finite");
+
+        const bool integer = command.value("integer", false);
+        bool applied = false;
+        if (integer) {
+            if (std::trunc(value) != value ||
+                value < static_cast<double>(INT32_MIN) ||
+                value > static_cast<double>(INT32_MAX)) {
+                return fail("Integer stat value is outside the int32 range");
+            }
+            applied = SetStat(stat_id.c_str(), static_cast<int32>(value));
+        } else {
+            const auto max_float = static_cast<double>(std::numeric_limits<float>::max());
+            if (value < -max_float || value > max_float) {
+                return fail("Float stat value is outside the float range");
+            }
+            applied = SetStat(stat_id.c_str(), static_cast<float>(value));
+        }
+        return applied
+            ? succeed({{"statId", stat_id}, {"value", value}, {"integer", integer}})
+            : fail("GSE could not update the stat");
+    }
+
+    return fail("Unsupported achievement command type");
 }
 
 
@@ -451,6 +648,27 @@ void Steam_User_Stats::steam_run_callback()
     send_updated_stats();
     load_achievements_icons();
     send_pending_user_stats_requests();
+
+    // once global percentages are fetched, push them to overlay once (for display + optional sort)
+    // and persist them into the user achievements.json
+    if (global_achievement_percentages_populated && !global_achievement_percentages_overlay_sorted) {
+        if (overlay) {
+            overlay->SortAchievementsByGlobalPercent(global_achievement_percentages);
+        }
+
+        // write global_percent into every achievement entry and save to disk
+        bool changed = false;
+        for (auto &kv : global_achievement_percentages) {
+            float existing = user_achievements[kv.first].value("global_percent", -1.0f);
+            if (existing != kv.second) {
+                user_achievements[kv.first]["global_percent"] = kv.second;
+                changed = true;
+            }
+        }
+        if (changed) save_achievements();
+
+        global_achievement_percentages_overlay_sorted = true;
+    }
 }
 
 

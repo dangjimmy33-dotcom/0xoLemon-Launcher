@@ -5,6 +5,7 @@
 #include <Windows.h>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 
 typedef int (*CliMainFn)(int argc, char** argv);
 
@@ -17,17 +18,27 @@ int main(int argc, char** argv) {
         return 1;
     }
     
-    // Replace exe name with dll name
+    // The launcher brands the embedded DLL while upstream releases retain the
+    // original filename. Accept both layouts so the same CLI remains useful in
+    // packaged and standalone CloudRedirect installations.
     char* lastSlash = strrchr(dllPath, '\\');
-    if (lastSlash) {
-        strcpy(lastSlash + 1, "cloud_redirect.dll");
-    } else {
-        strcpy(dllPath, "cloud_redirect.dll");
+    const char* dllNames[] = { "0xoCloudRedirect.dll", "cloud_redirect.dll" };
+    HMODULE hDll = nullptr;
+    DWORD loadError = ERROR_MOD_NOT_FOUND;
+    for (const char* dllName : dllNames) {
+        if (lastSlash) {
+            strcpy_s(lastSlash + 1, MAX_PATH - static_cast<size_t>(lastSlash + 1 - dllPath), dllName);
+        } else {
+            strcpy_s(dllPath, MAX_PATH, dllName);
+        }
+        hDll = LoadLibraryA(dllPath);
+        if (hDll) break;
+        loadError = GetLastError();
     }
-    
-    HMODULE hDll = LoadLibraryA(dllPath);
+
     if (!hDll) {
-        fprintf(stderr, "Error: Cannot load %s (error %lu)\n", dllPath, GetLastError());
+        fprintf(stderr, "Error: Cannot load CloudRedirect engine beside %s (error %lu)\n",
+                argv[0], loadError);
         return 1;
     }
     

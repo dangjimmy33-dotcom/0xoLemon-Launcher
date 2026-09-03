@@ -211,15 +211,6 @@ static void load_old_steam_interfaces()
     reset_LastError();
 }
 
-inline int get_old_interface_ver(const char *interface_name)
-{
-    size_t len = strlen(interface_name);
-    if (len < 3)
-        return 0;
-
-    return atoi(interface_name + (len - 3));
-}
-
 // declare "g_pSteamClientGameServer" as an export for API library, then actually define it
 #if !defined(STEAMCLIENT_DLL) // api
 STEAMAPI_API ISteamClient *g_pSteamClientGameServer;
@@ -590,6 +581,16 @@ STEAMAPI_API void S_CALLTYPE SteamAPI_RunCallbacks()
 {
     // PRINT_DEBUG_ENTRY();
     get_steam_client()->RunCallbacks(true, false);
+
+#if defined(EMU_EXPERIMENTAL_BUILD)
+    // one-shot renderer detection on first callback (renderer is initialized by now)
+    static bool renderer_checked = false;
+    if (!renderer_checked) {
+        renderer_checked = true;
+        append_renderer_info();
+    }
+#endif
+
     //std::this_thread::sleep_for(std::chrono::microseconds(1)); //fixes resident evil revelations lagging. (Seems to work fine without this right now, commenting out)
 }
 

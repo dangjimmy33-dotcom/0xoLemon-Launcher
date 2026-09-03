@@ -1,0 +1,948 @@
+/* DepotDownloaderView.css — Modern styling for 0xoLemon Depot Downloader */
+
+.depot-downloader-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background: var(--theme-page-bg, #090e13);
+  color: var(--text-color, #e2e8f0);
+  overflow: hidden;
+  box-sizing: border-box;
+  --depot-accent: var(--theme-accent-strong, #6ab6d9);
+  --depot-accent-soft: color-mix(in oklab, transparent 80%, var(--theme-accent, #6ab6d9) 20%);
+  --depot-accent-faint: color-mix(in oklab, transparent 90%, var(--theme-accent, #6ab6d9) 10%);
+}
+
+/* ── Top Header ── */
+.depot-downloader-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background: rgba(15, 23, 42, 0.75);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.depot-header-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.depot-header-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, color-mix(in oklab, transparent 75%, var(--theme-accent) 25%), rgba(255, 215, 0, 0.2));
+  border: 1px solid color-mix(in oklab, transparent 60%, var(--theme-accent) 40%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--depot-accent);
+  box-shadow: 0 0 16px color-mix(in oklab, transparent 85%, var(--theme-accent) 15%);
+}
+
+.depot-header-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.depot-header-title-row h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
+
+.depot-header-badge {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: color-mix(in oklab, transparent 85%, var(--theme-accent) 15%);
+  color: var(--depot-accent);
+  border: 1px solid color-mix(in oklab, transparent 70%, var(--theme-accent) 30%);
+}
+
+.depot-header-badge.is-net9 {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
+.depot-header-subtitle {
+  margin: 2px 0 0 0;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.depot-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.depot-search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.depot-search-icon {
+  position: absolute;
+  left: 10px;
+  color: rgba(255, 255, 255, 0.4);
+  pointer-events: none;
+}
+
+.depot-search-box input {
+  width: 240px;
+  height: 34px;
+  padding: 0 28px 0 32px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 12px;
+  outline: none;
+  transition: all 0.18s;
+}
+
+.depot-search-box input:focus {
+  border-color: var(--depot-accent);
+  background: rgba(255, 255, 255, 0.09);
+  box-shadow: 0 0 0 2px color-mix(in oklab, transparent 80%, var(--theme-accent) 20%);
+  width: 280px;
+}
+
+.depot-search-clear {
+  position: absolute;
+  right: 8px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.depot-refresh-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+
+.depot-refresh-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.depot-refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Main Layout Body ── */
+.depot-main-layout {
+  display: flex;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ── Left Side: Catalog Pane ── */
+.depot-catalog-pane {
+  width: 420px;
+  min-width: 360px;
+  max-width: 480px;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  background: rgba(10, 15, 24, 0.4);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.depot-pane-title-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.depot-count-pill {
+  font-size: 11px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 8px;
+  border-radius: 12px;
+  color: #fff;
+}
+
+.depot-cards-grid {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-gutter: stable;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.depot-game-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+}
+
+.depot-game-card:disabled {
+  cursor: default;
+}
+
+.depot-game-card:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: color-mix(in oklab, transparent 65%, var(--theme-accent) 35%);
+  transform: translateX(3px);
+}
+
+.depot-game-card.is-selected {
+  background: linear-gradient(90deg, color-mix(in oklab, transparent 84%, var(--theme-accent) 16%), rgba(255, 215, 0, 0.06));
+  border-color: var(--depot-accent);
+  box-shadow: 0 0 14px color-mix(in oklab, transparent 85%, var(--theme-accent) 15%);
+}
+
+.depot-card-thumb {
+  width: 90px;
+  height: 48px;
+  border-radius: 6px;
+  background: #0f172a;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.depot-card-thumb img {
+  display: block;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.depot-card-overlay {
+  position: absolute;
+  bottom: 2px;
+  left: 3px;
+}
+
+.depot-appid-tag {
+  font-size: 8px;
+  font-weight: 700;
+  background: rgba(0, 0, 0, 0.75);
+  padding: 1px 4px;
+  border-radius: 3px;
+  color: color-mix(in oklab, var(--depot-accent) 70%, white 30%);
+  backdrop-filter: blur(4px);
+}
+
+.depot-card-info {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  gap: 2px;
+  flex: 1;
+}
+
+.depot-card-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.depot-card-sub {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Right Side: Inspector Pane ── */
+.depot-inspector-pane {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: rgba(15, 23, 42, 0.25);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.depot-detail-scroll {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-gutter: stable;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.depot-no-selection,
+.depot-pane-loading,
+.depot-pane-error,
+.depot-pane-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  text-align: center;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.depot-no-sel-icon {
+  color: color-mix(in oklab, transparent 65%, var(--theme-accent) 35%);
+}
+
+.depot-no-selection h3 {
+  margin: 0;
+  color: #fff;
+  font-size: 16px;
+}
+
+.depot-no-selection p {
+  margin: 0;
+  max-width: 360px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ── Game Hero ── */
+.depot-game-hero {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 20px;
+  display: flex;
+  gap: 18px;
+  align-items: flex-end;
+  min-height: 120px;
+}
+
+.depot-hero-banner {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 50%;
+  object-fit: cover;
+  opacity: 0.35;
+  mask-image: linear-gradient(to left, rgba(0, 0, 0, 1), transparent);
+  pointer-events: none;
+}
+
+.depot-hero-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.depot-hero-tags {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.depot-tag-appid {
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.depot-tag-key {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.depot-tag-key.is-ready {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.depot-tag-key.is-missing {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.depot-hero-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.depot-hero-folder {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  font-family: monospace;
+}
+
+/* ── Config Cards ── */
+.depot-config-card {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.depot-card-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--depot-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.depot-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.depot-form-group label {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.depot-select {
+  height: 38px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #fff;
+  font-size: 13px;
+  padding: 0 12px;
+  outline: none;
+}
+
+.depot-select option {
+  background: #0f172a;
+  color: #fff;
+}
+
+.depot-path-input-group {
+  display: flex;
+  gap: 8px;
+}
+
+.depot-input {
+  flex: 1;
+  height: 38px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #fff;
+  font-size: 13px;
+  padding: 0 12px;
+  outline: none;
+  font-family: monospace;
+}
+
+.depot-btn-browse {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.depot-btn-browse:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.depot-options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.depot-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  cursor: pointer;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* ── Manifests Table ── */
+.depot-manifests-table {
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+}
+
+.depot-manifest-row {
+  display: grid;
+  grid-template-columns: 120px 220px 1fr;
+  padding: 8px 14px;
+  font-size: 12px;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.depot-manifest-row:last-child {
+  border-bottom: none;
+}
+
+.depot-manifest-row.is-header {
+  background: rgba(255, 255, 255, 0.05);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+}
+
+.depot-id-mono,
+.depot-gid-mono,
+.depot-file-mono {
+  font-family: monospace;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.depot-id-mono {
+  color: color-mix(in oklab, var(--depot-accent) 70%, white 30%);
+  font-weight: 600;
+}
+
+
+/* ── Installed Build / Version Switch State ── */
+.depot-version-state {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.045);
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.depot-version-state > svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: var(--depot-accent);
+}
+
+.depot-version-state > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.depot-version-state strong {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.depot-version-state span {
+  font-size: 11px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.58);
+}
+
+.depot-version-state.is-switch {
+  border-color: color-mix(in oklab, var(--depot-accent) 46%, transparent);
+  background: color-mix(in oklab, var(--depot-accent) 9%, transparent);
+}
+
+.depot-version-state.is-current {
+  border-color: rgba(34, 197, 94, 0.28);
+  background: rgba(34, 197, 94, 0.055);
+}
+
+.depot-version-state.is-current > svg {
+  color: #4ade80;
+}
+
+/* ── Action & Progress Card ── */
+.depot-action-card {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.depot-start-btn-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.depot-btn-primary-start {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 148px;
+  height: 42px;
+  padding: 0 16px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 180ms ease, border-color 180ms ease, transform 120ms ease;
+}
+
+.depot-btn-primary-start:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.depot-btn-primary-start:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.depot-btn-primary-start:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--theme-accent, #6ab6d9) 68%, white 32%);
+  outline-offset: 2px;
+}
+
+.depot-btn-primary-start:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.depot-btn-secondary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.depot-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+/* ── Live Progress ── */
+.depot-download-live-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.depot-live-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.depot-live-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.depot-pulse-icon {
+  color: var(--depot-accent);
+}
+
+.depot-live-sub {
+  display: block;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 2px;
+}
+
+.depot-pct-display {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--depot-accent);
+  font-family: monospace;
+}
+
+.depot-progress-track {
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.depot-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--theme-accent-strong), color-mix(in oklab, var(--theme-accent-strong) 68%, white 32%));
+  border-radius: 4px;
+  transition: width 0.2s ease-out;
+}
+
+.depot-progress-fill.is-animated {
+  background-size: 200% 100%;
+  animation: depot-shimmer 2s linear infinite;
+}
+
+@keyframes depot-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.depot-live-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+
+.depot-live-primary-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.depot-btn-pause,
+.depot-btn-resume {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid color-mix(in oklab, var(--depot-accent) 42%, rgba(255, 255, 255, 0.12));
+  background: color-mix(in oklab, var(--depot-accent) 13%, rgba(255, 255, 255, 0.04));
+  color: color-mix(in oklab, var(--depot-accent) 70%, white 30%);
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease;
+}
+
+.depot-btn-pause:hover,
+.depot-btn-resume:hover {
+  background: color-mix(in oklab, var(--depot-accent) 22%, rgba(255, 255, 255, 0.06));
+  border-color: color-mix(in oklab, var(--depot-accent) 62%, rgba(255, 255, 255, 0.16));
+}
+
+.depot-btn-cancel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  background: rgba(239, 68, 68, 0.18);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #f87171;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.depot-btn-cancel:hover {
+  background: rgba(239, 68, 68, 0.3);
+}
+
+.depot-btn-toggle-logs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* ── Success & Error Banners ── */
+.depot-success-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  color: #4ade80;
+}
+
+.depot-success-icon {
+  flex-shrink: 0;
+}
+
+.depot-btn-open-dir {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  background: #22c55e;
+  border: none;
+  color: #0f172a;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.depot-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #f87171;
+}
+
+/* ── Console Output Terminal ── */
+.depot-terminal-console {
+  border-radius: 8px;
+  background: #090e13;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+.depot-terminal-header {
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  gap: 6px;
+}
+
+.depot-term-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.depot-term-dot.is-red { background: #ef4444; }
+.depot-term-dot.is-yellow { background: #f59e0b; }
+.depot-term-dot.is-green { background: #22c55e; }
+
+.depot-term-title {
+  margin-left: 6px;
+  font-size: 11px;
+  font-family: monospace;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.depot-terminal-body {
+  max-height: 180px;
+  overflow-y: auto;
+  padding: 10px 14px;
+  font-family: 'Consolas', 'Fira Code', monospace;
+  font-size: 11px;
+  line-height: 1.45;
+  color: #a5f3fc;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.depot-log-line {
+  word-break: break-all;
+  white-space: pre-wrap;
+}

@@ -537,6 +537,43 @@ static void load_overlay_appearance(class Settings *settings_client, class Setti
                 settings_client->overlay_appearance.stats_text_a = val;
                 settings_server->overlay_appearance.stats_text_a = val;
             // FPS text color END <<<
+            // >>> Image gamma correction
+            } else if (name.compare("Image_Gamma") == 0) {
+                using SrgbDecode = Overlay_Appearance::SrgbDecode;
+                SrgbDecode mode = SrgbDecode::Auto;
+                if (value == "on")   mode = SrgbDecode::On;
+                else if (value == "off") mode = SrgbDecode::Off;
+                settings_client->overlay_appearance.image_gamma = mode;
+                settings_server->overlay_appearance.image_gamma = mode;
+            // Image gamma correction END <<<
+            // >>> Swapchain colour-space override
+            } else if (name.compare("Swapchain_Override") == 0) {
+                using SO = Overlay_Appearance::SwapchainOverride;
+                SO mode = SO::Auto;
+                if      (value == "linear_hdr") mode = SO::LinearHDR;
+                else if (value == "hdr10_pq")   mode = SO::HDR10PQ;
+                else if (value == "srgb_rtv")   mode = SO::SrgbRTV;
+                else if (value == "sdr")        mode = SO::SDR;
+                settings_client->overlay_appearance.swapchain_override = mode;
+                settings_server->overlay_appearance.swapchain_override = mode;
+            // Swapchain colour-space override END <<<
+            // >>> Image colour adjustments (brightness, contrast, gamma)
+            } else if (name.compare("Image_Brightness") == 0) {
+                float val = std::stof(value);
+                if (val < 0.1f) val = 0.1f; else if (val > 4.0f) val = 4.0f;
+                settings_client->overlay_appearance.image_brightness = val;
+                settings_server->overlay_appearance.image_brightness = val;
+            } else if (name.compare("Image_Contrast") == 0) {
+                float val = std::stof(value);
+                if (val < 0.1f) val = 0.1f; else if (val > 4.0f) val = 4.0f;
+                settings_client->overlay_appearance.image_contrast = val;
+                settings_server->overlay_appearance.image_contrast = val;
+            } else if (name.compare("Image_Gamma_Adjust") == 0) {
+                float val = std::stof(value);
+                if (val < 0.1f) val = 0.1f; else if (val > 4.0f) val = 4.0f;
+                settings_client->overlay_appearance.image_gamma_adjust = val;
+                settings_server->overlay_appearance.image_gamma_adjust = val;
+            // Image colour adjustments END <<<
             // >>> FPS position
             } else if (name.compare("Stats_Pos_x") == 0) {
                 auto pos = std::stof(value);
@@ -910,6 +947,29 @@ static std::set<std::string> parse_supported_languages(class Local_Storage *loca
     return supported_languages;
 }
 
+static void parse_purchase_date(class Settings* settings_client, Settings* settings_server)
+{
+    const char* raw_purchase_date = ini.GetValue("app::general", "purchase_date", "");
+
+    std::chrono::system_clock::time_point purchase_date;
+
+    std::tm time{};
+    std::istringstream is{ raw_purchase_date };
+    is.imbue(std::locale("")); // Default to system locale
+    is >> std::get_time(&time, "%Y/%m/%d %H:%M:%S");
+
+    // if date is formatted incorrectly
+    if (is.fail()) {
+        // default to 4 days ago
+        purchase_date = startup_time - std::chrono::hours(24 * 4);
+    } else {
+        purchase_date = std::chrono::system_clock::from_time_t(std::mktime(&time));
+    }
+
+    settings_client->set_purchase_date(purchase_date);
+    settings_server->set_purchase_date(purchase_date);
+}
+
 // app::dlcs
 static void parse_dlc(class Settings *settings_client, class Settings *settings_server)
 {
@@ -974,6 +1034,303 @@ static void parse_app_paths(class Settings *settings_client, Settings *settings_
     }
 }
 
+// ---- Binary VDF parser + auto-generator for UserGameStatsSchema_<appid>.bin ----
+
+static bool schema_vdf_read_cstr(const uint8_t *data, size_t len, size_t &pos, std::string &out)
+{
+    const size_t start = pos;
+    while (pos < len && data[pos] != 0) ++pos;
+    if (pos >= len) return false;
+    out.assign(reinterpret_cast<const char*>(data + start), pos - start);
+    ++pos; // consume null terminator
+    return true;
+}
+
+static bool schema_vdf_parse_node(const uint8_t *data, size_t len, size_t &pos, nlohmann::json &out)
+{
+    out = nlohmann::json::object();
+    while (pos < len) {
+        const uint8_t type = data[pos++];
+        if (type == 0x08) return true; // TYPE_END
+        std::string key;
+        if (!schema_vdf_read_cstr(data, len, pos, key)) return false;
+
+        if (type == 0x00) { // TYPE_SUBKEY
+            nlohmann::json child;
+            if (!schema_vdf_parse_node(data, len, pos, child)) return false;
+            out[key] = std::move(child);
+        } else if (type == 0x01) { // TYPE_STRING
+            std::string val;
+            if (!schema_vdf_read_cstr(data, len, pos, val)) return false;
+            out[key] = val;
+        } else if (type == 0x02) { // TYPE_INT32
+            if (pos + 4 > len) return false;
+            int32_t v; memcpy(&v, data + pos, 4); pos += 4;
+            out[key] = v;
+        } else if (type == 0x03) { // TYPE_FLOAT32
+            if (pos + 4 > len) return false;
+            float v; memcpy(&v, data + pos, 4); pos += 4;
+            out[key] = v;
+        } else if (type == 0x07) { // TYPE_UINT64
+            if (pos + 8 > len) return false;
+            uint64_t v; memcpy(&v, data + pos, 8); pos += 8;
+            out[key] = v;
+        } else {
+            return false; // unknown type
+        }
+    }
+    return true; // EOF is valid at root level
+}
+
+// FNV-1a 64-bit content hash (for detecting .bin file replacements)
+static uint64_t schema_fnv1a_64(const uint8_t *data, size_t len)
+{
+    uint64_t hash = 14695981039346656037ULL;
+    for (size_t i = 0; i < len; ++i) {
+        hash ^= static_cast<uint64_t>(data[i]);
+        hash *= 1099511628211ULL;
+    }
+    return hash;
+}
+
+// Try to auto-generate steam_settings/achievements.json and steam_settings/stats.json
+// from a UserGameStatsSchema_<appid>.bin placed in the steam_settings folder.
+// - If neither JSON exists:           generate both.
+// - If only one is missing:           generate only the missing one.
+// - If the .bin changed (hash diff):  force-regenerate both and update the stored hash.
+// Hash is stored in UserGameStatsSchema_<appid>.bin.hash alongside the bin.
+static void try_gen_settings_from_schema_bin(class Settings *settings_client, class Settings *settings_server)
+{
+    const std::string settings_path = Local_Storage::get_game_settings_path();
+    const uint32 appid = settings_client->get_local_game_id().AppID();
+    const std::string appid_str = std::to_string(appid);
+
+    const std::string schema_path = settings_path + "UserGameStatsSchema_" + appid_str + ".bin";
+    if (!std::filesystem::exists(std::filesystem::u8path(schema_path))) return;
+
+    // Read the binary schema file first (raw bytes needed for hash computation)
+    std::ifstream ifs(std::filesystem::u8path(schema_path), std::ios::binary | std::ios::ate);
+    if (!ifs) {
+        PRINT_DEBUG("schema_gen: failed to open schema file");
+        return;
+    }
+    const auto fsz = ifs.tellg();
+    ifs.seekg(0);
+    if (fsz <= 0 || static_cast<size_t>(fsz) > 16 * 1024 * 1024) {
+        PRINT_DEBUG("schema_gen: schema file size invalid");
+        return;
+    }
+    std::vector<uint8_t> raw(static_cast<size_t>(fsz));
+    ifs.read(reinterpret_cast<char*>(raw.data()), fsz);
+    ifs.close();
+
+    // Compare current hash against stored value to detect bin replacements
+    const uint64_t cur_hash = schema_fnv1a_64(raw.data(), raw.size());
+    const std::string hash_path = settings_path + "UserGameStatsSchema_" + appid_str + ".bin.hash";
+
+    uint64_t stored_hash = ~cur_hash; // intentionally different until proven equal
+    {
+        std::ifstream hf(std::filesystem::u8path(hash_path));
+        if (hf) {
+            std::string hex;
+            hf >> hex;
+            try { stored_hash = std::stoull(hex, nullptr, 16); } catch (...) {}
+        }
+    }
+
+    const bool bin_changed      = (cur_hash != stored_hash);
+    const bool ach_json_exists   = std::filesystem::exists(std::filesystem::u8path(settings_path + "achievements.json"));
+    const bool stats_json_exists = std::filesystem::exists(std::filesystem::u8path(settings_path + "stats.json"));
+    // Decide whether to write JSON files (skip if the user opted out)
+    const bool need_ach   = !settings_client->no_write_schema_achievements_json && (bin_changed || !ach_json_exists);
+    const bool need_stats = !settings_client->no_write_schema_stats_json         && (bin_changed || !stats_json_exists);
+    // Always parse if any no-write flag is set (need cache for fallback) or if files must be written
+    const bool need_parse = need_ach || need_stats
+                         || settings_client->no_write_schema_achievements_json
+                         || settings_client->no_write_schema_stats_json;
+    if (!need_parse) return;
+
+    PRINT_DEBUG("schema_gen: %s — generating config files", bin_changed ? "bin changed" : "first run");
+
+    // Parse binary VDF
+    nlohmann::json vdf;
+    size_t pos = 0;
+    if (!schema_vdf_parse_node(raw.data(), raw.size(), pos, vdf)) {
+        PRINT_DEBUG("schema_gen: failed to parse VDF in '%s'", schema_path.c_str());
+        return;
+    }
+
+    // Navigate: root[appid_str]["stats"]
+    if (!vdf.contains(appid_str) || !vdf[appid_str].is_object()) {
+        PRINT_DEBUG("schema_gen: appid '%s' not found in VDF", appid_str.c_str());
+        return;
+    }
+    const auto &app_node = vdf[appid_str];
+    if (!app_node.contains("stats") || !app_node["stats"].is_object()) {
+        PRINT_DEBUG("schema_gen: no 'stats' node in schema for appid '%s'", appid_str.c_str());
+        return;
+    }
+    const auto &stats_node = app_node["stats"];
+
+    // Convert any JSON numeric/string value to a plain string
+    auto json_val_to_str = [](const nlohmann::json &v) -> std::string {
+        if (v.is_string())          return v.get<std::string>();
+        if (v.is_number_integer())  return std::to_string(v.get<int64_t>());
+        if (v.is_number_unsigned()) return std::to_string(v.get<uint64_t>());
+        if (v.is_number_float())    return std::to_string(v.get<double>());
+        return "0";
+    };
+
+    nlohmann::json achievements_arr = nlohmann::json::array();
+    nlohmann::json stats_arr        = nlohmann::json::array();
+    static const nlohmann::json empty_obj = nlohmann::json::object();
+
+    for (const auto &[gid, gval] : stats_node.items()) {
+        if (!gval.is_object()) continue;
+
+        std::string gtype = gval.value("type", std::string{});
+        std::string gtype_upper = gtype;
+        std::transform(gtype_upper.begin(), gtype_upper.end(), gtype_upper.begin(),
+                       [](unsigned char c){ return (unsigned char)std::toupper(c); });
+
+        if (gtype_upper == "ACHIEVEMENTS") {
+            if (!gval.contains("bits") || !gval["bits"].is_object()) continue;
+            const auto &bits = gval["bits"];
+
+            for (const auto &[bit, bval] : bits.items()) {
+                if (!bval.is_object()) continue;
+                const std::string api_name = bval.value("name", std::string{});
+                if (api_name.empty()) continue;
+
+                const auto &disp = (bval.contains("display") && bval["display"].is_object())
+                                   ? bval["display"] : empty_obj;
+
+                // displayName / description: preserve the full language map if present, or plain string
+                nlohmann::json display_name = disp.contains("name") ? disp["name"] : nlohmann::json(std::string{});
+                nlohmann::json description  = disp.contains("desc") ? disp["desc"] : nlohmann::json(std::string{});
+                if (!display_name.is_string() && !display_name.is_object()) display_name = std::string{};
+                if (!description.is_string()  && !description.is_object())  description  = std::string{};
+
+                int hidden = 0;
+                if (disp.contains("hidden")) {
+                    const auto &h = disp["hidden"];
+                    if (h.is_number())      hidden = h.get<int>();
+                    else if (h.is_string()) { try { hidden = std::stoi(h.get<std::string>()); } catch (...) {} }
+                }
+
+                std::string icon      = disp.value("icon",      std::string{});
+                std::string icon_gray = disp.value("icon_gray", std::string{});
+                if (icon_gray.empty()) icon_gray = disp.value("icongray", std::string{});
+                // Prefix icon paths with "img/" to match expected format
+                if (!icon.empty()      && icon.rfind("img/", 0)      != 0) icon      = "img/" + icon;
+                if (!icon_gray.empty() && icon_gray.rfind("img/", 0) != 0) icon_gray = "img/" + icon_gray;
+
+                nlohmann::json ach_entry = {
+                    {"name",        api_name},
+                    {"displayName", display_name},
+                    {"description", description},
+                    {"hidden",      hidden},
+                    {"icon",        icon},
+                    {"icon_gray",   icon_gray},
+                    {"_group",      gid},
+                    {"_bit",        bit},
+                };
+
+                // Progress tracking (optional)
+                if (bval.contains("progress") && bval["progress"].is_object()) {
+                    const auto &prog = bval["progress"];
+                    const auto &val_node = (prog.contains("value") && prog["value"].is_object())
+                                           ? prog["value"] : empty_obj;
+                    const std::string op1 = val_node.value("operand1", std::string{});
+                    if (!op1.empty()) {
+                        const std::string op = val_node.value("operation", std::string("statvalue"));
+                        ach_entry["progress"] = {
+                            {"value",   {{"operation", op}, {"operand1", op1}}},
+                            {"min_val", json_val_to_str(prog.contains("min_val") ? prog["min_val"] : nlohmann::json(0))},
+                            {"max_val", json_val_to_str(prog.contains("max_val") ? prog["max_val"] : nlohmann::json(0))},
+                        };
+                    }
+                }
+
+                achievements_arr.push_back(std::move(ach_entry));
+            }
+        } else {
+            // Regular stat: INT, FLOAT, AVGRATE
+            const std::string stat_name = gval.value("name", std::string{});
+            if (stat_name.empty()) continue;
+
+            std::string stat_type = gtype;
+            std::transform(stat_type.begin(), stat_type.end(), stat_type.begin(),
+                           [](unsigned char c){ return (unsigned char)std::tolower(c); });
+            if (stat_type != "int" && stat_type != "float" && stat_type != "avgrate") continue;
+
+            const std::string default_val_raw = gval.contains("default")
+                                            ? json_val_to_str(gval["default"])
+                                            : "0";
+            // Ensure float/avgrate defaults use decimal notation ("0" -> "0.0", "5" -> "5.0")
+            std::string default_val = default_val_raw;
+            if ((stat_type == "float" || stat_type == "avgrate") && default_val.find('.') == std::string::npos) {
+                default_val += ".0";
+            }
+            const std::string global_val = default_val; // no real global data available; mirror default
+            stats_arr.push_back({{"name", stat_name}, {"type", stat_type}, {"default", default_val}, {"global", global_val}, {"_group", gid}});
+        }
+    }
+
+    // Sort stats by integer group ID (schema binary gives string-lexicographic order: 1,10,100…)
+    std::sort(stats_arr.begin(), stats_arr.end(), [](const nlohmann::json &a, const nlohmann::json &b) {
+        try { return std::stoi(a.value("_group", "0")) < std::stoi(b.value("_group", "0")); }
+        catch (...) { return false; }
+    });
+
+    // Sort achievements by integer group ID then bit position
+    std::sort(achievements_arr.begin(), achievements_arr.end(), [](const nlohmann::json &a, const nlohmann::json &b) {
+        int ga = 0, gb = 0, ba = 0, bb = 0;
+        try { ga = std::stoi(a.value("_group", "0")); } catch (...) {}
+        try { gb = std::stoi(b.value("_group", "0")); } catch (...) {}
+        try { ba = std::stoi(a.value("_bit",   "0")); } catch (...) {}
+        try { bb = std::stoi(b.value("_bit",   "0")); } catch (...) {}
+        return ga != gb ? ga < gb : ba < bb;
+    });
+
+    // Always populate the in-memory cache so load_achievements_db() and parse_stats()
+    // can use it as a fallback when the JSON files are absent or intentionally not written.
+    settings_client->schema_achievements_json_str = achievements_arr.dump();
+    settings_server->schema_achievements_json_str = achievements_arr.dump();
+    settings_client->schema_stats_json_str = stats_arr.dump();
+    settings_server->schema_stats_json_str = stats_arr.dump();
+
+    if (need_ach) {
+        const std::string out_path = settings_path + "achievements.json";
+        std::ofstream ofs(std::filesystem::u8path(out_path));
+        if (ofs) {
+            ofs << achievements_arr.dump(2) << '\n';
+            PRINT_DEBUG("schema_gen: wrote achievements.json (%zu entries)", achievements_arr.size());
+        } else {
+            PRINT_DEBUG("schema_gen: failed to write achievements.json");
+        }
+    }
+
+    if (need_stats) {
+        const std::string out_path = settings_path + "stats.json";
+        std::ofstream ofs(std::filesystem::u8path(out_path));
+        if (ofs) {
+            ofs << stats_arr.dump(2) << '\n';
+            PRINT_DEBUG("schema_gen: wrote stats.json (%zu entries)", stats_arr.size());
+        } else {
+            PRINT_DEBUG("schema_gen: failed to write stats.json");
+        }
+    }
+
+    // Persist the hash so the next launch can detect if the bin is replaced
+    {
+        std::ostringstream oss;
+        oss << std::hex << std::setfill('0') << std::setw(16) << cur_hash;
+        std::ofstream hf(std::filesystem::u8path(hash_path));
+        if (hf) hf << oss.str() << '\n';
+    }
+}
+
 // leaderboards.txt
 static void parse_leaderboards(class Settings *settings_client, class Settings *settings_server)
 {
@@ -1022,7 +1379,15 @@ static void parse_stats(class Settings *settings_client, class Settings *setting
 {
     nlohmann::json stats_items;
     std::string stats_json_path = Local_Storage::get_game_settings_path() + "stats.json";
-    if (local_storage->load_json(stats_json_path, stats_items)) {
+    if (!local_storage->load_json(stats_json_path, stats_items) || !stats_items.is_array() || stats_items.empty()) {
+        // Fallback: schema cache populated by try_gen_settings_from_schema_bin() (when no_write_schema_stats_json is set)
+        if (!settings_client->schema_stats_json_str.empty()) {
+            try { stats_items = nlohmann::json::parse(settings_client->schema_stats_json_str); }
+            catch (...) { stats_items = nlohmann::json::array(); }
+            PRINT_DEBUG("parse_stats: using schema cache (%zu entries)", stats_items.size());
+        }
+    }
+    if (stats_items.is_array()) {
         for (const auto &stats : stats_items) {
             std::string stat_name;
             std::string stat_type;
@@ -1036,6 +1401,7 @@ static void parse_stats(class Settings *settings_client, class Settings *setting
                 stat_global_value = stats.value("global", std::string("0"));
             }
             catch (const std::exception &e) {
+                (void)e;
                 PRINT_DEBUG("Error reading current stat item in stats.json, reason: %s", e.what());
                 continue;
             }
@@ -1253,7 +1619,7 @@ static void try_parse_mods_file(class Settings *settings_client, Settings *setti
 {
     for (auto mod = mod_items.begin(); mod != mod_items.end(); ++mod) {
         try {
-            std::string mod_images_fullpath = Local_Storage::get_game_settings_path() + "mod_images" + PATH_SEPARATOR + std::string(mod.key());
+            std::string mod_images_fullpath = Local_Storage::get_game_settings_path() + "mods_img" + PATH_SEPARATOR + std::string(mod.key());
             Mod_entry newMod;
             newMod.id = std::stoull(mod.key());
             newMod.title = mod.value().value("title", std::string(mod.key()));
@@ -1347,7 +1713,7 @@ static void try_detect_mods_folder(class Settings *settings_client, Settings *se
 {
     std::vector<std::string> all_mods = Local_Storage::get_folders_path(mods_folder);
     for (auto & mod_folder: all_mods) {
-        std::string mod_images_fullpath = Local_Storage::get_game_settings_path() + "mod_images" + PATH_SEPARATOR + mod_folder;
+        std::string mod_images_fullpath = Local_Storage::get_game_settings_path() + "mods_img" + PATH_SEPARATOR + mod_folder;
         try {
             Mod_entry newMod;
             newMod.id = std::stoull(mod_folder);
@@ -1523,9 +1889,9 @@ static bool parse_branches_file(
         return false;
     }
 
+    // app::general::is_beta_branch
     settings_client->is_beta_branch = ini.GetBoolValue("app::general", "is_beta_branch", settings_client->is_beta_branch);
     settings_server->is_beta_branch = ini.GetBoolValue("app::general", "is_beta_branch", settings_server->is_beta_branch);
-
 
     // app::general::branch_name
     std::string selected_branch = common_helpers::string_strip(ini.GetValue("app::general", "branch_name", ""));
@@ -1628,6 +1994,12 @@ static void parse_overlay_general_config(class Settings *settings_client, class 
     settings_client->disable_overlay = !ini.GetBoolValue("overlay::general", "enable_experimental_overlay", !settings_client->disable_overlay);
     settings_server->disable_overlay = !ini.GetBoolValue("overlay::general", "enable_experimental_overlay", !settings_server->disable_overlay);
 
+    settings_client->enable_overlay_bridge = ini.GetBoolValue("overlay::reshade", "enable_experimental_bridge", settings_client->enable_overlay_bridge);
+    settings_server->enable_overlay_bridge = ini.GetBoolValue("overlay::reshade", "enable_experimental_bridge", settings_server->enable_overlay_bridge);
+
+    settings_client->disable_overlay_activated_callback = ini.GetBoolValue("overlay::general", "disable_overlay_activated_callback", settings_client->disable_overlay_activated_callback);
+    settings_server->disable_overlay_activated_callback = ini.GetBoolValue("overlay::general", "disable_overlay_activated_callback", settings_server->disable_overlay_activated_callback);
+
     {
         auto val = ini.GetLongValue("overlay::general", "hook_delay_sec", -1);
         if (val >= 0) {
@@ -1697,6 +2069,9 @@ static void parse_overlay_general_config(class Settings *settings_client, class 
     settings_client->overlay_upload_achs_icons_to_gpu = ini.GetBoolValue("overlay::general", "upload_achievements_icons_to_gpu", settings_client->overlay_upload_achs_icons_to_gpu);
     settings_server->overlay_upload_achs_icons_to_gpu = ini.GetBoolValue("overlay::general", "upload_achievements_icons_to_gpu", settings_server->overlay_upload_achs_icons_to_gpu);
 
+    settings_client->overlay_achievement_sort_by_global_percent = ini.GetBoolValue("overlay::general", "sort_achievements_by_global_percent", settings_client->overlay_achievement_sort_by_global_percent);
+    settings_server->overlay_achievement_sort_by_global_percent = ini.GetBoolValue("overlay::general", "sort_achievements_by_global_percent", settings_server->overlay_achievement_sort_by_global_percent);
+
     settings_client->overlay_always_show_user_info = ini.GetBoolValue("overlay::general", "overlay_always_show_user_info", settings_client->overlay_always_show_user_info);
     settings_server->overlay_always_show_user_info = ini.GetBoolValue("overlay::general", "overlay_always_show_user_info", settings_server->overlay_always_show_user_info);
 
@@ -1709,6 +2084,26 @@ static void parse_overlay_general_config(class Settings *settings_client, class 
     settings_client->overlay_always_show_playtime = ini.GetBoolValue("overlay::general", "overlay_always_show_playtime", settings_client->overlay_always_show_playtime);
     settings_server->overlay_always_show_playtime = ini.GetBoolValue("overlay::general", "overlay_always_show_playtime", settings_server->overlay_always_show_playtime);
 
+    // detailed stats display options
+    settings_client->overlay_show_fps_graph = ini.GetBoolValue("overlay::general", "overlay_show_fps_graph", settings_client->overlay_show_fps_graph);
+    settings_server->overlay_show_fps_graph = ini.GetBoolValue("overlay::general", "overlay_show_fps_graph", settings_server->overlay_show_fps_graph);
+    settings_client->overlay_show_frametime_graph = ini.GetBoolValue("overlay::general", "overlay_show_frametime_graph", settings_client->overlay_show_frametime_graph);
+    settings_server->overlay_show_frametime_graph = ini.GetBoolValue("overlay::general", "overlay_show_frametime_graph", settings_server->overlay_show_frametime_graph);
+    settings_client->overlay_show_min_max_avg = ini.GetBoolValue("overlay::general", "overlay_show_min_max_avg", settings_client->overlay_show_min_max_avg);
+    settings_server->overlay_show_min_max_avg = ini.GetBoolValue("overlay::general", "overlay_show_min_max_avg", settings_server->overlay_show_min_max_avg);
+    settings_client->overlay_show_percentile_1 = ini.GetBoolValue("overlay::general", "overlay_show_percentile_1", settings_client->overlay_show_percentile_1);
+    settings_server->overlay_show_percentile_1 = ini.GetBoolValue("overlay::general", "overlay_show_percentile_1", settings_server->overlay_show_percentile_1);
+    settings_client->overlay_show_percentile_5 = ini.GetBoolValue("overlay::general", "overlay_show_percentile_5", settings_client->overlay_show_percentile_5);
+    settings_server->overlay_show_percentile_5 = ini.GetBoolValue("overlay::general", "overlay_show_percentile_5", settings_server->overlay_show_percentile_5);
+    settings_client->overlay_show_percentile_01 = ini.GetBoolValue("overlay::general", "overlay_show_percentile_01", settings_client->overlay_show_percentile_01);
+    settings_server->overlay_show_percentile_01 = ini.GetBoolValue("overlay::general", "overlay_show_percentile_01", settings_server->overlay_show_percentile_01);
+    {
+        auto val = ini.GetLongValue("overlay::general", "overlay_graph_timeframe_sec", settings_client->overlay_graph_timeframe_sec);
+        if (val >= 1 && val <= 30) {
+            settings_client->overlay_graph_timeframe_sec = (int)val;
+            settings_server->overlay_graph_timeframe_sec = (int)val;
+        }
+    }
     settings_client->enable_screenshot = ini.GetBoolValue("overlay::general", "enable_screenshot", settings_client->enable_screenshot);
     settings_server->enable_screenshot = ini.GetBoolValue("overlay::general", "enable_screenshot", settings_server->enable_screenshot);
 
@@ -1761,8 +2156,7 @@ static void parse_simple_features(class Settings *settings_client, class Setting
     settings_client->enable_voice_chat = ini.GetBoolValue("main::general", "enable_voice_chat", settings_client->enable_voice_chat);
     settings_server->enable_voice_chat = ini.GetBoolValue("main::general", "enable_voice_chat", settings_server->enable_voice_chat);
 
-    settings_client->steam_deck = ini.GetBoolValue("main::general", "steam_deck", settings_client->steam_deck);
-    settings_server->steam_deck = ini.GetBoolValue("main::general", "steam_deck", settings_server->steam_deck);
+    bool steam_deck = ini.GetBoolValue("main::general", "steam_deck", false);
 
     settings_client->immediate_gameserver_stats = ini.GetBoolValue("main::general", "immediate_gameserver_stats", settings_client->immediate_gameserver_stats);
     settings_server->immediate_gameserver_stats = ini.GetBoolValue("main::general", "immediate_gameserver_stats", settings_server->immediate_gameserver_stats);
@@ -1773,10 +2167,102 @@ static void parse_simple_features(class Settings *settings_client, class Setting
     settings_client->matchmaking_server_list_always_lan_type = !ini.GetBoolValue("main::general", "matchmaking_server_list_actual_type", !settings_client->matchmaking_server_list_always_lan_type);
     settings_server->matchmaking_server_list_always_lan_type = !ini.GetBoolValue("main::general", "matchmaking_server_list_actual_type", !settings_server->matchmaking_server_list_always_lan_type);
 
+    {
+        ESteamHardwareType steam_hardware_type{};
+        long steam_hardware_type_long = ini.GetLongValue("main::general", "steam_hardware_type", static_cast<long>(settings_client->steam_hardware_type));
+        switch (steam_hardware_type_long) {
+        case 0:
+            steam_hardware_type = k_ESteamHardwareTypeNone;
+            break;
+        case 1:
+            steam_hardware_type = k_ESteamHardwareTypeSteamDeck;
+            break;
+        case 2:
+            steam_hardware_type = k_ESteamHardwareTypeSteamMachine;
+            break;
+        case 3:
+            steam_hardware_type = k_ESteamHardwareTypeSteamFrame;
+            break;
+
+        default:
+            steam_hardware_type = k_ESteamHardwareTypeNone;
+            break;
+        }
+        if (steam_hardware_type == k_ESteamHardwareTypeNone && steam_deck) {
+            steam_hardware_type = k_ESteamHardwareTypeSteamDeck; // temp compatibility for `steam_deck` option, will be removed eventually
+        }
+        settings_client->steam_hardware_type = steam_hardware_type;
+        settings_server->steam_hardware_type = steam_hardware_type;
+    }
+
+    {
+        ESteamHardwareDefaultConfig steam_hardware_def_config{};
+        long steam_hardware_def_config_long = ini.GetLongValue("main::general", "steam_hardware_default_config", static_cast<long>(settings_client->steam_hardware_def_config));
+        switch (steam_hardware_def_config_long) {
+        case 0:
+            steam_hardware_def_config = k_ESteamHardwareDefaultConfigNone;
+            break;
+        case 1:
+            steam_hardware_def_config = k_ESteamHardwareDefaultConfigLow;
+            break;
+        case 2:
+            steam_hardware_def_config = k_ESteamHardwareDefaultConfigMedium;
+            break;
+        case 3:
+            steam_hardware_def_config = k_ESteamHardwareDefaultConfigHigh;
+            break;
+        case 4:
+            steam_hardware_def_config = k_ESteamHardwareDefaultConfigMax;
+            break;
+        case 5:
+            steam_hardware_def_config = k_ESteamHardwareDefaultConfigSteamDeck;
+            break;
+        case 6:
+            steam_hardware_def_config = k_ESteamHardwareDefaultConfigSteamMachine;
+            break;
+        case 7:
+            steam_hardware_def_config = k_ESteamHardwareDefaultConfigSteamFrame;
+            break;
+
+        default:
+            steam_hardware_def_config = k_ESteamHardwareDefaultConfigNone;
+            break;
+        }
+
+        if (steam_hardware_def_config == k_ESteamHardwareDefaultConfigNone) {
+            switch (settings_client->steam_hardware_type) {
+            case k_ESteamHardwareTypeNone:
+                steam_hardware_def_config = k_ESteamHardwareDefaultConfigNone;
+                break;
+            case k_ESteamHardwareTypeSteamDeck:
+                steam_hardware_def_config = k_ESteamHardwareDefaultConfigSteamDeck;
+                break;
+            case k_ESteamHardwareTypeSteamMachine:
+                steam_hardware_def_config = k_ESteamHardwareDefaultConfigSteamMachine;
+                break;
+            case k_ESteamHardwareTypeSteamFrame:
+                steam_hardware_def_config = k_ESteamHardwareDefaultConfigSteamFrame;
+                break;
+
+            default:
+                steam_hardware_def_config = k_ESteamHardwareDefaultConfigNone;
+                break;
+            }
+        }
+
+        settings_client->steam_hardware_def_config = steam_hardware_def_config;
+        settings_server->steam_hardware_def_config = steam_hardware_def_config;
+    }
+
+    settings_client->is_under_proton = ini.GetBoolValue("main::general", "is_under_proton", settings_client->is_under_proton);
+    settings_server->is_under_proton = ini.GetBoolValue("main::general", "is_under_proton", settings_server->is_under_proton);
 
     // [main::connectivity]
     settings_client->disable_networking = ini.GetBoolValue("main::connectivity", "disable_networking", settings_client->disable_networking);
     settings_server->disable_networking = ini.GetBoolValue("main::connectivity", "disable_networking", settings_server->disable_networking);
+
+    settings_client->enable_crossapp_messaging = ini.GetBoolValue("main::connectivity", "enable_crossapp_messaging", settings_client->enable_crossapp_messaging);
+    settings_server->enable_crossapp_messaging = ini.GetBoolValue("main::connectivity", "enable_crossapp_messaging", settings_server->enable_crossapp_messaging);
 
     settings_client->disable_sharing_stats_with_gameserver = ini.GetBoolValue("main::connectivity", "disable_sharing_stats_with_gameserver", settings_client->disable_sharing_stats_with_gameserver);
     settings_server->disable_sharing_stats_with_gameserver = ini.GetBoolValue("main::connectivity", "disable_sharing_stats_with_gameserver", settings_server->disable_sharing_stats_with_gameserver);
@@ -1812,6 +2298,34 @@ static void parse_simple_features(class Settings *settings_client, class Setting
 
     settings_client->use_32bit_inventory_item_ids = ini.GetBoolValue("main::misc", "use_32bit_inventory_item_ids", settings_client->use_32bit_inventory_item_ids);
     settings_server->use_32bit_inventory_item_ids = ini.GetBoolValue("main::misc", "use_32bit_inventory_item_ids", settings_server->use_32bit_inventory_item_ids);
+
+    settings_client->exit_on_unknown_interface = ini.GetBoolValue("main::misc", "exit_on_unknown_interface", settings_client->exit_on_unknown_interface);
+    settings_server->exit_on_unknown_interface = ini.GetBoolValue("main::misc", "exit_on_unknown_interface", settings_server->exit_on_unknown_interface);
+
+    settings_client->auto_inject_specialk = ini.GetBoolValue("overlay::specialk", "auto_inject_specialk", settings_client->auto_inject_specialk);
+    settings_server->auto_inject_specialk = ini.GetBoolValue("overlay::specialk", "auto_inject_specialk", settings_server->auto_inject_specialk);
+
+    settings_client->disable_specialk_notification = ini.GetBoolValue("overlay::specialk", "disable_specialk_notification", settings_client->disable_specialk_notification);
+    settings_server->disable_specialk_notification = ini.GetBoolValue("overlay::specialk", "disable_specialk_notification", settings_server->disable_specialk_notification);
+
+    settings_client->disable_reshade_banner = ini.GetBoolValue("overlay::reshade", "disable_reshade_banner", settings_client->disable_reshade_banner);
+    settings_server->disable_reshade_banner = ini.GetBoolValue("overlay::reshade", "disable_reshade_banner", settings_server->disable_reshade_banner);
+
+    {
+        const char *val = ini.GetValue("overlay::specialk", "specialk_install_path");
+        if (val && val[0]) {
+            settings_client->specialk_install_path = val;
+            settings_server->specialk_install_path = val;
+        }
+    }
+
+    {
+        long dur = ini.GetLongValue("overlay::specialk", "specialk_service_duration", settings_client->specialk_service_duration);
+        if (dur >= 0) {
+            settings_client->specialk_service_duration = static_cast<unsigned>(dur);
+            settings_server->specialk_service_duration = static_cast<unsigned>(dur);
+        }
+    }
 }
 
 // [main::stats]
@@ -1840,6 +2354,28 @@ static void parse_stats_features(class Settings *settings_client, class Settings
     settings_client->record_playtime = ini.GetBoolValue("main::stats", "record_playtime", settings_client->record_playtime);
     settings_server->record_playtime = ini.GetBoolValue("main::stats", "record_playtime", settings_server->record_playtime);
 
+    {
+        long ttl_client = ini.GetLongValue("main::stats", "achievements_cache_ttl", (long)settings_client->achievements_cache_ttl);
+        if (ttl_client > 0) settings_client->achievements_cache_ttl = static_cast<uint32>(ttl_client);
+        long ttl_server = ini.GetLongValue("main::stats", "achievements_cache_ttl", (long)settings_server->achievements_cache_ttl);
+        if (ttl_server > 0) settings_server->achievements_cache_ttl = static_cast<uint32>(ttl_server);
+    }
+
+    // write-control flags for JSON/file output
+    settings_client->no_write_schema_achievements_json = ini.GetBoolValue("main::stats", "no_write_schema_achievements_json", settings_client->no_write_schema_achievements_json);
+    settings_server->no_write_schema_achievements_json = ini.GetBoolValue("main::stats", "no_write_schema_achievements_json", settings_server->no_write_schema_achievements_json);
+
+    settings_client->no_write_schema_stats_json = ini.GetBoolValue("main::stats", "no_write_schema_stats_json", settings_client->no_write_schema_stats_json);
+    settings_server->no_write_schema_stats_json = ini.GetBoolValue("main::stats", "no_write_schema_stats_json", settings_server->no_write_schema_stats_json);
+
+    settings_client->no_write_user_achievements_json = ini.GetBoolValue("main::stats", "no_write_user_achievements_json", settings_client->no_write_user_achievements_json);
+    settings_server->no_write_user_achievements_json = ini.GetBoolValue("main::stats", "no_write_user_achievements_json", settings_server->no_write_user_achievements_json);
+    settings_client->no_write_user_stats_json = ini.GetBoolValue("main::stats", "no_write_user_stats_json", settings_client->no_write_user_stats_json);
+    settings_server->no_write_user_stats_json = ini.GetBoolValue("main::stats", "no_write_user_stats_json", settings_server->no_write_user_stats_json);
+
+    settings_client->no_write_user_stats_files = ini.GetBoolValue("main::stats", "no_write_user_stats_files", settings_client->no_write_user_stats_files);
+    settings_server->no_write_user_stats_files = ini.GetBoolValue("main::stats", "no_write_user_stats_files", settings_server->no_write_user_stats_files);
+    
     settings_client->pause_total_when_unfocused = ini.GetBoolValue("main::stats", "pause_total_when_unfocused", settings_client->pause_total_when_unfocused);
     settings_server->pause_total_when_unfocused = ini.GetBoolValue("main::stats", "pause_total_when_unfocused", settings_server->pause_total_when_unfocused);
     settings_client->pause_session_when_unfocused = ini.GetBoolValue("main::stats", "pause_session_when_unfocused", settings_client->pause_session_when_unfocused);
@@ -2114,6 +2650,8 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     settings_client->set_supported_languages(supported_languages);
     settings_server->set_supported_languages(supported_languages);
 
+    parse_purchase_date(settings_client, settings_server);
+
     parse_simple_features(settings_client, settings_server);
     parse_stats_features(settings_client, settings_server);
 
@@ -2122,6 +2660,7 @@ uint32 create_localstorage_settings(Settings **settings_client_out, Settings **s
     parse_app_paths(settings_client, settings_server, program_path);
     parse_purchased_keys(settings_client, settings_server);
 
+    try_gen_settings_from_schema_bin(settings_client, settings_server);
     parse_leaderboards(settings_client, settings_server);
     parse_stats(settings_client, settings_server, local_storage);
     parse_depots(settings_client, settings_server);

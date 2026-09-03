@@ -1,66 +1,81 @@
 /**
  * useScrollReveal
  * ---------------
- * Watches `.reveal`, `.reveal-left`, `.reveal-scale`, and `.settings-group`
- * elements inside a given root (defaults to the `.workspace` scroll container).
- * When they enter the viewport it adds the `is-visible` class which triggers
- * the CSS transition defined in premium.css (Google Antigravity style).
+ * Reveals elements inside the current workspace scroll container. Big Picture
+ * temporarily unmounts the normal launcher tree, so the workspace DOM node can
+ * be destroyed and recreated. This hook deliberately rebinds whenever that root
+ * changes; otherwise newly remounted Settings groups stay at opacity: 0 forever.
  */
 import { useEffect } from 'react'
 
 interface Options {
-  /** CSS selector for elements to observe. Default covers all reveal classes + settings groups */
   selector?: string
-  /** IntersectionObserver threshold. Default 0.08 */
   threshold?: number
-  /** Root margin. Default '0px 0px -40px 0px' (trigger 40px before the bottom edge) */
   rootMargin?: string
-  /** Scroll container selector. Default '.workspace' */
   rootSelector?: string
 }
 
 export function useScrollReveal(options: Options = {}) {
   const {
-    selector = '.reveal, .reveal-left, .reveal-scale, .reveal-clip, .settings-group, .settings-section, .heading-underline',
+    selector = '.reveal, .reveal-left, .reveal-scale, .reveal-clip, .settings-section, .heading-underline',
     threshold = 0.06,
     rootMargin = '0px 0px -30px 0px',
     rootSelector = '.workspace',
   } = options
 
   useEffect(() => {
-    const root = document.querySelector(rootSelector) ?? null
+    let currentRoot: Element | null = null
+    let intersection: IntersectionObserver | null = null
+    let rootMutation: MutationObserver | null = null
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('is-visible')
-            observer.unobserve(entry.target)
-          }
-        })
-      },
-      { root, threshold, rootMargin }
-    )
-
-    function observeAll() {
-      document.querySelectorAll<HTMLElement>(selector).forEach((el) => {
-        if (!el.classList.contains('is-visible')) {
-          observer.observe(el)
-        }
+    const observeAll = () => {
+      if (!intersection) return
+      document.querySelectorAll<HTMLElement>(selector).forEach((element) => {
+        if (!element.classList.contains('is-visible')) intersection?.observe(element)
       })
     }
 
-    observeAll()
+    const bindCurrentRoot = () => {
+      const nextRoot = document.querySelector(rootSelector)
+      if (nextRoot === currentRoot && intersection) {
+        observeAll()
+        return
+      }
 
-    const mutation = new MutationObserver(observeAll)
-    const workspace = document.querySelector(rootSelector)
-    if (workspace) {
-      mutation.observe(workspace, { childList: true, subtree: true })
+      intersection?.disconnect()
+      rootMutation?.disconnect()
+      currentRoot = nextRoot
+
+      intersection = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return
+            entry.target.classList.add('is-visible')
+            intersection?.unobserve(entry.target)
+          })
+        },
+        { root: currentRoot, threshold, rootMargin },
+      )
+
+      observeAll()
+
+      if (currentRoot) {
+        rootMutation = new MutationObserver(observeAll)
+        rootMutation.observe(currentRoot, { childList: true, subtree: true })
+      }
     }
 
+    bindCurrentRoot()
+
+    // Observe the document shell too. Big Picture swaps the launcher subtree, so
+    // the old .workspace can disappear completely and a new one can later mount.
+    const documentMutation = new MutationObserver(bindCurrentRoot)
+    documentMutation.observe(document.body, { childList: true, subtree: true })
+
     return () => {
-      observer.disconnect()
-      mutation.disconnect()
+      intersection?.disconnect()
+      rootMutation?.disconnect()
+      documentMutation.disconnect()
     }
   }, [selector, threshold, rootMargin, rootSelector])
 }

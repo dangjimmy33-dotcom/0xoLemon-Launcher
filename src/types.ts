@@ -81,8 +81,12 @@ export type JobJournal = {
   applyBytesDone?: number
   applyBytesTotal?: number
   durableBytes?: number
+  wireBytesDone?: number
   currentFile?: string
   pipelineVersion?: string
+  transportPlans?: PackTransportPlan[]
+  currentTransport?: DownloadTransportKind
+  stallReason?: string
   commitState?: string
   plannedFiles?: string[]
   retryCount: number
@@ -107,6 +111,14 @@ export type JobJournal = {
     commitWaitMs?: number
     allocationReservedBytes?: number
     allocationFallbackReason?: string
+    xetBytes?: number
+    rawRangeBytes?: number
+    wireBytes?: number
+    decodeWaitMs?: number
+    writerWaitMs?: number
+    checkpointWaitMs?: number
+    ttfbP50Ms?: number
+    ttfbP95Ms?: number
   }
   /** Set when a patch job commits – lets the UI immediately clear the pending-patch badge. */
   appliedPatchId?: string
@@ -142,7 +154,33 @@ export type Snapshot = {
   appliedPatchId?: string
 }
 
-export type DownloadProfile = 'eco' | 'balanced' | 'turbo'
+export type DownloadProfile = 'eco' | 'balanced' | 'auto' | 'turbo'
+export type DownloadTransportKind = 'xetPack' | 'httpRange'
+
+export type DownloadTelemetry = {
+  jobId: string
+  wireBytesDone: number
+  applyBytesDone: number
+  durableBytesDone: number
+  wireBytesPerSecond: number
+  applyBytesPerSecond: number
+  activeConnections: number
+  queueBytes: number
+  ttfbMs: number
+  retryWaitMs: number
+  rateLimitWaitMs: number
+  currentTransport: DownloadTransportKind
+  stallReason: string
+}
+
+export type PackTransportPlan = {
+  packId: string
+  sourceIdentity: string
+  requiredBytes: number
+  totalPackBytes: number
+  selectedTransport: DownloadTransportKind
+  estimatedOverfetch: number
+}
 export type GameUpdateMode = 'automatic' | 'scheduled' | 'manual'
 export type GameTurboPreference = 'always' | 'never' | 'ask'
 
@@ -267,6 +305,8 @@ export type CloudSaveStatus = {
   quota: CloudSaveQuota | null
   mapStatus: CloudSaveMapStatus
   remoteNewerKnown: boolean
+  localWinsOnceState: 'prepared' | 'running' | 'conflict' | null
+  localWinsOnceSnapshotId: string | null
 }
 
 
@@ -300,7 +340,22 @@ export type GameCatalog = {
   newestGameIds?: string[]
 }
 
-export type GameSummary = {
+export type SteamRuntimeMode = 'none' | 'managedGse'
+
+export type SaveProviderKind = 'gse' | 'goldbergSteamEmu' | 'goldbergUplayEmu' | 'legacyVersioned'
+
+export type SaveProvider = {
+  provider: SaveProviderKind
+  saveId: string
+}
+
+export type LocalRuntimeIntegration = {
+  steamRuntime: SteamRuntimeMode
+  achievementsEnabled: boolean
+  saveProviders: SaveProvider[]
+}
+
+export type GameSummary = LocalRuntimeIntegration & {
   id: string
   appid?: string | number
   title: string
@@ -336,7 +391,7 @@ export type GameInstallMetadata = {
   launchExecutable: string
 }
 
-export type GameDetail = {
+export type GameDetail = LocalRuntimeIntegration & {
   gameId: string
   appid?: string | number
   locale: string
@@ -501,9 +556,296 @@ export type LuaGameManagerState = {
   game: LuaGameState
   luaPath: string
   fileExists: boolean
+  activeSha256: string | null
   hasUserOverrides: boolean
   canSwitchLive: boolean
   canSwitchLocked: boolean
+}
+
+export type LuaDriftResolution =
+  | 'captureExternalAndApply'
+  | 'keepExternal'
+  | 'restoreManagedAndApply'
+
+export type LuaFileDriftReport = {
+  appId: number
+  path: string
+  fileExists: boolean
+  baselineAvailable: boolean
+  expectedSha256: string | null
+  actualSha256: string | null
+  drifted: boolean
+  encodingStatus: 'utf8' | 'utf8Bom' | 'nonUtf8' | 'missing' | string
+  validLua: boolean
+  managedRevision: string | null
+}
+
+export type LuaRuntimePackage =
+  | 'gseRegular'
+  | 'gseExperimental'
+  | 'gseColdClient'
+  | 'gseColdClientV1'
+  | 'ucOnline2'
+  | 'runeRegular'
+  | 'runeSteakClient'
+  | 'runeSteamClient'
+
+export type LuaOverlayRenderer =
+  | 'gseNative'
+  | 'reshadeCompatibility'
+  | 'desktopFallback'
+  | 'disabled'
+
+export type LuaSteamStubMode = 'disabled' | 'autoSteamless' | 'steamless' | 'runeProxy' | 'ucRuntime'
+export type LuaSaveMode = 'global' | 'portable' | 'custom'
+export type LuaNetworkMode = 'offline' | 'lan' | 'ucOnline2'
+export type LuaAccountMode = 'localEmulated' | 'steamClientSpacewar'
+
+export type LuaRuntimeSettings = {
+  schemaVersion: number
+  defaultPackage: LuaRuntimePackage
+  renderer: LuaOverlayRenderer
+  overlayHotkey: 'Shift+Tab'
+  desktopFallbackHotkey: 'Shift+F1'
+  theme: 'launcher' | 'dark' | 'high-contrast'
+  scale: number
+  opacity: number
+  soundEnabled: boolean
+  notificationDurationMs: number
+  telemetryEnabled: boolean
+  reducedMotion: boolean
+  saveMode: LuaSaveMode
+  customSaveRoot: string | null
+  networkMode: LuaNetworkMode
+  accountMode: LuaAccountMode
+  steamStubMode: LuaSteamStubMode
+  resourceChannel: 'stable' | 'pinned'
+  advancedFeatures: boolean
+}
+
+export type LuaRuntimeComponentStatus = 'available' | 'onDemand' | 'blocked' | 'unavailable'
+
+export type LuaRuntimeComponentHealth = {
+  id: string
+  label: string
+  status: LuaRuntimeComponentStatus
+  version: string | null
+  canonicalSource: string | null
+  immutableCommit: string | null
+  integrityVerified: boolean
+  provenanceVerified: boolean
+  artifactSha256: string | null
+  license: string | null
+  detail: string
+}
+
+export type LuaRuntimeSettingsState = {
+  contractVersion: string
+  settings: LuaRuntimeSettings
+  components: LuaRuntimeComponentHealth[]
+  activationAllowed: boolean
+  activationBlockedReason: string
+}
+
+export type LuaRuntimeScannedFile = {
+  relativePath: string
+  architecture: 'x86' | 'x64' | null
+  sha256: string
+  sizeBytes: number
+}
+
+export type LuaRuntimeTargetScan = {
+  schemaVersion: number
+  appId: number
+  installRoot: string
+  runtimeTargets: LuaRuntimeScannedFile[]
+  executables: LuaRuntimeScannedFile[]
+  antiCheatSignals: string[]
+  reparsePoints: string[]
+  warnings: string[]
+  blockedReasons: string[]
+  approvalFingerprint: string
+  approvalEligible: boolean
+  locallyApproved: boolean
+  approvedAt: string | null
+  canApply: boolean
+  applyBlockedReason: string
+}
+
+export type GseUcComponentHealth = {
+  id: string
+  label: string
+  status: 'available' | 'blocked' | 'unavailable' | string
+  version: string | null
+  source: string | null
+  integrityVerified: boolean
+  provenanceVerified: boolean
+  fileCount: number
+  checkedFiles: number
+  missingFiles: string[]
+  corruptFiles: string[]
+  license: string | null
+  detail: string
+}
+
+export type GseUcActionKind = 'create' | 'replace'
+
+export type GseUcFileAction = {
+  kind: GseUcActionKind
+  componentId: string
+  architecture: 'x86' | 'x64' | null
+  targetRelativePath: string
+  sourceRelativePath: string
+  beforeSha256: string | null
+  afterSha256: string
+  generated: boolean
+}
+
+export type GseUcPlan = {
+  schemaVersion: number
+  appId: number
+  package: LuaRuntimePackage
+  installRoot: string
+  approvalFingerprint: string
+  locallyApproved: boolean
+  canApply: boolean
+  blockedReasons: string[]
+  warnings: string[]
+  actions: GseUcFileAction[]
+  componentHealth: GseUcComponentHealth[]
+  steamStubMode: LuaSteamStubMode
+}
+
+export type GseUcOwnedFileReceipt = {
+  targetRelativePath: string
+  managedSha256: string
+  originalSha256: string | null
+  originalBackupRelativePath: string | null
+}
+
+export type GseUcReceiptState = {
+  schemaVersion: number
+  appId: number
+  package: LuaRuntimePackage | null
+  status: 'notInstalled' | 'installed' | 'repairRequired' | 'restored' | string
+  transactionId: string | null
+  approvalFingerprint: string | null
+  ownedFiles: GseUcOwnedFileReceipt[]
+  message: string
+}
+
+export type LuaDriftResolutionResult = {
+  resolution: LuaDriftResolution
+  before: LuaFileDriftReport
+  captured: LuaVariantEntry | null
+  applied: boolean
+  game: LuaGameState
+}
+
+export type LuaVariantOrigin = 'active' | 'providerLive' | 'providerRaw' | 'imported'
+export type LuaVariantCaptureReason =
+  | 'manual'
+  | 'beforeUpdate'
+  | 'beforeProviderSwitch'
+  | 'beforeChannelSwitch'
+  | 'beforeImport'
+  | 'beforeRestore'
+  | 'legacyMigration'
+export type LuaVariantValidationStatus = 'valid' | 'recoveryOnly'
+
+export type LuaVariantEntry = {
+  id: string
+  appId: number
+  sha256: string
+  byteLength: number
+  origin: LuaVariantOrigin
+  captureReason: LuaVariantCaptureReason
+  provider: string | null
+  source: string | null
+  channel: LuaGameChannel | null
+  buildId: string | null
+  revision: string | null
+  capturedAt: string
+  encodingStatus: 'utf8' | 'utf8Bom' | 'nonUtf8' | 'unknown'
+  validationStatus: LuaVariantValidationStatus
+  manifestSnapshotIdentity: string | null
+  pinned: boolean
+}
+
+export type LuaVariantRestoreRequest = {
+  appId: number
+  sha256: string
+}
+
+export type SteamAppInfoFormat = 'v27' | 'v28' | 'v29'
+export type SteamLaunchDriftState = 'staged' | 'applied' | 'drifted' | 'rebaseReviewRequired'
+
+export type SteamLaunchOption = {
+  index: string
+  sourceIndex: string
+  executable: string
+  arguments: string
+  workingDir: string
+  description: string
+  launchType: string
+  osList: string
+  osArch: string
+  betaKey: string
+  ownsDlc: string
+}
+
+export type SteamLaunchState = {
+  appId: number
+  format: SteamAppInfoFormat
+  changeNumber: number
+  current: SteamLaunchOption[]
+  installDir: string | null
+  isModded: boolean
+  steamRunning: boolean
+  driftState: SteamLaunchDriftState | null
+}
+
+export type SteamLaunchMod = {
+  appId: number
+  changeNumber: number
+  original: SteamLaunchOption[]
+  desired: SteamLaunchOption[]
+  sourceFileHash: string
+  savedAt: string
+  appliedAt: string | null
+  driftState: SteamLaunchDriftState
+  initialBaseline: SteamLaunchBaseline | null
+  latestSteamBaseline: SteamLaunchBaseline | null
+}
+
+export type SteamLaunchBaseline = {
+  changeNumber: number
+  sourceFileHash: string
+  options: SteamLaunchOption[]
+  capturedAt: string
+}
+
+export type SteamLaunchAuditReceipt = {
+  receiptId: string
+  appIds: number[]
+  operation: 'apply' | 'reapply' | 'restore' | string
+  transactionId: string
+  beforeFileHash: string
+  afterFileHash: string
+  retainedBackupSha256: string
+  initialBaselines: Record<string, SteamLaunchBaseline>
+  latestSteamBaselines: Record<string, SteamLaunchBaseline>
+  createdAt: string
+}
+
+export type SteamLaunchApplyRequest = { appIds: number[] }
+
+export type SteamLaunchApplyResult = {
+  ok: boolean
+  appliedAppIds: number[]
+  backupSha256: string | null
+  transactionId: string | null
+  auditReceipt: SteamLaunchAuditReceipt | null
 }
 
 export type HubcapUsageBucket = {
@@ -796,8 +1138,398 @@ export type ShortcutLaunchPayload = {
   launchExecutable?: string | null
 }
 
+export type GameToolsCatalogKind = 'bypass' | 'onlineFix' | 'store'
+
+export type GameToolsCatalogItem = {
+  kind: GameToolsCatalogKind
+  appId: number
+  category: string | null
+  name: string
+  packageName: string | null
+  imageUrl: string | null
+  backgroundUrl: string | null
+  logoUrl: string | null
+  dependencies: string[]
+  instructions: string[]
+  note: string | null
+  launchWithSteam: boolean
+  launchExecutable: boolean
+  active: boolean
+  regularPrice: string | null
+  supporterPrice: string | null
+  discount: string | null
+  sourceRepository: string
+}
+
+export type GameToolsCatalogResponse = {
+  kind: GameToolsCatalogKind
+  revision: string
+  categories: string[]
+  items: GameToolsCatalogItem[]
+}
+
+export type GameToolsStatus = {
+  referenceVersion: string
+  bypassCount: number
+  onlineFixCount: number
+  storeCount: number
+  packageApplyMode: string
+  capabilities: string[]
+}
+
+export type GameToolsPackageRequest = {
+  kind: 'bypass' | 'onlineFix'
+  appId: number
+  requestId: string
+  installDir: string
+  revision: string
+  packageSha256: string
+}
+
+export type GameToolsProvider = 'ubisoft' | 'ea' | 'rockstar' | 'denuvo' | 'playstation' | 'other'
+
+export type GameToolsRouteState = {
+  section: 'store' | 'tools' | 'bypass' | 'onlineFix'
+  provider?: GameToolsProvider
+  appId?: number
+}
+
+export type GameToolsSourceIdentity = {
+  repository: string
+  revision: string
+  packageSha256: string
+}
+
+export type GameToolsImportResult = {
+  transactionId: string
+  installedFiles: number
+  appIds: number[]
+  depotIds: number[]
+  requiresSteamRestart: boolean
+}
+
+export type GameToolsLibraryItem = {
+  gameId: string
+  appId: number | null
+  title: string
+  subtitle: string
+  imageUrl: string | null
+  installed: boolean
+}
+
+export type HomeWallpaperPreference =
+  | { kind: 'featured'; assetId?: string }
+  | { kind: 'pinned'; assetId: string }
+  | { kind: 'custom'; assetId: string }
+
+export type ManagedGseStatus = 'notManaged' | 'missing' | 'installed' | 'restored' | 'repairRequired' | 'conflict'
+
+export type RuntimeComponentV2 = 'steamApi'
+
+export type ManagedRuntimeFileStateV2 = {
+  component: RuntimeComponentV2
+  architecture: 'x86' | 'x64'
+  targetPath: string
+  managedSha256: string
+  originalSha256: string | null
+  originalBackupPath: string | null
+}
+
+export type ManagedGseState = {
+  schemaVersion: number
+  gameId: string
+  appId: number | null
+  steamRuntime: SteamRuntimeMode
+  achievementsEnabled: boolean
+  status: ManagedGseStatus
+  catalogRevision: string
+  runtimeVersion: string | null
+  architecture: 'x86' | 'x64' | null
+  dllPath: string | null
+  managedSha256: string | null
+  originalSha256: string | null
+  originalBackupPath: string | null
+  profileId?: string | null
+  transactionId?: string | null
+  ownedFiles?: ManagedRuntimeFileStateV2[]
+  message: string
+}
+
+export type OverlayRenderer = 'gseNative' | 'reshadeCompatibility' | 'desktopFallback' | 'disabled'
+
+export type ManagedRuntimeTargetSpecV2 = {
+  relativePath: string
+  architecture: 'x86' | 'x64'
+  component: RuntimeComponentV2
+  allowedOriginalSha256: string[]
+  managedSha256: string
+}
+
+export type ManagedRuntimeProfileV2 = {
+  schemaVersion: 2
+  profileId: string
+  gameId: string
+  appId: number
+  canonicalUpstream: string
+  immutableCommit: string
+  buildId: string
+  patchSetHash: string
+  license: string
+  provenanceVerified: boolean
+  executableAllowlist: string[]
+  runtimeProcessAllowlist: string[]
+  antiCheatPolicy: 'blockProtectedRuntime'
+  targets: ManagedRuntimeTargetSpecV2[]
+  generatedSettings: string[]
+  generatedInterfaces: string[]
+  generatedAssets: string[]
+  renderer: OverlayRenderer
+  hotkey: string
+  achievementProtocolVersion: number
+  saveProvider: string | null
+  saveRoot: string | null
+  cloudPolicy: string
+  requiredComponents: string[]
+  onDemandComponents: string[]
+  restoreConstraints: string[]
+}
+
+export type ManagedRuntimePlanV2 = {
+  schemaVersion: 2
+  profile: ManagedRuntimeProfileV2
+  state: ManagedGseState
+  canApply: boolean
+  blockedReason: string | null
+  changes: Array<{
+    targetRelativePath: string
+    action: 'verify' | 'create' | 'replace' | 'blocked' | 'none' | string
+    beforeSha256: string | null
+    afterSha256: string
+  }>
+}
+
+export type AchievementSchema = {
+  id: string
+  name: string
+  description: string
+  hidden: boolean
+  target: number
+}
+
+export type AchievementRecord = {
+  id: string
+  unlocked: boolean
+  unlockedAt: string | null
+  progress: number
+  target: number
+}
+
+export type AchievementState = {
+  schemaVersion: number
+  gameId: string
+  appId: number
+  sessionId: string | null
+  connected: boolean
+  transport: 'namedPipe' | 'fileFallback' | 'readOnly' | string
+  schema: AchievementSchema[]
+  achievements: Record<string, AchievementRecord>
+  stats: Record<string, number>
+  lastEventId: number
+  updatedAt: string
+}
+
+export type AchievementEventType = 'schemaReady' | 'unlocked' | 'cleared' | 'progress' | 'statChanged' | 'flushed' | 'runtimeStopped'
+
+export type AchievementEvent = {
+  protocolVersion: number
+  sessionId: string
+  gameId: string
+  appId: number
+  pid: number
+  messageId: number
+  source: string
+  eventType: AchievementEventType
+  achievementId: string | null
+  statId: string | null
+  payload: Record<string, unknown>
+  occurredAt: string
+}
+
+export type AchievementTransport = 'connecting' | 'namedPipe' | 'scopedFallback' | 'closed'
+
+export type OverlayMetricsSummary = {
+  sampleCount: number
+  frameIntervalP95Ms: number | null
+  overlayCallbackP95Ms: number | null
+  privateBytes: number | null
+  commitBytes: number | null
+  vramBytes: number | null
+  handleCount: number | null
+  queueDepth: number
+  sampledAt: number | null
+}
+
+export type GameSessionStateV1 = {
+  schemaVersion: 1
+  sessionId: string
+  gameId: string
+  appId: number
+  lifecycle: 'starting' | 'running' | 'exiting' | 'closed' | 'failed'
+  rootPid: number
+  runtimePid: number | null
+  renderer: OverlayRenderer
+  achievementTransport: AchievementTransport
+  droppedEventCount: number
+  latestAchievementSequence: number
+  metrics: OverlayMetricsSummary
+}
+
+export type AchievementEventV2 = {
+  schemaVersion: 2
+  eventId: string
+  sequence: number
+  sessionId: string
+  gameId: string
+  appId: number
+  achievementId: string
+  kind: 'schema' | 'unlock' | 'progress' | 'clear' | 'stat' | 'flush' | 'runtimeStopped'
+  name?: string | null
+  description?: string | null
+  iconPath?: string | null
+  current?: number | null
+  maximum?: number | null
+  occurredAt: number
+  source: 'namedPipe' | 'scopedFallback'
+}
+
+export type SaveSnapshotPurpose = 'automatic' | 'preRestore'
+
+export type SaveSnapshotRoot = {
+  index: number
+  provider: SaveProviderKind
+  providerSaveId: string
+  originalPath: string
+  rootFingerprint: string
+}
+
+export type SaveSnapshotV2 = {
+  schemaVersion: 2
+  id: string
+  gameId: string
+  gameVersion: string
+  runtimeVersion: string | null
+  appId: number | null
+  createdAt: string
+  purpose: SaveSnapshotPurpose
+  roots: SaveSnapshotRoot[]
+  sourcePaths: string[]
+  files: Array<{ relativePath: string; sizeBytes: number; sha256: string }>
+  totalBytes: number
+}
+
+export type RestoreTransaction = {
+  transactionId: string
+  gameId: string
+  snapshotId: string
+  preRestoreSnapshotId: string
+  filesReplaced: number
+  status: 'committed'
+}
+
+export type RestoreAndRelaunchResult = {
+  restore: RestoreTransaction
+  launch: LaunchReport | null
+  launchError: string | null
+  cloudPolicyState: 'localWinsOncePrepared' | 'localWinsOnceRunning' | 'blocked' | string
+}
+
+export type GameToolsPackageProgress = {
+  requestId: string
+  appId: number
+  phase: string
+  filesDone: number
+  filesTotal: number
+  bytesDone: number
+  bytesTotal: number
+  currentFile: string | null
+}
+
+export type GameToolsPackageResult = {
+  requestId: string
+  kind: string
+  appId: number
+  gameName: string
+  installDir: string
+  sourceRepository: string
+  sourceReference: string
+  downloadedBytes: number
+  appliedFiles: number
+  backupFiles: number
+  receiptPath: string
+}
+
+export type GameToolsAppliedPackageStatus = {
+  requestId: string
+  kind: string
+  appId: number
+  sourceRepository: string
+  sourceReference: string
+  installedAt: string
+  committed: boolean
+  restoredAt: string | null
+  appliedFiles: number
+  backupFiles: number
+}
+
+export type GameToolsGameStatus = {
+  appId: number
+  installed: boolean
+  installDir: string | null
+  latestPackage: GameToolsAppliedPackageStatus | null
+}
+
+export type GameToolsExecutable = {
+  relativePath: string
+  size: number
+  patched: boolean
+}
+
+// Compatibility aliases for one desktop release while older UI bundles migrate.
+export type LightningCatalogKind = GameToolsCatalogKind
+export type LightningCatalogItem = GameToolsCatalogItem
+export type LightningCatalogResponse = GameToolsCatalogResponse
+export type LightningIntegrationStatus = GameToolsStatus
+export type LightningPackageRequest = GameToolsPackageRequest
+export type LightningPackageProgress = GameToolsPackageProgress
+export type LightningPackageResult = GameToolsPackageResult
+export type LightningAppliedPackageStatus = GameToolsAppliedPackageStatus
+export type LightningGameStatus = GameToolsGameStatus
+export type LightningExecutable = GameToolsExecutable
+
+export type SteamlessResult = {
+  success: boolean
+  message: string
+  outputPath: string | null
+  variant: string | null
+  steamAppId: number | null
+}
+
+export type FeaturePackageStatus = {
+  id: string
+  displayName: string
+  capability: string
+  source: string
+  installed: boolean
+  installedVersion: string | null
+  entrypoint: string | null
+  builtIn: boolean
+  integration: 'builtIn' | 'automatic' | 'dependency' | 'component' | string
+  usedBy: string | null
+}
+
 export type TabId =
   | 'Home'
+  | 'Social'
   | 'What\'s New!'
   | 'Store'
   | 'Library'
@@ -807,8 +1539,119 @@ export type TabId =
   | 'CloudRedirect'
   | 'Lua Installer'
   | 'Lua Shop'
+  | 'Depot Downloader'
+  | 'GSE / UC Setup'
+  | 'Tools'
   | 'Translations'
   | 'Cache'
   | 'Settings'
+
+export interface DepotGameItem {
+  appid: number
+  title: string
+  folderName: string
+  bannerUrl?: string
+}
+
+export interface DepotManifestInfo {
+  depotId: number
+  manifestGid: string
+  manifestFile: string
+}
+
+export interface DepotBuildOption {
+  buildId: string
+  version?: string
+  buildDate?: string
+  manifests: DepotManifestInfo[]
+}
+
+export interface DepotGameDetail {
+  appid: number
+  title: string
+  folderName: string
+  builds: DepotBuildOption[]
+  hasKey: boolean
+}
+
+export interface DepotDownloadProgressEvent {
+  eventType: 'start' | 'depot-start' | 'progress' | 'log' | 'depot-done' | 'paused' | 'resumed' | 'complete' | 'error' | 'cancelled'
+  appid: number
+  buildId: string
+  depotId?: string
+  message?: string
+  currentDepotIndex: number
+  totalDepots: number
+  progressPercent?: number
+  speedMbps?: number
+  transferredBytes?: number
+  totalBytes?: number
+  success?: boolean
+}
+
+export interface DepotDownloaderStatus {
+  isDownloading: boolean
+  isPaused: boolean
+  canResume: boolean
+  activeAppid?: number
+  activeBuildId?: string
+  destinationDir?: string
+}
+
+export interface DepotInstallState {
+  appid: number
+  installedBuildId?: string
+  manifests: Record<string, string>
+  completedUnix?: number
+  hasDepotState: boolean
+}
+
+export type LauncherRoute = {
+  tab: TabId
+  selectedGameId?: string | null
+  query?: Record<string, string>
+}
+
+export type LauncherNavigationSnapshot = {
+  schemaVersion: 2
+  currentRoute: LauncherRoute
+  backStack: LauncherRoute[]
+  forwardStack: LauncherRoute[]
+  updatedAt: string
+}
+
+export type LauncherCollection = {
+  id: string
+  name: string
+  gameIds: string[]
+  createdAt: string
+  updatedAt: string
+}
+
+export type LauncherShelf = {
+  id: string
+  title: string
+  kind: 'recent' | 'installed' | 'favorites' | 'collection' | 'custom'
+  collectionId?: string | null
+  gameIds: string[]
+}
+
+export type XmclInstanceGroup = {
+  id: string
+  name: string
+  gameIds: string[]
+  collapsed: boolean
+}
+
+export type LauncherLibraryLayout = {
+  schemaVersion: number
+  libraryGameIds: string[]
+  favoriteGameIds: string[]
+  collections: LauncherCollection[]
+  shelves: LauncherShelf[]
+  xmclInstanceGroups: XmclInstanceGroup[]
+  migratedLegacyAt?: string | null
+  updatedAt: string
+}
 
 export { }

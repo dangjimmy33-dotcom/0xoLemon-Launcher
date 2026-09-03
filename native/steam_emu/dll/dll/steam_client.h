@@ -462,6 +462,19 @@ public:
 
     void report_missing_impl(std::string_view itf, std::string_view caller);
     [[noreturn]] void report_missing_impl_and_exit(std::string_view itf, std::string_view caller);
+    // graceful version: returns nullptr when caller is Special K or config allows it
+    // instead of terminating the process, matching real steamclient.dll behavior
+    std::nullptr_t report_missing_impl_and_exit_or_null(std::string_view itf, std::string_view caller);
+
+    bool thirdparty_injector_detected = false;
+    bool specialk_proxy_detected = false;
+    bool reshade_proxy_detected = false;
+    std::string cached_detected_overlays;
+    bool overlays_scanned = false;
+    unsigned missing_interface_count = 0;
+    void detect_thirdparty_injectors();
+    bool is_caller_special_k();
+    void try_start_specialk_injection();
 
     HSteamUser create_old_user_ref(HSteamUser hUser, HSteamPipe hSteamPipe);
     HSteamPipe get_pipe_for_user(HSteamUser hUser);

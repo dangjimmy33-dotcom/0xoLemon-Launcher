@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "revision": "2026-08-28.1",
+  "games": [
+    {
+      "gameId": "007-first-light",
+      "appId": 3768760,
+      "steamRuntime": "managedGse",
+      "achievementsEnabled": true,
+      "saveProviders": [
+        {
+          "provider": "gse",
+          "saveId": "3768760"
+        },
+        {
+          "provider": "goldbergSteamEmu",
+          "saveId": "3768760"
+        },
+        {
+          "provider": "legacyVersioned",
+          "saveId": "007-versioned"
+        }
+      ],
+      "allowedOriginalSha256": []
+    },
+    {
+      "gameId": "assassins-creed-mirage",
+      "steamRuntime": "none",
+      "achievementsEnabled": false,
+      "saveProviders": [
+        {
+          "provider": "goldbergUplayEmu",
+          "saveId": "6100"
+        }
+      ],
+      "allowedOriginalSha256": []
+    }
+  ]
+}

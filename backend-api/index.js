@@ -5,6 +5,7 @@
 // Giải quyết: 807 listeners → 0, 49k reads/day → 100 reads/day per tenant
 
 const express = require('express');
+const http = require('http');
 const cors = require('cors');
 const NodeCache = require('node-cache');
 const admin = require('firebase-admin');
@@ -13,10 +14,23 @@ const crypto = require('crypto');
 const { createOfflineActivationRouter } = require('./activation/routes');
 const { constantTimeKeyMatches } = require('./activation/secret-crypto');
 const { createLuaShopRouter } = require('./lua-shop/routes');
+const { loadSocialConfig } = require('./social/config');
+const { createSocialRouter } = require('./social/routes');
+const { assertRemoteConfig, loadRemoteConfig } = require('./remote/config');
+const { RemoteEventHub } = require('./remote/events');
+const { DeviceGateway } = require('./remote/gateway');
+const { RemoteService } = require('./remote/service');
+const { createRemoteRouter } = require('./remote/routes');
+const { attachDeviceSocketServer } = require('./remote/socket');
 
 const app = express();
 app.set('trust proxy', 1);
 const PORT = process.env.PORT || 8080;
+const socialConfig = loadSocialConfig();
+const remoteConfig = loadRemoteConfig();
+assertRemoteConfig(remoteConfig);
+const remoteEventHub = new RemoteEventHub();
+const deviceGateway = new DeviceGateway(remoteEventHub);
 
 // Cache: 1 giờ TTL per tenant
 const cache = new NodeCache({ stdTTL: 3600 });
@@ -127,7 +141,16 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-app.use(cors());
+app.use(cors({
+  credentials: true,
+  origin(origin, callback) {
+    if (!origin || remoteConfig.allowedOrigins.has(String(origin).replace(/\/$/, ''))) {
+      callback(null, true);
+      return;
+    }
+    callback(new Error('Origin is not allowed'));
+  }
+}));
 app.use(express.json({ limit: '32kb' }));
 
 const searchWriteLimiter = rateLimit({
@@ -216,6 +239,11 @@ app.get('/health', (req, res) => {
     version: '2.0.0',
     uptime: process.uptime(),
     cache_keys: cache.keys().length,
+    social: {
+      enabled: socialConfig.enabled,
+      canary: socialConfig.canaryMode,
+      coverPublisherConfigured: Boolean(socialConfig.cover.token && socialConfig.cover.repoName)
+    },
     tenants: tenantsStatus
   });
 });
@@ -671,6 +699,25 @@ app.use(
   createLuaShopRouter({ getTenantDb })
 );
 
+app.use(
+  '/api/:tenant/social',
+  validateTenant,
+  createSocialRouter({ getTenantDb, config: socialConfig })
+);
+
+const remoteService = new RemoteService({
+  getTenantDb,
+  config: remoteConfig,
+  gateway: deviceGateway,
+  eventHub: remoteEventHub
+});
+
+app.use(
+  '/api/:tenant',
+  validateTenant,
+  createRemoteRouter({ service: remoteService, config: remoteConfig, eventHub: remoteEventHub })
+);
+
 function requireAdminKey(req, res, next) {
   const configuredKey = process.env.ACTIVATION_ADMIN_KEY || '';
   const providedKey = req.get('x-admin-key') || '';
@@ -715,13 +762,18 @@ app.use((req, res) => {
 
 app.use((err, req, res, next) => {
   console.error('❌ Server error:', err);
-  res.status(500).json({ error: 'Internal server error' });
+  const status = Number.isInteger(err.status) && err.status >= 400 && err.status <= 599 ? err.status : 500;
+  const safeCode = /^[A-Z0-9_]{3,80}$/.test(String(err.message || '')) ? err.message : 'INTERNAL_SERVER_ERROR';
+  res.status(status).json({ error: safeCode });
 });
 
 // ============================================================
 // START SERVER
 // ============================================================
-app.listen(PORT, '0.0.0.0', () => {
+const server = http.createServer(app);
+attachDeviceSocketServer(server, { service: remoteService, gateway: deviceGateway });
+
+server.listen(PORT, '0.0.0.0', () => {
   console.log('');
   console.log('========================================');
   console.log('🚀 0xoLemon Multi-Tenant Backend');
@@ -739,5 +791,7 @@ app.listen(PORT, '0.0.0.0', () => {
     }
   }
   console.log('========================================');
+  console.log(`🔐 Web auth: ${remoteConfig.webAuthEnabled ? 'enabled' : 'disabled'}`);
+  console.log(`🖥️  Remote web: ${remoteConfig.remoteWebEnabled ? 'enabled' : 'disabled'}`);
   console.log('');
 });

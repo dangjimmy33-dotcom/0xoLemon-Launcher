@@ -26,6 +26,26 @@ type HomePreferences = {
   carouselAutoplay: boolean
 }
 
+export type HomeViewProps = {
+  catalog: GameCatalog
+  installStates: Record<string, GameInstallState>
+  runtimeStates: GameRuntimeState[]
+  assets: Record<string, string>
+  job: JobJournal | null
+  launcherUpdate: LauncherUpdateInfo | null
+  launcherUpdateProgress: LauncherUpdateProgress | null
+  preferences: HomePreferences
+  reducedMotion: boolean
+  onRequestAsset: (gameId: string, assetId: string, urgent?: boolean) => void
+  onOpenGame: (gameId: string) => void
+  onPlayGame: (gameId: string) => void
+  onOpenTab: (tab: TabId) => void
+  onOpenDiscord: () => void
+  onOpenDonate: () => void
+  displayName?: string | null
+  online?: boolean
+}
+
 function stableGameRank(game: GameSummary) {
   let hash = 2166136261
   for (let index = 0; index < game.id.length; index += 1) {
@@ -51,23 +71,7 @@ export function HomeView({
   onOpenTab,
   onOpenDiscord,
   onOpenDonate,
-}: {
-  catalog: GameCatalog
-  installStates: Record<string, GameInstallState>
-  runtimeStates: GameRuntimeState[]
-  assets: Record<string, string>
-  job: JobJournal | null
-  launcherUpdate: LauncherUpdateInfo | null
-  launcherUpdateProgress: LauncherUpdateProgress | null
-  preferences: HomePreferences
-  reducedMotion: boolean
-  onRequestAsset: (gameId: string, assetId: string, urgent?: boolean) => void
-  onOpenGame: (gameId: string) => void
-  onPlayGame: (gameId: string) => void
-  onOpenTab: (tab: TabId) => void
-  onOpenDiscord: () => void
-  onOpenDonate: () => void
-}) {
+}: HomeViewProps) {
   // ── data ──────────────────────────────────────────────────────
   const installedGames = useMemo(
     () => catalog.games.filter((g) => installStates[g.id]?.installed),

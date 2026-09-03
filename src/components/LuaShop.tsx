@@ -13,6 +13,7 @@ import {
 import './LuaShop.css'
 import { LuaGameManagerDialog } from './LuaGameManagerDialog'
 import { LuaSourcePickerDialog } from './LuaSourcePickerDialog'
+import { UnifiedSearchOverlay, UnifiedSearchResult } from './UnifiedSearchOverlay'
 import type {
   LuaCatalogItem,
   LuaCatalogSearchPage,
@@ -568,6 +569,7 @@ export function LuaShop() {
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [search, setSearch] = useState('')
+  const [luaSearchOverlayOpen, setLuaSearchOverlayOpen] = useState(false)
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [isSearching, setIsSearching] = useState(false)
   const [isCatalogTransitioning, setIsCatalogTransitioning] = useState(false)
@@ -683,8 +685,7 @@ export function LuaShop() {
     const handleSearchShortcut = (event: KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault()
-        searchInputRef.current?.focus()
-        searchInputRef.current?.select()
+        setLuaSearchOverlayOpen(true)
       }
     }
     window.addEventListener('keydown', handleSearchShortcut)
@@ -993,7 +994,10 @@ export function LuaShop() {
       if (skipConfirm) void performRestart()
       else setShowRestartConfirm(true)
     }
-    void refreshSourceOverview(provider === 'hubcap')
+    // Hubcap reports usage separately from the package response. Await the
+    // no-cache usage refresh so the header cannot keep showing the pre-install
+    // quota after a successful Add/Update transaction.
+    await refreshSourceOverview(provider === 'hubcap')
   }, [
     performRestart,
     refreshSourceOverview,
@@ -1107,7 +1111,10 @@ export function LuaShop() {
                 {t.luaShop.installed}: <strong>{installedLuas.size}</strong>
               </span>
               {sourceSettings?.hubcap.configured && (
-                <span className={`lua-shop-quota quota-${hubcapQuotaTone}`}>
+                <span
+                  className={`lua-shop-quota quota-${hubcapQuotaTone}`}
+                  title={t.luaShop.dailyAddsHint}
+                >
                   {t.luaShop.dailyAdds}: <strong>{hubcapQuotaRemaining}/{hubcapQuotaLimit}</strong>
                 </span>
               )}
@@ -1193,6 +1200,8 @@ export function LuaShop() {
               type="text"
               placeholder={t.luaShop.searchPlaceholder || 'Search by game name or AppID...'}
               value={search}
+              onFocus={() => setLuaSearchOverlayOpen(true)}
+              onClick={() => setLuaSearchOverlayOpen(true)}
               onChange={(event) => {
                 const value = event.target.value
                 setSearch(value)
@@ -1245,6 +1254,65 @@ export function LuaShop() {
           ))}
         </div>
       </div>
+
+      <UnifiedSearchOverlay
+        open={luaSearchOverlayOpen}
+        query={search}
+        onQueryChange={(value) => {
+          setSearch(value)
+          if (filterTab !== 'installed') setIsCatalogTransitioning(value.trim() !== debouncedSearch)
+          setIsSearching(filterTab !== 'installed' && Boolean(value.trim()))
+        }}
+        onClose={() => setLuaSearchOverlayOpen(false)}
+        onSubmit={() => setLuaSearchOverlayOpen(false)}
+        placeholder={t.luaShop.searchPlaceholder || 'Search by game name or AppID...'}
+        ariaLabel="Search Lua Shop"
+        filters={filterTabs.map((tab) => ({
+          id: tab.id,
+          label: tab.label,
+          count: tab.id === 'installed' ? installedLuas.size : null,
+        }))}
+        activeFilter={filterTab}
+        onFilterChange={(id) => {
+          const next = id as FilterTab
+          setFilterTab(next)
+          setCatalogCursor(null)
+          setCatalogCursorHistory([])
+          setCatalogPageNumber(1)
+          setIsSearching(next !== 'installed' && Boolean(search.trim()))
+          setIsCatalogTransitioning(next !== 'installed')
+        }}
+        resultCount={sortedCatalogItems.length}
+        resultsHint={filterTab === 'installed' ? 'Installed Lua games' : 'Lua catalog results'}
+        discoveryTitle="Recommended Lua-ready games"
+        discoveryHint="Search by title or exact Steam AppID. Filters stay synchronized with the Lua Shop page."
+        historyKey="0xo.luaShopSearchHistory"
+      >
+        {sortedCatalogItems.length ? sortedCatalogItems.slice(0, 36).map((item) => {
+          const appid = String(item.appid)
+          const installed = installedLuas.has(appid) || Boolean(item.installed)
+          return (
+            <UnifiedSearchResult
+              key={`lua-search-${appid}`}
+              title={item.name}
+              subtitle={`AppID ${appid}`}
+              matchLabel={installed ? 'Installed · Manage or sync from Lua Shop' : 'Available in Lua catalog'}
+              imageUrl={item.headerImage || getCachedSteamGameInfo(appid)?.header_image || null}
+              meta={installed ? <span className="installed"><CheckCircle size={13} /> Installed</span> : null}
+              onClick={() => {
+                setSearch(item.name)
+                setLuaSearchOverlayOpen(false)
+              }}
+            />
+          )
+        }) : (
+          <div className="store-search-empty">
+            <Search size={28} />
+            <strong>No matching Lua games</strong>
+            <span>Try another title or Steam AppID.</span>
+          </div>
+        )}
+      </UnifiedSearchOverlay>
 
       {/* ── Body ── */}
       {isLoading || (filterTab === 'installed' && isInstalledCatalogLoading) ? (

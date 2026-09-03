@@ -17,6 +17,10 @@
 
 #include "dll/steam_client.h"
 
+#if defined(__WINDOWS__)
+#include <TlHelp32.h>
+#endif
+
 
 // retrieves the ISteamBilling interface associated with the handle
 ISteamBilling *Steam_Client::GetISteamBilling( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
@@ -30,7 +34,7 @@ ISteamBilling *Steam_Client::GetISteamBilling( HSteamUser hSteamUser, HSteamPipe
         return reinterpret_cast<ISteamBilling *>(static_cast<ISteamBilling *>(steam_billing));
     }
 
-    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return report_missing_impl_and_exit_or_null(pchVersion, EMU_FUNC_NAME);
 }
 
 void *Steam_Client::GetISteamBilling_old( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
@@ -49,7 +53,7 @@ ISteamAppDisableUpdate *Steam_Client::GetISteamAppDisableUpdate( HSteamUser hSte
         return reinterpret_cast<ISteamAppDisableUpdate *>(static_cast<ISteamAppDisableUpdate *>(steam_app_disable_update));
     }
 
-    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return report_missing_impl_and_exit_or_null(pchVersion, EMU_FUNC_NAME);
 }
 
 // retrieves the ISteamTimeline interface associated with the handle
@@ -68,7 +72,7 @@ ISteamTimeline *Steam_Client::GetISteamTimeline( HSteamUser hSteamUser, HSteamPi
         return reinterpret_cast<ISteamTimeline *>(static_cast<ISteamTimeline *>(steam_timeline));
     }
 
-    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return report_missing_impl_and_exit_or_null(pchVersion, EMU_FUNC_NAME);
 }
 
 // retrieves the ISteamGameStats interface associated with the handle
@@ -89,7 +93,7 @@ ISteamGameStats *Steam_Client::GetISteamGameStats( HSteamUser hSteamUser, HSteam
         return reinterpret_cast<ISteamGameStats *>(static_cast<ISteamGameStats *>(steam_gamestats_tmp));
     }
 
-    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return report_missing_impl_and_exit_or_null(pchVersion, EMU_FUNC_NAME);
 }
 
 // retrieves the ISteamUser interface associated with the handle
@@ -143,7 +147,7 @@ ISteamUser *Steam_Client::GetISteamUser( HSteamUser hSteamUser, HSteamPipe hStea
     } else if (strcmp(pchVersion, "SteamUser014") == 0) {
         return reinterpret_cast<ISteamUser *>(static_cast<ISteamUser014 *>(steam_user_tmp));
     } else if (strcmp(pchVersion, "SteamUser015") == 0) {
-        return reinterpret_cast<ISteamUser *>(static_cast<ISteamUser015 *>(steam_user_tmp)); // SteamUser015 Not found in public Archive, must be between 1.12-1.13 
+        return reinterpret_cast<ISteamUser *>(static_cast<ISteamUser015 *>(steam_user_tmp)); // SteamUser015 Not found in public Archive, must be between 1.12-1.13
     } else if (strcmp(pchVersion, "SteamUser016") == 0) {
         return reinterpret_cast<ISteamUser *>(static_cast<ISteamUser016 *>(steam_user_tmp));
     } else if (strcmp(pchVersion, "SteamUser017") == 0) {
@@ -162,7 +166,7 @@ ISteamUser *Steam_Client::GetISteamUser( HSteamUser hSteamUser, HSteamPipe hStea
         return reinterpret_cast<ISteamUser *>(static_cast<ISteamUser *>(steam_user_tmp));
     }
 
-    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return report_missing_impl_and_exit_or_null(pchVersion, EMU_FUNC_NAME);
 }
 
 // retrieves the ISteamGameServer interface associated with the handle
@@ -207,7 +211,7 @@ ISteamGameServer *Steam_Client::GetISteamGameServer( HSteamUser hSteamUser, HSte
         return reinterpret_cast<ISteamGameServer *>(static_cast<ISteamGameServer *>(steam_gameserver));
     }
     
-    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return report_missing_impl_and_exit_or_null(pchVersion, EMU_FUNC_NAME);
 }
 
 // returns the ISteamFriends interface
@@ -254,7 +258,7 @@ ISteamFriends *Steam_Client::GetISteamFriends( HSteamUser hSteamUser, HSteamPipe
         return reinterpret_cast<ISteamFriends *>(static_cast<ISteamFriends *>(steam_friends));
     }
     
-    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return report_missing_impl_and_exit_or_null(pchVersion, EMU_FUNC_NAME);
 }
 
 // returns the ISteamUtils interface
@@ -290,11 +294,13 @@ ISteamUtils *Steam_Client::GetISteamUtils( HSteamPipe hSteamPipe, const char *pc
         return reinterpret_cast<ISteamUtils *>(static_cast<ISteamUtils008 *>(steam_utils_temp));
     } else if (strcmp(pchVersion, "SteamUtils009") == 0) {
         return reinterpret_cast<ISteamUtils *>(static_cast<ISteamUtils009 *>(steam_utils_temp));
+    } else if (strcmp(pchVersion, "SteamUtils010") == 0) {
+        return reinterpret_cast<ISteamUtils *>(static_cast<ISteamUtils010 *>(steam_utils_temp));
     } else if (strcmp(pchVersion, STEAMUTILS_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamUtils *>(static_cast<ISteamUtils *>(steam_utils_temp));
     }
     
-    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return report_missing_impl_and_exit_or_null(pchVersion, EMU_FUNC_NAME);
 }
 
 // returns the ISteamMatchmaking interface
@@ -323,7 +329,7 @@ ISteamMatchmaking *Steam_Client::GetISteamMatchmaking( HSteamUser hSteamUser, HS
         return reinterpret_cast<ISteamMatchmaking *>(static_cast<ISteamMatchmaking *>(steam_matchmaking));
     }
     
-    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return report_missing_impl_and_exit_or_null(pchVersion, EMU_FUNC_NAME);
 }
 
 // returns the ISteamMatchmakingServers interface
@@ -334,11 +340,13 @@ ISteamMatchmakingServers *Steam_Client::GetISteamMatchmakingServers( HSteamUser 
 
     if (strcmp(pchVersion, "SteamMatchMakingServers001") == 0) {
         return reinterpret_cast<ISteamMatchmakingServers *>(static_cast<ISteamMatchmakingServers001 *>(steam_matchmaking_servers));
+    } else if (strcmp(pchVersion, "SteamMatchMakingServers002") == 0) {
+        return reinterpret_cast<ISteamMatchmakingServers *>(static_cast<ISteamMatchmakingServers002 *>(steam_matchmaking_servers));
     } else if (strcmp(pchVersion, STEAMMATCHMAKINGSERVERS_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamMatchmakingServers *>(static_cast<ISteamMatchmakingServers *>(steam_matchmaking_servers));
     }
     
-    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return report_missing_impl_and_exit_or_null(pchVersion, EMU_FUNC_NAME);
 }
 
 // returns the a generic interface
@@ -390,6 +398,8 @@ void *Steam_Client::GetISteamGenericInterface( HSteamUser hSteamUser, HSteamPipe
             steam_networking_sockets_temp = steam_networking_sockets;
         }
 
+        steam_networking_sockets_temp->set_version(pchVersion);
+
         if (strcmp(pchVersion, "SteamNetworkingSockets001") == 0) {
             return reinterpret_cast<void *>(static_cast<ISteamNetworkingSockets001 *>( steam_networking_sockets_temp)); // SteamNetworkingSockets001 Not found in public Archive, must be before 1.44
         } else if (strcmp(pchVersion, "SteamNetworkingSockets002") == 0) {
@@ -411,6 +421,8 @@ void *Steam_Client::GetISteamGenericInterface( HSteamUser hSteamUser, HSteamPipe
             return reinterpret_cast<void *>(static_cast<ISteamNetworkingSockets010 *>( steam_networking_sockets_temp));
         } else if (strcmp(pchVersion, "SteamNetworkingSockets011") == 0) { // Not found in public Archive, based on reversing, requested by appid 1492070
             return reinterpret_cast<void *>(static_cast<ISteamNetworkingSockets011 *>( steam_networking_sockets_temp));
+        } else if (strcmp(pchVersion, "SteamNetworkingSockets012") == 0) {
+            return reinterpret_cast<void *>(static_cast<ISteamNetworkingSockets012 *>( steam_networking_sockets_temp));
         } else if (strcmp(pchVersion, STEAMNETWORKINGSOCKETS_INTERFACE_VERSION) == 0) {
             return reinterpret_cast<void *>(static_cast<ISteamNetworkingSockets *>( steam_networking_sockets_temp));
         }
@@ -537,9 +549,9 @@ void *Steam_Client::GetISteamGenericInterface( HSteamUser hSteamUser, HSteamPipe
     } else if (strstr(pchVersion, "SteamBilling") == pchVersion) {
         return GetISteamBilling(hSteamUser, hSteamPipe, pchVersion);
     }
-    
+
     PRINT_DEBUG("No interface: %s", pchVersion);
-    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return report_missing_impl_and_exit_or_null(pchVersion, EMU_FUNC_NAME);
 }
 
 // returns the ISteamUserStats interface
@@ -576,7 +588,7 @@ ISteamUserStats *Steam_Client::GetISteamUserStats( HSteamUser hSteamUser, HSteam
         return reinterpret_cast<ISteamUserStats *>(static_cast<ISteamUserStats *>(steam_user_stats));
     }
 
-    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return report_missing_impl_and_exit_or_null(pchVersion, EMU_FUNC_NAME);
 }
 
 // returns the ISteamGameServerStats interface
@@ -584,12 +596,12 @@ ISteamGameServerStats *Steam_Client::GetISteamGameServerStats( HSteamUser hSteam
 {
     PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamuser) return NULL;
-    
+
     if (strcmp(pchVersion, STEAMGAMESERVERSTATS_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamGameServerStats *>(static_cast<ISteamGameServerStats *>(steam_gameserverstats));
     }
 
-    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return report_missing_impl_and_exit_or_null(pchVersion, EMU_FUNC_NAME);
 }
 
 // returns apps interface
@@ -625,7 +637,7 @@ ISteamApps *Steam_Client::GetISteamApps( HSteamUser hSteamUser, HSteamPipe hStea
         return reinterpret_cast<ISteamApps *>(static_cast<ISteamApps *>(steam_apps_temp));
     }
 
-    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return report_missing_impl_and_exit_or_null(pchVersion, EMU_FUNC_NAME);
 }
 
 // networking
@@ -656,7 +668,7 @@ ISteamNetworking *Steam_Client::GetISteamNetworking( HSteamUser hSteamUser, HSte
         return reinterpret_cast<ISteamNetworking *>(static_cast<ISteamNetworking *>(steam_networking_temp));
     }
 
-    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return report_missing_impl_and_exit_or_null(pchVersion, EMU_FUNC_NAME);
 }
 
 // remote storage
@@ -699,7 +711,7 @@ ISteamRemoteStorage *Steam_Client::GetISteamRemoteStorage( HSteamUser hSteamuser
         return reinterpret_cast<ISteamRemoteStorage *>(static_cast<ISteamRemoteStorage *>(steam_remote_storage));
     }
 
-    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return report_missing_impl_and_exit_or_null(pchVersion, EMU_FUNC_NAME);
 }
 
 // user screenshots
@@ -716,7 +728,7 @@ ISteamScreenshots *Steam_Client::GetISteamScreenshots( HSteamUser hSteamuser, HS
         return reinterpret_cast<ISteamScreenshots *>(static_cast<ISteamScreenshots *>(steam_screenshots));
     }
     
-    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return report_missing_impl_and_exit_or_null(pchVersion, EMU_FUNC_NAME);
 }
 
 
@@ -741,11 +753,11 @@ ISteamHTTP *Steam_Client::GetISteamHTTP( HSteamUser hSteamuser, HSteamPipe hStea
         return reinterpret_cast<ISteamHTTP *>(static_cast<ISteamHTTP *>(steam_http_temp));
     }
 
-    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return report_missing_impl_and_exit_or_null(pchVersion, EMU_FUNC_NAME);
 }
 
 // Deprecated - the ISteamUnifiedMessages interface is no longer intended for public consumption.
-void *Steam_Client::DEPRECATED_GetISteamUnifiedMessages( HSteamUser hSteamuser, HSteamPipe hSteamPipe, const char *pchVersion ) 
+void *Steam_Client::DEPRECATED_GetISteamUnifiedMessages( HSteamUser hSteamuser, HSteamPipe hSteamPipe, const char *pchVersion )
 {
     PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamuser) return NULL;
@@ -754,7 +766,7 @@ void *Steam_Client::DEPRECATED_GetISteamUnifiedMessages( HSteamUser hSteamuser, 
         return reinterpret_cast<void *>(static_cast<ISteamUnifiedMessages *>(steam_unified_messages));
     }
 
-    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return report_missing_impl_and_exit_or_null(pchVersion, EMU_FUNC_NAME);
 }
 
 ISteamUnifiedMessages *Steam_Client::GetISteamUnifiedMessages( HSteamUser hSteamuser, HSteamPipe hSteamPipe, const char *pchVersion )
@@ -766,7 +778,7 @@ ISteamUnifiedMessages *Steam_Client::GetISteamUnifiedMessages( HSteamUser hSteam
         return reinterpret_cast<ISteamUnifiedMessages *>(static_cast<ISteamUnifiedMessages *>(steam_unified_messages));
     }
 
-    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return report_missing_impl_and_exit_or_null(pchVersion, EMU_FUNC_NAME);
 }
 
 // Exposes the ISteamController interface
@@ -795,7 +807,7 @@ ISteamController *Steam_Client::GetISteamController( HSteamUser hSteamUser, HSte
         return reinterpret_cast<ISteamController *>(static_cast<ISteamController *>(steam_controller));
     }
 
-    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return report_missing_impl_and_exit_or_null(pchVersion, EMU_FUNC_NAME);
 }
 
 // Exposes the ISteamUGC interface
@@ -858,7 +870,7 @@ ISteamUGC *Steam_Client::GetISteamUGC( HSteamUser hSteamUser, HSteamPipe hSteamP
         return reinterpret_cast<ISteamUGC *>(static_cast<ISteamUGC *>(steam_ugc_temp));
     }
 
-    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return report_missing_impl_and_exit_or_null(pchVersion, EMU_FUNC_NAME);
 }
 
 // returns app list interface, only available on specially registered apps
@@ -866,12 +878,12 @@ ISteamAppList *Steam_Client::GetISteamAppList( HSteamUser hSteamUser, HSteamPipe
 {
     PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return NULL;
-    
+
     if (strcmp(pchVersion, STEAMAPPLIST_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamAppList *>(static_cast<ISteamAppList *>(steam_applist));
     }
 
-    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return report_missing_impl_and_exit_or_null(pchVersion, EMU_FUNC_NAME);
 }
 
 // Music Player
@@ -884,7 +896,7 @@ ISteamMusic *Steam_Client::GetISteamMusic( HSteamUser hSteamuser, HSteamPipe hSt
         return reinterpret_cast<ISteamMusic *>(static_cast<ISteamMusic *>(steam_music));
     }
 
-    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return report_missing_impl_and_exit_or_null(pchVersion, EMU_FUNC_NAME);
 }
 
 // Music Player Remote
@@ -892,12 +904,12 @@ ISteamMusicRemote *Steam_Client::GetISteamMusicRemote(HSteamUser hSteamuser, HSt
 {
     PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamuser) return NULL;
-    
+
     if (strcmp(pchVersion, STEAMMUSICREMOTE_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamMusicRemote *>(static_cast<ISteamMusicRemote *>(steam_musicremote));
     }
 
-    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return report_missing_impl_and_exit_or_null(pchVersion, EMU_FUNC_NAME);
 }
 
 // html page display
@@ -918,7 +930,7 @@ ISteamHTMLSurface *Steam_Client::GetISteamHTMLSurface(HSteamUser hSteamuser, HSt
         return reinterpret_cast<ISteamHTMLSurface *>(static_cast<ISteamHTMLSurface *>(steam_HTMLsurface));
     }
 
-    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return report_missing_impl_and_exit_or_null(pchVersion, EMU_FUNC_NAME);
 }
 
 // inventory
@@ -942,7 +954,7 @@ ISteamInventory *Steam_Client::GetISteamInventory( HSteamUser hSteamuser, HSteam
         return reinterpret_cast<ISteamInventory *>(static_cast<ISteamInventory *>(steam_inventory_temp));
     }
 
-    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return report_missing_impl_and_exit_or_null(pchVersion, EMU_FUNC_NAME);
 }
 
 // Video
@@ -950,7 +962,7 @@ ISteamVideo *Steam_Client::GetISteamVideo( HSteamUser hSteamuser, HSteamPipe hSt
 {
     PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamuser) return NULL;
-    
+
     if (strcmp(pchVersion, "STEAMVIDEO_INTERFACE_V001") == 0) {
         return reinterpret_cast<ISteamVideo *>(static_cast<ISteamVideo001 *>(steam_video));
     }
@@ -961,7 +973,7 @@ ISteamVideo *Steam_Client::GetISteamVideo( HSteamUser hSteamuser, HSteamPipe hSt
         return reinterpret_cast<ISteamVideo *>(static_cast<ISteamVideo *>(steam_video));
     }
 
-    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return report_missing_impl_and_exit_or_null(pchVersion, EMU_FUNC_NAME);
 }
 
 // Parental controls
@@ -969,24 +981,24 @@ ISteamParentalSettings *Steam_Client::GetISteamParentalSettings( HSteamUser hSte
 {
     PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamuser) return NULL;
-    
+
     if (strcmp(pchVersion, STEAMPARENTALSETTINGS_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamParentalSettings *>(static_cast<ISteamParentalSettings *>(steam_parental));
     }
 
-    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return report_missing_impl_and_exit_or_null(pchVersion, EMU_FUNC_NAME);
 }
 
 ISteamMasterServerUpdater *Steam_Client::GetISteamMasterServerUpdater( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
 {
     PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return NULL;
-    
+
     if (strcmp(pchVersion, STEAMMASTERSERVERUPDATER_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamMasterServerUpdater *>(static_cast<ISteamMasterServerUpdater *>(steam_masterserver_updater));
     }
 
-    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return report_missing_impl_and_exit_or_null(pchVersion, EMU_FUNC_NAME);
 }
 
 ISteamContentServer *Steam_Client::GetISteamContentServer( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
@@ -1001,12 +1013,12 @@ ISteamGameSearch *Steam_Client::GetISteamGameSearch( HSteamUser hSteamuser, HSte
 {
     PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamuser) return NULL;
-    
+
     if (strcmp(pchVersion, STEAMGAMESEARCH_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamGameSearch *>(static_cast<ISteamGameSearch *>(steam_game_search));
     }
 
-    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return report_missing_impl_and_exit_or_null(pchVersion, EMU_FUNC_NAME);
 }
 
 // Exposes the Steam Input interface for controller support
@@ -1021,11 +1033,13 @@ ISteamInput *Steam_Client::GetISteamInput( HSteamUser hSteamUser, HSteamPipe hSt
         return reinterpret_cast<ISteamInput *>(static_cast<ISteamInput002 *>(steam_controller));
     } else if (strcmp(pchVersion, "SteamInput005") == 0) {
         return reinterpret_cast<ISteamInput *>(static_cast<ISteamInput005 *>(steam_controller));
+    } else if (strcmp(pchVersion, "SteamInput006") == 0) {
+        return reinterpret_cast<ISteamInput *>(static_cast<ISteamInput006 *>(steam_controller));
     } else if (strcmp(pchVersion, STEAMINPUT_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamInput *>(static_cast<ISteamInput *>(steam_controller));
     }
 
-    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return report_missing_impl_and_exit_or_null(pchVersion, EMU_FUNC_NAME);
 }
 
 // Steam Parties interface
@@ -1033,12 +1047,12 @@ ISteamParties *Steam_Client::GetISteamParties( HSteamUser hSteamUser, HSteamPipe
 {
     PRINT_DEBUG("%s", pchVersion);
     if (!steam_pipes.count(hSteamPipe) || !hSteamUser) return NULL;
-    
+
     if (strcmp(pchVersion, STEAMPARTIES_INTERFACE_VERSION) == 0) {
         return reinterpret_cast<ISteamParties *>(static_cast<ISteamParties *>(steam_parties));
     }
 
-    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return report_missing_impl_and_exit_or_null(pchVersion, EMU_FUNC_NAME);
 }
 
 ISteamRemotePlay *Steam_Client::GetISteamRemotePlay( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
@@ -1056,7 +1070,7 @@ ISteamRemotePlay *Steam_Client::GetISteamRemotePlay( HSteamUser hSteamUser, HSte
         return reinterpret_cast<ISteamRemotePlay *>(static_cast<ISteamRemotePlay *>(steam_remoteplay));
     }
 
-    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return report_missing_impl_and_exit_or_null(pchVersion, EMU_FUNC_NAME);
 }
 
 ISteamAppTicket *Steam_Client::GetAppTicket( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion )
@@ -1068,13 +1082,14 @@ ISteamAppTicket *Steam_Client::GetAppTicket( HSteamUser hSteamUser, HSteamPipe h
         return reinterpret_cast<ISteamAppTicket *>(static_cast<ISteamAppTicket *>(steam_app_ticket));
     }
 
-    report_missing_impl_and_exit(pchVersion, EMU_FUNC_NAME);
+    return report_missing_impl_and_exit_or_null(pchVersion, EMU_FUNC_NAME);
 }
 
 void Steam_Client::report_missing_impl(std::string_view itf, std::string_view caller)
 {
     PRINT_DEBUG("'%s' '%s'", itf.data(), caller.data());
     std::lock_guard lck(global_mutex);
+    ++missing_interface_count;
     std::stringstream ss{};
 
     try {
@@ -1083,10 +1098,124 @@ void Steam_Client::report_missing_impl(std::string_view itf, std::string_view ca
     }
     catch(...) { }
 
+#if defined(__WINDOWS__)
+    // use a static variable as an address anchor in our DLL
+    static const char emu_module_anchor = 0;
+
+    // helper: replace user profile prefix with %USERPROFILE% to avoid leaking the username
+    auto sanitize_path = [](const char* path) -> std::string {
+        std::string result(path);
+        char profile[MAX_PATH]{};
+        if (GetEnvironmentVariableA("USERPROFILE", profile, MAX_PATH)) {
+            size_t len = strlen(profile);
+            if (len > 0 && result.size() >= len) {
+                // case-insensitive prefix match
+                if (_strnicmp(result.c_str(), profile, len) == 0) {
+                    result.replace(0, len, "%USERPROFILE%");
+                }
+            }
+        }
+        return result;
+    };
+
+    // caller module detection via stack walk
+    try {
+        HMODULE our_module = nullptr;
+        GetModuleHandleExW(
+            GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+            reinterpret_cast<LPCWSTR>(&emu_module_anchor),
+            &our_module
+        );
+
+        void* stack_frames[10]{};
+        USHORT frame_count = CaptureStackBackTrace(0, 10, stack_frames, nullptr);
+        for (USHORT i = 0; i < frame_count; ++i) {
+            HMODULE frame_module = nullptr;
+            if (GetModuleHandleExW(
+                    GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                    reinterpret_cast<LPCWSTR>(stack_frames[i]),
+                    &frame_module) && frame_module && frame_module != our_module) {
+                wchar_t module_path[MAX_PATH]{};
+                if (GetModuleFileNameW(frame_module, module_path, MAX_PATH)) {
+                    char module_path_a[MAX_PATH]{};
+                    WideCharToMultiByte(CP_UTF8, 0, module_path, -1, module_path_a, MAX_PATH, nullptr, nullptr);
+                    ss << "CALLER MODULE=" << sanitize_path(module_path_a) << "\n";
+                    // return address offset within the calling module
+                    auto offset = reinterpret_cast<uintptr_t>(stack_frames[i]) - reinterpret_cast<uintptr_t>(frame_module);
+                    ss << "CALLER OFFSET=0x" << std::hex << offset << std::dec << "\n";
+                }
+                break;
+            }
+        }
+    }
+    catch(...) { }
+
+    // process executable name
+    try {
+        wchar_t exe_path[MAX_PATH]{};
+        if (GetModuleFileNameW(nullptr, exe_path, MAX_PATH)) {
+            const wchar_t* exe_name = wcsrchr(exe_path, L'\\');
+            exe_name = exe_name ? exe_name + 1 : exe_path;
+            char exe_name_a[MAX_PATH]{};
+            WideCharToMultiByte(CP_UTF8, 0, exe_name, -1, exe_name_a, MAX_PATH, nullptr, nullptr);
+            ss << "PROCESS=" << exe_name_a << "\n";
+        }
+    }
+    catch(...) { }
+
+    // EMU DLL path
+    try {
+        HMODULE our_module = nullptr;
+        GetModuleHandleExW(
+            GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+            reinterpret_cast<LPCWSTR>(&emu_module_anchor),
+            &our_module
+        );
+        if (our_module) {
+            wchar_t emu_path[MAX_PATH]{};
+            if (GetModuleFileNameW(our_module, emu_path, MAX_PATH)) {
+                char emu_path_a[MAX_PATH]{};
+                WideCharToMultiByte(CP_UTF8, 0, emu_path, -1, emu_path_a, MAX_PATH, nullptr, nullptr);
+                ss << "EMU DLL=" << sanitize_path(emu_path_a) << "\n";
+            }
+        }
+    }
+    catch(...) { }
+
+    // thread ID
+    try {
+        ss << "THREAD ID=" << GetCurrentThreadId() << "\n";
+    }
+    catch(...) { }
+
+    // detected third-party modules (use cached results from detect_thirdparty_injectors)
+    try {
+        if (!overlays_scanned) {
+            detect_thirdparty_injectors();
+        }
+        if (!cached_detected_overlays.empty()) {
+            ss << "DETECTED OVERLAYS=" << cached_detected_overlays << "\n";
+        }
+    }
+    catch(...) { }
+#endif
+
+    // injector detection status
+    try {
+        ss << "GRACEFUL=" << (thirdparty_injector_detected ? "true" : "false") << "\n";
+    }
+    catch(...) { }
+
     try {
         if (settings_client) {
             ss << "APPID=" << settings_client->get_local_game_id().AppID() << "\n";
         }
+    }
+    catch(...) { }
+
+    // request counter
+    try {
+        ss << "REQUEST #=" << missing_interface_count << "\n";
     }
     catch(...) { }
 
@@ -1109,7 +1238,9 @@ void Steam_Client::report_missing_impl(std::string_view itf, std::string_view ca
     catch(...) { }
 
 #if defined(__WINDOWS__)
-    MessageBoxA(nullptr, ss.str().c_str(), "Missing interface", MB_OK);
+    if (!thirdparty_injector_detected) {
+        MessageBoxA(nullptr, ss.str().c_str(), "Missing interface", MB_OK);
+    }
 #endif
 }
 
@@ -1117,4 +1248,810 @@ void Steam_Client::report_missing_impl_and_exit(std::string_view itf, std::strin
 {
     report_missing_impl(itf, caller);
     std::exit(0x4155149); // MISSING :)
+}
+
+std::nullptr_t Steam_Client::report_missing_impl_and_exit_or_null(std::string_view itf, std::string_view caller)
+{
+    // re-check for late-injected third-party tools (e.g. Special K via global hook)
+    if (!thirdparty_injector_detected) {
+        detect_thirdparty_injectors();
+    }
+
+    // Special K caller: always graceful - SK probes interfaces from high versions down
+    if (is_caller_special_k()) {
+        PRINT_DEBUG("[GRACEFUL/SK] unknown interface '%s' requested by '%s', returning nullptr", itf.data(), caller.data());
+        report_missing_impl(itf, caller);
+        return nullptr;
+    }
+
+    // config: exit_on_unknown_interface (default true)
+    // when false, return nullptr instead of crashing for any caller
+    if (settings_client && !settings_client->exit_on_unknown_interface) {
+        PRINT_DEBUG("[GRACEFUL/CFG] unknown interface '%s' requested by '%s', returning nullptr", itf.data(), caller.data());
+        report_missing_impl(itf, caller);
+        return nullptr;
+    }
+
+    // default: crash for debugging (non-SK, no config override)
+    report_missing_impl_and_exit(itf, caller);
+    // unreachable - report_missing_impl_and_exit is [[noreturn]]
+    return nullptr;
+}
+
+void Steam_Client::detect_thirdparty_injectors()
+{
+    thirdparty_injector_detected = false;
+
+#if defined(__WINDOWS__)
+    // scan all known overlays/injectors and log each one found
+    struct { const wchar_t* name; const char* label; const char* type; } known_modules[] = {
+        // --- injectors / post-processors ---
+        #if defined(_WIN64)
+        { L"SpecialK64.dll",            "Special K",            "injector" },
+        { L"ReShade64.dll",             "ReShade",              "post-processor" },
+        #else
+        { L"SpecialK32.dll",            "Special K",            "injector" },
+        { L"ReShade32.dll",             "ReShade",              "post-processor" },
+        #endif
+        { L"d3dcompiler_46e.dll",       "ENB Series",           "post-processor" },
+
+        // --- recording / streaming ---
+        #if defined(_WIN64)
+        { L"nvspcap64.dll",             "NVIDIA ShadowPlay",    "recording" },
+        { L"graphics-hook64.dll",       "OBS Game Capture",     "recording" },
+        { L"fraps64.dll",               "Fraps",                "recording" },
+        { L"MedalHook64.dll",           "Medal.tv",             "recording" },
+        { L"bdcam64.dll",               "Bandicam",             "recording" },
+        { L"Action64.dll",              "Mirillis Action",      "recording" },
+        { L"XSplit.Core64.dll",         "XSplit",               "recording" },
+        { L"d3dgear64.dll",             "D3DGear",              "recording" },
+        #else
+        { L"nvspcap.dll",               "NVIDIA ShadowPlay",    "recording" },
+        { L"graphics-hook32.dll",       "OBS Game Capture",     "recording" },
+        { L"fraps32.dll",               "Fraps",                "recording" },
+        { L"MedalHook.dll",             "Medal.tv",             "recording" },
+        { L"bdcam32.dll",               "Bandicam",             "recording" },
+        { L"Action.dll",                "Mirillis Action",      "recording" },
+        { L"XSplit.Core.dll",           "XSplit",               "recording" },
+        { L"d3dgear.dll",               "D3DGear",              "recording" },
+        #endif
+        { L"Streamlabs.dll",            "Streamlabs",           "recording" },
+
+        // --- monitoring ---
+        { L"RTSSHooks64.dll",           "RTSS",                 "monitoring" },
+        { L"RTSSHooks.dll",             "RTSS",                 "monitoring" },
+        #if defined(_WIN64)
+        { L"fpshook64.dll",             "FPS Monitor",          "monitoring" },
+        { L"PresentMon64.dll",          "Intel PresentMon",     "monitoring" },
+        #else
+        { L"fpshook.dll",               "FPS Monitor",          "monitoring" },
+        { L"PresentMon32.dll",          "Intel PresentMon",     "monitoring" },
+        #endif
+
+        // --- store overlays ---
+        { L"GameOverlayRenderer64.dll", "Steam Overlay",        "store overlay" },
+        { L"GameOverlayRenderer.dll",   "Steam Overlay",        "store overlay" },
+        { L"DiscordHook64.dll",         "Discord",              "store overlay" },
+        { L"DiscordHook.dll",           "Discord",              "store overlay" },
+        #if defined(_WIN64)
+        { L"EOSOVH-Win64-Shipping.dll", "Epic Online Services", "store overlay" },
+        { L"Galaxy64.dll",              "GOG Galaxy",           "store overlay" },
+        { L"GalaxyOverlayRenderer64.dll", "GOG Galaxy",         "store overlay" },
+        { L"igo64.dll",                 "EA App / Origin",      "store overlay" },
+        { L"uplay_r2_loader64.dll",     "Ubisoft Connect",      "store overlay" },
+        { L"upc_r2_loader64.dll",       "Ubisoft Connect",      "store overlay" },
+        #else
+        { L"EOSOVH-Win32-Shipping.dll", "Epic Online Services", "store overlay" },
+        { L"Galaxy.dll",                "GOG Galaxy",           "store overlay" },
+        { L"GalaxyOverlayRenderer.dll", "GOG Galaxy",           "store overlay" },
+        { L"igo32.dll",                 "EA App / Origin",      "store overlay" },
+        { L"uplay_r2_loader.dll",       "Ubisoft Connect",      "store overlay" },
+        { L"upc_r2_loader.dll",         "Ubisoft Connect",      "store overlay" },
+        #endif
+
+        // --- GPU vendor software ---
+        #if defined(_WIN64)
+        { L"aaborern64.dll",            "AMD Adrenalin",        "gpu vendor" },
+        { L"atiumd64.dll",              "AMD Display Driver",   "gpu vendor" },
+        #else
+        { L"aaborern.dll",              "AMD Adrenalin",        "gpu vendor" },
+        { L"atiumdag.dll",              "AMD Display Driver",   "gpu vendor" },
+        #endif
+        { L"RadeonSoftware.dll",        "AMD Software",         "gpu vendor" },
+
+        // --- system / platform overlays ---
+        { L"GameBar.dll",               "Xbox Game Bar",        "system overlay" },
+        { L"GameBarPresenceWriter.dll", "Xbox Game Bar",        "system overlay" },
+        { L"SSOverlay64.dll",           "Samsung Gaming Hub",   "system overlay" },
+        { L"SSOverlay.dll",             "Samsung Gaming Hub",   "system overlay" },
+        { L"AcLayer.dll",               "Windows Compatibility","system overlay" },
+
+        // --- gaming platforms / launchers ---
+        { L"OWClient.dll",              "Overwolf",             "platform" },
+        { L"OWExplorer.dll",            "Overwolf",             "platform" },
+        #if defined(_WIN64)
+        { L"ltc_game64.dll",            "Playnite",             "platform" },
+        #else
+        { L"ltc_game32.dll",            "Playnite",             "platform" },
+        #endif
+
+        // --- peripheral software ---
+        #if defined(_WIN64)
+        { L"Nahimic2OSD64.dll",         "Nahimic",              "peripheral" },
+        { L"LogiOverlay64.dll",         "Logitech G Hub",       "peripheral" },
+        { L"iCUEOverlay64.dll",         "Corsair iCUE",         "peripheral" },
+        { L"SteelSeriesGG64.dll",       "SteelSeries GG",       "peripheral" },
+        { L"RzChromaSDK64.dll",         "Razer Chroma",         "peripheral" },
+        #else
+        { L"Nahimic2OSD.dll",           "Nahimic",              "peripheral" },
+        { L"LogiOverlay.dll",           "Logitech G Hub",       "peripheral" },
+        { L"iCUEOverlay.dll",           "Corsair iCUE",         "peripheral" },
+        { L"SteelSeriesGG.dll",         "SteelSeries GG",       "peripheral" },
+        { L"RzChromaSDK.dll",           "Razer Chroma",         "peripheral" },
+        #endif
+        { L"NahimicOSD.dll",            "Nahimic",              "peripheral" },
+
+        // --- communication ---
+        #if defined(_WIN64)
+        { L"mumble_ol_x64.dll",         "Mumble",               "communication" },
+        { L"ts3overlay_hook_x64.dll",   "TeamSpeak",            "communication" },
+        #else
+        { L"mumble_ol.dll",             "Mumble",               "communication" },
+        { L"ts3overlay_hook_x86.dll",   "TeamSpeak",            "communication" },
+        #endif
+
+        // --- VR ---
+        { L"openvr_api.dll",            "SteamVR",              "vr" },
+        #if defined(_WIN64)
+        { L"vrclient_x64.dll",          "SteamVR Client",       "vr" },
+        { L"LibOVRRT64_1.dll",          "Oculus Runtime",       "vr" },
+        #else
+        { L"vrclient.dll",              "SteamVR Client",       "vr" },
+        { L"LibOVRRT32_1.dll",          "Oculus Runtime",       "vr" },
+        #endif
+        { L"OculusXRPlugin.dll",        "Oculus/Meta",          "vr" },
+
+        // --- anti-cheat (informational) ---
+        #if defined(_WIN64)
+        { L"EasyAntiCheat_x64.dll",     "EasyAntiCheat",        "anti-cheat" },
+        { L"BEService_x64.dll",         "BattlEye",             "anti-cheat" },
+        { L"BEClient_x64.dll",          "BattlEye",             "anti-cheat" },
+        #else
+        { L"EasyAntiCheat_x86.dll",     "EasyAntiCheat",        "anti-cheat" },
+        { L"BEService_x86.dll",         "BattlEye",             "anti-cheat" },
+        { L"BEClient_x86.dll",          "BattlEye",             "anti-cheat" },
+        #endif
+        { L"easyanticheat.dll",         "EasyAntiCheat",        "anti-cheat" },
+        { L"vanguard.dll",              "Vanguard",             "anti-cheat" },
+
+        // --- modding / script hooks ---
+        { L"ScriptHookV.dll",           "ScriptHookV",          "modding" },
+        { L"ScriptHookRDR2.dll",        "ScriptHookRDR2",       "modding" },
+        { L"ScriptHook.dll",            "ScriptHook",           "modding" },
+        { L"ScriptHookDotNet.dll",      "ScriptHookDotNet",     "modding" },
+        #if defined(_WIN64)
+        { L"version.dll",               "ASI Loader",           "modding" },
+        #else
+        { L"version.dll",               "ASI Loader",           "modding" },
+        #endif
+    };
+    std::set<std::string> seen;
+    std::string detected;
+    for (auto& entry : known_modules) {
+        if (GetModuleHandleW(entry.name) && seen.insert(entry.label).second) {
+            PRINT_DEBUG("detected [%s]: %s (via %ls)", entry.type, entry.label, entry.name);
+            if (!detected.empty()) detected += ", ";
+            detected += entry.label;
+        }
+    }
+
+    // check proxy DLLs for Special K or ReShade exports
+    const wchar_t* proxy_dlls[] = {
+        L"dxgi.dll", L"d3d11.dll", L"d3d12.dll", L"d3d10_1.dll", L"d3d10.dll", L"d3d9.dll",
+        L"d3d8.dll", L"ddraw.dll", L"dinput8.dll", L"dinput.dll", L"winmm.dll",
+        L"OpenGL32.dll", L"version.dll", L"dsound.dll", L"wininet.dll", L"winhttp.dll",
+        L"xinput1_1.dll", L"xinput1_2.dll", L"xinput1_3.dll", L"xinput1_4.dll",
+        L"xinput9_1_0.dll", L"xinputuap.dll",
+        L"binkw32.dll", L"bink2w32.dll", L"binkw64.dll", L"bink2w64.dll",
+        L"vorbisFile.dll", L"msacm32.dll", L"msvfw32.dll", L"xlive.dll"
+    };
+    for (auto dll_name : proxy_dlls) {
+        HMODULE hMod = GetModuleHandleW(dll_name);
+        if (!hMod) continue;
+        if (GetProcAddress(hMod, "SK_GetVersionStr")) {
+            PRINT_DEBUG("detected Special K via proxy DLL '%ls'", dll_name);
+            thirdparty_injector_detected = true;
+            specialk_proxy_detected = true;
+            if (seen.insert("Special K (proxy)").second) {
+                if (!detected.empty()) detected += ", ";
+                detected += "Special K (proxy)";
+            }
+        } else if (GetProcAddress(hMod, "ReShadeVersion")) {
+            PRINT_DEBUG("detected ReShade via proxy DLL '%ls'", dll_name);
+            reshade_proxy_detected = true;
+            if (seen.insert("ReShade (proxy)").second) {
+                if (!detected.empty()) detected += ", ";
+                detected += "ReShade (proxy)";
+            }
+        } else if (GetProcAddress(hMod, "GetASILoadLibrary")) {
+            PRINT_DEBUG("detected Ultimate ASI Loader via proxy DLL '%ls'", dll_name);
+            if (seen.insert("Ultimate ASI Loader (proxy)").second) {
+                if (!detected.empty()) detected += ", ";
+                detected += "Ultimate ASI Loader (proxy)";
+            }
+        }
+    }
+
+    // Special K (global injection) sets the flag
+    #if defined(_WIN64)
+    if (GetModuleHandleW(L"SpecialK64.dll")) thirdparty_injector_detected = true;
+    #else
+    if (GetModuleHandleW(L"SpecialK32.dll")) thirdparty_injector_detected = true;
+    #endif
+
+    cached_detected_overlays = std::move(detected);
+#endif
+
+    overlays_scanned = true;
+}
+
+bool Steam_Client::is_caller_special_k()
+{
+#if defined(__WINDOWS__)
+    static const char emu_anchor = 0;
+    HMODULE our_module = nullptr;
+    GetModuleHandleExW(
+        GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+        reinterpret_cast<LPCWSTR>(&emu_anchor),
+        &our_module
+    );
+
+    void* stack_frames[12]{};
+    USHORT frame_count = CaptureStackBackTrace(0, 12, stack_frames, nullptr);
+    for (USHORT i = 0; i < frame_count; ++i) {
+        HMODULE frame_module = nullptr;
+        if (GetModuleHandleExW(
+                GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                reinterpret_cast<LPCWSTR>(stack_frames[i]),
+                &frame_module) && frame_module && frame_module != our_module) {
+            // found the first external caller module - check if it's Special K
+            // check global injection DLLs
+            #if defined(_WIN64)
+            HMODULE sk_global = GetModuleHandleW(L"SpecialK64.dll");
+            #else
+            HMODULE sk_global = GetModuleHandleW(L"SpecialK32.dll");
+            #endif
+            if (sk_global && frame_module == sk_global) return true;
+
+            // check proxy DLLs with SK export
+            if (GetProcAddress(frame_module, "SK_GetVersionStr")) return true;
+
+            return false;
+        }
+    }
+#endif
+    return false;
+}
+
+void Steam_Client::try_start_specialk_injection()
+{
+#if defined(__WINDOWS__)
+    if (!settings_client) return;
+
+    // run detection first if not done yet
+    if (!overlays_scanned) {
+        detect_thirdparty_injectors();
+    }
+
+    // --- notification/banner disables (independent of auto_inject_specialk) ---
+
+    // disable ReShade startup banner by writing to ReShade.ini in the game directory
+    // takes effect on next launch (ReShade reads its config during DLL init before our code runs)
+    if (settings_client->disable_reshade_banner && reshade_proxy_detected) {
+        wchar_t game_dir[MAX_PATH]{};
+        if (GetModuleFileNameW(nullptr, game_dir, MAX_PATH)) {
+            wchar_t* last_sep = wcsrchr(game_dir, L'\\');
+            if (last_sep) *(last_sep + 1) = L'\0';
+            std::wstring reshade_ini = std::wstring(game_dir) + L"ReShade.ini";
+            if (WritePrivateProfileStringW(L"OVERLAY", L"ShowStartupBanner", L"0", reshade_ini.c_str())) {
+                PRINT_DEBUG("[NOTIFICATION] disabled ReShade startup banner in '%ls'", reshade_ini.c_str());
+            }
+        }
+    }
+
+    // disable Special K startup notification by writing Silent=true to the per-game SK profile
+    // takes effect on next launch (SK reads its config during init before our code runs)
+    if (settings_client->disable_specialk_notification) {
+        // check if SK is present (proxy, global injection, or about to be auto-injected)
+        bool sk_present = specialk_proxy_detected || settings_client->auto_inject_specialk;
+        #if defined(_WIN64)
+        if (!sk_present) sk_present = (GetModuleHandleW(L"SpecialK64.dll") != nullptr);
+        #else
+        if (!sk_present) sk_present = (GetModuleHandleW(L"SpecialK32.dll") != nullptr);
+        #endif
+        if (sk_present) {
+            wchar_t exe_path_sn[MAX_PATH]{};
+            if (GetModuleFileNameW(nullptr, exe_path_sn, MAX_PATH)) {
+                const wchar_t* exe_name_sn = wcsrchr(exe_path_sn, L'\\');
+                exe_name_sn = exe_name_sn ? exe_name_sn + 1 : exe_path_sn;
+
+                std::wstring sk_root_sn;
+                if (!settings_client->specialk_install_path.empty()) {
+                    wchar_t tmp[MAX_PATH]{};
+                    MultiByteToWideChar(CP_UTF8, 0, settings_client->specialk_install_path.c_str(), -1, tmp, MAX_PATH);
+                    sk_root_sn = tmp;
+                    auto sep = sk_root_sn.find_last_of(L"\\/");
+                    if (sep != std::wstring::npos) {
+                        std::wstring tail = sk_root_sn.substr(sep + 1);
+                        for (auto& c : tail) c = towlower(c);
+                        if (tail == L"skif.exe") sk_root_sn = sk_root_sn.substr(0, sep);
+                    }
+                }
+                if (sk_root_sn.empty()) {
+                    wchar_t local_appdata[MAX_PATH]{};
+                    if (SHGetFolderPathW(nullptr, CSIDL_LOCAL_APPDATA, nullptr, 0, local_appdata) == S_OK) {
+                        sk_root_sn = std::wstring(local_appdata) + L"\\Programs\\Special K";
+                    }
+                }
+                if (!sk_root_sn.empty()) {
+                    std::wstring ini_dir_sn = sk_root_sn + L"\\Profiles\\" + exe_name_sn;
+                    std::wstring ini_path_sn = ini_dir_sn + L"\\SpecialK.ini";
+                    // create with UTF-16LE BOM if it doesn't exist yet
+                    if (GetFileAttributesW(ini_path_sn.c_str()) == INVALID_FILE_ATTRIBUTES) {
+                        CreateDirectoryW(ini_dir_sn.c_str(), nullptr);
+                        HANDLE hFile = CreateFileW(ini_path_sn.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
+                        if (hFile != INVALID_HANDLE_VALUE) {
+                            const unsigned char bom[] = { 0xFF, 0xFE };
+                            DWORD written = 0;
+                            WriteFile(hFile, bom, sizeof(bom), &written, nullptr);
+                            CloseHandle(hFile);
+                        }
+                    }
+                    if (WritePrivateProfileStringW(L"SpecialK.System", L"Silent", L"true", ini_path_sn.c_str())) {
+                        PRINT_DEBUG("[NOTIFICATION] disabled SK startup notification in '%ls'", ini_path_sn.c_str());
+                    }
+                }
+            }
+        }
+    }
+
+    // --- auto-injection logic (requires auto_inject_specialk=1) ---
+    if (!settings_client->auto_inject_specialk) return;
+
+    // Special K is already loaded as a local proxy DLL — do not start SKIF (global injection would conflict)
+    if (specialk_proxy_detected) {
+        PRINT_DEBUG("[SK AUTO-INJECT] Special K detected as local proxy DLL, skipping SKIF global injection");
+        // if SKIF is running, stop its injection service to avoid double-injection
+        HANDLE hSnap0 = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+        if (hSnap0 != INVALID_HANDLE_VALUE) {
+            wchar_t skif_path_buf[MAX_PATH]{};
+            bool skif_running = false;
+            PROCESSENTRY32W pe0{};
+            pe0.dwSize = sizeof(pe0);
+            if (Process32FirstW(hSnap0, &pe0)) {
+                do {
+                    if (_wcsicmp(pe0.szExeFile, L"SKIF.exe") == 0) {
+                        HANDLE hProc = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pe0.th32ProcessID);
+                        if (hProc) {
+                            DWORD path_len = MAX_PATH;
+                            if (QueryFullProcessImageNameW(hProc, 0, skif_path_buf, &path_len)) {
+                                skif_running = true;
+                            }
+                            CloseHandle(hProc);
+                        }
+                        break;
+                    }
+                } while (Process32NextW(hSnap0, &pe0));
+            }
+            CloseHandle(hSnap0);
+            if (skif_running) {
+                PRINT_DEBUG("[SK AUTO-INJECT] SKIF is running, sending Stop to prevent global injection conflict");
+                SHELLEXECUTEINFOW sei_stop{};
+                sei_stop.cbSize = sizeof(sei_stop);
+                sei_stop.fMask = SEE_MASK_NOASYNC;
+                sei_stop.lpFile = skif_path_buf;
+                sei_stop.lpParameters = L"Stop";
+                sei_stop.nShow = SW_HIDE;
+                ShellExecuteExW(&sei_stop);
+            }
+        }
+
+        // SK is already a local proxy — if ReShade is also a proxy, disable SK's ReShade plugin
+        if (reshade_proxy_detected) {
+            wchar_t exe_path[MAX_PATH]{};
+            if (GetModuleFileNameW(nullptr, exe_path, MAX_PATH)) {
+                const wchar_t* exe_name = wcsrchr(exe_path, L'\\');
+                exe_name = exe_name ? exe_name + 1 : exe_path;
+
+                // find SK install root from configured path or default location
+                std::wstring sk_root;
+                if (settings_client && !settings_client->specialk_install_path.empty()) {
+                    wchar_t tmp[MAX_PATH]{};
+                    MultiByteToWideChar(CP_UTF8, 0, settings_client->specialk_install_path.c_str(), -1, tmp, MAX_PATH);
+                    sk_root = tmp;
+                    // strip SKIF.exe if present
+                    auto last_sep = sk_root.find_last_of(L"\\/");
+                    if (last_sep != std::wstring::npos) {
+                        std::wstring tail = sk_root.substr(last_sep + 1);
+                        for (auto& c : tail) c = towlower(c);
+                        if (tail == L"skif.exe") sk_root = sk_root.substr(0, last_sep);
+                    }
+                }
+                if (sk_root.empty()) {
+                    wchar_t local_appdata[MAX_PATH]{};
+                    if (SHGetFolderPathW(nullptr, CSIDL_LOCAL_APPDATA, nullptr, 0, local_appdata) == S_OK) {
+                        sk_root = std::wstring(local_appdata) + L"\\Programs\\Special K";
+                    }
+                }
+                if (!sk_root.empty()) {
+                    std::wstring ini_dir = sk_root + L"\\Profiles\\" + exe_name;
+                    std::wstring ini_path = ini_dir + L"\\SpecialK.ini";
+                    // only modify if the profile already exists — creating a minimal INI
+                    // prevents SK from writing its defaults and breaks initialization
+                    if (GetFileAttributesW(ini_path.c_str()) != INVALID_FILE_ATTRIBUTES) {
+                        if (WritePrivateProfileStringW(L"SpecialK.Plugins", L"ReShade", L"false", ini_path.c_str())) {
+                            PRINT_DEBUG("[SK AUTO-INJECT] disabled ReShade plugin in SK profile: '%ls'", ini_path.c_str());
+                        } else {
+                            PRINT_DEBUG("[SK AUTO-INJECT] failed to write SK profile INI (error %lu)", GetLastError());
+                        }
+                    } else {
+                        PRINT_DEBUG("[SK AUTO-INJECT] SK profile not found at '%ls', skipping ReShade disable (SK will create it on first run)", ini_path.c_str());
+                    }
+                }
+            }
+        }
+
+        return;
+    }
+
+    // ReShade is loaded as a local proxy — disable SK's ReShade plugin to prevent double-load
+    // This must happen BEFORE the "SK already loaded" check, because if SK is already
+    // globally injected, we'd return early and never reach the INI write below.
+    if (reshade_proxy_detected) {
+        PRINT_DEBUG("[SK AUTO-INJECT] ReShade detected as local proxy DLL, will disable SK ReShade plugin loading");
+        wchar_t exe_path_rd[MAX_PATH]{};
+        if (GetModuleFileNameW(nullptr, exe_path_rd, MAX_PATH)) {
+            const wchar_t* exe_name_rd = wcsrchr(exe_path_rd, L'\\');
+            exe_name_rd = exe_name_rd ? exe_name_rd + 1 : exe_path_rd;
+
+            // try to find SK install root
+            std::wstring sk_root_rd;
+            if (settings_client && !settings_client->specialk_install_path.empty()) {
+                wchar_t tmp[MAX_PATH]{};
+                MultiByteToWideChar(CP_UTF8, 0, settings_client->specialk_install_path.c_str(), -1, tmp, MAX_PATH);
+                sk_root_rd = tmp;
+                auto last_sep = sk_root_rd.find_last_of(L"\\/");
+                if (last_sep != std::wstring::npos) {
+                    std::wstring tail = sk_root_rd.substr(last_sep + 1);
+                    for (auto& c : tail) c = towlower(c);
+                    if (tail == L"skif.exe") sk_root_rd = sk_root_rd.substr(0, last_sep);
+                }
+            }
+            if (sk_root_rd.empty()) {
+                wchar_t local_appdata[MAX_PATH]{};
+                if (SHGetFolderPathW(nullptr, CSIDL_LOCAL_APPDATA, nullptr, 0, local_appdata) == S_OK) {
+                    sk_root_rd = std::wstring(local_appdata) + L"\\Programs\\Special K";
+                }
+            }
+            if (!sk_root_rd.empty()) {
+                std::wstring ini_dir_rd = sk_root_rd + L"\\Profiles\\" + exe_name_rd;
+                std::wstring ini_path_rd = ini_dir_rd + L"\\SpecialK.ini";
+                // if the profile INI doesn't exist yet, create it with a UTF-16LE BOM
+                // so WritePrivateProfileStringW writes in the same encoding SK uses
+                if (GetFileAttributesW(ini_path_rd.c_str()) == INVALID_FILE_ATTRIBUTES) {
+                    CreateDirectoryW(ini_dir_rd.c_str(), nullptr);
+                    HANDLE hFile = CreateFileW(ini_path_rd.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
+                    if (hFile != INVALID_HANDLE_VALUE) {
+                        const unsigned char bom[] = { 0xFF, 0xFE };
+                        DWORD written = 0;
+                        WriteFile(hFile, bom, sizeof(bom), &written, nullptr);
+                        CloseHandle(hFile);
+                        PRINT_DEBUG("[SK AUTO-INJECT] created SK profile with UTF-16LE BOM: '%ls'", ini_path_rd.c_str());
+                    }
+                }
+                if (WritePrivateProfileStringW(L"SpecialK.Plugins", L"ReShade", L"false", ini_path_rd.c_str())) {
+                    PRINT_DEBUG("[SK AUTO-INJECT] disabled ReShade plugin in SK profile: '%ls'", ini_path_rd.c_str());
+                } else {
+                    PRINT_DEBUG("[SK AUTO-INJECT] failed to write SK profile INI (error %lu)", GetLastError());
+                }
+            }
+        }
+    }
+
+    // check if Special K is already loaded
+    #if defined(_WIN64)
+    if (GetModuleHandleW(L"SpecialK64.dll")) {
+        PRINT_DEBUG("[SK AUTO-INJECT] Special K already loaded, skipping");
+        return;
+    }
+    #else
+    if (GetModuleHandleW(L"SpecialK32.dll")) {
+        PRINT_DEBUG("[SK AUTO-INJECT] Special K already loaded, skipping");
+        return;
+    }
+    #endif
+
+    // also check proxy DLLs for SK
+    const wchar_t* proxy_dlls[] = {
+        L"dxgi.dll", L"d3d11.dll", L"d3d12.dll", L"d3d10_1.dll", L"d3d10.dll", L"d3d9.dll",
+        L"d3d8.dll", L"ddraw.dll", L"dinput8.dll", L"dinput.dll", L"winmm.dll",
+        L"OpenGL32.dll", L"version.dll", L"dsound.dll", L"wininet.dll", L"winhttp.dll",
+        L"xinput1_1.dll", L"xinput1_2.dll", L"xinput1_3.dll", L"xinput1_4.dll",
+        L"xinput9_1_0.dll", L"xinputuap.dll",
+        L"binkw32.dll", L"bink2w32.dll", L"binkw64.dll", L"bink2w64.dll",
+        L"vorbisFile.dll", L"msacm32.dll", L"msvfw32.dll", L"xlive.dll"
+    };
+    for (auto dll_name : proxy_dlls) {
+        HMODULE hMod = GetModuleHandleW(dll_name);
+        if (hMod && GetProcAddress(hMod, "SK_GetVersionStr")) {
+            PRINT_DEBUG("[SK AUTO-INJECT] Special K already loaded via proxy '%ls', skipping", dll_name);
+            return;
+        }
+    }
+
+    // find SKIF.exe in running processes and get its path
+    HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (hSnap == INVALID_HANDLE_VALUE) {
+        PRINT_DEBUG("[SK AUTO-INJECT] CreateToolhelp32Snapshot failed");
+        return;
+    }
+
+    wchar_t skif_path[MAX_PATH]{};
+    bool found_skif = false;
+
+    PROCESSENTRY32W pe{};
+    pe.dwSize = sizeof(pe);
+    if (Process32FirstW(hSnap, &pe)) {
+        do {
+            if (_wcsicmp(pe.szExeFile, L"SKIF.exe") == 0) {
+                // found SKIF process, get its full executable path
+                HANDLE hProc = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pe.th32ProcessID);
+                if (hProc) {
+                    DWORD path_len = MAX_PATH;
+                    if (QueryFullProcessImageNameW(hProc, 0, skif_path, &path_len)) {
+                        found_skif = true;
+                    }
+                    CloseHandle(hProc);
+                }
+                break;
+            }
+        } while (Process32NextW(hSnap, &pe));
+    }
+    CloseHandle(hSnap);
+
+    if (!found_skif) {
+        // SKIF not running — try to find and start it
+        wchar_t skif_search_path[MAX_PATH]{};
+
+        // check user-configured path first
+        if (settings_client && !settings_client->specialk_install_path.empty()) {
+            MultiByteToWideChar(CP_UTF8, 0, settings_client->specialk_install_path.c_str(), -1, skif_search_path, MAX_PATH);
+            // append SKIF.exe if the path doesn't end with it
+            std::wstring path_w(skif_search_path);
+            if (path_w.size() >= 8) {
+                std::wstring tail = path_w.substr(path_w.size() - 8);
+                for (auto& c : tail) c = towlower(c);
+                if (tail != L"skif.exe") {
+                    if (path_w.back() != L'\\' && path_w.back() != L'/') path_w += L'\\';
+                    path_w += L"SKIF.exe";
+                }
+            } else {
+                if (!path_w.empty() && path_w.back() != L'\\' && path_w.back() != L'/') path_w += L'\\';
+                path_w += L"SKIF.exe";
+            }
+            wcsncpy_s(skif_search_path, path_w.c_str(), MAX_PATH - 1);
+        }
+
+        // try default install location: %LOCALAPPDATA%/Programs/Special K/
+        if (!skif_search_path[0]) {
+            wchar_t local_appdata[MAX_PATH]{};
+            if (SHGetFolderPathW(nullptr, CSIDL_LOCAL_APPDATA, nullptr, 0, local_appdata) == S_OK) {
+                std::wstring default_path = std::wstring(local_appdata) + L"\\Programs\\Special K\\SKIF.exe";
+                wcsncpy_s(skif_search_path, default_path.c_str(), MAX_PATH - 1);
+            }
+        }
+
+        if (skif_search_path[0] && GetFileAttributesW(skif_search_path) != INVALID_FILE_ATTRIBUTES) {
+            PRINT_DEBUG("[SK AUTO-INJECT] SKIF not running, starting from '%ls'", skif_search_path);
+            
+            // step 1: launch SKIF minimized (without Start Temp)
+            SHELLEXECUTEINFOW sei_skif{};
+            sei_skif.cbSize = sizeof(sei_skif);
+            sei_skif.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NOASYNC;
+            sei_skif.lpFile = skif_search_path;
+            sei_skif.lpParameters = L"Minimize";
+            sei_skif.nShow = SW_HIDE;
+
+            if (ShellExecuteExW(&sei_skif)) {
+                if (sei_skif.hProcess) CloseHandle(sei_skif.hProcess);
+
+                // step 2: wait for SKIF to initialize (poll for process)
+                PRINT_DEBUG("[SK AUTO-INJECT] waiting for SKIF to initialize...");
+                const int init_timeout_ms = 5000;
+                const int init_poll_ms = 250;
+                int init_elapsed = 0;
+                bool skif_ready = false;
+
+                while (init_elapsed < init_timeout_ms) {
+                    Sleep(init_poll_ms);
+                    init_elapsed += init_poll_ms;
+                    // check if SKIF created its window (FindWindow with SKIF's class)
+                    // or just check if the process is running and responsive
+                    HANDLE hSnap2 = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+                    if (hSnap2 != INVALID_HANDLE_VALUE) {
+                        PROCESSENTRY32W pe2{};
+                        pe2.dwSize = sizeof(pe2);
+                        if (Process32FirstW(hSnap2, &pe2)) {
+                            do {
+                                if (_wcsicmp(pe2.szExeFile, L"SKIF.exe") == 0) {
+                                    skif_ready = true;
+                                    break;
+                                }
+                            } while (Process32NextW(hSnap2, &pe2));
+                        }
+                        CloseHandle(hSnap2);
+                    }
+                    if (skif_ready) break;
+                }
+
+                if (skif_ready) {
+                    // give SKIF a bit more time to fully initialize its D3D11 renderer
+                    Sleep(2000);
+                    found_skif = true;
+                    wcsncpy_s(skif_path, skif_search_path, MAX_PATH - 1);
+                    PRINT_DEBUG("[SK AUTO-INJECT] SKIF started and ready after %d ms", init_elapsed + 2000);
+                } else {
+                    PRINT_DEBUG("[SK AUTO-INJECT] SKIF process did not appear within %d ms", init_timeout_ms);
+                }
+            } else {
+                PRINT_DEBUG("[SK AUTO-INJECT] failed to launch SKIF (error %lu)", GetLastError());
+            }
+        } else {
+            PRINT_DEBUG("[SK AUTO-INJECT] SKIF not found at '%ls'", skif_search_path[0] ? skif_search_path : L"(no path)");
+        }
+    }
+
+    if (!found_skif) {
+        PRINT_DEBUG("[SK AUTO-INJECT] SKIF.exe not found, skipping auto-injection");
+        return;
+    }
+
+    // if ReShade is loaded as a local proxy, disable SK's ReShade plugin loading
+    // by writing ReShade=false to the per-game SK profile before triggering injection
+    if (reshade_proxy_detected) {
+        wchar_t exe_path[MAX_PATH]{};
+        if (GetModuleFileNameW(nullptr, exe_path, MAX_PATH)) {
+            const wchar_t* exe_name = wcsrchr(exe_path, L'\\');
+            exe_name = exe_name ? exe_name + 1 : exe_path;
+
+            // determine SK install root from SKIF path (strip SKIF.exe)
+            std::wstring sk_root(skif_path);
+            auto last_sep = sk_root.find_last_of(L"\\/");
+            if (last_sep != std::wstring::npos) {
+                sk_root = sk_root.substr(0, last_sep);
+            }
+
+            // build profile INI path: <SK root>/Profiles/<game.exe>/SpecialK.ini
+            std::wstring ini_dir = sk_root + L"\\Profiles\\" + exe_name;
+            std::wstring ini_path = ini_dir + L"\\SpecialK.ini";
+
+            // if the profile INI doesn't exist yet, create it with a UTF-16LE BOM
+            // so WritePrivateProfileStringW writes in the same encoding SK uses
+            if (GetFileAttributesW(ini_path.c_str()) == INVALID_FILE_ATTRIBUTES) {
+                CreateDirectoryW(ini_dir.c_str(), nullptr);
+                HANDLE hFile = CreateFileW(ini_path.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
+                if (hFile != INVALID_HANDLE_VALUE) {
+                    const unsigned char bom[] = { 0xFF, 0xFE };
+                    DWORD written = 0;
+                    WriteFile(hFile, bom, sizeof(bom), &written, nullptr);
+                    CloseHandle(hFile);
+                    PRINT_DEBUG("[SK AUTO-INJECT] created SK profile with UTF-16LE BOM: '%ls'", ini_path.c_str());
+                }
+            }
+            if (WritePrivateProfileStringW(L"SpecialK.Plugins", L"ReShade", L"false", ini_path.c_str())) {
+                PRINT_DEBUG("[SK AUTO-INJECT] disabled ReShade plugin in SK profile: '%ls'", ini_path.c_str());
+            } else {
+                PRINT_DEBUG("[SK AUTO-INJECT] failed to write SK profile INI (error %lu)", GetLastError());
+            }
+        }
+    }
+
+    // check if the SK injection service is already running
+    bool service_already_running = false;
+    {
+        HANDLE hSnap2 = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+        if (hSnap2 != INVALID_HANDLE_VALUE) {
+            PROCESSENTRY32W pe2{};
+            pe2.dwSize = sizeof(pe2);
+            if (Process32FirstW(hSnap2, &pe2)) {
+                do {
+                    if (_wcsicmp(pe2.szExeFile, L"SKIFsvc64.exe") == 0 ||
+                        _wcsicmp(pe2.szExeFile, L"SKIFsvc32.exe") == 0) {
+                        service_already_running = true;
+                        break;
+                    }
+                } while (Process32NextW(hSnap2, &pe2));
+            }
+            CloseHandle(hSnap2);
+        }
+    }
+
+    if (service_already_running) {
+        PRINT_DEBUG("[SK AUTO-INJECT] SK injection service already running, skipping service start");
+    } else {
+        // determine service mode based on specialk_service_duration
+        unsigned duration = settings_client ? settings_client->specialk_service_duration : 0;
+        const wchar_t* params = duration > 0 ? L"Start" : L"Start Temp";
+
+        PRINT_DEBUG("[SK AUTO-INJECT] sending '%ls' to SKIF at '%ls'...", params, skif_path);
+
+        SHELLEXECUTEINFOW sei{};
+        sei.cbSize = sizeof(sei);
+        sei.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NOASYNC;
+        sei.lpFile = skif_path;
+        sei.lpParameters = params;
+        sei.nShow = SW_HIDE;
+
+        if (!ShellExecuteExW(&sei)) {
+            PRINT_DEBUG("[SK AUTO-INJECT] failed to launch SKIF injection service (error %lu)", GetLastError());
+            return;
+        }
+
+        if (sei.hProcess) {
+            CloseHandle(sei.hProcess);
+        }
+
+        // if using timed mode, schedule a background thread to stop the service
+        if (duration > 0) {
+            std::wstring stop_path(skif_path);
+            std::thread([stop_path, duration]() {
+                Sleep(duration * 1000);
+                SHELLEXECUTEINFOW sei_stop{};
+                sei_stop.cbSize = sizeof(sei_stop);
+                sei_stop.fMask = SEE_MASK_NOASYNC;
+                sei_stop.lpFile = stop_path.c_str();
+                sei_stop.lpParameters = L"Stop";
+                sei_stop.nShow = SW_HIDE;
+                ShellExecuteExW(&sei_stop);
+                PRINT_DEBUG("[SK AUTO-INJECT] stopped injection service after %u seconds", duration);
+            }).detach();
+            PRINT_DEBUG("[SK AUTO-INJECT] service will auto-stop in %u seconds", duration);
+        }
+    }
+
+    // wait for Special K DLL to appear in our process (timeout: 10 seconds)
+    PRINT_DEBUG("[SK AUTO-INJECT] waiting for Special K to inject...");
+    const int timeout_ms = 10000;
+    const int poll_ms = 100;
+    int elapsed = 0;
+    bool injected = false;
+
+    while (elapsed < timeout_ms) {
+        #if defined(_WIN64)
+        if (GetModuleHandleW(L"SpecialK64.dll")) { injected = true; break; }
+        #else
+        if (GetModuleHandleW(L"SpecialK32.dll")) { injected = true; break; }
+        #endif
+
+        // also check proxy DLLs
+        for (auto dll_name : proxy_dlls) {
+            HMODULE hMod = GetModuleHandleW(dll_name);
+            if (hMod && GetProcAddress(hMod, "SK_GetVersionStr")) {
+                injected = true;
+                break;
+            }
+        }
+        if (injected) break;
+
+        Sleep(poll_ms);
+        elapsed += poll_ms;
+    }
+
+    if (injected) {
+        PRINT_DEBUG("[SK AUTO-INJECT] Special K successfully injected after %d ms", elapsed);
+        thirdparty_injector_detected = true;
+    } else {
+        PRINT_DEBUG("[SK AUTO-INJECT] timed out waiting for Special K injection (%d ms)", timeout_ms);
+    }
+#endif
 }

@@ -98,6 +98,7 @@
 #include "isteamutils007.h"
 #include "isteamutils008.h"
 #include "isteamutils009.h"
+#include "isteamutils010.h"
 #include "isteammatchmaking.h"
 #include "isteammatchmaking001.h"
 #include "isteammatchmaking002.h"
@@ -107,6 +108,8 @@
 #include "isteammatchmaking006.h"
 #include "isteammatchmaking007.h"
 #include "isteammatchmaking008.h"
+#include "isteammatchmakingservers002.h"
+#include "isteamgamesearch001.h"
 #include "isteamuserstats.h"
 #include "isteamuserstats012.h"
 #include "isteamuserstats011.h"
@@ -150,6 +153,7 @@
 #include "isteamnetworkingsockets009.h"
 #include "isteamnetworkingsockets010.h"
 #include "isteamnetworkingsockets011.h"
+#include "isteamnetworkingsockets012.h"
 #include "isteamremotestorage.h"
 #include "isteamremotestorage001.h"
 #include "isteamremotestorage002.h"
@@ -226,6 +230,7 @@
 #include "isteaminput001.h"
 #include "isteaminput002.h"
 #include "isteaminput005.h"
+#include "isteaminput006.h"
 #include "isteamremoteplay.h"
 #include "isteamremoteplay001.h"
 #include "isteamremoteplay002.h"
@@ -278,16 +283,16 @@ enum ESteamAPIInitResult
 
 // Initializing the Steamworks SDK
 // -----------------------------
-// 
+//
 // There are three different methods you can use to initialize the Steamworks SDK, depending on
 // your project's environment. You should only use one method in your project.
-// 
+//
 // If you are able to include this C++ header in your project, we recommend using the following
 // initialization methods. They will ensure that all ISteam* interfaces defined in other
 // C++ header files have versions that are supported by the user's Steam Client:
 // - SteamAPI_InitEx() for new projects so you can show a detailed error message to the user
 // - SteamAPI_Init() for existing projects that only display a generic error message
-// 
+//
 // If you are unable to include this C++ header in your project and are dynamically loading
 // Steamworks SDK methods from dll/so, you can use the following method:
 // - SteamAPI_InitFlat()
@@ -299,7 +304,7 @@ enum ESteamAPIInitResult
 // it will receive an example error message, in English, that explains the reason for the failure.
 //
 // Example usage:
-// 
+//
 //   SteamErrMsg errMsg;
 //   if ( SteamAPI_Init(&errMsg) != k_ESteamAPIInitResult_OK )
 //       FatalError( "Failed to init Steam.  %s", errMsg );
@@ -572,7 +577,7 @@ inline bool CSteamAPIContext::Init()
 // of version checking), you can pass a NULL interface version string.
 inline ESteamAPIInitResult SteamAPI_InitEx( SteamErrMsg *pOutErrMsg )
 {
-	const char *pszInternalCheckInterfaceVersions = 
+	const char *pszInternalCheckInterfaceVersions =
 		STEAMUTILS_INTERFACE_VERSION "\0"
 		STEAMNETWORKINGUTILS_INTERFACE_VERSION "\0"
 

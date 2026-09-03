@@ -25,28 +25,52 @@ import {
   ExternalLink,
   KeyRound,
   Loader2,
+  Package,
+  FileCode2,
+  Wrench,
+  Check,
+  X,
 } from 'lucide-react'
 import { invoke } from '@tauri-apps/api/core'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { DEFAULT_LAUNCHER_PREFERENCES, type LauncherPreferences, type NotificationCategory } from '../lib/preferences'
+import { isTauriRuntime } from '../lib/gameMeta'
 import { launcherAccent } from '../lib/theme'
+import { formatBytes } from '../lib/format'
+import { UI_THEME_PROFILES, type ThemeAccentMode, type UiThemeId } from '../lib/uiThemes'
 import type {
   HubcapKeyState,
   LauncherSettings,
   LuaSourceSettingsState,
   NativeCoreSettings,
+  GameToolsExecutable,
+  SteamlessResult,
   SteamEnvironmentInfo,
 } from '../types'
 import { ConfirmDialog } from './ConfirmDialog'
+import './SettingsView.css'
+import '../themes/theme-picker.css'
+
+type SettingsPaneId = 'general' | 'interface' | 'games' | 'components' | 'storage' | 'notifications' | 'updates'
+
+const SETTINGS_PANE_STORAGE_KEY = '0xolemon.settings.activePane'
+
+const SETTINGS_PANE_IDS: SettingsPaneId[] = ['general', 'interface', 'games', 'components', 'storage', 'notifications', 'updates']
+
+function isSettingsPaneId(value: string | null): value is SettingsPaneId {
+  return Boolean(value && SETTINGS_PANE_IDS.includes(value as SettingsPaneId))
+}
 
 function CustomSelect<T extends string>({
   value,
   onChange,
   options,
+  disabled = false,
 }: {
   value: T
   onChange: (value: T) => void
-  options: { value: T; label: string }[]
+  options: { value: T; label: string; disabled?: boolean; title?: string }[]
+  disabled?: boolean
 }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -62,8 +86,8 @@ function CustomSelect<T extends string>({
   }, [open])
 
   return (
-    <div className={`cs-wrap${open ? ' is-open' : ''}`} ref={ref}>
-      <button type="button" className="cs-trigger" onClick={() => setOpen((v) => !v)}>
+    <div className={`cs-wrap${open ? ' is-open' : ''}${disabled ? ' is-disabled' : ''}`} ref={ref}>
+      <button type="button" className="cs-trigger" disabled={disabled} onClick={() => !disabled && setOpen((v) => !v)}>
         <span>{selectedLabel}</span>
         <ChevronDown size={14} className="cs-chevron" />
       </button>
@@ -74,6 +98,8 @@ function CustomSelect<T extends string>({
               key={opt.value}
               type="button"
               className={`cs-option${opt.value === value ? ' is-selected' : ''}`}
+              disabled={disabled || opt.disabled}
+              title={opt.title}
               onClick={() => { onChange(opt.value); setOpen(false) }}
             >
               {opt.label}
@@ -89,10 +115,12 @@ function Toggle({
   checked,
   onChange,
   label,
+  disabled,
 }: {
   checked: boolean
   onChange: (checked: boolean) => void
   label: string
+  disabled?: boolean
 }) {
   return (
     <button
@@ -101,7 +129,10 @@ function Toggle({
       role="switch"
       aria-checked={checked}
       aria-label={label}
-      onClick={() => onChange(!checked)}
+      disabled={disabled}
+      onClick={() => {
+        if (!disabled) onChange(!checked)
+      }}
     >
       <span />
     </button>
@@ -145,6 +176,92 @@ function ThemeRange({
   )
 }
 
+function UiThemePicker({
+  value,
+  sessionValue,
+  onChange,
+  locale,
+}: {
+  value: UiThemeId
+  sessionValue: UiThemeId
+  onChange: (value: UiThemeId) => void
+  locale: Locale
+}) {
+  const groups = [
+    {
+      id: 'standard',
+      title: locale === 'vi-VN' ? 'Giao diện tiêu chuẩn' : 'Standard themes',
+      description: locale === 'vi-VN'
+        ? 'Hai trải nghiệm được 0xoLemon hỗ trợ làm chuẩn cho toàn launcher.'
+        : 'The two full-launcher experiences maintained as 0xoLemon standards.',
+      themes: UI_THEME_PROFILES.filter((theme) => theme.tier === 'standard'),
+    },
+    {
+      id: 'additional',
+      title: locale === 'vi-VN' ? 'Giao diện bổ sung' : 'Additional themes',
+      description: locale === 'vi-VN'
+        ? 'Đổi sang giao diện Steam hoặc XMCL khi bạn muốn một quy trình chuyên biệt.'
+        : 'Choose Steam or XMCL when you prefer their specialized navigation model.',
+      themes: UI_THEME_PROFILES.filter((theme) => theme.tier === 'additional'),
+    },
+  ] as const
+
+  return (
+    <div className="ui-theme-picker-groups" role="radiogroup" aria-label="Launcher UI theme">
+      {groups.map((group) => (
+        <section key={group.id} className={`ui-theme-picker-group is-${group.id}`}>
+          <header><strong>{group.title}</strong><span>{group.description}</span></header>
+          <div className="ui-theme-picker">
+            {group.themes.map((theme) => {
+              const isLocked = theme.id !== 'default'
+              return (
+                <button
+                  key={theme.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={value === theme.id}
+                  aria-disabled={isLocked}
+                  disabled={isLocked}
+                  className={`ui-theme-card theme-preview-${theme.id}${value === theme.id ? ' is-active' : ''}${isLocked ? ' is-disabled' : ''}`}
+                  style={{
+                    '--preview-page': 'var(--launcher-page-bg)',
+                    '--preview-sidebar': 'var(--launcher-sidebar-bg)',
+                    '--preview-panel': 'var(--theme-card-bg)',
+                    '--preview-accent': theme.nativePalette.accent,
+                  } as CSSProperties}
+                  onClick={() => {
+                    if (!isLocked) {
+                      onChange(theme.id)
+                    }
+                  }}
+                >
+                  <span className="ui-theme-card-preview" aria-hidden="true" />
+                  <span className="ui-theme-card-copy">
+                    <strong>{theme.label}</strong>
+                    <span>{locale === 'vi-VN'
+                      ? theme.id === 'default'
+                        ? 'Giao diện 0xoLemon nguyên bản và bảng màu Color Studio thích ứng.'
+                        : theme.id === 'lightning'
+                          ? 'Giao diện 0xoLemon cinematic được đề xuất, tích hợp công cụ và dịch vụ trên toàn launcher.'
+                          : theme.id === 'steam'
+                            ? 'Workbench riêng theo snapshot Steam desktop, dùng dữ liệu và thao tác của 0xoLemon.'
+                            : 'Renderer riêng theo snapshot XMCL, biểu diễn mỗi game và phiên bản như một instance.'
+                      : theme.description}</span>
+                    <small className="ui-theme-card-reference">{theme.referenceVersion}</small>
+                  </span>
+                  {theme.recommended ? <span className="ui-theme-card-recommended">RECOMMENDED</span> : null}
+                  {sessionValue === theme.id ? <span className="ui-theme-card-running">RUNNING</span> : null}
+                  {value === theme.id ? <span className="ui-theme-card-check" aria-hidden="true"><Check size={13} /></span> : null}
+                </button>
+              )
+            })}
+          </div>
+        </section>
+      ))}
+    </div>
+  )
+}
+
 const ACCENT_PRESETS = [
   { hue: 82, label: 'Amber' },
   { hue: 35, label: 'Coral' },
@@ -162,6 +279,7 @@ function AccentTonePicker({
   themeContrast,
   dynamicTheme,
   dynamicThemeSpeed,
+  locked = false,
   onHueChange,
   onChromaChange,
   onThemeIntensityChange,
@@ -176,6 +294,7 @@ function AccentTonePicker({
   themeContrast: number
   dynamicTheme: boolean
   dynamicThemeSpeed: number
+  locked?: boolean
   onHueChange: (value: number) => void
   onChromaChange: (value: number) => void
   onThemeIntensityChange: (value: number) => void
@@ -192,6 +311,7 @@ function AccentTonePicker({
     speed: string
     default: string
     preview: string
+    lock: string
   }
 }) {
   const wheelRef = useRef<HTMLDivElement>(null)
@@ -260,13 +380,14 @@ function AccentTonePicker({
 
   return (
     <div
-      className="accent-tone-picker color-studio"
+      className={`accent-tone-picker color-studio${locked ? ' is-theme-accent' : ''}`}
       style={{
         '--accent-preview': accent.base,
         '--wheel-x': `${thumbX}%`,
         '--wheel-y': `${thumbY}%`,
       } as CSSProperties}
     >
+      {locked ? <div className="color-studio-theme-lock">{labels.lock}</div> : null}
       <div className="accent-tone-preview">
         <span aria-hidden="true" />
         <div>
@@ -403,6 +524,11 @@ export function LuaGameModeToggle({
   }, [])
 
   const checkStatus = useCallback(async () => {
+    if (!isTauriRuntime()) {
+      setEnabled(false)
+      onEnabledChange(false)
+      return
+    }
     try {
       const isEnabled = await invoke<boolean>('is_lua_game_mode_enabled')
       setEnabled(isEnabled)
@@ -621,6 +747,281 @@ function SteamAutoInstallSettings() {
         />
       </SettingRow>
     </>
+  )
+}
+
+type SteamFixStatus = {
+  active: boolean
+  embedded: boolean
+  message: string | null
+}
+
+function SteamVietnamFixSetting() {
+  const { t } = useLocale()
+  const [fixStatus, setFixStatus] = useState<SteamFixStatus | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [message, setMessage] = useState<string | null>(null)
+
+  const refreshStatus = useCallback(async () => {
+    try {
+      const status = await invoke<SteamFixStatus>('get_steam_fix_status')
+      setFixStatus(status)
+    } catch (err) {
+      console.warn('Could not read Steam fix status:', err)
+    }
+  }, [])
+
+  useEffect(() => {
+    void refreshStatus()
+  }, [refreshStatus])
+
+  const handleToggle = async (val: boolean) => {
+    setBusy(true)
+    setMessage(null)
+    try {
+      await invoke<boolean>('toggle_steam_bypass', { enable: val })
+      setMessage(val ? t.settings.steamVnFixEnabled : t.settings.steamVnFixDisabled)
+      await refreshStatus()
+      setTimeout(() => setMessage(null), 4000)
+    } catch (err: any) {
+      console.error('Failed to toggle Steam bypass:', err)
+      setMessage(String(err?.message || err || 'Error'))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const isActive = fixStatus?.active ?? false
+
+  return (
+    <SettingRow
+      title={t.settings.steamVnFix}
+      description={t.settings.steamVnFixDesc}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        {message && (
+          <span style={{ fontSize: '11px', color: 'var(--theme-accent-strong)', opacity: 0.9 }}>
+            {message}
+          </span>
+        )}
+        <Toggle
+          checked={isActive}
+          disabled={busy}
+          onChange={(val) => void handleToggle(val)}
+          label={t.settings.steamVnFix}
+        />
+      </div>
+    </SettingRow>
+  )
+}
+
+type FeaturePackageStatus = {
+  id: string
+  displayName: string
+  capability: string
+  source: string
+  installed: boolean
+  installedVersion: string | null
+  entrypoint: string | null
+  builtIn: boolean
+  integration: 'builtIn' | 'automatic' | 'dependency' | 'component'
+  usedBy: string | null
+}
+
+function FeaturePackagesSettings() {
+  const { locale } = useLocale()
+  const [packages, setPackages] = useState<FeaturePackageStatus[]>([])
+  const [busyPackage, setBusyPackage] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  const reload = useCallback(async () => {
+    if (!isTauriRuntime()) return
+    try {
+      setError(null)
+      setPackages(await invoke<FeaturePackageStatus[]>('list_sff_feature_packages'))
+    } catch (cause) {
+      setError(String(cause))
+    }
+  }, [])
+
+  useEffect(() => {
+    void reload()
+  }, [reload])
+
+  const install = async (packageId: string, forceUpdate: boolean) => {
+    setBusyPackage(packageId)
+    setError(null)
+    try {
+      await invoke<FeaturePackageStatus>('install_sff_feature_package', {
+        packageId,
+        forceUpdate,
+      })
+      await reload()
+    } catch (cause) {
+      setError(String(cause))
+    } finally {
+      setBusyPackage(null)
+    }
+  }
+
+  if (!isTauriRuntime()) return null
+
+  const copy = locale === 'vi-VN'
+    ? {
+        title: 'Gói tính năng tùy chọn',
+        description: 'Công cụ lớn chỉ được tải từ nguồn chính thức khi cần và lưu cạnh launcher.',
+        builtIn: 'Có sẵn',
+        installed: 'Đã cài',
+        install: 'Cài gói',
+        refresh: 'Cập nhật gói',
+        loading: 'Đang xử lý',
+        automatic: 'Launcher tự dùng',
+        component: 'Chỉ là component',
+        dependency: 'Runtime phụ thuộc',
+        usedBy: 'Dùng bởi',
+        componentNote: 'Tải gói không đồng nghĩa đã áp dụng vào game. Launcher chỉ áp dụng qua quy trình riêng có kiểm tra và khôi phục.',
+      }
+    : {
+        title: 'Optional feature packages',
+        description: 'Large tools are downloaded from their official source only when needed and stored beside the launcher.',
+        builtIn: 'Built in',
+        installed: 'Installed',
+        install: 'Install package',
+        refresh: 'Update package',
+        loading: 'Working',
+        automatic: 'Used automatically',
+        component: 'Component only',
+        dependency: 'Dependency runtime',
+        usedBy: 'Used by',
+        componentNote: 'Downloading a package does not apply it to a game. The launcher only applies components through a validated, recoverable workflow.',
+      }
+
+  return (
+    <section className="settings-group" id="feature-packages" data-settings-pane="components">
+      <header>
+        <Package size={18} />
+        <div>
+          <strong>{copy.title}</strong>
+          <span>{copy.description}</span>
+        </div>
+      </header>
+      <div className="feature-package-list">
+        {packages.map((featurePackage) => {
+          const busy = busyPackage === featurePackage.id
+          const stateLabel = featurePackage.builtIn
+            ? copy.builtIn
+            : featurePackage.installed
+              ? featurePackage.installedVersion
+                ? `${copy.installed} · ${featurePackage.installedVersion}`
+                : copy.installed
+              : null
+          const integrationLabel = featurePackage.integration === 'automatic'
+            ? copy.automatic
+            : featurePackage.integration === 'component'
+              ? copy.component
+              : featurePackage.integration === 'dependency'
+                ? copy.dependency
+                : null
+          return (
+            <article className="feature-package-row" key={featurePackage.id}>
+              <div className="feature-package-copy">
+                <div className="feature-package-heading">
+                  <strong>{featurePackage.displayName}</strong>
+                  {stateLabel ? <span className="feature-package-state">{stateLabel}</span> : null}
+                  {integrationLabel ? <span className="feature-package-integration">{integrationLabel}</span> : null}
+                </div>
+                <span>{featurePackage.capability}</span>
+                <small>{featurePackage.source}</small>
+                {featurePackage.usedBy ? <small>{copy.usedBy}: {featurePackage.usedBy}</small> : null}
+                {featurePackage.integration === 'component' ? <small className="feature-package-note">{copy.componentNote}</small> : null}
+              </div>
+              {!featurePackage.builtIn ? (
+                <button
+                  type="button"
+                  className="settings-secondary-button feature-package-action"
+                  disabled={busyPackage !== null}
+                  onClick={() => void install(featurePackage.id, featurePackage.installed)}
+                >
+                  {busy ? <Loader2 size={14} className="spin" /> : <Download size={14} />}
+                  {busy ? copy.loading : featurePackage.installed ? copy.refresh : copy.install}
+                </button>
+              ) : null}
+            </article>
+          )
+        })}
+        {error ? <div className="feature-package-error" role="status">{error}</div> : null}
+      </div>
+    </section>
+  )
+}
+
+function SteamlessComponentSettings() {
+  const [appId, setAppId] = useState('')
+  const [executables, setExecutables] = useState<GameToolsExecutable[]>([])
+  const [selected, setSelected] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [message, setMessage] = useState<string | null>(null)
+  const numericAppId = Number(appId)
+  const validAppId = Number.isSafeInteger(numericAppId) && numericAppId > 0
+
+  const inspect = useCallback(async () => {
+    if (!validAppId || busy) return
+    setBusy(true)
+    setMessage(null)
+    try {
+      const result = await invoke<GameToolsExecutable[]>('list_game_tools_executables', { appId: numericAppId })
+      setExecutables(result)
+      setSelected(result[0]?.relativePath ?? '')
+      if (result.length === 0) setMessage('No eligible executable was found in the verified Steam install path.')
+    } catch (cause) {
+      setMessage(String(cause))
+    } finally {
+      setBusy(false)
+    }
+  }, [busy, numericAppId, validAppId])
+
+  const run = async (restore: boolean) => {
+    if (!validAppId || !selected || busy) return
+    setBusy(true)
+    setMessage(null)
+    try {
+      if (restore) {
+        setMessage(await invoke<string>('restore_game_tools_steamless', { appId: numericAppId, relativeExecutable: selected }))
+      } else {
+        const result = await invoke<SteamlessResult>('apply_game_tools_steamless', { appId: numericAppId, relativeExecutable: selected })
+        if (!result.success) throw new Error(result.message)
+        setMessage(result.message)
+      }
+      const refreshed = await invoke<GameToolsExecutable[]>('list_game_tools_executables', { appId: numericAppId })
+      setExecutables(refreshed)
+    } catch (cause) {
+      setMessage(String(cause))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const selectedState = executables.find((item) => item.relativePath === selected)
+  return (
+    <section className="settings-group" id="steamless-component" data-settings-pane="components">
+      <header><Wrench size={18} /><div><strong>Steamless executable component</strong><span>Inspect and modify only executables inside a verified Steam install. Original files remain recoverable.</span></div></header>
+      <div className="settings-group-body">
+        <SettingRow title="Steam AppID" description="This component is separate from Tools and never runs automatically.">
+          <div className="settings-action-row steamless-component-form">
+            <input inputMode="numeric" value={appId} onChange={(event) => { setAppId(event.target.value.replace(/\D/g, '')); setExecutables([]); setSelected('') }} placeholder="e.g. 620" />
+            <button type="button" className="settings-secondary-button" disabled={!validAppId || busy} title={!validAppId ? 'Enter a positive numeric Steam AppID.' : undefined} onClick={() => void inspect()}>{busy ? <Loader2 className="spin" /> : <FileCode2 />} Inspect</button>
+          </div>
+        </SettingRow>
+        {executables.length > 0 ? (
+          <div className="steamless-component-list">
+            {executables.map((executable) => <button key={executable.relativePath} type="button" className={selected === executable.relativePath ? 'is-selected' : ''} onClick={() => setSelected(executable.relativePath)}><FileCode2 /><span><strong>{executable.relativePath}</strong><small>{formatBytes(executable.size)}</small></span><b className={executable.patched ? 'is-patched' : ''}>{executable.patched ? 'Patched' : 'Original'}</b></button>)}
+          </div>
+        ) : null}
+        {selectedState ? <div className="settings-action-row steamless-component-actions"><button type="button" className="settings-secondary-button" disabled={busy || !selectedState.patched} onClick={() => void run(true)}><RotateCcw /> Restore original</button><button type="button" className="settings-secondary-button" disabled={busy || selectedState.patched} onClick={() => void run(false)}><Wrench /> Analyze and apply</button></div> : null}
+        {message ? <div className="feature-package-error" role="status">{message}</div> : null}
+        <p className="feature-package-note"><TriangleAlert size={13} /> Use only with software you are authorized to modify. Close the game before applying or restoring.</p>
+      </div>
+    </section>
   )
 }
 
@@ -865,7 +1266,7 @@ function LuaSourcesSettings() {
 
   const hubcap = sources?.hubcap
   return (
-    <section className="settings-group" id="lua-sources">
+    <section className="settings-group" id="lua-sources" data-settings-pane="games">
       <header>
         <KeyRound size={18} />
         <div>
@@ -1148,29 +1549,7 @@ function LuaSourcesSettings() {
   )
 }
 
-export function SettingsView({
-  preferences,
-  launcherSettings,
-  onChange,
-  onLauncherSettingChange,
-  onChooseLibrary,
-  onOpenLibrary,
-  onOpenCache,
-  onCheckForUpdates,
-  onLuaGameModeChange,
-  steamEnvironment,
-  steamStatus,
-  onRefreshSteam,
-  onOpenSteam,
-  onRestartSteam,
-  onOpenBigPicture,
-  onReset,
-  onResetOnboarding,
-  onOpenHelpCenter,
-  onManageNotifications,
-  appVersion,
-  updateStatus,
-}: {
+export type SettingsViewProps = {
   preferences: LauncherPreferences
   launcherSettings: LauncherSettings
   onChange: <K extends keyof LauncherPreferences>(key: K, value: LauncherPreferences[K]) => void
@@ -1178,6 +1557,7 @@ export function SettingsView({
   onChooseLibrary: () => void
   onOpenLibrary: () => void
   onOpenCache: () => void
+  onOpenCloudRedirect: () => void
   onChooseCloudRoot: () => void
   onOpenCloudRoot: () => void
   onCheckForUpdates: () => void
@@ -1192,12 +1572,105 @@ export function SettingsView({
   onResetOnboarding: () => void
   onOpenHelpCenter: () => void
   onManageNotifications: () => void
+  sessionUiTheme: UiThemeId
+  onClose: () => void
   appVersion: string
   updateStatus: string | null
-}) {
+}
+
+export function SettingsView({
+  preferences,
+  launcherSettings,
+  onChange,
+  onLauncherSettingChange,
+  onChooseLibrary,
+  onOpenLibrary,
+  onOpenCache,
+  onOpenCloudRedirect,
+  onCheckForUpdates,
+  onLuaGameModeChange,
+  steamEnvironment,
+  steamStatus,
+  onRefreshSteam,
+  onOpenSteam,
+  onRestartSteam,
+  onOpenBigPicture,
+  onReset,
+  onResetOnboarding,
+  onOpenHelpCenter,
+  onManageNotifications,
+  sessionUiTheme,
+  onClose,
+  appVersion,
+  updateStatus,
+  presentation = 'default',
+}: SettingsViewProps & { presentation?: 'default' | 'steam' }) {
   const { locale, setLocale, t } = useLocale()
+  const settingsRootRef = useRef<HTMLElement>(null)
+  const [activePane, setActivePane] = useState<SettingsPaneId>(() => {
+    if (typeof window === 'undefined') return 'general'
+    const saved = window.localStorage.getItem(SETTINGS_PANE_STORAGE_KEY)
+    return isSettingsPaneId(saved) ? saved : 'general'
+  })
+  const paneLabels = locale === 'vi-VN'
+    ? {
+        general: 'Chung',
+        interface: 'Giao diện',
+        games: 'Game & Steam',
+        components: 'Components',
+        storage: 'Lưu trữ & Cloud',
+        notifications: 'Thông báo & Trợ giúp',
+        updates: 'Cập nhật & Giới thiệu',
+      }
+    : {
+        general: 'General',
+        interface: 'Interface',
+        games: 'Games & Steam',
+        components: 'Components',
+        storage: 'Storage & Cloud',
+        notifications: 'Notifications & Help',
+        updates: 'Updates & About',
+      }
+  const settingsPanes = [
+    { id: 'general' as const, label: paneLabels.general, Icon: MonitorCog },
+    { id: 'interface' as const, label: paneLabels.interface, Icon: Sparkles },
+    { id: 'games' as const, label: paneLabels.games, Icon: Gamepad2 },
+    { id: 'components' as const, label: paneLabels.components, Icon: Package },
+    { id: 'storage' as const, label: paneLabels.storage, Icon: Database },
+    { id: 'notifications' as const, label: paneLabels.notifications, Icon: Bell },
+    { id: 'updates' as const, label: paneLabels.updates, Icon: RefreshCcw },
+  ]
+  const selectPane = useCallback((pane: SettingsPaneId) => {
+    if (pane === activePane) return
+    setActivePane(pane)
+    window.localStorage.setItem(SETTINGS_PANE_STORAGE_KEY, pane)
+    window.requestAnimationFrame(() => {
+      const scroller = settingsRootRef.current?.closest('.workspace') as HTMLElement | null
+      scroller?.scrollTo({ top: 0, behavior: 'smooth' })
+    })
+  }, [activePane])
+
+  useEffect(() => {
+    const handlePaneRequest = (event: Event) => {
+      const requested = (event as CustomEvent<{ pane?: string }>).detail?.pane ?? null
+      if (isSettingsPaneId(requested)) selectPane(requested)
+    }
+    window.addEventListener('0xo-settings-pane', handlePaneRequest)
+    return () => window.removeEventListener('0xo-settings-pane', handlePaneRequest)
+  }, [selectPane])
+
   return (
-    <section className="settings-view settings-view-global">
+    <section
+      ref={settingsRootRef}
+      className={`settings-view settings-view-global${presentation === 'steam' ? ' steam-settings-view' : ''}`}
+      data-settings-presentation={presentation}
+    >
+      <div className="steam-settings-window-title">
+        <strong>{locale === 'vi-VN' ? 'CÀI ĐẶT' : 'SETTINGS'}</strong>
+        <button type="button" onClick={onClose} aria-label={locale === 'vi-VN' ? 'Đóng cài đặt' : 'Close settings'}>
+          <X size={15} />
+        </button>
+      </div>
       <header className="settings-page-header">
         <div>
           <span className="settings-page-icon">
@@ -1214,8 +1687,23 @@ export function SettingsView({
         </button>
       </header>
 
-      <div className="settings-sections">
-        <section className="settings-group">
+      <nav className="settings-pane-nav" aria-label={locale === 'vi-VN' ? 'Nhóm cài đặt' : 'Settings sections'}>
+        {settingsPanes.map(({ id, label, Icon }) => (
+          <button
+            key={id}
+            type="button"
+            className={activePane === id ? 'is-active' : ''}
+            aria-current={activePane === id ? 'page' : undefined}
+            onClick={() => selectPane(id)}
+          >
+            <Icon size={16} />
+            <span>{label}</span>
+          </button>
+        ))}
+      </nav>
+
+      <div className="settings-sections" data-active-pane={activePane}>
+        <section className="settings-group" data-settings-pane="general">
           <header>
             <MonitorCog size={18} />
             <div>
@@ -1279,7 +1767,7 @@ export function SettingsView({
           </div>
         </section>
 
-        <section className="settings-group">
+        <section className="settings-group" data-settings-pane="interface">
           <header>
             <PanelTop size={18} />
             <div>
@@ -1303,7 +1791,7 @@ export function SettingsView({
           </div>
         </section>
 
-        <section className="settings-group">
+        <section className="settings-group" data-settings-pane="storage">
           <header>
             <Cloud size={18} />
             <div>
@@ -1333,7 +1821,7 @@ export function SettingsView({
           </div>
         </section>
 
-        <section className="settings-group" id="steam-integration">
+        <section className="settings-group" id="steam-integration" data-settings-pane="games">
           <header>
             <Gamepad2 size={18} />
             <div>
@@ -1405,6 +1893,7 @@ export function SettingsView({
               </div>
             </SettingRow>
             <SteamAutoInstallSettings />
+            <SteamVietnamFixSetting />
             <LuaGameModeToggle
               steamEnvironment={steamEnvironment}
               onEnabledChange={onLuaGameModeChange}
@@ -1412,10 +1901,24 @@ export function SettingsView({
           </div>
         </section>
 
+        <section className="settings-group" id="cloudredirect-component" data-settings-pane="components">
+          <header><Cloud size={18} /><div><strong>CloudRedirect</strong><span>Open the dedicated save-protection workspace from Components.</span></div></header>
+          <div className="settings-group-body">
+            <SettingRow title="Cloud save component" description="CloudRedirect remains isolated from Tools and uses its own managed configuration and backup flow.">
+              <button type="button" className="settings-secondary-button" onClick={onOpenCloudRedirect}><ExternalLink size={14} /> Open CloudRedirect</button>
+            </SettingRow>
+          </div>
+        </section>
+
+        <FeaturePackagesSettings />
+
+        <SteamlessComponentSettings />
+
+
         <LuaSourcesSettings />
 
 
-        <section className="settings-group">
+        <section className="settings-group" data-settings-pane="storage">
           <header>
             <HardDrive size={18} />
             <div>
@@ -1482,6 +1985,7 @@ export function SettingsView({
                 options={[
                   { value: 'eco', label: 'Eco' },
                   { value: 'balanced', label: 'Balanced' },
+                  { value: 'auto', label: 'Auto' },
                   { value: 'turbo', label: 'Turbo' },
                 ]}
               />
@@ -1525,7 +2029,7 @@ export function SettingsView({
           </div>
         </section>
 
-        <section className="settings-group">
+        <section className="settings-group" data-settings-pane="general">
           <header>
             <Sparkles size={18} />
             <div>
@@ -1547,7 +2051,7 @@ export function SettingsView({
           </div>
         </section>
 
-        <section className="settings-group">
+        <section className="settings-group" data-settings-pane="interface">
           <header>
             <Sparkles size={18} />
             <div>
@@ -1566,6 +2070,31 @@ export function SettingsView({
                 ]}
               />
             </SettingRow>
+            <SettingRow
+              title={t.settings.interfaceTheme}
+              description={t.settings.interfaceThemeDesc}
+            >
+              <div className="ui-theme-selection-stack">
+                <UiThemePicker value={preferences.uiTheme} sessionValue={sessionUiTheme} onChange={(value) => onChange('uiTheme', value)} locale={locale} />
+              </div>
+            </SettingRow>
+            <SettingRow
+              title={locale === 'vi-VN' ? 'Màu của giao diện' : 'Theme colors'}
+              description={locale === 'vi-VN'
+                ? 'Giữ bảng màu chuẩn của Lightning/Steam/XMCL hoặc chủ động dùng Color Studio.'
+                : 'Keep the native Lightning/Steam/XMCL palette or explicitly override it with Color Studio.'}
+            >
+              <CustomSelect<ThemeAccentMode>
+                value={preferences.uiTheme === 'default' ? 'custom' : preferences.themeAccentMode}
+                onChange={(value) => onChange('themeAccentMode', value)}
+                options={preferences.uiTheme === 'default'
+                  ? [{ value: 'custom', label: locale === 'vi-VN' ? '0xoLemon Color Studio' : '0xoLemon Color Studio' }]
+                  : [
+                    { value: 'native', label: locale === 'vi-VN' ? 'Bảng màu nguyên bản' : 'Native palette' },
+                    { value: 'custom', label: locale === 'vi-VN' ? 'Color Studio tùy chỉnh' : 'Custom Color Studio' },
+                  ]}
+              />
+            </SettingRow>
             <SettingRow title={t.settings.accentTone || 'Accent tone'} description={t.settings.accentToneDesc || 'Customize the launcher accent while keeping contrast and surfaces subdued.'}>
               <AccentTonePicker
                 hue={preferences.accentHue}
@@ -1574,6 +2103,7 @@ export function SettingsView({
                 themeContrast={preferences.themeContrast}
                 dynamicTheme={preferences.dynamicTheme}
                 dynamicThemeSpeed={preferences.dynamicThemeSpeed}
+                locked={preferences.uiTheme !== 'default' && preferences.themeAccentMode === 'native'}
                 onHueChange={(value) => onChange('accentHue', value)}
                 onChromaChange={(value) => onChange('accentChroma', value)}
                 onThemeIntensityChange={(value) => onChange('themeIntensity', value)}
@@ -1590,6 +2120,7 @@ export function SettingsView({
                   speed: t.settings.dynamicThemeSpeed || 'Cycle speed',
                   default: t.settings.defaultAccent || 'Default',
                   preview: t.settings.themePreview || 'Launcher palette preview',
+                  lock: t.settings.themeColorsActive,
                 }}
               />
             </SettingRow>
@@ -1628,7 +2159,7 @@ export function SettingsView({
           </div>
         </section>
 
-        <section className="settings-group">
+        <section className="settings-group" data-settings-pane="interface">
           <header>
             <Clock3 size={18} />
             <div>
@@ -1662,7 +2193,7 @@ export function SettingsView({
           </div>
         </section>
 
-        <section className="settings-group" id="notification-settings">
+        <section className="settings-group" id="notification-settings" data-settings-pane="notifications">
           <header>
             <Bell size={18} />
             <div>
@@ -1713,7 +2244,7 @@ export function SettingsView({
           </div>
         </section>
 
-        <section className="settings-group">
+        <section className="settings-group" data-settings-pane="notifications">
           <header>
             <CircleHelp size={18} />
             <div>
@@ -1735,7 +2266,7 @@ export function SettingsView({
           </div>
         </section>
 
-        <section className="settings-group">
+        <section className="settings-group" data-settings-pane="updates">
           <header>
             <RefreshCcw size={18} />
             <div>
@@ -1763,7 +2294,7 @@ export function SettingsView({
           </div>
         </section>
 
-        <section className="settings-group">
+        <section className="settings-group" data-settings-pane="updates">
           <header>
             <CircleAlert size={18} style={{ color: '#ef4444' }} />
             <div>
@@ -1797,7 +2328,7 @@ export function SettingsView({
           </div>
         </section>
 
-        <section className="settings-about-card">
+        <section className="settings-about-card" data-settings-pane="updates">
           <Info size={18} />
           <div>
             <strong>0xoLemon Launcher</strong>

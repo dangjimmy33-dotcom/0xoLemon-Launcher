@@ -1,256 +1,767 @@
-.lua-installer-container {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 48px;
-  min-height: 100%;
+/* ==========================================================================
+   LuaInstaller — Modern 3-Column Dashboard & Games Catalog
+   ========================================================================== */
+
+.lua-installer-shell {
   width: 100%;
+  height: 100%;
+  min-height: 100%;
+  overflow-y: auto;
+  background: var(--launcher-page-bg, #080a0f);
+  color: var(--text, #e2e8f0);
   box-sizing: border-box;
 }
 
-.lua-installer-content {
-  width: 100%;
-  max-width: 800px;
+.lua-installer-wrapper {
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 28px 36px 64px;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  gap: 28px;
 }
 
-.lua-installer-header {
+/* ==========================================================================
+   TOP ROW (3 COLUMNS: IMPORT | CLOCK | APP ID OF STEAM)
+   ========================================================================== */
+.lua-top-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr 1.15fr;
+  gap: 20px;
+  align-items: stretch;
+}
+
+@media (max-width: 1080px) {
+  .lua-top-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.lua-card {
   position: relative;
-  margin-bottom: 48px;
-  text-align: center;
-  width: 100%;
-}
-
-.lua-installer-header h1 {
-  font-size: 32px;
-  margin-bottom: 8px;
-}
-
-.lua-installer-header p {
-  color: #999;
-  font-size: 16px;
-}
-
-.restart-steam-btn {
-  position: absolute;
-  top: 0;
-  right: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  background: #1e40af;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
-  transition: background 0.2s;
-}
-
-.restart-steam-btn:hover {
-  background: #1e3a8a;
-}
-
-.restart-steam-btn:active {
-  transform: scale(0.98);
-}
-
-.drop-zone {
-  border: 3px dashed #444;
+  background: var(--theme-card-bg, rgba(15, 20, 32, 0.6));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.08));
   border-radius: 16px;
-  padding: 80px 48px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s;
-  background: rgba(255, 255, 255, 0.02);
-  min-height: 300px;
+  padding: 20px 22px;
   display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+.lua-card-header-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted, #64748b);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+/* --------------------------------------------------------------------------
+   COLUMN 1: IMPORT DROPZONE
+   -------------------------------------------------------------------------- */
+.lua-import-card {
+  justify-content: space-between;
+}
+
+.lua-import-dropzone {
+  flex: 1;
+  min-height: 140px;
+  border: 1.5px dashed var(--line-strong, rgba(255, 255, 255, 0.16));
+  border-radius: 12px;
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  max-width: 700px;
-}
-
-.drop-zone.drag-over {
-  border-color: #3b82f6;
-  background: rgba(59, 130, 246, 0.1);
-}
-
-.drop-zone.has-file {
-  border-color: #10b981;
-  background: rgba(16, 185, 129, 0.05);
-}
-
-.drop-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-}
-
-.drop-placeholder svg {
-  color: #666;
-  margin-bottom: 8px;
-  pointer-events: none;
-}
-
-.drop-placeholder p {
-  margin: 0;
-  font-size: 18px;
-  color: #aaa;
-  pointer-events: none;
-}
-
-.drop-hint {
-  font-size: 14px !important;
-  color: #666 !important;
-  pointer-events: none;
-}
-
-.browse-btn {
-  margin-top: 16px;
-  padding: 10px 24px;
-  background: #374151;
-  color: white;
-  border-radius: 8px;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.25);
   cursor: pointer;
-  transition: background 0.2s;
-  font-size: 14px;
-  font-weight: 500;
-  pointer-events: all;
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.browse-btn:hover {
-  background: #4b5563;
+.lua-import-dropzone:hover,
+.lua-import-dropzone.is-drag-over {
+  border-color: var(--theme-accent, #38bdf8);
+  background: color-mix(in oklab, var(--theme-accent) 10%, transparent);
+  transform: scale(1.01);
 }
 
-.file-info {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  pointer-events: none;
+.lua-import-icon {
+  color: var(--muted, #94a3b8);
+  margin-bottom: 2px;
+  transition: transform 200ms ease;
 }
 
-.file-info svg {
-  color: #10b981;
+.lua-import-dropzone:hover .lua-import-icon {
+  color: var(--theme-accent-strong, #38bdf8);
+  transform: translateY(-2px);
 }
 
-.file-name {
-  font-size: 20px;
+.lua-import-text {
+  font-size: 13px;
   font-weight: 600;
+  color: var(--text-strong, #f1f5f9);
+}
+
+.lua-import-formats {
+  font-size: 11px;
+  color: var(--muted, #64748b);
+}
+
+.lua-browse-btn {
+  margin-top: 8px;
+  padding: 5px 16px;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.14));
+  color: var(--text, #e2e8f0);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 160ms ease;
+}
+
+.lua-browse-btn:hover {
+  background: color-mix(in oklab, var(--theme-accent) 18%, transparent);
+  border-color: color-mix(in oklab, var(--theme-accent) 40%, transparent);
   color: #fff;
 }
 
-.file-size {
-  font-size: 14px;
-  color: #999;
-}
-
-.status-message {
+.lua-import-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 16px;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.04);
   border-radius: 8px;
-  margin-top: 24px;
-  font-size: 14px;
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.07));
 }
 
-.status-processing {
-  background: rgba(59, 130, 246, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  color: #3b82f6;
+.lua-selected-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--theme-accent-strong, #38bdf8);
 }
 
-.status-success {
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  color: #10b981;
-}
-
-.status-error {
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  color: #ef4444;
-}
-
-.actions {
+.lua-btn-group {
   display: flex;
-  gap: 12px;
-  margin-top: 24px;
+  align-items: center;
+  gap: 6px;
+}
+
+.lua-btn-install {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  background: var(--theme-accent-strong, #38bdf8);
+  color: color-mix(in oklab, #05070a 85%, var(--theme-accent-deep) 15%);
+  font-size: 12px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.lua-btn-install:hover:not(:disabled) {
+  background: var(--theme-accent, #0ea5e9);
+  box-shadow: 0 0 12px color-mix(in oklab, var(--theme-accent) 40%, transparent);
+}
+
+.lua-btn-install:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.lua-btn-clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 150ms ease;
+  flex-shrink: 0;
+}
+
+.lua-btn-clear > svg {
+  display: block;
+  width: 14px;
+  height: 14px;
+  min-width: 14px;
+  min-height: 14px;
+  flex: 0 0 14px;
+  stroke: currentColor;
+  fill: none;
+  pointer-events: none;
+}
+
+.lua-btn-clear:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+/* --------------------------------------------------------------------------
+   COLUMN 2: DIGITAL CLOCK
+   -------------------------------------------------------------------------- */
+.lua-clock-card {
+  align-items: center;
   justify-content: center;
 }
 
-.install-btn,
-.clear-btn {
-  padding: 12px 32px;
-  border: none;
+.lua-clock-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 12px 0;
+}
+
+.lua-clock-digits {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.lua-clock-time {
+  font-size: 52px;
+  font-weight: 300;
+  color: #fff;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.6);
+}
+
+.lua-clock-seconds {
+  font-size: 15px;
+  font-weight: 600;
+  color: #64748b;
+  font-variant-numeric: tabular-nums;
+  margin-top: 2px;
+}
+
+.lua-clock-date {
+  font-size: 13px;
+  font-weight: 500;
+  color: #94a3b8;
+  letter-spacing: 0.01em;
+  margin-top: 6px;
+}
+
+/* --------------------------------------------------------------------------
+   COLUMN 3: STEAM APP ID
+   -------------------------------------------------------------------------- */
+.lua-appid-card {
+  justify-content: space-between;
+}
+
+.lua-appid-form {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.lua-appid-input {
+  flex: 1;
+  height: 38px;
+  padding: 0 14px;
   border-radius: 8px;
-  font-size: 16px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.12));
+  color: #fff;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 150ms ease;
+}
+
+.lua-appid-input:focus {
+  border-color: var(--theme-accent, #38bdf8);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--theme-accent) 25%, transparent);
+}
+
+.lua-appid-input::placeholder {
+  color: var(--muted, #475569);
+}
+
+.lua-appid-add-btn {
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 8px;
+  background: var(--theme-accent-strong, #38bdf8);
+  color: color-mix(in oklab, #05070a 85%, var(--theme-accent-deep) 15%);
+  font-size: 13px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 150ms ease;
+  white-space: nowrap;
+}
+
+.lua-appid-add-btn:hover:not(:disabled) {
+  background: var(--theme-accent, #0ea5e9);
+  box-shadow: 0 0 12px color-mix(in oklab, var(--theme-accent) 40%, transparent);
+}
+
+.lua-appid-add-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.lua-appid-help {
+  font-size: 11px;
+  color: var(--muted, #64748b);
+  margin: 0 0 12px;
+  line-height: 1.4;
+}
+
+.lua-appid-quick-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.lua-action-btn {
+  flex: 1;
+  height: 34px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.1));
+  color: var(--text, #cbd5e1);
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 150ms ease;
 }
 
-.install-btn {
-  background: #10b981;
-  color: white;
+.lua-action-btn:hover {
+  background: color-mix(in oklab, var(--theme-accent) 14%, transparent);
+  border-color: color-mix(in oklab, var(--theme-accent) 35%, transparent);
+  color: #fff;
 }
 
-.install-btn:hover:not(:disabled) {
-  background: #059669;
+.lua-action-btn-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  border-radius: 3px;
+  flex-shrink: 0;
+  display: block;
 }
 
-.install-btn:disabled {
-  background: #374151;
-  color: #666;
-  cursor: not-allowed;
+/* Status Banners */
+.lua-status-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  line-height: 1.4;
 }
 
-.clear-btn {
-  background: #374151;
-  color: white;
+.lua-status-banner.status-success {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #6ee7b7;
 }
 
-.clear-btn:hover:not(:disabled) {
-  background: #4b5563;
+.lua-status-banner.status-error {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
 }
 
-.clear-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.lua-status-banner.status-processing {
+  background: color-mix(in oklab, var(--theme-accent) 15%, transparent);
+  border: 1px solid color-mix(in oklab, var(--theme-accent) 35%, transparent);
+  color: var(--theme-accent-strong, #c7d2fe);
 }
 
-.instructions {
-  margin-top: 64px;
-  padding: 32px;
-  background: rgba(255, 255, 255, 0.02);
+/* ==========================================================================
+   BOTTOM GAMES SECTION (TOOLBAR + CONTENT + PAGINATION)
+   ========================================================================== */
+.lua-games-section {
+  border-top: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+  padding-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Toolbar */
+.lua-games-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.lua-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.lua-games-count-badge {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted, #94a3b8);
+}
+
+.lua-filter-pills {
+  display: flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.35);
+  padding: 3px;
+  border-radius: 8px;
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+}
+
+.lua-filter-pills button {
+  padding: 4px 12px;
+  border-radius: 6px;
+  background: transparent;
+  border: none;
+  color: var(--muted, #94a3b8);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.lua-filter-pills button.is-active {
+  background: color-mix(in oklab, var(--theme-accent) 22%, transparent);
+  color: var(--theme-accent-strong, #fff);
+}
+
+.lua-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lua-reload-covers-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.1));
+  color: var(--text, #cbd5e1);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.lua-reload-covers-btn:hover {
+  background: color-mix(in oklab, var(--theme-accent) 14%, transparent);
+  border-color: color-mix(in oklab, var(--theme-accent) 35%, transparent);
+  color: #fff;
+}
+
+.lua-search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.lua-search-icon {
+  position: absolute;
+  left: 10px;
+  color: var(--muted, #64748b);
+  pointer-events: none;
+}
+
+.lua-search-box input {
+  height: 32px;
+  width: 180px;
+  padding: 0 28px 0 30px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.1));
+  color: #fff;
+  font-size: 12px;
+  outline: none;
+  transition: all 150ms ease;
+}
+
+.lua-search-box input:focus {
+  width: 220px;
+  border-color: var(--theme-accent, #38bdf8);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--theme-accent) 25%, transparent);
+}
+
+.lua-search-clear {
+  position: absolute;
+  right: 8px;
+  background: transparent;
+  border: none;
+  color: var(--muted, #94a3b8);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  padding: 2px;
+}
+
+/* Empty & Loading States */
+.lua-games-empty,
+.lua-games-loading {
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+  color: var(--muted, #64748b);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Games Grid */
+.lua-games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.lua-game-card {
   border-radius: 12px;
-  border: 1px solid #333;
+  overflow: hidden;
+  background: var(--theme-card-bg, rgba(18, 24, 38, 0.6));
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+  display: flex;
+  flex-direction: column;
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.lua-game-card:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in oklab, var(--theme-accent) 45%, transparent);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 16px color-mix(in oklab, var(--theme-accent) 12%, transparent);
+}
+
+.lua-game-cover-box {
+  position: relative;
+  aspect-ratio: 460 / 215;
+  background: #000;
+  overflow: hidden;
+}
+
+.lua-game-cover-box img {
   width: 100%;
-  max-width: 700px;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
-.instructions h3 {
-  margin-top: 0;
-  margin-bottom: 16px;
-  font-size: 18px;
+.lua-game-cover-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 50%, rgba(0, 0, 0, 0.7) 100%);
+  pointer-events: none;
 }
 
-.instructions ol {
-  margin: 0;
-  padding-left: 24px;
-  line-height: 1.8;
-  color: #aaa;
+.lua-game-appid-tag {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(6px);
+  color: #e2e8f0;
+  font-size: 10px;
+  font-weight: 700;
 }
 
-.instructions li {
-  margin-bottom: 8px;
+.lua-game-channel-tag {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.lua-game-channel-tag.is-live {
+  background: rgba(34, 197, 94, 0.85);
+  color: #fff;
+}
+
+.lua-game-channel-tag.is-locked {
+  background: rgba(245, 158, 11, 0.85);
+  color: #fff;
+}
+
+.lua-game-card-footer {
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.lua-game-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #f1f5f9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lua-game-remove-btn {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.lua-game-remove-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+/* Pagination */
+.lua-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.lua-page-btn {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.lua-page-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.lua-page-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.lua-page-indicator {
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+/* ==========================================================================
+   INSTRUCTIONS ACCORDION GUIDE (Preserving user guide)
+   ========================================================================== */
+.lua-instructions-wrapper {
+  margin-top: 12px;
+  border-radius: 12px;
+  background: rgba(15, 20, 32, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.lua-instructions-toggle {
+  width: 100%;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.lua-instructions-toggle:hover {
+  background: rgba(255, 255, 255, 0.03);
+  color: #fff;
+}
+
+.lua-instructions-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.lua-instructions-body {
+  padding: 0 20px 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.lua-instructions-steps {
+  margin: 12px 0 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #94a3b8;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.lua-instructions-steps li {
+  padding-left: 4px;
+}
+
+/* Global spin animation */
+.is-spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }

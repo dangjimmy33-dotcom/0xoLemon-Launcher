@@ -196,6 +196,25 @@ struct PendingCloudOperation {
     reason: String,
 }
 
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+enum LocalWinsOnceState {
+    Prepared,
+    Running,
+    Conflict,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct LocalWinsOnceToken {
+    snapshot_id: String,
+    restore_transaction_id: String,
+    created_at: String,
+    state: LocalWinsOnceState,
+    #[serde(default)]
+    session_id: Option<String>,
+}
+
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct GameCloudRecord {
@@ -247,6 +266,8 @@ struct GameCloudRecord {
     poll_interval_ms: u64,
     #[serde(default = "default_stability_wait_ms")]
     max_stability_wait_ms: u64,
+    #[serde(default)]
+    local_wins_once: Option<LocalWinsOnceToken>,
 }
 
 fn default_max_save_files() -> u64 {
@@ -315,6 +336,16 @@ pub struct CloudSaveStatus {
     pub quota: Option<CloudQuotaStatus>,
     pub map_status: CloudMapStatus,
     pub remote_newer_known: bool,
+    pub local_wins_once_state: Option<String>,
+    pub local_wins_once_snapshot_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum LocalWinsExitDisposition {
+    Normal,
+    ForcePush,
+    Conflict,
+    StillPrepared,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -401,7 +432,169 @@ pub fn sync_manual(
     sync_game(app, game_id, direction)
 }
 
+pub fn prepare_local_wins_once(
+    app: &AppHandle,
+    game_id: &str,
+    snapshot_id: &str,
+    restore_transaction_id: &str,
+) -> Result<CloudSaveStatus, String> {
+    if snapshot_id.trim().is_empty() || restore_transaction_id.trim().is_empty() {
+        return Err("Restore snapshot and transaction ids are required".to_string());
+    }
+    let _guard = state_lock()
+        .lock()
+        .map_err(|_| "cloud save state lock poisoned".to_string())?;
+    let mut state = load_state_unlocked(app)?;
+    seed_metadata_defaults(app, game_id, &mut state);
+    let record = state.games.entry(game_id.to_string()).or_default();
+    if let Some(existing) = record.local_wins_once.as_ref() {
+        if existing.restore_transaction_id == restore_transaction_id
+            && existing.snapshot_id == snapshot_id
+            && existing.state == LocalWinsOnceState::Prepared
+        {
+            return Ok(build_status(app, game_id, Some(record)));
+        }
+        if existing.state == LocalWinsOnceState::Running {
+            return Err(
+                "A restored save branch is already attached to a running game session".to_string(),
+            );
+        }
+    }
+    record.local_wins_once = Some(LocalWinsOnceToken {
+        snapshot_id: snapshot_id.to_string(),
+        restore_transaction_id: restore_transaction_id.to_string(),
+        created_at: Utc::now().to_rfc3339(),
+        state: LocalWinsOnceState::Prepared,
+        session_id: None,
+    });
+    record.cloud_state = "restore_prepared".to_string();
+    record.last_message =
+        "Restored local save is prepared; the next real process start will consume its one-time cloud-pull bypass."
+            .to_string();
+    write_state_unlocked(app, &state)?;
+    Ok(build_status(app, game_id, state.games.get(game_id)))
+}
+
+fn local_wins_before_launch(app: &AppHandle, game_id: &str) -> Result<bool, String> {
+    let _guard = state_lock()
+        .lock()
+        .map_err(|_| "cloud save state lock poisoned".to_string())?;
+    let mut state = load_state_unlocked(app)?;
+    let Some(record) = state.games.get_mut(game_id) else {
+        return Ok(false);
+    };
+    let Some(token) = record.local_wins_once.as_mut() else {
+        return Ok(false);
+    };
+    match token.state {
+        LocalWinsOnceState::Prepared => {
+            record.cloud_state = "restore_prepared".to_string();
+            record.last_message =
+                "Cloud pull skipped for the prepared restored branch; waiting for the game process to start."
+                    .to_string();
+            write_state_unlocked(app, &state)?;
+            Ok(true)
+        }
+        LocalWinsOnceState::Running => {
+            token.state = LocalWinsOnceState::Conflict;
+            record.cloud_state = "conflict".to_string();
+            record.last_message =
+                "The prior restored branch did not reach a verified clean exit; cloud upload is blocked for review."
+                    .to_string();
+            write_state_unlocked(app, &state)?;
+            Err("CLOUD_SAVE_RESTORE_UNCLEAN:The restored branch did not exit cleanly; resolve the cloud conflict before launching again".to_string())
+        }
+        LocalWinsOnceState::Conflict => Err(
+            "CLOUD_SAVE_RESTORE_UNCLEAN:The restored branch requires cloud conflict review"
+                .to_string(),
+        ),
+    }
+}
+
+pub fn consume_local_wins_once_on_start(
+    app: &AppHandle,
+    game_id: &str,
+    session_id: &str,
+) -> Result<bool, String> {
+    if session_id.trim().is_empty() {
+        return Err("Runtime session id is required to consume localWinsOnce".to_string());
+    }
+    let _guard = state_lock()
+        .lock()
+        .map_err(|_| "cloud save state lock poisoned".to_string())?;
+    let mut state = load_state_unlocked(app)?;
+    let Some(record) = state.games.get_mut(game_id) else {
+        return Ok(false);
+    };
+    let Some(token) = record.local_wins_once.as_mut() else {
+        return Ok(false);
+    };
+    match token.state {
+        LocalWinsOnceState::Prepared => {
+            token.state = LocalWinsOnceState::Running;
+            token.session_id = Some(session_id.to_string());
+            record.cloud_state = "restore_running".to_string();
+            record.last_message =
+                "The restored local branch is active; upload remains blocked until a clean exit."
+                    .to_string();
+            write_state_unlocked(app, &state)?;
+            Ok(true)
+        }
+        LocalWinsOnceState::Running if token.session_id.as_deref() == Some(session_id) => Ok(true),
+        LocalWinsOnceState::Running => {
+            Err("localWinsOnce is already bound to a different runtime session".to_string())
+        }
+        LocalWinsOnceState::Conflict => {
+            Err("localWinsOnce is blocked by an unresolved restore conflict".to_string())
+        }
+    }
+}
+
+pub fn finalize_local_wins_once_after_exit(
+    app: &AppHandle,
+    game_id: &str,
+    session_id: &str,
+    clean_exit: bool,
+) -> Result<LocalWinsExitDisposition, String> {
+    let _guard = state_lock()
+        .lock()
+        .map_err(|_| "cloud save state lock poisoned".to_string())?;
+    let mut state = load_state_unlocked(app)?;
+    let Some(record) = state.games.get_mut(game_id) else {
+        return Ok(LocalWinsExitDisposition::Normal);
+    };
+    let Some(token) = record.local_wins_once.as_mut() else {
+        return Ok(LocalWinsExitDisposition::Normal);
+    };
+    let disposition = match token.state {
+        LocalWinsOnceState::Prepared => LocalWinsExitDisposition::StillPrepared,
+        LocalWinsOnceState::Conflict => LocalWinsExitDisposition::Conflict,
+        LocalWinsOnceState::Running => {
+            if token.session_id.as_deref() != Some(session_id) || !clean_exit {
+                token.state = LocalWinsOnceState::Conflict;
+                record.cloud_state = "conflict".to_string();
+                record.last_message =
+                    "The restored branch did not exit cleanly; automatic cloud upload is blocked."
+                        .to_string();
+                LocalWinsExitDisposition::Conflict
+            } else {
+                record.local_wins_once = None;
+                record.cloud_state = "syncing".to_string();
+                record.last_message =
+                    "Clean exit verified; the restored local branch is ready for cloud upload."
+                        .to_string();
+                LocalWinsExitDisposition::ForcePush
+            }
+        }
+    };
+    write_state_unlocked(app, &state)?;
+    Ok(disposition)
+}
+
 pub fn sync_before_launch(app: &AppHandle, game_id: &str) -> Result<CloudSaveStatus, String> {
+    if local_wins_before_launch(app, game_id)? {
+        return get_status(app, game_id);
+    }
     let status = sync_game(app, game_id, SyncDirection::Auto)?;
     if !status.conflicts.is_empty() {
         return Err(format!(
@@ -633,7 +826,26 @@ pub fn mark_game_running(game_id: &str, running: bool) {
     }
 }
 
+pub fn is_game_running(game_id: &str) -> bool {
+    running_games()
+        .lock()
+        .map(|games| games.contains(game_id))
+        .unwrap_or(true)
+}
+
 pub fn sync_after_exit_async(app: AppHandle, game_id: String) {
+    sync_after_exit_with_direction_async(app, game_id, SyncDirection::Auto);
+}
+
+pub fn sync_restored_after_exit_async(app: AppHandle, game_id: String) {
+    sync_after_exit_with_direction_async(app, game_id, SyncDirection::Push);
+}
+
+fn sync_after_exit_with_direction_async(
+    app: AppHandle,
+    game_id: String,
+    direction: SyncDirection,
+) {
     thread::spawn(move || {
         mark_game_running(&game_id, false);
         if let Err(error) = wait_for_local_stability(&app, &game_id) {
@@ -653,7 +865,7 @@ pub fn sync_after_exit_async(app: AppHandle, game_id: String) {
             }
             return;
         }
-        let result = sync_game(&app, &game_id, SyncDirection::Auto);
+        let result = sync_game(&app, &game_id, direction);
         match result {
             Ok(status) => {
                 let _ = app.emit("launcher://cloud-save", CloudSaveEvent { game_id, status });
@@ -2056,6 +2268,14 @@ fn manifest_bytes(manifest: &CloudManifest) -> u64 {
     manifest.files.iter().map(|entry| entry.size).sum()
 }
 
+fn local_wins_state_label(state: LocalWinsOnceState) -> &'static str {
+    match state {
+        LocalWinsOnceState::Prepared => "prepared",
+        LocalWinsOnceState::Running => "running",
+        LocalWinsOnceState::Conflict => "conflict",
+    }
+}
+
 fn build_status(
     app: &AppHandle,
     game_id: &str,
@@ -2081,6 +2301,14 @@ fn build_status(
         .iter()
         .map(|operation| operation.bytes)
         .sum();
+    let local_wins_once_state = record
+        .local_wins_once
+        .as_ref()
+        .map(|token| local_wins_state_label(token.state).to_string());
+    let local_wins_once_snapshot_id = record
+        .local_wins_once
+        .as_ref()
+        .map(|token| token.snapshot_id.clone());
     let can_sync = !game_running && record.enabled && !record.save_roots.is_empty();
     CloudSaveStatus {
         game_id: game_id.to_string(),
@@ -2109,6 +2337,8 @@ fn build_status(
         quota: record.quota,
         map_status: record.map_status,
         remote_newer_known: record.remote_newer_known,
+        local_wins_once_state,
+        local_wins_once_snapshot_id,
     }
 }
 

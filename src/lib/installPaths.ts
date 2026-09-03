@@ -110,6 +110,13 @@ export const fallbackCatalog: GameCatalog = {
       iconAssetId: '',
       install: fallbackInstall,
       cloudSave: { enabled: false, saveRoots: [], include: [], exclude: [] },
+      steamRuntime: 'managedGse',
+      achievementsEnabled: true,
+      saveProviders: [
+        { provider: 'gse', saveId: '3768760' },
+        { provider: 'goldbergSteamEmu', saveId: '3768760' },
+        { provider: 'legacyVersioned', saveId: '007-versioned' },
+      ],
       assetPackPath: 'assets/games/007-first-light/core.0xo',
     },
   ],

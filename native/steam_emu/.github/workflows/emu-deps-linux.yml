@@ -2,12 +2,101 @@ name: "Emu third-party dependencies (Linux)"
 
 on:
   workflow_call:
-    # needed since it allows this to become a reusable workflow
+    inputs:
+      branch:
+        description: 'Branch to build'
+        type: string
+        default: 'dev'
+      commit:
+        description: 'Commit SHA to build (empty = latest on branch)'
+        type: string
+        default: ''
+      rebuild_ssq:
+        description: 'Force rebuild ssq (ignore cache)'
+        type: boolean
+        default: false
+      rebuild_zlib:
+        description: 'Force rebuild zlib (ignore cache)'
+        type: boolean
+        default: false
+      rebuild_mbedtls:
+        description: 'Force rebuild mbedtls (ignore cache)'
+        type: boolean
+        default: false
+      rebuild_curl:
+        description: 'Force rebuild curl (ignore cache)'
+        type: boolean
+        default: false
+      rebuild_protobuf:
+        description: 'Force rebuild protobuf (ignore cache)'
+        type: boolean
+        default: false
+      rebuild_ingame_overlay:
+        description: 'Force rebuild ingame_overlay (ignore cache)'
+        type: boolean
+        default: false
+      rebuild_opus:
+        description: 'Force rebuild opus (ignore cache)'
+        type: boolean
+        default: false
+      rebuild_portaudio:
+        description: 'Force rebuild portaudio (ignore cache)'
+        type: boolean
+        default: false
+      rebuild_sdl:
+        description: 'Force rebuild sdl (ignore cache)'
+        type: boolean
+        default: false
   workflow_dispatch:
-    # allows manual trigger
+    inputs:
+      branch:
+        description: 'Branch to build'
+        type: string
+        default: 'dev'
+      commit:
+        description: 'Commit SHA to build (leave empty for latest on branch)'
+        type: string
+        default: ''
+      rebuild_ssq:
+        description: 'Force rebuild ssq (ignore cache)'
+        type: boolean
+        default: false
+      rebuild_zlib:
+        description: 'Force rebuild zlib (ignore cache)'
+        type: boolean
+        default: false
+      rebuild_mbedtls:
+        description: 'Force rebuild mbedtls (ignore cache)'
+        type: boolean
+        default: false
+      rebuild_curl:
+        description: 'Force rebuild curl (ignore cache)'
+        type: boolean
+        default: false
+      rebuild_protobuf:
+        description: 'Force rebuild protobuf (ignore cache)'
+        type: boolean
+        default: false
+      rebuild_ingame_overlay:
+        description: 'Force rebuild ingame_overlay (ignore cache)'
+        type: boolean
+        default: false
+      rebuild_opus:
+        description: 'Force rebuild opus (ignore cache)'
+        type: boolean
+        default: false
+      rebuild_portaudio:
+        description: 'Force rebuild portaudio (ignore cache)'
+        type: boolean
+        default: false
+      rebuild_sdl:
+        description: 'Force rebuild sdl (ignore cache)'
+        type: boolean
+        default: false
 
 permissions:
   contents: "write"
+  actions: "write"
 
 env:
   PREMAKE_ACTION: "gmake"
@@ -26,49 +115,81 @@ jobs:
     if: ${{ !cancelled() }}
 
     steps:
-      - name: "Lookup cache for deps"
-        id: "emu-deps-cache-step"
-        uses: actions/cache@v5
+      # checkout first so that git clean does not wipe the restored cache
+      - name: "Checkout branch"
+        uses: actions/checkout@v6
         with:
-          key: "${{ env.DEPS_CACHE_KEY }}-${{ env.PREMAKE_ACTION }}"
+          ref: ${{ inputs.commit || inputs.branch || 'dev' }}
+
+      - name: "Restore combined deps cache"
+        id: "cache-deps-restore"
+        continue-on-error: true
+        uses: actions/cache/restore@v5
+        with:
+          key: "emu-deps-linux-all-${{ env.PREMAKE_ACTION }}"
           path: "${{ env.DEPS_CACHE_DIR }}/${{ env.PREMAKE_ACTION }}"
 
-      # we need branch because it has build scripts
-      - name: "Checkout branch"
-        if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
-        uses: actions/checkout@v6
+      # determine if any dep needs (re)building
+      - name: "Check if any dep rebuild needed"
+        id: "needs-build"
+        shell: "bash"
+        run: |
+          any=false
+          ssq_dir="${{ env.DEPS_CACHE_DIR }}/${{ env.PREMAKE_ACTION }}/libssq"
+          zlib_dir="${{ env.DEPS_CACHE_DIR }}/${{ env.PREMAKE_ACTION }}/zlib"
+          mbedtls_dir="${{ env.DEPS_CACHE_DIR }}/${{ env.PREMAKE_ACTION }}/mbedtls"
+          curl_dir="${{ env.DEPS_CACHE_DIR }}/${{ env.PREMAKE_ACTION }}/curl"
+          protobuf_dir="${{ env.DEPS_CACHE_DIR }}/${{ env.PREMAKE_ACTION }}/protobuf"
+          overlay_dir="${{ env.DEPS_CACHE_DIR }}/${{ env.PREMAKE_ACTION }}/ingame_overlay"
+          opus_dir="${{ env.DEPS_CACHE_DIR }}/${{ env.PREMAKE_ACTION }}/opus"
+          portaudio_dir="${{ env.DEPS_CACHE_DIR }}/${{ env.PREMAKE_ACTION }}/portaudio"
+          sdl_dir="${{ env.DEPS_CACHE_DIR }}/${{ env.PREMAKE_ACTION }}/sdl"
+
+          [[ ! -d "$ssq_dir"       || "${{ inputs.rebuild_ssq }}"            == "true" ]] && { any=true; echo "build_ssq=true"            >> $GITHUB_OUTPUT; } || echo "build_ssq=false"            >> $GITHUB_OUTPUT
+          [[ ! -d "$zlib_dir"      || "${{ inputs.rebuild_zlib }}"           == "true" ]] && { any=true; echo "build_zlib=true"           >> $GITHUB_OUTPUT; } || echo "build_zlib=false"           >> $GITHUB_OUTPUT
+          [[ ! -d "$mbedtls_dir"   || "${{ inputs.rebuild_mbedtls }}"        == "true" ]] && { any=true; echo "build_mbedtls=true"        >> $GITHUB_OUTPUT; } || echo "build_mbedtls=false"        >> $GITHUB_OUTPUT
+          [[ ! -d "$curl_dir"      || "${{ inputs.rebuild_curl }}"           == "true" ]] && { any=true; echo "build_curl=true"           >> $GITHUB_OUTPUT; } || echo "build_curl=false"           >> $GITHUB_OUTPUT
+          [[ ! -d "$protobuf_dir"  || "${{ inputs.rebuild_protobuf }}"       == "true" ]] && { any=true; echo "build_protobuf=true"       >> $GITHUB_OUTPUT; } || echo "build_protobuf=false"       >> $GITHUB_OUTPUT
+          [[ ! -d "$overlay_dir"   || "${{ inputs.rebuild_ingame_overlay }}" == "true" ]] && { any=true; echo "build_ingame_overlay=true" >> $GITHUB_OUTPUT; } || echo "build_ingame_overlay=false" >> $GITHUB_OUTPUT
+          [[ ! -d "$opus_dir"      || "${{ inputs.rebuild_opus }}"           == "true" ]] && { any=true; echo "build_opus=true"           >> $GITHUB_OUTPUT; } || echo "build_opus=false"           >> $GITHUB_OUTPUT
+          [[ ! -d "$portaudio_dir" || "${{ inputs.rebuild_portaudio }}"      == "true" ]] && { any=true; echo "build_portaudio=true"      >> $GITHUB_OUTPUT; } || echo "build_portaudio=false"      >> $GITHUB_OUTPUT
+          [[ ! -d "$sdl_dir"       || "${{ inputs.rebuild_sdl }}"            == "true" ]] && { any=true; echo "build_sdl=true"            >> $GITHUB_OUTPUT; } || echo "build_sdl=false"            >> $GITHUB_OUTPUT
+
+          echo "needed=$any" >> $GITHUB_OUTPUT
+
+      # clone sources only when at least one dep needs building
 
       - name: "Clone third-party deps (common/linux)"
-        if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
+        if: steps.needs-build.outputs.needed == 'true'
         uses: actions/checkout@v6
         with:
           ref: "third-party/common/linux"
           path: "${{env.THIRD_PARTY_BASE_DIR}}/common/linux"
 
       - name: "Clone third-party deps (deps/linux)"
-        if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
+        if: steps.needs-build.outputs.needed == 'true'
         uses: actions/checkout@v6
         with:
           ref: "third-party/deps/linux"
           path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/linux"
 
       - name: "Clone third-party deps (deps/common)"
-        if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
+        if: steps.needs-build.outputs.needed == 'true'
         uses: actions/checkout@v6
         with:
           ref: "third-party/deps/common"
           path: "${{env.THIRD_PARTY_BASE_DIR}}/deps/common"
 
-      # fix folder permissions! not sure why this fails
-      # nested subdirs "build/linux/release" cause permission problems
+      # fix folder permissions
       - name: "Give all permissions to repo folder"
-        if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
+        if: steps.needs-build.outputs.needed == 'true'
         shell: "bash"
         working-directory: "${{ github.workspace }}"
         run: sudo chmod -R 777 "${{ github.workspace }}"
 
       # mandatory Linux packages
       - name: "Install required packages"
+        if: steps.needs-build.outputs.needed == 'true'
         shell: "bash"
         run: |
           sudo dpkg --add-architecture i386
@@ -83,11 +204,101 @@ jobs:
           sudo apt install -y libx11-dev:i386 # needed for overlay build
           # sudo apt install -y binutils # (optional) contains the tool 'readelf' mainly, and other usefull binary stuff
 
-      - name: "Build deps"
-        if: steps.emu-deps-cache-step.outputs.cache-hit != 'true'
+      - name: "Set premake5 permissions"
+        if: steps.needs-build.outputs.needed == 'true'
+        shell: "bash"
+        run: sudo chmod 777 ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5
+
+      # per-dep build steps (only run when cache missed or force-rebuild requested)
+      - name: "Build ssq"
+        if: steps.needs-build.outputs.build_ssq == 'true'
         shell: "bash"
         working-directory: "${{ github.workspace }}"
         run: |
           export CMAKE_GENERATOR="Unix Makefiles"
-          sudo chmod 777 ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5
-          ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5 --file=premake5-deps.lua --64-build --32-build --all-ext --all-build --j=${{ env.MAX_PARALLEL_JOBS }} --verbose --clean --os=linux gmake
+          ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5 --file=premake5-deps.lua --ext-ssq --build-ssq --64-build --32-build --j=${{ env.MAX_PARALLEL_JOBS }} --verbose --clean --os=linux gmake
+
+      - name: "Build zlib"
+        if: steps.needs-build.outputs.build_zlib == 'true'
+        shell: "bash"
+        working-directory: "${{ github.workspace }}"
+        run: |
+          export CMAKE_GENERATOR="Unix Makefiles"
+          ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5 --file=premake5-deps.lua --ext-zlib --build-zlib --64-build --32-build --j=${{ env.MAX_PARALLEL_JOBS }} --verbose --clean --os=linux gmake
+
+      - name: "Build mbedtls"
+        if: steps.needs-build.outputs.build_mbedtls == 'true'
+        shell: "bash"
+        working-directory: "${{ github.workspace }}"
+        run: |
+          export CMAKE_GENERATOR="Unix Makefiles"
+          ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5 --file=premake5-deps.lua --ext-mbedtls --build-mbedtls --64-build --32-build --j=${{ env.MAX_PARALLEL_JOBS }} --verbose --clean --os=linux gmake
+
+      - name: "Build curl"
+        if: |
+          steps.needs-build.outputs.build_curl == 'true' ||
+          steps.needs-build.outputs.build_zlib == 'true' ||
+          steps.needs-build.outputs.build_mbedtls == 'true'
+        shell: "bash"
+        working-directory: "${{ github.workspace }}"
+        run: |
+          export CMAKE_GENERATOR="Unix Makefiles"
+          ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5 --file=premake5-deps.lua --ext-curl --build-curl --64-build --32-build --j=${{ env.MAX_PARALLEL_JOBS }} --verbose --clean --os=linux gmake
+
+      - name: "Build protobuf"
+        if: |
+          steps.needs-build.outputs.build_protobuf == 'true' ||
+          steps.needs-build.outputs.build_zlib == 'true'
+        shell: "bash"
+        working-directory: "${{ github.workspace }}"
+        run: |
+          export CMAKE_GENERATOR="Unix Makefiles"
+          ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5 --file=premake5-deps.lua --ext-protobuf --build-protobuf --64-build --32-build --j=${{ env.MAX_PARALLEL_JOBS }} --verbose --clean --os=linux gmake
+
+      - name: "Build ingame_overlay"
+        if: steps.needs-build.outputs.build_ingame_overlay == 'true'
+        shell: "bash"
+        working-directory: "${{ github.workspace }}"
+        run: |
+          export CMAKE_GENERATOR="Unix Makefiles"
+          ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5 --file=premake5-deps.lua --ext-ingame_overlay --build-ingame_overlay --64-build --32-build --j=${{ env.MAX_PARALLEL_JOBS }} --verbose --clean --os=linux gmake
+
+      - name: "Build opus"
+        if: steps.needs-build.outputs.build_opus == 'true'
+        shell: "bash"
+        working-directory: "${{ github.workspace }}"
+        run: |
+          export CMAKE_GENERATOR="Unix Makefiles"
+          ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5 --file=premake5-deps.lua --ext-opus --build-opus --64-build --32-build --j=${{ env.MAX_PARALLEL_JOBS }} --verbose --clean --os=linux gmake
+
+      - name: "Build portaudio"
+        if: steps.needs-build.outputs.build_portaudio == 'true'
+        shell: "bash"
+        working-directory: "${{ github.workspace }}"
+        run: |
+          export CMAKE_GENERATOR="Unix Makefiles"
+          ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5 --file=premake5-deps.lua --ext-portaudio --build-portaudio --64-build --32-build --j=${{ env.MAX_PARALLEL_JOBS }} --verbose --clean --os=linux gmake
+
+      - name: "Build sdl"
+        if: steps.needs-build.outputs.build_sdl == 'true'
+        shell: "bash"
+        working-directory: "${{ github.workspace }}"
+        run: |
+          export CMAKE_GENERATOR="Unix Makefiles"
+          ./${{env.THIRD_PARTY_BASE_DIR}}/common/linux/premake/premake5 --file=premake5-deps.lua --ext-sdl --build-sdl --64-build --32-build --j=${{ env.MAX_PARALLEL_JOBS }} --verbose --clean --os=linux gmake
+
+      - name: "Delete existing combined deps cache"
+        if: steps.needs-build.outputs.needed == 'true'
+        continue-on-error: true
+        shell: "bash"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh cache delete "emu-deps-linux-all-${{ env.PREMAKE_ACTION }}" --repo "${{ github.repository }}" || true
+
+      - name: "Save combined deps cache"
+        if: steps.needs-build.outputs.needed == 'true'
+        uses: actions/cache/save@v5
+        with:
+          key: "emu-deps-linux-all-${{ env.PREMAKE_ACTION }}"
+          path: "${{ env.DEPS_CACHE_DIR }}/${{ env.PREMAKE_ACTION }}"

@@ -1,0 +1,164 @@
+{
+  "schema": 1,
+  "defaultDependencies": ["vc-redist-v14-x64", "vc-redist-v14-x86", "directx-jun2010"],
+  "gameProfiles": {
+    "007-first-light": ["vc-redist-v14-x64", "directx-jun2010"],
+    "alan-wake": ["vc-redist-2010-x86", "directx-jun2010", "nvidia-physx"],
+    "among-us": ["vc-redist-v14-x64", "vc-redist-v14-x86", "directx-jun2010"],
+    "assassins-creed-black-flag-resynced": ["vc-redist-v14-x64", "directx-jun2010"],
+    "assassins-creed-black-flag-resynced-steam": ["vc-redist-v14-x64", "directx-jun2010"],
+    "assassins-creed-mirage": ["vc-redist-v14-x64", "directx-jun2010"],
+    "atomic-heart": ["vc-redist-v14-x64", "directx-jun2010"],
+    "avatar-frontiers-of-pandora": ["vc-redist-v14-x64", "directx-jun2010"],
+    "blackmythwukong": ["vc-redist-v14-x64", "directx-jun2010", "dotnet-framework-481"],
+    "call-of-duty-vanguard": ["vc-redist-v14-x64", "directx-jun2010"],
+    "crimson-desert": ["vc-redist-v14-x64", "directx-jun2010"],
+    "dead-space-2023": ["vc-redist-v14-x64", "directx-jun2010", "ea-app"],
+    "dragon-quest-vii-reimagined": ["vc-redist-v14-x64", "directx-jun2010"],
+    "ea-sports-fc-26": ["vc-redist-v14-x64", "directx-jun2010", "ea-app"],
+    "ea-sports-fifa-23": ["vc-redist-v14-x64", "directx-jun2010", "ea-app"],
+    "elden-ring": ["vc-redist-v14-x64", "directx-jun2010"],
+    "fifa-13": ["vc-redist-2008-x86", "vc-redist-2010-x86", "directx-jun2010", "nvidia-physx"],
+    "fifa-14": ["vc-redist-2008-x86", "vc-redist-2010-x86", "directx-jun2010", "nvidia-physx"],
+    "geometry-dash": ["vc-redist-v14-x86", "directx-jun2010"],
+    "grand-theft-auto-san-andreas-2005": ["vc-redist-2008-x86", "directx-jun2010", "openal-1.1"],
+    "heavy-rain": ["vc-redist-2010-x64", "vc-redist-2012-x64", "directx-jun2010", "nvidia-physx"],
+    "hello-kitty-island-adventure": ["vc-redist-v14-x64", "directx-jun2010"],
+    "hogwarts-legacy": ["vc-redist-v14-x64", "directx-jun2010", "dotnet-framework-481"],
+    "judgment": ["vc-redist-v14-x64", "directx-jun2010"],
+    "meccha-chameleon": ["vc-redist-v14-x64", "directx-jun2010"],
+    "microsoft-flight-simulator-2020-40th-anniversary-edition": ["vc-redist-v14-x64", "directx-jun2010"],
+    "octopath-traveler-0": ["vc-redist-v14-x64", "directx-jun2010"],
+    "paper-bride": ["vc-redist-v14-x64", "vc-redist-v14-x86", "directx-jun2010"],
+    "persona-3-reload": ["vc-redist-v14-x64", "directx-jun2010"],
+    "persona-5-royal": ["vc-redist-v14-x64", "directx-jun2010"],
+    "pragmata": ["vc-redist-v14-x64", "directx-jun2010"],
+    "red-dead-redemption": ["vc-redist-v14-x64", "directx-jun2010"],
+    "red-dead-redemption-2": ["vc-redist-v14-x64", "directx-jun2010"],
+    "resident-evil-requiem": ["vc-redist-v14-x64", "directx-jun2010"],
+    "rogue-genesia": ["vc-redist-v14-x64", "vc-redist-v14-x86", "directx-jun2010"],
+    "sekiro-shadows-die-twice---goty-edition": ["vc-redist-v14-x64", "directx-jun2010"],
+    "soulstone-survivors": ["vc-redist-v14-x64", "directx-jun2010"],
+    "stellar-blade": ["vc-redist-v14-x64", "directx-jun2010"],
+    "tom-clancy-s-splinter-cell-blacklist": ["vc-redist-2010-x64", "vc-redist-2010-x86", "directx-jun2010", "nvidia-physx"],
+    "total-war-three-kingdoms": ["vc-redist-2010-x64", "vc-redist-v14-x64", "directx-jun2010"],
+    "yakuza-0": ["vc-redist-2012-x64", "vc-redist-v14-x64", "directx-jun2010"],
+    "yakuza-like-a-dragon": ["vc-redist-v14-x64", "directx-jun2010"]
+  },
+  "packages": [
+    {
+      "id": "vc-redist-v14-x64",
+      "aliases": ["vc-redist-x64-v14", "vc-redist-x64-2015", "vc-redist-x64-2017", "vc-redist-x64-2019", "vc-redist-x64-2022"],
+      "displayName": "Microsoft Visual C++ 2015-2022 Redistributable (x64)",
+      "url": "https://download.visualstudio.microsoft.com/download/pr/ebdab8e5-1d7b-4d9f-a11b-cbb1720c3b12/843068991DAAA1F73AD9F6239BCE4D0F6A07A51F18C37EA2A867E9BECA71295C/VC_redist.x64.exe",
+      "downloadFileName": "VC_redist.v14.x64.exe", "bundledPath": "VC_redist.v14.x64.exe",
+      "downloadSha256": "843068991DAAA1F73AD9F6239BCE4D0F6A07A51F18C37EA2A867E9BECA71295C", "payloadSha256": "843068991DAAA1F73AD9F6239BCE4D0F6A07A51F18C37EA2A867E9BECA71295C",
+      "minimumDownloadBytes": 1000000, "minimumPayloadBytes": 1000000, "signaturePublisher": "Microsoft Corporation", "installerKind": "vc-redist"
+    },
+    {
+      "id": "vc-redist-v14-x86",
+      "aliases": ["vc-redist-x86-v14", "vc-redist-x86-2015", "vc-redist-x86-2017", "vc-redist-x86-2019", "vc-redist-x86-2022"],
+      "displayName": "Microsoft Visual C++ 2015-2022 Redistributable (x86)",
+      "url": "https://download.visualstudio.microsoft.com/download/pr/355d2512-13c2-400a-bf9f-8a296abb5932/F0BAB33A302B3CDB2E11113760D016F54FD3D2632C65BA7834FAC4F0ABD7F1A3/VC_redist.x86.exe",
+      "downloadFileName": "VC_redist.v14.x86.exe", "bundledPath": "VC_redist.v14.x86.exe",
+      "downloadSha256": "F0BAB33A302B3CDB2E11113760D016F54FD3D2632C65BA7834FAC4F0ABD7F1A3", "payloadSha256": "F0BAB33A302B3CDB2E11113760D016F54FD3D2632C65BA7834FAC4F0ABD7F1A3",
+      "minimumDownloadBytes": 1000000, "minimumPayloadBytes": 1000000, "signaturePublisher": "Microsoft Corporation", "installerKind": "vc-redist"
+    },
+    {
+      "id": "vc-redist-2008-x64", "aliases": ["vc-redist-x64-2008"], "displayName": "Microsoft Visual C++ 2008 SP1 Redistributable (x64)",
+      "url": "https://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x64.exe",
+      "downloadFileName": "vcredist_2008_x64.exe", "bundledPath": "vcredist_2008_x64.exe",
+      "downloadSha256": "C5E273A4A16AB4D5471E91C7477719A2F45DDADB76C7F98A38FA5074A6838654", "payloadSha256": "C5E273A4A16AB4D5471E91C7477719A2F45DDADB76C7F98A38FA5074A6838654",
+      "minimumDownloadBytes": 4000000, "minimumPayloadBytes": 4000000, "signaturePublisher": "Microsoft Corporation", "installerKind": "vc-redist-legacy"
+    },
+    {
+      "id": "vc-redist-2008-x86", "aliases": ["vc-redist-x86-2008"], "displayName": "Microsoft Visual C++ 2008 SP1 Redistributable (x86)",
+      "url": "https://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x86.exe",
+      "downloadFileName": "vcredist_2008_x86.exe", "bundledPath": "vcredist_2008_x86.exe",
+      "downloadSha256": "8742BCBF24EF328A72D2A27B693CC7071E38D3BB4B9B44DEC42AA3D2C8D61D92", "payloadSha256": "8742BCBF24EF328A72D2A27B693CC7071E38D3BB4B9B44DEC42AA3D2C8D61D92",
+      "minimumDownloadBytes": 4000000, "minimumPayloadBytes": 4000000, "signaturePublisher": "Microsoft Corporation", "installerKind": "vc-redist-legacy"
+    },
+    {
+      "id": "vc-redist-2010-x64", "aliases": ["vc-redist-x64-2010"], "displayName": "Microsoft Visual C++ 2010 SP1 Redistributable (x64)",
+      "url": "https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x64.exe",
+      "downloadFileName": "vcredist_2010_x64.exe", "bundledPath": "vcredist_2010_x64.exe",
+      "downloadSha256": "F3B7A76D84D23F91957AA18456A14B4E90609E4CE8194C5653384ED38DADA6F3", "payloadSha256": "F3B7A76D84D23F91957AA18456A14B4E90609E4CE8194C5653384ED38DADA6F3",
+      "minimumDownloadBytes": 1000000, "minimumPayloadBytes": 1000000, "signaturePublisher": "Microsoft Corporation", "installerKind": "vc-redist-legacy"
+    },
+    {
+      "id": "vc-redist-2010-x86", "aliases": ["vc-redist-x86-2010"], "displayName": "Microsoft Visual C++ 2010 SP1 Redistributable (x86)",
+      "url": "https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x86.exe",
+      "downloadFileName": "vcredist_2010_x86.exe", "bundledPath": "vcredist_2010_x86.exe",
+      "downloadSha256": "99DCE3C841CC6028560830F7866C9CE2928C98CF3256892EF8E6CF755147B0D8", "payloadSha256": "99DCE3C841CC6028560830F7866C9CE2928C98CF3256892EF8E6CF755147B0D8",
+      "minimumDownloadBytes": 1000000, "minimumPayloadBytes": 1000000, "signaturePublisher": "Microsoft Corporation", "installerKind": "vc-redist-legacy"
+    },
+    {
+      "id": "vc-redist-2012-x64", "aliases": ["vc-redist-x64-2012"], "displayName": "Microsoft Visual C++ 2012 Update 4 Redistributable (x64)",
+      "url": "https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe",
+      "downloadFileName": "vcredist_2012_x64.exe", "bundledPath": "vcredist_2012_x64.exe",
+      "downloadSha256": "681BE3E5BA9FD3DA02C09D7E565ADFA078640ED66A0D58583EFAD2C1E3CC4064", "payloadSha256": "681BE3E5BA9FD3DA02C09D7E565ADFA078640ED66A0D58583EFAD2C1E3CC4064",
+      "minimumDownloadBytes": 6000000, "minimumPayloadBytes": 6000000, "signaturePublisher": "Microsoft Corporation", "installerKind": "vc-redist-legacy"
+    },
+    {
+      "id": "vc-redist-2012-x86", "aliases": ["vc-redist-x86-2012"], "displayName": "Microsoft Visual C++ 2012 Update 4 Redistributable (x86)",
+      "url": "https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x86.exe",
+      "downloadFileName": "vcredist_2012_x86.exe", "bundledPath": "vcredist_2012_x86.exe",
+      "downloadSha256": "B924AD8062EAF4E70437C8BE50FA612162795FF0839479546CE907FFA8D6E386", "payloadSha256": "B924AD8062EAF4E70437C8BE50FA612162795FF0839479546CE907FFA8D6E386",
+      "minimumDownloadBytes": 6000000, "minimumPayloadBytes": 6000000, "signaturePublisher": "Microsoft Corporation", "installerKind": "vc-redist-legacy"
+    },
+    {
+      "id": "vc-redist-2013-x64", "aliases": ["vc-redist-x64-2013"], "displayName": "Microsoft Visual C++ 2013 Redistributable (x64)",
+      "url": "https://download.visualstudio.microsoft.com/download/pr/10912041/cee5d6bca2ddbcd039da727bf4acb48a/vcredist_x64.exe",
+      "downloadFileName": "vcredist_2013_x64.exe", "bundledPath": "vcredist_2013_x64.exe",
+      "downloadSha256": "A4BBA7701E355AE29C403431F871A537897C363E215CAFE706615E270984F17C", "payloadSha256": "A4BBA7701E355AE29C403431F871A537897C363E215CAFE706615E270984F17C",
+      "minimumDownloadBytes": 6000000, "minimumPayloadBytes": 6000000, "signaturePublisher": "Microsoft Corporation", "installerKind": "vc-redist-legacy"
+    },
+    {
+      "id": "vc-redist-2013-x86", "aliases": ["vc-redist-x86-2013"], "displayName": "Microsoft Visual C++ 2013 Redistributable (x86)",
+      "url": "https://download.visualstudio.microsoft.com/download/pr/10912113/5da66ddebb0ad32ebd4b922fd82e8e25/vcredist_x86.exe",
+      "downloadFileName": "vcredist_2013_x86.exe", "bundledPath": "vcredist_2013_x86.exe",
+      "downloadSha256": "53B605D1100AB0A88B867447BBF9274B5938125024BA01F5105A9E178A3DCDBD", "payloadSha256": "53B605D1100AB0A88B867447BBF9274B5938125024BA01F5105A9E178A3DCDBD",
+      "minimumDownloadBytes": 6000000, "minimumPayloadBytes": 6000000, "signaturePublisher": "Microsoft Corporation", "installerKind": "vc-redist-legacy"
+    },
+    {
+      "id": "directx-jun2010", "aliases": ["directx-june-2010", "directx-legacy"], "displayName": "DirectX End-User Runtimes (June 2010)",
+      "url": "https://download.microsoft.com/download/8/4/a/84a35bf1-dafe-4ae8-82af-ad2ae20b6b14/directx_Jun2010_redist.exe",
+      "downloadFileName": "directx_Jun2010_redist.exe", "bundledPath": "directx_Jun2010_redist.exe",
+      "downloadSha256": "053F76DCBB28802E23341B6A787E3B0791C0FA5C8D4D011B1044172DBF89C73B", "payloadSha256": "053F76DCBB28802E23341B6A787E3B0791C0FA5C8D4D011B1044172DBF89C73B",
+      "minimumDownloadBytes": 90000000, "minimumPayloadBytes": 90000000, "signaturePublisher": "Microsoft Corporation",
+      "extractedInstallerPath": "DXSETUP.exe", "extractedInstallerSha256": "8F47D7121EF6532AD9AD9901E44E237F5C30448B752028C58A9D19521414E40D", "minimumExtractedInstallerBytes": 400000,
+      "installerKind": "directx-redist"
+    },
+    {
+      "id": "dotnet-framework-481", "aliases": ["dotnet-481", "dotnet-48", "dotnet-47", "net4.6-redist", "net4.7-redist", "net4.8-redist", "net4.8.1-redist"],
+      "displayName": "Microsoft .NET Framework 4.8.1 Runtime",
+      "url": "https://download.microsoft.com/download/4/b/2/cd00d4ed-ebdd-49ee-8a33-eabc3d1030e3/NDP481-x86-x64-AllOS-ENU.exe",
+      "downloadFileName": "NDP481-x86-x64-AllOS-ENU.exe", "bundledPath": "NDP481-x86-x64-AllOS-ENU.exe",
+      "downloadSha256": "C0CA2E0C9CD18A24A0A77369A13FAE2C2C4E8BC83355DD24E5DDC00F9D791FE3", "payloadSha256": "C0CA2E0C9CD18A24A0A77369A13FAE2C2C4E8BC83355DD24E5DDC00F9D791FE3",
+      "minimumDownloadBytes": 70000000, "minimumPayloadBytes": 70000000, "signaturePublisher": "Microsoft Corporation", "installerKind": "dotnet-framework"
+    },
+    {
+      "id": "xna-framework-4-refresh", "aliases": ["xna-4.0", "xna-framework-4.0", "xna-4.0-refresh"], "displayName": "Microsoft XNA Framework Redistributable 4.0 Refresh",
+      "url": "https://download.microsoft.com/download/5/3/a/53a804c8-ec78-43cd-a0f0-2fb4d45603d3/xnafx40_redist.msi",
+      "downloadFileName": "xnafx40_redist.msi", "bundledPath": "xnafx40_redist.msi",
+      "downloadSha256": "2B03C130C4BB5F106B9619BEA8150201F7E982709CFE9A0CC8BDE75FF0A83B27", "payloadSha256": "2B03C130C4BB5F106B9619BEA8150201F7E982709CFE9A0CC8BDE75FF0A83B27",
+      "minimumDownloadBytes": 7000000, "minimumPayloadBytes": 7000000, "signaturePublisher": "Microsoft Corporation", "installerKind": "msi"
+    },
+    {
+      "id": "nvidia-physx", "aliases": ["physx", "physx-redist", "nvidia-physx-system-software"], "displayName": "NVIDIA PhysX System Software 9.23.1019",
+      "url": "https://us.download.nvidia.com/Windows/9.23.1019/PhysX_9.23.1019_SystemSoftware.exe",
+      "downloadFileName": "PhysX_9.23.1019_SystemSoftware.exe", "bundledPath": "PhysX_9.23.1019_SystemSoftware.exe",
+      "downloadSha256": "9B42B84E881769D681E09F62A1B51532616B2E6A2D5D99D0CCAE6EB5FBBC208C", "payloadSha256": "9B42B84E881769D681E09F62A1B51532616B2E6A2D5D99D0CCAE6EB5FBBC208C",
+      "minimumDownloadBytes": 29000000, "minimumPayloadBytes": 29000000, "signaturePublisher": "NVIDIA Corporation", "installerKind": "physx-redist"
+    },
+    {
+      "id": "openal-1.1", "aliases": ["openal", "openal-redist"], "displayName": "OpenAL 1.1 Windows Installer",
+      "url": "https://www.openal.org/downloads/oalinst.zip",
+      "downloadFileName": "oalinst.zip", "bundledPath": "oalinst.zip",
+      "downloadSha256": "D165BCB7628FD950D14847585468CC11943B2A1DA92A59A839D397C68F9D4B06", "payloadSha256": "D165BCB7628FD950D14847585468CC11943B2A1DA92A59A839D397C68F9D4B06",
+      "minimumDownloadBytes": 500000, "minimumPayloadBytes": 500000, "archiveKind": "zip", "extractedInstallerPath": "oalinst.exe",
+      "extractedInstallerSha256": "B8F39714D41E009F75EFB183C37100F2CBABB71784BBD243BE881AC5B42D86FD", "minimumExtractedInstallerBytes": 800000,
+      "extractedSignaturePublisher": "Creative Labs Inc", "installerKind": "openal-redist"
+    }
+  ]
+}

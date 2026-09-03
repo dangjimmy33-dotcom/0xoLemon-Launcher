@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import { ChevronLeft, ChevronRight, CircleHelp, Compass, X } from 'lucide-react'
 import { useLocale } from '../context/locale'
+import { UI_THEME_PROFILES, type UiThemeId } from '../lib/uiThemes'
 
 type TourRect = { top: number; left: number; width: number; height: number }
 
@@ -55,10 +56,14 @@ function cardPosition(rect: TourRect | null) {
 
 export function Onboarding({
   onComplete,
+  uiTheme = 'default',
+  onThemeChange,
 }: {
   onComplete: () => void
+  uiTheme?: UiThemeId
+  onThemeChange?: (theme: UiThemeId) => void
 }) {
-  const { t } = useLocale()
+  const { t, locale } = useLocale()
   const [step, setStep] = useState(0)
   const [rect, setRect] = useState<TourRect | null>(null)
   const current = TOUR_STEPS[step]
@@ -133,6 +138,40 @@ export function Onboarding({
         <h2 id="guided-tour-title">{copy.title}</h2>
         <p>{copy.body}</p>
         {copy.note ? <small>{copy.note}</small> : null}
+        {isWelcome && onThemeChange ? (
+          <div className="theme-quick-pick" role="radiogroup" aria-label="Launcher theme">
+            {UI_THEME_PROFILES.map((theme) => {
+              const isLocked = theme.id !== 'default'
+              return (
+                <button
+                  key={theme.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={uiTheme === theme.id}
+                  aria-disabled={isLocked}
+                  disabled={isLocked}
+                  className={`${uiTheme === theme.id ? 'is-active' : ''}${isLocked ? ' is-disabled' : ''}`}
+                  onClick={() => {
+                    if (!isLocked) {
+                      onThemeChange(theme.id)
+                    }
+                  }}
+                >
+                  <strong>{theme.label}{theme.recommended ? <em>{locale === 'vi-VN' ? 'Đề xuất' : 'Recommended'}</em> : null}</strong>
+                  <span>{locale === 'vi-VN'
+                    ? theme.id === 'default'
+                      ? 'Giao diện gốc'
+                      : theme.id === 'lightning'
+                        ? 'Không gian cinematic toàn launcher'
+                        : theme.id === 'steam'
+                          ? 'Phong cách Steam'
+                          : 'Phong cách XMCL hiện đại'
+                    : theme.previewLabel}</span>
+                </button>
+              )
+            })}
+          </div>
+        ) : null}
         <div className="guided-tour-dots" aria-hidden="true">
           {TOUR_STEPS.map((item, index) => <i key={item.key} className={index === step ? 'active' : index < step ? 'done' : ''} />)}
         </div>

@@ -23,6 +23,9 @@ static int number_broadcasts = -1;
 static IP_PORT broadcasts[MAX_BROADCASTS];
 static uint32_t lower_range_ips[MAX_BROADCASTS];
 static uint32_t upper_range_ips[MAX_BROADCASTS];
+static uint32_t adapter_own_ips[MAX_BROADCASTS];   // host byte order
+static uint8_t  adapter_prefix_len[MAX_BROADCASTS]; // CIDR prefix (e.g. 24)
+static char     adapter_names[MAX_BROADCASTS][128]; // friendly name
 
 #define BROADCAST_INTERVAL 5.0
 #define HEARTBEAT_TIMEOUT 20.0
@@ -72,6 +75,13 @@ static void get_broadcast_info(uint16 port)
                 ip_port->port = port;
                 lower_range_ips[number_broadcasts] = htonl(iface_ip & subnet_mask);
                 upper_range_ips[number_broadcasts] = broadcast_ip;
+                adapter_own_ips[number_broadcasts] = iface_ip;
+                adapter_prefix_len[number_broadcasts] = (uint8_t)prefix;
+                adapter_names[number_broadcasts][0] = '\0';
+                if (pAdapter->FriendlyName) {
+                    WideCharToMultiByte(CP_UTF8, 0, pAdapter->FriendlyName, -1,
+                        adapter_names[number_broadcasts], sizeof(adapter_names[0]), NULL, NULL);
+                }
                 number_broadcasts++;
 
                 if (number_broadcasts >= MAX_BROADCASTS) {
@@ -142,6 +152,38 @@ static void get_broadcast_info(uint16 port)
         }
 
         ip_port->port = port;
+
+        // Get adapter's own IP and netmask for subnet info
+        struct ifreq ifr_a = i_faces[i];
+        if (ioctl(sock, SIOCGIFADDR, &ifr_a) >= 0) {
+            struct sockaddr_in *sa = (struct sockaddr_in *)&ifr_a.ifr_addr;
+            uint32 iface_ip = ntohl(sa->sin_addr.s_addr);
+            adapter_own_ips[number_broadcasts] = iface_ip;
+
+            struct ifreq ifr_m = i_faces[i];
+            if (ioctl(sock, SIOCGIFNETMASK, &ifr_m) >= 0) {
+                struct sockaddr_in *sm = (struct sockaddr_in *)&ifr_m.ifr_addr;
+                uint32 mask = ntohl(sm->sin_addr.s_addr);
+                // Count prefix bits
+                uint8_t prefix = 0;
+                for (uint32 m = mask; m & 0x80000000u; m <<= 1) prefix++;
+                adapter_prefix_len[number_broadcasts] = prefix;
+                lower_range_ips[number_broadcasts] = htonl(iface_ip & mask);
+                upper_range_ips[number_broadcasts] = htonl(iface_ip | ~mask);
+            } else {
+                adapter_prefix_len[number_broadcasts] = 0;
+                lower_range_ips[number_broadcasts] = 0;
+                upper_range_ips[number_broadcasts] = 0;
+            }
+        } else {
+            adapter_own_ips[number_broadcasts] = 0;
+            adapter_prefix_len[number_broadcasts] = 0;
+            lower_range_ips[number_broadcasts] = 0;
+            upper_range_ips[number_broadcasts] = 0;
+        }
+        strncpy(adapter_names[number_broadcasts], i_faces[i].ifr_name, sizeof(adapter_names[0]) - 1);
+        adapter_names[number_broadcasts][sizeof(adapter_names[0]) - 1] = '\0';
+
         number_broadcasts++;
     }
 
@@ -408,7 +450,11 @@ static void send_buffer_tcp(struct TCP_Socket &socket, Common_Message *msg)
     uint32 size = static_cast<uint32>(msg->ByteSizeLong()), old_size = static_cast<uint32>(socket.send_buffer.size());
     socket.send_buffer.resize(old_size + sizeof(uint32) + size);
     memcpy(&(socket.send_buffer[old_size]), &size, sizeof(size));
-    msg->SerializeToArray(&(socket.send_buffer[old_size + sizeof(uint32)]), size);
+    if (!msg->SerializeToArray(&(socket.send_buffer[old_size + sizeof(uint32)]), size)) {
+        PRINT_DEBUG("send_buffer_tcp: SerializeToArray failed, dropping message");
+        socket.send_buffer.resize(old_size);
+        return;
+    }
 
     send_tcp_pending(socket);
 }
@@ -469,6 +515,7 @@ static void socket_timeouts(struct TCP_Socket &socket, double extra_time)
     }
 
     if (check_timedout(socket.last_heartbeat_received, HEARTBEAT_TIMEOUT + extra_time)) {
+        PRINT_DEBUG("[DISCONNECT-DIAG] HEARTBEAT_TIMEOUT: killing tcp socket %u (received_data=%d)", socket.sock, socket.received_data);
         kill_tcp_socket(socket);
         PRINT_DEBUG("TCP SOCKET HEARTBEAT TIMEOUT");
     }
@@ -647,6 +694,8 @@ struct Connection *Networking::new_connection(CSteamID search_id, uint32 appid)
 
     PRINT_DEBUG("ADDED ID %llu", (uint64)search_id.ConvertToUint64());
     connections.push_back(connection);
+    PRINT_DEBUG("[DISCONNECT-DIAG] new_connection: added user %llu appid %u, total_connections=%zu, vector_capacity=%zu",
+        (uint64)search_id.ConvertToUint64(), appid, connections.size(), connections.capacity());
     return &(connections[connections.size() - 1]);
 }
 
@@ -659,10 +708,24 @@ bool Networking::handle_announce(Common_Message *msg, IP_PORT ip_port)
         PRINT_DEBUG("new connection created: user %llu, appid %u", (uint64)msg->source_id(), msg->announce().appid());
     }
 
-    PRINT_DEBUG("Handle Announce: %u, " "%" PRIu64 ", %u, %u", conn->appid, msg->source_id(), msg->announce().appid(), msg->announce().type());
+    PRINT_DEBUG("Handle Announce: %u, " "%" PRIu64 ", %u, %u, total_connections=%zu", conn->appid, msg->source_id(), msg->announce().appid(), msg->announce().type(), connections.size());
     conn->tcp_ip_port = ip_port;
     conn->tcp_ip_port.port = htons(msg->announce().tcp_port());
     conn->appid = msg->announce().appid();
+
+    // Track all unique IPs seen from this peer (host byte order)
+    {
+        uint32 ip_host = ntohl(ip_port.ip);
+        if (ip_host != 0) {
+            bool found = false;
+            for (int i = 0; i < conn->known_ip_count; ++i) {
+                if (conn->known_ips[i] == ip_host) { found = true; break; }
+            }
+            if (!found && conn->known_ip_count < 16) {
+                conn->known_ips[conn->known_ip_count++] = ip_host;
+            }
+        }
+    }
 
     for (int i = 0; i < msg->announce().ids_size(); ++i) {
         add_id_connection(conn, (uint64) msg->announce().ids(i));
@@ -682,11 +745,14 @@ bool Networking::handle_announce(Common_Message *msg, IP_PORT ip_port)
 
             size_t size = msg_.ByteSizeLong();
             char *buffer = new char[size];
-            msg_.SerializeToArray(buffer, static_cast<int>(size));
-            IP_PORT ipp;
-            ipp.ip = msg->announce().peers(i).ip();
-            ipp.port = htons(msg->announce().peers(i).udp_port());
-            send_packet_to(udp_socket, ipp, buffer, static_cast<unsigned long>(size));
+            if (!msg_.SerializeToArray(buffer, static_cast<int>(size))) {
+                PRINT_DEBUG("handle_announce: SerializeToArray failed for peer discovery, skipping send");
+            } else {
+                IP_PORT ipp;
+                ipp.ip = msg->announce().peers(i).ip();
+                ipp.port = htons(msg->announce().peers(i).udp_port());
+                send_packet_to(udp_socket, ipp, buffer, static_cast<unsigned long>(size));
+            }
             delete[] buffer;
         }
     }
@@ -697,8 +763,11 @@ bool Networking::handle_announce(Common_Message *msg, IP_PORT ip_port)
         Common_Message msg = create_announce(false);
         size_t size = msg.ByteSizeLong(); 
         char *buffer = new char[size];
-        msg.SerializeToArray(buffer, static_cast<int>(size));
-        send_packet_to(udp_socket, ip_port, buffer, static_cast<unsigned long>(size));
+        if (!msg.SerializeToArray(buffer, static_cast<int>(size))) {
+            PRINT_DEBUG("handle_announce: SerializeToArray failed for PING reply, skipping send");
+        } else {
+            send_packet_to(udp_socket, ip_port, buffer, static_cast<unsigned long>(size));
+        }
         delete[] buffer;
 
         //send ping packet if not pinged
@@ -706,8 +775,11 @@ bool Networking::handle_announce(Common_Message *msg, IP_PORT ip_port)
             Common_Message msg = create_announce(true);
             size_t size = msg.ByteSizeLong(); 
             char *buffer = new char[size];
-            msg.SerializeToArray(buffer, static_cast<int>(size));
-            send_packet_to(udp_socket, ip_port, buffer, static_cast<unsigned long>(size));
+            if (!msg.SerializeToArray(buffer, static_cast<int>(size))) {
+                PRINT_DEBUG("handle_announce: SerializeToArray failed for re-ping, skipping send");
+            } else {
+                send_packet_to(udp_socket, ip_port, buffer, static_cast<unsigned long>(size));
+            }
             delete[] buffer;
         }
     } else if (msg->announce().type() == Announce::PONG) {
@@ -739,12 +811,13 @@ bool Networking::handle_low_level_udp(Common_Message *msg, IP_PORT ip_port)
 
 #define NUM_TCP_WAITING 128
 
-Networking::Networking(CSteamID id, uint32 appid, uint16 port, std::set<IP_PORT> *custom_broadcasts, bool disable_sockets)
+Networking::Networking(CSteamID id, uint32 appid, uint16 port, std::set<IP_PORT> *custom_broadcasts, bool disable_sockets, bool crossapp_messaging)
 {
     tcp_port = udp_port = port;
     own_ip = 0x7F000001;
     last_run = std::chrono::high_resolution_clock::now();
     this->appid = appid;
+    this->crossapp_messaging = crossapp_messaging;
 
     if (disable_sockets) {
         enabled = false;
@@ -893,7 +966,10 @@ void Networking::send_announce_broadcasts()
 
     size_t size = msg.ByteSizeLong(); 
     std::vector<char> buffer(size);
-    msg.SerializeToArray(&buffer[0], static_cast<int>(size));
+    if (!msg.SerializeToArray(&buffer[0], static_cast<int>(size))) {
+        PRINT_DEBUG("send_announce_broadcasts: SerializeToArray failed, skipping broadcast");
+        return;
+    }
     for (uint16 i = DEFAULT_PORT; i < DEFAULT_PORT + NUM_QUERY_PORTS; i++) {
         send_broadcasts(udp_socket, htons(i), &buffer[0], static_cast<unsigned long>(size), &this->custom_broadcasts);
     }
@@ -1014,6 +1090,10 @@ void Networking::Run()
             if (msg.source_id()) {
                 Connection *connection = find_connection((uint64)msg.source_id());
                 if (connection) {
+                    PRINT_DEBUG("[DISCONNECT-DIAG] TCP_ACCEPT: replacing incoming socket for user %llu (appid %u), old_sock=%u old_recv=%d, new_sock=%u",
+                        (uint64)msg.source_id(), connection->appid,
+                        connection->tcp_socket_incoming.sock, connection->tcp_socket_incoming.received_data,
+                        conn->sock);
                     kill_tcp_socket(connection->tcp_socket_incoming);
                     connection->tcp_socket_incoming = *conn;
                     conn = accepted.erase(conn);
@@ -1065,8 +1145,8 @@ void Networking::Run()
 
         if (conn.tcp_socket_incoming.received_data || conn.tcp_socket_outgoing.received_data) {
             if (!conn.connected) {
-                //reconnect the connection if it has the right appid
-                if (conn.appid == this->appid || conn.appid == LOBBY_CONNECT_APPID) {
+                //reconnect the connection if it has the right appid (or any appid if crossapp is enabled)
+                if (conn.appid == this->appid || conn.appid == LOBBY_CONNECT_APPID || crossapp_messaging) {
                     for (auto &c: connections) {
                         if (&c == &conn) continue;
                         if (c.appid != this->appid) continue;
@@ -1074,6 +1154,7 @@ void Networking::Run()
                             auto i = std::find(c.ids.begin(), c.ids.end(), steam_id);
                             if (i != c.ids.end()) {
                                 c.ids.erase(i);
+                                PRINT_DEBUG("[DISCONNECT-DIAG] DEDUP: firing DISCONNECT for user %llu (appid %u) because it was found in another connection (new conn appid %u, connected via reconnect)", (uint64)steam_id.ConvertToUint64(), c.appid, conn.appid);
                                 run_callback_user(steam_id, false, c.appid);
                                 PRINT_DEBUG("REMOVE OLD CONNECTION ID");
                             }
@@ -1083,6 +1164,10 @@ void Networking::Run()
                     for (auto &steam_id : conn.ids) run_callback_user(steam_id, true, conn.appid);
                 }
 
+                PRINT_DEBUG("[DISCONNECT-DIAG] CONNECTED_TRANSITION: conn for appid %u now connected=true, ids_count=%zu, out_sock=%u out_recv=%d, in_sock=%u in_recv=%d",
+                    conn.appid, conn.ids.size(),
+                    conn.tcp_socket_outgoing.sock, conn.tcp_socket_outgoing.received_data,
+                    conn.tcp_socket_incoming.sock, conn.tcp_socket_incoming.received_data);
                 conn.connected = true;
             }
         }
@@ -1117,7 +1202,15 @@ void Networking::Run()
         auto conn = std::begin(connections);
         while (conn != std::end(connections)) {
             if (check_timedout(conn->last_received, USER_TIMEOUT + time_extra)) {
-                if (conn->connected) for (auto &steam_id : conn->ids) run_callback_user(steam_id, false, conn->appid);
+                if (conn->connected) {
+                    for (auto &steam_id : conn->ids) {
+                        PRINT_DEBUG("[DISCONNECT-DIAG] USER_TIMEOUT: firing DISCONNECT for user %llu (appid %u), connected=%d, out_sock=%u out_recv=%d, in_sock=%u in_recv=%d",
+                            (uint64)steam_id.ConvertToUint64(), conn->appid, conn->connected,
+                            conn->tcp_socket_outgoing.sock, conn->tcp_socket_outgoing.received_data,
+                            conn->tcp_socket_incoming.sock, conn->tcp_socket_incoming.received_data);
+                        run_callback_user(steam_id, false, conn->appid);
+                    }
+                }
                 kill_tcp_socket(conn->tcp_socket_outgoing);
                 kill_tcp_socket(conn->tcp_socket_incoming);
                 conn = connections.erase(conn);
@@ -1128,9 +1221,27 @@ void Networking::Run()
         }
     }
 
+    // Periodic connection state dump for diagnostics
+    for (size_t idx = 0; idx < connections.size(); ++idx) {
+        auto &conn = connections[idx];
+        PRINT_DEBUG("[DISCONNECT-DIAG] STATE[%zu]: appid=%u connected=%d ids_count=%zu first_id=%llu out_sock=%u out_recv=%d in_sock=%u in_recv=%d",
+            idx, conn.appid, conn.connected, conn.ids.size(),
+            conn.ids.empty() ? 0ULL : (uint64)conn.ids[0].ConvertToUint64(),
+            conn.tcp_socket_outgoing.sock, conn.tcp_socket_outgoing.received_data,
+            conn.tcp_socket_incoming.sock, conn.tcp_socket_incoming.received_data);
+    }
+
     for (auto &conn: connections) {
         if (!(conn.tcp_socket_incoming.received_data || conn.tcp_socket_outgoing.received_data)) {
-            if (conn.connected) for (auto &steam_id : conn.ids) run_callback_user(steam_id, false, conn.appid);
+            if (conn.connected) {
+                for (auto &steam_id : conn.ids) {
+                    PRINT_DEBUG("[DISCONNECT-DIAG] NO_RECV_DATA: firing DISCONNECT for user %llu (appid %u), out_sock=%u in_sock=%u, total_connections=%zu",
+                        (uint64)steam_id.ConvertToUint64(), conn.appid,
+                        conn.tcp_socket_outgoing.sock, conn.tcp_socket_incoming.sock,
+                        connections.size());
+                    run_callback_user(steam_id, false, conn.appid);
+                }
+            }
             conn.connected = false;
         }
     }
@@ -1178,6 +1289,7 @@ bool Networking::sendToIPPort(Common_Message *msg, uint32 ip, uint16 port, bool 
 uint32 Networking::getIP(CSteamID id)
 {
     Connection *conn = find_connection(id, this->appid);
+    if (!conn && crossapp_messaging) conn = find_connection(id, 0);
     if (conn) {
         return ntohl(conn->tcp_ip_port.ip);
     }
@@ -1185,9 +1297,23 @@ uint32 Networking::getIP(CSteamID id)
     return 0;
 }
 
+int Networking::getIPs(CSteamID id, uint32 *out, int max_count)
+{
+    if (!out || max_count <= 0) return 0;
+    Connection *conn = find_connection(id, this->appid);
+    if (!conn && crossapp_messaging) conn = find_connection(id, 0);
+    if (!conn) return 0;
+    int count = (std::min)(max_count, conn->known_ip_count);
+    for (int i = 0; i < count; ++i) {
+        out[i] = conn->known_ips[i];  // already host byte order
+    }
+    return count;
+}
+
 uint16 Networking::getPort(CSteamID id)
 {
     Connection *conn = find_connection(id, this->appid);
+    if (!conn && crossapp_messaging) conn = find_connection(id, 0);
     if (conn) {
         return ntohs(conn->tcp_ip_port.port);
     }
@@ -1195,7 +1321,7 @@ uint16 Networking::getPort(CSteamID id)
     return 0;
 }
 
-bool Networking::sendTo(Common_Message *msg, bool reliable, Connection *conn)
+bool Networking::sendTo(Common_Message *msg, bool reliable, Connection *conn, bool any_appid)
 {
     if (!enabled) return false;
 
@@ -1214,7 +1340,7 @@ bool Networking::sendTo(Common_Message *msg, bool reliable, Connection *conn)
     }
 
     if (!conn) {
-        conn = find_connection(dest_id, this->appid);
+        conn = find_connection(dest_id, any_appid ? 0 : this->appid);
     }
 
     if (!ret && conn) {
@@ -1228,9 +1354,12 @@ bool Networking::sendTo(Common_Message *msg, bool reliable, Connection *conn)
             }
         } else {
             std::vector<char> buffer(size, 0);
-            msg->SerializeToArray(&buffer[0], static_cast<int>(size));
-            send_packet_to(udp_socket, conn->udp_ip_port, &buffer[0], static_cast<unsigned long>(size));
-            ret = true;
+            if (!msg->SerializeToArray(&buffer[0], static_cast<int>(size))) {
+                PRINT_DEBUG("sendTo: SerializeToArray failed, dropping UDP packet to %" PRIu64 "", (uint64)msg->dest_id());
+            } else {
+                send_packet_to(udp_socket, conn->udp_ip_port, &buffer[0], static_cast<unsigned long>(size));
+                ret = true;
+            }
         }
     }
 
@@ -1293,8 +1422,10 @@ void Networking::run_callbacks(Callback_Ids id, Common_Message *msg)
 
 void Networking::run_callback_user(CSteamID steam_id, bool online, uint32 appid)
 {
+    PRINT_DEBUG("[DISCONNECT-DIAG] run_callback_user: user %llu %s (appid %u, our_appid %u)",
+        (uint64)steam_id.ConvertToUint64(), online ? "CONNECT" : "DISCONNECT", appid, this->appid);
     //only give callbacks for right game accounts
-    if (steam_id.BIndividualAccount() && appid != this->appid && appid != LOBBY_CONNECT_APPID) return;
+    if (steam_id.BIndividualAccount() && appid != this->appid && appid != LOBBY_CONNECT_APPID && !crossapp_messaging) return;
 
     Common_Message msg{};
     msg.set_source_id(steam_id.ConvertToUint64());
@@ -1342,6 +1473,34 @@ void Networking::rmCallback(Callback_Ids id, CSteamID steam_id, void (*message_c
 uint32 Networking::getOwnIP()
 {
     return own_ip;
+}
+
+int Networking::getAdapters(AdapterInfo *out, int max_count)
+{
+    if (!out || max_count <= 0 || number_broadcasts < 0) return 0;
+    int count = (std::min)(max_count, number_broadcasts);
+    for (int i = 0; i < count; ++i) {
+        out[i].ip = adapter_own_ips[i];
+        out[i].lower = lower_range_ips[i];
+        out[i].upper = upper_range_ips[i];
+        out[i].prefix_len = adapter_prefix_len[i];
+        memcpy(out[i].name, adapter_names[i], sizeof(out[i].name));
+    }
+    return count;
+}
+
+int Networking::getConnectedUsers(CSteamID *out, int max_count)
+{
+    if (!out || max_count <= 0) return 0;
+    int written = 0;
+    for (auto &conn : connections) {
+        if (!conn.connected) continue;
+        for (auto &id : conn.ids) {
+            if (written >= max_count) return written;
+            out[written++] = id;
+        }
+    }
+    return written;
 }
 
 void Networking::startQuery(IP_PORT ip_port)

@@ -40,6 +40,12 @@ struct Data_Requested {
     std::chrono::high_resolution_clock::time_point requested{};
 };
 
+struct Pending_Lobby_Join_Request {
+    CSteamID lobby_id{};
+    CSteamID requester_id{};
+    std::chrono::high_resolution_clock::time_point requested{};
+};
+
 struct Filter_Values {
     std::string key{};
     std::string value_string{};
@@ -89,6 +95,9 @@ public ISteamMatchmaking
 
     std::vector<struct Chat_Entry> chat_entries{};
     std::vector<struct Data_Requested> data_requested{};
+    std::vector<struct Pending_Lobby_Join_Request> pending_lobby_join_requests{};
+    // Track users we explicitly invited so their JOIN is auto-accepted (no notification needed)
+    std::set<std::pair<uint64, uint64>> invited_users{}; // {lobby_id, invitee_id}
 
     std::map<uint64, ::google::protobuf::Map<std::string, std::string>> self_lobby_member_data{};
 
@@ -120,12 +129,29 @@ public ISteamMatchmaking
     void RunCallbacks();
     void Callback(Common_Message *msg);
 
+    void SendJoinResponse(uint64 lobby_id, uint64 requester_id, bool accepted);
+    void HandleJoinResponse(Common_Message *msg);
+    void SendKickMessage(uint64 lobby_id, uint64 member_id);
+    void HandleKickMessage(Common_Message *msg);
+
     static void steam_matchmaking_callback(void *object, Common_Message *msg);
     static void steam_matchmaking_run_every_runcb(void *object);
 
 public:
     Steam_Matchmaking(class Settings *settings, class Local_Storage *local_storage, class Networking *network, class SteamCallResults *callback_results, class SteamCallBacks *callbacks, class RunEveryRunCB *run_every_runcb);
     ~Steam_Matchmaking();
+
+    // Lobby join request accept/decline (called by overlay)
+    void AcceptLobbyJoinRequest(uint64 lobby_id, uint64 requester_id);
+    void DeclineLobbyJoinRequest(uint64 lobby_id, uint64 requester_id);
+    const std::vector<struct Pending_Lobby_Join_Request>& GetPendingLobbyJoinRequests() const { return pending_lobby_join_requests; }
+
+    // Lobby chat entries accessor (called by overlay)
+    const std::vector<struct Chat_Entry>& GetChatEntries() const { return chat_entries; }
+
+    // Kick members from lobby (called by overlay, owner only)
+    void KickLobbyMember(uint64 lobby_id, uint64 member_id);
+    void KickAllLobbyMembers(uint64 lobby_id);
 
     // game server favorites storage
     // saves basic details about a multiplayer game server locally

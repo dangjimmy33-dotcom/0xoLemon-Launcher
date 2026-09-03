@@ -132,7 +132,7 @@ const char translationCopyId[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER
   u8"Copy ID",
 
 	// 9 - French
-  u8"Copy ID",
+  u8"Copier l'ID",
 
 	// 10 - German
   u8"Copy ID",
@@ -228,7 +228,7 @@ const char translationTestAchievement[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATI
   u8"Test achievement",
 
 	// 9 - French
-  u8"Test achievement",
+  u8"Tester le succès",
 
 	// 10 - German
   u8"Test achievement",
@@ -422,7 +422,7 @@ const char translationInviteAll[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUF
   u8"Invite all",
 
 	// 9 - French
-  u8"Invite all",
+  u8"Inviter tout le monde",
 
 	// 10 - German
   u8"Invite all",
@@ -493,7 +493,7 @@ const char translationInviteAll[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUF
 // friends_chat_accept_game_invite
 const char translationJoin[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  u8"Accept Game Invite",
+  u8"Join Lobby",
 
 	// 1 - Arabic
   u8"Accept Game Invite",
@@ -1008,7 +1008,7 @@ const char translationUserPlaying[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_B
   u8"Username: %s (%llu) playing %u",
 
 	// 9 - French
-  u8"Username: %s (%llu) playing %u",
+  u8"Nom d'utilisateur : %s (%llu) joue à %u",
 
 	// 10 - German
   u8"Username: %s (%llu) playing %u",
@@ -1185,7 +1185,7 @@ const char translationTotalTimeText[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION
   u8"Total: %s  Session: %s",
 
 	// 4 - Traditional Chinese
-  u8"Total: %s  Session: %s",
+  u8"合计: %s  会话: %s",
 
 	// 5 - Czech
   u8"Total: %s  Session: %s",
@@ -1200,7 +1200,7 @@ const char translationTotalTimeText[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION
   u8"Total: %s  Session: %s",
 
 	// 9 - French
-  u8"Total: %s  Session: %s",
+  u8"Total : %s  Session : %s",
 
 	// 10 - German
   u8"Total: %s  Session: %s",
@@ -1296,7 +1296,7 @@ const char translationRenderer[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
   u8"Renderer: %s",
 
 	// 9 - French
-  u8"Renderer: %s",
+  u8"Moteur de rendu : %s",
 
 	// 10 - German
   u8"Renderer: %s",
@@ -1392,7 +1392,7 @@ const char translationToggleUserInfo[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATIO
   u8"Toggle User Info",
 
 	// 9 - French
-  u8"Toggle User Info",
+  u8"Afficher/masquer les infos utilisateur",
 
 	// 10 - German
   u8"Toggle User Info",
@@ -1488,7 +1488,7 @@ const char translationShowAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLAT
   u8"Show Achievements",
 
 	// 9 - French
-  u8"Show Achievements",
+  u8"Afficher les succès",
 
 	// 10 - German
   u8"Show Achievements",
@@ -1682,7 +1682,7 @@ const char translationHistory[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFE
   u8"History",
 
 	// 9 - French
-  u8"History",
+  u8"Historique",
 
 	// 10 - German
   u8"History",
@@ -1760,7 +1760,7 @@ const char translationScreenshots[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_B
   u8"Screenshots",
 
 	// 3 - Simplified Chinese
-  u8"Screenshots",
+  u8"截图",
 
 	// 4 - Traditional Chinese
   u8"Screenshots",
@@ -1778,7 +1778,7 @@ const char translationScreenshots[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_B
   u8"Screenshots",
 
 	// 9 - French
-  u8"Screenshots",
+  u8"Captures d'écran",
 
 	// 10 - German
   u8"Screenshots",
@@ -1972,7 +1972,7 @@ const char translationNoNotification[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATIO
   u8"No notifications yet",
 
 	// 9 - French
-  u8"No notifications yet",
+  u8"Aucune notification pour le moment",
 
 	// 10 - German
   u8"No notifications yet",
@@ -2068,7 +2068,7 @@ const char translationClearAll[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
   u8"Clear All",
 
 	// 9 - French
-  u8"Clear All",
+  u8"Tout effacer",
 
 	// 10 - German
   u8"Clear All",
@@ -2146,7 +2146,7 @@ const char translationHistoryChat[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_B
   u8"Chat",
 
 	// 3 - Simplified Chinese
-  u8"Chat",
+  u8"聊天",
 
 	// 4 - Traditional Chinese
   u8"Chat",
@@ -2242,7 +2242,7 @@ const char translationHistoryInvite[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION
   u8"Invite",
 
 	// 3 - Simplified Chinese
-  u8"Invite",
+  u8"邀请",
 
 	// 4 - Traditional Chinese
   u8"Invite",
@@ -2260,7 +2260,7 @@ const char translationHistoryInvite[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION
   u8"Invite",
 
 	// 9 - French
-  u8"Invite",
+  u8"Inviter",
 
 	// 10 - German
   u8"Invite",
@@ -2338,7 +2338,7 @@ const char translationHistoryAchievement[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSL
   u8"Achievement",
 
 	// 3 - Simplified Chinese
-  u8"Achievement",
+  u8"成就",
 
 	// 4 - Traditional Chinese
   u8"Achievement",
@@ -2356,7 +2356,7 @@ const char translationHistoryAchievement[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSL
   u8"Achievement",
 
 	// 9 - French
-  u8"Achievement",
+  u8"Succès",
 
 	// 10 - German
   u8"Achievement",
@@ -2434,7 +2434,7 @@ const char translationHistoryProgress[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATI
   u8"Progress",
 
 	// 3 - Simplified Chinese
-  u8"Progress",
+  u8"进度",
 
 	// 4 - Traditional Chinese
   u8"Progress",
@@ -2452,7 +2452,7 @@ const char translationHistoryProgress[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATI
   u8"Progress",
 
 	// 9 - French
-  u8"Progress",
+  u8"Progression",
 
 	// 10 - German
   u8"Progress",
@@ -2530,7 +2530,7 @@ const char translationHistoryAutoInvite[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLA
   u8"Auto-Invite",
 
 	// 3 - Simplified Chinese
-  u8"Auto-Invite",
+  u8"自动邀请",
 
 	// 4 - Traditional Chinese
   u8"Auto-Invite",
@@ -2548,7 +2548,7 @@ const char translationHistoryAutoInvite[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLA
   u8"Auto-Invite",
 
 	// 9 - French
-  u8"Auto-Invite",
+  u8"Invitation automatique",
 
 	// 10 - German
   u8"Auto-Invite",
@@ -2626,7 +2626,7 @@ const char translationHistoryScreenshot[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLA
   u8"Screenshot",
 
 	// 3 - Simplified Chinese
-  u8"Screenshot",
+  u8"截图",
 
 	// 4 - Traditional Chinese
   u8"Screenshot",
@@ -2644,7 +2644,7 @@ const char translationHistoryScreenshot[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLA
   u8"Screenshot",
 
 	// 9 - French
-  u8"Screenshot",
+  u8"Capture d'écran",
 
 	// 10 - German
   u8"Screenshot",
@@ -2740,7 +2740,7 @@ const char translationShow[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_S
   u8"Show",
 
 	// 9 - French
-  u8"Show",
+  u8"Afficher",
 
 	// 10 - German
   u8"Show",
@@ -2836,7 +2836,7 @@ const char translationUnlocked[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
   u8"Unlocked",
 
 	// 9 - French
-  u8"Unlocked",
+  u8"Déverrouillé",
 
 	// 10 - German
   u8"Unlocked",
@@ -2932,7 +2932,7 @@ const char translationNoUnlockedAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TR
   u8"No achievements unlocked yet",
 
 	// 9 - French
-  u8"No achievements unlocked yet",
+  u8"Aucun succès n'a encore été débloqué",
 
 	// 10 - German
   u8"No achievements unlocked yet",
@@ -3028,7 +3028,7 @@ const char translationLocked[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER
   u8"Locked",
 
 	// 9 - French
-  u8"Locked",
+  u8"Verrouillé",
 
 	// 10 - German
   u8"Locked",
@@ -3124,7 +3124,7 @@ const char translationAllAchievementsUnlocked[TRANSLATION_NUMBER_OF_LANGUAGES][T
   u8"All achievements unlocked!",
 
 	// 9 - French
-  u8"All achievements unlocked!",
+  u8"Tous les succès ont été débloqués !",
 
 	// 10 - German
   u8"All achievements unlocked!",
@@ -3220,7 +3220,7 @@ const char translationAchievementWindow[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLA
   u8"Achievement Window",
 
 	// 9 - French
-  u8"Achievement Window",
+  u8"Fenêtre des succès",
 
 	// 10 - German
   u8"Achievement Window",
@@ -3316,7 +3316,7 @@ const char translationListOfAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSL
   u8"List of achievements",
 
 	// 9 - French
-  u8"List of achievements",
+  u8"Liste des succès",
 
 	// 10 - German
   u8"List of achievements",
@@ -3412,7 +3412,7 @@ const char translationAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_
   u8"Achievements",
 
 	// 9 - French
-  u8"Achievements",
+  u8"Succès",
 
 	// 10 - German
   u8"Achievements",
@@ -3481,13 +3481,13 @@ const char translationAchievements[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_
 
 const char translationHiddenAchievement[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
-  u8"hidden achievement",
+  u8"Hidden Achievement",
 
 	// 1 - Arabic
-  u8"hidden achievement",
+  u8"إنجاز مخفي",
 
 	// 2 - Bulgarian
-  u8"hidden achievement",
+  u8"Скрито постижение",
 
 	// 3 - Simplified Chinese
   u8"隐藏成就",
@@ -3499,52 +3499,52 @@ const char translationHiddenAchievement[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLA
   u8"Skrytý achievement",
 
 	// 6 - Danish
-  u8"hidden achievement",
+  u8"Skjult præstation",
 
 	// 7 - Dutch
-  u8"hidden achievement",
+  u8"Verborgen prestatie",
 
 	// 8 - Finnish
-  u8"hidden achievement",
+  u8"Piilotettu saavutus",
 
 	// 9 - French
-  u8"hidden achievement",
+  u8"Succès caché",
 
 	// 10 - German
-  u8"hidden achievement",
+  u8"Verstecktes Achievement",
 
 	// 11 - Greek
-  u8"hidden achievement",
+  u8"Κρυφό επίτευγμα",
 
 	// 12 - Hungarian
-  u8"hidden achievement",
+  u8"Rejtett teljesítmény",
 
 	// 13 - Italian
-  u8"hidden achievement",
+  u8"Obiettivo nascosto",
 
 	// 14 - Japanese
-  u8"hidden achievement",
+  u8"非表示の実績",
 
 	// 15 - Korean
-  u8"hidden achievement",
+  u8"숨겨진 도전 과제",
 
 	// 16 - Norwegian
-  u8"hidden achievement",
+  u8"Skjult prestasjon",
 
 	// 17 - Polish
-  u8"ukryte osiągnięcie",
+  u8"Ukryte osiągnięcie",
 
 	// 18 - Portuguese
-  u8"hidden achievement",
+  u8"Troféu oculto",
 
 	// 19 - Brazilian Portuguese
-  u8"conquista oculta",
+  u8"Conquista oculta",
 
 	// 20 - Romanian
-  u8"hidden achievement",
+  u8"Realizare ascunsă",
 
 	// 21 - Russian
-  u8"скрытое достижение",
+  u8"Скрытое достижение",
 
 	// 22 - Spanish
   u8"Logro oculto",
@@ -3553,25 +3553,25 @@ const char translationHiddenAchievement[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLA
   u8"Logro oculto",
 
 	// 24 - Swedish
-  u8"hidden achievement",
+  u8"Dold utmärkelse",
 
 	// 25 - Thai
-  u8"hidden achievement",
+  u8"ความสำเร็จที่ซ่อนอยู่",
 
 	// 26 - Turkish
   u8"Gizli Başarım",
 
 	// 27 - Ukrainian
-  u8"hidden achievement",
+  u8"Приховане досягнення",
 
 	// 28 - Vietnamese
-  u8"hidden achievement",
+  u8"Thành tích ẩn",
 
 	// 29 - Croatian
-  u8"Sakrivena postignuća",
-  
+  u8"Skriveno postignuće",
+
   // 30 - Indonesian
-  u8"hidden achievement",
+  u8"Pencapaian tersembunyi",
   
 };
 
@@ -3604,7 +3604,7 @@ const char translationAchievedOn[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BU
   u8"achieved on %s",
 
 	// 9 - French
-  u8"achieved on %s",
+  u8"obtenu le %s",
 
 	// 10 - German
   u8"achieved on %s",
@@ -3700,7 +3700,7 @@ const char translationNotAchieved[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_B
   u8"not achieved",
 
 	// 9 - French
-  u8"not achieved",
+  u8"non obtenu",
 
 	// 10 - German
   u8"not achieved",
@@ -3767,6 +3767,71 @@ const char translationNotAchieved[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_B
   
 };
 
+const char translationGlobalAchievementPercent[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
+	// 0 - English
+  u8"%.1f%% of all players have this achievement",
+	// 1 - Arabic
+  u8"%.1f%% of all players have this achievement",
+	// 2 - Bulgarian
+  u8"%.1f%% of all players have this achievement",
+	// 3 - Simplified Chinese
+  u8"%.1f%% 的玩家拥有此成就",
+	// 4 - Traditional Chinese
+  u8"%.1f%% 的玩家擁有此成就",
+	// 5 - Czech
+  u8"%.1f%% hráčů má toto úspěch",
+	// 6 - Danish
+  u8"%.1f%% of all players have this achievement",
+	// 7 - Dutch
+  u8"%.1f%% of all players have this achievement",
+	// 8 - Finnish
+  u8"%.1f%% of all players have this achievement",
+	// 9 - French
+  u8"%.1f%% des joueurs ont ce succès",
+	// 10 - German
+  u8"%.1f%% aller Spieler haben diesen Erfolg",
+	// 11 - Greek
+  u8"%.1f%% of all players have this achievement",
+	// 12 - Hungarian
+  u8"%.1f%% of all players have this achievement",
+	// 13 - Italian
+  u8"%.1f%% of all players have this achievement",
+	// 14 - Japanese
+  u8"%.1f%% of all players have this achievement",
+	// 15 - Korean
+  u8"%.1f%% of all players have this achievement",
+	// 16 - Norwegian
+  u8"%.1f%% of all players have this achievement",
+	// 17 - Polish
+  u8"%.1f%% graczy ma to osiągnięcie",
+	// 18 - Portuguese
+  u8"%.1f%% of all players have this achievement",
+	// 19 - Brazilian Portuguese
+  u8"%.1f%% de todos os jogadores têm esta conquista",
+	// 20 - Romanian
+  u8"%.1f%% of all players have this achievement",
+	// 21 - Russian
+  u8"%.1f%% всех игроков имеют это достижение",
+	// 22 - Spanish
+  u8"%.1f%% de todos los jugadores tienen este logro",
+	// 23 - Latin American
+  u8"%.1f%% de todos los jugadores tienen este logro",
+	// 24 - Swedish
+  u8"%.1f%% of all players have this achievement",
+	// 25 - Thai
+  u8"%.1f%% of all players have this achievement",
+	// 26 - Turkish
+  u8"%.1f%% oyuncunun bu başarımı var",
+	// 27 - Ukrainian
+  u8"%.1f%% of all players have this achievement",
+	// 28 - Vietnamese
+  u8"%.1f%% of all players have this achievement",
+	// 29 - Croatian
+  u8"%.1f%% of all players have this achievement",
+  // 30 - Indonesian
+  u8"%.1f%% of all players have this achievement",
+};
+
 const char translationGlobalSettingsWindow[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZE] = {
 	// 0 - English
   u8"Global Settings Window",
@@ -3796,7 +3861,7 @@ const char translationGlobalSettingsWindow[TRANSLATION_NUMBER_OF_LANGUAGES][TRAN
   u8"Global Settings Window",
 
 	// 9 - French
-  u8"Global Settings Window",
+  u8"Fenêtre des paramètres globaux",
 
 	// 10 - German
   u8"Global Settings Window",
@@ -3892,7 +3957,7 @@ const char translationGlobalSettingsWindowDescription[TRANSLATION_NUMBER_OF_LANG
   u8"These are global emulator settings and will apply to all games.",
 
 	// 9 - French
-  u8"These are global emulator settings and will apply to all games.",
+  u8"Ce sont des paramètres globaux de l'émulateur qui s'appliqueront à tous les jeux.",
 
 	// 10 - German
   u8"These are global emulator settings and will apply to all games.",
@@ -3988,7 +4053,7 @@ const char translationUsername[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
   u8"Username:",
 
 	// 9 - French
-  u8"Username:",
+  u8"Nom d'utilisateur :",
 
 	// 10 - German
   u8"Username:",
@@ -4084,7 +4149,7 @@ const char translationLanguage[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
   u8"Language:",
 
 	// 9 - French
-  u8"Language:",
+  u8"Langue :",
 
 	// 10 - German
   u8"Language:",
@@ -4180,7 +4245,7 @@ const char translationSelectedLanguage[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLAT
   u8"Selected Language: %s",
 
 	// 9 - French
-  u8"Selected Language: %s",
+  u8"Langue sélectionnée : %s",
 
 	// 10 - German
   u8"Selected Language: %s",
@@ -4276,7 +4341,7 @@ const char translationRestartTheGameToApply[TRANSLATION_NUMBER_OF_LANGUAGES][TRA
   u8"You may have to restart the game for these to apply.",
 
 	// 9 - French
-  u8"You may have to restart the game for these to apply.",
+  u8"Vous devrez peut-être redémarrer le jeu pour que les modifications prennent effet.",
 
 	// 10 - German
   u8"You may have to restart the game for these to apply.",
@@ -4372,7 +4437,7 @@ const char translationSave[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_S
   u8"Save",
 
 	// 9 - French
-  u8"Save",
+  u8"Enregistrer",
 
 	// 10 - German
   u8"Save",
@@ -4468,7 +4533,7 @@ const char translationWarning[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFE
   u8"WARNING",
 
 	// 9 - French
-  u8"WARNING",
+  u8"AVERTISSEMENT",
 
 	// 10 - German
   u8"WARNING",
@@ -4564,7 +4629,7 @@ const char translationWarningDescription_badAppid[TRANSLATION_NUMBER_OF_LANGUAGE
   u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
 
 	// 9 - French
-  u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
+  u8"AppID est 0, veuillez créer steam_appid.txt contenant le bon AppID et redémarrer le jeu.",
 
 	// 10 - German
   u8"AppID is 0, please create a steam_appid.txt with the right appid and restart the game.",
@@ -4660,7 +4725,7 @@ const char translationWarningDescription_localSave[TRANSLATION_NUMBER_OF_LANGUAG
   u8"local_save_path detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
 
 	// 9 - French
-  u8"local_save_path detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
+  u8"local_save_path détecté, l’émulateur enregistre localement dans le dossier du jeu. Veuillez le supprimer si vous ne le souhaitez pas.",
 
 	// 10 - German
   u8"local_save_path detected, the emu is saving locally to the game folder. Please delete it if you don't want this.",
@@ -4756,7 +4821,7 @@ const char translationSteamOverlayURL[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATI
   u8"The game tried to get the steam overlay to open this url:",
 
 	// 9 - French
-  u8"The game tried to get the steam overlay to open this url:",
+  u8"Le jeu a voulu ouvrir cette URL par l’overlay Steam :",
 
 	// 10 - German
   u8"The game tried to get the steam overlay to open this url:",
@@ -4950,7 +5015,7 @@ const char translationPlaying[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFE
   u8"playing",
 
 	// 9 - French
-  u8"playing",
+  u8"joue à",
 
 	// 10 - German
   u8"playing",
@@ -5028,7 +5093,7 @@ const char translationScreenshotSaved[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATI
   u8"Screenshot saved: ",
 
 	// 3 - Simplified Chinese
-  u8"Screenshot saved: ",
+  u8"已保存截图：",
 
 	// 4 - Traditional Chinese
   u8"Screenshot saved: ",
@@ -5046,7 +5111,7 @@ const char translationScreenshotSaved[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATI
   u8"Screenshot saved: ",
 
 	// 9 - French
-  u8"Screenshot saved: ",
+  u8"Capture d'écran enregistrée : ",
 
 	// 10 - German
   u8"Screenshot saved: ",
@@ -5124,7 +5189,7 @@ const char translationUnpinAll[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
   u8"Unpin all",
 
 	// 3 - Simplified Chinese
-  u8"Unpin all",
+  u8"取消所有置顶",
 
 	// 4 - Traditional Chinese
   u8"Unpin all",
@@ -5142,7 +5207,7 @@ const char translationUnpinAll[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFF
   u8"Unpin all",
 
 	// 9 - French
-  u8"Unpin all",
+  u8"Désépingler tout",
 
 	// 10 - German
   u8"Unpin all",
@@ -5220,7 +5285,7 @@ const char translationDeleteSelected[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATIO
   u8"Delete selected",
 
 	// 3 - Simplified Chinese
-  u8"Delete selected",
+  u8"删除所选项",
 
 	// 4 - Traditional Chinese
   u8"Delete selected",
@@ -5238,7 +5303,7 @@ const char translationDeleteSelected[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATIO
   u8"Delete selected",
 
 	// 9 - French
-  u8"Delete selected",
+  u8"Supprimer la sélection",
 
 	// 10 - German
   u8"Delete selected",
@@ -5316,7 +5381,7 @@ const char translationOpenFolder[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BU
   u8"Open Folder",
 
 	// 3 - Simplified Chinese
-  u8"Open Folder",
+  u8"打开文件夹",
 
 	// 4 - Traditional Chinese
   u8"Open Folder",
@@ -5334,7 +5399,7 @@ const char translationOpenFolder[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BU
   u8"Open Folder",
 
 	// 9 - French
-  u8"Open Folder",
+  u8"Ouvrir le dossier",
 
 	// 10 - German
   u8"Open Folder",
@@ -5412,7 +5477,7 @@ const char translationNoScreenshotsYet[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLAT
   u8"No screenshots yet",
 
 	// 3 - Simplified Chinese
-  u8"No screenshots yet",
+  u8"暂无截图",
 
 	// 4 - Traditional Chinese
   u8"No screenshots yet",
@@ -5430,7 +5495,7 @@ const char translationNoScreenshotsYet[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLAT
   u8"No screenshots yet",
 
 	// 9 - French
-  u8"No screenshots yet",
+  u8"Aucune capture d’écran pour le moment",
 
 	// 10 - German
   u8"No screenshots yet",
@@ -5508,7 +5573,7 @@ const char translationDelete[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER
   u8"Delete",
 
 	// 3 - Simplified Chinese
-  u8"Delete",
+  u8"删除",
 
 	// 4 - Traditional Chinese
   u8"Delete",
@@ -5526,7 +5591,7 @@ const char translationDelete[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER
   u8"Delete",
 
 	// 9 - French
-  u8"Delete",
+  u8"Supprimer",
 
 	// 10 - German
   u8"Delete",
@@ -5604,7 +5669,7 @@ const char translationScreenshotPreview[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLA
   u8"Screenshot Preview",
 
 	// 3 - Simplified Chinese
-  u8"Screenshot Preview",
+  u8"截图预览",
 
 	// 4 - Traditional Chinese
   u8"Screenshot Preview",
@@ -5622,7 +5687,7 @@ const char translationScreenshotPreview[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLA
   u8"Screenshot Preview",
 
 	// 9 - French
-  u8"Screenshot Preview",
+  u8"Aperçu de la capture d'écran",
 
 	// 10 - German
   u8"Screenshot Preview",
@@ -5700,7 +5765,7 @@ const char translationPrev[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_S
   u8"< Prev",
 
 	// 3 - Simplified Chinese
-  u8"< Prev",
+  u8"< 上一项",
 
 	// 4 - Traditional Chinese
   u8"< Prev",
@@ -5718,7 +5783,7 @@ const char translationPrev[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_S
   u8"< Prev",
 
 	// 9 - French
-  u8"< Prev",
+  u8"< Préc.",
 
 	// 10 - German
   u8"< Prev",
@@ -5796,7 +5861,7 @@ const char translationPin[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SI
   u8"Pin",
 
 	// 3 - Simplified Chinese
-  u8"Pin",
+  u8"置顶",
 
 	// 4 - Traditional Chinese
   u8"Pin",
@@ -5814,7 +5879,7 @@ const char translationPin[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SI
   u8"Pin",
 
 	// 9 - French
-  u8"Pin",
+  u8"Épingler",
 
 	// 10 - German
   u8"Pin",
@@ -5892,7 +5957,7 @@ const char translationCrop[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_S
   u8"Crop",
 
 	// 3 - Simplified Chinese
-  u8"Crop",
+  u8"裁剪",
 
 	// 4 - Traditional Chinese
   u8"Crop",
@@ -5910,7 +5975,7 @@ const char translationCrop[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_S
   u8"Crop",
 
 	// 9 - French
-  u8"Crop",
+  u8"Recadrer",
 
 	// 10 - German
   u8"Crop",
@@ -5988,7 +6053,7 @@ const char translationNext[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_S
   u8"Next >",
 
 	// 3 - Simplified Chinese
-  u8"Next >",
+  u8"下一项 >",
 
 	// 4 - Traditional Chinese
   u8"Next >",
@@ -6006,7 +6071,7 @@ const char translationNext[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_S
   u8"Next >",
 
 	// 9 - French
-  u8"Next >",
+  u8"Suiv. >",
 
 	// 10 - German
   u8"Next >",
@@ -6084,7 +6149,7 @@ const char translationDeleteThisScreenshot[TRANSLATION_NUMBER_OF_LANGUAGES][TRAN
   u8"Delete this screenshot?",
 
 	// 3 - Simplified Chinese
-  u8"Delete this screenshot?",
+  u8"是否删除该截图？",
 
 	// 4 - Traditional Chinese
   u8"Delete this screenshot?",
@@ -6102,7 +6167,7 @@ const char translationDeleteThisScreenshot[TRANSLATION_NUMBER_OF_LANGUAGES][TRAN
   u8"Delete this screenshot?",
 
 	// 9 - French
-  u8"Delete this screenshot?",
+  u8"Supprimer cette capture d'écran ?",
 
 	// 10 - German
   u8"Delete this screenshot?",
@@ -6180,7 +6245,7 @@ const char translationDeleteAllScelectedScreenshots[TRANSLATION_NUMBER_OF_LANGUA
   u8"Delete all selected screenshots?",
 
 	// 3 - Simplified Chinese
-  u8"Delete all selected screenshots?",
+  u8"是否删除所有截图？",
 
 	// 4 - Traditional Chinese
   u8"Delete all selected screenshots?",
@@ -6198,7 +6263,7 @@ const char translationDeleteAllScelectedScreenshots[TRANSLATION_NUMBER_OF_LANGUA
   u8"Delete all selected screenshots?",
 
 	// 9 - French
-  u8"Delete all selected screenshots?",
+  u8"Supprimer toutes les captures d'écran sélectionnées ?",
 
 	// 10 - German
   u8"Delete all selected screenshots?",
@@ -6276,7 +6341,7 @@ const char translationYes[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SI
   u8"Yes",
 
 	// 3 - Simplified Chinese
-  u8"Yes",
+  u8"是",
 
 	// 4 - Traditional Chinese
   u8"Yes",
@@ -6294,7 +6359,7 @@ const char translationYes[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SI
   u8"Yes",
 
 	// 9 - French
-  u8"Yes",
+  u8"Oui",
 
 	// 10 - German
   u8"Yes",
@@ -6372,7 +6437,7 @@ const char translationNo[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZ
   u8"No",
 
 	// 3 - Simplified Chinese
-  u8"No",
+  u8"否",
 
 	// 4 - Traditional Chinese
   u8"No",
@@ -6390,7 +6455,7 @@ const char translationNo[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER_SIZ
   u8"No",
 
 	// 9 - French
-  u8"No",
+  u8"Non",
 
 	// 10 - German
   u8"No",
@@ -6468,7 +6533,7 @@ const char translationConfirmDelete[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION
   u8"Confirm Delete",
 
 	// 3 - Simplified Chinese
-  u8"Confirm Delete",
+  u8"确认删除",
 
 	// 4 - Traditional Chinese
   u8"Confirm Delete",
@@ -6486,7 +6551,7 @@ const char translationConfirmDelete[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION
   u8"Confirm Delete",
 
 	// 9 - French
-  u8"Confirm Delete",
+  u8"Confirmer la suppression",
 
 	// 10 - German
   u8"Confirm Delete",
@@ -6564,7 +6629,7 @@ const char translationConfirm[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFE
   u8"Confirm",
 
 	// 3 - Simplified Chinese
-  u8"Confirm",
+  u8"确认",
 
 	// 4 - Traditional Chinese
   u8"Confirm",
@@ -6582,7 +6647,7 @@ const char translationConfirm[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFE
   u8"Confirm",
 
 	// 9 - French
-  u8"Confirm",
+  u8"Confirmer",
 
 	// 10 - German
   u8"Confirm",
@@ -6660,7 +6725,7 @@ const char translationCancel[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER
   u8"Cancel",
 
 	// 3 - Simplified Chinese
-  u8"Cancel",
+  u8"取消",
 
 	// 4 - Traditional Chinese
   u8"Cancel",
@@ -6678,7 +6743,7 @@ const char translationCancel[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFER
   u8"Cancel",
 
 	// 9 - French
-  u8"Cancel",
+  u8"Annuler",
 
 	// 10 - German
   u8"Cancel",
@@ -6756,7 +6821,7 @@ const char translationPinnedScreenshots[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLA
   u8"Pinned Screenshot###pinned_ss_%llu",
 
 	// 3 - Simplified Chinese
-  u8"Pinned Screenshot###pinned_ss_%llu",
+  u8"置顶截图###pinned_ss_%llu",
 
 	// 4 - Traditional Chinese
   u8"Pinned Screenshot###pinned_ss_%llu",
@@ -6774,7 +6839,7 @@ const char translationPinnedScreenshots[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLA
   u8"Pinned Screenshot###pinned_ss_%llu",
 
 	// 9 - French
-  u8"Pinned Screenshot###pinned_ss_%llu",
+  u8"Capture d'écran épinglée###pinned_ss_%llu",
 
 	// 10 - German
   u8"Pinned Screenshot###pinned_ss_%llu",
@@ -6852,7 +6917,7 @@ const char translationOpacity[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFE
   u8"Opacity",
 
 	// 3 - Simplified Chinese
-  u8"Opacity",
+  u8"透明度",
 
 	// 4 - Traditional Chinese
   u8"Opacity",
@@ -6870,7 +6935,7 @@ const char translationOpacity[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATION_BUFFE
   u8"Opacity",
 
 	// 9 - French
-  u8"Opacity",
+  u8"Opacité",
 
 	// 10 - German
   u8"Opacity",
@@ -6966,7 +7031,7 @@ const char translationAutoAcceptFriendInvite[TRANSLATION_NUMBER_OF_LANGUAGES][TR
   u8"Invitations are controlled by auto_accept_invite.txt!",
 
 	// 9 - French
-  u8"Invitations are controlled by auto_accept_invite.txt!",
+  u8"Les invitations sont gérées par auto_accept_invite.txt !",
 
 	// 10 - German
   u8"Invitations are controlled by auto_accept_invite.txt!",
@@ -7542,7 +7607,7 @@ const char translationPlaytimeCheckbox[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLAT
   u8"Playtime",
 
 	// 9 - French
-  u8"Playtime",
+  u8"Temps de jeu",
 
 	// 10 - German
   u8"Playtime",
@@ -7638,7 +7703,7 @@ const char translationPlaytimeDisplay[TRANSLATION_NUMBER_OF_LANGUAGES][TRANSLATI
   u8"PLT: ",
 
 	// 9 - French
-  u8"PLT: ",
+  u8"TdJ: ",
 
 	// 10 - German
   u8"PLT: ",

@@ -13,6 +13,7 @@
 #include <pwd.h>
 #include <unistd.h>
 #include <sys/inotify.h>
+#include <limits.h>
 #include "yaml_parser.h"
 #include "xdg.h"
 
@@ -102,29 +103,44 @@ static std::string LoadNamespaceAppsFromSLSsteam() {
     return {};
 }
 
-// Watch SLSsteam config for changes; re-read AdditionalApps on modify.
 static void WatchSLSsteamConfig(std::string configPath) {
+    std::string watchDir = ".";
+    std::string targetName = configPath;
+    if (auto slash = configPath.find_last_of('/'); slash != std::string::npos) {
+        watchDir = configPath.substr(0, slash);
+        targetName = configPath.substr(slash + 1);
+    }
+
     int notifyFd = inotify_init();
     if (notifyFd == -1) {
         LOG("[Linux] inotify_init failed: %s", strerror(errno));
         return;
     }
-    int wd = inotify_add_watch(notifyFd, configPath.c_str(), IN_MODIFY);
+    int wd = inotify_add_watch(notifyFd, watchDir.c_str(),
+                               IN_CLOSE_WRITE | IN_MOVED_TO | IN_CREATE);
     if (wd == -1) {
-        LOG("[Linux] inotify_add_watch %s failed: %s", configPath.c_str(), strerror(errno));
+        LOG("[Linux] inotify_add_watch %s failed: %s", watchDir.c_str(), strerror(errno));
         close(notifyFd);
         return;
     }
     g_watcherFd.store(notifyFd, std::memory_order_release);
-    LOG("[Linux] Watching SLSsteam config for changes: %s", configPath.c_str());
+    LOG("[Linux] Watching SLSsteam config dir for changes: %s (target: %s)",
+        watchDir.c_str(), targetName.c_str());
 
+    alignas(inotify_event) char buf[sizeof(inotify_event) + NAME_MAX + 1];
     for (;;) {
-        inotify_event event{};
-        ssize_t n = read(notifyFd, &event, sizeof(event));
+        ssize_t n = read(notifyFd, buf, sizeof(buf));
         if (n <= 0) {
             if (n == -1 && errno == EINTR) continue;
             break;
         }
+        bool hit = false;
+        for (char* p = buf; p < buf + n; ) {
+            auto* ev = reinterpret_cast<inotify_event*>(p);
+            if (ev->len > 0 && targetName == ev->name) hit = true;
+            p += sizeof(inotify_event) + ev->len;
+        }
+        if (!hit) continue;
         int added = 0;
         if (LoadNamespaceAppsFrom(configPath, &added) && added > 0) {
             LOG("[Linux] SLSsteam config change: registered %d new namespace app(s)", added);

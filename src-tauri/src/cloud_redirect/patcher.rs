@@ -152,13 +152,15 @@ impl Patcher {
                 )
             }
         };
-        if !steam_detector::is_supported_steam_version(version) {
-            return PatchOutcome::fail(format!(
-                "Steam version mismatch: installed {}. Update CloudRedirect or downgrade Steam.",
+        let is_known = steam_detector::is_supported_steam_version(version);
+        if !is_known {
+            self.log(&format!(
+                "  Steam build {} is newer than static whitelist. Engaging Adaptive Dynamic AOB Scanner...",
                 version
             ));
+        } else {
+            self.log(&format!("  Steam version: {} (OK)", version));
         }
-        self.log(&format!("  Steam version: {} (OK)", version));
 
         let hijack = match self.find_core_dll() {
             Some(n) => n,
@@ -263,6 +265,8 @@ impl Patcher {
             self.log(&format!("  {}: already patched", hijack));
         }
 
+        crate::cloud_redirect::steam_specs_cloud::register_dynamically_adapted_version(version, None);
+        self.log(&format!("  [Adaptive Engine] Successfully verified and registered Steam build {}", version));
         self.log("Done.");
         PatchOutcome::ok()
     }

@@ -83,6 +83,7 @@ public ISteamNetworkingSockets008,
 public ISteamNetworkingSockets009,
 public ISteamNetworkingSockets010,
 public ISteamNetworkingSockets011,
+public ISteamNetworkingSockets012,
 public ISteamNetworkingSockets
 {
     class Settings *settings{};
@@ -93,6 +94,8 @@ public ISteamNetworkingSockets
 
     struct shared_between_client_server *sbcs{};
     std::chrono::steady_clock::time_point created{};
+
+    std::string version{};
 
     static const int SNS_DISABLED_PORT = -1;
 
@@ -125,6 +128,9 @@ public ISteamNetworkingSockets
 public:
     Steam_Networking_Sockets(class Settings *settings, class Networking *network, class SteamCallResults *callback_results, class SteamCallBacks *callbacks, class RunEveryRunCB *run_every_runcb, shared_between_client_server *sbcs);
     ~Steam_Networking_Sockets();
+
+    std::string get_version() const;
+    void set_version(const std::string &version);
 
     shared_between_client_server *get_shared_between_client_server();
 
@@ -436,6 +442,7 @@ public:
     /// See ISteamNetworkingSockets::SendMessageToConnection for possible
     /// failure codes.
     void SendMessages( int nMessages, SteamNetworkingMessage_t *const *pMessages, int64 *pOutMessageNumberOrResult );
+    void SendMessages( int nMessages, SteamNetworkingMessage_t **pMessages, int64 *pOutMessageNumberOrResult, bool bDeleteFailedMessages );
 
 
     /// If Nagle is enabled (its on by default) then when calling 
@@ -595,7 +602,7 @@ public:
     /// identity.  Otherwise, if you pass nullptr, the respective connection will assume a generic
     /// "localhost" identity.  If you use real network loopback, this might be translated to the
     /// actual bound loopback port.  Otherwise, the port will be zero.
-    bool CreateSocketPair( HSteamNetConnection *pOutConnection1, HSteamNetConnection *pOutConnection2, bool bUseNetworkLoopback, const SteamNetworkingIdentity *pIdentity1, const SteamNetworkingIdentity *pIdentity2 );
+    bool CreateSocketPair( HSteamNetConnection *pOutConnection1, HSteamNetConnection *pOutConnection2, bool bUseNetworkLoopback, const SteamNetworkingIdentity *pPeerIdentity1, const SteamNetworkingIdentity *pPeerIdentity2 );
 
     /// Configure multiple outbound messages streams ("lanes") on a connection, and
     /// control head-of-line blocking between them.  Messages within a given lane

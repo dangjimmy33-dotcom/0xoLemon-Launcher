@@ -26,8 +26,8 @@ The game using Denuvo: Yes/No
 **Requirement**
 Set x what you completed
 - [x] like this
-- [ ] I am uploaded debug log. 
-- [ ] I am uploaded steam_setting file. 
+- [ ] I have uploaded the debug log. 
+- [ ] I have uploaded the steam_settings file. 
 - [ ] I am sure the game not using 3rd party server (Photon, Playfab, GC, etc). 
 - [ ] I am sure can run the game offline.
 

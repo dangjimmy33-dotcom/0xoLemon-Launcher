@@ -491,7 +491,7 @@ bool Steam_User_Stats::GetDownloadedLeaderboardEntry( SteamLeaderboardEntries_t 
         entry.m_steamIDUser = target_entry.steam_id;
         entry.m_nGlobalRank = 1 + (int)(&target_entry - &board.entries[0]);
         entry.m_nScore = target_entry.score;
-        entry.m_cDetails = target_entry.score_details.size();
+        entry.m_cDetails = static_cast<int32>(target_entry.score_details.size());
         entry.m_hUGC = k_UGCHandleInvalid; // TODO
         
         *pLeaderboardEntry = entry;

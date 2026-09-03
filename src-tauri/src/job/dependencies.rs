@@ -1,373 +1,545 @@
+use std::collections::{HashMap, HashSet};
 use std::env;
 use std::ffi::OsStr;
 use std::fs::{self, File};
 use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
+use std::sync::OnceLock;
 use std::time::Duration;
 
 use reqwest::blocking::Client;
 use reqwest::header::USER_AGENT;
+use serde::Deserialize;
+use sha2::{Digest, Sha256};
 use tauri::{AppHandle, Manager};
 
 use crate::launch::{
     expand_placeholders, is_script_path, process_path, process_working_directory, GameLaunchOption,
 };
 
-use super::{hidden_command, DepotSource, JobError, DEFAULT_GAME_ID};
+use super::{hidden_command, DepotSource, JobError};
 
-// ══════════════════════════════════════════════════════════════
-//  Dependency types
-// ══════════════════════════════════════════════════════════════
+const DEPENDENCY_BUNDLE_JSON: &str = include_str!("../../dependency-bundle.json");
+const MAX_DEPENDENCY_DOWNLOAD_BYTES: u64 = 600 * 1024 * 1024;
+const DOTNET_FRAMEWORK_481_RELEASE: u64 = 533_320;
 
-/// How to detect whether a dependency is already installed on the machine.
-#[derive(Debug, Clone)]
-enum DependencyDetect {
-    /// Query one or more HKLM registry paths; value name is checked for "Installed" == 1
-    /// or for the presence of a non-empty string (for display-version checks).
-    RegistryInstalled {
-        /// HKLM registry path(s) to query. Any one matching counts as "installed".
-        paths: &'static [&'static str],
-        /// Registry value name to look up (e.g. "Installed", "Version").
-        value: &'static str,
-        /// If true the value must equal "0x1" or "1"; if false any non-empty value counts.
-        require_flag: bool,
-    },
-    /// Check whether a specific file or directory exists on disk.
-    PathExists { path: &'static str },
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct DependencyBundle {
+    schema: u32,
+    #[serde(default)]
+    default_dependencies: Vec<String>,
+    #[serde(default)]
+    game_profiles: HashMap<String, Vec<String>>,
+    packages: Vec<DependencyBundlePackage>,
 }
 
-/// Arguments to pass to the installer executable when running silently.
-#[derive(Debug, Clone, Copy)]
-enum InstallerArgs {
-    VcRedist,   // /install /quiet /norestart
-    Dxweb,      // /Q
-    DotNetFull, // /q /norestart
-    EaApp,      // /install /quiet
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct DependencyBundlePackage {
+    id: String,
+    #[serde(default)]
+    aliases: Vec<String>,
+    display_name: String,
+    url: String,
+    download_file_name: String,
+    bundled_path: String,
+    download_sha256: String,
+    payload_sha256: String,
+    minimum_download_bytes: u64,
+    minimum_payload_bytes: u64,
+    #[serde(default)]
+    signature_publisher: Option<String>,
+    #[serde(default)]
+    archive_kind: Option<String>,
+    #[serde(default)]
+    extracted_installer_path: Option<String>,
+    #[serde(default)]
+    extracted_installer_sha256: Option<String>,
+    #[serde(default)]
+    minimum_extracted_installer_bytes: Option<u64>,
+    #[serde(default)]
+    extracted_signature_publisher: Option<String>,
+    installer_kind: String,
 }
 
-impl InstallerArgs {
-    fn as_slice(self) -> &'static [&'static str] {
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum InstallerKind {
+    VcRedist,
+    VcRedistLegacy,
+    DirectXRedist,
+    DotNetFramework,
+    Msi,
+    PhysXRedist,
+    OpenAlRedist,
+    EaApp,
+}
+
+impl InstallerKind {
+    fn arguments(self) -> &'static [&'static str] {
         match self {
-            InstallerArgs::VcRedist => &["/install", "/quiet", "/norestart"],
-            InstallerArgs::Dxweb => &["/Q"],
-            InstallerArgs::DotNetFull => &["/q", "/norestart"],
-            InstallerArgs::EaApp => &["/install", "/quiet"],
+            Self::VcRedist => &["/install", "/quiet", "/norestart"],
+            Self::VcRedistLegacy => &["/q", "/norestart"],
+            Self::DirectXRedist => &["/silent"],
+            Self::DotNetFramework => &["/q", "/norestart"],
+            Self::Msi => &[],
+            Self::PhysXRedist => &["/quiet"],
+            Self::OpenAlRedist => &["/S"],
+            Self::EaApp => &["/install", "/quiet"],
+        }
+    }
+
+    fn accepted_exit_codes(self) -> &'static [i32] {
+        match self {
+            Self::VcRedist | Self::VcRedistLegacy => &[0, 1638, 3010],
+            Self::DotNetFramework => &[0, 1641, 3010],
+            Self::Msi => &[0, 1641, 3010],
+            Self::DirectXRedist | Self::PhysXRedist | Self::OpenAlRedist | Self::EaApp => &[0],
         }
     }
 }
 
 #[derive(Debug, Clone)]
 struct DependencySpec {
-    id: &'static str,
-    display_name: &'static str,
-    url: &'static str,
-    file_name: &'static str,
-    detect: DependencyDetect,
-    installer_args: InstallerArgs,
+    id: String,
+    display_name: String,
+    url: String,
+    file_name: String,
+    bundled_path: Option<String>,
+    download_sha256: Option<String>,
+    payload_sha256: Option<String>,
+    minimum_download_bytes: u64,
+    minimum_payload_bytes: u64,
+    archive_kind: Option<String>,
+    extracted_installer_path: Option<String>,
+    extracted_installer_sha256: Option<String>,
+    minimum_extracted_installer_bytes: Option<u64>,
+    installer_kind: InstallerKind,
 }
 
-// ══════════════════════════════════════════════════════════════
-//  Well-known dependency definitions
-// ══════════════════════════════════════════════════════════════
+static DEPENDENCY_BUNDLE: OnceLock<Result<DependencyBundle, String>> = OnceLock::new();
 
-// ── Visual C++ 2022 ────────────────────────────────────────────
-const VC_REDIST_X64: DependencySpec = DependencySpec {
-    id: "vc-redist-x64-2022",
-    display_name: "Microsoft Visual C++ 2022 Redistributable (x64)",
-    url: "https://aka.ms/vs/17/release/vc_redist.x64.exe",
-    file_name: "vc_redist_2022.x64.exe",
-    detect: DependencyDetect::RegistryInstalled {
-        paths: &[
-            r"HKLM\SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64",
-            r"HKLM\SOFTWARE\WOW6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x64",
-        ],
-        value: "Installed",
-        require_flag: true,
-    },
-    installer_args: InstallerArgs::VcRedist,
-};
-
-const VC_REDIST_X86: DependencySpec = DependencySpec {
-    id: "vc-redist-x86-2022",
-    display_name: "Microsoft Visual C++ 2022 Redistributable (x86)",
-    url: "https://aka.ms/vs/17/release/vc_redist.x86.exe",
-    file_name: "vc_redist_2022.x86.exe",
-    detect: DependencyDetect::RegistryInstalled {
-        paths: &[
-            r"HKLM\SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x86",
-            r"HKLM\SOFTWARE\WOW6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x86",
-        ],
-        value: "Installed",
-        require_flag: true,
-    },
-    installer_args: InstallerArgs::VcRedist,
-};
-
-// ── Visual C++ 2019 ────────────────────────────────────────────
-// VC 2019 (14.2x) and VC 2022 (14.3x) share the same runtime key; having 2022
-// installed fully satisfies a 2019 requirement — detection is intentionally identical.
-const VC_REDIST_X64_2019: DependencySpec = DependencySpec {
-    id: "vc-redist-x64-2019",
-    display_name: "Microsoft Visual C++ 2019 Redistributable (x64)",
-    url: "https://aka.ms/vs/16/release/vc_redist.x64.exe",
-    file_name: "vc_redist_2019.x64.exe",
-    detect: DependencyDetect::RegistryInstalled {
-        paths: &[
-            r"HKLM\SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64",
-            r"HKLM\SOFTWARE\WOW6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x64",
-        ],
-        value: "Installed",
-        require_flag: true,
-    },
-    installer_args: InstallerArgs::VcRedist,
-};
-
-const VC_REDIST_X86_2019: DependencySpec = DependencySpec {
-    id: "vc-redist-x86-2019",
-    display_name: "Microsoft Visual C++ 2019 Redistributable (x86)",
-    url: "https://aka.ms/vs/16/release/vc_redist.x86.exe",
-    file_name: "vc_redist_2019.x86.exe",
-    detect: DependencyDetect::RegistryInstalled {
-        paths: &[
-            r"HKLM\SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x86",
-            r"HKLM\SOFTWARE\WOW6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x86",
-        ],
-        value: "Installed",
-        require_flag: true,
-    },
-    installer_args: InstallerArgs::VcRedist,
-};
-
-// ── Visual C++ 2010 ────────────────────────────────────────────
-// Detected via System32 DLL presence (msvcp100.dll) — the most reliable
-// signal across all Windows versions and patch levels.
-const VC_REDIST_X64_2010: DependencySpec = DependencySpec {
-    id: "vc-redist-x64-2010",
-    display_name: "Microsoft Visual C++ 2010 Redistributable (x64)",
-    url: "https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x64.exe",
-    file_name: "vc_redist_2010.x64.exe",
-    detect: DependencyDetect::PathExists {
-        path: r"C:\Windows\System32\msvcp100.dll",
-    },
-    installer_args: InstallerArgs::VcRedist,
-};
-
-const VC_REDIST_X86_2010: DependencySpec = DependencySpec {
-    id: "vc-redist-x86-2010",
-    display_name: "Microsoft Visual C++ 2010 Redistributable (x86)",
-    url: "https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x86.exe",
-    file_name: "vc_redist_2010.x86.exe",
-    detect: DependencyDetect::PathExists {
-        path: r"C:\Windows\SysWOW64\msvcp100.dll",
-    },
-    installer_args: InstallerArgs::VcRedist,
-};
-
-// ── DirectX Jun 2010 ───────────────────────────────────────────
-const DIRECTX_JUN2010: DependencySpec = DependencySpec {
-    id: "directx-jun2010",
-    display_name: "DirectX End-User Runtime (June 2010)",
-    url: "https://download.microsoft.com/download/1/7/1/1718CCC4-6315-4D8E-9543-8E28A4E18C4C/dxwebsetup.exe",
-    file_name: "dxwebsetup.exe",
-    detect: DependencyDetect::RegistryInstalled {
-        paths: &[
-            r"HKLM\SOFTWARE\Microsoft\DirectX",
-            r"HKLM\SOFTWARE\WOW6432Node\Microsoft\DirectX",
-        ],
-        value: "Version",
-        require_flag: false,
-    },
-    installer_args: InstallerArgs::Dxweb,
-};
-
-// ── .NET Framework 4.7 ─────────────────────────────────────────
-const DOTNET_47: DependencySpec = DependencySpec {
-    id: "dotnet-47",
-    display_name: "Microsoft .NET Framework 4.7",
-    url: "https://go.microsoft.com/fwlink/?linkid=843004",
-    file_name: "NDP47-KB3186500-x86-x64-AllOS-ENU.exe",
-    detect: DependencyDetect::RegistryInstalled {
-        paths: &[
-            r"HKLM\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full",
-            r"HKLM\SOFTWARE\WOW6432Node\Microsoft\NET Framework Setup\NDP\v4\Full",
-        ],
-        value: "Release",
-        require_flag: false,
-    },
-    installer_args: InstallerArgs::DotNetFull,
-};
-
-// ── EA App ─────────────────────────────────────────────────────
-const EA_APP: DependencySpec = DependencySpec {
-    id: "ea-app",
-    display_name: "EA App",
-    url: "https://origin-a.akamaihd.net/EA-Desktop-Client-Download/installer-releases/EAappInstaller.exe",
-    file_name: "EAappInstaller.exe",
-    detect: DependencyDetect::PathExists {
-        path: r"C:\Program Files\Electronic Arts\EA Desktop\EA Desktop.exe",
-    },
-    installer_args: InstallerArgs::EaApp,
-};
-
-// ══════════════════════════════════════════════════════════════
-//  Game → dependency mapping
-// ══════════════════════════════════════════════════════════════
-
-fn dependency_spec_by_id(id: &str) -> Option<DependencySpec> {
-    match id {
-        "vc-redist-x64-2022" => Some(VC_REDIST_X64.clone()),
-        "vc-redist-x86-2022" => Some(VC_REDIST_X86.clone()),
-        "vc-redist-x64-2019" => Some(VC_REDIST_X64_2019.clone()),
-        "vc-redist-x86-2019" => Some(VC_REDIST_X86_2019.clone()),
-        "vc-redist-x64-2010" => Some(VC_REDIST_X64_2010.clone()),
-        "vc-redist-x86-2010" => Some(VC_REDIST_X86_2010.clone()),
-        "directx-jun2010" => Some(DIRECTX_JUN2010.clone()),
-        "dotnet-47" => Some(DOTNET_47.clone()),
-        "ea-app" => Some(EA_APP.clone()),
-        _ => None,
+fn dependency_bundle() -> Result<&'static DependencyBundle, JobError> {
+    match DEPENDENCY_BUNDLE.get_or_init(|| {
+        let bundle: DependencyBundle = serde_json::from_str(DEPENDENCY_BUNDLE_JSON)
+            .map_err(|error| format!("invalid dependency-bundle.json: {error}"))?;
+        validate_dependency_bundle(&bundle)?;
+        Ok(bundle)
+    }) {
+        Ok(bundle) => Ok(bundle),
+        Err(error) => Err(JobError::Depot(error.clone())),
     }
 }
 
-fn dependency_specs_for_game(game_id: &str) -> Vec<DependencySpec> {
-    // Helper to deduplicate by id so games listing both 2019+2022 don't double-install.
-    fn dedup(mut v: Vec<DependencySpec>) -> Vec<DependencySpec> {
-        let mut seen = std::collections::HashSet::new();
-        v.retain(|s| seen.insert(s.id));
-        v
+fn validate_dependency_bundle(bundle: &DependencyBundle) -> Result<(), String> {
+    if bundle.schema != 1
+        || bundle.packages.is_empty()
+        || bundle.default_dependencies.is_empty()
+        || bundle.game_profiles.is_empty()
+    {
+        return Err("dependency bundle schema is unsupported or empty".to_string());
     }
 
-    let specs = match game_id {
-        // ── Black Myth: Wukong ─────────────────────────────────
-        "black-myth-wukong" | "blackmythwukong" => vec![
-            VC_REDIST_X64.clone(),
-            DIRECTX_JUN2010.clone(),
-            DOTNET_47.clone(),
-        ],
-
-        // ── Resident Evil: Requiem ────────────────────────────
-        "resident-evil-requiem" => vec![VC_REDIST_X64.clone()],
-
-        // ── Pragmata ─────────────────────────────────────────
-        "pragmata" => vec![VC_REDIST_X64.clone()],
-
-        // ── Among Us ─────────────────────────────────────────
-        // User corrected: needs 2019, not 2022
-        "among-us" => vec![VC_REDIST_X64_2019.clone(), VC_REDIST_X86_2019.clone()],
-
-        // ── Geometry Dash ────────────────────────────────────
-        "geometry-dash" => vec![VC_REDIST_X64.clone()],
-
-        // ── 007 First Light ──────────────────────────────────
-        "007-first-light" => vec![VC_REDIST_X64.clone()],
-
-        // ── EA Sports FC 26 ──────────────────────────────────
-        "ea-sports-fc-26" => vec![VC_REDIST_X64.clone(), EA_APP.clone()],
-
-        // ── Meccha Chameleon ─────────────────────────────────
-        "Meccha-Chameleon" => vec![VC_REDIST_X64.clone(), DIRECTX_JUN2010.clone()],
-
-        // ── Microsoft Flight Simulator 2020 40th Anniversary ─
-        "microsoft-flight-simulator-2020-40th-anniversary-edition"
-        | "microsoft-flight-simulator-2020-40th-anniversary-edition" => {
-            vec![VC_REDIST_X64_2019.clone()]
+    let mut names = HashSet::new();
+    for package in &bundle.packages {
+        let id = normalize_dependency_id(&package.id);
+        if id.is_empty() || !names.insert(id.clone()) {
+            return Err(format!("duplicate or empty dependency id: {}", package.id));
+        }
+        for alias in &package.aliases {
+            let alias = normalize_dependency_id(alias);
+            if alias.is_empty() || !names.insert(alias.clone()) {
+                return Err(format!("duplicate or empty dependency alias: {alias}"));
+            }
         }
 
-        // ── Octopath Traveler 0 ───────────────────────────────
-        "octopath-traveler-0" => vec![VC_REDIST_X64.clone(), DIRECTX_JUN2010.clone()],
+        let parsed_url = url::Url::parse(&package.url)
+            .map_err(|error| format!("invalid dependency URL for {id}: {error}"))?;
+        let trusted_host = matches!(
+            parsed_url.host_str(),
+            Some(
+                "download.microsoft.com"
+                    | "download.visualstudio.microsoft.com"
+                    | "us.download.nvidia.com"
+                    | "www.openal.org"
+            )
+        );
+        if parsed_url.scheme() != "https" || !trusted_host {
+            return Err(format!("untrusted dependency URL for {id}"));
+        }
+        validate_relative_bundle_path(&package.download_file_name)?;
+        validate_relative_bundle_path(&package.bundled_path)?;
+        if let Some(path) = package.extracted_installer_path.as_deref() {
+            validate_relative_bundle_path(path)?;
+        }
+        validate_sha256(&package.download_sha256, &id)?;
+        validate_sha256(&package.payload_sha256, &id)?;
+        if let Some(hash) = package.extracted_installer_sha256.as_deref() {
+            validate_sha256(hash, &id)?;
+        }
+        if package.display_name.trim().is_empty()
+            || package.minimum_download_bytes == 0
+            || package.minimum_payload_bytes == 0
+        {
+            return Err(format!("incomplete dependency metadata for {id}"));
+        }
+        match package.installer_kind.as_str() {
+            "vc-redist" | "vc-redist-legacy" | "directx-redist" | "dotnet-framework" | "msi"
+            | "physx-redist" | "openal-redist" => {}
+            other => return Err(format!("unsupported installer kind for {id}: {other}")),
+        }
+        if matches!(
+            package.installer_kind.as_str(),
+            "directx-redist" | "openal-redist"
+        ) && (package.extracted_installer_sha256.is_none()
+            || package.extracted_installer_path.is_none()
+            || package.minimum_extracted_installer_bytes.unwrap_or(0) == 0)
+        {
+            return Err(format!("extracted installer metadata is missing for {id}"));
+        }
+        if let Some(archive_kind) = package.archive_kind.as_deref() {
+            if archive_kind != "zip" || package.installer_kind != "openal-redist" {
+                return Err(format!("unsupported archive kind for {id}: {archive_kind}"));
+            }
+        }
+        if package.archive_kind.is_some() && package.extracted_signature_publisher.is_none() {
+            return Err(format!("archive signer metadata is missing for {id}"));
+        }
+        if package.archive_kind.is_none() && package.signature_publisher.is_none() {
+            return Err(format!("payload signer metadata is missing for {id}"));
+        }
+    }
 
-        // ── Persona 5 Royal ───────────────────────────────────
-        "persona-5-royal" => vec![DIRECTX_JUN2010.clone(), VC_REDIST_X64_2019.clone()],
-
-        // ── Persona 3 Reload ──────────────────────────────────
-        "persona-3-reload" => vec![
-            VC_REDIST_X64.clone(),
-            VC_REDIST_X64_2019.clone(), // dedup removes if 2022 already present
-            DIRECTX_JUN2010.clone(),
-        ],
-
-        // ── Stellar Blade ─────────────────────────────────────
-        "stellar-blade" => vec![DIRECTX_JUN2010.clone(), VC_REDIST_X64.clone()],
-
-        // ── Tom Clancy's Splinter Cell Blacklist ──────────────
-        "tom-clancy-s-splinter-cell-blacklist" => vec![
-            VC_REDIST_X64_2010.clone(),
-            VC_REDIST_X86_2010.clone(),
-            DIRECTX_JUN2010.clone(),
-        ],
-
-        // ── Judgment ─────────────────────────────────────────
-        "judgment" => vec![VC_REDIST_X64_2019.clone()],
-
-        // ── Grand Theft Auto: San Andreas (2005) ─────────────
-        "grand-theft-auto-san-andreas-2005" => vec![DIRECTX_JUN2010.clone()],
-
-        // ── Heavy Rain ───────────────────────────────────────
-        "heavy-rain" => vec![VC_REDIST_X64_2019.clone(), DIRECTX_JUN2010.clone()],
-
-        // ── Yakuza: Like a Dragon ─────────────────────────────
-        "yakuza-like-a-dragon" => vec![VC_REDIST_X64_2019.clone(), DIRECTX_JUN2010.clone()],
-
-        // ── Total War: Three Kingdoms ─────────────────────────
-        "total-war-three-kingdoms" => vec![
-            VC_REDIST_X64_2010.clone(),
-            VC_REDIST_X64_2019.clone(),
-            DIRECTX_JUN2010.clone(),
-        ],
-
-        // ── Assassin's Creed IV: Black Flag (Resynced) ───────
-        "assassins-creed-black-flag-resynced" => vec![VC_REDIST_X64.clone()],
-
-        // ── Default: every game needs at minimum VC++ 2022 x64
-        DEFAULT_GAME_ID | _ => vec![VC_REDIST_X64.clone()],
-    };
-
-    dedup(specs)
+    for id in bundle.default_dependencies.iter().chain(
+        bundle
+            .game_profiles
+            .values()
+            .flat_map(|dependencies| dependencies.iter()),
+    ) {
+        let normalized = normalize_dependency_id(id);
+        if !names.contains(&normalized) && normalized != "ea-app" {
+            return Err(format!("profile references unknown dependency: {id}"));
+        }
+    }
+    for (game_id, dependencies) in &bundle.game_profiles {
+        if normalize_game_id(game_id).is_empty() || dependencies.is_empty() {
+            return Err(format!("empty dependency profile for game: {game_id}"));
+        }
+    }
+    Ok(())
 }
 
-// ══════════════════════════════════════════════════════════════
-//  Dependency detection
-// ══════════════════════════════════════════════════════════════
+fn validate_sha256(value: &str, dependency_id: &str) -> Result<(), String> {
+    if value.len() == 64 && value.bytes().all(|byte| byte.is_ascii_hexdigit()) {
+        Ok(())
+    } else {
+        Err(format!("invalid SHA-256 for dependency {dependency_id}"))
+    }
+}
+
+fn validate_relative_bundle_path(value: &str) -> Result<PathBuf, String> {
+    let path = Path::new(value);
+    if value.trim().is_empty()
+        || path.is_absolute()
+        || path
+            .components()
+            .any(|component| !matches!(component, std::path::Component::Normal(_)))
+    {
+        return Err(format!("unsafe dependency bundle path: {value}"));
+    }
+    Ok(path.to_path_buf())
+}
+
+fn normalize_dependency_id(id: &str) -> String {
+    id.trim().to_ascii_lowercase()
+}
+
+fn normalize_game_id(id: &str) -> String {
+    id.trim().to_ascii_lowercase()
+}
+
+fn installer_kind(package: &DependencyBundlePackage) -> Result<InstallerKind, JobError> {
+    match package.installer_kind.as_str() {
+        "vc-redist" => Ok(InstallerKind::VcRedist),
+        "vc-redist-legacy" => Ok(InstallerKind::VcRedistLegacy),
+        "directx-redist" => Ok(InstallerKind::DirectXRedist),
+        "dotnet-framework" => Ok(InstallerKind::DotNetFramework),
+        "msi" => Ok(InstallerKind::Msi),
+        "physx-redist" => Ok(InstallerKind::PhysXRedist),
+        "openal-redist" => Ok(InstallerKind::OpenAlRedist),
+        other => Err(JobError::Depot(format!(
+            "unsupported installer kind for {}: {other}",
+            package.id
+        ))),
+    }
+}
+
+fn dependency_spec_by_id(id: &str) -> Result<Option<DependencySpec>, JobError> {
+    let requested = normalize_dependency_id(id);
+    if requested == "ea-app" {
+        return Ok(Some(DependencySpec {
+            id: "ea-app".to_string(),
+            display_name: "EA App".to_string(),
+            url: "https://origin-a.akamaihd.net/EA-Desktop-Client-Download/installer-releases/EAappInstaller.exe".to_string(),
+            file_name: "EAappInstaller.exe".to_string(),
+            bundled_path: None,
+            download_sha256: None,
+            payload_sha256: None,
+            minimum_download_bytes: 512 * 1024,
+            minimum_payload_bytes: 512 * 1024,
+            archive_kind: None,
+            extracted_installer_path: None,
+            extracted_installer_sha256: None,
+            minimum_extracted_installer_bytes: None,
+            installer_kind: InstallerKind::EaApp,
+        }));
+    }
+
+    let package = dependency_bundle()?.packages.iter().find(|package| {
+        normalize_dependency_id(&package.id) == requested
+            || package
+                .aliases
+                .iter()
+                .any(|alias| normalize_dependency_id(alias) == requested)
+    });
+    package
+        .map(|package| {
+            Ok(DependencySpec {
+                id: normalize_dependency_id(&package.id),
+                display_name: package.display_name.clone(),
+                url: package.url.clone(),
+                file_name: package.download_file_name.clone(),
+                bundled_path: Some(package.bundled_path.clone()),
+                download_sha256: Some(package.download_sha256.clone()),
+                payload_sha256: Some(package.payload_sha256.clone()),
+                minimum_download_bytes: package.minimum_download_bytes,
+                minimum_payload_bytes: package.minimum_payload_bytes,
+                archive_kind: package.archive_kind.clone(),
+                extracted_installer_path: package.extracted_installer_path.clone(),
+                extracted_installer_sha256: package.extracted_installer_sha256.clone(),
+                minimum_extracted_installer_bytes: package.minimum_extracted_installer_bytes,
+                installer_kind: installer_kind(package)?,
+            })
+        })
+        .transpose()
+}
+
+fn dependency_specs(ids: &[&str]) -> Result<Vec<DependencySpec>, JobError> {
+    let mut specs = Vec::new();
+    for id in ids {
+        specs.push(dependency_spec_by_id(id)?.ok_or_else(|| {
+            JobError::Depot(format!("launcher dependency catalog is missing {id}"))
+        })?);
+    }
+    deduplicate_dependency_specs(&mut specs);
+    Ok(specs)
+}
+
+fn dependency_specs_for_game(game_id: &str) -> Result<Vec<DependencySpec>, JobError> {
+    let bundle = dependency_bundle()?;
+    let normalized = normalize_game_id(game_id);
+    let ids = bundle
+        .game_profiles
+        .iter()
+        .find(|(profile_game_id, _)| normalize_game_id(profile_game_id) == normalized)
+        .map(|(_, dependencies)| dependencies)
+        .unwrap_or(&bundle.default_dependencies);
+    let id_refs = ids.iter().map(String::as_str).collect::<Vec<_>>();
+    dependency_specs(&id_refs)
+}
+
+fn deduplicate_dependency_specs(specs: &mut Vec<DependencySpec>) {
+    let mut seen = HashSet::new();
+    specs.retain(|spec| seen.insert(spec.id.clone()));
+}
+
+fn split_manifest_dependencies(entries: &[String]) -> Vec<String> {
+    entries
+        .iter()
+        .flat_map(|entry| entry.split([',', ';', '\n', '\r']))
+        .map(normalize_dependency_id)
+        .filter(|id| !id.is_empty())
+        .collect()
+}
+
+fn resolve_manifest_dependencies(entries: &[String]) -> Result<Vec<DependencySpec>, JobError> {
+    let dependency_ids = split_manifest_dependencies(entries);
+    let mut specs = Vec::new();
+    let mut unsupported = Vec::new();
+    for id in dependency_ids {
+        match dependency_spec_by_id(&id)? {
+            Some(spec) => specs.push(spec),
+            None => unsupported.push(id),
+        }
+    }
+    if !unsupported.is_empty() {
+        unsupported.sort();
+        unsupported.dedup();
+        return Err(JobError::Depot(format!(
+            "unsupported game dependency IDs: {}",
+            unsupported.join(", ")
+        )));
+    }
+    deduplicate_dependency_specs(&mut specs);
+    Ok(specs)
+}
+
+#[cfg(target_os = "windows")]
+fn registry_dword(paths: &[&str], value: &str) -> Option<u64> {
+    paths.iter().find_map(|path| {
+        let output = hidden_command("reg.exe")
+            .args(["query", path, "/v", value])
+            .output()
+            .ok()
+            .filter(|output| output.status.success())?;
+        let expected = value.to_ascii_lowercase();
+        String::from_utf8_lossy(&output.stdout)
+            .lines()
+            .find(|line| line.to_ascii_lowercase().contains(&expected))
+            .and_then(|line| {
+                line.split_whitespace().rev().find_map(|token| {
+                    token
+                        .strip_prefix("0x")
+                        .or_else(|| token.strip_prefix("0X"))
+                        .and_then(|hex| u64::from_str_radix(hex, 16).ok())
+                        .or_else(|| token.parse::<u64>().ok())
+                })
+            })
+    })
+}
+
+fn windows_directory() -> PathBuf {
+    env::var_os("WINDIR")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| PathBuf::from(r"C:\Windows"))
+}
+
+#[cfg(target_os = "windows")]
+fn directory_has_entry_prefix(directory: &Path, prefix: &str) -> bool {
+    let prefix = prefix.to_ascii_lowercase();
+    fs::read_dir(directory)
+        .ok()
+        .into_iter()
+        .flatten()
+        .filter_map(Result::ok)
+        .any(|entry| {
+            entry
+                .file_name()
+                .to_string_lossy()
+                .to_ascii_lowercase()
+                .starts_with(&prefix)
+        })
+}
+
+#[cfg(target_os = "windows")]
+fn vc_runtime_installed(version: &str, architecture: &str) -> bool {
+    let native =
+        format!(r"HKLM\SOFTWARE\Microsoft\VisualStudio\{version}\VC\Runtimes\{architecture}");
+    let wow = format!(
+        r"HKLM\SOFTWARE\WOW6432Node\Microsoft\VisualStudio\{version}\VC\Runtimes\{architecture}"
+    );
+    registry_dword(&[native.as_str(), wow.as_str()], "Installed") == Some(1)
+}
 
 fn dependency_installed(spec: &DependencySpec) -> bool {
     #[cfg(target_os = "windows")]
     {
-        match &spec.detect {
-            DependencyDetect::RegistryInstalled {
-                paths,
-                value,
-                require_flag,
-            } => paths.iter().any(|path| {
-                let output = hidden_command("reg.exe")
-                    .args(["query", path, "/v", value])
-                    .output()
-                    .ok()
-                    .filter(|output| output.status.success());
+        const VC_RUNTIME_X64: &[&str] = &[
+            r"HKLM\SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64",
+            r"HKLM\SOFTWARE\WOW6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x64",
+        ];
+        const VC_RUNTIME_X86: &[&str] = &[
+            r"HKLM\SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x86",
+            r"HKLM\SOFTWARE\WOW6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x86",
+        ];
+        const DOTNET_FULL: &[&str] = &[
+            r"HKLM\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full",
+            r"HKLM\SOFTWARE\WOW6432Node\Microsoft\NET Framework Setup\NDP\v4\Full",
+        ];
 
-                let Some(output) = output else {
-                    return false;
-                };
-
-                let text = String::from_utf8_lossy(&output.stdout).to_ascii_lowercase();
-
-                if *require_flag {
-                    text.contains("0x1") || text.split_whitespace().any(|part| part == "1")
+        let windows = windows_directory();
+        let winsxs = windows.join("WinSxS");
+        match spec.id.as_str() {
+            "vc-redist-v14-x64" => registry_dword(VC_RUNTIME_X64, "Installed") == Some(1),
+            "vc-redist-v14-x86" => registry_dword(VC_RUNTIME_X86, "Installed") == Some(1),
+            "vc-redist-2008-x64" => {
+                directory_has_entry_prefix(&winsxs, "amd64_microsoft.vc90.crt_")
+            }
+            "vc-redist-2008-x86" => directory_has_entry_prefix(&winsxs, "x86_microsoft.vc90.crt_"),
+            "vc-redist-2010-x64" => windows.join("System32/msvcp100.dll").is_file(),
+            "vc-redist-2010-x86" => {
+                let syswow64 = windows.join("SysWOW64");
+                if syswow64.is_dir() {
+                    syswow64.join("msvcp100.dll").is_file()
                 } else {
-                    // Any non-empty value returned counts as installed.
-                    let lines: Vec<&str> = text.lines().collect();
-                    // Look for a line containing the value name; reg /v output format:
-                    //     "    ValueName    REG_DWORD    0x…"
-                    lines.iter().any(|line| {
-                        let lower = line.to_ascii_lowercase();
-                        let value_lower = value.to_ascii_lowercase();
-                        lower.contains(&value_lower)
-                            && (lower.contains("reg_dword")
-                                || lower.contains("reg_sz")
-                                || lower.contains("reg_expand_sz"))
-                    })
+                    windows.join("System32/msvcp100.dll").is_file()
                 }
+            }
+            "vc-redist-2012-x64" => {
+                vc_runtime_installed("11.0", "x64")
+                    || windows.join("System32/msvcp110.dll").is_file()
+            }
+            "vc-redist-2012-x86" => {
+                vc_runtime_installed("11.0", "x86")
+                    || windows.join("SysWOW64/msvcp110.dll").is_file()
+            }
+            "vc-redist-2013-x64" => {
+                vc_runtime_installed("12.0", "x64")
+                    || windows.join("System32/msvcp120.dll").is_file()
+            }
+            "vc-redist-2013-x86" => {
+                vc_runtime_installed("12.0", "x86")
+                    || windows.join("SysWOW64/msvcp120.dll").is_file()
+            }
+            "directx-jun2010" => {
+                let x64_component = windows.join("System32/d3dx9_43.dll").is_file();
+                let syswow64 = windows.join("SysWOW64");
+                x64_component && (!syswow64.is_dir() || syswow64.join("d3dx9_43.dll").is_file())
+            }
+            "dotnet-framework-481" => registry_dword(DOTNET_FULL, "Release")
+                .map(|release| release >= DOTNET_FRAMEWORK_481_RELEASE)
+                .unwrap_or(false),
+            "xna-framework-4-refresh" => {
+                let assembly_root =
+                    windows.join("Microsoft.NET/assembly/GAC_32/Microsoft.Xna.Framework");
+                assembly_root.is_dir()
+                    && fs::read_dir(assembly_root)
+                        .ok()
+                        .into_iter()
+                        .flatten()
+                        .filter_map(Result::ok)
+                        .any(|entry| entry.path().is_dir())
+            }
+            "nvidia-physx" => env::var_os("ProgramFiles(x86)")
+                .map(PathBuf::from)
+                .into_iter()
+                .chain(env::var_os("ProgramFiles").map(PathBuf::from))
+                .any(|root| {
+                    let physx = root.join("NVIDIA Corporation/PhysX");
+                    physx.join("Common/PhysXLoader.dll").is_file() || physx.join("Engine").is_dir()
+                }),
+            "openal-1.1" => {
+                windows.join("System32/OpenAL32.dll").is_file()
+                    || windows.join("SysWOW64/OpenAL32.dll").is_file()
+            }
+            "ea-app" => [
+                env::var_os("ProgramFiles"),
+                env::var_os("ProgramFiles(x86)"),
+            ]
+            .into_iter()
+            .flatten()
+            .map(PathBuf::from)
+            .any(|root| {
+                [
+                    "Electronic Arts/EA Desktop/EA Desktop/EADesktop.exe",
+                    "Electronic Arts/EA Desktop/EADesktop.exe",
+                    "Electronic Arts/EA Desktop/EA Desktop.exe",
+                ]
+                .iter()
+                .any(|relative| root.join(relative).is_file())
             }),
-            DependencyDetect::PathExists { path } => Path::new(path).exists(),
+            _ => false,
         }
     }
 
@@ -378,80 +550,356 @@ fn dependency_installed(spec: &DependencySpec) -> bool {
     }
 }
 
-// ══════════════════════════════════════════════════════════════
-//  Installer download + run
-// ══════════════════════════════════════════════════════════════
-
 pub(super) fn ensure_game_dependencies(
     app: &AppHandle,
     source: &DepotSource,
     install_path: &Path,
 ) -> Result<Vec<String>, JobError> {
-    let mut installed = Vec::new();
-
-    // First, try to load the dependencies dynamically from the installed manifest
-    let mut specs = Vec::new();
-    if let Ok(Some(manifest)) = super::read_installed_manifest(install_path) {
-        if let Some(deps) = manifest.dependencies {
-            for dep_id in deps {
-                if let Some(spec) = dependency_spec_by_id(&dep_id) {
-                    specs.push(spec);
-                }
+    let mut specs = if let Ok(Some(manifest)) = super::read_installed_manifest(install_path) {
+        match manifest.dependencies {
+            Some(entries) if !split_manifest_dependencies(&entries).is_empty() => {
+                resolve_manifest_dependencies(&entries)?
             }
+            _ => dependency_specs_for_game(&source.game_id)?,
         }
-    }
+    } else {
+        dependency_specs_for_game(&source.game_id)?
+    };
+    deduplicate_dependency_specs(&mut specs);
 
-    // Fallback to hardcoded list if the manifest didn't provide any dependencies
-    if specs.is_empty() {
-        specs = dependency_specs_for_game(&source.game_id);
-    }
-
+    let mut installed = Vec::new();
     for spec in specs {
         if dependency_installed(&spec) {
             continue;
         }
-        let installer = download_dependency_installer(app, &spec)?;
-        run_elevated(
-            &installer,
-            spec.installer_args.as_slice(),
-            installer.parent(),
-            true,
-        )?;
-        installed.push(spec.display_name.to_string());
+        let installer = prepare_dependency_installer(app, &spec)?;
+        run_dependency_installer(&spec, &installer)?;
+        if !dependency_installed(&spec) {
+            return Err(JobError::Depot(format!(
+                "{} finished but the required runtime was not detected",
+                spec.display_name
+            )));
+        }
+        installed.push(spec.display_name);
     }
     Ok(installed)
 }
 
-fn download_dependency_installer(
+fn prepare_dependency_installer(
     app: &AppHandle,
     spec: &DependencySpec,
 ) -> Result<PathBuf, JobError> {
     let redist_dir = app.path().app_data_dir()?.join("redist");
     fs::create_dir_all(&redist_dir)?;
-    let destination = redist_dir.join(spec.file_name);
-    if destination
-        .metadata()
-        .map(|metadata| metadata.len() > 512 * 1024)
-        .unwrap_or(false)
+    let source = match locate_bundled_installer(app, spec)? {
+        Some(installer) => installer,
+        None => download_dependency_installer(&redist_dir, spec)?,
+    };
+    match spec.installer_kind {
+        InstallerKind::DirectXRedist => prepare_directx_installer(&redist_dir, spec, &source),
+        InstallerKind::OpenAlRedist => prepare_zip_dependency_installer(&redist_dir, spec, &source),
+        _ => Ok(source),
+    }
+}
+
+fn prepare_directx_installer(
+    redist_dir: &Path,
+    spec: &DependencySpec,
+    source: &Path,
+) -> Result<PathBuf, JobError> {
+    let hash_prefix = spec
+        .payload_sha256
+        .as_deref()
+        .unwrap_or("unverified")
+        .chars()
+        .take(12)
+        .collect::<String>();
+    let extraction_dir = redist_dir.join(format!("directx-jun2010-{hash_prefix}"));
+    fs::create_dir_all(&extraction_dir)?;
+    let extracted_path = spec.extracted_installer_path.as_deref().ok_or_else(|| {
+        JobError::Depot("DirectX extracted installer path is not configured".to_string())
+    })?;
+    let payload = extraction_dir
+        .join(validate_relative_bundle_path(extracted_path).map_err(JobError::Depot)?);
+    let extracted_minimum = spec.minimum_extracted_installer_bytes.ok_or_else(|| {
+        JobError::Depot("DirectX extracted installer size is not configured".to_string())
+    })?;
+    let extracted_hash = spec.extracted_installer_sha256.as_deref().ok_or_else(|| {
+        JobError::Depot("DirectX extracted installer hash is not configured".to_string())
+    })?;
+    if payload.is_file() {
+        verify_dependency_file(&payload, extracted_minimum, Some(extracted_hash), &spec.id)?;
+        verify_directx_payload_directory(&extraction_dir)?;
+        return Ok(payload);
+    }
+
+    let extract_target = format!("/T:{}", extraction_dir.display());
+    let status = hidden_command(&source)
+        .args(["/Q", &extract_target])
+        .status()?;
+    if !status.success() {
+        return Err(JobError::Depot(format!(
+            "failed to extract {}",
+            spec.display_name
+        )));
+    }
+    verify_dependency_file(&payload, extracted_minimum, Some(extracted_hash), &spec.id)?;
+    verify_directx_payload_directory(&extraction_dir)?;
+    Ok(payload)
+}
+
+fn prepare_zip_dependency_installer(
+    redist_dir: &Path,
+    spec: &DependencySpec,
+    source: &Path,
+) -> Result<PathBuf, JobError> {
+    if spec.archive_kind.as_deref() != Some("zip") {
+        return Err(JobError::Depot(format!(
+            "unsupported dependency archive for {}",
+            spec.id
+        )));
+    }
+    let extracted_path = spec.extracted_installer_path.as_deref().ok_or_else(|| {
+        JobError::Depot(format!("archive installer path is missing for {}", spec.id))
+    })?;
+    let relative = validate_relative_bundle_path(extracted_path).map_err(JobError::Depot)?;
+    let expected_hash = spec.extracted_installer_sha256.as_deref().ok_or_else(|| {
+        JobError::Depot(format!("archive installer hash is missing for {}", spec.id))
+    })?;
+    let minimum_bytes = spec.minimum_extracted_installer_bytes.ok_or_else(|| {
+        JobError::Depot(format!("archive installer size is missing for {}", spec.id))
+    })?;
+    let hash_prefix = spec
+        .payload_sha256
+        .as_deref()
+        .unwrap_or("unverified")
+        .chars()
+        .take(12)
+        .collect::<String>();
+    let extraction_dir = redist_dir.join(format!("{}-{hash_prefix}", spec.id));
+    fs::create_dir_all(&extraction_dir)?;
+    let payload = extraction_dir.join(&relative);
+    if payload.is_file() {
+        verify_dependency_file(&payload, minimum_bytes, Some(expected_hash), &spec.id)?;
+        return Ok(payload);
+    }
+
+    let archive_file = File::open(source)?;
+    let mut archive = zip::ZipArchive::new(archive_file)
+        .map_err(|error| JobError::Depot(format!("invalid {} archive: {error}", spec.id)))?;
+    let entry_name = relative.to_string_lossy().replace('\\', "/");
+    let mut entry = archive.by_name(&entry_name).map_err(|_| {
+        JobError::Depot(format!(
+            "{} archive does not contain {}",
+            spec.id, entry_name
+        ))
+    })?;
+    if entry.is_dir() || entry.enclosed_name().as_deref() != Some(relative.as_path()) {
+        return Err(JobError::Depot(format!(
+            "unsafe installer entry in {} archive",
+            spec.id
+        )));
+    }
+    if entry.size() > MAX_DEPENDENCY_DOWNLOAD_BYTES {
+        return Err(JobError::Depot(format!(
+            "extracted dependency is too large: {}",
+            spec.id
+        )));
+    }
+    let temporary = extraction_dir.join(format!("{}.download", uuid::Uuid::new_v4()));
+    {
+        let mut output = File::create(&temporary)?;
+        std::io::copy(&mut entry, &mut output)?;
+        output.flush()?;
+        output.sync_all()?;
+    }
+    verify_dependency_file(&temporary, minimum_bytes, Some(expected_hash), &spec.id)?;
+    if payload.exists() {
+        fs::remove_file(&payload)?;
+    }
+    fs::rename(&temporary, &payload)?;
+    Ok(payload)
+}
+
+fn run_dependency_installer(spec: &DependencySpec, installer: &Path) -> Result<(), JobError> {
+    if spec.installer_kind == InstallerKind::Msi {
+        let installer_arg = installer.to_string_lossy().to_string();
+        let args = ["/i", installer_arg.as_str(), "/quiet", "/norestart"];
+        return run_elevated(
+            Path::new("msiexec.exe"),
+            &args,
+            installer.parent(),
+            true,
+            spec.installer_kind.accepted_exit_codes(),
+        );
+    }
+    run_elevated(
+        installer,
+        spec.installer_kind.arguments(),
+        installer.parent(),
+        true,
+        spec.installer_kind.accepted_exit_codes(),
+    )
+}
+
+fn locate_bundled_installer(
+    app: &AppHandle,
+    spec: &DependencySpec,
+) -> Result<Option<PathBuf>, JobError> {
+    let Some(relative) = spec.bundled_path.as_deref() else {
+        return Ok(None);
+    };
+    let relative = validate_relative_bundle_path(relative).map_err(JobError::Depot)?;
+    let mut candidates = Vec::new();
+    if let Ok(resource_dir) = app.path().resource_dir() {
+        candidates.push(resource_dir.join("redist").join(&relative));
+        candidates.push(resource_dir.join("resources/redist").join(&relative));
+    }
+    candidates.push(
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("resources/redist")
+            .join(&relative),
+    );
+
+    for candidate in candidates {
+        if !candidate.is_file() {
+            continue;
+        }
+        verify_dependency_file(
+            &candidate,
+            spec.minimum_payload_bytes,
+            spec.payload_sha256.as_deref(),
+            &spec.id,
+        )?;
+        return Ok(Some(candidate));
+    }
+    Ok(None)
+}
+
+fn verify_directx_payload_directory(directory: &Path) -> Result<(), JobError> {
+    let file_count = fs::read_dir(directory)?
+        .filter_map(Result::ok)
+        .filter(|entry| {
+            entry
+                .file_type()
+                .map(|kind| kind.is_file())
+                .unwrap_or(false)
+        })
+        .count();
+    if file_count < 150 {
+        return Err(JobError::Depot(format!(
+            "DirectX offline bundle is incomplete ({file_count} files)"
+        )));
+    }
+    Ok(())
+}
+
+fn download_dependency_installer(
+    redist_dir: &Path,
+    spec: &DependencySpec,
+) -> Result<PathBuf, JobError> {
+    let destination = redist_dir.join(&spec.file_name);
+    if destination.is_file()
+        && verify_dependency_file(
+            &destination,
+            spec.minimum_download_bytes,
+            spec.download_sha256.as_deref(),
+            &spec.id,
+        )
+        .is_ok()
     {
         return Ok(destination);
     }
 
-    let temp = destination.with_extension("download");
-    let mut response = Client::builder()
+    let temporary = redist_dir.join(format!(
+        "{}.{}.download",
+        spec.file_name,
+        uuid::Uuid::new_v4()
+    ));
+    let response = Client::builder()
         .connect_timeout(Duration::from_secs(15))
-        .timeout(Duration::from_secs(240))
+        .timeout(Duration::from_secs(600))
         .build()
         .unwrap_or_else(|_| Client::new())
-        .get(spec.url)
-        .header(USER_AGENT, "0xoLemon-launcher-redist/0.1")
+        .get(&spec.url)
+        .header(USER_AGENT, "0xoLemon-launcher-redist/1.0")
         .send()?
         .error_for_status()?;
-    let mut file = File::create(&temp)?;
-    response.copy_to(&mut file)?;
-    file.flush()?;
-    fs::rename(temp, &destination)?;
+    if response
+        .content_length()
+        .map(|length| length > MAX_DEPENDENCY_DOWNLOAD_BYTES)
+        .unwrap_or(false)
+    {
+        return Err(JobError::Depot(format!(
+            "dependency download is too large: {}",
+            spec.id
+        )));
+    }
+
+    let mut file = File::create(&temporary)?;
+    let copied = std::io::copy(
+        &mut response.take(MAX_DEPENDENCY_DOWNLOAD_BYTES + 1),
+        &mut file,
+    )?;
+    file.sync_all()?;
+    if copied > MAX_DEPENDENCY_DOWNLOAD_BYTES {
+        let _ = fs::remove_file(&temporary);
+        return Err(JobError::Depot(format!(
+            "dependency download exceeded the size limit: {}",
+            spec.id
+        )));
+    }
+    if let Err(error) = verify_dependency_file(
+        &temporary,
+        spec.minimum_download_bytes,
+        spec.download_sha256.as_deref(),
+        &spec.id,
+    ) {
+        let _ = fs::remove_file(&temporary);
+        return Err(error);
+    }
+    if destination.exists() {
+        fs::remove_file(&destination)?;
+    }
+    fs::rename(&temporary, &destination)?;
     Ok(destination)
+}
+
+fn verify_dependency_file(
+    path: &Path,
+    minimum_bytes: u64,
+    expected_sha256: Option<&str>,
+    dependency_id: &str,
+) -> Result<(), JobError> {
+    let metadata = path.metadata()?;
+    if !metadata.is_file() || metadata.len() < minimum_bytes {
+        return Err(JobError::Depot(format!(
+            "dependency payload is missing or too small: {dependency_id}"
+        )));
+    }
+    if let Some(expected) = expected_sha256 {
+        let actual = sha256_file(path)?;
+        if !actual.eq_ignore_ascii_case(expected) {
+            return Err(JobError::Depot(format!(
+                "dependency SHA-256 mismatch for {dependency_id}"
+            )));
+        }
+    }
+    Ok(())
+}
+
+fn sha256_file(path: &Path) -> Result<String, JobError> {
+    let mut file = File::open(path)?;
+    let mut hasher = Sha256::new();
+    let mut buffer = [0_u8; 1024 * 1024];
+    loop {
+        let read = file.read(&mut buffer)?;
+        if read == 0 {
+            break;
+        }
+        hasher.update(&buffer[..read]);
+    }
+    Ok(hex::encode_upper(hasher.finalize()))
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -845,6 +1293,7 @@ pub(super) fn launch_option_processes(
     game_id: &str,
     install_root: &Path,
     option: &GameLaunchOption,
+    runtime_environment: &[(String, String)],
 ) -> Result<LaunchedProcessSet, JobError> {
     let mut launched = Vec::new();
     let mut main_process = None;
@@ -897,7 +1346,7 @@ pub(super) fn launch_option_processes(
             .iter()
             .map(|arg| expand_placeholders(arg, install_root, game_id))
             .collect::<Vec<_>>();
-        let environment = process
+        let mut environment = process
             .environment
             .iter()
             .map(|(key, value)| {
@@ -907,6 +1356,12 @@ pub(super) fn launch_option_processes(
                 )
             })
             .collect::<Vec<_>>();
+        if main_index == Some(index) {
+            for (key, value) in runtime_environment {
+                environment.retain(|(existing, _)| !existing.eq_ignore_ascii_case(key));
+                environment.push((key.clone(), value.clone()));
+            }
+        }
         let hidden = process
             .hidden
             .unwrap_or_else(|| is_script_path(&executable));
@@ -1205,10 +1660,11 @@ fn run_elevated(
     args: &[&str],
     working_dir: Option<&Path>,
     wait: bool,
+    accepted_exit_codes: &[i32],
 ) -> Result<(), JobError> {
     #[cfg(target_os = "windows")]
     {
-        run_elevated_windows(executable, args, working_dir, wait)
+        run_elevated_windows(executable, args, working_dir, wait, accepted_exit_codes)
     }
 
     #[cfg(not(target_os = "windows"))]
@@ -1219,7 +1675,13 @@ fn run_elevated(
             command.current_dir(dir);
         }
         if wait {
-            command.status()?;
+            let status = command.status()?;
+            let exit_code = status.code().unwrap_or(-1);
+            if !accepted_exit_codes.contains(&exit_code) {
+                return Err(JobError::Depot(format!(
+                    "dependency installer failed with exit code {exit_code}"
+                )));
+            }
         } else {
             command.spawn()?;
         }
@@ -1233,6 +1695,7 @@ fn run_elevated_windows(
     args: &[&str],
     working_dir: Option<&Path>,
     wait: bool,
+    accepted_exit_codes: &[i32],
 ) -> Result<(), JobError> {
     let mut script = format!(
         "$p = Start-Process -FilePath {} -Verb RunAs -WindowStyle Normal",
@@ -1253,7 +1716,14 @@ fn run_elevated_windows(
         script.push_str(&format!(" -ArgumentList @({quoted_args})"));
     }
     if wait {
-        script.push_str(" -Wait -PassThru; if ($p.ExitCode -ne 0) { exit $p.ExitCode }");
+        let accepted = accepted_exit_codes
+            .iter()
+            .map(i32::to_string)
+            .collect::<Vec<_>>()
+            .join(", ");
+        script.push_str(&format!(
+            " -Wait -PassThru; if (@({accepted}) -notcontains $p.ExitCode) {{ exit 1 }}"
+        ));
     }
 
     let status = hidden_command("powershell.exe")
@@ -1277,4 +1747,188 @@ fn run_elevated_windows(
 #[cfg(target_os = "windows")]
 fn ps_quote_os(value: &OsStr) -> String {
     ps_quote(&value.to_string_lossy())
+}
+
+#[cfg(test)]
+mod dependency_tests {
+    use super::*;
+
+    #[test]
+    fn bundled_catalog_is_valid_and_aliases_are_unique() {
+        let bundle: DependencyBundle = serde_json::from_str(DEPENDENCY_BUNDLE_JSON).unwrap();
+        validate_dependency_bundle(&bundle).unwrap();
+
+        let mut names = HashSet::new();
+        for package in bundle.packages {
+            assert!(names.insert(normalize_dependency_id(&package.id)));
+            for alias in package.aliases {
+                assert!(names.insert(normalize_dependency_id(&alias)));
+            }
+        }
+    }
+
+    #[test]
+    fn manifest_csv_is_split_and_cumulative_runtimes_are_deduplicated() {
+        let entries =
+            vec!["vc-redist-x64-2019,vc-redist-x64-2022,directx-jun2010,net4.6-redist".to_string()];
+        let specs = resolve_manifest_dependencies(&entries).unwrap();
+        let ids = specs
+            .iter()
+            .map(|spec| spec.id.as_str())
+            .collect::<Vec<_>>();
+
+        assert_eq!(
+            ids,
+            vec![
+                "vc-redist-v14-x64",
+                "directx-jun2010",
+                "dotnet-framework-481"
+            ]
+        );
+    }
+
+    #[test]
+    fn net46_alias_resolves_to_supported_dotnet_runtime() {
+        let spec = dependency_spec_by_id("net4.6-redist").unwrap().unwrap();
+        assert_eq!(spec.id, "dotnet-framework-481");
+        assert_eq!(spec.installer_kind, InstallerKind::DotNetFramework);
+    }
+
+    #[test]
+    fn legacy_and_optional_runtime_aliases_resolve_to_pinned_packages() {
+        let cases = [
+            ("vc-redist-x86-2008", "vc-redist-2008-x86"),
+            ("vc-redist-x64-2012", "vc-redist-2012-x64"),
+            ("vc-redist-x86-2013", "vc-redist-2013-x86"),
+            ("xna-4.0", "xna-framework-4-refresh"),
+            ("physx", "nvidia-physx"),
+            ("openal", "openal-1.1"),
+        ];
+        for (alias, expected) in cases {
+            let spec = dependency_spec_by_id(alias).unwrap().unwrap();
+            assert_eq!(spec.id, expected);
+        }
+    }
+
+    #[test]
+    fn all_production_games_have_explicit_dependency_profiles() {
+        const PRODUCTION_GAME_IDS: &[&str] = &[
+            "007-first-light",
+            "alan-wake",
+            "among-us",
+            "assassins-creed-black-flag-resynced",
+            "assassins-creed-black-flag-resynced-steam",
+            "assassins-creed-mirage",
+            "atomic-heart",
+            "avatar-frontiers-of-pandora",
+            "blackmythwukong",
+            "call-of-duty-vanguard",
+            "crimson-desert",
+            "dead-space-2023",
+            "dragon-quest-vii-reimagined",
+            "ea-sports-fc-26",
+            "ea-sports-fifa-23",
+            "elden-ring",
+            "fifa-13",
+            "fifa-14",
+            "geometry-dash",
+            "grand-theft-auto-san-andreas-2005",
+            "heavy-rain",
+            "hello-kitty-island-adventure",
+            "hogwarts-legacy",
+            "judgment",
+            "meccha-chameleon",
+            "microsoft-flight-simulator-2020-40th-anniversary-edition",
+            "octopath-traveler-0",
+            "paper-bride",
+            "persona-3-reload",
+            "persona-5-royal",
+            "pragmata",
+            "red-dead-redemption",
+            "red-dead-redemption-2",
+            "resident-evil-requiem",
+            "rogue-genesia",
+            "sekiro-shadows-die-twice---goty-edition",
+            "soulstone-survivors",
+            "stellar-blade",
+            "tom-clancy-s-splinter-cell-blacklist",
+            "total-war-three-kingdoms",
+            "yakuza-0",
+            "yakuza-like-a-dragon",
+        ];
+        let bundle: DependencyBundle = serde_json::from_str(DEPENDENCY_BUNDLE_JSON).unwrap();
+        for game_id in PRODUCTION_GAME_IDS {
+            assert!(
+                bundle.game_profiles.contains_key(*game_id),
+                "missing dependency profile for {game_id}"
+            );
+            assert!(!dependency_specs_for_game(game_id).unwrap().is_empty());
+        }
+    }
+
+    #[test]
+    fn unknown_future_games_receive_the_cross_architecture_safe_default() {
+        let specs = dependency_specs_for_game("future-production-game").unwrap();
+        let ids = specs
+            .iter()
+            .map(|spec| spec.id.as_str())
+            .collect::<Vec<_>>();
+        assert_eq!(
+            ids,
+            vec!["vc-redist-v14-x64", "vc-redist-v14-x86", "directx-jun2010"]
+        );
+    }
+
+    #[test]
+    fn older_game_profiles_include_their_non_vc_runtime_requirements() {
+        let gta = dependency_specs_for_game("grand-theft-auto-san-andreas-2005").unwrap();
+        assert!(gta.iter().any(|spec| spec.id == "openal-1.1"));
+
+        let fifa = dependency_specs_for_game("fifa-14").unwrap();
+        assert!(fifa.iter().any(|spec| spec.id == "nvidia-physx"));
+        assert!(fifa.iter().any(|spec| spec.id == "vc-redist-2008-x86"));
+    }
+
+    #[test]
+    fn openal_archive_metadata_is_safe_and_hash_pinned() {
+        let spec = dependency_spec_by_id("openal").unwrap().unwrap();
+        assert_eq!(spec.archive_kind.as_deref(), Some("zip"));
+        assert_eq!(
+            spec.extracted_installer_path.as_deref(),
+            Some("oalinst.exe")
+        );
+        assert!(spec.extracted_installer_sha256.is_some());
+        assert!(spec.minimum_extracted_installer_bytes.unwrap_or(0) >= 800_000);
+    }
+
+    #[test]
+    fn unsupported_manifest_dependency_is_not_silently_ignored() {
+        let error =
+            resolve_manifest_dependencies(&["vc-redist-x64-2022,unknown-sdk".into()]).unwrap_err();
+        assert!(error.to_string().contains("unknown-sdk"));
+    }
+
+    #[test]
+    fn dependency_bundle_paths_reject_absolute_and_parent_paths() {
+        assert!(validate_relative_bundle_path("VC_redist.x64.exe").is_ok());
+        assert!(validate_relative_bundle_path("directx/DXSETUP.exe").is_ok());
+        assert!(validate_relative_bundle_path("../outside.exe").is_err());
+        assert!(validate_relative_bundle_path(r"C:\outside.exe").is_err());
+    }
+
+    #[test]
+    fn payload_hash_verification_detects_tampering() {
+        let path = std::env::temp_dir().join(format!(
+            "0xolemon-dependency-test-{}.bin",
+            uuid::Uuid::new_v4()
+        ));
+        fs::write(&path, b"verified dependency payload").unwrap();
+        let expected = sha256_file(&path).unwrap();
+        verify_dependency_file(&path, 4, Some(&expected), "test-runtime").unwrap();
+
+        fs::write(&path, b"tampered dependency payload").unwrap();
+        let error = verify_dependency_file(&path, 4, Some(&expected), "test-runtime").unwrap_err();
+        assert!(error.to_string().contains("SHA-256 mismatch"));
+        fs::remove_file(path).unwrap();
+    }
 }

@@ -974,8 +974,7 @@ pub(super) fn push_map_from_firestore(app: &AppHandle, payload: &str) -> Result<
         validate_game_map(game_id, game, &map.defaults)?;
     }
     let lkg_path = lkg_map_path(app)?;
-    let bytes =
-        serde_json::to_vec(&map).map_err(|e| format!("serialize cloud save map: {e}"))?;
+    let bytes = serde_json::to_vec(&map).map_err(|e| format!("serialize cloud save map: {e}"))?;
     write_atomic(&lkg_path, &bytes)?;
     eprintln!(
         "[CloudSaveMap] LKG updated from Firestore — version={} games={}",

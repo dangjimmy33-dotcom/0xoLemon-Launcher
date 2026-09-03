@@ -31,10 +31,21 @@ steam_api_utf8.json
 *.zip
 *_backup_*/
 native/steam_hook_backup_*/
+.dependency-downloads/
+src-tauri/resources/redist/*.exe
+src-tauri/resources/redist/*.msi
+src-tauri/resources/redist/*.zip
+src-tauri/resources/redist/*.download
+src-tauri/resources/redist/directx-jun2010/
 .playwright-mcp/
 playwright-report/
 test-results/
 launcher-shell-bg-check.png
+src-tauri/resources/tools/*_extracted/
+src-tauri/resources/tools/*.txt
+src-tauri/resources/tools/*.py
+src-tauri/resources/tools/*-main/
+src-tauri/resources/cloud_redirect/engine/2.6.4/
 
 # Secrets — never commit tokens (keep local only)
 src-tauri/huggingface-repos.json
@@ -82,5 +93,10 @@ backend-api/*.env.*.txt
 !tsconfig.json
 !tsconfig.*.json
 !src-tauri/tauri.conf.json
+!src-tauri/dependency-bundle.json
 !src-tauri/src/resources/cloud-save/*.json
+!src-tauri/resources/managed-runtime/catalog.json
+!src-tauri/resources/emu/manifest.json
+!src-tauri/resources/emu/OXO_PATCH_PROVENANCE.json
+!src-tauri/resources/emu/SOURCE_PROVENANCE.json
 !latest.json

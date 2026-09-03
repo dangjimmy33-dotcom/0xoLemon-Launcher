@@ -1,4 +1,5 @@
 import { DEFAULT_STORE_ROOT } from './installPaths'
+import { isThemeAccentMode, isUiThemeId, type ThemeAccentMode, type UiThemeId } from './uiThemes'
 
 export type StartupPage = 'Home' | 'Store' | 'Library' | 'Updates' | 'Downloads' | 'CloudRedirect'
 export type CloseBehavior = 'exit' | 'minimize'
@@ -25,6 +26,9 @@ export type LauncherPreferences = {
   confirmBeforeCloudRestore: boolean
   motionMode: MotionMode
   glassEffects: boolean
+  uiTheme: UiThemeId
+  themeEngineVersion: number
+  themeAccentMode: ThemeAccentMode
   accentHue: number
   accentChroma: number
   themeIntensity: number
@@ -77,6 +81,9 @@ export const DEFAULT_LAUNCHER_PREFERENCES: LauncherPreferences = {
   confirmBeforeCloudRestore: true,
   motionMode: 'system',
   glassEffects: true,
+  uiTheme: 'lightning',
+  themeEngineVersion: 3,
+  themeAccentMode: 'native',
   accentHue: 82,
   accentChroma: 56,
   themeIntensity: 64,
@@ -109,7 +116,8 @@ export const DEFAULT_LAUNCHER_PREFERENCES: LauncherPreferences = {
   defaultLibraryRoot: DEFAULT_STORE_ROOT,
 }
 
-const STORAGE_KEY = '0xo_launcher_preferences_v3'
+const STORAGE_KEY = '0xo_launcher_preferences_v4'
+const PREVIOUS_V3_STORAGE_KEY = '0xo_launcher_preferences_v3'
 const PREVIOUS_STORAGE_KEY = '0xo_launcher_preferences_v2'
 const LEGACY_STORAGE_KEY = '0xo_launcher_preferences_v1'
 
@@ -171,9 +179,10 @@ export function loadLauncherPreferences(): LauncherPreferences {
   if (typeof window === 'undefined') return DEFAULT_LAUNCHER_PREFERENCES
   try {
     const currentRaw = window.localStorage.getItem(STORAGE_KEY)
-    const previousRaw = currentRaw ? null : window.localStorage.getItem(PREVIOUS_STORAGE_KEY)
-    const legacyRaw = currentRaw || previousRaw ? null : window.localStorage.getItem(LEGACY_STORAGE_KEY)
-    const raw = currentRaw ?? previousRaw ?? legacyRaw
+    const v3Raw = currentRaw ? null : window.localStorage.getItem(PREVIOUS_V3_STORAGE_KEY)
+    const previousRaw = currentRaw || v3Raw ? null : window.localStorage.getItem(PREVIOUS_STORAGE_KEY)
+    const legacyRaw = currentRaw || v3Raw || previousRaw ? null : window.localStorage.getItem(LEGACY_STORAGE_KEY)
+    const raw = currentRaw ?? v3Raw ?? previousRaw ?? legacyRaw
     if (!raw) return DEFAULT_LAUNCHER_PREFERENCES
     const parsed = JSON.parse(raw) as Partial<LauncherPreferences> & { reduceMotion?: boolean; accentSoftness?: number }
     const migratedStartupPage =
@@ -189,6 +198,16 @@ export function loadLauncherPreferences(): LauncherPreferences {
       : parsed.reduceMotion
         ? 'reduced'
         : 'system'
+    const migratedUiTheme: UiThemeId = isUiThemeId(parsed.uiTheme)
+      ? parsed.uiTheme
+      : currentRaw
+        ? DEFAULT_LAUNCHER_PREFERENCES.uiTheme
+        : 'default'
+    const migratedThemeAccentMode: ThemeAccentMode = isThemeAccentMode(parsed.themeAccentMode)
+      ? parsed.themeAccentMode
+      : migratedUiTheme === 'default'
+        ? 'custom'
+        : 'native'
 
     return {
       startupPage: migratedStartupPage,
@@ -202,6 +221,9 @@ export function loadLauncherPreferences(): LauncherPreferences {
       confirmBeforeCloudRestore: booleanValue(parsed.confirmBeforeCloudRestore, true),
       motionMode: migratedMotionMode,
       glassEffects: booleanValue(parsed.glassEffects, true),
+      uiTheme: migratedUiTheme,
+      themeEngineVersion: 3,
+      themeAccentMode: migratedThemeAccentMode,
       accentHue: numberInRange(parsed.accentHue, DEFAULT_LAUNCHER_PREFERENCES.accentHue, 0, 360),
       accentChroma: numberInRange(
         parsed.accentChroma,

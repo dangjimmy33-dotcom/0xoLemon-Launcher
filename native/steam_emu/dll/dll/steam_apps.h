@@ -34,7 +34,7 @@ public ISteamApps
     class Settings *settings{};
     class SteamCallResults *callback_results{};
     class SteamCallBacks *callbacks{};
-	
+
 	void FillProofOfPurchaseKey( AppProofOfPurchaseKeyResponse_t& data, AppId_t nAppID, bool ok_result, std::string key = "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd" );
 	void FillProofOfPurchaseKey( AppProofOfPurchaseKeyResponse007_t& data, AppId_t nAppID, bool ok_result, std::string key = "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd" );
 
@@ -50,10 +50,10 @@ public:
 	bool BIsLowViolence();
 	bool BIsCybercafe();
 	bool BIsVACBanned();
-	
+
 	// valid list: https://partner.steamgames.com/doc/store/localization/languages
 	const char *GetCurrentGameLanguage();
-	
+
 	// valid list: https://partner.steamgames.com/doc/store/localization/languages
 	const char *GetAvailableGameLanguages();
 
@@ -80,7 +80,7 @@ public:
 	// Install/Uninstall control for optional DLC
 	void InstallDLC( AppId_t nAppID );
 	void UninstallDLC( AppId_t nAppID );
-	
+
 	// Request legacy cd-key for yourself or owned DLC. If you are interested in this
 	// data then make sure you provide us with a list of valid keys to be distributed
 	// to users when they purchase the game, before the game ships.
@@ -97,7 +97,7 @@ public:
 	// returns current app install folder for AppID, returns folder name length
 	uint32 GetAppInstallDir( AppId_t appID, char *pchFolder, uint32 cchFolderBufferSize );
 	bool BIsAppInstalled( AppId_t appID ); // returns true if that app is installed (not necessarily owned)
-	
+
 	CSteamID GetAppOwner(); // returns the SteamID of the original owner. If different from current user, it's borrowed
 
 	// Returns the associated launch param if the game is run via steam://run/<appid>//?param1=value1;param2=value2;param3=value3 etc.
@@ -107,7 +107,7 @@ public:
 	const char *GetLaunchQueryParam( const char *pchKey );
 
 	// get download progress for optional DLC
-	bool GetDlcDownloadProgress( AppId_t nAppID, uint64 *punBytesDownloaded, uint64 *punBytesTotal ); 
+	bool GetDlcDownloadProgress( AppId_t nAppID, uint64 *punBytesDownloaded, uint64 *punBytesTotal );
 
 	// return the buildid of this app, may change at any time based on backend updates to the game
 	int GetAppBuildId();
@@ -149,6 +149,10 @@ public:
 
 	// select this beta branch for this app as active, might need the game to restart so Steam can update to that branch
 	bool SetActiveBeta( const char *pchBetaName );
+
+	// game performance settings
+	void SetGamePerformanceSetting( EGamePerformanceSetting setting );
+	void SetGameRenderResolution( uint32 unWidth, uint32 unHeight );
 };
 
 #endif // __INCLUDED_STEAM_APPS_H__

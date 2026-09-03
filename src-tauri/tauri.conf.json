@@ -1,11 +1,11 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "0xoLemon",
-  "version": "2.0.50",
+  "version": "2.0.55",
   "identifier": "com.0xolemon.launcher",
   "build": {
     "beforeDevCommand": "npm run dev",
-    "beforeBuildCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File src-tauri/build-cloudredirect.ps1 -Configuration Release && npm run build",
+    "beforeBuildCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File src-tauri/build-cloudredirect.ps1 -Configuration Release && powershell -NoProfile -ExecutionPolicy Bypass -File src-tauri/prepare-dependencies.ps1 && npm run build",
     "devUrl": "http://localhost:1420",
     "frontendDist": "../dist"
   },
@@ -28,7 +28,13 @@
       }
     ],
     "security": {
-      "csp": null
+      "csp": null,
+      "assetProtocol": {
+        "enable": true,
+        "scope": [
+          "$APPLOCALDATA/home-wallpapers/**"
+        ]
+      }
     },
     "withGlobalTauri": true
   },
@@ -36,15 +42,17 @@
     "active": true,
     "targets": "all",
     "createUpdaterArtifacts": true,
-    "externalBin": [
-      "binaries/DepotDownloaderMod"
-    ],
     "resources": [
       "resources/steam_hooks/*",
       "resources/emu/**/*",
       "../steam_appids_mapping.json",
       "src/resources/cloud-save/**/*",
       "resources/cloud_redirect/**/*",
+      "resources/tools/**/*",
+      "resources/redist/*.exe",
+      "resources/redist/*.msi",
+      "resources/redist/*.zip",
+      "resources/redist/README.txt",
       "vendor/cloudredirect/Version.props"
     ],
     "icon": [

@@ -1,0 +1,28 @@
+/* X Minecraft Launcher inspired theme package.
+   The package owns geometry, density, glass and motion. Chroma stays delegated
+   to the launcher Color Wheel through the existing --theme-accent* tokens. */
+html[data-ui-theme='xmcl'] {
+  --xmcl-rail-width: 80px;
+  --xmcl-systembar-height: 36px;
+  --xmcl-page-gap: 10px;
+  --xmcl-radius-item: 10px;
+  --xmcl-radius-card: 16px;
+  --xmcl-radius-panel: 24px;
+  --xmcl-radius-dialog: 28px;
+  --xmcl-surface-blur: 34px;
+  --xmcl-motion-duration: .34s;
+  --xmcl-motion-fast: .18s;
+  --xmcl-motion-emphasized: .44s;
+  --xmcl-ease: cubic-bezier(.2, .82, .2, 1);
+  --xmcl-ease-emphasized: cubic-bezier(.16, 1, .3, 1);
+
+  --ui-page-bg: color-mix(in oklab, var(--launcher-page-bg) 94%, var(--theme-accent-deep) 6%);
+  --ui-frame-bg: color-mix(in oklab, var(--launcher-frame-bg) 94%, var(--theme-accent-deep) 6%);
+  --ui-sidebar-bg: color-mix(in oklab, var(--launcher-sidebar-bg) 88%, transparent 12%);
+  --ui-panel-bg: color-mix(in oklab, var(--theme-card-bg) 84%, transparent 16%);
+  --ui-panel-bg-strong: color-mix(in oklab, var(--theme-elevated-bg) 88%, transparent 12%);
+  --ui-popup-bg: color-mix(in oklab, var(--theme-modal-bg-strong) 84%, transparent 16%);
+  --ui-overlay-bg: color-mix(in oklab, rgba(2, 5, 8, .64) 78%, var(--theme-accent-deep) 22%);
+  --ui-hover-bg: color-mix(in oklab, transparent 90%, var(--theme-accent) 10%);
+  --ui-selection-bg: color-mix(in oklab, transparent 82%, var(--theme-accent) 18%);
+}

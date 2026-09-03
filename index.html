@@ -3,20 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#080b0e" />
+    <meta name="description" content="0xoLemon Launcher provides version-aware game delivery, verified resumable downloads and authenticated Remote Web control." />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="0xoLemon Launcher" />
+    <meta property="og:description" content="Install exact versions, resume verified downloads and send typed jobs to your own online launcher." />
+    <meta property="og:url" content="https://0xo-lemon-launcher.vercel.app/" />
+    <meta property="og:image" content="https://0xo-lemon-launcher.vercel.app/favicon.svg" />
+    <meta name="twitter:card" content="summary" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>0xoLemon Launcher</title>
-    <script>
-      window.onerror = function(message, source, lineno, colno, error) {
-        fetch('http://localhost:14200/log-error', { method: 'POST', body: JSON.stringify({type: 'onerror', message, source, lineno, colno, stack: error?.stack}) }).catch(()=>{});
-      };
-      window.addEventListener('unhandledrejection', function(event) {
-        fetch('http://localhost:14200/log-error', { method: 'POST', body: JSON.stringify({type: 'unhandledrejection', reason: event.reason?.stack || event.reason}) }).catch(()=>{});
-      });
-      const originalError = console.error;
-      console.error = function(...args) {
-        fetch('http://localhost:14200/log-error', { method: 'POST', body: JSON.stringify({type: 'console.error', args: args.map(a => a?.stack || a?.toString() || a)}) }).catch(()=>{});
-        originalError.apply(console, args);
-      };
-    </script>
   </head>
   <body>
     <div id="root"></div>

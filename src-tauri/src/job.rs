@@ -5,7 +5,7 @@ use std::fs::{self, File, OpenOptions};
 use std::io::{Read, Seek, SeekFrom, Write};
 use std::path::{Path, PathBuf};
 use std::process::Command;
-use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
 use std::sync::{mpsc, Arc, Mutex, OnceLock};
 use std::thread;
 use std::time::{Duration, Instant};
@@ -107,26 +107,46 @@ const MAX_DOWNLOAD_RETRIES: u32 = 5;
 const PACK_RANGE_MERGE_GAP: u64 = 4 * 1024 * 1024;
 const MIN_PACK_RANGE_TASK_BYTES: u64 = 8 * 1024 * 1024;
 const MAX_PACK_RANGE_TASK_BYTES: u64 = 64 * 1024 * 1024;
-const MIN_ADAPTIVE_RANGE_BYTES: u64 = 8 * 1024 * 1024;
-const ANONYMOUS_MAX_WORKERS: usize = 4;
-const ANONYMOUS_MAX_PACK_RANGE_TASK_BYTES: u64 = 12 * 1024 * 1024;
 const VERIFY_PROGRESS_EVENT: &str = "launcher://verify-progress";
+const DOWNLOAD_TELEMETRY_EVENT: &str = "launcher://download-telemetry";
 const VERIFY_READ_BUFFER_BYTES: usize = 4 * 1024 * 1024;
 const DOWNLOAD_CHECKPOINT_BYTES: u64 = 64 * 1024 * 1024;
 const DOWNLOAD_CHECKPOINT_MIN_INTERVAL: Duration = Duration::from_secs(1);
-const DOWNLOAD_CHECKPOINT_MAX_INTERVAL: Duration = Duration::from_secs(5);
+const DOWNLOAD_CHECKPOINT_MAX_INTERVAL: Duration = Duration::from_secs(2);
 const SEQUENTIAL_PREFETCH_MAX_FILES: usize = 256;
 const SEQUENTIAL_COMMIT_BATCH_FILES: usize = 256;
 const JOB_UI_EMIT_INTERVAL: Duration = Duration::from_millis(200);
 const JOB_JOURNAL_PERSIST_INTERVAL: Duration = Duration::from_secs(2);
 const CIRCUIT_BREAKER_FAILURES: u32 = 3;
 const CIRCUIT_BREAKER_COOLDOWN: Duration = Duration::from_secs(30);
+const TRANSPORT_PIPELINE_V3: &str = "transport-pipeline-v3";
+
+fn transport_pipeline_v3_enabled() -> bool {
+    env::var("OXO_TRANSPORT_PIPELINE_V3")
+        .ok()
+        .map(|value| {
+            !matches!(
+                value.trim().to_ascii_lowercase().as_str(),
+                "0" | "false" | "off" | "disabled"
+            )
+        })
+        .unwrap_or(true)
+}
+
+fn journal_uses_transport_v3(journal: &JobJournal) -> bool {
+    journal.pipeline_version == TRANSPORT_PIPELINE_V3
+}
+
+fn journal_uses_verified_stage(journal: &JobJournal) -> bool {
+    journal_uses_transport_v3(journal) || journal.pipeline_version == "verified-stage-v2"
+}
 
 mod dependencies;
 mod direct;
 mod paths;
 mod progress;
 mod sequential;
+mod transport;
 
 use dependencies::{
     create_game_shortcut, create_game_shortcut_no_exe, ensure_game_dependencies,
@@ -139,18 +159,33 @@ use sequential::{
     RecoveryOutcome, SequentialUpdateSession, TransactionCommitProof, VerifiedFileWriter,
     VerifiedStageSession,
 };
-
-#[derive(Debug)]
-struct AdaptiveRangeState {
-    range_bytes: u64,
-    ewma_rate: f64,
-    successful_samples: u32,
-}
-
-static ADAPTIVE_RANGE_STATE: OnceLock<Mutex<AdaptiveRangeState>> = OnceLock::new();
+use transport::{
+    cleanup_xet_spool, probe_hf_pack, select_transport, source_identities_match,
+    stream_hf_xet_pack_to_spool, AdaptiveGovernor, DownloadTelemetry, DownloadTransportKind,
+    HfPackMetadata, HfRepoLocation, PackTransportPlan, TransportCandidate, TransportOperation,
+};
 static RUNNING_GAMES: OnceLock<Mutex<std::collections::HashMap<String, u32>>> = OnceLock::new();
+static DOWNLOAD_TELEMETRY_RATES: OnceLock<Mutex<HashMap<String, TelemetryRateState>>> =
+    OnceLock::new();
+static DOWNLOAD_RUNTIME_TELEMETRY: OnceLock<Mutex<HashMap<String, RuntimeTransportState>>> =
+    OnceLock::new();
 static AUTOMATIC_SCAN_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
 static LAST_POST_DISCOVERY_SCAN: AtomicU64 = AtomicU64::new(0);
+
+#[derive(Debug)]
+struct TelemetryRateState {
+    sampled_at: Instant,
+    wire_bytes: u64,
+    apply_bytes: u64,
+    wire_rate_ewma: f64,
+    apply_rate_ewma: f64,
+}
+
+#[derive(Debug, Default, Clone, Copy)]
+struct RuntimeTransportState {
+    active_connections: usize,
+    queue_bytes: u64,
+}
 
 fn running_games() -> &'static Mutex<std::collections::HashMap<String, u32>> {
     RUNNING_GAMES.get_or_init(|| Mutex::new(std::collections::HashMap::new()))
@@ -307,7 +342,8 @@ pub fn start_auto_update_scheduler(app: AppHandle, control: Arc<JobControl>) {
         thread::sleep(AUTO_PATCH_STARTUP_DELAY);
         loop {
             if let Ok(_scan_guard) = automatic_scan_lock().try_lock() {
-                if let Err(error) = auto_patch_tick(&patch_app, &patch_control, &mut last_attempts) {
+                if let Err(error) = auto_patch_tick(&patch_app, &patch_control, &mut last_attempts)
+                {
                     let _ = patch_app.emit(
                         "launcher://auto-update",
                         AutoUpdateEvent {
@@ -760,10 +796,19 @@ pub struct JobJournal {
     pub apply_bytes_total: u64,
     #[serde(default)]
     pub durable_bytes: u64,
+    /// Bytes observed at the network transport, independent of disk checkpoints.
+    #[serde(default)]
+    pub wire_bytes_done: u64,
     #[serde(default)]
     pub current_file: String,
     #[serde(default)]
     pub pipeline_version: String,
+    #[serde(default)]
+    pub transport_plans: Vec<PackTransportPlan>,
+    #[serde(default)]
+    pub current_transport: DownloadTransportKind,
+    #[serde(default)]
+    pub stall_reason: String,
     #[serde(default)]
     pub commit_state: String,
     #[serde(default)]
@@ -807,6 +852,22 @@ pub struct DownloadMetrics {
     pub allocation_reserved_bytes: u64,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub allocation_fallback_reason: Option<String>,
+    #[serde(default)]
+    pub xet_bytes: u64,
+    #[serde(default)]
+    pub raw_range_bytes: u64,
+    #[serde(default)]
+    pub wire_bytes: u64,
+    #[serde(default)]
+    pub decode_wait_ms: u64,
+    #[serde(default)]
+    pub writer_wait_ms: u64,
+    #[serde(default)]
+    pub checkpoint_wait_ms: u64,
+    #[serde(default)]
+    pub ttfb_p50_ms: u64,
+    #[serde(default)]
+    pub ttfb_p95_ms: u64,
     #[serde(skip)]
     throughput_samples: Vec<u64>,
 }
@@ -1190,7 +1251,11 @@ pub fn spawn_update_job(
         &target_version,
         0,
     );
-    journal.pipeline_version = "sequential-stage-v1+verified-patch-v2".to_string();
+    journal.pipeline_version = if transport_pipeline_v3_enabled() {
+        TRANSPORT_PIPELINE_V3.to_string()
+    } else {
+        "sequential-stage-v1+verified-patch-v2".to_string()
+    };
     journal.steps[0] = step(
         "Read install state",
         "Load .0xolemon state and the installed manifest",
@@ -1324,7 +1389,11 @@ pub fn spawn_install_job(
         &target_version,
         initial_bytes,
     );
-    journal.pipeline_version = "verified-stage-v2".to_string();
+    journal.pipeline_version = if transport_pipeline_v3_enabled() {
+        TRANSPORT_PIPELINE_V3.to_string()
+    } else {
+        "verified-stage-v2".to_string()
+    };
     journal.bytes_done = initial_in_flight
         .values()
         .copied()
@@ -1537,7 +1606,11 @@ pub fn spawn_repair_job(
         &version,
         bytes_total,
     );
-    journal.pipeline_version = "verified-stage-v2".to_string();
+    journal.pipeline_version = if transport_pipeline_v3_enabled() {
+        TRANSPORT_PIPELINE_V3.to_string()
+    } else {
+        "verified-stage-v2".to_string()
+    };
     journal.planned_files = repair_files.iter().map(|file| file.path.clone()).collect();
     journal.bytes_done = existing_partial_task_progress(&staged_chunks_root, &missing_chunks)
         .values()
@@ -2070,6 +2143,12 @@ pub fn game_install_state(app: &AppHandle, game_id: &str) -> Result<GameInstallS
     })
 }
 
+/// Resolves the launcher-managed install directory for a registered library.
+/// Callers must first validate the library identity through install discovery.
+pub(crate) fn install_path_for_library(game_id: &str, library_root: &Path) -> PathBuf {
+    library_root.join("common").join(game_dir_name(game_id))
+}
+
 pub fn game_install_state_quick(
     app: &AppHandle,
     game_id: &str,
@@ -2391,39 +2470,10 @@ pub fn launch_game(
         )));
     }
 
-    // --- Steam Emulator DLL injection ---
-    // executable is now fully resolved; copy our emu DLL next to it.
-    {
-        let game_dir = executable.parent().unwrap_or(install_path);
-        let exe_is_64 = crate::process_manager::is_pe64(&executable);
-        let (arch_dir, dll_name) = if exe_is_64 {
-            ("x64", "steam_api64.dll")
-        } else {
-            ("x86", "steam_api.dll")
-        };
-        let emu_dll = if let Ok(res_dir) = app.path().resource_dir() {
-            res_dir.join("emu").join(arch_dir).join(dll_name)
-        } else {
-            std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-                .join("resources")
-                .join("emu")
-                .join(arch_dir)
-                .join(dll_name)
-        };
-        if emu_dll.exists() {
-            let dest = game_dir.join(dll_name);
-            match std::fs::copy(&emu_dll, &dest) {
-                Ok(_) => eprintln!(
-                    "[steam_emu] Injected {} -> {}",
-                    emu_dll.display(),
-                    dest.display()
-                ),
-                Err(e) => eprintln!("[steam_emu] Failed to inject DLL: {}", e),
-            }
-        } else {
-            eprintln!("[steam_emu] DLL not found at: {}", emu_dll.display());
-        }
-    }
+    // Launch is verify-only. Runtime files are installed or repaired only at an
+    // explicit transaction boundary while the game is closed.
+    crate::managed_game_runtime::verify_before_launch(&source.game_id, install_path, &executable)
+        .map_err(JobError::Depot)?;
 
     if !skip_cloud_sync {
         crate::cloud_save::sync_before_launch(app, &source.game_id).map_err(JobError::Depot)?;
@@ -2450,9 +2500,97 @@ pub fn launch_game(
         Some(&executable),
     );
 
-    let mut launched = launch_option_processes(&source.game_id, install_path, option)?;
+    let achievement_watcher =
+        if crate::managed_game_runtime::supports_managed_achievements(&source.game_id) {
+            Some(
+                crate::achievement_watcher::start_session(
+                    app.clone(),
+                    &source.game_id,
+                    source.app_id,
+                    install_path,
+                    0,
+                )
+                .map_err(JobError::Depot)?,
+            )
+        } else {
+            None
+        };
+    let runtime_environment = achievement_watcher
+        .as_ref()
+        .map(crate::achievement_watcher::AchievementWatcher::environment)
+        .unwrap_or_default();
+    let runtime_session_id = achievement_watcher
+        .as_ref()
+        .map(|watcher| watcher.session_id().to_string())
+        .unwrap_or_else(|| uuid::Uuid::new_v4().to_string());
+    let runtime_app_id = achievement_watcher
+        .as_ref()
+        .map(crate::achievement_watcher::AchievementWatcher::app_id)
+        .or(source.app_id)
+        .unwrap_or_default();
+    crate::game_session_state::begin_session(
+        app,
+        &runtime_session_id,
+        &source.game_id,
+        runtime_app_id,
+        crate::game_session_state::OverlayRenderer::Disabled,
+    )
+    .map_err(JobError::Depot)?;
+    if achievement_watcher.is_none() {
+        let _ = crate::game_session_state::mark_transport(
+            app,
+            &source.game_id,
+            &runtime_session_id,
+            crate::game_session_state::AchievementTransport::Closed,
+            None,
+        );
+    }
+    let mut launched = match launch_option_processes(
+        &source.game_id,
+        install_path,
+        option,
+        &runtime_environment,
+    ) {
+        Ok(launched) => launched,
+        Err(error) => {
+            let _ = crate::game_session_state::close_session(
+                app,
+                &source.game_id,
+                &runtime_session_id,
+                true,
+            );
+            return Err(error);
+        }
+    };
     if let Some(mut tracked_process) = launched.main_process.take() {
         let pid = tracked_process.id();
+        if let Some(watcher) = achievement_watcher.as_ref() {
+            if let Err(error) = watcher.bind_pid(pid) {
+                tracked_process.terminate();
+                let _ = crate::game_session_state::close_session(
+                    app,
+                    &source.game_id,
+                    &runtime_session_id,
+                    true,
+                );
+                return Err(JobError::Depot(error));
+            }
+        }
+        if let Err(error) = crate::game_session_state::mark_running(
+            app,
+            &source.game_id,
+            &runtime_session_id,
+            pid,
+        ) {
+            tracked_process.terminate();
+            let _ = crate::game_session_state::close_session(
+                app,
+                &source.game_id,
+                &runtime_session_id,
+                true,
+            );
+            return Err(JobError::Depot(error));
+        }
         let (started_event, achievement_events) = match crate::platform::begin_game_session(
             app,
             &source.game_id,
@@ -2463,11 +2601,34 @@ pub fn launch_game(
             Ok(value) => value,
             Err(error) => {
                 tracked_process.terminate();
+                let _ = crate::game_session_state::close_session(
+                    app,
+                    &source.game_id,
+                    &runtime_session_id,
+                    true,
+                );
                 return Err(JobError::Depot(format!(
                     "game started but runtime tracking could not be initialized: {error}"
                 )));
             }
         };
+        if let Err(error) = crate::cloud_save::consume_local_wins_once_on_start(
+            app,
+            &source.game_id,
+            &runtime_session_id,
+        ) {
+            tracked_process.terminate();
+            let _ = crate::platform::end_game_session(app, &source.game_id, pid, 0, None);
+            let _ = crate::game_session_state::close_session(
+                app,
+                &source.game_id,
+                &runtime_session_id,
+                true,
+            );
+            return Err(JobError::Depot(format!(
+                "game started but restored-save cloud policy could not bind to the runtime session: {error}"
+            )));
+        }
 
         crate::cloud_save::mark_game_running(&source.game_id, true);
         running_games()
@@ -2480,6 +2641,9 @@ pub fn launch_game(
         let app_for_exit = app.clone();
         let game_id_for_exit = source.game_id.clone();
         let installed_version_for_exit = marker.version.clone();
+        let app_id_for_exit = source.app_id;
+        let achievement_watcher_for_exit = achievement_watcher;
+        let runtime_session_id_for_exit = runtime_session_id;
         let session_started_at = Instant::now();
         thread::spawn(move || {
             let exit_code = match tracked_process.wait() {
@@ -2494,6 +2658,11 @@ pub fn launch_game(
             };
             let session_seconds = session_started_at.elapsed().as_secs();
             running_games().lock().unwrap().remove(&game_id_for_exit);
+            let _ = crate::game_session_state::mark_exiting(
+                &app_for_exit,
+                &game_id_for_exit,
+                &runtime_session_id_for_exit,
+            );
 
             match crate::platform::end_game_session(
                 &app_for_exit,
@@ -2523,13 +2692,82 @@ pub fn launch_game(
                 }
             }
 
-            crate::local_save_backup::backup_after_exit_async(
-                app_for_exit.clone(),
-                game_id_for_exit.clone(),
-                installed_version_for_exit,
+            // Stop and join the pipe worker before save/cloud finalization so
+            // no late achievement event can escape the session boundary.
+            drop(achievement_watcher_for_exit);
+            let _ = crate::game_session_state::close_session(
+                &app_for_exit,
+                &game_id_for_exit,
+                &runtime_session_id_for_exit,
+                false,
             );
-            crate::cloud_save::sync_after_exit_async(app_for_exit, game_id_for_exit);
+            crate::cloud_save::mark_game_running(&game_id_for_exit, false);
+            let backup_result = crate::local_save_backup::backup_after_exit(
+                &app_for_exit,
+                &game_id_for_exit,
+                &installed_version_for_exit,
+                app_id_for_exit,
+            );
+            if let Err(error) = backup_result {
+                eprintln!(
+                    "[save-backup] Could not protect {} before cloud sync: {error}",
+                    game_id_for_exit
+                );
+                let _ = app_for_exit.emit(
+                    "launcher://cloud-save-error",
+                    serde_json::json!({
+                        "gameId": &game_id_for_exit,
+                        "message": format!("Local save backup failed; cloud upload was blocked: {error}")
+                    }),
+                );
+                return;
+            }
+
+            match crate::cloud_save::finalize_local_wins_once_after_exit(
+                &app_for_exit,
+                &game_id_for_exit,
+                &runtime_session_id_for_exit,
+                exit_code == Some(0),
+            ) {
+                Ok(crate::cloud_save::LocalWinsExitDisposition::ForcePush) => {
+                    crate::cloud_save::sync_restored_after_exit_async(
+                        app_for_exit,
+                        game_id_for_exit,
+                    );
+                }
+                Ok(crate::cloud_save::LocalWinsExitDisposition::Normal) => {
+                    crate::cloud_save::sync_after_exit_async(app_for_exit, game_id_for_exit);
+                }
+                Ok(
+                    crate::cloud_save::LocalWinsExitDisposition::Conflict
+                    | crate::cloud_save::LocalWinsExitDisposition::StillPrepared,
+                ) => {
+                    let _ = app_for_exit.emit(
+                        "launcher://cloud-save-error",
+                        serde_json::json!({
+                            "gameId": &game_id_for_exit,
+                            "message": "Restored save did not reach a verified clean exit; automatic cloud upload is blocked."
+                        }),
+                    );
+                }
+                Err(error) => {
+                    let _ = app_for_exit.emit(
+                        "launcher://cloud-save-error",
+                        serde_json::json!({
+                            "gameId": &game_id_for_exit,
+                            "message": format!("Could not finalize restored-save cloud policy: {error}")
+                        }),
+                    );
+                }
+            }
         });
+    } else {
+        let _ = crate::game_session_state::close_session(
+            app,
+            &source.game_id,
+            &runtime_session_id,
+            true,
+        );
     }
 
     Ok(LaunchReport {
@@ -3038,10 +3276,31 @@ fn run_real_update_job_once(
         .collect::<Vec<_>>();
     let missing_chunks =
         plan_missing_chunks(&local_sources, session.cache_root(), &remaining_files, None)?;
-    let transfer_total = download_transfer_bytes(&missing_chunks);
+    let prepared_transports = if journal_uses_transport_v3(&journal) {
+        let operation = update_transport_operation(&catalog, &from_version, &target_version);
+        let prepared = source.prepare_pack_transports(
+            session.cache_root(),
+            &missing_chunks,
+            Some(&target_version),
+            operation,
+            &[],
+        )?;
+        debug_assert!(prepared.xet_packs.is_empty());
+        Some(prepared)
+    } else {
+        None
+    };
+    let transfer_total = prepared_transports
+        .as_ref()
+        .map(|prepared| prepared.transfer_bytes)
+        .unwrap_or_else(|| download_transfer_bytes(&missing_chunks));
     configure_transfer_plan(&mut journal, transfer_total, 0);
     configure_download_metrics(&mut journal, &missing_chunks, false);
-    journal.metrics.pipeline = "sequential-stage-v1".to_string();
+    journal.metrics.pipeline = if journal_uses_transport_v3(&journal) {
+        TRANSPORT_PIPELINE_V3.to_string()
+    } else {
+        "sequential-stage-v1".to_string()
+    };
     if journal.pipeline_version.is_empty() {
         // Journals created before verified patch staging stay pinned to the
         // legacy patch implementation when they resume.
@@ -3063,6 +3322,14 @@ fn run_real_update_job_once(
     journal.apply_bytes_done = session.total_durable_bytes(&changed);
     journal.durable_bytes = journal.apply_bytes_done;
     journal.commit_state = "staging".to_string();
+    if let Some(prepared) = prepared_transports {
+        journal.transport_plans = prepared.plans;
+        journal.metrics.overfetch_bytes = journal
+            .transport_plans
+            .iter()
+            .map(|plan| plan.estimated_overfetch)
+            .sum();
+    }
     let planned_network = human_bytes(journal.bytes_total);
     append_log(
         &mut journal,
@@ -3539,6 +3806,7 @@ fn stage_verified_manifest_files(
     files: &[FileEntry],
     local_sources: &mut HashMap<String, LocalChunkSource>,
     target_version: &str,
+    operation: TransportOperation,
     step_index: usize,
 ) -> Result<(), JobError> {
     session.reconcile_chunk_references(files)?;
@@ -3552,7 +3820,21 @@ fn stage_verified_manifest_files(
         .collect::<Vec<_>>();
     let missing_chunks =
         plan_missing_chunks(local_sources, session.cache_root(), &remaining_files, None)?;
-    let transfer_total = download_transfer_bytes(&missing_chunks);
+    let prepared_transports = if journal_uses_transport_v3(journal) {
+        Some(source.prepare_pack_transports(
+            session.cache_root(),
+            &missing_chunks,
+            Some(target_version),
+            operation,
+            &journal.transport_plans,
+        )?)
+    } else {
+        None
+    };
+    let transfer_total = prepared_transports
+        .as_ref()
+        .map(|prepared| prepared.transfer_bytes)
+        .unwrap_or_else(|| download_transfer_bytes(&missing_chunks));
     let resumed_in_flight = existing_partial_task_progress(session.cache_root(), &missing_chunks);
     let resumed_bytes = resumed_in_flight
         .values()
@@ -3561,12 +3843,26 @@ fn stage_verified_manifest_files(
         .min(transfer_total);
     configure_transfer_plan(journal, transfer_total, resumed_bytes);
     configure_download_metrics(journal, &missing_chunks, false);
-    journal.metrics.pipeline = "verified-stage-v2".to_string();
-    journal.pipeline_version = "verified-stage-v2".to_string();
+    journal.metrics.pipeline = if journal_uses_transport_v3(journal) {
+        TRANSPORT_PIPELINE_V3.to_string()
+    } else {
+        "verified-stage-v2".to_string()
+    };
+    if journal.pipeline_version.is_empty() {
+        journal.pipeline_version = "verified-stage-v2".to_string();
+    }
     journal.apply_bytes_total = files.iter().map(|file| file.size).sum();
     journal.apply_bytes_done = session.total_durable_bytes(files);
     journal.durable_bytes = journal.apply_bytes_done;
     journal.commit_state = "staging".to_string();
+    if let Some(prepared) = prepared_transports.as_ref() {
+        journal.transport_plans = prepared.plans.clone();
+        journal.metrics.overfetch_bytes = prepared
+            .plans
+            .iter()
+            .map(|plan| plan.estimated_overfetch)
+            .sum();
+    }
 
     let queue_budget = crate::platform::current_settings()
         .download_queue_mb
@@ -3576,6 +3872,86 @@ fn stage_verified_manifest_files(
     let mut in_flight = resumed_in_flight;
     let mut last_ui_emit = Instant::now();
     let mut last_journal_persist = Instant::now();
+
+    if let Some(prepared) = prepared_transports {
+        persist_and_emit(app, journal)?;
+        let mut fell_back_to_raw = false;
+        for pack in prepared.xet_packs {
+            wait_for_control(app, control, journal, step_index)?;
+            let durable_snapshot = journal.apply_bytes_done;
+            let mut progress_callback = |progress: DownloadProgress| {
+                if progress.clear_in_flight {
+                    in_flight.remove(&progress.task_id);
+                } else {
+                    in_flight.insert(progress.task_id.clone(), progress.in_flight_bytes);
+                }
+                downloaded = downloaded.saturating_add(progress.committed_bytes);
+                wait_for_control(app, control, journal, step_index)?;
+                let active_bytes = in_flight.values().copied().sum::<u64>();
+                observe_download_progress(journal, &progress, active_bytes);
+                journal.bytes_done = downloaded
+                    .saturating_add(active_bytes)
+                    .min(journal.bytes_total);
+                journal.steps[step_index].progress =
+                    streamed_journal_progress(journal, durable_snapshot, journal.apply_bytes_total);
+                journal.overall_progress =
+                    overall_progress(step_index, journal.steps[step_index].progress);
+                touch(journal);
+                publish_job_progress(
+                    app,
+                    journal,
+                    &mut last_ui_emit,
+                    &mut last_journal_persist,
+                    false,
+                )
+            };
+            match source.download_xet_pack_to_store(
+                session.cache_root(),
+                &pack,
+                control,
+                &mut progress_callback,
+            ) {
+                Ok(()) => {}
+                Err(JobError::Transient(error)) => {
+                    fell_back_to_raw = true;
+                    in_flight.remove(&format!("xet:{}", pack.plan.pack_id));
+                    if let Some(plan) = journal
+                        .transport_plans
+                        .iter_mut()
+                        .find(|plan| plan.pack_id == pack.plan.pack_id)
+                    {
+                        plan.selected_transport = DownloadTransportKind::HttpRange;
+                    }
+                    append_log(
+                        journal,
+                        "warning",
+                        &format!(
+                            "Xet unavailable for pack {}; falling back to exact verified ranges: {}",
+                            pack.plan.pack_id, error
+                        ),
+                    );
+                    persist_and_emit(app, journal)?;
+                }
+                Err(error) => return Err(error),
+            }
+        }
+
+        if fell_back_to_raw {
+            let remaining =
+                plan_missing_chunks(local_sources, session.cache_root(), &remaining_files, None)?;
+            let raw_remaining = download_transfer_bytes(&remaining);
+            configure_transfer_plan(
+                journal,
+                downloaded.saturating_add(raw_remaining),
+                downloaded,
+            );
+            journal.metrics.overfetch_bytes = journal
+                .transport_plans
+                .iter()
+                .map(|plan| plan.estimated_overfetch)
+                .sum();
+        }
+    }
 
     for (file_index, file) in files.iter().enumerate() {
         wait_for_control(app, control, journal, step_index)?;
@@ -4260,7 +4636,7 @@ fn run_real_install_job(
     control: Arc<JobControl>,
     journal: JobJournal,
 ) -> Result<JobJournal, JobError> {
-    if journal.pipeline_version == "verified-stage-v2" {
+    if journal_uses_verified_stage(&journal) {
         run_verified_install_job(app, control, journal)
     } else {
         run_legacy_install_job(app, control, journal)
@@ -4374,6 +4750,7 @@ fn run_verified_install_job(
         &changed,
         &mut local_sources,
         &target_version,
+        TransportOperation::FreshInstall,
         2,
     )?;
     complete_step(app, &mut journal, 2)?;
@@ -4721,7 +5098,7 @@ fn run_real_repair_job(
     repair_files: Vec<FileEntry>,
     target_manifest: VersionManifest,
 ) -> Result<JobJournal, JobError> {
-    if journal.pipeline_version == "verified-stage-v2" {
+    if journal_uses_verified_stage(&journal) {
         run_verified_repair_job(app, control, journal, repair_files, target_manifest)
     } else {
         run_legacy_repair_job(app, control, journal, repair_files, target_manifest)
@@ -4813,6 +5190,7 @@ fn run_verified_repair_job(
         &repair_files,
         &mut local_sources,
         &target_version,
+        TransportOperation::Repair,
         2,
     )?;
     complete_step(app, &mut journal, 2)?;
@@ -5171,6 +5549,31 @@ struct DepotRemoteBase {
 }
 
 #[derive(Debug, Clone)]
+struct ResolvedPackUrl {
+    signed_url: Option<String>,
+    refresh_at: Instant,
+    source_identity: Option<String>,
+    total_pack_bytes: Option<u64>,
+}
+
+#[derive(Debug, Clone)]
+struct PlannedXetPack {
+    plan: PackTransportPlan,
+    base: DepotRemoteBase,
+    location: HfRepoLocation,
+    metadata: HfPackMetadata,
+    relative_path: String,
+    chunks: Vec<ChunkRef>,
+}
+
+#[derive(Debug, Default)]
+struct PreparedPackTransports {
+    plans: Vec<PackTransportPlan>,
+    xet_packs: Vec<PlannedXetPack>,
+    transfer_bytes: u64,
+}
+
+#[derive(Debug, Clone)]
 struct DepotSource {
     game_id: String,
     game_dir_name: String,
@@ -5182,6 +5585,8 @@ struct DepotSource {
     local_root: Option<PathBuf>,
     client: OnceLock<Client>,
     rate_coordinator: Arc<RateCoordinator>,
+    governor: Arc<Mutex<AdaptiveGovernor>>,
+    resolved_pack_urls: Arc<Mutex<HashMap<String, ResolvedPackUrl>>>,
     // Negative cache for optional JSON objects (notably patch manifests).
     // A missing patch must not be fetched from every mirror again later in
     // the same install/update job.
@@ -5337,6 +5742,21 @@ impl DepotSource {
             local_root,
             client: OnceLock::new(),
             rate_coordinator: Arc::new(RateCoordinator::default()),
+            governor: Arc::new(Mutex::new(AdaptiveGovernor::new(
+                crate::platform::current_settings().download_workers,
+                if matches!(
+                    crate::platform::current_settings().download_profile,
+                    crate::platform::DownloadProfile::Auto
+                ) {
+                    4
+                } else {
+                    crate::platform::current_settings().download_workers
+                },
+                crate::platform::current_settings()
+                    .pack_range_mb
+                    .saturating_mul(1024 * 1024),
+            ))),
+            resolved_pack_urls: Arc::new(Mutex::new(HashMap::new())),
             missing_json_paths: Arc::new(Mutex::new(HashSet::new())),
         }
     }
@@ -5360,26 +5780,445 @@ impl DepotSource {
         }
     }
 
-    fn is_remote_anonymous(&self) -> bool {
-        self.local_root.is_none() && !self.base_urls.iter().any(|base| base.token.is_some())
-    }
-
     fn effective_worker_count(&self) -> usize {
-        let workers = download_worker_count();
-        if self.is_remote_anonymous() {
-            workers.min(ANONYMOUS_MAX_WORKERS)
-        } else {
-            workers
-        }
+        download_worker_count()
     }
 
     fn effective_pack_range_task_bytes(&self) -> u64 {
-        let bytes = pack_range_task_bytes();
-        if self.is_remote_anonymous() {
-            bytes.min(ANONYMOUS_MAX_PACK_RANGE_TASK_BYTES)
-        } else {
-            bytes
+        self.governor
+            .lock()
+            .map(|governor| governor.range_bytes())
+            .unwrap_or_else(|_| pack_range_task_bytes())
+    }
+
+    fn active_connection_limit(&self) -> usize {
+        self.governor
+            .lock()
+            .map(|governor| governor.active_connections())
+            .unwrap_or(1)
+    }
+
+    fn observe_transport_window(
+        &self,
+        elapsed: Duration,
+        throughput: u64,
+        error_rate: f32,
+        rate_limited: bool,
+        ttfb_ms: u64,
+        backpressured: bool,
+    ) {
+        if let Ok(mut governor) = self.governor.lock() {
+            governor.observe_window(
+                elapsed,
+                throughput,
+                error_rate,
+                rate_limited,
+                ttfb_ms,
+                backpressured,
+            );
         }
+    }
+
+    fn pack_relative_path(pack_id: &str, target_version: Option<&str>) -> String {
+        if pack_id.starts_with("patch-") {
+            target_version
+                .map(|version| format!("patches/{version}/packs/{pack_id}.bin"))
+                .unwrap_or_else(|| format!("packs/{pack_id}.bin"))
+        } else {
+            format!("packs/{pack_id}.bin")
+        }
+    }
+
+    fn pack_relative_path_in(
+        pack_id: &str,
+        target_version: Option<&str>,
+        pack_path_prefix: Option<&str>,
+    ) -> String {
+        let prefix = pack_path_prefix.map(str::trim).unwrap_or_default();
+        if prefix.is_empty() {
+            Self::pack_relative_path(pack_id, target_version)
+        } else {
+            format!("{}/{}.bin", prefix.trim_matches('/'), pack_id)
+        }
+    }
+
+    fn pin_pack_source_metadata(
+        &self,
+        base_url: &str,
+        relative_path: &str,
+        metadata: &HfPackMetadata,
+    ) -> Result<(), JobError> {
+        let key = format!("{base_url}\n{relative_path}");
+        let mut cache = self
+            .resolved_pack_urls
+            .lock()
+            .map_err(|_| JobError::Depot("pack source cache is unavailable".to_string()))?;
+        if let Some(previous) = cache.get(&key) {
+            if previous.source_identity.as_deref().is_some_and(|identity| {
+                !source_identities_match(identity, &metadata.source_identity)
+            }) {
+                return Err(JobError::Depot(
+                    "source revision changed while planning pack transport".to_string(),
+                ));
+            }
+            if previous.total_pack_bytes != Some(metadata.file_size) {
+                return Err(JobError::Depot(
+                    "source pack size changed while planning transport".to_string(),
+                ));
+            }
+        }
+        cache.entry(key).or_insert(ResolvedPackUrl {
+            signed_url: None,
+            refresh_at: Instant::now(),
+            source_identity: Some(metadata.source_identity.clone()),
+            total_pack_bytes: Some(metadata.file_size),
+        });
+        Ok(())
+    }
+
+    fn prepare_pack_transports(
+        &self,
+        staged_chunks_root: &Path,
+        chunks: &[ChunkRef],
+        target_version: Option<&str>,
+        operation: TransportOperation,
+        pinned_plans: &[PackTransportPlan],
+    ) -> Result<PreparedPackTransports, JobError> {
+        let mut by_pack = HashMap::<String, Vec<ChunkRef>>::new();
+        for chunk in chunks {
+            by_pack
+                .entry(chunk.pack_id.clone())
+                .or_default()
+                .push(chunk.clone());
+        }
+        let mut pack_ids = by_pack.keys().cloned().collect::<Vec<_>>();
+        pack_ids.sort();
+
+        let cache_dir = staged_chunks_root.join("_transport").join("xet-cache");
+        let mut prepared = PreparedPackTransports::default();
+        for pack_id in pack_ids {
+            let mut pack_chunks = by_pack.remove(&pack_id).unwrap_or_default();
+            pack_chunks.sort_by_key(|chunk| chunk.pack_offset);
+            let required_bytes = pack_chunks
+                .iter()
+                .map(|chunk| chunk.compressed_size)
+                .sum::<u64>();
+            let known_pack_extent = pack_chunks
+                .iter()
+                .map(|chunk| chunk.pack_offset.saturating_add(chunk.compressed_size))
+                .max()
+                .unwrap_or(0);
+            let raw_transfer_bytes =
+                build_pack_download_tasks(&pack_chunks, self.effective_pack_range_task_bytes())
+                    .iter()
+                    .map(|task| task.range_end.saturating_sub(task.range_start))
+                    .sum::<u64>();
+            let pinned = pinned_plans
+                .iter()
+                .find(|plan| plan.pack_id == pack_id)
+                .cloned();
+            let pinned_xet = pinned
+                .as_ref()
+                .is_some_and(|plan| plan.selected_transport == DownloadTransportKind::XetPack);
+            let dense_enough_to_probe = required_bytes > 0
+                && known_pack_extent > 0
+                && u128::from(required_bytes) * 100 >= u128::from(known_pack_extent) * 90;
+            let should_probe = pinned_xet
+                || (pinned.is_none()
+                    && operation == TransportOperation::FreshInstall
+                    && dense_enough_to_probe);
+            let relative_path = Self::pack_relative_path(&pack_id, target_version);
+            let mut selected_xet = None::<PlannedXetPack>;
+
+            if should_probe {
+                for base in self.ordered_base_urls() {
+                    let Some(mut location) = HfRepoLocation::parse_resolve_base(&base.url) else {
+                        continue;
+                    };
+                    let metadata = match probe_hf_pack(
+                        &location,
+                        base.token.as_deref(),
+                        &cache_dir,
+                        &relative_path,
+                    ) {
+                        Ok(metadata) => metadata,
+                        Err(_) => continue,
+                    };
+                    if let Some(pinned) = pinned.as_ref() {
+                        if !pinned.source_identity.is_empty()
+                            && !source_identities_match(
+                                &pinned.source_identity,
+                                &metadata.source_identity,
+                            )
+                        {
+                            return Err(JobError::Depot(format!(
+                                "source revision changed for pack {pack_id}"
+                            )));
+                        }
+                    }
+                    let transport = if pinned_xet {
+                        DownloadTransportKind::XetPack
+                    } else {
+                        select_transport(
+                            operation,
+                            TransportCandidate {
+                                required_bytes,
+                                total_pack_bytes: metadata.file_size,
+                                xet_metadata_available: metadata.xet_hash.is_some(),
+                                public_read_available: true,
+                                xet_estimated_bytes_per_second: None,
+                                raw_estimated_bytes_per_second: None,
+                            },
+                        )
+                    };
+                    if transport != DownloadTransportKind::XetPack {
+                        break;
+                    }
+                    location.revision = metadata.resolved_revision.clone();
+                    let plan = PackTransportPlan {
+                        pack_id: pack_id.clone(),
+                        source_identity: metadata.source_identity.clone(),
+                        required_bytes,
+                        total_pack_bytes: metadata.file_size,
+                        selected_transport: DownloadTransportKind::XetPack,
+                        estimated_overfetch: metadata.file_size.saturating_sub(required_bytes),
+                    };
+                    selected_xet = Some(PlannedXetPack {
+                        plan,
+                        base,
+                        location,
+                        metadata,
+                        relative_path: relative_path.clone(),
+                        chunks: pack_chunks.clone(),
+                    });
+                    break;
+                }
+            }
+
+            if let Some(xet) = selected_xet {
+                prepared.transfer_bytes = prepared
+                    .transfer_bytes
+                    .saturating_add(xet.plan.total_pack_bytes);
+                prepared.plans.push(xet.plan.clone());
+                prepared.xet_packs.push(xet);
+            } else {
+                let plan = PackTransportPlan {
+                    pack_id,
+                    source_identity: pinned
+                        .as_ref()
+                        .map(|plan| plan.source_identity.clone())
+                        .unwrap_or_default(),
+                    required_bytes,
+                    total_pack_bytes: pinned
+                        .as_ref()
+                        .map(|plan| plan.total_pack_bytes)
+                        .filter(|bytes| *bytes > 0)
+                        .unwrap_or(known_pack_extent),
+                    selected_transport: DownloadTransportKind::HttpRange,
+                    estimated_overfetch: raw_transfer_bytes.saturating_sub(required_bytes),
+                };
+                prepared.transfer_bytes =
+                    prepared.transfer_bytes.saturating_add(raw_transfer_bytes);
+                prepared.plans.push(plan);
+            }
+        }
+        Ok(prepared)
+    }
+
+    fn download_xet_pack_to_store<F>(
+        &self,
+        staged_chunks_root: &Path,
+        pack: &PlannedXetPack,
+        control: &JobControl,
+        on_progress: &mut F,
+    ) -> Result<(), JobError>
+    where
+        F: FnMut(DownloadProgress) -> Result<(), JobError>,
+    {
+        self.pin_pack_source_metadata(&pack.base.url, &pack.relative_path, &pack.metadata)?;
+        let safe_pack_id = pack
+            .plan
+            .pack_id
+            .chars()
+            .filter(|ch| ch.is_ascii_alphanumeric() || *ch == '-' || *ch == '_')
+            .collect::<String>();
+        let transport_root = staged_chunks_root.join("_transport");
+        let cache_dir = transport_root.join("xet-cache");
+        let spool_path = transport_root.join("xet-spool").join(format!(
+            "{}.pack.part",
+            if safe_pack_id.is_empty() {
+                "pack"
+            } else {
+                &safe_pack_id
+            }
+        ));
+        let task_id = format!("xet:{}", pack.plan.pack_id);
+        let mut callback_error = None::<JobError>;
+        let stream_result = stream_hf_xet_pack_to_spool(
+            &pack.location,
+            pack.base.token.as_deref(),
+            &cache_dir,
+            &pack.relative_path,
+            &spool_path,
+            pack.metadata.file_size,
+            || control.is_canceled(),
+            || control.is_paused(),
+            |wire_delta, _written, durable| {
+                let progress = DownloadProgress {
+                    task_id: task_id.clone(),
+                    committed_bytes: 0,
+                    wire_bytes_delta: wire_delta,
+                    in_flight_bytes: durable,
+                    clear_in_flight: false,
+                    retry_count: 0,
+                    rate_bytes_per_second: 0,
+                    retry_wait_ms: 0,
+                    rate_limit_wait_ms: 0,
+                    transport: DownloadTransportKind::XetPack,
+                    stall_reason: "network".to_string(),
+                    active_connections: 1,
+                    queue_bytes: 0,
+                };
+                match on_progress(progress) {
+                    Ok(()) => Ok(()),
+                    Err(error) => {
+                        callback_error = Some(error);
+                        Err("download progress callback failed".to_string())
+                    }
+                }
+            },
+        );
+        if let Some(error) = callback_error {
+            return Err(error);
+        }
+        if let Err(error) = stream_result {
+            if control.is_canceled() || error == "download canceled" {
+                return Err(JobError::Canceled);
+            }
+            if error.contains("source size changed") || error.contains("source ended early") {
+                cleanup_xet_spool(&spool_path);
+                return Err(JobError::Depot(error));
+            }
+            cleanup_xet_spool(&spool_path);
+            return Err(JobError::Transient(error));
+        }
+
+        let write_result = (|| -> Result<(), JobError> {
+            let mut spool = File::open(long_path(&spool_path))?;
+            for chunk in &pack.chunks {
+                let chunk_path = staged_chunk_path_from(staged_chunks_root, &chunk.hash);
+                if compressed_chunk_file_valid(&chunk_path, chunk)? {
+                    continue;
+                }
+                let length = usize::try_from(chunk.compressed_size).map_err(|_| {
+                    JobError::Depot(format!("chunk {} is too large to verify", chunk.hash))
+                })?;
+                let mut compressed = vec![0_u8; length];
+                spool.seek(SeekFrom::Start(chunk.pack_offset))?;
+                spool.read_exact(&mut compressed)?;
+                verify_compressed_chunk_bytes(chunk, &compressed)?;
+                write_chunk_file(&chunk_path, &compressed)?;
+            }
+            Ok(())
+        })();
+        cleanup_xet_spool(&spool_path);
+        write_result?;
+        on_progress(DownloadProgress {
+            task_id,
+            committed_bytes: pack.metadata.file_size,
+            wire_bytes_delta: 0,
+            in_flight_bytes: 0,
+            clear_in_flight: true,
+            retry_count: 0,
+            rate_bytes_per_second: 0,
+            retry_wait_ms: 0,
+            rate_limit_wait_ms: 0,
+            transport: DownloadTransportKind::XetPack,
+            stall_reason: String::new(),
+            active_connections: 0,
+            queue_bytes: 0,
+        })?;
+        Ok(())
+    }
+
+    fn cached_signed_pack_url(&self, key: &str) -> Option<String> {
+        self.resolved_pack_urls
+            .lock()
+            .ok()
+            .and_then(|cache| cache.get(key).cloned())
+            .filter(|entry| entry.refresh_at > Instant::now())
+            .and_then(|entry| entry.signed_url)
+    }
+
+    fn expire_signed_pack_url(&self, key: &str) {
+        if let Ok(mut cache) = self.resolved_pack_urls.lock() {
+            if let Some(entry) = cache.get_mut(key) {
+                entry.refresh_at = Instant::now();
+                entry.signed_url = None;
+            }
+        }
+    }
+
+    fn validate_pack_response(
+        &self,
+        key: &str,
+        response: &reqwest::blocking::Response,
+        resolved_from_origin: bool,
+        origin_url: &str,
+    ) -> Result<(), JobError> {
+        let identity = pack_response_identity(response.headers());
+        let total_pack_bytes = content_range_total(response.headers());
+        let redirected_url = if resolved_from_origin && response.url().as_str() != origin_url {
+            Some(response.url().as_str().to_string())
+        } else {
+            None
+        };
+
+        let mut cache = self
+            .resolved_pack_urls
+            .lock()
+            .map_err(|_| JobError::Depot("pack source cache is unavailable".to_string()))?;
+        if let Some(previous) = cache.get(key) {
+            if let (Some(expected), Some(observed)) =
+                (previous.source_identity.as_deref(), identity.as_deref())
+            {
+                if !source_identities_match(expected, observed) {
+                    return Err(JobError::Depot(
+                        "source revision changed while downloading pack".to_string(),
+                    ));
+                }
+            }
+            if previous.total_pack_bytes.is_some()
+                && total_pack_bytes.is_some()
+                && previous.total_pack_bytes != total_pack_bytes
+            {
+                return Err(JobError::Depot(
+                    "source pack size changed while downloading".to_string(),
+                ));
+            }
+        }
+
+        let entry = cache.entry(key.to_string()).or_insert(ResolvedPackUrl {
+            signed_url: None,
+            refresh_at: Instant::now(),
+            source_identity: identity.clone(),
+            total_pack_bytes,
+        });
+        if entry.source_identity.is_none() {
+            entry.source_identity = identity;
+        }
+        if entry.total_pack_bytes.is_none() {
+            entry.total_pack_bytes = total_pack_bytes;
+        }
+        if let Some(url) = redirected_url {
+            // Keep the signed URL only in process memory and refresh before its
+            // server-provided expiry. No credentials or query parameters enter
+            // the journal, telemetry, or diagnostic log.
+            let refresh_at = signed_url_refresh_at(&url);
+            entry.signed_url = Some(url);
+            entry.refresh_at = refresh_at;
+        }
+        Ok(())
     }
 
     fn get_client(&self) -> &Client {
@@ -5387,6 +6226,11 @@ impl DepotSource {
             Client::builder()
                 .connect_timeout(Duration::from_secs(15))
                 .timeout(Duration::from_secs(180))
+                .pool_idle_timeout(Duration::from_secs(90))
+                .pool_max_idle_per_host(32)
+                .tcp_keepalive(Duration::from_secs(30))
+                .tcp_nodelay(true)
+                .http2_adaptive_window(true)
                 .build()
                 .unwrap_or_else(|_| Client::new())
         })
@@ -5658,7 +6502,7 @@ impl DepotSource {
         )))
     }
 
-    fn fetch_pack_span_with_progress(
+    fn ensure_pack_span_with_progress(
         &self,
         pack_id: &str,
         start: u64,
@@ -5668,10 +6512,10 @@ impl DepotSource {
         partial_path: &Path,
         control: &JobControl,
         progress_tx: &mpsc::Sender<Result<DownloadProgress, JobError>>,
-    ) -> Result<Vec<u8>, JobError> {
+    ) -> Result<(), JobError> {
         let expected_len = end_exclusive.saturating_sub(start);
         if expected_len == 0 {
-            return Ok(Vec::new());
+            return Ok(());
         }
         if let Some(parent) = partial_path.parent() {
             fs::create_dir_all(parent).map_err(|e| {
@@ -5695,10 +6539,11 @@ impl DepotSource {
                     existing,
                     expected_len,
                     task_id,
+                    false,
                     control,
                     progress_tx,
                 )?;
-                return read_completed_partial(partial_path, expected_len, pack_id);
+                return validate_completed_partial(partial_path, expected_len, pack_id);
             }
         }
 
@@ -5708,7 +6553,7 @@ impl DepotSource {
             // Check if already completed (don't normalize again - already done once above)
             let existing = durable_partial_len(partial_path).min(expected_len);
             if existing == expected_len {
-                return read_completed_partial(partial_path, expected_len, pack_id);
+                return validate_completed_partial(partial_path, expected_len, pack_id);
             }
 
             let request_start = start.saturating_add(existing);
@@ -5718,12 +6563,38 @@ impl DepotSource {
                 base.url.trim_end_matches('/'),
                 encoded_relative_path
             );
-            let mut response = match self.send_remote_get(
-                &base,
-                &url,
-                Some((request_start, end)),
-                Some(control),
-            ) {
+            let cache_key = format!("{}\n{}", base.url, relative_path);
+            let mut resolved_from_origin = false;
+            let response_result = if let Some(signed_url) = self.cached_signed_pack_url(&cache_key)
+            {
+                let unsigned_base = DepotRemoteBase {
+                    url: base.url.clone(),
+                    token: None,
+                };
+                match self.send_remote_get(
+                    &unsigned_base,
+                    &signed_url,
+                    Some((request_start, end)),
+                    Some(control),
+                ) {
+                    Ok(response) => Ok(response),
+                    Err(JobError::Unauthorized(_)) => {
+                        self.expire_signed_pack_url(&cache_key);
+                        resolved_from_origin = true;
+                        self.send_remote_get(&base, &url, Some((request_start, end)), Some(control))
+                    }
+                    Err(JobError::NotFound(_)) => {
+                        return Err(JobError::Depot(
+                            "source revision changed while downloading pack".to_string(),
+                        ));
+                    }
+                    Err(error) => Err(error),
+                }
+            } else {
+                resolved_from_origin = true;
+                self.send_remote_get(&base, &url, Some((request_start, end)), Some(control))
+            };
+            let mut response = match response_result {
                 Ok(response) => response,
                 Err(JobError::NotFound(err)) => {
                     failures.push(err);
@@ -5741,6 +6612,7 @@ impl DepotSource {
                     continue;
                 }
             };
+            self.validate_pack_response(&cache_key, &response, resolved_from_origin, &url)?;
 
             if response.status() != StatusCode::PARTIAL_CONTENT {
                 failures.push(format!(
@@ -5762,12 +6634,13 @@ impl DepotSource {
                 existing,
                 expected_len,
                 task_id,
+                true,
                 control,
                 progress_tx,
             ) {
                 Ok(final_len) if final_len == expected_len => {
                     self.mark_active_base_url(&base.url);
-                    return read_completed_partial(partial_path, expected_len, pack_id);
+                    return validate_completed_partial(partial_path, expected_len, pack_id);
                 }
                 Ok(final_len) => failures.push(format!(
                     "{url}: range size mismatch for {pack_id}; expected {expected_len}, got {final_len}"
@@ -5801,11 +6674,58 @@ impl DepotSource {
         )))
     }
 
+    #[allow(clippy::too_many_arguments)]
+    fn fetch_pack_span_with_progress(
+        &self,
+        pack_id: &str,
+        start: u64,
+        end_exclusive: u64,
+        relative_path: &str,
+        task_id: &str,
+        partial_path: &Path,
+        control: &JobControl,
+        progress_tx: &mpsc::Sender<Result<DownloadProgress, JobError>>,
+    ) -> Result<Vec<u8>, JobError> {
+        self.ensure_pack_span_with_progress(
+            pack_id,
+            start,
+            end_exclusive,
+            relative_path,
+            task_id,
+            partial_path,
+            control,
+            progress_tx,
+        )?;
+        read_completed_partial(partial_path, end_exclusive.saturating_sub(start), pack_id)
+    }
+
     fn download_chunks_to_store_parallel<F>(
         &self,
         staged_chunks_root: &Path,
         chunks: &[ChunkRef],
         target_version: Option<&str>,
+        control: Arc<JobControl>,
+        on_progress: F,
+    ) -> Result<(), JobError>
+    where
+        F: FnMut(DownloadProgress) -> Result<(), JobError>,
+    {
+        self.download_chunks_to_store_parallel_at_prefix(
+            staged_chunks_root,
+            chunks,
+            target_version,
+            None,
+            control,
+            on_progress,
+        )
+    }
+
+    fn download_chunks_to_store_parallel_at_prefix<F>(
+        &self,
+        staged_chunks_root: &Path,
+        chunks: &[ChunkRef],
+        target_version: Option<&str>,
+        pack_path_prefix: Option<&str>,
         control: Arc<JobControl>,
         mut on_progress: F,
     ) -> Result<(), JobError>
@@ -5826,20 +6746,81 @@ impl DepotSource {
             .min(workers_by_budget)
             .min(tasks.len())
             .max(1);
+        let decoder_count = thread::available_parallelism()
+            .map(|count| (count.get() / 2).clamp(1, 4))
+            .unwrap_or(1)
+            .min(tasks.len())
+            .max(1);
+        let downloaded_queue_capacity =
+            workers_by_budget.min(worker_count.saturating_mul(2)).max(1);
         let tasks = Arc::new(Mutex::new(VecDeque::from(tasks)));
         let abort = Arc::new(AtomicBool::new(false));
+        let active_connections = Arc::new(AtomicUsize::new(0));
+        let queued_bytes = Arc::new(AtomicU64::new(0));
         let (tx, rx) = mpsc::channel::<Result<DownloadProgress, JobError>>();
+        let (downloaded_tx, downloaded_rx) =
+            mpsc::sync_channel::<DownloadedPackTask>(downloaded_queue_capacity);
+        let downloaded_rx = Arc::new(Mutex::new(downloaded_rx));
         let mut first_error: Option<JobError> = None;
 
         thread::scope(|scope| {
-            for _ in 0..worker_count {
+            for _ in 0..decoder_count {
+                let downloaded_rx = Arc::clone(&downloaded_rx);
+                let abort = Arc::clone(&abort);
+                let tx = tx.clone();
+                let staged_chunks_root = staged_chunks_root.to_path_buf();
+                let queued_bytes = Arc::clone(&queued_bytes);
+                scope.spawn(move || loop {
+                    let downloaded = {
+                        let receiver = match downloaded_rx.lock() {
+                            Ok(receiver) => receiver,
+                            Err(_) => {
+                                abort.store(true, Ordering::SeqCst);
+                                let _ = tx.send(Err(JobError::Depot(
+                                    "download verification queue is unavailable".to_string(),
+                                )));
+                                return;
+                            }
+                        };
+                        receiver.recv()
+                    };
+                    let downloaded = match downloaded {
+                        Ok(downloaded) => downloaded,
+                        Err(_) => return,
+                    };
+                    atomic_saturating_sub(
+                        &queued_bytes,
+                        downloaded
+                            .task
+                            .range_end
+                            .saturating_sub(downloaded.task.range_start),
+                    );
+                    if abort.load(Ordering::SeqCst) {
+                        return;
+                    }
+                    if let Err(error) = DepotSource::verify_downloaded_pack_task_to_store(
+                        &staged_chunks_root,
+                        downloaded,
+                        &tx,
+                    ) {
+                        abort.store(true, Ordering::SeqCst);
+                        let _ = tx.send(Err(error));
+                        return;
+                    }
+                });
+            }
+            for worker_index in 0..worker_count {
                 let tasks = Arc::clone(&tasks);
                 let abort = Arc::clone(&abort);
                 let tx = tx.clone();
                 let source = self.clone();
                 let target_version = target_version.map(String::from);
+                let pack_path_prefix = pack_path_prefix.map(String::from);
                 let control = Arc::clone(&control);
                 let staged_chunks_root = staged_chunks_root.to_path_buf();
+                let downloaded_tx = downloaded_tx.clone();
+                let active_connections = Arc::clone(&active_connections);
+                let queued_bytes = Arc::clone(&queued_bytes);
                 scope.spawn(move || loop {
                     if abort.load(Ordering::SeqCst) {
                         break;
@@ -5858,6 +6839,20 @@ impl DepotSource {
                         thread::sleep(Duration::from_millis(150));
                     }
 
+                    // Auto starts conservatively and wakes additional workers only
+                    // after this source's governor observes useful throughput.
+                    while worker_index >= source.active_connection_limit() {
+                        if abort.load(Ordering::SeqCst) || control.is_canceled() {
+                            return;
+                        }
+                        let queue_empty =
+                            tasks.lock().map(|guard| guard.is_empty()).unwrap_or(true);
+                        if queue_empty {
+                            return;
+                        }
+                        thread::sleep(Duration::from_millis(50));
+                    }
+
                     let task = {
                         let mut guard = tasks.lock().expect("download task queue poisoned");
                         guard.pop_front()
@@ -5869,15 +6864,90 @@ impl DepotSource {
                     let max_retries = download_retry_count();
                     let mut retry_count = 0_u32;
                     loop {
-                        match source.download_pack_task_to_store(
-                            &staged_chunks_root,
-                            &task,
-                            &task_id,
-                            target_version.as_deref(),
-                            &control,
-                            &tx,
-                        ) {
-                            Ok(()) => break,
+                        let attempt_started = Instant::now();
+                        let attempt_result = {
+                            let _active = ActiveConnectionGuard::new(&active_connections);
+                            source.download_pack_task_to_spool(
+                                &staged_chunks_root,
+                                &task,
+                                &task_id,
+                                target_version.as_deref(),
+                                pack_path_prefix.as_deref(),
+                                &control,
+                                &tx,
+                            )
+                        };
+                        match attempt_result {
+                            Ok(mut downloaded_task) => {
+                                let elapsed = attempt_started.elapsed();
+                                let bytes = task.range_end.saturating_sub(task.range_start);
+                                let throughput = if elapsed.is_zero() {
+                                    0
+                                } else {
+                                    (u128::from(bytes) * 1_000 / elapsed.as_millis().max(1))
+                                        .min(u128::from(u64::MAX))
+                                        as u64
+                                };
+                                source.observe_transport_window(
+                                    elapsed, throughput, 0.0, false, 0, false,
+                                );
+                                let queue_wait_started = Instant::now();
+                                loop {
+                                    let task_bytes = downloaded_task
+                                        .task
+                                        .range_end
+                                        .saturating_sub(downloaded_task.task.range_start);
+                                    queued_bytes.fetch_add(task_bytes, Ordering::Relaxed);
+                                    match downloaded_tx.try_send(downloaded_task) {
+                                        Ok(()) => break,
+                                        Err(mpsc::TrySendError::Full(task)) => {
+                                            atomic_saturating_sub(&queued_bytes, task_bytes);
+                                            downloaded_task = task;
+                                            source.observe_transport_window(
+                                                Duration::ZERO,
+                                                0,
+                                                0.0,
+                                                false,
+                                                0,
+                                                true,
+                                            );
+                                            if abort.load(Ordering::SeqCst) || control.is_canceled()
+                                            {
+                                                return;
+                                            }
+                                            thread::sleep(Duration::from_millis(25));
+                                        }
+                                        Err(mpsc::TrySendError::Disconnected(_)) => {
+                                            atomic_saturating_sub(&queued_bytes, task_bytes);
+                                            abort.store(true, Ordering::SeqCst);
+                                            let _ = tx.send(Err(JobError::Depot(
+                                                "download verification queue stopped".to_string(),
+                                            )));
+                                            return;
+                                        }
+                                    }
+                                }
+                                if queue_wait_started.elapsed() >= Duration::from_millis(250) {
+                                    let _ = tx.send(Ok(DownloadProgress {
+                                        task_id: task_id.clone(),
+                                        committed_bytes: 0,
+                                        wire_bytes_delta: 0,
+                                        in_flight_bytes: task
+                                            .range_end
+                                            .saturating_sub(task.range_start),
+                                        clear_in_flight: false,
+                                        retry_count,
+                                        rate_bytes_per_second: 0,
+                                        retry_wait_ms: 0,
+                                        rate_limit_wait_ms: 0,
+                                        transport: DownloadTransportKind::HttpRange,
+                                        stall_reason: "verifying".to_string(),
+                                        active_connections: 0,
+                                        queue_bytes: 0,
+                                    }));
+                                }
+                                break;
+                            }
                             Err(err) if retry_count < max_retries && !control.is_canceled() => {
                                 let next_retry = retry_count.saturating_add(1);
                                 let Some(delay) = err.retry_delay(next_retry) else {
@@ -5886,10 +6956,18 @@ impl DepotSource {
                                     break;
                                 };
                                 retry_count = next_retry;
-                                observe_adaptive_range(0, true);
+                                source.observe_transport_window(
+                                    attempt_started.elapsed(),
+                                    0,
+                                    1.0,
+                                    matches!(err, JobError::RateLimited { .. }),
+                                    0,
+                                    false,
+                                );
                                 let _ = tx.send(Ok(DownloadProgress {
                                     task_id: task_id.clone(),
                                     committed_bytes: 0,
+                                    wire_bytes_delta: 0,
                                     in_flight_bytes: 0,
                                     clear_in_flight: true,
                                     retry_count,
@@ -5904,6 +6982,14 @@ impl DepotSource {
                                     } else {
                                         0
                                     },
+                                    transport: DownloadTransportKind::HttpRange,
+                                    stall_reason: if matches!(err, JobError::RateLimited { .. }) {
+                                        "rate-limit".to_string()
+                                    } else {
+                                        "retry".to_string()
+                                    },
+                                    active_connections: 0,
+                                    queue_bytes: 0,
                                 }));
                                 if let Err(err) = sleep_with_control(delay, &control) {
                                     abort.store(true, Ordering::SeqCst);
@@ -5924,11 +7010,14 @@ impl DepotSource {
                     }
                 });
             }
+            drop(downloaded_tx);
             drop(tx);
 
             for message in rx {
                 match message {
-                    Ok(progress) => {
+                    Ok(mut progress) => {
+                        progress.active_connections = active_connections.load(Ordering::Relaxed);
+                        progress.queue_bytes = queued_bytes.load(Ordering::Relaxed);
                         if let Err(err) = on_progress(progress) {
                             abort.store(true, Ordering::SeqCst);
                             first_error = Some(err);
@@ -5950,26 +7039,20 @@ impl DepotSource {
         Ok(())
     }
 
-    fn download_pack_task_to_store(
+    fn download_pack_task_to_spool(
         &self,
         staged_chunks_root: &Path,
         task: &PackDownloadTask,
         task_id: &str,
         target_version: Option<&str>,
+        pack_path_prefix: Option<&str>,
         control: &JobControl,
         progress_tx: &mpsc::Sender<Result<DownloadProgress, JobError>>,
-    ) -> Result<(), JobError> {
-        let relative_path = if task.pack_id.starts_with("patch-") {
-            if let Some(version) = target_version {
-                format!("patches/{}/packs/{}.bin", version, task.pack_id)
-            } else {
-                format!("packs/{}.bin", task.pack_id)
-            }
-        } else {
-            format!("packs/{}.bin", task.pack_id)
-        };
-        let partial_path = partial_range_path(staged_chunks_root, task);
-        let range = self.fetch_pack_span_with_progress(
+    ) -> Result<DownloadedPackTask, JobError> {
+        let relative_path =
+            Self::pack_relative_path_in(&task.pack_id, target_version, pack_path_prefix);
+        let partial_path = partial_range_path_in(staged_chunks_root, task, pack_path_prefix);
+        self.ensure_pack_span_with_progress(
             &task.pack_id,
             task.range_start,
             task.range_end,
@@ -5979,46 +7062,75 @@ impl DepotSource {
             control,
             progress_tx,
         )?;
+        Ok(DownloadedPackTask {
+            task: task.clone(),
+            task_id: task_id.to_string(),
+            partial_path,
+        })
+    }
 
+    fn verify_downloaded_pack_task_to_store(
+        staged_chunks_root: &Path,
+        downloaded: DownloadedPackTask,
+        progress_tx: &mpsc::Sender<Result<DownloadProgress, JobError>>,
+    ) -> Result<(), JobError> {
+        let task = &downloaded.task;
         let write_result = (|| -> Result<(), JobError> {
+            validate_completed_partial(
+                &downloaded.partial_path,
+                task.range_end.saturating_sub(task.range_start),
+                &task.pack_id,
+            )?;
+            let mut range = File::open(long_path(&downloaded.partial_path))?;
             for chunk in &task.chunks {
                 let path = staged_chunk_path_from(staged_chunks_root, &chunk.hash);
                 if compressed_chunk_file_valid(&path, chunk)? {
                     continue;
                 }
 
-                let start = (chunk.pack_offset - task.range_start) as usize;
-                let end = start + chunk.compressed_size as usize;
-                if end > range.len() {
+                let start = chunk.pack_offset.saturating_sub(task.range_start);
+                let length = usize::try_from(chunk.compressed_size).map_err(|_| {
+                    JobError::Depot(format!("chunk {} is too large to verify", chunk.hash))
+                })?;
+                if start.saturating_add(chunk.compressed_size)
+                    > task.range_end.saturating_sub(task.range_start)
+                {
                     return Err(JobError::Depot(format!(
                         "pack range does not contain chunk {}",
                         chunk.hash
                     )));
                 }
-                let compressed = &range[start..end];
-                verify_compressed_chunk_bytes(chunk, compressed)?;
-                write_chunk_file(&path, compressed)?;
+                let mut compressed = vec![0_u8; length];
+                range.seek(SeekFrom::Start(start))?;
+                range.read_exact(&mut compressed)?;
+                verify_compressed_chunk_bytes(chunk, &compressed)?;
+                write_chunk_file(&path, &compressed)?;
             }
             Ok(())
         })();
 
         if let Err(err) = write_result {
-            let _ = fs::remove_file(&partial_path);
-            let _ = fs::remove_file(partial_checkpoint_path(&partial_path));
+            let _ = fs::remove_file(&downloaded.partial_path);
+            let _ = fs::remove_file(partial_checkpoint_path(&downloaded.partial_path));
             return Err(err);
         }
-        let _ = fs::remove_file(&partial_path);
-        let _ = fs::remove_file(partial_checkpoint_path(&partial_path));
+        let _ = fs::remove_file(&downloaded.partial_path);
+        let _ = fs::remove_file(partial_checkpoint_path(&downloaded.partial_path));
         progress_tx
             .send(Ok(DownloadProgress {
-                task_id: task_id.to_string(),
+                task_id: downloaded.task_id,
                 committed_bytes: task.range_end - task.range_start,
+                wire_bytes_delta: 0,
                 in_flight_bytes: 0,
                 clear_in_flight: true,
                 retry_count: 0,
                 rate_bytes_per_second: 0,
                 retry_wait_ms: 0,
                 rate_limit_wait_ms: 0,
+                transport: DownloadTransportKind::HttpRange,
+                stall_reason: String::new(),
+                active_connections: 0,
+                queue_bytes: 0,
             }))
             .map_err(|_| JobError::Canceled)?;
         Ok(())
@@ -6040,6 +7152,36 @@ struct PackDownloadTask {
     chunks: Vec<ChunkRef>,
 }
 
+#[derive(Debug)]
+struct DownloadedPackTask {
+    task: PackDownloadTask,
+    task_id: String,
+    partial_path: PathBuf,
+}
+
+struct ActiveConnectionGuard<'a> {
+    counter: &'a AtomicUsize,
+}
+
+impl<'a> ActiveConnectionGuard<'a> {
+    fn new(counter: &'a AtomicUsize) -> Self {
+        counter.fetch_add(1, Ordering::Relaxed);
+        Self { counter }
+    }
+}
+
+impl Drop for ActiveConnectionGuard<'_> {
+    fn drop(&mut self) {
+        self.counter.fetch_sub(1, Ordering::Relaxed);
+    }
+}
+
+fn atomic_saturating_sub(counter: &AtomicU64, value: u64) {
+    let _ = counter.fetch_update(Ordering::Relaxed, Ordering::Relaxed, |current| {
+        Some(current.saturating_sub(value))
+    });
+}
+
 impl PackDownloadTask {
     fn id(&self) -> String {
         format!("{}:{}-{}", self.pack_id, self.range_start, self.range_end)
@@ -6047,6 +7189,27 @@ impl PackDownloadTask {
 }
 
 fn partial_range_path(staged_chunks_root: &Path, task: &PackDownloadTask) -> PathBuf {
+    staged_chunks_root.join(partial_range_file_name(task))
+}
+
+fn partial_range_path_in(
+    staged_chunks_root: &Path,
+    task: &PackDownloadTask,
+    pack_path_prefix: Option<&str>,
+) -> PathBuf {
+    let prefix = pack_path_prefix.map(str::trim).unwrap_or_default();
+    if prefix.is_empty() {
+        return partial_range_path(staged_chunks_root, task);
+    }
+    let namespace = sha256_bytes(prefix.as_bytes());
+    staged_chunks_root
+        .join("_transport")
+        .join("raw-spool")
+        .join(&namespace[..16])
+        .join(partial_range_file_name(task))
+}
+
+fn partial_range_file_name(task: &PackDownloadTask) -> String {
     let safe_pack_id = task
         .pack_id
         .chars()
@@ -6057,11 +7220,10 @@ fn partial_range_path(staged_chunks_root: &Path, task: &PackDownloadTask) -> Pat
     } else {
         safe_pack_id.as_str()
     };
-    // Steam-like layout: .part files go directly to dl/ root, NOT in _ranges subfolder
-    staged_chunks_root.join(format!(
+    format!(
         "{pack_file_id}-{}-{}.part",
         task.range_start, task.range_end
-    ))
+    )
 }
 
 fn partial_file_len(path: &Path) -> u64 {
@@ -6098,31 +7260,7 @@ fn durable_partial_len(path: &Path) -> u64 {
 
 fn persist_partial_checkpoint(path: &Path, durable_len: u64) -> Result<(), JobError> {
     let checkpoint = partial_checkpoint_path(path);
-    let lp_checkpoint = long_path(&checkpoint);
-    let lp_temporary = long_path(&checkpoint.with_extension("checkpoint.tmp"));
-    {
-        let mut file = File::create(&lp_temporary).map_err(|e| {
-            JobError::Depot(format!(
-                "failed to create checkpoint tmp '{}': {e}",
-                lp_temporary.display()
-            ))
-        })?;
-        write!(file, "{durable_len}")?;
-        file.sync_all()?;
-    }
-    if lp_checkpoint.exists() {
-        fs::remove_file(&lp_checkpoint)?;
-    }
-    let rename_res = fs::rename(&lp_temporary, &lp_checkpoint);
-    if let Err(e) = rename_res {
-        if e.kind() != std::io::ErrorKind::NotFound {
-            return Err(JobError::Depot(format!(
-                "failed to rename checkpoint '{}': {e}",
-                lp_checkpoint.display()
-            )));
-        }
-    }
-    Ok(())
+    transport::persist_durable_counter(&checkpoint, durable_len).map_err(JobError::Depot)
 }
 
 fn normalize_partial_file(path: &Path, expected_len: u64) -> Result<(), JobError> {
@@ -6180,19 +7318,27 @@ fn read_completed_partial(
     expected_len: u64,
     pack_id: &str,
 ) -> Result<Vec<u8>, JobError> {
+    validate_completed_partial(path, expected_len, pack_id)?;
+    Ok(fs::read(long_path(path))?)
+}
+
+fn validate_completed_partial(
+    path: &Path,
+    expected_len: u64,
+    pack_id: &str,
+) -> Result<(), JobError> {
     if durable_partial_len(path) != expected_len {
         return Err(JobError::Depot(format!(
             "partial range for {pack_id} is not durably checkpointed"
         )));
     }
-    let bytes = fs::read(long_path(path))?;
-    if bytes.len() as u64 != expected_len {
+    let actual_len = fs::metadata(long_path(path))?.len();
+    if actual_len != expected_len {
         return Err(JobError::Depot(format!(
-            "partial range size mismatch for {pack_id}; expected {expected_len}, got {}",
-            bytes.len()
+            "partial range size mismatch for {pack_id}; expected {expected_len}, got {actual_len}"
         )));
     }
-    Ok(bytes)
+    Ok(())
 }
 
 fn content_range_starts_at(response: &reqwest::blocking::Response, expected_start: u64) -> bool {
@@ -6209,6 +7355,51 @@ fn content_range_starts_at(response: &reqwest::blocking::Response, expected_star
         .split_once('-')
         .and_then(|(start, _)| start.parse::<u64>().ok())
         .is_some_and(|start| start == expected_start)
+}
+
+fn content_range_total(headers: &HeaderMap) -> Option<u64> {
+    headers
+        .get(CONTENT_RANGE)?
+        .to_str()
+        .ok()?
+        .rsplit_once('/')?
+        .1
+        .parse::<u64>()
+        .ok()
+}
+
+fn pack_response_identity(headers: &HeaderMap) -> Option<String> {
+    ["x-xet-hash", "x-linked-etag", "etag", "x-repo-commit"]
+        .into_iter()
+        .find_map(|name| {
+            headers
+                .get(name)
+                .and_then(|value| value.to_str().ok())
+                .map(|value| format!("{name}:{}", value.trim()))
+        })
+}
+
+fn signed_url_refresh_delay(value: &str, now_epoch_seconds: u64) -> Option<Duration> {
+    const EXPIRY_MARGIN_SECONDS: u64 = 60;
+
+    let parsed = url::Url::parse(value).ok()?;
+    let expires = parsed.query_pairs().find_map(|(name, value)| {
+        name.eq_ignore_ascii_case("Expires")
+            .then(|| value.parse::<u64>().ok())
+            .flatten()
+    })?;
+    Some(Duration::from_secs(
+        expires
+            .saturating_sub(now_epoch_seconds)
+            .saturating_sub(EXPIRY_MARGIN_SECONDS),
+    ))
+}
+
+fn signed_url_refresh_at(value: &str) -> Instant {
+    let now_epoch_seconds = Utc::now().timestamp().max(0) as u64;
+    let delay = signed_url_refresh_delay(value, now_epoch_seconds)
+        .unwrap_or_else(|| Duration::from_secs(4 * 60));
+    Instant::now() + delay
 }
 
 fn rate_limit_remaining(headers: &HeaderMap) -> Option<u64> {
@@ -6243,6 +7434,7 @@ fn append_stream_to_partial<R: Read>(
     existing_len: u64,
     expected_len: u64,
     task_id: &str,
+    count_wire_bytes: bool,
     control: &JobControl,
     progress_tx: &mpsc::Sender<Result<DownloadProgress, JobError>>,
 ) -> Result<u64, JobError> {
@@ -6269,12 +7461,17 @@ fn append_stream_to_partial<R: Read>(
         .send(Ok(DownloadProgress {
             task_id: task_id.to_string(),
             committed_bytes: 0,
+            wire_bytes_delta: 0,
             in_flight_bytes: durable,
             clear_in_flight: false,
             retry_count: 0,
             rate_bytes_per_second: 0,
             retry_wait_ms: 0,
             rate_limit_wait_ms: 0,
+            transport: DownloadTransportKind::HttpRange,
+            stall_reason: "network".to_string(),
+            active_connections: 0,
+            queue_bytes: 0,
         }))
         .map_err(|_| JobError::Canceled)?;
 
@@ -6338,12 +7535,21 @@ fn append_stream_to_partial<R: Read>(
                 .send(Ok(DownloadProgress {
                     task_id: task_id.to_string(),
                     committed_bytes: 0,
+                    wire_bytes_delta: if count_wire_bytes {
+                        written.saturating_sub(last_progress_bytes)
+                    } else {
+                        0
+                    },
                     in_flight_bytes: durable,
                     clear_in_flight: false,
                     retry_count: 0,
                     rate_bytes_per_second: rate,
                     retry_wait_ms: 0,
                     rate_limit_wait_ms: 0,
+                    transport: DownloadTransportKind::HttpRange,
+                    stall_reason: "network".to_string(),
+                    active_connections: 0,
+                    queue_bytes: 0,
                 }))
                 .map_err(|_| JobError::Canceled)?;
             last_progress_emit = Instant::now();
@@ -6364,12 +7570,24 @@ fn existing_partial_task_progress(
     staged_chunks_root: &Path,
     chunks: &[ChunkRef],
 ) -> HashMap<String, u64> {
+    existing_partial_task_progress_in(staged_chunks_root, chunks, None)
+}
+
+fn existing_partial_task_progress_in(
+    staged_chunks_root: &Path,
+    chunks: &[ChunkRef],
+    pack_path_prefix: Option<&str>,
+) -> HashMap<String, u64> {
     build_pack_download_tasks(chunks, pack_range_task_bytes())
         .into_iter()
         .filter_map(|task| {
             let expected = task.range_end.saturating_sub(task.range_start);
-            let existing =
-                durable_partial_len(&partial_range_path(staged_chunks_root, &task)).min(expected);
+            let existing = durable_partial_len(&partial_range_path_in(
+                staged_chunks_root,
+                &task,
+                pack_path_prefix,
+            ))
+            .min(expected);
             (existing > 0).then(|| (task.id(), existing))
         })
         .collect()
@@ -6379,12 +7597,17 @@ fn existing_partial_task_progress(
 struct DownloadProgress {
     task_id: String,
     committed_bytes: u64,
+    wire_bytes_delta: u64,
     in_flight_bytes: u64,
     clear_in_flight: bool,
     retry_count: u32,
     rate_bytes_per_second: u64,
     retry_wait_ms: u64,
     rate_limit_wait_ms: u64,
+    transport: DownloadTransportKind,
+    stall_reason: String,
+    active_connections: usize,
+    queue_bytes: u64,
 }
 
 #[derive(Debug, Clone)]
@@ -6408,6 +7631,23 @@ fn canonical_version_label(value: &str) -> String {
 fn versions_equivalent(left: &str, right: &str) -> bool {
     let left = canonical_version_label(left);
     !left.is_empty() && left == canonical_version_label(right)
+}
+
+fn update_transport_operation(
+    catalog: &Catalog,
+    from_version: &str,
+    target_version: &str,
+) -> TransportOperation {
+    let find_index = |value: &str| {
+        catalog
+            .versions
+            .iter()
+            .position(|entry| versions_equivalent(&entry.version, value))
+    };
+    match (find_index(from_version), find_index(target_version)) {
+        (Some(from), Some(target)) if target < from => TransportOperation::Downgrade,
+        _ => TransportOperation::Update,
+    }
 }
 
 fn usable_installed_version(value: &str) -> Option<String> {
@@ -6470,21 +7710,47 @@ fn load_installed_update_base(
         .and_then(|manifest| usable_installed_version(&manifest.version));
 
     // state.0xo is authoritative because it is committed only after a completed
-    // install/update. If manifest.0xo carries a stale version label, load the
-    // canonical manifest for the committed marker version instead of guessing.
+    // install/update. The mutable remote catalog is *not* install history: old
+    // entries can be pruned while users still legitimately have that version
+    // installed. In that case manifest.0xo is the exact local base manifest we
+    // need to plan the update, so prefer it when it canonically matches state.0xo.
     if let Some(version) = marker_version {
+        let local_manifest_matches_marker = manifest_version
+            .as_deref()
+            .map(|manifest_version| versions_equivalent(manifest_version, &version))
+            .unwrap_or(false);
+
         if !catalog_has_version(catalog, &version) {
+            if local_manifest_matches_marker {
+                if let Some(manifest) = installed_manifest.as_ref() {
+                    return Ok(Some(InstalledUpdateBase {
+                        version: version.clone(),
+                        manifest: canonicalize_manifest_version(manifest.clone(), &version),
+                        source_label:
+                            ".0xolemon/state.0xo + local manifest.0xo (catalog history pruned)"
+                                .to_string(),
+                    }));
+                }
+            }
+
             return Err(JobError::Depot(format!(
-                "installed version '{}' from .0xolemon/state.0xo is not present in this game's catalog",
+                "installed version '{}' from .0xolemon/state.0xo is not present in this game's catalog and no matching local manifest.0xo is available",
                 version
             )));
         }
 
         let (manifest, source_label) = match installed_manifest {
-            Some(manifest) if manifest_version.as_deref() == Some(version.as_str()) => (
-                canonicalize_manifest_version(manifest, &version),
-                ".0xolemon/state.0xo + manifest.0xo".to_string(),
-            ),
+            Some(manifest)
+                if manifest_version
+                    .as_deref()
+                    .map(|manifest_version| versions_equivalent(manifest_version, &version))
+                    .unwrap_or(false) =>
+            {
+                (
+                    canonicalize_manifest_version(manifest, &version),
+                    ".0xolemon/state.0xo + manifest.0xo".to_string(),
+                )
+            }
             _ => (
                 source.load_manifest(catalog, &version)?,
                 ".0xolemon/state.0xo + catalog manifest".to_string(),
@@ -6499,16 +7765,12 @@ fn load_installed_update_base(
     }
 
     // Generic recovery path for installs whose marker was lost but whose
-    // installed manifest is intact. This works for every game and never invokes
-    // a title-specific signature scanner.
+    // installed manifest is intact. A local installed manifest is itself the
+    // update base and must remain usable even after its historical catalog entry
+    // has been pruned. This works for every game and never invokes a title-specific
+    // signature scanner.
     if let Some(manifest) = installed_manifest {
         if let Some(version) = manifest_version {
-            if !catalog_has_version(catalog, &version) {
-                return Err(JobError::Depot(format!(
-                    "installed version '{}' from .0xolemon/manifest.0xo is not present in this game's catalog",
-                    version
-                )));
-            }
             return Ok(Some(InstalledUpdateBase {
                 version: version.clone(),
                 manifest: canonicalize_manifest_version(manifest, &version),
@@ -7056,64 +8318,10 @@ fn pack_range_task_bytes() -> u64 {
     {
         return bytes.clamp(MIN_PACK_RANGE_TASK_BYTES, MAX_PACK_RANGE_TASK_BYTES);
     }
-    let initial = settings
+    settings
         .pack_range_mb
         .saturating_mul(1024 * 1024)
-        .clamp(MIN_ADAPTIVE_RANGE_BYTES, MAX_PACK_RANGE_TASK_BYTES);
-    ADAPTIVE_RANGE_STATE
-        .get_or_init(|| {
-            Mutex::new(AdaptiveRangeState {
-                range_bytes: initial,
-                ewma_rate: 0.0,
-                successful_samples: 0,
-            })
-        })
-        .lock()
-        .map(|state| state.range_bytes)
-        .unwrap_or(initial)
-}
-
-fn observe_adaptive_range(rate_bytes_per_second: u64, failed: bool) {
-    let initial = crate::platform::current_settings()
-        .pack_range_mb
-        .saturating_mul(1024 * 1024)
-        .clamp(MIN_ADAPTIVE_RANGE_BYTES, MAX_PACK_RANGE_TASK_BYTES);
-    let Ok(mut state) = ADAPTIVE_RANGE_STATE
-        .get_or_init(|| {
-            Mutex::new(AdaptiveRangeState {
-                range_bytes: initial,
-                ewma_rate: 0.0,
-                successful_samples: 0,
-            })
-        })
-        .lock()
-    else {
-        return;
-    };
-    if failed {
-        state.range_bytes = (state.range_bytes / 2).max(MIN_ADAPTIVE_RANGE_BYTES);
-        state.successful_samples = 0;
-        return;
-    }
-    if rate_bytes_per_second == 0 {
-        return;
-    }
-    let rate = rate_bytes_per_second as f64;
-    state.ewma_rate = if state.ewma_rate == 0.0 {
-        rate
-    } else {
-        state.ewma_rate * 0.8 + rate * 0.2
-    };
-    state.successful_samples = state.successful_samples.saturating_add(1);
-    if state.successful_samples >= 8 {
-        if state.ewma_rate >= 80.0 * 1024.0 * 1024.0 {
-            state.range_bytes =
-                (state.range_bytes.saturating_mul(2)).min(MAX_PACK_RANGE_TASK_BYTES);
-        } else if state.ewma_rate <= 8.0 * 1024.0 * 1024.0 {
-            state.range_bytes = (state.range_bytes / 2).max(MIN_ADAPTIVE_RANGE_BYTES);
-        }
-        state.successful_samples = 0;
-    }
+        .clamp(MIN_PACK_RANGE_TASK_BYTES, MAX_PACK_RANGE_TASK_BYTES)
 }
 
 fn download_transfer_bytes(chunks: &[ChunkRef]) -> u64 {
@@ -7149,17 +8357,46 @@ fn observe_download_progress(
     progress: &DownloadProgress,
     in_flight_bytes: u64,
 ) {
+    journal.current_transport = progress.transport;
+    journal.stall_reason = progress.stall_reason.clone();
+    journal.wire_bytes_done = journal
+        .wire_bytes_done
+        .saturating_add(progress.wire_bytes_delta);
+    if journal_uses_transport_v3(journal) {
+        if let Ok(mut runtime) = DOWNLOAD_RUNTIME_TELEMETRY
+            .get_or_init(|| Mutex::new(HashMap::new()))
+            .lock()
+        {
+            runtime.insert(
+                journal.id.clone(),
+                RuntimeTransportState {
+                    active_connections: progress.active_connections,
+                    queue_bytes: progress.queue_bytes,
+                },
+            );
+        }
+    }
     let metrics = &mut journal.metrics;
     metrics.network_bytes = metrics
         .network_bytes
-        .saturating_add(progress.committed_bytes);
+        .saturating_add(progress.wire_bytes_delta);
+    metrics.wire_bytes = metrics.wire_bytes.saturating_add(progress.wire_bytes_delta);
+    match progress.transport {
+        DownloadTransportKind::HttpRange => {
+            metrics.raw_range_bytes = metrics
+                .raw_range_bytes
+                .saturating_add(progress.wire_bytes_delta);
+        }
+        DownloadTransportKind::XetPack => {
+            metrics.xet_bytes = metrics.xet_bytes.saturating_add(progress.wire_bytes_delta);
+        }
+    }
     metrics.retry_wait_ms = metrics.retry_wait_ms.saturating_add(progress.retry_wait_ms);
     metrics.rate_limit_wait_ms = metrics
         .rate_limit_wait_ms
         .saturating_add(progress.rate_limit_wait_ms);
     metrics.peak_in_flight_bytes = metrics.peak_in_flight_bytes.max(in_flight_bytes);
     if progress.rate_bytes_per_second > 0 {
-        observe_adaptive_range(progress.rate_bytes_per_second, false);
         metrics
             .throughput_samples
             .push(progress.rate_bytes_per_second);
@@ -7784,6 +9021,14 @@ fn write_install_marker(
         launch_executable: Some(launch_executable.clone()),
         applied_patch_id: None,
     };
+    crate::managed_game_runtime::ensure_after_install(
+        app,
+        &source.game_id,
+        install_root,
+        Path::new(&launch_executable),
+        manifest,
+    )
+    .map_err(JobError::Depot)?;
     if manifest.version == installed_version {
         write_installed_manifest(install_root, manifest)?;
     } else {
@@ -8493,8 +9738,12 @@ fn default_journal(
         apply_bytes_done: 0,
         apply_bytes_total: 0,
         durable_bytes: 0,
+        wire_bytes_done: 0,
         current_file: String::new(),
         pipeline_version: String::new(),
+        transport_plans: Vec::new(),
+        current_transport: DownloadTransportKind::HttpRange,
+        stall_reason: String::new(),
         commit_state: "idle".to_string(),
         planned_files: Vec::new(),
         retry_count: 0,
@@ -8562,15 +9811,102 @@ fn publish_job_progress(
     last_journal_persist: &mut Instant,
     force_persist: bool,
 ) -> Result<(), JobError> {
-    if force_persist || last_journal_persist.elapsed() >= JOB_JOURNAL_PERSIST_INTERVAL {
+    let emitted = if force_persist || last_journal_persist.elapsed() >= JOB_JOURNAL_PERSIST_INTERVAL
+    {
         persist_and_emit(app, journal)?;
         *last_journal_persist = Instant::now();
         *last_ui_emit = Instant::now();
+        true
     } else if last_ui_emit.elapsed() >= JOB_UI_EMIT_INTERVAL {
         app.emit("launcher://job", journal)?;
         *last_ui_emit = Instant::now();
+        true
+    } else {
+        false
+    };
+    if emitted {
+        emit_download_telemetry(app, journal);
     }
     Ok(())
+}
+
+fn emit_download_telemetry(app: &AppHandle, journal: &JobJournal) {
+    if !journal_uses_transport_v3(journal) {
+        return;
+    }
+
+    let now = Instant::now();
+    let terminal = matches!(
+        journal.status,
+        JobStatus::Committed | JobStatus::Canceled | JobStatus::Failed
+    );
+    let rates = DOWNLOAD_TELEMETRY_RATES.get_or_init(|| Mutex::new(HashMap::new()));
+    let Ok(mut rates) = rates.lock() else {
+        return;
+    };
+
+    let state = rates
+        .entry(journal.id.clone())
+        .or_insert_with(|| TelemetryRateState {
+            sampled_at: now,
+            wire_bytes: journal.wire_bytes_done,
+            apply_bytes: journal.apply_bytes_done,
+            wire_rate_ewma: 0.0,
+            apply_rate_ewma: 0.0,
+        });
+    let elapsed = now.duration_since(state.sampled_at).as_secs_f64();
+    if elapsed >= 0.1 {
+        let wire_sample = journal.wire_bytes_done.saturating_sub(state.wire_bytes) as f64 / elapsed;
+        let apply_sample =
+            journal.apply_bytes_done.saturating_sub(state.apply_bytes) as f64 / elapsed;
+        const EWMA_ALPHA: f64 = 0.25;
+        state.wire_rate_ewma = if state.wire_rate_ewma == 0.0 {
+            wire_sample
+        } else {
+            state.wire_rate_ewma * (1.0 - EWMA_ALPHA) + wire_sample * EWMA_ALPHA
+        };
+        state.apply_rate_ewma = if state.apply_rate_ewma == 0.0 {
+            apply_sample
+        } else {
+            state.apply_rate_ewma * (1.0 - EWMA_ALPHA) + apply_sample * EWMA_ALPHA
+        };
+        state.sampled_at = now;
+        state.wire_bytes = journal.wire_bytes_done;
+        state.apply_bytes = journal.apply_bytes_done;
+    }
+
+    let runtime = DOWNLOAD_RUNTIME_TELEMETRY
+        .get_or_init(|| Mutex::new(HashMap::new()))
+        .lock()
+        .ok()
+        .and_then(|runtime| runtime.get(&journal.id).copied())
+        .unwrap_or_default();
+    let payload = DownloadTelemetry {
+        job_id: journal.id.clone(),
+        wire_bytes_done: journal.wire_bytes_done,
+        apply_bytes_done: journal.apply_bytes_done,
+        durable_bytes_done: journal.durable_bytes,
+        wire_bytes_per_second: state.wire_rate_ewma.max(0.0).round() as u64,
+        apply_bytes_per_second: state.apply_rate_ewma.max(0.0).round() as u64,
+        active_connections: runtime.active_connections,
+        queue_bytes: runtime.queue_bytes,
+        ttfb_ms: journal.metrics.ttfb_p50_ms,
+        retry_wait_ms: journal.metrics.retry_wait_ms,
+        rate_limit_wait_ms: journal.metrics.rate_limit_wait_ms,
+        current_transport: journal.current_transport,
+        stall_reason: journal.stall_reason.clone(),
+    };
+    if terminal {
+        rates.remove(&journal.id);
+        if let Ok(mut runtime) = DOWNLOAD_RUNTIME_TELEMETRY
+            .get_or_init(|| Mutex::new(HashMap::new()))
+            .lock()
+        {
+            runtime.remove(&journal.id);
+        }
+    }
+    drop(rates);
+    let _ = app.emit(DOWNLOAD_TELEMETRY_EVENT, payload);
 }
 
 fn persist_and_emit(app: &AppHandle, journal: &JobJournal) -> Result<(), JobError> {
@@ -8607,6 +9943,107 @@ fn journal_path(app: &AppHandle) -> Result<PathBuf, JobError> {
 mod downloader_v2_tests {
     use super::*;
     use std::io::{Cursor, Error, ErrorKind, Read};
+
+    fn manifest_file(path: &str, file_hash: &str, chunk_hash: &str) -> FileEntry {
+        FileEntry {
+            path: path.to_string(),
+            size: 8,
+            sha256: file_hash.to_string(),
+            chunks: vec![ChunkRef {
+                hash: chunk_hash.to_string(),
+                file_offset: 0,
+                uncompressed_size: 8,
+                pack_id: format!("pack-{chunk_hash}"),
+                pack_offset: 0,
+                compressed_size: 8,
+                compressed_sha256: format!("compressed-{chunk_hash}"),
+                codec: ChunkCodec::Raw,
+                encryption: None,
+            }],
+            delta_patches: None,
+            executable: false,
+            preserve: false,
+        }
+    }
+
+    fn target_manifest(version: &str, changing_chunk: &str) -> VersionManifest {
+        VersionManifest {
+            format_version: LEGACY_FORMAT_VERSION,
+            game_id: "target-selection-test".to_string(),
+            version: version.to_string(),
+            created_at: String::new(),
+            root_label: "Target Selection Test".to_string(),
+            launch_executable: None,
+            launch_options: Vec::new(),
+            dependencies: None,
+            total_size: 16,
+            files: vec![
+                manifest_file("stable.bin", "stable-file", "stable-chunk"),
+                manifest_file(
+                    "large.pak",
+                    &format!("file-{changing_chunk}"),
+                    changing_chunk,
+                ),
+            ],
+            signature: None,
+        }
+    }
+
+    #[test]
+    fn patch_pack_ranges_use_the_patch_url_and_an_isolated_spool_namespace() {
+        let task = PackDownloadTask {
+            pack_id: "pack-00001".to_string(),
+            range_start: 4096,
+            range_end: 8192,
+            chunks: Vec::new(),
+        };
+        let root = Path::new(r"E:\0xoLemon store\downloading\Example\dl");
+        let prefix = "patches/v1.10/packs";
+
+        assert_eq!(
+            DepotSource::pack_relative_path_in(&task.pack_id, Some("v1.10"), Some(prefix)),
+            "patches/v1.10/packs/pack-00001.bin"
+        );
+        let base_spool = partial_range_path(root, &task);
+        let patch_spool = partial_range_path_in(root, &task, Some(prefix));
+        let other_patch_spool = partial_range_path_in(root, &task, Some("patches/v1.09/packs"));
+
+        assert_ne!(patch_spool, base_spool);
+        assert_ne!(patch_spool, other_patch_spool);
+        assert!(patch_spool.starts_with(root.join("_transport").join("raw-spool")));
+        assert_eq!(patch_spool.file_name(), base_spool.file_name());
+    }
+
+    #[test]
+    fn update_transport_direction_follows_the_selected_catalog_version() {
+        let catalog = Catalog {
+            format_version: LEGACY_FORMAT_VERSION,
+            game_id: "direction-test".to_string(),
+            latest_version: Some("v1.10".to_string()),
+            versions: ["v1.0", "v1.5", "v1.10"]
+                .into_iter()
+                .map(|version| crate::manifest::CatalogVersion {
+                    version: version.to_string(),
+                    manifest_path: format!("versions/{version}/manifest.json"),
+                    total_size: 0,
+                    file_count: 0,
+                    chunk_count: 0,
+                    created_at: String::new(),
+                })
+                .collect(),
+            packs: Vec::new(),
+            signature: None,
+        };
+
+        assert_eq!(
+            update_transport_operation(&catalog, "v1.5", "v1.10"),
+            TransportOperation::Update
+        );
+        assert_eq!(
+            update_transport_operation(&catalog, "v1.10", "v1.0"),
+            TransportOperation::Downgrade
+        );
+    }
 
     #[test]
     fn transfer_replan_preserves_visible_progress_when_remaining_work_shrinks() {
@@ -8660,6 +10097,60 @@ mod downloader_v2_tests {
         assert_eq!(journal.session_base_bytes, 40 * gib);
         assert_eq!(journal.logical_bytes_done, 40 * gib);
         assert_eq!(journal.logical_bytes_total, 67 * gib);
+    }
+
+    #[test]
+    fn install_update_and_downgrade_plan_only_the_selected_target_manifest() {
+        let v1 = target_manifest("v1.0", "chunk-v1");
+        let v5 = target_manifest("v1.5", "chunk-v5");
+        let v10 = target_manifest("v1.10", "chunk-v10");
+
+        let fresh = install_changed_files(&v10);
+        assert_eq!(fresh.len(), v10.files.len());
+        assert_eq!(
+            v10.files
+                .iter()
+                .flat_map(|file| file.chunks.iter())
+                .map(|chunk| chunk.hash.as_str())
+                .collect::<Vec<_>>(),
+            vec!["stable-chunk", "chunk-v10"]
+        );
+
+        let update = changed_target_files(&v1, &v10);
+        assert_eq!(update.len(), 1);
+        assert_eq!(update[0].path, "large.pak");
+        assert_eq!(update[0].chunks[0].hash, "chunk-v10");
+
+        let downgrade = changed_target_files(&v10, &v5);
+        assert_eq!(downgrade.len(), 1);
+        assert_eq!(downgrade[0].path, "large.pak");
+        assert_eq!(downgrade[0].chunks[0].hash, "chunk-v5");
+
+        let catalog = test_catalog(&["v1.0", "v1.5", "v1.10"]);
+        assert_eq!(
+            resolve_target_version(&catalog, Some("v1.0".to_string())).unwrap(),
+            "v1.0"
+        );
+        assert_eq!(resolve_target_version(&catalog, None).unwrap(), "v1.10");
+    }
+
+    #[test]
+    fn signed_hf_url_refreshes_before_server_expiry() {
+        let delay = signed_url_refresh_delay(
+            "https://cdn.example.test/pack.bin?user_id=public&Expires=1300&Signature=secret",
+            1000,
+        )
+        .expect("CloudFront expiry should be parsed");
+        assert_eq!(delay, Duration::from_secs(240));
+
+        assert_eq!(
+            signed_url_refresh_delay(
+                "https://cdn.example.test/pack.bin?Expires=1040&Signature=secret",
+                1000,
+            ),
+            Some(Duration::ZERO)
+        );
+        assert!(signed_url_refresh_delay("https://cdn.example.test/pack.bin", 1000).is_none());
     }
 
     #[cfg(target_os = "windows")]
@@ -8826,8 +10317,9 @@ mod downloader_v2_tests {
             reads: 0,
         };
 
-        let err = append_stream_to_partial(&mut reader, &partial, 0, 8, "task-1", &control, &tx)
-            .unwrap_err();
+        let err =
+            append_stream_to_partial(&mut reader, &partial, 0, 8, "task-1", true, &control, &tx)
+                .unwrap_err();
 
         assert!(matches!(err, JobError::Transient(_)));
         assert!(err.retry_delay(1).is_some());
@@ -8849,8 +10341,9 @@ mod downloader_v2_tests {
         let control = JobControl::default();
         let mut reader = Cursor::new(vec![9, 9, 9]);
 
-        let err = append_stream_to_partial(&mut reader, &partial, 0, 16, "task-2", &control, &tx)
-            .unwrap_err();
+        let err =
+            append_stream_to_partial(&mut reader, &partial, 0, 16, "task-2", true, &control, &tx)
+                .unwrap_err();
 
         assert!(matches!(err, JobError::Transient(_)));
         assert!(err.retry_delay(1).is_some());
@@ -8991,6 +10484,54 @@ mod downloader_v2_tests {
 
         assert!(find_catalog_version_entry(&catalog, "v1.0").is_none());
         assert!(resolve_target_version(&catalog, Some("v1.0".to_string())).is_err());
+    }
+
+    #[test]
+    fn installed_update_base_uses_local_manifest_when_catalog_history_is_pruned() {
+        let root = env::temp_dir().join(format!(
+            "0xolemon-pruned-catalog-base-{}",
+            Utc::now().timestamp_nanos_opt().unwrap_or_default()
+        ));
+        fs::create_dir_all(&root).unwrap();
+
+        let source = DepotSource::for_game("among-us");
+        let marker = InstallMarker {
+            game_id: source.game_id.clone(),
+            version: "1.0.4.0 (Build 24213434) - Uploaded 2026-07-17".to_string(),
+            installed_at: "2026-07-17T00:00:00Z".to_string(),
+            launch_executable: Some("Among Us.exe".to_string()),
+            applied_patch_id: None,
+        };
+        write_install_marker_file(&root, &marker).unwrap();
+
+        let installed_manifest = VersionManifest {
+            format_version: LEGACY_FORMAT_VERSION,
+            game_id: source.game_id.clone(),
+            version: "1.0.4.0".to_string(),
+            created_at: "2026-07-17T00:00:00Z".to_string(),
+            root_label: "Among Us".to_string(),
+            launch_executable: Some("Among Us.exe".to_string()),
+            launch_options: Vec::new(),
+            dependencies: None,
+            total_size: 0,
+            files: Vec::new(),
+            signature: None,
+        };
+        write_installed_manifest(&root, &installed_manifest).unwrap();
+
+        let catalog = test_catalog(&["1.0.5.0", "1.0.6.0"]);
+        let base = load_installed_update_base(&root, &source, &catalog)
+            .expect("a valid local manifest should survive catalog history pruning")
+            .expect("installed base should be available");
+
+        assert_eq!(
+            base.version,
+            "1.0.4.0 (Build 24213434) - Uploaded 2026-07-17"
+        );
+        assert_eq!(canonical_version_label(&base.manifest.version), "1.0.4.0");
+        assert!(base.source_label.contains("local manifest.0xo"));
+
+        fs::remove_dir_all(&root).ok();
     }
 
     fn test_catalog(versions: &[&str]) -> Catalog {
@@ -9147,7 +10688,11 @@ fn default_patch_journal(
     if let Some(log) = journal.logs.first_mut() {
         log.message = "Ready to download and apply a resumable patch".to_string();
     }
-    journal.pipeline_version = "verified-stage-v2".to_string();
+    journal.pipeline_version = if transport_pipeline_v3_enabled() {
+        TRANSPORT_PIPELINE_V3.to_string()
+    } else {
+        "verified-stage-v2".to_string()
+    };
     journal
 }
 
@@ -9294,10 +10839,12 @@ fn try_apply_patch_fix(
     control: &Arc<JobControl>,
     manifest_errors_are_fatal: bool,
 ) -> Result<(), JobError> {
-    if matches!(
-        journal.pipeline_version.as_str(),
-        "verified-stage-v2" | "sequential-stage-v1+verified-patch-v2"
-    ) {
+    if journal_uses_transport_v3(journal)
+        || matches!(
+            journal.pipeline_version.as_str(),
+            "verified-stage-v2" | "sequential-stage-v1+verified-patch-v2"
+        )
+    {
         try_apply_patch_fix_verified(
             app,
             journal,
@@ -9447,13 +10994,56 @@ fn try_apply_patch_fix_verified(
         &patch_manifest.files,
         None,
     )?;
-    configure_transfer_plan(journal, patch_transfer_bytes_for_chunks(&missing_chunks), 0);
+    let use_bounded_patch_transport = journal_uses_transport_v3(journal);
+    let patch_pack_prefix = format!("patches/{version}/packs");
+    let prepared_transports = if use_bounded_patch_transport {
+        Some(source.prepare_pack_transports(
+            session.cache_root(),
+            &missing_chunks,
+            Some(version),
+            TransportOperation::Patch,
+            &[],
+        )?)
+    } else {
+        None
+    };
+    let transfer_total = prepared_transports
+        .as_ref()
+        .map(|prepared| prepared.transfer_bytes)
+        .unwrap_or_else(|| patch_transfer_bytes_for_chunks(&missing_chunks));
+    let resumed_in_flight = if use_bounded_patch_transport {
+        existing_partial_task_progress_in(
+            session.cache_root(),
+            &missing_chunks,
+            Some(&patch_pack_prefix),
+        )
+    } else {
+        HashMap::new()
+    };
+    let resumed_bytes = resumed_in_flight
+        .values()
+        .copied()
+        .sum::<u64>()
+        .min(transfer_total);
+    configure_transfer_plan(journal, transfer_total, resumed_bytes);
     configure_download_metrics(journal, &missing_chunks, false);
-    journal.metrics.pipeline = "verified-patch-stage-v2".to_string();
+    journal.metrics.pipeline = if journal_uses_transport_v3(journal) {
+        TRANSPORT_PIPELINE_V3.to_string()
+    } else {
+        "verified-patch-stage-v2".to_string()
+    };
     journal.apply_bytes_total = patch_manifest.files.iter().map(|file| file.size).sum();
     journal.apply_bytes_done = session.total_durable_bytes(&patch_manifest.files);
     journal.durable_bytes = journal.apply_bytes_done;
     journal.commit_state = "staging".to_string();
+    if let Some(prepared) = prepared_transports.as_ref() {
+        journal.transport_plans = prepared.plans.clone();
+        journal.metrics.overfetch_bytes = prepared
+            .plans
+            .iter()
+            .map(|plan| plan.estimated_overfetch)
+            .sum();
+    }
     session.reconcile_chunk_references(&patch_manifest.files)?;
     set_step_running(
         app,
@@ -9464,7 +11054,13 @@ fn try_apply_patch_fix_verified(
     )?;
 
     let mut downloaded = 0_u64;
-    let mut in_flight = HashMap::<String, u64>::new();
+    let mut in_flight = resumed_in_flight;
+    let queue_budget = crate::platform::current_settings()
+        .download_queue_mb
+        .max(8)
+        .saturating_mul(1024 * 1024);
+    let mut last_ui_emit = Instant::now();
+    let mut last_journal_persist = Instant::now();
     for (file_index, file) in patch_manifest.files.iter().enumerate() {
         wait_for_control(app, control, journal, patch_step_index)?;
         journal.current_file = file.path.clone();
@@ -9479,52 +11075,133 @@ fn try_apply_patch_fix_verified(
         let mut writer = session.open_writer(file)?;
         let mut checkpointed_hashes = Vec::<String>::new();
         while writer.next_chunk() < file.chunks.len() {
-            let chunk = &file.chunks[writer.next_chunk()];
-            let cache_path = staged_chunk_path_from(session.cache_root(), &chunk.hash);
-            if !local_sources.contains_key(&chunk.hash)
-                && !compressed_chunk_file_valid(&cache_path, chunk)?
-            {
-                let pack_relative = format!("patches/{version}/packs/{}.bin", chunk.pack_id);
-                let task_id = format!("patch-{version}-{}", chunk.hash);
-                let partial_path = session
-                    .cache_root()
-                    .join(format!("{}.range.partial", chunk.hash));
-                let transport = fetch_patch_pack_span_with_journal_progress(
-                    app,
-                    journal,
-                    source,
-                    chunk,
-                    pack_relative,
-                    task_id,
-                    partial_path,
-                    control,
-                    patch_step_index,
-                    &mut downloaded,
-                    &mut in_flight,
-                )?;
-                verify_compressed_chunk_bytes(chunk, &transport)?;
-                write_chunk_file(&cache_path, &transport)?;
+            wait_for_control(app, control, journal, patch_step_index)?;
+            let batch_start = writer.next_chunk();
+            let batch_end = if use_bounded_patch_transport {
+                sequential_batch_end(
+                    file,
+                    batch_start,
+                    &local_sources,
+                    session.cache_root(),
+                    queue_budget,
+                )?
+            } else {
+                batch_start.saturating_add(1).min(file.chunks.len())
+            };
+
+            if use_bounded_patch_transport {
+                let mut batch = file.clone();
+                batch.chunks = file.chunks[batch_start..batch_end].to_vec();
+                let batch_missing =
+                    plan_missing_chunks(&local_sources, session.cache_root(), &[batch], None)?;
+                if !batch_missing.is_empty() {
+                    let durable_snapshot = journal.apply_bytes_done;
+                    let mut progress_callback = |progress: DownloadProgress| {
+                        if progress.clear_in_flight {
+                            in_flight.remove(&progress.task_id);
+                        } else {
+                            in_flight.insert(progress.task_id.clone(), progress.in_flight_bytes);
+                        }
+                        downloaded = downloaded.saturating_add(progress.committed_bytes);
+                        wait_for_control(app, control, journal, patch_step_index)?;
+                        let active_bytes = in_flight.values().copied().sum::<u64>();
+                        observe_download_progress(journal, &progress, active_bytes);
+                        journal.bytes_done = downloaded
+                            .saturating_add(active_bytes)
+                            .min(journal.bytes_total);
+                        journal.steps[patch_step_index].progress = streamed_journal_progress(
+                            journal,
+                            durable_snapshot,
+                            journal.apply_bytes_total,
+                        );
+                        journal.steps[patch_step_index].retry_count = journal.steps
+                            [patch_step_index]
+                            .retry_count
+                            .max(progress.retry_count);
+                        journal.steps[patch_step_index].detail =
+                            format!("Downloading patch data for {}", file.path);
+                        journal.overall_progress = overall_progress(
+                            patch_step_index,
+                            journal.steps[patch_step_index].progress,
+                        );
+                        touch(journal);
+                        publish_job_progress(
+                            app,
+                            journal,
+                            &mut last_ui_emit,
+                            &mut last_journal_persist,
+                            false,
+                        )
+                    };
+                    source.download_chunks_to_store_parallel_at_prefix(
+                        session.cache_root(),
+                        &batch_missing,
+                        Some(version),
+                        Some(&patch_pack_prefix),
+                        Arc::clone(control),
+                        &mut progress_callback,
+                    )?;
+                }
             }
-            let plain = read_chunk_bytes(chunk, &local_sources, session.cache_root())?;
-            journal.metrics.disk_read_bytes = journal
-                .metrics
-                .disk_read_bytes
-                .saturating_add(plain.len() as u64);
-            writer.append(chunk, &plain)?;
-            checkpointed_hashes.push(chunk.hash.clone());
-            if writer.checkpoint_due() {
+
+            while writer.next_chunk() < batch_end {
+                let chunk = &file.chunks[writer.next_chunk()];
+                let cache_path = staged_chunk_path_from(session.cache_root(), &chunk.hash);
+                if !use_bounded_patch_transport
+                    && !local_sources.contains_key(&chunk.hash)
+                    && !compressed_chunk_file_valid(&cache_path, chunk)?
+                {
+                    let pack_relative = format!("patches/{version}/packs/{}.bin", chunk.pack_id);
+                    let task_id = format!("patch-{version}-{}", chunk.hash);
+                    let partial_path = session
+                        .cache_root()
+                        .join(format!("{}.range.partial", chunk.hash));
+                    let transport = fetch_patch_pack_span_with_journal_progress(
+                        app,
+                        journal,
+                        source,
+                        chunk,
+                        pack_relative,
+                        task_id,
+                        partial_path,
+                        control,
+                        patch_step_index,
+                        &mut downloaded,
+                        &mut in_flight,
+                    )?;
+                    verify_compressed_chunk_bytes(chunk, &transport)?;
+                    write_chunk_file(&cache_path, &transport)?;
+                }
+                let plain = read_chunk_bytes(chunk, &local_sources, session.cache_root())?;
+                journal.metrics.disk_read_bytes = journal
+                    .metrics
+                    .disk_read_bytes
+                    .saturating_add(plain.len() as u64);
+                writer.append(chunk, &plain)?;
+                checkpointed_hashes.push(chunk.hash.clone());
+                if writer.checkpoint_due() {
+                    session.checkpoint_writer(&mut writer, false)?;
+                    session.release_checkpointed_chunks(&mut checkpointed_hashes)?;
+                    journal.apply_bytes_done = session.total_durable_bytes(&patch_manifest.files);
+                    journal.durable_bytes = journal.apply_bytes_done;
+                    journal.steps[patch_step_index].progress = streamed_journal_progress(
+                        journal,
+                        journal.apply_bytes_done,
+                        journal.apply_bytes_total,
+                    );
+                    journal.overall_progress = overall_progress(
+                        patch_step_index,
+                        journal.steps[patch_step_index].progress,
+                    );
+                    persist_and_emit(app, journal)?;
+                }
+            }
+
+            if writer.next_chunk() < file.chunks.len() {
                 session.checkpoint_writer(&mut writer, false)?;
                 session.release_checkpointed_chunks(&mut checkpointed_hashes)?;
                 journal.apply_bytes_done = session.total_durable_bytes(&patch_manifest.files);
                 journal.durable_bytes = journal.apply_bytes_done;
-                journal.steps[patch_step_index].progress = streamed_journal_progress(
-                    journal,
-                    journal.apply_bytes_done,
-                    journal.apply_bytes_total,
-                );
-                journal.overall_progress =
-                    overall_progress(patch_step_index, journal.steps[patch_step_index].progress);
-                persist_and_emit(app, journal)?;
             }
         }
         session.finish_writer(&mut writer, file)?;
@@ -10003,12 +11680,17 @@ fn fetch_patch_pack_span_with_journal_progress(
         DownloadProgress {
             task_id,
             committed_bytes: expected_size,
+            wire_bytes_delta: expected_size,
             in_flight_bytes: 0,
             clear_in_flight: true,
             retry_count: 0,
             rate_bytes_per_second: 0,
             retry_wait_ms: 0,
             rate_limit_wait_ms: 0,
+            transport: DownloadTransportKind::HttpRange,
+            stall_reason: String::new(),
+            active_connections: 0,
+            queue_bytes: 0,
         },
     )?;
     Ok(transport)

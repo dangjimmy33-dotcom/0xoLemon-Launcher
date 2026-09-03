@@ -91,6 +91,11 @@ newoption {
     trigger = "genproto",
     description = "Generate .cc/.h files from .proto file",
 }
+newoption {
+    category = 'protobuf files',
+    trigger = "genproto_only",
+    description = "Generate .cc/.h files from .proto file and exit immediately (skips project file generation)",
+}
 
 newoption {
     category = 'build',
@@ -98,6 +103,13 @@ newoption {
     description = "Set the EMU_BUILD_STRING",
     value = "your_string",
     default = os.date("%Y_%m_%d-%H_%M_%S"),
+}
+newoption {
+    category = 'build',
+    trigger = "emubuilddate",
+    description = "Set the EMU_BUILD_DATE_STRING",
+    value = "your_date",
+    default = os.date("%Y_%m_%d"),
 }
 newoption {
     category = "build",
@@ -210,7 +222,9 @@ end
 -- common defines
 ---------
 local common_emu_defines = { -- added to all filters, later defines will be appended
-    "UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB", "CONTROLLER_SUPPORT", "EMU_BUILD_STRING=" .. _OPTIONS["emubuild"],
+    "UTF_CPP_CPLUSPLUS=201703L", "CURL_STATICLIB", "CONTROLLER_SUPPORT",
+    'EMU_BUILD_STRING="' .. _OPTIONS["emubuild"] .. '"',
+    'EMU_BUILD_DATE_STRING="' .. _OPTIONS["emubuilddate"] .. '"',
 }
 
 -- include dirs
@@ -282,6 +296,14 @@ local overlay_files = {
     "overlay_experimental/**",
 }
 
+-- ImGui source files from ingame_overlay dependency
+local imgui_files = {
+    path.join(deps_dir, "ingame_overlay/deps/ImGui/imgui.cpp"),
+    path.join(deps_dir, "ingame_overlay/deps/ImGui/imgui_draw.cpp"),
+    path.join(deps_dir, "ingame_overlay/deps/ImGui/imgui_tables.cpp"),
+    path.join(deps_dir, "ingame_overlay/deps/ImGui/imgui_widgets.cpp"),
+}
+
 local detours_files = {
     "libs/detours/**",
 }
@@ -302,7 +324,7 @@ end
 
 local zlib_archive_name = 'z'
 if os.target() == 'windows' then
-    zlib_archive_name = 'zs' -- even on MinGw we need this name
+    zlib_archive_name = 'zs' -- zlib v1.3.2+ uses OUTPUT_NAME 'zs' on Windows; even on MinGw we need this name
 end
 
 local sdl_name = 'SDL3'
@@ -424,7 +446,7 @@ local common_link_win = {
     "Winmm"    .. static_postfix,
     "Bcrypt"   .. static_postfix,
     "Dbghelp"  .. static_postfix,
-    "ntdll"    .. static_postfix,
+    "Ntdll"    .. static_postfix, -- for NtQueryInformationProcess/Thread
     -- gamepad
     "Xinput"   .. static_postfix,
     -- imgui / overlay
@@ -434,6 +456,10 @@ local common_link_win = {
 }
 -- add deps to win
 table_append(common_link_win, deps_link)
+
+-- portaudio installs platform-suffixed static libs
+local x32_portaudio_link = { "portaudio_static_x86" .. static_postfix }
+local x64_portaudio_link = { "portaudio_static_x64" .. static_postfix }
 
 local common_link_linux = {
     -- os specific
@@ -498,11 +524,14 @@ local x64_deps_overlay_libdir = {
 }
 
 -- generate proto
-if _OPTIONS["genproto"] then
+if _OPTIONS["genproto"] or _OPTIONS["genproto_only"] then
     if genproto() then
         print("Success!")
     else
         error("protoc error")
+    end
+    if _OPTIONS["genproto_only"] then
+        os.exit(0)
     end
 end
 -- End generate proto
@@ -641,6 +670,9 @@ filter { "system:windows", }
     defines {
         "_CRT_SECURE_NO_WARNINGS",
     }
+    disablewarnings {
+        "4834", -- C4834: discarding return value of [[nodiscard]] (protobuf SerializeToArray)
+    }
 -- Linux defines
 filter { "system:not windows" }
     defines {
@@ -744,7 +776,7 @@ end
 
 
 
-workspace "gbe"
+workspace "gse"
     location("build/project/%{_ACTION}/" .. os_iden)
 
 
@@ -859,6 +891,11 @@ project "api_experimental"
     defines { -- added to all filters, later defines will be appended
         "EMU_OVERLAY", "ImTextureID=ImU64",
         "EMU_EXPERIMENTAL_BUILD",
+        -- these MUST match the PUBLIC defines in ingame_overlay's CMakeLists.txt
+        -- otherwise ImGuiIO struct layout will mismatch between premake-compiled imgui.cpp
+        -- and the cmake-compiled ingame_overlay.lib, causing an assertion crash
+        "IMGUI_DISABLE_OBSOLETE_FUNCTIONS",
+        "IMGUI_DISABLE_OBSOLETE_KEYIO",
     }
 
 
@@ -884,9 +921,11 @@ project "api_experimental"
     files { -- added to all filters, later defines will be appended
         common_files,
         overlay_files,
+        imgui_files, -- ImGui sources from ingame_overlay
     }
     removefiles {
         'libs/detours/uimports.cc',
+        'overlay_experimental/gse_reshade_overlay_addon.cpp', -- built separately as a ReShade addon
     }
     -- deps
     filter { 'options:incdeps', "platforms:x86", }
@@ -990,6 +1029,9 @@ project "steamclient_experimental"
     defines { -- added to all filters, later defines will be appended
         "STEAMCLIENT_DLL", "EMU_OVERLAY", "ImTextureID=ImU64",
         "EMU_EXPERIMENTAL_BUILD",
+        -- these MUST match the PUBLIC defines in ingame_overlay's CMakeLists.txt
+        "IMGUI_DISABLE_OBSOLETE_FUNCTIONS",
+        "IMGUI_DISABLE_OBSOLETE_KEYIO",
     }
 
 
@@ -1016,10 +1058,12 @@ project "steamclient_experimental"
     files { -- added to all filters, later defines will be appended
         common_files,
         overlay_files,
+        imgui_files, -- ImGui sources from ingame_overlay
     }
     removefiles {
         'libs/detours/uimports.cc',
         'dll/flat.cpp',
+        'overlay_experimental/gse_reshade_overlay_addon.cpp', -- built separately as a ReShade addon
     }
     -- deps
     filter { 'options:incdeps', "platforms:x86", }
@@ -1280,6 +1324,64 @@ project "lib_game_overlay_renderer"
             "resources/win/game_overlay_renderer/64/resources.rc"
         }
 -- End lib_game_overlay_renderer
+
+
+
+-- Project reshade_addon_overlay (Windows-only ReShade addon DLL)
+---------
+if os.target() == "windows" then
+project "reshade_addon_overlay"
+    kind "SharedLib"
+    location "%{wks.location}/%{prj.name}"
+    targetdir(path.join(build_dir, os_iden, _ACTION, "%{cfg.buildcfg}/reshade_addon/%{cfg.platform}"))
+
+    -- target name & extension
+    ---------
+    filter { "platforms:x32", }
+        targetname "gse_overlay"
+        targetextension ".addon"
+    filter { "platforms:x64", }
+        targetname "gse_overlay"
+        targetextension ".addon64"
+
+    -- defines
+    ---------
+    filter {} -- reset
+    defines {
+        "ImTextureID=ImU64",
+        "WIN32_LEAN_AND_MEAN",
+        "NOMINMAX",
+        "_CRT_SECURE_NO_WARNINGS",
+    }
+
+    -- include dirs (only ReShade + ImGui headers, no emu internals)
+    ---------
+    filter {} -- reset
+    includedirs {
+        "libs/reshade",
+        "libs/reshade/imgui",
+        "overlay_experimental",
+    }
+
+    -- source files
+    ---------
+    filter {} -- reset
+    files {
+        "overlay_experimental/gse_reshade_overlay_addon.cpp",
+        "overlay_experimental/overlay_bridge.h",
+    }
+
+    -- no libs to link — reshade.hpp is header-only, ImGui is provided by ReShade at runtime
+
+    -- build options
+    ---------
+    filter { "action:vs*", }
+        buildoptions { "/std:c++17" }
+    filter { "action:not vs*", }
+        buildoptions { "-std=c++17" }
+
+end -- windows only
+-- End reshade_addon_overlay
 
 
 

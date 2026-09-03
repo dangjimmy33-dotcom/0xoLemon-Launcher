@@ -635,7 +635,7 @@ export function CloudRedirectSettings() {
         <div className="cr2-title-copy">
           <div className="cr2-title-row">
             <h2>{c.title}</h2>
-            <span className="cr2-version">v{status?.version || '2.6.4'}</span>
+            <span className="cr2-version">v{status?.version || '2.6.5'}</span>
           </div>
           <p>{c.subtitle}</p>
           <small className="cr2-attribution">{c.attribution}</small>
@@ -675,7 +675,7 @@ export function CloudRedirectSettings() {
           {steamVersion && !steamVersionSupported ? (
             <div className="cr2-compatibility-notice" role="status">
               <TriangleAlert size={16} />
-              <div><b>{c.unsupportedSteamTitle}</b><span>{c.unsupportedSteamBody.replace('{version}', String(steamVersion)).replace('{engine}', status?.version || '2.6.4')}</span></div>
+              <div><b>{c.unsupportedSteamTitle}</b><span>{c.unsupportedSteamBody.replace('{version}', String(steamVersion)).replace('{engine}', status?.version || '2.6.5')}</span></div>
             </div>
           ) : null}
 

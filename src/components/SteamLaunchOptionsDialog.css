@@ -1,0 +1,109 @@
+.steam-launch-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10035;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(5, 9, 13, 0.78);
+  backdrop-filter: blur(14px);
+}
+
+.steam-launch-dialog {
+  width: min(1050px, 100%);
+  max-height: min(880px, calc(100vh - 48px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  color: var(--text-strong);
+  background: var(--theme-modal-bg);
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.62);
+}
+
+.steam-launch-dialog > header {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.steam-launch-dialog > header span { color: var(--theme-accent-strong); font-size: 9px; font-weight: 800; letter-spacing: 0.14em; }
+.steam-launch-dialog > header h2 { margin: 3px 0 0; font-size: 18px; }
+.steam-launch-dialog > header p { margin: 5px 0 0; color: #8996a1; font-size: 11px; }
+.steam-launch-dialog > header button { width: 34px; height: 34px; display: grid; place-items: center; border: 0; border-radius: 5px; color: #9aa6b0; background: transparent; }
+.steam-launch-dialog > header button:hover:not(:disabled) { color: #fff; background: var(--theme-hover-bg); }
+
+.steam-launch-toolbar {
+  display: flex;
+  align-items: end;
+  gap: 8px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--line);
+  background: var(--theme-card-bg-soft);
+}
+
+.steam-launch-toolbar label { display: grid; gap: 5px; color: #7f8d98; font-size: 9px; text-transform: uppercase; }
+.steam-launch-toolbar input { width: 150px; height: 34px; padding: 0 10px; border: 1px solid var(--line); border-radius: 5px; color: var(--text-strong); background: var(--theme-control-bg); }
+.steam-launch-toolbar button,
+.steam-launch-dialog footer button,
+.steam-launch-list-heading button { min-height: 34px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 11px; border: 1px solid var(--line); border-radius: 5px; color: var(--text-strong); background: var(--theme-control-bg); font-size: 10px; font-weight: 700; }
+.steam-launch-toolbar button svg,
+.steam-launch-dialog footer button svg,
+.steam-launch-list-heading button svg { width: 14px; height: 14px; }
+.steam-launch-toolbar > div { margin-left: auto; display: flex; gap: 6px; }
+.steam-launch-toolbar > div span { padding: 6px 8px; border: 1px solid var(--line); border-radius: 4px; color: #94a1ab; background: var(--theme-control-bg); font-size: 9px; }
+.steam-launch-toolbar > div span.is-running { color: #efb85a; }
+.steam-launch-toolbar > div span.is-closed { color: #67d99b; }
+
+.steam-launch-message { display: flex; align-items: flex-start; gap: 8px; margin: 10px 20px 0; padding: 9px 10px; border: 1px solid rgba(104, 196, 225, 0.24); border-radius: 5px; color: #a7ddeb; background: rgba(54, 130, 154, 0.11); font-size: 10px; line-height: 1.4; }
+.steam-launch-message svg { width: 15px; height: 15px; flex: 0 0 auto; }
+.steam-launch-message.is-error { border-color: rgba(255, 91, 91, 0.3); color: #ff9696; background: rgba(129, 35, 35, 0.13); }
+.steam-launch-message.is-warning { border-color: rgba(241, 184, 67, 0.3); color: #edc56f; background: rgba(130, 92, 22, 0.13); }
+.steam-launch-message.is-success { border-color: rgba(65, 201, 126, 0.28); color: #79dda5; background: rgba(27, 111, 66, 0.13); }
+
+.steam-launch-body { min-height: 0; flex: 1; overflow-y: auto; padding: 18px 20px; }
+.steam-launch-empty { min-height: 360px; display: grid; place-content: center; justify-items: center; gap: 8px; color: #7e8b96; text-align: center; }
+.steam-launch-empty svg { width: 34px; height: 34px; color: var(--theme-accent-strong); }
+.steam-launch-empty strong { color: #dce3e8; font-size: 13px; }
+.steam-launch-empty span { font-size: 10px; }
+.steam-launch-list-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 10px; }
+.steam-launch-list-heading > div { display: grid; gap: 3px; }
+.steam-launch-list-heading strong { font-size: 12px; }
+.steam-launch-list-heading span { color: #7f8d98; font-size: 9px; }
+.steam-launch-list { display: grid; gap: 9px; }
+.steam-launch-list article { display: grid; grid-template-columns: 28px minmax(0, 1fr) 30px; align-items: start; gap: 10px; padding: 11px; border: 1px solid var(--line); border-radius: 7px; background: var(--theme-card-bg-soft); }
+.steam-launch-option-number { width: 26px; height: 26px; display: grid; place-items: center; border-radius: 5px; color: var(--theme-accent-strong); background: var(--theme-accent-surface); font-size: 10px; font-weight: 800; }
+.steam-launch-fields { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.steam-launch-fields label { min-width: 0; display: grid; gap: 4px; color: #74838f; font-size: 8px; text-transform: uppercase; }
+.steam-launch-fields label.is-wide { grid-column: span 2; }
+.steam-launch-fields input { min-width: 0; width: 100%; height: 32px; padding: 0 9px; border: 1px solid var(--line); border-radius: 4px; color: #dce4e9; background: var(--theme-control-bg); font-size: 10px; }
+.steam-launch-fields input:focus { border-color: var(--theme-accent-strong); outline: 2px solid color-mix(in srgb, var(--theme-accent-strong) 25%, transparent); }
+.steam-launch-option-actions { display: grid; gap: 5px; }
+.steam-launch-option-actions button { width: 28px; height: 28px; display: grid; place-items: center; padding: 0; border: 1px solid var(--line); border-radius: 4px; color: #8d9aa4; background: var(--theme-control-bg); }
+.steam-launch-option-actions button:last-child { color: #ed8585; }
+.steam-launch-option-actions svg { width: 13px; height: 13px; }
+
+.steam-launch-dialog > footer { display: flex; justify-content: space-between; gap: 12px; padding: 12px 20px; border-top: 1px solid var(--line); background: var(--theme-card-bg-soft); }
+.steam-launch-dialog > footer > div { display: flex; gap: 7px; }
+.steam-launch-dialog footer button.is-primary { border-color: var(--line-strong); background: var(--theme-accent-surface-strong); }
+.steam-launch-dialog button:disabled { opacity: 0.42; cursor: not-allowed; }
+
+@media (max-width: 760px) {
+  .steam-launch-backdrop { align-items: end; padding: 8px; }
+  .steam-launch-dialog { max-height: calc(100vh - 16px); }
+  .steam-launch-toolbar { flex-wrap: wrap; }
+  .steam-launch-toolbar > div { width: 100%; margin-left: 0; }
+  .steam-launch-list article { grid-template-columns: 28px minmax(0, 1fr); }
+  .steam-launch-option-actions { grid-column: 2; display: flex; justify-content: flex-end; }
+  .steam-launch-fields { grid-template-columns: 1fr; }
+  .steam-launch-fields label.is-wide { grid-column: auto; }
+  .steam-launch-dialog > footer { align-items: stretch; flex-direction: column-reverse; }
+  .steam-launch-dialog > footer > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .steam-launch-backdrop, .steam-launch-dialog { animation: none !important; }
+}

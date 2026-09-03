@@ -199,6 +199,33 @@ struct Overlay_Appearance {
     NotificationPosition invite_pos = default_pos; // lobby/game invitation
     NotificationPosition chat_msg_pos = NotificationPosition::top_center; // chat message from a friend
 
+    // sRGB / gamma correction before GPU upload.
+    // Controls per-pixel colour-space transforms applied to overlay images and UI colours.
+    //   auto = detect from swap chain format: linear-HDR, PQ, _SRGB, or plain SDR.
+    //   on   = always apply the transform selected by Swapchain_Override (or auto-detect).
+    //   off  = never transform (original behaviour, raw sRGB bytes pass through).
+    enum class SrgbDecode { Auto, On, Off };
+    SrgbDecode image_gamma = SrgbDecode::Auto;
+
+    // Manual override for the detected swap chain colour space.
+    // Useful when auto-detection produces the wrong result (e.g. OpenGL with GL_FRAMEBUFFER_SRGB,
+    // or a game that creates an SDR swap chain but applies its own HDR tone-mapping shader).
+    //   auto       = rely on screenshot-based format detection (default).
+    //   linear_hdr = force scRGB / FP16 / linear treatment  (sRGB→linear + SDR-white scale).
+    //   hdr10_pq   = force HDR10 PQ (ST.2084) treatment     (sRGB→linear→PQ encode).
+    //   srgb_rtv   = force _SRGB back-buffer treatment      (sRGB→linear, hw re-encodes).
+    //   sdr        = force standard SDR UNORM               (no decode, optional contrast).
+    enum class SwapchainOverride { Auto, LinearHDR, HDR10PQ, SrgbRTV, SDR };
+    SwapchainOverride swapchain_override = SwapchainOverride::Auto;
+
+    // Per-image colour adjustments applied at texture upload time.
+    // Brightness: linear multiplier (1.0 = unchanged).
+    // Contrast: expansion/compression around 0.5 in linear space (1.0 = unchanged).
+    // Gamma: power curve exponent applied in linear space (1.0 = unchanged).
+    float image_brightness = 1.0f;
+    float image_contrast   = 1.0f;
+    float image_gamma_adjust = 1.0f;
+
     static NotificationPosition translate_notification_position(const std::string &str);
 };
 
@@ -219,6 +246,9 @@ class Settings {
 private:
     CSteamID steam_id{}; // user id
     CGameID game_id{};
+
+    std::chrono::system_clock::time_point purchase_date{};
+
     std::string name{};
     std::string language{}; // default "english"
     std::string overlay_language{}; // for overlay language
@@ -267,6 +297,9 @@ public:
     //networking
     bool disable_networking = false;
 
+    // allow friend messages (chat, avatars) to reach friends on different appids
+    bool enable_crossapp_messaging = true;
+
     //gameserver source query
     bool disable_source_query = false;
 
@@ -280,10 +313,30 @@ public:
     //steamhttp external download support
     bool download_steamhttp_requests = false;
     bool force_steamhttp_success = false;
-
-    //steam deck flag
-    bool steam_deck = false;
     
+    // gracefully return nullptr for unknown interface versions instead of crashing
+    // enabled automatically when third-party injectors (e.g. Special K) are detected
+    bool exit_on_unknown_interface = true;
+
+    // automatically start Special K injection service if SKIF is running
+    // waits for SK to inject before continuing initialization
+    bool auto_inject_specialk = false;
+
+    // path to SKIF.exe for auto-injection when SKIF is not already running
+    // if empty, the emu will try to find SKIF in the default install location
+    std::string specialk_install_path{};
+
+    // how long the SK injection service stays running (in seconds)
+    // 0 = use Temp mode (auto-stop after first successful injection)
+    // >0 = keep service running for this many seconds then stop (for games with launchers)
+    unsigned specialk_service_duration = 0;
+
+    // disable ReShade startup banner (writes ShowStartupBanner=0 to ReShade.ini in game dir)
+    bool disable_reshade_banner = false;
+
+    // disable Special K startup notification (writes Silent=true to per-game SpecialK.ini)
+    bool disable_specialk_notification = false;
+
     // use new app_ticket auth instead of old one
     bool enable_new_app_ticket = true;
     // can use GC token for generation
@@ -307,6 +360,21 @@ public:
     // 0  == load icons only when they're requested
     // >0 == load icons in the background as mentioned above
     int paginated_achievements_icons = 10;
+
+    // cache TTL for Steam global achievement percentages and SteamHunters data (seconds, default 1 day)
+    uint32 achievements_cache_ttl = 86400;
+
+    // write control: skip generating steam_settings JSON files from schema bin
+    bool no_write_schema_achievements_json = false; // don't write steam_settings/achievements.json
+    bool no_write_schema_stats_json = false;        // don't write steam_settings/stats.json
+    // write control: skip writing user save-state files (UGS bin is used as primary store)
+    bool no_write_user_achievements_json = false;   // don't write save/achievements.json
+    bool no_write_user_stats_json = false;          // don't write save/user_stats.json
+    bool no_write_user_stats_files = false;         // legacy: no longer writes any individual files; kept for compatibility
+
+    // schema data cache: populated when schema bin is parsed; used as fallback when JSON files are absent
+    std::string schema_achievements_json_str{}; // raw JSON string of parsed achievements schema
+    std::string schema_stats_json_str{};        // raw JSON string of parsed stats schema
 
     // whether to record playtime
     bool record_playtime = false;
@@ -358,6 +426,8 @@ public:
 
     //overlay
     bool disable_overlay = true;
+    bool enable_overlay_bridge = false; // allow ReShade addon bridge even when disable_overlay is true
+    bool disable_overlay_activated_callback = false; // suppress GameOverlayActivated_t so the game doesn't pause
     int overlay_hook_delay_sec = 0; // "Saints Row (2022)" needs a lot of time to initialize, otherwise detection will fail
     int overlay_renderer_detector_timeout_sec = 15; // "Saints Row (2022)" takes almost ~8 sec to detect renderer (DX12)
     bool disable_overlay_achievement_notification = false;
@@ -372,6 +442,8 @@ public:
     bool disable_overlay_warning_local_save = false;
     // should the overlay upload icons to the GPU and display them
     bool overlay_upload_achs_icons_to_gpu = true;
+    // sort achievements in the overlay by global percentage (descending) instead of alphabetically
+    bool overlay_achievement_sort_by_global_percent = true;
     //disable overlay warning for bad app ID (= 0)
     bool disable_overlay_warning_bad_appid = false;
     // disable all overlay warnings
@@ -400,6 +472,14 @@ public:
     bool overlay_always_show_fps = false;
     bool overlay_always_show_frametime = false;
     bool overlay_always_show_playtime = false;
+    // detailed stats display options
+    bool overlay_show_fps_graph = true;
+    bool overlay_show_frametime_graph = true;
+    bool overlay_show_min_max_avg = true;
+    bool overlay_show_percentile_1 = true;
+    bool overlay_show_percentile_5 = true;
+    bool overlay_show_percentile_01 = false;
+    int  overlay_graph_timeframe_sec = 5;  // 1-30 seconds
     // keys used to toggle the overlay, default = Shift + Tab
     std::vector<std::string> overlay_toggle_keys{};
     // 0=disable the F12 screenshot feature
@@ -417,6 +497,15 @@ public:
 
     // only use 32 bits for inventory item ids
     bool use_32bit_inventory_item_ids = false;
+
+    // steam hardware flag
+    ESteamHardwareType steam_hardware_type = k_ESteamHardwareTypeNone;
+
+    // steam hardware default config
+    ESteamHardwareDefaultConfig steam_hardware_def_config = k_ESteamHardwareDefaultConfigNone;
+
+    // steam proton flag
+    bool is_under_proton = false;
 
 
 #ifdef LOBBY_CONNECT
@@ -448,6 +537,9 @@ public:
     const std::string& get_supported_languages() const;
 
     void set_game_id(CGameID game_id);
+
+    std::chrono::system_clock::time_point get_purchase_date();
+    void set_purchase_date(std::chrono::system_clock::time_point purchase_date);
 
     void set_lobby(CSteamID lobby_id);
     CSteamID get_lobby();

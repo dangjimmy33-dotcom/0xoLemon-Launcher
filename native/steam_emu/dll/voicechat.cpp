@@ -84,7 +84,7 @@ int VoiceChat::inputCallback(const void* input, void*, unsigned long frameCount,
 
     std::vector<uint8_t> encoded(MAX_ENCODED_SIZE);
     int len = opus_encode(self_ref->encoder, reinterpret_cast<const int16_t*>(input), frameCount,
-        encoded.data(), encoded.size());
+        encoded.data(), static_cast<opus_int32>(encoded.size()));
     if (len > 0) {
         encoded.resize(len);
         {

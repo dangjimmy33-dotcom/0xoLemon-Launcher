@@ -1,5 +1,7 @@
+import { lazy, Suspense } from 'react'
 import { Database } from 'lucide-react'
-import type { CloudSaveStatus, DiscordAuthUser, GameCatalog, GameDetail, GameInstallState, GameSummary, GameVersionInfo, JobJournal, JobLog, PhaseProgress, Snapshot, TabId, VerifyUiStatus } from '../types'
+import type { CloudSaveStatus, DiscordAuthUser, GameCatalog, GameDetail, GameInstallState, GameSummary, GameToolsLibraryItem, GameVersionInfo, JobJournal, JobLog, PhaseProgress, Snapshot, TabId, VerifyUiStatus } from '../types'
+import type { UiThemeId } from '../lib/uiThemes'
 import { rollbackVersionFor, assetUrlForId } from '../lib/gameMeta'
 import { TabEmptyState, ScopedTabEmptyState } from './layout'
 import { StoreLibraryView } from './library'
@@ -11,6 +13,9 @@ import { WhatsNewView } from './WhatsNewView'
 import { OfflineActivation } from './OfflineActivation'
 import { LuaInstaller } from './LuaInstaller'
 import { LuaShop } from './LuaShop'
+import './ActiveViewLegacy.css'
+
+const GameToolsView = lazy(() => import('./LightningHub'))
 
 export function ActiveView({
   activeTab,
@@ -78,6 +83,9 @@ export function ActiveView({
   installStates,
   steamInstalledAppIds,
   steamBuildIds,
+  uiTheme,
+  onOpenLibrary,
+  onNavigate,
 }: {
   activeTab: TabId
   catalog: GameCatalog
@@ -144,6 +152,9 @@ export function ActiveView({
   installStates?: Record<string, GameInstallState>
   steamInstalledAppIds?: number[]
   steamBuildIds?: Record<number, string>
+  uiTheme: UiThemeId
+  onOpenLibrary: (gameId: string) => void
+  onNavigate: (tab: TabId) => void
 }) {
   const hasSelectedDetail = Boolean(selectedGame && detail)
 
@@ -197,6 +208,8 @@ export function ActiveView({
         installStates={installStates}
         steamInstalledAppIds={steamInstalledAppIds}
         steamBuildIds={steamBuildIds}
+        uiTheme={uiTheme}
+        onOpenLibrary={onOpenLibrary}
       />
     )
   }
@@ -256,6 +269,32 @@ export function ActiveView({
 
   if (activeTab === 'Lua Shop') {
     return <LuaShop />
+  }
+
+  if (activeTab === 'Tools') {
+    const steamApps = new Set(steamInstalledAppIds ?? [])
+    const gameToolsLibrary: GameToolsLibraryItem[] = catalog.games.map((game) => {
+      const numericAppId = Number(game.appid)
+      const appId = Number.isInteger(numericAppId) && numericAppId > 0 ? numericAppId : null
+      return {
+        gameId: game.id,
+        appId,
+        title: game.title,
+        subtitle: game.subtitle || game.developer,
+        imageUrl: assetUrlForId(game.gridAssetId, assets) ?? null,
+        installed: Boolean(installStates?.[game.id]?.installed || (appId && steamApps.has(appId))),
+      }
+    })
+    return (
+      <Suspense fallback={<div className="lightning-hub-loading">Loading Game Tools...</div>}>
+        <GameToolsView
+          steamInstalledAppIds={steamInstalledAppIds}
+          libraryItems={gameToolsLibrary}
+          onNavigate={onNavigate}
+          onReloadLibrary={onRetryCatalog}
+        />
+      </Suspense>
+    )
   }
 
   if (activeTab === 'Downloads' || activeTab === 'Updates') {

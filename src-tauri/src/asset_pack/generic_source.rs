@@ -137,6 +137,7 @@ pub(super) fn build_generic_manifest_and_assets(
         install: install.clone(),
         launch: launch.clone(),
         cloud_save: cloud_save.clone(),
+        local_runtime: crate::managed_game_runtime::local_runtime_integration_for_game(&game_id),
         description_images: description_images.values().cloned().collect::<Vec<_>>(),
         versions: versions.clone(),
         metadata_source: value_string(metadata.get("source"))
@@ -171,6 +172,7 @@ pub(super) fn build_generic_manifest_and_assets(
         install,
         launch,
         cloud_save,
+        local_runtime: crate::managed_game_runtime::local_runtime_integration_for_game(&game_id),
         asset_pack_path: format!("assets/games/{game_id}/core.0xo"),
     };
 

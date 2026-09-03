@@ -89,6 +89,7 @@ public:
     ~Steam_Friends();
 
     void resend_friend_data();
+    void force_resend_friend_data();
 
     // returns the local players name - guaranteed to not be NULL.
     // this is the same name as on the users community profile page

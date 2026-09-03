@@ -1,10 +1,15 @@
-use base64::{engine::general_purpose::{STANDARD, URL_SAFE_NO_PAD}, Engine as _};
+use base64::{
+    engine::general_purpose::{STANDARD, URL_SAFE_NO_PAD},
+    Engine as _,
+};
 use chrono::{DateTime, Duration as ChronoDuration, NaiveDateTime, Utc};
+use regex::Regex;
 use reqwest::blocking::{Client, Response};
-use reqwest::header::{ACCEPT, ACCEPT_ENCODING, AUTHORIZATION, CACHE_CONTROL, ETAG, LAST_MODIFIED, RANGE};
+use reqwest::header::{
+    ACCEPT, ACCEPT_ENCODING, AUTHORIZATION, CACHE_CONTROL, ETAG, LAST_MODIFIED, RANGE,
+};
 use reqwest::redirect::Policy;
 use reqwest::{StatusCode, Url};
-use regex::Regex;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
@@ -537,8 +542,7 @@ fn decrypt_depotbox_key(settings: &LuaSourceSettingsDisk) -> Result<Option<Strin
         .decode(encoded)
         .map_err(|_| "Stored DepotBox key is invalid".to_string())?;
     let clear = crate::secret_store::unprotect(&encrypted)?;
-    let key = String::from_utf8(clear)
-        .map_err(|_| "Stored DepotBox key is invalid".to_string())?;
+    let key = String::from_utf8(clear).map_err(|_| "Stored DepotBox key is invalid".to_string())?;
     if key.trim().is_empty() || key.len() > MAX_KEY_BYTES || key.chars().any(char::is_whitespace) {
         return Err("Stored DepotBox key is invalid".to_string());
     }
@@ -553,7 +557,8 @@ fn decrypt_manifesthub_key(settings: &LuaSourceSettingsDisk) -> Result<Option<St
         .decode(encoded)
         .map_err(|_| "Stored ManifestHub key is invalid".to_string())?;
     let clear = crate::secret_store::unprotect(&encrypted)?;
-    let key = String::from_utf8(clear).map_err(|_| "Stored ManifestHub key is invalid".to_string())?;
+    let key =
+        String::from_utf8(clear).map_err(|_| "Stored ManifestHub key is invalid".to_string())?;
     if key.trim().is_empty() || key.len() > MAX_KEY_BYTES {
         return Err("Stored ManifestHub key is invalid".to_string());
     }
@@ -691,20 +696,36 @@ fn mask_key(key: &str) -> String {
 }
 
 fn daily_usage_bucket(value: &Value) -> HubcapUsageBucket {
-    let usage = value_u64(value, &[&["daily_usage"]]);
-    // Hubcap is the only source whose quota is surfaced by the launcher.
-    // Prefer the role/custom limit returned by Hubcap; when an older response
-    // omits it, use the documented/default free cap expected by this launcher.
-    let limit = value_u64(
+    let explicit_usage = value_u64(value, &[&["daily_usage"]]);
+    let explicit_remaining = value_u64(value, &[&["daily_remaining"]]);
+    let explicit_limit = value_u64(
         value,
         &[
             &["daily_limit"],
             &["custom_api_limit"],
             &["role_daily_limit"],
         ],
-    )
-    .or(Some(HUBCAP_FREE_DAILY_LIMIT));
-    let remaining = limit.map(|limit| limit.saturating_sub(usage.unwrap_or(0)));
+    );
+    let bundle = usage_bucket(value, "bundle");
+
+    // Hubcap counts /api/v1/manifest/{appid} against the app-bundle bucket.
+    // Older responses do not expose daily_usage at the top level, so treating
+    // the missing field as zero made the launcher permanently display 25/25.
+    // Explicit daily counters still win; otherwise mirror the bundle bucket
+    // used by the endpoint the launcher actually calls.
+    let limit = explicit_limit
+        .or(bundle.limit)
+        .or(Some(HUBCAP_FREE_DAILY_LIMIT));
+    let usage = explicit_usage.or(bundle.usage);
+    let remaining = explicit_remaining
+        .or_else(|| {
+            if explicit_usage.is_none() && explicit_limit.is_none() {
+                bundle.remaining
+            } else {
+                None
+            }
+        })
+        .or_else(|| limit.map(|limit| limit.saturating_sub(usage.unwrap_or(0))));
     HubcapUsageBucket {
         usage,
         limit,
@@ -1036,7 +1057,10 @@ pub async fn test_manifesthub_api_key(app: AppHandle) -> Result<bool, String> {
             "https://api.manifesthub2.filegear-sg.me/manifest?apikey={}&depotid=731&manifestid=1",
             key.trim()
         );
-        let res = client.get(url).send().map_err(|_| "NETWORK_ERROR".to_string())?;
+        let res = client
+            .get(url)
+            .send()
+            .map_err(|_| "NETWORK_ERROR".to_string())?;
         if res.status() == StatusCode::FORBIDDEN || res.status() == StatusCode::UNAUTHORIZED {
             return Err("KEY_INVALID".to_string());
         }
@@ -1053,16 +1077,13 @@ pub async fn fetch_donor_steamid(app: AppHandle, appid: u32) -> Result<String, S
         .map_err(|e| format!("Task failed: {}", e))?
 }
 
-pub(crate) fn fetch_donor_steamid_blocking(
-    app: &AppHandle,
-    appid: u32,
-) -> Result<String, String> {
+pub(crate) fn fetch_donor_steamid_blocking(app: &AppHandle, appid: u32) -> Result<String, String> {
     use tauri::{Listener, Manager, WebviewUrl, WebviewWindowBuilder};
 
     let (tx, rx) = std::sync::mpsc::channel::<String>();
     let tx = std::sync::Arc::new(std::sync::Mutex::new(Some(tx)));
     let tx_clone = tx.clone();
-    
+
     let window_label = format!("steamid-fetch-{}", appid);
     let event_id = app.listen_any("steamid-result", move |event| {
         let payload = event.payload();
@@ -1106,11 +1127,15 @@ pub(crate) fn fetch_donor_steamid_blocking(
             }, 1000);
         })();
     "#;
-    
+
     let window_result = WebviewWindowBuilder::new(
         app,
         &window_label,
-        WebviewUrl::External(format!("https://steamhunters.com/apps/{}/leaderboards", appid).parse().unwrap())
+        WebviewUrl::External(
+            format!("https://steamhunters.com/apps/{}/leaderboards", appid)
+                .parse()
+                .unwrap(),
+        ),
     )
     .title(format!("SteamHunters Fetcher - {}", appid))
     .inner_size(800.0, 600.0)
@@ -1124,7 +1149,10 @@ pub(crate) fn fetch_donor_steamid_blocking(
 
     let result = match rx.recv_timeout(std::time::Duration::from_secs(60)) {
         Ok(res) => Ok(res),
-        Err(_) => Err("Timeout waiting for SteamID (60s). Please ensure Cloudflare allowed access.".to_string()),
+        Err(_) => Err(
+            "Timeout waiting for SteamID (60s). Please ensure Cloudflare allowed access."
+                .to_string(),
+        ),
     };
 
     app.unlisten(event_id);
@@ -1218,8 +1246,14 @@ fn empty_source_candidate(provider: LuaSourceProvider) -> LuaSourceCandidate {
         available: false,
         enabled: true,
         on_demand: false,
-        requires_key: matches!(provider, LuaSourceProvider::Hubcap | LuaSourceProvider::Ryuu),
-        key_ready: !matches!(provider, LuaSourceProvider::Hubcap | LuaSourceProvider::Ryuu),
+        requires_key: matches!(
+            provider,
+            LuaSourceProvider::Hubcap | LuaSourceProvider::Ryuu
+        ),
+        key_ready: !matches!(
+            provider,
+            LuaSourceProvider::Hubcap | LuaSourceProvider::Ryuu
+        ),
         recommended: false,
         variant: None,
         revision: None,
@@ -1481,7 +1515,6 @@ fn probe_steamtools_source(app: &AppHandle, appid: u32) -> LuaSourceCandidate {
     candidate
 }
 
-
 fn luatools_source_aliases(provider: LuaSourceProvider) -> &'static [&'static str] {
     match provider {
         LuaSourceProvider::Luie => &["Luie"],
@@ -1525,12 +1558,19 @@ fn luatools_manifest_client(timeout: Duration) -> Result<Client, String> {
         .connect_timeout(Duration::from_secs(10))
         .timeout(timeout)
         .redirect(Policy::limited(8))
-        .user_agent(concat!("0xoLemon/", env!("CARGO_PKG_VERSION"), " LuaToolsDirect"))
+        .user_agent(concat!(
+            "0xoLemon/",
+            env!("CARGO_PKG_VERSION"),
+            " LuaToolsDirect"
+        ))
         .build()
         .map_err(|error| format!("Could not initialize LuaTools source client: {error}"))
 }
 
-fn luatools_direct_available_source_entries(client: &Client, appid: u32) -> Result<Vec<String>, String> {
+fn luatools_direct_available_source_entries(
+    client: &Client,
+    appid: u32,
+) -> Result<Vec<String>, String> {
     let url = format!("{LUATOOLS_MANIFEST_BACKEND}/check_apis?appid={appid}");
     let response = client
         .get(&url)
@@ -1538,7 +1578,10 @@ fn luatools_direct_available_source_entries(client: &Client, appid: u32) -> Resu
         .send()
         .map_err(|error| format!("LUATOOLS_DISCOVERY_NETWORK:{error}"))?;
     if !response.status().is_success() {
-        return Err(format!("LUATOOLS_DISCOVERY_HTTP_{}", response.status().as_u16()));
+        return Err(format!(
+            "LUATOOLS_DISCOVERY_HTTP_{}",
+            response.status().as_u16()
+        ));
     }
     let payload: Value = response
         .json()
@@ -1588,7 +1631,11 @@ fn cached_luatools_wire_name(appid: u32, provider: LuaSourceProvider) -> Option<
     luatools_wire_name_cache()
         .lock()
         .ok()
-        .and_then(|cache| cache.get(&luatools_source_cache_key(appid, provider)).cloned())
+        .and_then(|cache| {
+            cache
+                .get(&luatools_source_cache_key(appid, provider))
+                .cloned()
+        })
         .filter(|name| !name.trim().is_empty())
 }
 
@@ -1662,7 +1709,10 @@ fn luatools_exact_download_source_name(
                 cache_luatools_wire_name(appid, provider, &name);
                 return Ok(name);
             }
-            Err(format!("LUATOOLS_SOURCE_NOT_AVAILABLE:{}", provider.cache_name()))
+            Err(format!(
+                "LUATOOLS_SOURCE_NOT_AVAILABLE:{}",
+                provider.cache_name()
+            ))
         }
         Err(error) => {
             if let Some(name) = luatools_known_stable_wire_name(provider) {
@@ -1812,7 +1862,6 @@ fn probe_luatools_direct_sources(app: &AppHandle, appid: u32) -> Vec<LuaSourceCa
     candidates
 }
 
-
 pub(crate) fn probe_source(
     app: &AppHandle,
     appid: u32,
@@ -1889,13 +1938,11 @@ fn scan_lua_sources_blocking(
                 && candidate.error_code.is_none()
         })
         .or_else(|| {
-            sources
-                .iter()
-                .position(|candidate| {
-                    candidate.provider == LuaSourceProvider::HuggingFace
-                        && candidate.enabled
-                        && candidate.available
-                })
+            sources.iter().position(|candidate| {
+                candidate.provider == LuaSourceProvider::HuggingFace
+                    && candidate.enabled
+                    && candidate.available
+            })
         });
     if let Some(index) = recommended {
         sources[index].recommended = true;
@@ -2037,8 +2084,8 @@ fn probe_one(
     // Sushi is on-demand. Do not burn a GitHub request merely to advertise
     // availability; the actual fetch is the source of truth and handles 404.
     let sushi_available = settings.sushi_enabled;
-    let ryuu_available = settings.ryuu_enabled
-        && decrypt_ryuu_key(settings).ok().flatten().is_some();
+    let ryuu_available =
+        settings.ryuu_enabled && decrypt_ryuu_key(settings).ok().flatten().is_some();
 
     let hubcap_time = modified.as_deref().and_then(parse_source_time);
     let community_matches_revision = hubcap_revision.as_deref().is_some_and(|source| {
@@ -2107,12 +2154,7 @@ pub(crate) fn probe_installed_source(
     let settings = load_settings(app)?;
     let key = decrypt_hubcap_key(&settings)?;
     let client = source_client(Duration::from_secs(12))?;
-    Ok(probe_one(
-        &client,
-        appid,
-        &settings,
-        key.as_deref(),
-    ))
+    Ok(probe_one(&client, appid, &settings, key.as_deref()))
 }
 
 fn probe_many_blocking(
@@ -2531,7 +2573,7 @@ fn sha256_bytes(bytes: &[u8]) -> String {
     hex::encode(hasher.finalize())
 }
 
-fn validate_manifest_magic(bytes: &[u8]) -> Result<(), String> {
+pub(crate) fn validate_manifest_magic(bytes: &[u8]) -> Result<(), String> {
     if bytes.len() < 8 {
         return Err("Manifest binary is too small".to_string());
     }
@@ -2782,11 +2824,14 @@ fn parse_top_level_calls(source: &str) -> Result<Vec<(String, Vec<String>)>, Str
     Ok(calls)
 }
 
-
 fn provider_long_bracket_open(bytes: &[u8], index: usize) -> Option<(usize, usize)> {
-    if bytes.get(index) != Some(&b'[') { return None; }
+    if bytes.get(index) != Some(&b'[') {
+        return None;
+    }
     let mut cursor = index + 1;
-    while bytes.get(cursor) == Some(&b'=') { cursor += 1; }
+    while bytes.get(cursor) == Some(&b'=') {
+        cursor += 1;
+    }
     (bytes.get(cursor) == Some(&b'[')).then_some((cursor - index - 1, cursor + 1))
 }
 
@@ -2795,8 +2840,13 @@ fn provider_long_bracket_end(bytes: &[u8], mut cursor: usize, level: usize) -> u
         if bytes[cursor] == b']' {
             let mut probe = cursor + 1;
             let mut equals = 0;
-            while bytes.get(probe) == Some(&b'=') { equals += 1; probe += 1; }
-            if equals == level && bytes.get(probe) == Some(&b']') { return probe + 1; }
+            while bytes.get(probe) == Some(&b'=') {
+                equals += 1;
+                probe += 1;
+            }
+            if equals == level && bytes.get(probe) == Some(&b']') {
+                return probe + 1;
+            }
         }
         cursor += 1;
     }
@@ -2814,10 +2864,14 @@ fn mask_provider_lua_non_code(source: &str) -> String {
                 index = provider_long_bracket_end(bytes, content_start, level);
             } else {
                 index += 2;
-                while index < bytes.len() && bytes[index] != b'\n' { index += 1; }
+                while index < bytes.len() && bytes[index] != b'\n' {
+                    index += 1;
+                }
             }
             for offset in start..index {
-                if masked[offset] != b'\n' && masked[offset] != b'\r' { masked[offset] = b' '; }
+                if masked[offset] != b'\n' && masked[offset] != b'\r' {
+                    masked[offset] = b' ';
+                }
             }
             continue;
         }
@@ -2826,12 +2880,20 @@ fn mask_provider_lua_non_code(source: &str) -> String {
             let start = index;
             index += 1;
             while index < bytes.len() {
-                if bytes[index] == b'\\' { index = (index + 2).min(bytes.len()); continue; }
-                if bytes[index] == quote { index += 1; break; }
+                if bytes[index] == b'\\' {
+                    index = (index + 2).min(bytes.len());
+                    continue;
+                }
+                if bytes[index] == quote {
+                    index += 1;
+                    break;
+                }
                 index += 1;
             }
             for offset in start..index {
-                if masked[offset] != b'\n' && masked[offset] != b'\r' { masked[offset] = b' '; }
+                if masked[offset] != b'\n' && masked[offset] != b'\r' {
+                    masked[offset] = b' ';
+                }
             }
             continue;
         }
@@ -2839,7 +2901,9 @@ fn mask_provider_lua_non_code(source: &str) -> String {
             let start = index;
             index = provider_long_bracket_end(bytes, content_start, level);
             for offset in start..index {
-                if masked[offset] != b'\n' && masked[offset] != b'\r' { masked[offset] = b' '; }
+                if masked[offset] != b'\n' && masked[offset] != b'\r' {
+                    masked[offset] = b' ';
+                }
             }
             continue;
         }
@@ -2853,11 +2917,13 @@ fn provider_call_args(source: &str, function_name: &str) -> Result<Vec<Vec<Strin
     let regex = Regex::new(&format!(
         r"(?im)^[\t ]*{}[\t ]*\(",
         regex::escape(function_name)
-    )).map_err(|_| "Could not prepare provider Lua parser".to_string())?;
+    ))
+    .map_err(|_| "Could not prepare provider Lua parser".to_string())?;
     let bytes = mask.as_bytes();
     let mut calls = Vec::new();
     for found in regex.find_iter(&mask) {
-        let open = mask[found.start()..found.end()].rfind('(')
+        let open = mask[found.start()..found.end()]
+            .rfind('(')
             .map(|value| found.start() + value)
             .ok_or_else(|| "Provider Lua call is malformed".to_string())?;
         let mut cursor = open + 1;
@@ -2870,7 +2936,9 @@ fn provider_call_args(source: &str, function_name: &str) -> Result<Vec<Vec<Strin
             }
             cursor += 1;
         }
-        if depth != 0 { return Err(format!("Unterminated provider Lua call: {function_name}")); }
+        if depth != 0 {
+            return Err(format!("Unterminated provider Lua call: {function_name}"));
+        }
         let args = &source[open + 1..cursor - 1];
         calls.push(split_lua_args(args)?);
     }
@@ -2883,7 +2951,9 @@ fn inspect_provider_lua(appid: u32, source: &str) -> Result<BTreeMap<u32, String
     }
     let mut root_registered = false;
     for args in provider_call_args(source, "addappid")? {
-        let Some(first) = args.first() else { continue; };
+        let Some(first) = args.first() else {
+            continue;
+        };
         if parse_decimal(first, "AppID")?.parse::<u32>().ok() == Some(appid) {
             root_registered = true;
         }
@@ -2895,14 +2965,22 @@ fn inspect_provider_lua(appid: u32, source: &str) -> Result<BTreeMap<u32, String
     let mut manifests = BTreeMap::new();
     for args in provider_call_args(source, "setmanifestid")? {
         if !(2..=3).contains(&args.len()) {
-            return Err("setManifestid requires depot ID, manifest GID and optional size".to_string());
+            return Err(
+                "setManifestid requires depot ID, manifest GID and optional size".to_string(),
+            );
         }
         let depot = parse_decimal(&args[0], "Depot ID")?;
         let gid = parse_decimal(&args[1], "Manifest GID")?;
-        let depot_id = depot.parse::<u32>()
+        let depot_id = depot
+            .parse::<u32>()
             .map_err(|_| "Depot ID is outside the supported range".to_string())?;
-        if manifests.get(&depot_id).is_some_and(|existing| existing != &gid) {
-            return Err(format!("Lua source contains conflicting manifest pins for depot {depot_id}"));
+        if manifests
+            .get(&depot_id)
+            .is_some_and(|existing| existing != &gid)
+        {
+            return Err(format!(
+                "Lua source contains conflicting manifest pins for depot {depot_id}"
+            ));
         }
         manifests.insert(depot_id, gid);
     }
@@ -3383,7 +3461,6 @@ pub(crate) fn fetch_manifesthub_manifest(
     Ok(None)
 }
 
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct LuaToolsAuthSession {
     access_token: String,
@@ -3469,7 +3546,10 @@ fn refresh_luatools_session(
         .send()
         .map_err(|error| format!("LUATOOLS_AUTH_REFRESH_NETWORK:{error}"))?;
     if !response.status().is_success() {
-        return Err(format!("LUATOOLS_AUTH_REFRESH_HTTP_{}", response.status().as_u16()));
+        return Err(format!(
+            "LUATOOLS_AUTH_REFRESH_HTTP_{}",
+            response.status().as_u16()
+        ));
     }
     let payload: Value = response
         .json()
@@ -3519,15 +3599,14 @@ fn open_luatools_browser(url: &str) -> Result<(), String> {
     Err("Could not open LuaTools sign-in on this platform".to_string())
 }
 
-fn write_luatools_oauth_result(
-    stream: &mut std::net::TcpStream,
-    ok: bool,
-    detail: Option<&str>,
-) {
-    let title = if ok { "LuaTools connected" } else { "LuaTools sign-in failed" };
+fn write_luatools_oauth_result(stream: &mut std::net::TcpStream, ok: bool, detail: Option<&str>) {
+    let title = if ok {
+        "LuaTools connected"
+    } else {
+        "LuaTools sign-in failed"
+    };
     let body = if ok {
-        "Authentication completed. You can close this tab and return to 0xoLemon."
-            .to_string()
+        "Authentication completed. You can close this tab and return to 0xoLemon.".to_string()
     } else {
         format!(
             "Authentication did not complete: {}",
@@ -3546,9 +3625,7 @@ fn write_luatools_oauth_result(
     let _ = stream.flush();
 }
 
-fn wait_for_luatools_oauth_callback(
-    listener: &std::net::TcpListener,
-) -> Result<String, String> {
+fn wait_for_luatools_oauth_callback(listener: &std::net::TcpListener) -> Result<String, String> {
     listener
         .set_nonblocking(true)
         .map_err(|error| format!("Could not configure LuaTools OAuth listener: {error}"))?;
@@ -3572,8 +3649,9 @@ fn wait_for_luatools_oauth_callback(
                     write_luatools_oauth_result(&mut stream, false, Some("unexpected callback"));
                     continue;
                 }
-                let callback = Url::parse(&format!("http://localhost:{LUATOOLS_OAUTH_PORT}{target}"))
-                    .map_err(|_| "LUATOOLS_AUTH_CALLBACK_INVALID".to_string())?;
+                let callback =
+                    Url::parse(&format!("http://localhost:{LUATOOLS_OAUTH_PORT}{target}"))
+                        .map_err(|_| "LUATOOLS_AUTH_CALLBACK_INVALID".to_string())?;
                 let code = callback
                     .query_pairs()
                     .find(|(key, _)| key == "code")
@@ -3603,7 +3681,10 @@ fn wait_for_luatools_oauth_callback(
     Err("LUATOOLS_AUTH_TIMEOUT".to_string())
 }
 
-fn interactive_luatools_sign_in(app: &AppHandle, client: &Client) -> Result<LuaToolsAuthSession, String> {
+fn interactive_luatools_sign_in(
+    app: &AppHandle,
+    client: &Client,
+) -> Result<LuaToolsAuthSession, String> {
     let listener = std::net::TcpListener::bind(("127.0.0.1", LUATOOLS_OAUTH_PORT))
         .map_err(|error| format!("LUATOOLS_AUTH_PORT_BUSY:{error}"))?;
     let (verifier, challenge) = luatools_pkce_pair();
@@ -3615,13 +3696,18 @@ fn interactive_luatools_sign_in(app: &AppHandle, client: &Client) -> Result<LuaT
     open_luatools_browser(&authorize_url)?;
     let code = wait_for_luatools_oauth_callback(&listener)?;
     let response = client
-        .post(format!("{LUATOOLS_SUPABASE_URL}/auth/v1/token?grant_type=pkce"))
+        .post(format!(
+            "{LUATOOLS_SUPABASE_URL}/auth/v1/token?grant_type=pkce"
+        ))
         .header("apikey", LUATOOLS_SUPABASE_ANON_KEY)
         .json(&json!({ "auth_code": code, "code_verifier": verifier }))
         .send()
         .map_err(|error| format!("LUATOOLS_AUTH_EXCHANGE_NETWORK:{error}"))?;
     if !response.status().is_success() {
-        return Err(format!("LUATOOLS_AUTH_EXCHANGE_HTTP_{}", response.status().as_u16()));
+        return Err(format!(
+            "LUATOOLS_AUTH_EXCHANGE_HTTP_{}",
+            response.status().as_u16()
+        ));
     }
     let payload: Value = response
         .json()
@@ -3714,9 +3800,12 @@ fn package_from_luatools_direct_payload(
     provider: LuaSourceProvider,
     bytes: &[u8],
 ) -> Result<CanonicalPackage, String> {
-    let package_provider = luatools_package_provider(provider)
-        .ok_or_else(|| "LUATOOLS_SOURCE_INVALID".to_string())?;
-    if bytes.starts_with(b"PK\x03\x04") || bytes.starts_with(b"PK\x05\x06") || bytes.starts_with(b"PK\x07\x08") {
+    let package_provider =
+        luatools_package_provider(provider).ok_or_else(|| "LUATOOLS_SOURCE_INVALID".to_string())?;
+    if bytes.starts_with(b"PK\x03\x04")
+        || bytes.starts_with(b"PK\x05\x06")
+        || bytes.starts_with(b"PK\x07\x08")
+    {
         // LuaTools direct payloads may be ZIP or bare Lua depending on the provider.
         // package_from_archive keeps provider boundaries intact for manifest-backed bundles.
         return package_from_archive(appid, package_provider, bytes);
@@ -3724,8 +3813,8 @@ fn package_from_luatools_direct_payload(
     if bytes.len() > MAX_LUA_BYTES || bytes.contains(&0) {
         return Err("LUATOOLS_LUA_INVALID".to_string());
     }
-    let source = String::from_utf8(bytes.to_vec())
-        .map_err(|_| "LUATOOLS_LUA_NOT_UTF8".to_string())?;
+    let source =
+        String::from_utf8(bytes.to_vec()).map_err(|_| "LUATOOLS_LUA_NOT_UTF8".to_string())?;
     inspect_provider_lua(appid, &source)?;
     // Luie is Live-only and may return a bare Lua.
     let archive_bytes = build_canonical_archive(appid, package_provider, &source, &[])?;
@@ -3824,8 +3913,8 @@ fn package_from_archive(
             .take(entry_size.saturating_add(1))
             .read_to_end(&mut bytes)
             .map_err(|error| format!("Could not read Lua source: {error}"))?;
-        let text = String::from_utf8(bytes)
-            .map_err(|_| "Lua source is not valid UTF-8".to_string())?;
+        let text =
+            String::from_utf8(bytes).map_err(|_| "Lua source is not valid UTF-8".to_string())?;
         let file_name = path
             .file_name()
             .and_then(|value| value.to_str())
@@ -3870,7 +3959,7 @@ fn package_from_archive(
                     format!("Lua package does not contain any .lua payload for AppID {appid}")
                 } else {
                     format!("Lua package contains .lua files, but none register AppID {appid}: {detail}")
-                })
+                });
             }
             _ => {
                 return Err(format!(
@@ -3905,8 +3994,7 @@ fn package_from_archive(
         if actual.get(depot_id) != Some(gid) {
             if matches!(
                 provider,
-                LuaPackageProvider::Hubcap
-                    | LuaPackageProvider::TwentyTwoCloud
+                LuaPackageProvider::Hubcap | LuaPackageProvider::TwentyTwoCloud
             ) {
                 return Err(format!(
                     "{provider:?} same-provider bundle is missing its paired manifest {depot_id}_{gid}.manifest"
@@ -3944,7 +4032,6 @@ fn package_from_archive(
         archive_bytes: canonical_archive,
     })
 }
-
 
 fn download_github_contents_raw_to_part(
     app: &AppHandle,
@@ -4144,6 +4231,7 @@ pub(crate) fn fetch_skyflare_package(
 }
 
 const DEPOTKEYS_URLS: &[&str] = &[
+    "https://raw.githubusercontent.com/dangjimmy33-dotcom/SFF/main/sff/lua/fallback_depotkeys.json",
     "https://pub-d3ba7941fdf24c2c84da530b93221e1c.r2.dev/fallback_depotkeys.json",
     "https://raw.githubusercontent.com/KoriaPolis/Steam-Depot/main/fallback_depotkeys.json",
 ];
@@ -4181,14 +4269,19 @@ fn get_or_download_depotkeys(app: &AppHandle) -> Result<PathBuf, String> {
     Err("Could not download depot keys database".to_string())
 }
 
-pub(crate) fn generate_lua_from_depotkeys(app: &AppHandle, appid: u32) -> Result<Option<String>, String> {
+pub(crate) fn generate_lua_from_depotkeys(
+    app: &AppHandle,
+    appid: u32,
+) -> Result<Option<String>, String> {
     let cache_file = match get_or_download_depotkeys(app) {
         Ok(f) => f,
         Err(_) => return Ok(None),
     };
-    let file = fs::File::open(&cache_file).map_err(|e| format!("Failed to read depot keys: {e}"))?;
+    let file =
+        fs::File::open(&cache_file).map_err(|e| format!("Failed to read depot keys: {e}"))?;
     let reader = std::io::BufReader::new(file);
-    let json: Value = serde_json::from_reader(reader).map_err(|e| format!("Invalid depot keys JSON: {e}"))?;
+    let json: Value =
+        serde_json::from_reader(reader).map_err(|e| format!("Invalid depot keys JSON: {e}"))?;
     let Some(map) = json.as_object() else {
         return Ok(None);
     };
@@ -4222,13 +4315,21 @@ pub(crate) fn generate_lua_from_depotkeys(app: &AppHandle, appid: u32) -> Result
         });
         if parent_appid.as_deref() == Some(&appid_str) {
             let key = val.get("key").and_then(|v| v.as_str()).unwrap_or("").trim();
-            let name = val.get("name").and_then(|v| v.as_str()).unwrap_or("").to_string();
+            let name = val
+                .get("name")
+                .and_then(|v| v.as_str())
+                .unwrap_or("")
+                .to_string();
             let id = id_str.parse::<u32>().unwrap_or(0);
             if id == 0 {
                 continue;
             }
             if key.len() == 64 && key.chars().all(|c| c.is_ascii_hexdigit()) {
-                depots.push(DepotItem { id, key: key.to_ascii_lowercase(), name });
+                depots.push(DepotItem {
+                    id,
+                    key: key.to_ascii_lowercase(),
+                    name,
+                });
             } else {
                 dlcs.push(DlcItem { id, name });
             }
@@ -4251,7 +4352,11 @@ pub(crate) fn generate_lua_from_depotkeys(app: &AppHandle, appid: u32) -> Result
         .unwrap_or("")
         .trim();
     if main_key.len() == 64 && main_key.chars().all(|c| c.is_ascii_hexdigit()) {
-        lines.push(format!("addappid({}, 1, \"{}\")", appid, main_key.to_ascii_lowercase()));
+        lines.push(format!(
+            "addappid({}, 1, \"{}\")",
+            appid,
+            main_key.to_ascii_lowercase()
+        ));
     } else {
         lines.push(format!("addappid({})", appid));
     }
@@ -4260,7 +4365,11 @@ pub(crate) fn generate_lua_from_depotkeys(app: &AppHandle, appid: u32) -> Result
         lines.push("".to_string());
         lines.push("-- DEPOTS".to_string());
         for d in &depots {
-            let comment = if !d.name.is_empty() { format!(" -- {}", d.name) } else { String::new() };
+            let comment = if !d.name.is_empty() {
+                format!(" -- {}", d.name)
+            } else {
+                String::new()
+            };
             lines.push(format!("addappid({}, 1, \"{}\"){}", d.id, d.key, comment));
         }
     }
@@ -4269,7 +4378,11 @@ pub(crate) fn generate_lua_from_depotkeys(app: &AppHandle, appid: u32) -> Result
         lines.push("".to_string());
         lines.push("-- DLCS".to_string());
         for d in &dlcs {
-            let comment = if !d.name.is_empty() { format!(" -- {}", d.name) } else { String::new() };
+            let comment = if !d.name.is_empty() {
+                format!(" -- {}", d.name)
+            } else {
+                String::new()
+            };
             lines.push(format!("addappid({}){}", d.id, comment));
         }
     }
@@ -4311,7 +4424,9 @@ pub(crate) fn package_from_raw_lua_and_mirrors(
     let mut manifests = Vec::new();
     let client = source_client(Duration::from_secs(15)).ok();
     let settings = load_settings(app).ok();
-    let mh_key = settings.as_ref().and_then(|s| decrypt_manifesthub_key(s).ok().flatten());
+    let mh_key = settings
+        .as_ref()
+        .and_then(|s| decrypt_manifesthub_key(s).ok().flatten());
 
     for (depot_id, gid) in &expected_manifests {
         let mut resolved_bytes = None;
@@ -4367,8 +4482,8 @@ pub(crate) fn fetch_openlua_package(
         return Ok(None);
     }
 
-    use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
     use tauri::webview::DownloadEvent;
+    use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
 
     // 1. Create a local one-shot TCP listener to safely receive Lua payload without Tauri IPC issues
     let listener = std::net::TcpListener::bind("127.0.0.1:0")
@@ -4983,9 +5098,16 @@ pub(crate) fn fetch_openlua_package(
     let window_result = WebviewWindowBuilder::new(
         app,
         &window_label,
-        WebviewUrl::External(format!("https://openlua.cloud/?app={}", appid).parse().unwrap())
+        WebviewUrl::External(
+            format!("https://openlua.cloud/?app={}", appid)
+                .parse()
+                .unwrap(),
+        ),
     )
-    .title(format!("OpenLua Cloud Verification / Xác thực - AppID {}", appid))
+    .title(format!(
+        "OpenLua Cloud Verification / Xác thực - AppID {}",
+        appid
+    ))
     .inner_size(600.0, 520.0)
     .center()
     .resizable(false)
@@ -5042,7 +5164,9 @@ pub(crate) fn fetch_openlua_package(
                     }
                 }
                 if start_time.elapsed() >= std::time::Duration::from_secs(90) {
-                    break Err("Timeout waiting for OpenLua download or verification (90s)".to_string());
+                    break Err(
+                        "Timeout waiting for OpenLua download or verification (90s)".to_string()
+                    );
                 }
             }
             Err(std::sync::mpsc::RecvTimeoutError::Disconnected) => {
@@ -5111,7 +5235,10 @@ pub(crate) fn fetch_ryuu_package(
         }
         _ => {}
     }
-    if response.content_length().is_some_and(|size| size > MAX_ARCHIVE_BYTES) {
+    if response
+        .content_length()
+        .is_some_and(|size| size > MAX_ARCHIVE_BYTES)
+    {
         return Err("RYUU_PACKAGE_TOO_LARGE".to_string());
     }
     let mut bytes = Vec::new();
@@ -5150,15 +5277,11 @@ fn depotbox_package_from_bytes(
     if bytes.is_empty() || bytes.len() > MAX_LUA_BYTES || bytes.contains(&0) {
         return Err("DEPOTBOX_PAYLOAD_INVALID".to_string());
     }
-    let source = String::from_utf8(bytes.clone())
-        .map_err(|_| "DEPOTBOX_LUA_NOT_UTF8".to_string())?;
+    let source =
+        String::from_utf8(bytes.clone()).map_err(|_| "DEPOTBOX_LUA_NOT_UTF8".to_string())?;
     inspect_provider_lua(appid, &source)?;
-    let archive_bytes = build_canonical_archive(
-        appid,
-        LuaPackageProvider::TwentyTwoCloud,
-        &source,
-        &[],
-    )?;
+    let archive_bytes =
+        build_canonical_archive(appid, LuaPackageProvider::TwentyTwoCloud, &source, &[])?;
     Ok(CanonicalPackage {
         appid,
         provider: LuaPackageProvider::TwentyTwoCloud,
@@ -5291,8 +5414,15 @@ fn fetch_depotbox_api_package(
         let body = response.text().ok();
         return Err(depotbox_http_error(status, body.as_deref()));
     }
-    let max_bytes = if locked { MAX_ARCHIVE_BYTES } else { MAX_LUA_BYTES as u64 };
-    if response.content_length().is_some_and(|size| size > max_bytes) {
+    let max_bytes = if locked {
+        MAX_ARCHIVE_BYTES
+    } else {
+        MAX_LUA_BYTES as u64
+    };
+    if response
+        .content_length()
+        .is_some_and(|size| size > max_bytes)
+    {
         return Err("DEPOTBOX_PACKAGE_TOO_LARGE".to_string());
     }
     let mut bytes = Vec::new();
@@ -5431,7 +5561,11 @@ fn fetch_depotbox_web_package(
     let requested_path = destination_path.clone();
     let finished_fallback_path = destination_path.clone();
     let label = format!("depotbox-dl-{appid}");
-    let mode_label = if locked { "LOCKED (.zip)" } else { "LIVE (.lua)" };
+    let mode_label = if locked {
+        "LOCKED (.zip)"
+    } else {
+        "LIVE (.lua)"
+    };
 
     // Free Web mode is fully automatic after the user has already chosen the
     // channel in the launcher. `locked == false` means LIVE -> Download .lua;
@@ -5994,7 +6128,7 @@ fn fetch_depotbox_web_package(
                     let _ = window.close();
                 }
                 return Err(error);
-            },
+            }
             Err(std::sync::mpsc::RecvTimeoutError::Timeout) => {
                 // Some WebView2 versions can materialize the destination before the
                 // Finished callback reaches Tauri. Recover only after the size has
@@ -6098,8 +6232,8 @@ pub(crate) fn fetch_hubcap_package(
         MAX_ARCHIVE_BYTES,
     )?;
     let package = package_from_archive(appid, LuaPackageProvider::Hubcap, &generated)?;
-    let final_path = cache_dir(app, LuaSourceProvider::Hubcap, appid)?
-        .join(format!("{}.zip", package.revision));
+    let final_path =
+        cache_dir(app, LuaSourceProvider::Hubcap, appid)?.join(format!("{}.zip", package.revision));
     crate::lua_live::atomic_write_path(&final_path, &package.archive_bytes)?;
     Ok(package)
 }
@@ -6162,6 +6296,37 @@ mod tests {
             parse_expiry(&payload).map(|value| value.to_rfc3339()),
             Some("2026-08-19T12:00:00+00:00".to_string())
         );
+    }
+
+    #[test]
+    fn hubcap_daily_quota_uses_bundle_bucket_when_daily_fields_are_absent() {
+        let payload = json!({
+            "bundle": {
+                "usage": 2,
+                "limit": 25,
+                "remaining": 23
+            }
+        });
+        let daily = daily_usage_bucket(&payload);
+        assert_eq!(daily.usage, Some(2));
+        assert_eq!(daily.limit, Some(25));
+        assert_eq!(daily.remaining, Some(23));
+    }
+
+    #[test]
+    fn hubcap_daily_quota_combines_custom_limit_with_bundle_usage() {
+        let payload = json!({
+            "custom_api_limit": 25,
+            "bundle": {
+                "usage": 2,
+                "limit": 100,
+                "remaining": 98
+            }
+        });
+        let daily = daily_usage_bucket(&payload);
+        assert_eq!(daily.usage, Some(2));
+        assert_eq!(daily.limit, Some(25));
+        assert_eq!(daily.remaining, Some(23));
     }
 
     #[test]
@@ -6270,7 +6435,10 @@ mod tests {
             LuaPackageProvider::Ryuu.source(),
             Some(LuaSourceProvider::Ryuu)
         );
-        assert_eq!(LuaPackageProvider::Luie.source(), Some(LuaSourceProvider::Luie));
+        assert_eq!(
+            LuaPackageProvider::Luie.source(),
+            Some(LuaSourceProvider::Luie)
+        );
         assert_eq!(
             LuaPackageProvider::TwentyTwoCloud.source(),
             Some(LuaSourceProvider::TwentyTwoCloud)

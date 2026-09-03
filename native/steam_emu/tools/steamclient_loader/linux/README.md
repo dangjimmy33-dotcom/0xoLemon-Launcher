@@ -1,10 +1,9 @@
->## How to use it:
+## How to use it:
 Copy both files  
-- `x32/steamclient.so`  
-- `x64/steamclient.so`  
+- `steamclient.so`  
+- `steamclient64.so`  
 
-In their respective directories beside the script.  
-Then specify the requird data, either via commandline, or via the configuration files: `ldr_*.txt`  
+beside the script and specify the required input, either from the command line or via the configuration files: `ldr_*.txt`  
 
 It is recommended to create a separate setup for each game via the config files  
 to avoid specifying the commandline each time.  
@@ -15,7 +14,7 @@ in the cofiguration file and via command line will be passed to the executable.
 
 ---
 
->## Command line arguments:
+## Command line arguments:
 * `-exe`:   path to the executable
 * `-appid`: numeric app ID
 * `-cwd`:   *`(optional)`* working directory to switch to when running the executable
@@ -36,13 +35,13 @@ in the cofiguration file and via command line will be passed to the executable.
 
 ---
 
->## Configuraion files:
+## Configuration files:
 Additionally, you can set these values in the equivalent configuration files,  
 everything on a single line for each file, except `ldr_cmd.txt`:  
 * `ldr_exe.txt`: specify the executable path in this file
 * `ldr_appid.txt`: specify the app ID in this file
 * `ldr_cwd.txt`: *`(optional)`* specify the working directory of the executable path in this file
 * `ldr_steam_rt.txt`: *`(optional)`* specify the path of the Steam runtime script in this file
-* `ldr_cmd.txt`: *`(optional)`* specify aditional arguments that will be passed to the executable in this file,  
+* `ldr_cmd.txt`: *`(optional)`* specify additional arguments that will be passed to the executable in this file,  
     this file has the exception that the arguments must be specified on separate lines
 

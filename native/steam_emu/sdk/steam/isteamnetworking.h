@@ -17,12 +17,16 @@
 enum EP2PSessionError
 {
 	k_EP2PSessionErrorNone = 0,
-	k_EP2PSessionErrorNotRunningApp = 1,			// target is not running the same game
 	k_EP2PSessionErrorNoRightsToApp = 2,			// local user doesn't own the app that is running
-	k_EP2PSessionErrorDestinationNotLoggedIn = 3,	// target user isn't connected to Steam
 	k_EP2PSessionErrorTimeout = 4,					// target isn't responding, perhaps not calling AcceptP2PSessionWithUser()
 													// corporate firewalls can also block this (NAT traversal is not firewall traversal)
 													// make sure that UDP ports 3478, 4379, and 4380 are open in an outbound direction
+
+	//  The following error codes were removed and will never be sent.
+	//  For privacy reasons, there is no reply if the user is offline or playing another game.
+	k_EP2PSessionErrorNotRunningApp_DELETED = 1,
+	k_EP2PSessionErrorDestinationNotLoggedIn_DELETED = 3,
+
 	k_EP2PSessionErrorMax = 5
 };
 
@@ -40,12 +44,12 @@ enum EP2PSend
 	// This is only really useful for kinds of data that should never buffer up, i.e. voice payload packets
 	k_EP2PSendUnreliableNoDelay = 1,
 
-	// Reliable message send. Can send up to 1MB of data in a single message. 
-	// Does fragmentation/re-assembly of messages under the hood, as well as a sliding window for efficient sends of large chunks of data. 
+	// Reliable message send. Can send up to 1MB of data in a single message.
+	// Does fragmentation/re-assembly of messages under the hood, as well as a sliding window for efficient sends of large chunks of data.
 	k_EP2PSendReliable = 2,
 
-	// As above, but applies the Nagle algorithm to the send - sends will accumulate 
-	// until the current MTU size (typically ~1200 bytes, but can change) or ~200ms has passed (Nagle algorithm). 
+	// As above, but applies the Nagle algorithm to the send - sends will accumulate
+	// until the current MTU size (typically ~1200 bytes, but can change) or ~200ms has passed (Nagle algorithm).
 	// Useful if you want to send a set of smaller messages but have the coalesced into a single packet
 	// Since the reliable stream is all ordered, you can do several small message sends with k_EP2PSendReliableWithBuffering and then
 	// do a normal k_EP2PSendReliable to force all the buffered data to be sent.
@@ -62,7 +66,7 @@ enum EP2PSend
 #pragma pack( push, 8 )
 #else
 #error steam_api_common.h should define VALVE_CALLBACK_PACK_xxx
-#endif 
+#endif
 struct P2PSessionState_t
 {
 	uint8 m_bConnectionActive;		// true if we've got an active open connection
@@ -71,7 +75,7 @@ struct P2PSessionState_t
 	uint8 m_bUsingRelay;			// true if it's going through a relay server (TURN)
 	int32 m_nBytesQueuedForSend;
 	int32 m_nPacketsQueuedForSend;
-	uint32 m_nRemoteIP;				// potential IP:Port of remote host. Could be TURN server. 
+	uint32 m_nRemoteIP;				// potential IP:Port of remote host. Could be TURN server.
 	uint16 m_nRemotePort;			// Only exists for compatibility with older authentication api's
 };
 #pragma pack( pop )
@@ -84,11 +88,11 @@ typedef uint32 SNetListenSocket_t;	// CreateListenSocket()
 // connection progress indicators, used by CreateP2PConnectionSocket()
 enum ESNetSocketState
 {
-	k_ESNetSocketStateInvalid = 0,						
+	k_ESNetSocketStateInvalid = 0,
 
 	// communication is valid
-	k_ESNetSocketStateConnected = 1,				
-	
+	k_ESNetSocketStateConnected = 1,
+
 	// states while establishing a connection
 	k_ESNetSocketStateInitiated = 10,				// the connection state machine has started
 
@@ -100,7 +104,7 @@ enum ESNetSocketState
 	k_ESNetSocketStateChallengeHandshake = 15,		// we've received a challenge packet from the server
 
 	// failure states
-	k_ESNetSocketStateDisconnecting = 21,			// the API shut it down, and we're in the process of telling the other end	
+	k_ESNetSocketStateDisconnecting = 21,			// the API shut it down, and we're in the process of telling the other end
 	k_ESNetSocketStateLocalDisconnect = 22,			// the API shut it down, and we've completed shutdown
 	k_ESNetSocketStateTimeoutDuringConnect = 23,	// we timed out while trying to creating the connection
 	k_ESNetSocketStateRemoteEndDisconnected = 24,	// the remote end has disconnected from us
@@ -147,7 +151,7 @@ public:
 	// if we can't get through to the user, an error will be posted via the callback P2PSessionConnectFail_t
 	// see EP2PSend enum above for the descriptions of the different ways of sending packets
 	//
-	// nChannel is a routing number you can use to help route message to different systems 	- you'll have to call ReadP2PPacket() 
+	// nChannel is a routing number you can use to help route message to different systems 	- you'll have to call ReadP2PPacket()
 	// with the same channel number in order to retrieve the data on the other end
 	// using different channels to talk to the same user will still use the same underlying p2p connection, saving on resources
 	virtual bool SendP2PPacket( CSteamID steamIDRemote, const void *pubData, uint32 cubData, EP2PSend eP2PSendType, int nChannel = 0 ) = 0;
@@ -249,13 +253,13 @@ public:
 	// receiving data
 	// returns false if there is no data remaining
 	// fills out *pcubMsgSize with the size of the next message, in bytes
-	virtual bool IsDataAvailableOnSocket( SNetSocket_t hSocket, uint32 *pcubMsgSize ) = 0; 
+	virtual bool IsDataAvailableOnSocket( SNetSocket_t hSocket, uint32 *pcubMsgSize ) = 0;
 
 	// fills in pubDest with the contents of the message
 	// messages are always complete, of the same size as was sent (i.e. packetized, not streaming)
 	// if *pcubMsgSize < cubDest, only partial data is written
 	// returns false if no data is available
-	virtual bool RetrieveDataFromSocket( SNetSocket_t hSocket, void *pubDest, uint32 cubDest, uint32 *pcubMsgSize ) = 0; 
+	virtual bool RetrieveDataFromSocket( SNetSocket_t hSocket, void *pubDest, uint32 cubDest, uint32 *pcubMsgSize ) = 0;
 
 	// checks for data from any socket that has been connected off this listen socket
 	// returns false if there is no data remaining
@@ -303,12 +307,12 @@ STEAM_DEFINE_GAMESERVER_INTERFACE_ACCESSOR( ISteamNetworking *, SteamGameServerN
 #pragma pack( push, 8 )
 #else
 #error steam_api_common.h should define VALVE_CALLBACK_PACK_xxx
-#endif 
+#endif
 
 // callback notification - a user wants to talk to us over the P2P channel via the SendP2PPacket() API
 // in response, a call to AcceptP2PPacketsFromUser() needs to be made, if you want to talk with them
 struct P2PSessionRequest_t
-{ 
+{
 	enum { k_iCallback = k_iSteamNetworkingCallbacks + 2 };
 	CSteamID m_steamIDRemote;			// user who wants to talk to us
 };
@@ -318,7 +322,7 @@ struct P2PSessionRequest_t
 // all packets queued packets unsent at this point will be dropped
 // further attempts to send will retry making the connection (but will be dropped if we fail again)
 struct P2PSessionConnectFail_t
-{ 
+{
 	enum { k_iCallback = k_iSteamNetworkingCallbacks + 3 };
 	CSteamID m_steamIDRemote;			// user we were sending packets to
 	uint8 m_eP2PSessionError;			// EP2PSessionError indicating why we're having trouble
@@ -326,9 +330,9 @@ struct P2PSessionConnectFail_t
 
 
 // callback notification - status of a socket has changed
-// used as part of the CreateListenSocket() / CreateP2PConnectionSocket() 
+// used as part of the CreateListenSocket() / CreateP2PConnectionSocket()
 struct SocketStatusCallback_t
-{ 
+{
 	enum { k_iCallback = k_iSteamNetworkingCallbacks + 1 };
 	SNetSocket_t m_hSocket;				// the socket used to send/receive data to the remote host
 	SNetListenSocket_t m_hListenSocket;	// this is the server socket that we were listening on; NULL if this was an outgoing connection

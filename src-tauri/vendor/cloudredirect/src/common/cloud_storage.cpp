@@ -648,6 +648,33 @@ bool DownloadCloudMetadataWithLegacyFallback(uint32_t accountId, uint32_t appId,
     return true;
 }
 
+MetadataFetch FetchCloudMetadataStatus(uint32_t accountId, uint32_t appId,
+                                       const char* canonicalName,
+                                       std::vector<uint8_t>& outData) {
+    outData.clear();
+    if (!g_provider || !g_provider->IsAuthenticated()) return MetadataFetch::Error;
+
+    std::string canonicalPath = CloudMetadataPath(accountId, appId, canonicalName);
+    const bool cacheableMissing =
+        std::string_view(canonicalName) != kCNFilename &&
+        std::string_view(canonicalName) != kManifestFilename;
+
+    if (cacheableMissing && IsKnownMissingMetadataPath(canonicalPath))
+        return MetadataFetch::Missing;
+
+    if (g_provider->Download(canonicalPath, outData)) {
+        ClearMissingMetadataPath(canonicalPath);
+        return MetadataFetch::Ok;
+    }
+
+    auto status = g_provider->CheckExists(canonicalPath);
+    if (status == ICloudProvider::ExistsStatus::Missing) {
+        if (cacheableMissing) MarkMissingMetadataPath(canonicalPath);
+        return MetadataFetch::Missing;
+    }
+    return MetadataFetch::Error;
+}
+
 bool DownloadLegacyPlaytimeBlob(uint32_t accountId, uint32_t appId,
                                 std::vector<uint8_t>& outData) {
     outData.clear();

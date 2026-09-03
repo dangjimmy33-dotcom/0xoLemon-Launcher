@@ -81,6 +81,7 @@ public:
 
     void set_protocol_version(unsigned short nProtocolVersion);
     std::vector<std::pair<CSteamID, Gameserver_Player_Info_t>>* get_players();
+    const Gameserver& get_server_data() const { return server_data; }
     void add_player(CSteamID steamID);
     void remove_player(CSteamID steamID);
 

@@ -392,6 +392,8 @@ static void unload_dlls()
 
 #ifdef __WINDOWS__
 
+#include <TlHelp32.h>
+
 struct ips_test {
     uint32_t ip_from;
     uint32_t ip_to;
@@ -665,11 +667,1107 @@ HINTERNET WINAPI Mine_WinHttpOpenRequest(
 
 
 static bool network_functions_attached = false;
+
+// read command line from a remote process via its PEB
+static std::wstring read_process_cmdline(HANDLE hProc, DWORD pid)
+{
+    if (pid == GetCurrentProcessId()) {
+        return GetCommandLineW();
+    }
+
+    // dynamically resolve NtQueryInformationProcess from ntdll
+    typedef LONG(NTAPI* NtQIP_t)(HANDLE, ULONG, PVOID, ULONG, PULONG);
+    static NtQIP_t pNtQIP = (NtQIP_t)GetProcAddress(GetModuleHandleW(L"ntdll.dll"), "NtQueryInformationProcess");
+    if (!pNtQIP) return L"";
+
+    // ProcessBasicInformation (class 0) gives us the PEB address
+    struct { PVOID R1; PVOID PebBaseAddress; PVOID R2[2]; ULONG_PTR UniqueProcessId; PVOID R3; } pbi{};
+    ULONG ret_len = 0;
+    if (pNtQIP(hProc, 0, &pbi, sizeof(pbi), &ret_len) != 0 || !pbi.PebBaseAddress)
+        return L"";
+
+    // PEB.ProcessParameters offset: 0x20 on x64, 0x10 on x86
+    // RTL_USER_PROCESS_PARAMETERS.CommandLine offset: 0x70 on x64, 0x40 on x86
+#ifdef _WIN64
+    constexpr SIZE_T peb_params_off = 0x20;
+    constexpr SIZE_T cmdline_off = 0x70;
+    constexpr SIZE_T us_ptr_off = 8; // UNICODE_STRING: USHORT Len, USHORT MaxLen, 4-pad, PWSTR(8)
+#else
+    constexpr SIZE_T peb_params_off = 0x10;
+    constexpr SIZE_T cmdline_off = 0x40;
+    constexpr SIZE_T us_ptr_off = 4; // UNICODE_STRING: USHORT Len, USHORT MaxLen, PWSTR(4)
+#endif
+
+    // read ProcessParameters pointer from PEB
+    PVOID params_ptr = nullptr;
+    SIZE_T n = 0;
+    if (!ReadProcessMemory(hProc, (BYTE*)pbi.PebBaseAddress + peb_params_off, &params_ptr, sizeof(params_ptr), &n) || !params_ptr)
+        return L"";
+
+    // read CommandLine UNICODE_STRING: { USHORT Length, USHORT MaximumLength, [pad], PWSTR Buffer }
+    BYTE us_buf[16]{};
+    if (!ReadProcessMemory(hProc, (BYTE*)params_ptr + cmdline_off, us_buf, sizeof(us_buf), &n))
+        return L"";
+
+    USHORT length = *(USHORT*)us_buf;
+    PVOID buffer = *(PVOID*)(us_buf + us_ptr_off);
+    if (!buffer || length == 0 || length > 32768) return L"";
+
+    // read the actual command line string
+    std::wstring cmdline(length / sizeof(wchar_t), L'\0');
+    if (!ReadProcessMemory(hProc, buffer, &cmdline[0], length, &n))
+        return L"";
+
+    return cmdline;
+}
+
+// dump the full process tree of the current process to steam_api(64).dll.txt
+// this runs very early in DLL_PROCESS_ATTACH, before any game code or SteamAPI_Init
+static void dump_process_tree()
+{
+    // get our DLL path to determine where to write the file and compute relative paths
+    static const char anchor = 0;
+    HMODULE our_module = nullptr;
+    GetModuleHandleExW(
+        GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+        reinterpret_cast<LPCWSTR>(&anchor),
+        &our_module
+    );
+    if (!our_module) return;
+
+    wchar_t dll_path_w[MAX_PATH]{};
+    if (!GetModuleFileNameW(our_module, dll_path_w, MAX_PATH)) return;
+
+    // derive output file path: <dll_name>.txt next to the DLL
+    std::wstring out_path(dll_path_w);
+    out_path += L".txt";
+
+    // derive DLL directory for relative path computation
+    std::wstring dll_dir(dll_path_w);
+    auto last_sep = dll_dir.find_last_of(L"\\/");
+    if (last_sep != std::wstring::npos) dll_dir.resize(last_sep + 1);
+
+    // get DLL filename for the header
+    const wchar_t* dll_name = (last_sep != std::wstring::npos) ? &dll_path_w[last_sep + 1] : dll_path_w;
+
+    // walk the process tree: current → parent → grandparent → ...
+    struct ProcessInfo {
+        DWORD pid;
+        DWORD parent_pid;
+        std::wstring exe_name;
+        std::wstring full_path;
+        std::wstring cmdline;
+        std::string start_time; // formatted creation timestamp
+        struct RendererEntry {
+            std::string label;
+            std::wstring full_path;
+            bool is_proxy;
+        };
+        std::vector<RendererEntry> renderers; // loaded renderer/overlay DLLs (for parent processes)
+    };
+    std::vector<ProcessInfo> tree;
+
+    // DLLs to look for when scanning parent process modules
+    struct { const wchar_t* dll; const char* label; } renderer_dlls[] = {
+        { L"ddraw.dll",      "DirectDraw" },
+        { L"d3dimm.dll",     "Direct3D Immediate Mode" },
+        { L"d3d8.dll",       "DirectX 8" },
+        { L"d3d9.dll",       "DirectX 9" },
+        { L"d3d10.dll",      "DirectX 10" },
+        { L"d3d10_1.dll",    "DirectX 10.1" },
+        { L"d3d11.dll",      "DirectX 11" },
+        { L"d3d12.dll",      "DirectX 12" },
+        { L"vulkan-1.dll",   "Vulkan" },
+        { L"opengl32.dll",   "OpenGL" },
+        { L"dxgi.dll",       "DXGI" },
+        { L"dinput8.dll",    "DirectInput 8" },
+        // 3dfx Glide wrappers (dgVoodoo)
+        { L"glide.dll",      "Glide (3dfx)" },
+        { L"glide2x.dll",    "Glide 2x (3dfx)" },
+        { L"glide3x.dll",    "Glide 3x (3dfx)" },
+        { L"SpecialK32.dll", "Special K (32-bit)" },
+        { L"SpecialK64.dll", "Special K (64-bit)" },
+        { L"ReShade32.dll",  "ReShade (32-bit)" },
+        { L"ReShade64.dll",  "ReShade (64-bit)" },
+    };
+
+    // system directories for proxy detection in parent processes
+    wchar_t parent_sys_dir[MAX_PATH]{};
+    GetSystemDirectoryW(parent_sys_dir, MAX_PATH);
+    size_t parent_sys_len = wcslen(parent_sys_dir);
+    wchar_t parent_syswow_dir[MAX_PATH]{};
+    UINT parent_syswow_len = GetSystemWow64DirectoryW(parent_syswow_dir, MAX_PATH);
+
+    // snapshot all processes
+    HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (snap == INVALID_HANDLE_VALUE) return;
+
+    // build a map of pid → (parent_pid, exe_name)
+    std::map<DWORD, std::pair<DWORD, std::wstring>> proc_map;
+    PROCESSENTRY32W pe{};
+    pe.dwSize = sizeof(pe);
+    if (Process32FirstW(snap, &pe)) {
+        do {
+            proc_map[pe.th32ProcessID] = { pe.th32ParentProcessID, pe.szExeFile };
+        } while (Process32NextW(snap, &pe));
+    }
+    CloseHandle(snap);
+
+    // walk from current process up
+    DWORD current_pid = GetCurrentProcessId();
+    std::set<DWORD> visited; // prevent infinite loops from pid reuse
+    DWORD walk_pid = current_pid;
+    while (walk_pid && visited.insert(walk_pid).second) {
+        auto it = proc_map.find(walk_pid);
+        if (it == proc_map.end()) break;
+
+        ProcessInfo info{};
+        info.pid = walk_pid;
+        info.parent_pid = it->second.first;
+        info.exe_name = it->second.second;
+
+        // try to get full path, command line, and creation time
+        // PROCESS_VM_READ needed for PEB command line reading
+        HANDLE hProc = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, walk_pid);
+        bool full_access = (hProc != nullptr);
+        if (!hProc) hProc = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, walk_pid);
+        if (hProc) {
+            wchar_t path_buf[MAX_PATH]{};
+            DWORD path_size = MAX_PATH;
+            if (QueryFullProcessImageNameW(hProc, 0, path_buf, &path_size)) {
+                info.full_path = path_buf;
+            }
+            if (full_access) {
+                info.cmdline = read_process_cmdline(hProc, walk_pid);
+            }
+            // get process creation time
+            FILETIME ft_create{}, ft_exit{}, ft_kernel{}, ft_user{};
+            if (GetProcessTimes(hProc, &ft_create, &ft_exit, &ft_kernel, &ft_user) && (ft_create.dwHighDateTime || ft_create.dwLowDateTime)) {
+                SYSTEMTIME st_utc{}, st_local{};
+                FileTimeToSystemTime(&ft_create, &st_utc);
+                SystemTimeToTzSpecificLocalTime(nullptr, &st_utc, &st_local);
+                char tbuf[64]{};
+                snprintf(tbuf, sizeof(tbuf), "%04d-%02d-%02d %02d:%02d:%02d",
+                    st_local.wYear, st_local.wMonth, st_local.wDay,
+                    st_local.wHour, st_local.wMinute, st_local.wSecond);
+                info.start_time = tbuf;
+            }
+            CloseHandle(hProc);
+        }
+
+        // scan loaded modules for renderer/overlay DLLs (skip current process — renderer not loaded yet at DLL_PROCESS_ATTACH)
+        if (walk_pid != current_pid) {
+            HANDLE mod_snap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, walk_pid);
+            if (mod_snap != INVALID_HANDLE_VALUE) {
+                MODULEENTRY32W me{};
+                me.dwSize = sizeof(me);
+                if (Module32FirstW(mod_snap, &me)) {
+                    do {
+                        for (auto& rd : renderer_dlls) {
+                            if (_wcsicmp(me.szModule, rd.dll) == 0) {
+                                ProcessInfo::RendererEntry entry{};
+                                entry.label = rd.label;
+                                entry.full_path = me.szExePath;
+                                // proxy detection: compare against system directories
+                                std::wstring mod_dir(me.szExePath);
+                                auto sep = mod_dir.find_last_of(L"\\/");
+                                if (sep != std::wstring::npos) mod_dir.resize(sep);
+                                bool in_system = (_wcsnicmp(mod_dir.c_str(), parent_sys_dir, parent_sys_len) == 0 && mod_dir.size() == parent_sys_len);
+                                if (!in_system && parent_syswow_len > 0) {
+                                    in_system = (_wcsnicmp(mod_dir.c_str(), parent_syswow_dir, parent_syswow_len) == 0 && mod_dir.size() == parent_syswow_len);
+                                }
+                                entry.is_proxy = !in_system;
+                                info.renderers.push_back(std::move(entry));
+                                break;
+                            }
+                        }
+                    } while (Module32NextW(mod_snap, &me));
+                }
+                CloseHandle(mod_snap);
+            }
+        }
+
+        tree.push_back(std::move(info));
+        walk_pid = it->second.first;
+    }
+
+    // compute relative path from DLL directory
+    auto make_relative = [&dll_dir](const std::wstring& full_path) -> std::wstring {
+        if (full_path.empty()) return L"(unknown)";
+        // case-insensitive prefix check
+        if (full_path.size() >= dll_dir.size() &&
+            _wcsnicmp(full_path.c_str(), dll_dir.c_str(), dll_dir.size()) == 0) {
+            std::wstring rel = L".\\" + full_path.substr(dll_dir.size());
+            return rel;
+        }
+        return full_path; // different drive/root, return absolute
+    };
+
+    // sanitize user profile path
+    wchar_t profile_w[MAX_PATH]{};
+    DWORD profile_len = GetEnvironmentVariableW(L"USERPROFILE", profile_w, MAX_PATH);
+
+    auto sanitize = [&profile_w, profile_len](const std::wstring& path) -> std::wstring {
+        if (profile_len == 0 || path.size() < profile_len) return path;
+        if (_wcsnicmp(path.c_str(), profile_w, profile_len) == 0) {
+            return L"%USERPROFILE%" + path.substr(profile_len);
+        }
+        return path;
+    };
+
+    // write the file
+    FILE* f = _wfopen(out_path.c_str(), L"w");
+    if (!f) return;
+
+    // timestamp
+    SYSTEMTIME st{};
+    GetLocalTime(&st);
+    fprintf(f, "=== %ls Process Tree ===\n", dll_name);
+    fprintf(f, "Timestamp: %04d-%02d-%02d %02d:%02d:%02d\n",
+        st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond);
+
+    // sanitize DLL path for display
+    char dll_path_a[MAX_PATH]{};
+    WideCharToMultiByte(CP_UTF8, 0, dll_path_w, -1, dll_path_a, MAX_PATH, nullptr, nullptr);
+    char profile_a[MAX_PATH]{};
+    GetEnvironmentVariableA("USERPROFILE", profile_a, MAX_PATH);
+    size_t plen = strlen(profile_a);
+    std::string dll_display(dll_path_a);
+    if (plen > 0 && dll_display.size() >= plen && _strnicmp(dll_display.c_str(), profile_a, plen) == 0) {
+        dll_display.replace(0, plen, "%USERPROFILE%");
+    }
+    fprintf(f, "DLL Path: %s\n\n", dll_display.c_str());
+
+    // print tree (first entry is current process, last is the topmost ancestor we could reach)
+    for (size_t i = 0; i < tree.size(); ++i) {
+        auto& p = tree[i];
+        bool is_current = (p.pid == current_pid);
+
+        std::wstring sanitized_path = sanitize(p.full_path);
+        std::wstring rel = make_relative(p.full_path);
+        std::wstring sanitized_rel = sanitize(rel);
+
+        char name_a[MAX_PATH]{};
+        WideCharToMultiByte(CP_UTF8, 0, p.exe_name.c_str(), -1, name_a, MAX_PATH, nullptr, nullptr);
+        char path_a[MAX_PATH * 2]{};
+        WideCharToMultiByte(CP_UTF8, 0, sanitized_path.c_str(), -1, path_a, sizeof(path_a), nullptr, nullptr);
+        char rel_a[MAX_PATH * 2]{};
+        WideCharToMultiByte(CP_UTF8, 0, sanitized_rel.c_str(), -1, rel_a, sizeof(rel_a), nullptr, nullptr);
+
+        fprintf(f, "[PID %lu] %s%s\n", p.pid, name_a, is_current ? "  (current process)" : "");
+        fprintf(f, "  Path: %s\n", path_a);
+        fprintf(f, "  Relative: %s\n", rel_a);
+        if (!p.start_time.empty()) {
+            fprintf(f, "  Started: %s\n", p.start_time.c_str());
+        }
+        if (!p.cmdline.empty()) {
+            std::wstring sanitized_cmd = sanitize(p.cmdline);
+            int cmd_size = WideCharToMultiByte(CP_UTF8, 0, sanitized_cmd.c_str(), -1, nullptr, 0, nullptr, nullptr);
+            if (cmd_size > 0) {
+                std::string cmd_a(cmd_size - 1, '\0');
+                WideCharToMultiByte(CP_UTF8, 0, sanitized_cmd.c_str(), -1, &cmd_a[0], cmd_size, nullptr, nullptr);
+                fprintf(f, "  CmdLine: %s\n", cmd_a.c_str());
+            }
+        }
+        if (is_current) {
+            fprintf(f, "  Renderers: (pending - detected after init)\n");
+        } else if (!p.renderers.empty()) {
+            if (p.renderers.size() == 1) {
+                auto& r = p.renderers[0];
+                std::wstring san_rpath = sanitize(r.full_path);
+                char rpath_a[MAX_PATH * 2]{};
+                WideCharToMultiByte(CP_UTF8, 0, san_rpath.c_str(), -1, rpath_a, sizeof(rpath_a), nullptr, nullptr);
+                if (r.is_proxy) {
+                    fprintf(f, "  Renderers: %s [PROXY]\n", r.label.c_str());
+                } else {
+                    fprintf(f, "  Renderers: %s\n", r.label.c_str());
+                }
+                fprintf(f, "    %s\n", rpath_a);
+            } else {
+                fprintf(f, "  Renderers:\n");
+                for (auto& r : p.renderers) {
+                    std::wstring san_rpath = sanitize(r.full_path);
+                    char rpath_a[MAX_PATH * 2]{};
+                    WideCharToMultiByte(CP_UTF8, 0, san_rpath.c_str(), -1, rpath_a, sizeof(rpath_a), nullptr, nullptr);
+                    if (r.is_proxy) {
+                        fprintf(f, "    %s [PROXY]\n", r.label.c_str());
+                    } else {
+                        fprintf(f, "    %s\n", r.label.c_str());
+                    }
+                    fprintf(f, "      %s\n", rpath_a);
+                }
+            }
+        }
+        fprintf(f, "\n");
+
+        PRINT_DEBUG("process tree [PID %lu]: %s%s | path: %s", p.pid, name_a,
+            is_current ? " (current)" : "", path_a);
+    }
+
+    fclose(f);
+}
+
+// append detected renderer(s) and third-party modules for every process that loaded us
+// called from SteamAPI_RunCallbacks (first call only), when the game's renderer is initialized
+void append_renderer_info()
+{
+    // get our DLL path to derive the output file path
+    static const char anchor = 0;
+    HMODULE our_module = nullptr;
+    GetModuleHandleExW(
+        GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+        reinterpret_cast<LPCWSTR>(&anchor),
+        &our_module
+    );
+    if (!our_module) return;
+
+    wchar_t dll_path_w[MAX_PATH]{};
+    if (!GetModuleFileNameW(our_module, dll_path_w, MAX_PATH)) return;
+
+    std::wstring out_path(dll_path_w);
+    out_path += L".txt";
+
+    // --- Environment / compatibility layer detection ---
+    struct EnvCheck { const char* var; const char* label; };
+    // check if running under Wine/Proton by looking for wine_get_version in ntdll
+    bool is_wine = false;
+    std::string wine_version;
+    HMODULE ntdll = GetModuleHandleW(L"ntdll.dll");
+    if (ntdll) {
+        typedef const char* (*wine_get_version_t)();
+        auto wine_ver = (wine_get_version_t)GetProcAddress(ntdll, "wine_get_version");
+        if (wine_ver) {
+            is_wine = true;
+            const char* v = wine_ver();
+            if (v) wine_version = v;
+        }
+    }
+
+    // detect specific compatibility layers / launchers via environment variables
+    std::vector<std::string> env_info;
+
+    if (is_wine) {
+        std::string wine_label = "Wine";
+        if (!wine_version.empty()) wine_label += " " + wine_version;
+        env_info.push_back(wine_label);
+    }
+
+    // Proton (Steam Play)
+    char env_buf[512]{};
+    if (GetEnvironmentVariableA("STEAM_COMPAT_DATA_PATH", env_buf, sizeof(env_buf))) {
+        std::string proton_label = "Proton (Steam Play)";
+        char proton_ver[256]{};
+        if (GetEnvironmentVariableA("PROTON_VERSION", proton_ver, sizeof(proton_ver)))
+            proton_label += std::string(" ") + proton_ver;
+        env_info.push_back(proton_label);
+    }
+
+    // Lutris
+    if (GetEnvironmentVariableA("LUTRIS_GAME_SLUG", env_buf, sizeof(env_buf)))
+        env_info.push_back("Lutris");
+
+    // Bottles
+    if (GetEnvironmentVariableA("BOTTLES_ENV", env_buf, sizeof(env_buf)) ||
+        GetEnvironmentVariableA("FLATPAK_ID", env_buf, sizeof(env_buf)) && strstr(env_buf, "bottles"))
+        env_info.push_back("Bottles");
+
+    // PlayOnLinux
+    if (GetEnvironmentVariableA("PLAYONLINUX", env_buf, sizeof(env_buf)) ||
+        GetEnvironmentVariableA("POL_WINEVERSION", env_buf, sizeof(env_buf)))
+        env_info.push_back("PlayOnLinux");
+
+    // CrossOver (CodeWeavers)
+    if (GetEnvironmentVariableA("CX_BOTTLE", env_buf, sizeof(env_buf)) ||
+        GetEnvironmentVariableA("CX_ROOT", env_buf, sizeof(env_buf)))
+        env_info.push_back("CrossOver");
+
+    // Heroic Games Launcher
+    if (GetEnvironmentVariableA("HEROIC_APP_NAME", env_buf, sizeof(env_buf)) ||
+        GetEnvironmentVariableA("STORE", env_buf, sizeof(env_buf)) && (strstr(env_buf, "legendary") || strstr(env_buf, "gog")))
+        env_info.push_back("Heroic Games Launcher");
+
+    // GameScope (Steam Deck compositing)
+    if (GetEnvironmentVariableA("GAMESCOPE_WAYLAND_DISPLAY", env_buf, sizeof(env_buf)))
+        env_info.push_back("GameScope");
+
+    // MangoHud
+    if (GetEnvironmentVariableA("MANGOHUD", env_buf, sizeof(env_buf)))
+        env_info.push_back("MangoHud");
+
+    // Steam Runtime
+    if (GetEnvironmentVariableA("STEAM_RUNTIME", env_buf, sizeof(env_buf)))
+        env_info.push_back(std::string("Steam Runtime: ") + env_buf);
+
+    // --- Translation layer detection (DXVK, VKD3D, WineD3D) ---
+    std::vector<std::string> translation_info;
+
+    if (is_wine) {
+        // DXVK: check for DXVK-specific exports on dxgi.dll or env
+        bool dxvk_detected = false;
+        HMODULE dxgi_mod = GetModuleHandleW(L"dxgi.dll");
+        if (dxgi_mod && GetProcAddress(dxgi_mod, "DXVK_GetInstanceExtensions")) {
+            dxvk_detected = true;
+        }
+        if (!dxvk_detected && GetEnvironmentVariableA("DXVK_LOG_LEVEL", env_buf, sizeof(env_buf))) {
+            dxvk_detected = true;
+        }
+        if (!dxvk_detected && GetEnvironmentVariableA("DXVK_STATE_CACHE", env_buf, sizeof(env_buf))) {
+            dxvk_detected = true;
+        }
+        if (dxvk_detected) {
+            translation_info.push_back("DXVK (D3D9/D3D10/D3D11 -> Vulkan)");
+        }
+
+        // VKD3D-proton: D3D12 -> Vulkan
+        bool vkd3d_detected = false;
+        HMODULE d3d12_mod = GetModuleHandleW(L"d3d12.dll");
+        if (d3d12_mod && GetProcAddress(d3d12_mod, "vkd3d_create_instance")) {
+            vkd3d_detected = true;
+        }
+        if (!vkd3d_detected && GetEnvironmentVariableA("VKD3D_LOG_LEVEL", env_buf, sizeof(env_buf))) {
+            vkd3d_detected = true;
+        }
+        if (vkd3d_detected) {
+            translation_info.push_back("VKD3D-proton (D3D12 -> Vulkan)");
+        }
+
+        // WineD3D: if D3D is loaded but neither DXVK nor VKD3D, it's WineD3D (OpenGL-based)
+        bool has_d3d = GetModuleHandleW(L"d3d9.dll") || GetModuleHandleW(L"d3d10.dll") ||
+                       GetModuleHandleW(L"d3d11.dll") || GetModuleHandleW(L"d3d12.dll");
+        if (has_d3d && !dxvk_detected && !vkd3d_detected) {
+            translation_info.push_back("WineD3D (D3D -> OpenGL)");
+        }
+
+        // Gallium Nine: native D3D9 on Mesa
+        if (GetEnvironmentVariableA("WINE_NINE_NATIVE", env_buf, sizeof(env_buf)) ||
+            GetModuleHandleW(L"d3d9-nine.dll")) {
+            translation_info.push_back("Gallium Nine (native D3D9 on Mesa)");
+        }
+
+        // Zink: OpenGL -> Vulkan (Mesa driver)
+        if (GetEnvironmentVariableA("MESA_LOADER_DRIVER_OVERRIDE", env_buf, sizeof(env_buf)) && strstr(env_buf, "zink")) {
+            translation_info.push_back("Zink (OpenGL -> Vulkan via Mesa)");
+        }
+    }
+
+    // --- Vulkan layer detection (ReShade, vkBasalt as implicit/explicit Vulkan layers) ---
+    std::vector<std::string> vk_layer_info;
+
+    // check VK_INSTANCE_LAYERS env var (explicit layer activation)
+    char vk_layers_buf[2048]{};
+    if (GetEnvironmentVariableA("VK_INSTANCE_LAYERS", vk_layers_buf, sizeof(vk_layers_buf))) {
+        // colon/semicolon-separated list of layer names
+        if (strstr(vk_layers_buf, "VK_LAYER_reshade"))
+            vk_layer_info.push_back("ReShade (Vulkan layer via VK_INSTANCE_LAYERS)");
+        if (strstr(vk_layers_buf, "VK_LAYER_vkBasalt") || strstr(vk_layers_buf, "vkBasalt"))
+            vk_layer_info.push_back("vkBasalt (Vulkan layer via VK_INSTANCE_LAYERS)");
+    }
+
+    // check ENABLE_VKBASALT env var
+    if (GetEnvironmentVariableA("ENABLE_VKBASALT", env_buf, sizeof(env_buf)))
+        vk_layer_info.push_back("vkBasalt (enabled via ENABLE_VKBASALT)");
+
+    // check Windows registry for ReShade implicit Vulkan layer
+    {
+        HKEY layers_key = nullptr;
+        const wchar_t* reg_paths[] = {
+            L"SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers",
+            L"SOFTWARE\\Khronos\\Vulkan\\ExplicitLayers",
+        };
+        for (auto& reg_path : reg_paths) {
+            // check both HKLM and HKCU
+            HKEY roots[] = { HKEY_LOCAL_MACHINE, HKEY_CURRENT_USER };
+            for (auto root : roots) {
+                if (RegOpenKeyExW(root, reg_path, 0, KEY_READ, &layers_key) == ERROR_SUCCESS) {
+                    DWORD idx = 0;
+                    wchar_t value_name[1024]{};
+                    DWORD name_len = sizeof(value_name) / sizeof(wchar_t);
+                    while (RegEnumValueW(layers_key, idx++, value_name, &name_len, nullptr, nullptr, nullptr, nullptr) == ERROR_SUCCESS) {
+                        // value_name is the path to the JSON manifest
+                        if (wcsstr(value_name, L"reshade") || wcsstr(value_name, L"ReShade")) {
+                            bool is_implicit = (wcsstr(reg_path, L"Implicit") != nullptr);
+                            char manifest_a[1024]{};
+                            WideCharToMultiByte(CP_UTF8, 0, value_name, -1, manifest_a, sizeof(manifest_a), nullptr, nullptr);
+                            vk_layer_info.push_back(std::string("ReShade (Vulkan ") +
+                                (is_implicit ? "implicit" : "explicit") + " layer: " + manifest_a + ")");
+                        }
+                        name_len = sizeof(value_name) / sizeof(wchar_t);
+                    }
+                    RegCloseKey(layers_key);
+                }
+            }
+        }
+    }
+
+    // renderer and overlay DLLs to check (name, label)
+    struct { const wchar_t* dll; const char* label; } renderers[] = {
+        { L"ddraw.dll",      "DirectDraw" },
+        { L"d3dimm.dll",     "Direct3D Immediate Mode" },
+        { L"d3d8.dll",       "DirectX 8" },
+        { L"d3d9.dll",       "DirectX 9" },
+        { L"d3d10.dll",      "DirectX 10" },
+        { L"d3d10_1.dll",    "DirectX 10.1" },
+        { L"d3d11.dll",      "DirectX 11" },
+        { L"d3d12.dll",      "DirectX 12" },
+        { L"d3d12core.dll",  "DirectX 12 Core (Agility SDK)" },
+        { L"vulkan-1.dll",   "Vulkan" },
+        { L"opengl32.dll",   "OpenGL" },
+        { L"dxgi.dll",       "DXGI" },
+        { L"libEGL.dll",     "EGL (ANGLE)" },
+        { L"libGLESv2.dll",  "OpenGL ES (ANGLE)" },
+        { L"dinput8.dll",    "DirectInput 8" },
+        // 3dfx Glide wrappers (dgVoodoo)
+        { L"glide.dll",      "Glide (3dfx)" },
+        { L"glide2x.dll",    "Glide 2x (3dfx)" },
+        { L"glide3x.dll",    "Glide 3x (3dfx)" },
+        // Special K — global injection (SKIF) or local install
+        { L"SpecialK32.dll", "Special K (32-bit)" },
+        { L"SpecialK64.dll", "Special K (64-bit)" },
+        // ReShade — standalone or loaded as SK plugin
+        { L"ReShade32.dll",  "ReShade (32-bit)" },
+        { L"ReShade64.dll",  "ReShade (64-bit)" },
+    };
+
+    // get system directory for proxy detection
+    wchar_t sys_dir[MAX_PATH]{};
+    GetSystemDirectoryW(sys_dir, MAX_PATH);
+    size_t sys_dir_len = wcslen(sys_dir);
+    // also check SysWOW64 for 32-bit DLLs on 64-bit OS
+    wchar_t syswow_dir[MAX_PATH]{};
+    UINT syswow_len = GetSystemWow64DirectoryW(syswow_dir, MAX_PATH);
+
+    // sanitize user profile path in renderer DLL paths
+    wchar_t profile_w[MAX_PATH]{};
+    DWORD profile_len = GetEnvironmentVariableW(L"USERPROFILE", profile_w, MAX_PATH);
+
+    // known proxy identifiers: export name -> proxy label
+    struct ProxySignature { const char* export_name; const char* proxy_label; };
+    ProxySignature proxy_sigs[] = {
+        { "DXVK_GetInstanceExtensions",  "DXVK" },
+        { "vkd3d_create_instance",       "VKD3D-proton" },
+        // Special K exports (proxy DLLs like dxgi.dll, d3d11.dll, dinput8.dll replaced by SK)
+        { "SK_GetVersionStr",            "Special K" },
+        { "SK_GetDLLRole",               "Special K" },
+        { "SK_GetPlugInDirectory",       "Special K" },
+        // ReShade exports (proxy DLLs or standalone)
+        { "ReShadeVersion",              "ReShade" },
+        { "ReShadeRegisterAddon",        "ReShade" },
+        { "ENBGetVersion",               "ENB Series" },
+        { "dgVoodooVersion",             "dgVoodoo" },
+        { "D3D8_GetDirect3D",            "d3d8to9" },
+    };
+
+    struct DetectedRenderer {
+        std::string label;
+        std::string full_path;
+        bool is_proxy;
+        std::string proxy_label;
+        std::string category;    // GAME, OVERLAY, TRANSLATION, INFRA, INPUT
+        std::string annotation;  // e.g., "loaded by Special K for overlay rendering"
+    };
+    std::vector<DetectedRenderer> detected;
+
+    for (auto& r : renderers) {
+        HMODULE mod = GetModuleHandleW(r.dll);
+        if (!mod) continue;
+
+        DetectedRenderer entry{};
+        entry.label = r.label;
+
+        // get full path of the loaded DLL
+        wchar_t mod_path[MAX_PATH]{};
+        if (GetModuleFileNameW(mod, mod_path, MAX_PATH)) {
+            // sanitize user profile path
+            std::wstring path_w(mod_path);
+            if (profile_len > 0 && path_w.size() >= profile_len &&
+                _wcsnicmp(path_w.c_str(), profile_w, profile_len) == 0) {
+                path_w = L"%USERPROFILE%" + path_w.substr(profile_len);
+            }
+            char path_a[MAX_PATH * 2]{};
+            WideCharToMultiByte(CP_UTF8, 0, path_w.c_str(), -1, path_a, sizeof(path_a), nullptr, nullptr);
+            entry.full_path = path_a;
+
+            // check if DLL is loaded from outside system directories = proxy
+            // extract directory from the loaded DLL's full path
+            std::wstring mod_dir(mod_path);
+            auto sep = mod_dir.find_last_of(L"\\/");
+            if (sep != std::wstring::npos) mod_dir.resize(sep);
+
+            bool in_system = (_wcsnicmp(mod_dir.c_str(), sys_dir, sys_dir_len) == 0 && mod_dir.size() == sys_dir_len);
+            if (!in_system && syswow_len > 0) {
+                in_system = (_wcsnicmp(mod_dir.c_str(), syswow_dir, syswow_len) == 0 && mod_dir.size() == syswow_len);
+            }
+
+            if (!in_system) {
+                entry.is_proxy = true;
+                // identify the proxy by checking known exports
+                for (auto& sig : proxy_sigs) {
+                    if (GetProcAddress(mod, sig.export_name)) {
+                        entry.proxy_label = sig.proxy_label;
+                        break;
+                    }
+                }
+                if (entry.proxy_label.empty()) {
+                    entry.proxy_label = "unknown proxy";
+                }
+            }
+        } else {
+            char dll_a[MAX_PATH]{};
+            WideCharToMultiByte(CP_UTF8, 0, r.dll, -1, dll_a, MAX_PATH, nullptr, nullptr);
+            entry.full_path = dll_a;
+        }
+
+        detected.push_back(std::move(entry));
+    }
+
+    // --- classify each detected entry ---
+    // first pass: identify overlays
+    bool sk_present = false;
+    bool reshade_present = false;
+    std::string reshade_path_str;
+    for (auto& d : detected) {
+        if (d.label.find("Special K") != std::string::npos) {
+            sk_present = true;
+        }
+        if (d.label.find("ReShade") != std::string::npos) {
+            reshade_present = true;
+            reshade_path_str = d.full_path;
+        }
+    }
+
+    // find the lowest and highest system (non-proxy) D3D versions
+    int lowest_system_d3d = 0; // 8,9,10,11,12
+    int highest_system_d3d = 0;
+    bool has_system_vulkan = false;
+    bool has_system_opengl = false;
+    for (auto& d : detected) {
+        if (d.is_proxy) continue;
+        int ver = 0;
+        if (d.label == "DirectX 8")       ver = 8;
+        else if (d.label == "DirectX 9")  ver = 9;
+        else if (d.label == "DirectX 10" || d.label == "DirectX 10.1") ver = 10;
+        else if (d.label == "DirectX 11") ver = 11;
+        else if (d.label == "DirectX 12" || d.label == "DirectX 12 Core (Agility SDK)") ver = 12;
+        else if (d.label == "Vulkan")  { has_system_vulkan = true; continue; }
+        else if (d.label == "OpenGL")  { has_system_opengl = true; continue; }
+        if (ver) {
+            if (!lowest_system_d3d || ver < lowest_system_d3d) lowest_system_d3d = ver;
+            if (ver > highest_system_d3d) highest_system_d3d = ver;
+        }
+    }
+
+    // second pass: classify
+    for (auto& d : detected) {
+        // overlay tools
+        if (d.label.find("Special K") != std::string::npos) {
+            d.category = "OVERLAY";
+            d.annotation = "overlay renders via DirectX 11";
+            continue;
+        }
+        if (d.label.find("ReShade") != std::string::npos) {
+            d.category = "OVERLAY";
+            if (d.full_path.find("SpecialK") != std::string::npos ||
+                d.full_path.find("PlugIns") != std::string::npos ||
+                d.full_path.find("Special K") != std::string::npos) {
+                d.annotation = "loaded as Special K plugin";
+            }
+            continue;
+        }
+
+        // proxy'd DLLs (translation layers / overlay hooks)
+        if (d.is_proxy) {
+            if (d.proxy_label == "dgVoodoo") {
+                d.category = "TRANSLATION";
+                d.annotation = "translates " + d.label + " -> DirectX 11";
+            } else if (d.proxy_label == "DXVK") {
+                d.category = "TRANSLATION";
+                d.annotation = "translates " + d.label + " -> Vulkan";
+            } else if (d.proxy_label == "VKD3D-proton") {
+                d.category = "TRANSLATION";
+                d.annotation = "translates DirectX 12 -> Vulkan";
+            } else if (d.proxy_label == "d3d8to9") {
+                d.category = "TRANSLATION";
+                d.annotation = "translates DirectX 8 -> DirectX 9";
+            } else if (d.proxy_label == "ENB Series") {
+                d.category = "OVERLAY";
+                d.annotation = "post-processing (hooks " + d.label + ")";
+            } else if (d.proxy_label == "Special K") {
+                d.category = "OVERLAY";
+                d.annotation = "Special K proxy (hooks " + d.label + ")";
+            } else if (d.proxy_label == "ReShade") {
+                d.category = "OVERLAY";
+                d.annotation = "ReShade proxy (hooks " + d.label + ")";
+            } else {
+                d.category = "TRANSLATION";
+                d.annotation = "proxy: " + d.proxy_label;
+            }
+            continue;
+        }
+
+        // infrastructure (never primary renderers)
+        if (d.label == "DXGI") {
+            d.category = "INFRA";
+            continue;
+        }
+        if (d.label == "DirectInput 8") {
+            d.category = "INPUT";
+            continue;
+        }
+        if (d.label == "EGL (ANGLE)" || d.label == "OpenGL ES (ANGLE)") {
+            d.category = "INFRA";
+            continue;
+        }
+
+        // DirectDraw / D3D Immediate Mode from system = legacy, likely game renderer
+        if (d.label == "DirectDraw" || d.label == "Direct3D Immediate Mode") {
+            d.category = "GAME";
+            continue;
+        }
+
+        // Glide from system doesn't exist (no system glide DLL) - should be caught by proxy
+        if (d.label.find("Glide") != std::string::npos) {
+            d.category = "GAME";
+            continue;
+        }
+
+        // system D3D11 when SK is present and the game uses a different renderer
+        // SK always loads D3D11 for its overlay, even in D3D9/D3D12/Vulkan/OpenGL games
+        if (d.label == "DirectX 11" && sk_present &&
+            ((lowest_system_d3d && lowest_system_d3d < 11) ||
+             highest_system_d3d > 11 ||
+             has_system_vulkan || has_system_opengl)) {
+            d.category = "INFRA";
+            d.annotation = "loaded by Special K for overlay rendering";
+            continue;
+        }
+
+        // everything else from system = game renderer
+        d.category = "GAME";
+    }
+
+    // --- Third-party tool detection (non-renderer modules) ---
+    struct DetectedTool {
+        std::string label;
+        std::string type;
+    };
+    std::vector<DetectedTool> detected_tools;
+    {
+        struct { const wchar_t* name; const char* label; const char* type; } known_tools[] = {
+            // --- injectors / post-processors ---
+            #if defined(_WIN64)
+            { L"SpecialK64.dll",            "Special K",            "injector" },
+            { L"ReShade64.dll",             "ReShade",              "post-processor" },
+            #else
+            { L"SpecialK32.dll",            "Special K",            "injector" },
+            { L"ReShade32.dll",             "ReShade",              "post-processor" },
+            #endif
+            { L"d3dcompiler_46e.dll",       "ENB Series",           "post-processor" },
+
+            // --- recording / streaming ---
+            #if defined(_WIN64)
+            { L"nvspcap64.dll",             "NVIDIA ShadowPlay",    "recording" },
+            { L"graphics-hook64.dll",       "OBS Game Capture",     "recording" },
+            { L"fraps64.dll",               "Fraps",                "recording" },
+            { L"MedalHook64.dll",           "Medal.tv",             "recording" },
+            { L"bdcam64.dll",               "Bandicam",             "recording" },
+            { L"Action64.dll",              "Mirillis Action",      "recording" },
+            { L"XSplit.Core64.dll",         "XSplit",               "recording" },
+            { L"d3dgear64.dll",             "D3DGear",              "recording" },
+            #else
+            { L"nvspcap.dll",               "NVIDIA ShadowPlay",    "recording" },
+            { L"graphics-hook32.dll",       "OBS Game Capture",     "recording" },
+            { L"fraps32.dll",               "Fraps",                "recording" },
+            { L"MedalHook.dll",             "Medal.tv",             "recording" },
+            { L"bdcam32.dll",               "Bandicam",             "recording" },
+            { L"Action.dll",                "Mirillis Action",      "recording" },
+            { L"XSplit.Core.dll",           "XSplit",               "recording" },
+            { L"d3dgear.dll",               "D3DGear",              "recording" },
+            #endif
+            { L"Streamlabs.dll",            "Streamlabs",           "recording" },
+
+            // --- monitoring ---
+            { L"RTSSHooks64.dll",           "RTSS",                 "monitoring" },
+            { L"RTSSHooks.dll",             "RTSS",                 "monitoring" },
+            #if defined(_WIN64)
+            { L"fpshook64.dll",             "FPS Monitor",          "monitoring" },
+            { L"PresentMon64.dll",          "Intel PresentMon",     "monitoring" },
+            #else
+            { L"fpshook.dll",               "FPS Monitor",          "monitoring" },
+            { L"PresentMon32.dll",          "Intel PresentMon",     "monitoring" },
+            #endif
+
+            // --- store overlays ---
+            { L"GameOverlayRenderer64.dll", "Steam Overlay",        "store overlay" },
+            { L"GameOverlayRenderer.dll",   "Steam Overlay",        "store overlay" },
+            { L"DiscordHook64.dll",         "Discord",              "store overlay" },
+            { L"DiscordHook.dll",           "Discord",              "store overlay" },
+            #if defined(_WIN64)
+            { L"EOSOVH-Win64-Shipping.dll", "Epic Online Services", "store overlay" },
+            { L"Galaxy64.dll",              "GOG Galaxy",           "store overlay" },
+            { L"GalaxyOverlayRenderer64.dll", "GOG Galaxy",         "store overlay" },
+            { L"igo64.dll",                 "EA App / Origin",      "store overlay" },
+            { L"uplay_r2_loader64.dll",     "Ubisoft Connect",      "store overlay" },
+            { L"upc_r2_loader64.dll",       "Ubisoft Connect",      "store overlay" },
+            #else
+            { L"EOSOVH-Win32-Shipping.dll", "Epic Online Services", "store overlay" },
+            { L"Galaxy.dll",                "GOG Galaxy",           "store overlay" },
+            { L"GalaxyOverlayRenderer.dll", "GOG Galaxy",           "store overlay" },
+            { L"igo32.dll",                 "EA App / Origin",      "store overlay" },
+            { L"uplay_r2_loader.dll",       "Ubisoft Connect",      "store overlay" },
+            { L"upc_r2_loader.dll",         "Ubisoft Connect",      "store overlay" },
+            #endif
+
+            // --- GPU vendor software ---
+            #if defined(_WIN64)
+            { L"aaborern64.dll",            "AMD Adrenalin",        "gpu vendor" },
+            { L"atiumd64.dll",              "AMD Display Driver",   "gpu vendor" },
+            #else
+            { L"aaborern.dll",              "AMD Adrenalin",        "gpu vendor" },
+            { L"atiumdag.dll",              "AMD Display Driver",   "gpu vendor" },
+            #endif
+            { L"RadeonSoftware.dll",        "AMD Software",         "gpu vendor" },
+
+            // --- system / platform overlays ---
+            { L"GameBar.dll",               "Xbox Game Bar",        "system overlay" },
+            { L"GameBarPresenceWriter.dll", "Xbox Game Bar",        "system overlay" },
+            { L"SSOverlay64.dll",           "Samsung Gaming Hub",   "system overlay" },
+            { L"SSOverlay.dll",             "Samsung Gaming Hub",   "system overlay" },
+            { L"AcLayer.dll",               "Windows Compatibility","system overlay" },
+
+            // --- gaming platforms / launchers ---
+            { L"OWClient.dll",              "Overwolf",             "platform" },
+            { L"OWExplorer.dll",            "Overwolf",             "platform" },
+            #if defined(_WIN64)
+            { L"ltc_game64.dll",            "Playnite",             "platform" },
+            #else
+            { L"ltc_game32.dll",            "Playnite",             "platform" },
+            #endif
+
+            // --- peripheral software ---
+            #if defined(_WIN64)
+            { L"Nahimic2OSD64.dll",         "Nahimic",              "peripheral" },
+            { L"LogiOverlay64.dll",         "Logitech G Hub",       "peripheral" },
+            { L"iCUEOverlay64.dll",         "Corsair iCUE",         "peripheral" },
+            { L"SteelSeriesGG64.dll",       "SteelSeries GG",       "peripheral" },
+            { L"RzChromaSDK64.dll",         "Razer Chroma",         "peripheral" },
+            #else
+            { L"Nahimic2OSD.dll",           "Nahimic",              "peripheral" },
+            { L"LogiOverlay.dll",           "Logitech G Hub",       "peripheral" },
+            { L"iCUEOverlay.dll",           "Corsair iCUE",         "peripheral" },
+            { L"SteelSeriesGG.dll",         "SteelSeries GG",       "peripheral" },
+            { L"RzChromaSDK.dll",           "Razer Chroma",         "peripheral" },
+            #endif
+            { L"NahimicOSD.dll",            "Nahimic",              "peripheral" },
+
+            // --- communication ---
+            #if defined(_WIN64)
+            { L"mumble_ol_x64.dll",         "Mumble",               "communication" },
+            { L"ts3overlay_hook_x64.dll",   "TeamSpeak",            "communication" },
+            #else
+            { L"mumble_ol.dll",             "Mumble",               "communication" },
+            { L"ts3overlay_hook_x86.dll",   "TeamSpeak",            "communication" },
+            #endif
+
+            // --- VR ---
+            { L"openvr_api.dll",            "SteamVR",              "vr" },
+            #if defined(_WIN64)
+            { L"vrclient_x64.dll",          "SteamVR Client",       "vr" },
+            { L"LibOVRRT64_1.dll",          "Oculus Runtime",       "vr" },
+            #else
+            { L"vrclient.dll",              "SteamVR Client",       "vr" },
+            { L"LibOVRRT32_1.dll",          "Oculus Runtime",       "vr" },
+            #endif
+            { L"OculusXRPlugin.dll",        "Oculus/Meta",          "vr" },
+
+            // --- anti-cheat (informational) ---
+            #if defined(_WIN64)
+            { L"EasyAntiCheat_x64.dll",     "EasyAntiCheat",        "anti-cheat" },
+            { L"BEService_x64.dll",         "BattlEye",             "anti-cheat" },
+            { L"BEClient_x64.dll",          "BattlEye",             "anti-cheat" },
+            #else
+            { L"EasyAntiCheat_x86.dll",     "EasyAntiCheat",        "anti-cheat" },
+            { L"BEService_x86.dll",         "BattlEye",             "anti-cheat" },
+            { L"BEClient_x86.dll",          "BattlEye",             "anti-cheat" },
+            #endif
+            { L"easyanticheat.dll",         "EasyAntiCheat",        "anti-cheat" },
+            { L"vanguard.dll",              "Vanguard",             "anti-cheat" },
+
+            // --- modding / script hooks ---
+            { L"ScriptHookV.dll",           "ScriptHookV",          "modding" },
+            { L"ScriptHookRDR2.dll",        "ScriptHookRDR2",       "modding" },
+            { L"ScriptHook.dll",            "ScriptHook",           "modding" },
+            { L"ScriptHookDotNet.dll",      "ScriptHookDotNet",     "modding" },
+            #if defined(_WIN64)
+            { L"version.dll",               "ASI Loader",           "modding" },
+            #else
+            { L"version.dll",               "ASI Loader",           "modding" },
+            #endif
+        };
+        std::set<std::string> tool_seen;
+        for (auto& entry : known_tools) {
+            if (GetModuleHandleW(entry.name) && tool_seen.insert(entry.label).second) {
+                detected_tools.push_back({ entry.label, entry.type });
+                PRINT_DEBUG("detected tool [%s]: %s (via %ls)", entry.type, entry.label, entry.name);
+            }
+        }
+
+        // check proxy DLLs for Special K or ReShade exports
+        const wchar_t* proxy_tool_dlls[] = {
+            L"dxgi.dll", L"d3d11.dll", L"d3d12.dll", L"d3d10_1.dll", L"d3d10.dll", L"d3d9.dll",
+            L"d3d8.dll", L"ddraw.dll", L"dinput8.dll", L"dinput.dll", L"winmm.dll",
+            L"OpenGL32.dll", L"version.dll", L"dsound.dll", L"wininet.dll", L"winhttp.dll",
+            L"xinput1_1.dll", L"xinput1_2.dll", L"xinput1_3.dll", L"xinput1_4.dll",
+            L"xinput9_1_0.dll", L"xinputuap.dll",
+            L"binkw32.dll", L"bink2w32.dll", L"binkw64.dll", L"bink2w64.dll",
+            L"vorbisFile.dll", L"msacm32.dll", L"msvfw32.dll", L"xlive.dll"
+        };
+        for (auto dll_name : proxy_tool_dlls) {
+            HMODULE hMod = GetModuleHandleW(dll_name);
+            if (!hMod) continue;
+            if (GetProcAddress(hMod, "SK_GetVersionStr") && tool_seen.insert("Special K (proxy)").second) {
+                detected_tools.push_back({ "Special K (proxy)", "injector" });
+                PRINT_DEBUG("detected tool [injector]: Special K (proxy via %ls)", dll_name);
+            } else if (GetProcAddress(hMod, "ReShadeVersion") && tool_seen.insert("ReShade (proxy)").second) {
+                detected_tools.push_back({ "ReShade (proxy)", "post-processor" });
+                PRINT_DEBUG("detected tool [post-processor]: ReShade (proxy via %ls)", dll_name);
+            } else if (GetProcAddress(hMod, "GetASILoadLibrary") && tool_seen.insert("Ultimate ASI Loader (proxy)").second) {
+                detected_tools.push_back({ "Ultimate ASI Loader (proxy)", "modding" });
+                PRINT_DEBUG("detected tool [modding]: Ultimate ASI Loader (proxy via %ls)", dll_name);
+            }
+        }
+    }
+
+    // build replacement strings for the process tree placeholder (one per line ending style)
+    // helper to format one entry
+    auto format_entry = [](const DetectedRenderer& d, const std::string& indent, const std::string& eol) -> std::string {
+        std::string r = indent + "[" + d.category + "] " + d.label;
+        if (d.is_proxy) r += " [" + d.proxy_label + "]";
+        if (!d.annotation.empty()) r += " (" + d.annotation + ")";
+        r += eol;
+        r += indent + "  " + d.full_path + eol;
+        return r;
+    };
+
+    std::string replacement_lf, replacement_crlf;
+    if (detected.empty()) {
+        replacement_lf = "  Renderers: (none detected)\n";
+        replacement_crlf = "  Renderers: (none detected)\r\n";
+    } else if (detected.size() == 1) {
+        replacement_lf = "  Renderers:\n" + format_entry(detected[0], "    ", "\n");
+        replacement_crlf = "  Renderers:\r\n" + format_entry(detected[0], "    ", "\r\n");
+    } else {
+        replacement_lf = "  Renderers:\n";
+        replacement_crlf = "  Renderers:\r\n";
+        for (auto& d : detected) {
+            replacement_lf += format_entry(d, "    ", "\n");
+            replacement_crlf += format_entry(d, "    ", "\r\n");
+        }
+    }
+
+    // read-modify-write to replace "(pending - detected after init)" in the process tree
+    {
+        FILE* rf = _wfopen(out_path.c_str(), L"rb");
+        if (rf) {
+            fseek(rf, 0, SEEK_END);
+            long file_size = ftell(rf);
+            fseek(rf, 0, SEEK_SET);
+            if (file_size > 0) {
+                std::string content(file_size, '\0');
+                fread(&content[0], 1, file_size, rf);
+                fclose(rf);
+
+                const std::string placeholder_crlf = "  Renderers: (pending - detected after init)\r\n";
+                const std::string placeholder_lf = "  Renderers: (pending - detected after init)\n";
+
+                size_t pos = content.find(placeholder_crlf);
+                if (pos != std::string::npos) {
+                    content.replace(pos, placeholder_crlf.size(), replacement_crlf);
+                } else {
+                    pos = content.find(placeholder_lf);
+                    if (pos != std::string::npos) {
+                        content.replace(pos, placeholder_lf.size(), replacement_lf);
+                    }
+                }
+
+                FILE* wf = _wfopen(out_path.c_str(), L"wb");
+                if (wf) {
+                    fwrite(content.c_str(), 1, content.size(), wf);
+                    fclose(wf);
+                }
+            } else {
+                fclose(rf);
+            }
+        }
+    }
+
+    // append detailed renderer & environment info
+    FILE* f = _wfopen(out_path.c_str(), L"a");
+    if (!f) return;
+
+    fprintf(f, "=== Renderer & Environment Detection (PID %lu) ===\n", GetCurrentProcessId());
+
+    // environment info
+    if (!env_info.empty()) {
+        fprintf(f, "  Environment:\n");
+        for (auto& e : env_info) {
+            fprintf(f, "    %s\n", e.c_str());
+            PRINT_DEBUG("environment detected: %s", e.c_str());
+        }
+    }
+
+    // translation layers
+    if (!translation_info.empty()) {
+        fprintf(f, "  Translation layers:\n");
+        for (auto& t : translation_info) {
+            fprintf(f, "    %s\n", t.c_str());
+            PRINT_DEBUG("translation layer detected: %s", t.c_str());
+        }
+    }
+
+    // Vulkan layers
+    if (!vk_layer_info.empty()) {
+        fprintf(f, "  Vulkan layers:\n");
+        for (auto& v : vk_layer_info) {
+            fprintf(f, "    %s\n", v.c_str());
+            PRINT_DEBUG("vulkan layer detected: %s", v.c_str());
+        }
+    }
+
+    // renderers (categorized)
+    fprintf(f, "  Detected modules:\n");
+    if (detected.empty()) {
+        fprintf(f, "    (none detected)\n");
+    } else {
+        for (auto& d : detected) {
+            fprintf(f, "    [%s] %s", d.category.c_str(), d.label.c_str());
+            if (d.is_proxy) fprintf(f, " [PROXY: %s]", d.proxy_label.c_str());
+            if (!d.annotation.empty()) fprintf(f, " (%s)", d.annotation.c_str());
+            fprintf(f, "\n");
+            fprintf(f, "      %s\n", d.full_path.c_str());
+            PRINT_DEBUG("detected [%s]: %s at %s", d.category.c_str(), d.label.c_str(), d.full_path.c_str());
+        }
+    }
+
+    // third-party tools (non-renderer)
+    if (!detected_tools.empty()) {
+        fprintf(f, "  Third-party tools:\n");
+        for (auto& t : detected_tools) {
+            fprintf(f, "    [%s] %s\n", t.type.c_str(), t.label.c_str());
+            PRINT_DEBUG("tool detected: [%s] %s", t.type.c_str(), t.label.c_str());
+        }
+    }
+
+    fprintf(f, "\n");
+
+    fclose(f);
+}
+
 BOOL WINAPI DllMain( HINSTANCE, DWORD dwReason, LPVOID )
 {
     switch ( dwReason ) {
         case DLL_PROCESS_ATTACH:
             PRINT_DEBUG("experimental DLL_PROCESS_ATTACH");
+            dump_process_tree();
             if (!settings_disable_lan_only()) {
                 PRINT_DEBUG("Hooking lan only functions");
                 DetourTransactionBegin();
@@ -717,6 +1815,833 @@ BOOL WINAPI DllMain( HINSTANCE, DWORD dwReason, LPVOID )
 
 #else
 
+// dump the full process tree of the current process to <so_name>.txt
+// uses /proc filesystem for process info, command lines, and parent traversal
+static void dump_process_tree()
+{
+    // get our .so path via dladdr
+    static const char anchor = 0;
+    Dl_info dl_info{};
+    if (!dladdr((void*)&anchor, &dl_info) || !dl_info.dli_fname) return;
+
+    std::string so_path(dl_info.dli_fname);
+    // resolve to absolute path
+    char resolved[PATH_MAX]{};
+    if (realpath(so_path.c_str(), resolved)) so_path = resolved;
+
+    // derive output file path: <so_name>.txt next to the .so
+    std::string out_path = so_path + ".txt";
+
+    // derive directory for relative path computation
+    std::string so_dir = so_path;
+    auto last_sep = so_dir.find_last_of('/');
+    if (last_sep != std::string::npos) so_dir.resize(last_sep + 1);
+
+    // get .so filename for header
+    std::string so_name = (last_sep != std::string::npos) ? so_path.substr(last_sep + 1) : so_path;
+
+    struct ProcessInfo {
+        pid_t pid;
+        pid_t parent_pid;
+        std::string exe_name;
+        std::string full_path;
+        std::string cmdline;
+        std::string start_time; // formatted creation timestamp
+        struct RendererEntry {
+            std::string label;
+            std::string full_path;
+            bool is_proxy;
+        };
+        std::vector<RendererEntry> renderers; // loaded renderer/overlay libs (for parent processes)
+    };
+    std::vector<ProcessInfo> tree;
+
+    // libraries to look for when scanning parent process maps
+    struct { const char* lib; const char* label; } renderer_libs[] = {
+        { "libvulkan.so",     "Vulkan" },
+        { "libGL.so",         "OpenGL" },
+        { "libGLX.so",        "GLX" },
+        { "libEGL.so",        "EGL" },
+        { "libGLESv2.so",     "OpenGL ES" },
+        { "libvkbasalt.so",   "vkBasalt" },
+        // DXVK-native (D3D -> Vulkan for native Linux games)
+        { "libdxvk_d3d9.so",  "DXVK-native (D3D9)" },
+        { "libdxvk_d3d11.so", "DXVK-native (D3D11)" },
+        { "libdxvk_dxgi.so",  "DXVK-native (DXGI)" },
+        { "SpecialK",         "Special K" },
+        { "ReShade",          "ReShade" },
+    };
+
+    // standard system library paths (libraries here are NOT proxies)
+    const char* parent_system_prefixes[] = {
+        "/usr/lib", "/usr/lib32", "/usr/lib64",
+        "/usr/lib/x86_64-linux-gnu", "/usr/lib/i386-linux-gnu",
+        "/lib/", "/lib64/", "/lib32/",
+        "/usr/local/lib",
+        "/nix/store",
+    };
+
+    // walk from current process up through parents
+    pid_t walk_pid = getpid();
+    std::set<pid_t> visited;
+    while (walk_pid > 0 && visited.insert(walk_pid).second) {
+        ProcessInfo info{};
+        info.pid = walk_pid;
+
+        // read exe path from /proc/<pid>/exe
+        char link_path[64]{};
+        snprintf(link_path, sizeof(link_path), "/proc/%d/exe", walk_pid);
+        char exe_buf[PATH_MAX]{};
+        ssize_t len = readlink(link_path, exe_buf, sizeof(exe_buf) - 1);
+        if (len > 0) {
+            exe_buf[len] = '\0';
+            info.full_path = exe_buf;
+            auto slash = info.full_path.find_last_of('/');
+            info.exe_name = (slash != std::string::npos) ? info.full_path.substr(slash + 1) : info.full_path;
+        }
+
+        // read command line from /proc/<pid>/cmdline (NUL-separated args)
+        char cmd_path[64]{};
+        snprintf(cmd_path, sizeof(cmd_path), "/proc/%d/cmdline", walk_pid);
+        FILE* cf = fopen(cmd_path, "r");
+        if (cf) {
+            char cmd_buf[4096]{};
+            size_t n = fread(cmd_buf, 1, sizeof(cmd_buf) - 1, cf);
+            fclose(cf);
+            // replace NUL separators with spaces
+            for (size_t i = 0; i < n; ++i) {
+                if (cmd_buf[i] == '\0') cmd_buf[i] = ' ';
+            }
+            if (n > 0 && cmd_buf[n - 1] == ' ') cmd_buf[n - 1] = '\0';
+            info.cmdline = cmd_buf;
+        }
+
+        // read parent PID and start time from /proc/<pid>/stat
+        info.parent_pid = 0;
+        char stat_path[64]{};
+        snprintf(stat_path, sizeof(stat_path), "/proc/%d/stat", walk_pid);
+        FILE* sf = fopen(stat_path, "r");
+        if (sf) {
+            char stat_buf[4096]{};
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-result"
+            (void)fread(stat_buf, 1, sizeof(stat_buf) - 1, sf);
+#pragma GCC diagnostic pop
+            fclose(sf);
+            // format: pid (comm) state ppid ... field22=starttime
+            // find the last ')' to skip comm which may contain spaces/parens
+            char* comm_end = strrchr(stat_buf, ')');
+            if (comm_end) {
+                int ppid = 0;
+                char state;
+                if (sscanf(comm_end + 1, " %c %d", &state, &ppid) == 2) {
+                    info.parent_pid = ppid;
+                }
+                // parse starttime (field 22, which is field 20 after comm_end)
+                // fields after ')': state(1) ppid(2) pgrp(3) session(4) tty_nr(5) tpgid(6)
+                //   flags(7) minflt(8) cminflt(9) majflt(10) cmajflt(11) utime(12) stime(13)
+                //   cutime(14) cstime(15) priority(16) nice(17) num_threads(18) itrealvalue(19)
+                //   starttime(20)
+                unsigned long long starttime = 0;
+                char* p = comm_end + 2; // skip ') '
+                int field = 0;
+                while (*p && field < 19) {
+                    while (*p == ' ') ++p;
+                    if (!*p) break;
+                    if (field == 19) break;
+                    while (*p && *p != ' ') ++p;
+                    ++field;
+                }
+                while (*p == ' ') ++p;
+                if (*p) {
+                    sscanf(p, "%llu", &starttime);
+                    if (starttime > 0) {
+                        // convert clock ticks since boot to wall clock time
+                        long hz = sysconf(_SC_CLK_TCK);
+                        if (hz > 0) {
+                            // read boot time from /proc/stat
+                            FILE* bf = fopen("/proc/stat", "r");
+                            unsigned long long btime = 0;
+                            if (bf) {
+                                char line[256]{};
+                                while (fgets(line, sizeof(line), bf)) {
+                                    if (strncmp(line, "btime ", 6) == 0) {
+                                        sscanf(line + 6, "%llu", &btime);
+                                        break;
+                                    }
+                                }
+                                fclose(bf);
+                            }
+                            if (btime > 0) {
+                                time_t proc_start = (time_t)(btime + starttime / hz);
+                                struct tm tm_start{};
+                                localtime_r(&proc_start, &tm_start);
+                                char tbuf[64]{};
+                                snprintf(tbuf, sizeof(tbuf), "%04d-%02d-%02d %02d:%02d:%02d",
+                                    tm_start.tm_year + 1900, tm_start.tm_mon + 1, tm_start.tm_mday,
+                                    tm_start.tm_hour, tm_start.tm_min, tm_start.tm_sec);
+                                info.start_time = tbuf;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // scan /proc/<pid>/maps for renderer/overlay libraries (skip current process - renderer not loaded yet)
+        if (walk_pid != getpid()) {
+            char maps_path[64]{};
+            snprintf(maps_path, sizeof(maps_path), "/proc/%d/maps", walk_pid);
+            FILE* mf = fopen(maps_path, "r");
+            if (mf) {
+                char mline[1024]{};
+                std::set<std::string> rseen;
+                while (fgets(mline, sizeof(mline), mf)) {
+                    for (auto& rl : renderer_libs) {
+                        if (strstr(mline, rl.lib) && rseen.insert(rl.label).second) {
+                            ProcessInfo::RendererEntry entry{};
+                            entry.label = rl.label;
+                            // extract full mapped path from maps line
+                            const char* p = mline;
+                            int fields = 0;
+                            while (*p && fields < 5) {
+                                while (*p == ' ') ++p;
+                                while (*p && *p != ' ') ++p;
+                                ++fields;
+                            }
+                            while (*p == ' ') ++p;
+                            if (*p == '/') {
+                                entry.full_path = p;
+                                while (!entry.full_path.empty() && (entry.full_path.back() == '\n' || entry.full_path.back() == '\r'))
+                                    entry.full_path.pop_back();
+                                // proxy detection: check against system prefixes
+                                bool in_system = false;
+                                for (auto& prefix : parent_system_prefixes) {
+                                    if (strncmp(entry.full_path.c_str(), prefix, strlen(prefix)) == 0) {
+                                        in_system = true;
+                                        break;
+                                    }
+                                }
+                                entry.is_proxy = !in_system;
+                            }
+                            info.renderers.push_back(std::move(entry));
+                        }
+                    }
+                }
+                fclose(mf);
+            }
+        }
+
+        tree.push_back(std::move(info));
+        walk_pid = tree.back().parent_pid;
+    }
+
+    // compute relative path from .so directory
+    auto make_relative = [&so_dir](const std::string& full_path) -> std::string {
+        if (full_path.empty()) return "(unknown)";
+        if (full_path.size() >= so_dir.size() &&
+            strncmp(full_path.c_str(), so_dir.c_str(), so_dir.size()) == 0) {
+            return "./" + full_path.substr(so_dir.size());
+        }
+        return full_path;
+    };
+
+    // sanitize home directory
+    const char* home = getenv("HOME");
+    size_t home_len = home ? strlen(home) : 0;
+    auto sanitize = [home, home_len](const std::string& path) -> std::string {
+        if (!home || home_len == 0 || path.size() < home_len) return path;
+        if (strncmp(path.c_str(), home, home_len) == 0) {
+            return "$HOME" + path.substr(home_len);
+        }
+        return path;
+    };
+
+    // write the file
+    FILE* f = fopen(out_path.c_str(), "w");
+    if (!f) return;
+
+    // timestamp
+    time_t now = time(nullptr);
+    struct tm tm_buf{};
+    localtime_r(&now, &tm_buf);
+    fprintf(f, "=== %s Process Tree ===\n", so_name.c_str());
+    fprintf(f, "Timestamp: %04d-%02d-%02d %02d:%02d:%02d\n",
+        tm_buf.tm_year + 1900, tm_buf.tm_mon + 1, tm_buf.tm_mday,
+        tm_buf.tm_hour, tm_buf.tm_min, tm_buf.tm_sec);
+    fprintf(f, "SO Path: %s\n\n", sanitize(so_path).c_str());
+
+    pid_t current_pid = getpid();
+    for (size_t i = 0; i < tree.size(); ++i) {
+        auto& p = tree[i];
+        bool is_current = (p.pid == current_pid);
+
+        fprintf(f, "[PID %d] %s%s\n", p.pid, p.exe_name.c_str(), is_current ? "  (current process)" : "");
+        fprintf(f, "  Path: %s\n", sanitize(p.full_path).c_str());
+        fprintf(f, "  Relative: %s\n", sanitize(make_relative(p.full_path)).c_str());
+        if (!p.start_time.empty()) {
+            fprintf(f, "  Started: %s\n", p.start_time.c_str());
+        }
+        if (!p.cmdline.empty()) {
+            fprintf(f, "  CmdLine: %s\n", sanitize(p.cmdline).c_str());
+        }
+        if (is_current) {
+            fprintf(f, "  Renderers: (pending - detected after init)\n");
+        } else if (!p.renderers.empty()) {
+            if (p.renderers.size() == 1) {
+                auto& r = p.renderers[0];
+                if (r.is_proxy) {
+                    fprintf(f, "  Renderers: %s [PROXY]\n", r.label.c_str());
+                } else {
+                    fprintf(f, "  Renderers: %s\n", r.label.c_str());
+                }
+                if (!r.full_path.empty()) {
+                    fprintf(f, "    %s\n", sanitize(r.full_path).c_str());
+                }
+            } else {
+                fprintf(f, "  Renderers:\n");
+                for (auto& r : p.renderers) {
+                    if (r.is_proxy) {
+                        fprintf(f, "    %s [PROXY]\n", r.label.c_str());
+                    } else {
+                        fprintf(f, "    %s\n", r.label.c_str());
+                    }
+                    if (!r.full_path.empty()) {
+                        fprintf(f, "      %s\n", sanitize(r.full_path).c_str());
+                    }
+                }
+            }
+        }
+        fprintf(f, "\n");
+
+        PRINT_DEBUG("process tree [PID %d]: %s%s | path: %s", p.pid, p.exe_name.c_str(),
+            is_current ? " (current)" : "", sanitize(p.full_path).c_str());
+    }
+
+    fclose(f);
+}
+
+// append detected renderer(s) for the current process
+// called from SteamAPI_RunCallbacks (first call only), when the game's renderer is initialized
+void append_renderer_info()
+{
+    // get our .so path via dladdr
+    static const char anchor = 0;
+    Dl_info dl_info{};
+    if (!dladdr((void*)&anchor, &dl_info) || !dl_info.dli_fname) return;
+
+    std::string so_path(dl_info.dli_fname);
+    char resolved[PATH_MAX]{};
+    if (realpath(so_path.c_str(), resolved)) so_path = resolved;
+
+    std::string out_path = so_path + ".txt";
+
+    // for sanitizing home directory in paths
+    const char* home = getenv("HOME");
+    size_t home_len = home ? strlen(home) : 0;
+
+    // --- Environment detection ---
+    std::vector<std::string> env_info;
+
+    // display server
+    const char* wayland = getenv("WAYLAND_DISPLAY");
+    const char* x_display = getenv("DISPLAY");
+    const char* session_type = getenv("XDG_SESSION_TYPE");
+    if (session_type) {
+        std::string sess = "Session: ";
+        sess += session_type;
+        if (wayland) { sess += " ("; sess += wayland; sess += ")"; }
+        else if (x_display) { sess += " ("; sess += x_display; sess += ")"; }
+        env_info.push_back(sess);
+    } else {
+        if (wayland) env_info.push_back(std::string("Wayland (") + wayland + ")");
+        else if (x_display) env_info.push_back(std::string("X11 (") + x_display + ")");
+    }
+
+    // Steam runtime / launched from Steam
+    const char* steam_runtime = getenv("STEAM_RUNTIME");
+    if (steam_runtime) env_info.push_back(std::string("Steam Runtime: ") + steam_runtime);
+    const char* steam_appid = getenv("SteamAppId");
+    if (steam_appid) env_info.push_back(std::string("SteamAppId: ") + steam_appid);
+
+    // Proton (when running native .so side-by-side with Proton game)
+    const char* compat_data = getenv("STEAM_COMPAT_DATA_PATH");
+    if (compat_data) {
+        std::string label = "Proton (Steam Play)";
+        const char* proton_ver = getenv("PROTON_VERSION");
+        if (proton_ver) { label += " "; label += proton_ver; }
+        env_info.push_back(label);
+    }
+
+    // Lutris
+    if (getenv("LUTRIS_GAME_SLUG"))
+        env_info.push_back("Lutris");
+
+    // Bottles
+    const char* flatpak_id = getenv("FLATPAK_ID");
+    if (getenv("BOTTLES_ENV") || (flatpak_id && strstr(flatpak_id, "bottles")))
+        env_info.push_back("Bottles");
+
+    // PlayOnLinux
+    if (getenv("PLAYONLINUX") || getenv("POL_WINEVERSION"))
+        env_info.push_back("PlayOnLinux");
+
+    // CrossOver
+    if (getenv("CX_BOTTLE") || getenv("CX_ROOT"))
+        env_info.push_back("CrossOver");
+
+    // Heroic Games Launcher
+    const char* store_env = getenv("STORE");
+    if (getenv("HEROIC_APP_NAME") || (store_env && (strstr(store_env, "legendary") || strstr(store_env, "gog"))))
+        env_info.push_back("Heroic Games Launcher");
+
+    // GameScope
+    if (getenv("GAMESCOPE_WAYLAND_DISPLAY"))
+        env_info.push_back("GameScope");
+
+    // MangoHud
+    if (getenv("MANGOHUD"))
+        env_info.push_back("MangoHud");
+
+    // Flatpak / Snap
+    if (flatpak_id) env_info.push_back(std::string("Flatpak: ") + flatpak_id);
+    if (getenv("SNAP")) env_info.push_back("Snap");
+
+    // --- Mesa / GPU driver detection ---
+    std::vector<std::string> driver_info;
+    const char* mesa_driver = getenv("MESA_LOADER_DRIVER_OVERRIDE");
+    if (mesa_driver) {
+        std::string label = "Mesa driver override: ";
+        label += mesa_driver;
+        if (strstr(mesa_driver, "zink"))
+            label += " (OpenGL -> Vulkan)";
+        driver_info.push_back(label);
+    }
+    const char* libva_driver = getenv("LIBVA_DRIVER_NAME");
+    if (libva_driver) driver_info.push_back(std::string("VA-API driver: ") + libva_driver);
+    const char* vdpau_driver = getenv("VDPAU_DRIVER");
+    if (vdpau_driver) driver_info.push_back(std::string("VDPAU driver: ") + vdpau_driver);
+
+    // --- Vulkan layer detection ---
+    std::vector<std::string> vk_layer_info;
+
+    // check VK_INSTANCE_LAYERS env var
+    const char* vk_layers = getenv("VK_INSTANCE_LAYERS");
+    if (vk_layers) {
+        if (strstr(vk_layers, "VK_LAYER_reshade"))
+            vk_layer_info.push_back("ReShade (Vulkan layer via VK_INSTANCE_LAYERS)");
+        if (strstr(vk_layers, "VK_LAYER_vkBasalt") || strstr(vk_layers, "vkBasalt"))
+            vk_layer_info.push_back("vkBasalt (Vulkan layer via VK_INSTANCE_LAYERS)");
+        if (strstr(vk_layers, "VK_LAYER_MANGOHUD") || strstr(vk_layers, "MangoHud"))
+            vk_layer_info.push_back("MangoHud (Vulkan layer via VK_INSTANCE_LAYERS)");
+    }
+
+    // check ENABLE_VKBASALT env var
+    if (getenv("ENABLE_VKBASALT"))
+        vk_layer_info.push_back("vkBasalt (enabled via ENABLE_VKBASALT)");
+
+    // scan for installed Vulkan layer manifests
+    const char* vk_layer_dirs[] = {
+        "/usr/share/vulkan/implicit_layer.d",
+        "/usr/share/vulkan/explicit_layer.d",
+        "/etc/vulkan/implicit_layer.d",
+        "/etc/vulkan/explicit_layer.d",
+    };
+    // also check XDG_DATA_HOME and HOME for user-installed layers
+    std::vector<std::string> user_layer_dirs;
+    const char* xdg_data = getenv("XDG_DATA_HOME");
+    if (xdg_data) {
+        user_layer_dirs.push_back(std::string(xdg_data) + "/vulkan/implicit_layer.d");
+        user_layer_dirs.push_back(std::string(xdg_data) + "/vulkan/explicit_layer.d");
+    } else if (home && home_len > 0) {
+        user_layer_dirs.push_back(std::string(home) + "/.local/share/vulkan/implicit_layer.d");
+        user_layer_dirs.push_back(std::string(home) + "/.local/share/vulkan/explicit_layer.d");
+    }
+
+    auto scan_layer_dir = [&vk_layer_info](const char* dir_path, bool is_user) {
+        DIR* dir = opendir(dir_path);
+        if (!dir) return;
+        struct dirent* entry;
+        while ((entry = readdir(dir)) != nullptr) {
+            if (!entry->d_name || entry->d_name[0] == '.') continue;
+            const char* name = entry->d_name;
+            bool is_implicit = (strstr(dir_path, "implicit") != nullptr);
+            if (strstr(name, "reshade") || strstr(name, "ReShade")) {
+                vk_layer_info.push_back(std::string("ReShade (Vulkan ") +
+                    (is_implicit ? "implicit" : "explicit") + " layer: " +
+                    dir_path + "/" + name + (is_user ? " [user]" : "") + ")");
+            }
+            if (strstr(name, "vkbasalt") || strstr(name, "vkBasalt")) {
+                vk_layer_info.push_back(std::string("vkBasalt (Vulkan ") +
+                    (is_implicit ? "implicit" : "explicit") + " layer: " +
+                    dir_path + "/" + name + (is_user ? " [user]" : "") + ")");
+            }
+            if (strstr(name, "mangohud") || strstr(name, "MangoHud")) {
+                vk_layer_info.push_back(std::string("MangoHud (Vulkan ") +
+                    (is_implicit ? "implicit" : "explicit") + " layer: " +
+                    dir_path + "/" + name + (is_user ? " [user]" : "") + ")");
+            }
+        }
+        closedir(dir);
+    };
+
+    for (auto& ld : vk_layer_dirs) {
+        scan_layer_dir(ld, false);
+    }
+    for (auto& uld : user_layer_dirs) {
+        scan_layer_dir(uld.c_str(), true);
+    }
+
+    // check /proc/self/maps for renderer and overlay libraries
+    struct { const char* lib; const char* label; } renderers[] = {
+        { "libvulkan.so",     "Vulkan" },
+        { "libGL.so",         "OpenGL" },
+        { "libGLX.so",        "GLX" },
+        { "libEGL.so",        "EGL" },
+        { "libGLESv1_CM.so",  "OpenGL ES 1.x" },
+        { "libGLESv2.so",     "OpenGL ES 2/3" },
+        { "libSDL2",          "SDL2" },
+        { "libSDL3",          "SDL3" },
+        { "libwayland-client", "Wayland client" },
+        { "libX11.so",        "X11 client" },
+        { "libvkbasalt.so",   "vkBasalt" },
+        // DXVK-native (D3D -> Vulkan for native Linux games)
+        { "libdxvk_d3d9.so",  "DXVK-native (D3D9)" },
+        { "libdxvk_d3d11.so", "DXVK-native (D3D11)" },
+        { "libdxvk_dxgi.so",  "DXVK-native (DXGI)" },
+        { "SpecialK",         "Special K" },
+        { "ReShade",          "ReShade" },
+    };
+
+    // standard system library paths (libraries here are NOT proxies)
+    const char* system_prefixes[] = {
+        "/usr/lib", "/usr/lib32", "/usr/lib64",
+        "/usr/lib/x86_64-linux-gnu", "/usr/lib/i386-linux-gnu",
+        "/lib/", "/lib64/", "/lib32/",
+        "/usr/local/lib",
+        "/nix/store",
+    };
+
+    struct DetectedRenderer {
+        std::string label;
+        std::string full_path;  // full mapped path
+        std::string filename;   // just the filename
+        bool is_proxy;
+        std::string category;    // GAME, OVERLAY, TRANSLATION, INFRA
+        std::string annotation;
+    };
+    std::vector<DetectedRenderer> detected;
+    FILE* maps = fopen("/proc/self/maps", "r");
+    if (maps) {
+        char line[1024]{};
+        std::set<std::string> seen;
+        while (fgets(line, sizeof(line), maps)) {
+            for (auto& r : renderers) {
+                if (strstr(line, r.lib) && seen.insert(r.label).second) {
+                    DetectedRenderer entry{};
+                    entry.label = r.label;
+
+                    // extract the full mapped file path from the line
+                    // maps format: addr perms offset dev inode  pathname
+                    // find the pathname (starts after inode, leading spaces trimmed)
+                    const char* p = line;
+                    int fields = 0;
+                    while (*p && fields < 5) {
+                        while (*p == ' ') ++p;
+                        while (*p && *p != ' ') ++p;
+                        ++fields;
+                    }
+                    while (*p == ' ') ++p;
+                    if (*p && *p == '/') {
+                        entry.full_path = p;
+                        // trim trailing newline
+                        while (!entry.full_path.empty() && (entry.full_path.back() == '\n' || entry.full_path.back() == '\r'))
+                            entry.full_path.pop_back();
+
+                        // extract just the filename
+                        auto slash = entry.full_path.find_last_of('/');
+                        entry.filename = (slash != std::string::npos) ? entry.full_path.substr(slash + 1) : entry.full_path;
+
+                        // check if it's in a standard system path
+                        bool in_system = false;
+                        for (auto& prefix : system_prefixes) {
+                            if (strncmp(entry.full_path.c_str(), prefix, strlen(prefix)) == 0) {
+                                in_system = true;
+                                break;
+                            }
+                        }
+                        entry.is_proxy = !in_system;
+                    } else {
+                        entry.filename = r.lib;
+                    }
+
+                    // sanitize home dir in full path
+                    if (!entry.full_path.empty() && home && home_len > 0 &&
+                        strncmp(entry.full_path.c_str(), home, home_len) == 0) {
+                        entry.full_path = "$HOME" + entry.full_path.substr(home_len);
+                    }
+
+                    detected.push_back(std::move(entry));
+                }
+            }
+        }
+        fclose(maps);
+    }
+
+    // --- classify each detected entry ---
+    for (auto& d : detected) {
+        // overlay tools
+        if (d.label == "vkBasalt") {
+            d.category = "OVERLAY";
+            d.annotation = "Vulkan post-processing layer";
+            continue;
+        }
+        if (d.label == "Special K") {
+            d.category = "OVERLAY";
+            continue;
+        }
+        if (d.label == "ReShade") {
+            d.category = "OVERLAY";
+            continue;
+        }
+
+        // DXVK-native translation layers
+        if (d.label.find("DXVK-native") != std::string::npos) {
+            d.category = "TRANSLATION";
+            d.annotation = "translates " + d.label + " -> Vulkan";
+            continue;
+        }
+
+        // infrastructure (windowing / framework, not direct renderers)
+        if (d.label == "Wayland client" || d.label == "X11 client") {
+            d.category = "INFRA";
+            continue;
+        }
+        if (d.label == "SDL2" || d.label == "SDL3") {
+            d.category = "INFRA";
+            continue;
+        }
+        if (d.label == "GLX" || d.label == "EGL") {
+            d.category = "INFRA";
+            continue;
+        }
+
+        // everything else = game renderer
+        d.category = "GAME";
+    }
+
+    // --- Third-party tool detection (non-renderer modules via /proc/self/maps) ---
+    struct DetectedTool {
+        std::string label;
+        std::string type;
+        std::string path;
+    };
+    std::vector<DetectedTool> detected_tools;
+    {
+        struct { const char* lib; const char* label; const char* type; } known_tools[] = {
+            // --- recording / streaming ---
+            { "libobs.so",                  "OBS Studio",           "recording" },
+            { "libobs-opengl.so",           "OBS OpenGL Capture",   "recording" },
+            { "libobs-vulkan.so",           "OBS Vulkan Capture",   "recording" },
+            { "gpu-screen-recorder",        "GPU Screen Recorder",  "recording" },
+
+            // --- monitoring ---
+            { "libMangoHud.so",             "MangoHud",             "monitoring" },
+            { "libMangoHud_dlsym.so",       "MangoHud",             "monitoring" },
+
+            // --- post-processing / overlay ---
+            { "libvkbasalt.so",             "vkBasalt",             "post-processor" },
+            { "libreshade.so",              "ReShade",              "post-processor" },
+
+            // --- store overlays ---
+            { "gameoverlayrenderer.so",     "Steam Overlay",        "store overlay" },
+            { "discord_game_sdk.so",        "Discord Game SDK",     "store overlay" },
+
+            // --- gaming platforms ---
+            { "libgamemodeauto.so",         "GameMode (Feral)",     "platform" },
+            { "libgamemode.so",             "GameMode (Feral)",     "platform" },
+
+            // --- frame limiting ---
+            { "libstrangle.so",             "libstrangle",          "frame limiter" },
+
+            // --- communication ---
+            { "libmumble.so",               "Mumble",               "communication" },
+            { "mumble_ol.so",               "Mumble",               "communication" },
+
+            // --- VR ---
+            { "libopenvr_api.so",           "SteamVR",              "vr" },
+            { "libopenxr_loader.so",        "OpenXR",               "vr" },
+
+            // --- anti-cheat (informational) ---
+            { "libeasyanticheat.so",        "EasyAntiCheat",        "anti-cheat" },
+            { "easyanticheat_x64.so",       "EasyAntiCheat",        "anti-cheat" },
+            { "easyanticheat_x86.so",       "EasyAntiCheat",        "anti-cheat" },
+            { "battleye_client.so",         "BattlEye",             "anti-cheat" },
+            { "beclient_x64.so",            "BattlEye",             "anti-cheat" },
+        };
+        FILE* tool_maps = fopen("/proc/self/maps", "r");
+        if (tool_maps) {
+            char tline[1024]{};
+            std::set<std::string> tool_seen;
+            while (fgets(tline, sizeof(tline), tool_maps)) {
+                for (auto& t : known_tools) {
+                    if (strstr(tline, t.lib) && tool_seen.insert(t.label).second) {
+                        DetectedTool tool_entry{};
+                        tool_entry.label = t.label;
+                        tool_entry.type = t.type;
+                        // extract path from maps line
+                        const char* p = tline;
+                        int fields = 0;
+                        while (*p && fields < 5) {
+                            while (*p == ' ') ++p;
+                            while (*p && *p != ' ') ++p;
+                            ++fields;
+                        }
+                        while (*p == ' ') ++p;
+                        if (*p == '/') {
+                            tool_entry.path = p;
+                            while (!tool_entry.path.empty() && (tool_entry.path.back() == '\n' || tool_entry.path.back() == '\r'))
+                                tool_entry.path.pop_back();
+                            if (home && home_len > 0 && strncmp(tool_entry.path.c_str(), home, home_len) == 0) {
+                                tool_entry.path = "$HOME" + tool_entry.path.substr(home_len);
+                            }
+                        }
+                        detected_tools.push_back(std::move(tool_entry));
+                        PRINT_DEBUG("detected tool [%s]: %s", t.type, t.label);
+                    }
+                }
+            }
+            fclose(tool_maps);
+        }
+    }
+
+    // build replacement string for the process tree placeholder
+    auto format_entry_linux = [](const DetectedRenderer& d, const std::string& indent) -> std::string {
+        std::string r = indent + "[" + d.category + "] " + d.label;
+        if (d.is_proxy) r += " [PROXY]";
+        if (!d.annotation.empty()) r += " (" + d.annotation + ")";
+        r += "\n";
+        if (!d.full_path.empty()) {
+            r += indent + "  " + d.full_path + "\n";
+        }
+        return r;
+    };
+
+    std::string replacement;
+    if (detected.empty()) {
+        replacement = "  Renderers: (none detected)\n";
+    } else if (detected.size() == 1) {
+        replacement = "  Renderers:\n" + format_entry_linux(detected[0], "    ");
+    } else {
+        replacement = "  Renderers:\n";
+        for (auto& d : detected) {
+            replacement += format_entry_linux(d, "    ");
+        }
+    }
+
+    // read-modify-write to replace "(pending - detected after init)" in the process tree
+    {
+        FILE* rf = fopen(out_path.c_str(), "rb");
+        if (rf) {
+            fseek(rf, 0, SEEK_END);
+            long file_size = ftell(rf);
+            fseek(rf, 0, SEEK_SET);
+            if (file_size > 0) {
+                std::string content(file_size, '\0');
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-result"
+                (void)fread(&content[0], 1, file_size, rf);
+#pragma GCC diagnostic pop
+                fclose(rf);
+
+                const std::string placeholder = "  Renderers: (pending - detected after init)\n";
+
+                size_t pos = content.find(placeholder);
+                if (pos != std::string::npos) {
+                    content.replace(pos, placeholder.size(), replacement);
+                }
+
+                FILE* wf = fopen(out_path.c_str(), "wb");
+                if (wf) {
+                    fwrite(content.c_str(), 1, content.size(), wf);
+                    fclose(wf);
+                }
+            } else {
+                fclose(rf);
+            }
+        }
+    }
+
+    // append detailed renderer & environment info
+    FILE* f = fopen(out_path.c_str(), "a");
+    if (!f) return;
+
+    fprintf(f, "=== Renderer & Environment Detection (PID %d) ===\n", getpid());
+
+    // environment info
+    if (!env_info.empty()) {
+        fprintf(f, "  Environment:\n");
+        for (auto& e : env_info) {
+            fprintf(f, "    %s\n", e.c_str());
+            PRINT_DEBUG("environment detected: %s", e.c_str());
+        }
+    }
+
+    // driver info
+    if (!driver_info.empty()) {
+        fprintf(f, "  GPU/Driver:\n");
+        for (auto& d : driver_info) {
+            fprintf(f, "    %s\n", d.c_str());
+            PRINT_DEBUG("driver info: %s", d.c_str());
+        }
+    }
+
+    // Vulkan layers
+    if (!vk_layer_info.empty()) {
+        fprintf(f, "  Vulkan layers:\n");
+        for (auto& v : vk_layer_info) {
+            fprintf(f, "    %s\n", v.c_str());
+            PRINT_DEBUG("vulkan layer detected: %s", v.c_str());
+        }
+    }
+
+    // renderers
+    fprintf(f, "  Detected modules:\n");
+    if (detected.empty()) {
+        fprintf(f, "    (none detected)\n");
+    } else {
+        for (auto& d : detected) {
+            if (d.is_proxy) {
+                fprintf(f, "    [%s] %s [PROXY: custom library]", d.category.c_str(), d.label.c_str());
+            } else {
+                fprintf(f, "    [%s] %s", d.category.c_str(), d.label.c_str());
+            }
+            if (!d.annotation.empty()) {
+                fprintf(f, " (%s)", d.annotation.c_str());
+            }
+            fprintf(f, "\n");
+            fprintf(f, "      %s\n", d.full_path.c_str());
+            PRINT_DEBUG("module detected: [%s] %s at %s", d.category.c_str(), d.label.c_str(), d.full_path.c_str());
+        }
+    }
+
+    // third-party tools (non-renderer)
+    if (!detected_tools.empty()) {
+        fprintf(f, "  Third-party tools:\n");
+        for (auto& t : detected_tools) {
+            fprintf(f, "    [%s] %s\n", t.type.c_str(), t.label.c_str());
+            if (!t.path.empty()) {
+                fprintf(f, "      %s\n", t.path.c_str());
+            }
+            PRINT_DEBUG("tool detected: [%s] %s", t.type.c_str(), t.label.c_str());
+        }
+    }
+
+    fprintf(f, "\n");
+
+    fclose(f);
+}
+
 
 // this acts as both an entry and an exit points for the library
 // avoid "__attribute__((__constructor__))" and "__attribute__((__destructor__))"
@@ -726,6 +2651,7 @@ struct CppRuntimeTrick {
     CppRuntimeTrick()
     {
         PRINT_DEBUG_ENTRY();
+        dump_process_tree();
         load_dlls();
     }
 

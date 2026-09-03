@@ -567,6 +567,8 @@ fn build_manifest_and_assets(source: &Path) -> Result<SourceAssetBuild, AssetPac
         apply_remote_metadata_overlay(&mut detail, remote, &mut assets);
     }
     detail.launch = launch.clone();
+    detail.local_runtime =
+        crate::managed_game_runtime::local_runtime_integration_for_game(&detail.game_id);
     let cloud_save = detail.cloud_save.clone();
 
     let summary = GameSummary {
@@ -597,6 +599,7 @@ fn build_manifest_and_assets(source: &Path) -> Result<SourceAssetBuild, AssetPac
         install,
         launch,
         cloud_save,
+        local_runtime: detail.local_runtime.clone(),
         asset_pack_path: format!("assets/games/{DEFAULT_GAME_ID}/{GAME_CORE_PART}.0xo"),
     };
 
@@ -1243,6 +1246,9 @@ fn default_game_detail(
         install: install.clone(),
         launch: GameLaunchConfig::default(),
         cloud_save: crate::cloud_save::CloudSaveMetadata::default(),
+        local_runtime: crate::managed_game_runtime::local_runtime_integration_for_game(
+            DEFAULT_GAME_ID,
+        ),
         description_images: vec![],
         versions: versions.to_vec(),
         metadata_source: "local-default".to_string(),

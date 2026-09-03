@@ -14,6 +14,7 @@ use rand_core::{OsRng, RngCore};
 use reqwest::blocking::{Client, Response};
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 use tauri::{AppHandle, Emitter, Manager};
 use url::Url;
 
@@ -22,6 +23,7 @@ use crate::secret_store::{protect, unprotect};
 const AUTH_FILE: &str = "discord-auth.json";
 const DISCORD_API: &str = "https://discord.com/api/v10";
 const DISCORD_AUTHORIZE_ENDPOINT: &str = "https://discord.com/oauth2/authorize";
+const DISCORD_TOKEN_ENDPOINT: &str = "https://discord.com/api/oauth2/token";
 const DEFAULT_CLIENT_ID: &str = "1512105027270082651";
 const REQUIRED_GUILD_ID: &str = "1492076309323714570";
 const REQUIRED_GUILD_INVITE: &str = "https://discord.gg/7ZXdTUVsJE";
@@ -44,6 +46,7 @@ const MINIMUM_ACCOUNT_AGE: Duration = Duration::from_secs(7 * 24 * 60 * 60);
 const DISCORD_EPOCH_MS: u64 = 1_420_070_400_000;
 
 static LOGIN_LOCK: Mutex<()> = Mutex::new(());
+static TOKEN_REFRESH_LOCK: Mutex<()> = Mutex::new(());
 static CURRENT_AUTH_URL: Mutex<Option<String>> = Mutex::new(None);
 static CACHED_STATUS: Mutex<Option<(u64, DiscordAuthStatus)>> = Mutex::new(None);
 static SESSION_AUTHORIZED: AtomicBool = AtomicBool::new(false);
@@ -77,7 +80,17 @@ pub struct DiscordAuthStatus {
 struct StoredDiscordAuth {
     client_id: String,
     encrypted_access_token: String,
+    #[serde(default)]
+    encrypted_refresh_token: Option<String>,
     expires_at: u64,
+}
+
+#[derive(Debug, Deserialize)]
+struct DiscordTokenResponse {
+    access_token: String,
+    expires_in: u64,
+    #[serde(default)]
+    refresh_token: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -120,18 +133,7 @@ pub fn require_authorized_session() -> Result<(), String> {
 }
 
 pub(crate) fn access_token_for_backend(app: &AppHandle) -> Result<String, String> {
-    let stored = read_stored_auth(app).map_err(|error| match error.kind() {
-        ErrorKind::NotFound => "Discord authorization is required.".to_string(),
-        _ => format!("Discord sign-in data could not be read: {error}"),
-    })?;
-    if stored.client_id != client_id() || stored.expires_at <= unix_seconds().saturating_add(30) {
-        return Err("Discord authorization expired. Sign in again.".to_string());
-    }
-    let encrypted = STANDARD
-        .decode(stored.encrypted_access_token)
-        .map_err(|_| "Discord sign-in data is invalid.".to_string())?;
-    let bytes = unprotect(&encrypted)?;
-    String::from_utf8(bytes).map_err(|_| "Discord sign-in data is invalid.".to_string())
+    ensure_access_token(app)
 }
 
 pub fn get_status(app: &AppHandle) -> DiscordAuthStatus {
@@ -169,46 +171,29 @@ pub fn get_status(app: &AppHandle) -> DiscordAuthStatus {
             "Discord application configuration changed. Sign in again.",
         );
     }
-    if stored.expires_at <= unix_seconds().saturating_add(30) {
-        SESSION_AUTHORIZED.store(false, Ordering::Release);
-        return status(
-            "expired",
-            true,
-            "Your Discord session expired. Sign in again.",
-        );
-    }
-
     if let Ok(guard) = CACHED_STATUS.lock() {
         if let Some((cached_at, ref cached_status)) = *guard {
-            if unix_seconds().saturating_sub(cached_at) < 600 {
+            if stored.expires_at > unix_seconds().saturating_add(120)
+                && unix_seconds().saturating_sub(cached_at) < 600
+            {
                 SESSION_AUTHORIZED.store(true, Ordering::Release);
                 return cached_status.clone();
             }
         }
     }
 
-    let encrypted = match STANDARD.decode(stored.encrypted_access_token) {
-        Ok(encrypted) => encrypted,
-        Err(error) => {
-            SESSION_AUTHORIZED.store(false, Ordering::Release);
-            return status(
-                "error",
-                true,
-                format!("Discord session data is invalid: {error}"),
-            );
-        }
-    };
-    let token = match unprotect(&encrypted)
-        .and_then(|bytes| String::from_utf8(bytes).map_err(|error| error.to_string()))
-    {
+    let token = match ensure_access_token(app) {
         Ok(token) => token,
         Err(error) => {
             SESSION_AUTHORIZED.store(false, Ordering::Release);
-            return status(
-                "error",
-                true,
-                format!("Discord session could not be unlocked: {error}"),
-            );
+            let state = if error.contains("expired") || error.contains("Sign in again") {
+                "expired"
+            } else if error.contains("Network") || error.contains("network") {
+                "networkError"
+            } else {
+                "error"
+            };
+            return status(state, true, error);
         }
     };
 
@@ -273,15 +258,22 @@ pub fn login(app: &AppHandle) -> Result<DiscordAuthStatus, String> {
         .map_err(|error| error.to_string())?;
 
     let state_nonce = random_urlsafe(32);
+    let code_verifier = random_urlsafe(64);
+    let code_challenge = URL_SAFE_NO_PAD.encode(Sha256::digest(code_verifier.as_bytes()));
     let mut authorize_url =
         Url::parse(DISCORD_AUTHORIZE_ENDPOINT).map_err(|error| error.to_string())?;
     authorize_url
         .query_pairs_mut()
         .append_pair("client_id", &client_id)
         .append_pair("redirect_uri", CALLBACK_URL)
-        .append_pair("response_type", "token")
-        .append_pair("scope", "identify guilds guilds.members.read")
+        .append_pair("response_type", "code")
+        .append_pair(
+            "scope",
+            "identify guilds guilds.members.read offline_access",
+        )
         .append_pair("state", &state_nonce)
+        .append_pair("code_challenge", &code_challenge)
+        .append_pair("code_challenge_method", "S256")
         .append_pair("prompt", "consent")
         .append_pair("integration_type", "1");
     let _ = app.emit("discord-oauth-url", authorize_url.as_str());
@@ -289,8 +281,7 @@ pub fn login(app: &AppHandle) -> Result<DiscordAuthStatus, String> {
     let _ = open_system_browser(authorize_url.as_str());
 
     let deadline = Instant::now() + OAUTH_TIMEOUT;
-    let mut callback_page_served = false;
-    let mut token_result = None;
+    let mut authorization_code = None;
     while Instant::now() < deadline {
         match listener.accept() {
             Ok((mut stream, _)) => {
@@ -298,47 +289,45 @@ pub fn login(app: &AppHandle) -> Result<DiscordAuthStatus, String> {
                     Ok(req) => req,
                     Err(_) => continue,
                 };
-                if request.path.starts_with("/discord/callback") {
-                    let _ = write_http_response(&mut stream, callback_page());
-                    callback_page_served = true;
-                    continue;
-                }
-                if request.method == "POST" && request.path == "/discord/complete" {
-                    let fields = url::form_urlencoded::parse(request.body.as_bytes())
-                        .into_owned()
-                        .collect::<Vec<_>>();
+                if request.method == "GET" && request.path.starts_with("/discord/callback") {
+                    let callback =
+                        Url::parse(&format!("http://{CALLBACK_ADDRESS}{}", request.path))
+                            .map_err(|error| format!("Discord callback was invalid: {error}"))?;
+                    let fields = callback.query_pairs().into_owned().collect::<Vec<_>>();
                     let returned_state = field(&fields, "state");
-                    let access_token = field(&fields, "access_token");
-                    let expires_in =
-                        field(&fields, "expires_in").and_then(|value| value.parse::<u64>().ok());
                     let oauth_error = field(&fields, "error");
-
                     if returned_state != Some(state_nonce.as_str()) {
                         let _ = write_http_response(
                             &mut stream,
-                            "<h2>Discord sign-in was rejected.</h2><p>Security state validation failed. Return to 0xoLemon and try again.</p>",
+                            callback_page(
+                                "Discord sign-in was rejected.",
+                                "Security state validation failed. Return to 0xoLemon and try again.",
+                            ),
                         );
                         return Err("Discord OAuth state validation failed.".to_string());
                     }
                     if let Some(error) = oauth_error {
                         let _ = write_http_response(
                             &mut stream,
-                            "<h2>Discord sign-in was canceled.</h2><p>You can close this tab and return to 0xoLemon.</p>",
+                            callback_page(
+                                "Discord sign-in was canceled.",
+                                "You can close this tab and return to 0xoLemon.",
+                            ),
                         );
                         return Err(format!("Discord authorization was denied: {error}"));
                     }
-                    let token = access_token
-                        .filter(|value| !value.is_empty())
-                        .ok_or_else(|| "Discord did not return an access token.".to_string())?
+                    let code = field(&fields, "code")
+                        .filter(|value| !value.trim().is_empty())
+                        .ok_or_else(|| "Discord did not return an authorization code.".to_string())?
                         .to_string();
-                    let expires_in = expires_in.filter(|value| *value > 0).ok_or_else(|| {
-                        "Discord did not return a valid token lifetime.".to_string()
-                    })?;
                     let _ = write_http_response(
                         &mut stream,
-                        "<h2>Discord sign-in received.</h2><p>You can close this tab and return to 0xoLemon.</p>",
+                        callback_page(
+                            "Discord sign-in received.",
+                            "You can close this tab and return to 0xoLemon.",
+                        ),
                     );
-                    token_result = Some((token, expires_in));
+                    authorization_code = Some(code);
                     break;
                 }
                 write_not_found(&mut stream)?;
@@ -351,17 +340,15 @@ pub fn login(app: &AppHandle) -> Result<DiscordAuthStatus, String> {
     }
 
     *CURRENT_AUTH_URL.lock().unwrap() = None;
-    if !callback_page_served {
-        return Err("Discord sign-in timed out before the callback was received.".to_string());
-    }
-    let (token, expires_in) =
-        token_result.ok_or_else(|| "Discord sign-in timed out.".to_string())?;
-    let validation = validate_token(&token).map_err(|error| match error {
+    let code = authorization_code
+        .ok_or_else(|| "Discord sign-in timed out before the callback was received.".to_string())?;
+    let token_set = exchange_authorization_code(&client_id, &code, &code_verifier)?;
+    let validation = validate_token(&token_set.access_token).map_err(|error| match error {
         ApiError::Unauthorized => "Discord rejected the new access token.".to_string(),
         ApiError::NetworkError(message) => format!("Network error: {message}"),
         ApiError::Other(message) => format!("Discord verification failed: {message}"),
     })?;
-    write_stored_auth(app, &client_id, &token, expires_in)?;
+    write_stored_auth(app, &client_id, &token_set)?;
     Ok(validation)
 }
 
@@ -591,16 +578,72 @@ fn read_stored_auth(app: &AppHandle) -> Result<StoredDiscordAuth, std::io::Error
         .map_err(|error| std::io::Error::new(ErrorKind::InvalidData, error))
 }
 
+fn decrypt_secret(value: &str) -> Result<String, String> {
+    let encrypted = STANDARD
+        .decode(value)
+        .map_err(|_| "Discord sign-in data is invalid.".to_string())?;
+    let bytes = unprotect(&encrypted)?;
+    String::from_utf8(bytes).map_err(|_| "Discord sign-in data is invalid.".to_string())
+}
+
+fn ensure_access_token(app: &AppHandle) -> Result<String, String> {
+    let stored = read_stored_auth(app).map_err(|error| match error.kind() {
+        ErrorKind::NotFound => "Discord authorization is required.".to_string(),
+        _ => format!("Discord sign-in data could not be read: {error}"),
+    })?;
+    let expected_client_id = client_id();
+    if stored.client_id != expected_client_id {
+        return Err("Discord application configuration changed. Sign in again.".to_string());
+    }
+    if stored.expires_at > unix_seconds().saturating_add(120) {
+        return decrypt_secret(&stored.encrypted_access_token);
+    }
+
+    let _refresh_guard = TOKEN_REFRESH_LOCK
+        .lock()
+        .map_err(|_| "Discord token refresh lock is unavailable.".to_string())?;
+    let stored = read_stored_auth(app).map_err(|error| error.to_string())?;
+    if stored.expires_at > unix_seconds().saturating_add(120) {
+        return decrypt_secret(&stored.encrypted_access_token);
+    }
+
+    let refresh_token = stored
+        .encrypted_refresh_token
+        .as_deref()
+        .ok_or_else(|| "Discord authorization expired. Sign in again.".to_string())
+        .and_then(decrypt_secret)?;
+    match refresh_access_token(&expected_client_id, &refresh_token) {
+        Ok(mut token_set) => {
+            if token_set.refresh_token.is_none() {
+                token_set.refresh_token = Some(refresh_token);
+            }
+            write_stored_auth(app, &expected_client_id, &token_set)?;
+            if let Ok(mut guard) = CACHED_STATUS.lock() {
+                *guard = None;
+            }
+            Ok(token_set.access_token)
+        }
+        Err(error) if stored.expires_at > unix_seconds().saturating_add(30) => {
+            decrypt_secret(&stored.encrypted_access_token).map_err(|_| error)
+        }
+        Err(error) => Err(error),
+    }
+}
+
 fn write_stored_auth(
     app: &AppHandle,
     client_id: &str,
-    token: &str,
-    expires_in: u64,
+    token_set: &DiscordTokenResponse,
 ) -> Result<(), String> {
     let stored = StoredDiscordAuth {
         client_id: client_id.to_string(),
-        encrypted_access_token: STANDARD.encode(protect(token.as_bytes())?),
-        expires_at: unix_seconds().saturating_add(expires_in),
+        encrypted_access_token: STANDARD.encode(protect(token_set.access_token.as_bytes())?),
+        encrypted_refresh_token: token_set
+            .refresh_token
+            .as_deref()
+            .map(|token| protect(token.as_bytes()).map(|encrypted| STANDARD.encode(encrypted)))
+            .transpose()?,
+        expires_at: unix_seconds().saturating_add(token_set.expires_in),
     };
     let destination = auth_path(app)?;
     let temporary = destination.with_extension("json.tmp");
@@ -627,6 +670,55 @@ fn write_stored_auth(
         fs::remove_file(backup).map_err(|error| error.to_string())?;
     }
     Ok(())
+}
+
+fn exchange_authorization_code(
+    client_id: &str,
+    code: &str,
+    code_verifier: &str,
+) -> Result<DiscordTokenResponse, String> {
+    request_oauth_token(&[
+        ("client_id", client_id),
+        ("grant_type", "authorization_code"),
+        ("code", code),
+        ("redirect_uri", CALLBACK_URL),
+        ("code_verifier", code_verifier),
+    ])
+}
+
+fn refresh_access_token(
+    client_id: &str,
+    refresh_token: &str,
+) -> Result<DiscordTokenResponse, String> {
+    request_oauth_token(&[
+        ("client_id", client_id),
+        ("grant_type", "refresh_token"),
+        ("refresh_token", refresh_token),
+    ])
+}
+
+fn request_oauth_token(fields: &[(&str, &str)]) -> Result<DiscordTokenResponse, String> {
+    let response = http_client()?
+        .post(DISCORD_TOKEN_ENDPOINT)
+        .header("Accept", "application/json")
+        .form(fields)
+        .send()
+        .map_err(|error| format!("Network error while refreshing Discord access: {error}"))?;
+    let status = response.status();
+    if !status.is_success() {
+        let message = response.text().unwrap_or_default();
+        let summary = message.chars().take(512).collect::<String>();
+        return Err(format!(
+            "Discord OAuth token exchange failed ({status}): {summary}"
+        ));
+    }
+    let token = response
+        .json::<DiscordTokenResponse>()
+        .map_err(|error| format!("Discord OAuth response was invalid: {error}"))?;
+    if token.access_token.trim().is_empty() || token.expires_in == 0 {
+        return Err("Discord OAuth response did not contain a valid access token.".to_string());
+    }
+    Ok(token)
 }
 
 struct HttpRequest {
@@ -696,41 +788,34 @@ fn find_header_end(request: &[u8]) -> Option<usize> {
     request.windows(4).position(|window| window == b"\r\n\r\n")
 }
 
-fn callback_page() -> &'static str {
-    r#"<!doctype html>
+fn callback_page(title: &str, message: &str) -> String {
+    format!(
+        r#"<!doctype html>
 <html lang="en">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>0xoLemon Discord Sign-in</title></head>
 <body style="font-family:system-ui;background:#0b0e14;color:#f3f5f8;display:grid;place-items:center;min-height:100vh;margin:0">
 <main style="max-width:520px;padding:32px;border:1px solid #2d3440;border-radius:18px;background:#111722;text-align:center">
-<h2>Completing Discord sign-in...</h2><p id="status" style="color:#aeb8c8">Return to 0xoLemon after this page confirms access.</p>
+<h2>{}</h2><p style="color:#aeb8c8">{}</p>
 </main>
-<script>
-(async () => {
-  const values = new URLSearchParams(location.hash.slice(1));
-  const body = new URLSearchParams();
-  for (const key of ['access_token', 'token_type', 'expires_in', 'state', 'error', 'error_description']) {
-    const value = values.get(key);
-    if (value) body.set(key, value);
-  }
-  history.replaceState(null, '', '/discord/callback');
-  try {
-    const response = await fetch('/discord/complete', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-      body
-    });
-    document.getElementById('status').innerHTML = await response.text();
-  } catch {
-    document.getElementById('status').textContent = 'Could not return the sign-in result to 0xoLemon. Close this tab and try again.';
-  }
-})();
-</script>
-</body></html>"#
+</body></html>"#,
+        html_escape(title),
+        html_escape(message)
+    )
 }
 
-fn write_http_response(stream: &mut TcpStream, body: &str) -> Result<(), String> {
+fn html_escape(value: &str) -> String {
+    value
+        .replace('&', "&amp;")
+        .replace('<', "&lt;")
+        .replace('>', "&gt;")
+        .replace('"', "&quot;")
+        .replace('\'', "&#39;")
+}
+
+fn write_http_response(stream: &mut TcpStream, body: impl AsRef<str>) -> Result<(), String> {
+    let body = body.as_ref();
     let response = format!(
-        "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Security-Policy: default-src 'none'; script-src 'unsafe-inline'; connect-src 'self'; style-src 'unsafe-inline'\r\nCache-Control: no-store\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+        "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Security-Policy: default-src 'none'; style-src 'unsafe-inline'\r\nReferrer-Policy: no-referrer\r\nCache-Control: no-store\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
         body.len(),
         body
     );

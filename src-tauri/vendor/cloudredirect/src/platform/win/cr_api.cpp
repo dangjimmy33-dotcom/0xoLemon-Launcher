@@ -216,6 +216,7 @@ void CR_NotifyAppRunning(uint32_t appId, bool running) {
     } else {
         StatsStore::EndSession(appId);
         LOG("[CR_API] App %u session ended", appId);
+        CloudIntercept::QueueLocalPlaytimePush({appId});
     }
 }
 

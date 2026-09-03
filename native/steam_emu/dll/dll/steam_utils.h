@@ -24,7 +24,7 @@
 #include "overlay/steam_overlay.h"
 
 
-class Steam_Utils : 
+class Steam_Utils :
 public ISteamUtils001,
 public ISteamUtils002,
 public ISteamUtils003,
@@ -34,6 +34,7 @@ public ISteamUtils006,
 public ISteamUtils007,
 public ISteamUtils008,
 public ISteamUtils009,
+public ISteamUtils010,
 public ISteamUtils
 {
 private:
@@ -45,7 +46,7 @@ private:
 public:
     Steam_Utils(Settings *settings, class SteamCallResults *callback_results, class SteamCallBacks *callbacks, Steam_Overlay *overlay);
 
-    // return the number of seconds since the user 
+    // return the number of seconds since the user
     uint32 GetSecondsSinceAppActive();
 
     uint32 GetSecondsSinceComputerActive();
@@ -110,10 +111,10 @@ public:
     // start & hook the game process, so this function will initially return false while the overlay is loading.
     bool IsOverlayEnabled();
 
-    // Normally this call is unneeded if your game has a constantly running frame loop that calls the 
+    // Normally this call is unneeded if your game has a constantly running frame loop that calls the
     // D3D Present API, or OGL SwapBuffers API every frame.
     //
-    // However, if you have a game that only refreshes the screen on an event driven basis then that can break 
+    // However, if you have a game that only refreshes the screen on an event driven basis then that can break
     // the overlay, as it uses your Present/SwapBuffers calls to drive it's internal frame loop and it may also
     // need to Present() to the screen any time an even needing a notification happens or when the overlay is
     // brought up over the game by a user.  You can use this API to ask the overlay if it currently need a present
@@ -122,7 +123,7 @@ public:
     bool BOverlayNeedsPresent();
 
     // Asynchronous call to check if an executable file has been signed using the public key set on the signing tab
-    // of the partner site, for example to refuse to load modified executable files.  
+    // of the partner site, for example to refuse to load modified executable files.
     // The result is returned in CheckFileSignature_t.
     //   k_ECheckFileSignatureNoSignaturesFoundForThisApp - This app has not been configured on the signing tab of the partner site to enable this function.
     //   k_ECheckFileSignatureNoSignaturesFoundForThisFile - This file is not listed on the signing tab for the partner site.
@@ -217,6 +218,54 @@ public:
 
     // Dismisses the full-screen text input dialog.
     bool DismissGamepadTextInput();
+
+    // Returns if your process is running on a Steam Deck, Machine, Frame or other hardware.
+	//
+	// This method is intended to be used for usage analytics, support, diagnostic and other non-functional decisions. If your process
+	// needs to make a feature or device capability related decision, the Steamworks SDK exposes a set of other methods. Using one of these
+	// alternate methods will enable your game to run correctly on future versions of Steam hardware where this method would return a
+	// hardware type not present in old SDK versions.
+	//
+	// Some alternate methods include:
+	// - ISteamUtils::GetSteamHardwareDefaultConfig()
+	// - ISteamUtils::IsSteamInBigPictureMode()
+	// - ISteamUtils::IsRunningUnderProton()
+	// - ISteamUtils::IsSteamRunningInVR()
+	// - ISteamUtils::GetCurrentBatteryPower()
+	// - ISteamUtils::GetConnectedControllers()
+	ESteamHardwareType IsRunningOnSteamHardware();
+
+	// Use this method to help choose default game settings (video and other) that you have tuned for specific Steam hardware. It also enables
+	// changing your default game settings on future Steam hardware without needing to recompile your game.
+	//
+	// This method returns an ESteamHardwareDefaultConfig, which has two categories of values:
+	// - Machine specific values: Map each of these values to a setting configuration tuned for that device.
+	// - General values (low, medium, high, max): Map these values to one of your game's user selectable setting presets. If your game has less
+	//   than 4 presets, it is expected that multiple values might map to the same preset. For example, a game with 3 presets might map high and
+	//   max to the game's 'high' user preset. For games that only have 1 preset and run great on any device, low, medium, high and max might all
+	//   be mapped to that single preset.
+	//
+	// By default, this method will return a value corresponding to the device type returned by ISteamUtils::IsRunningOnSteamHardware(), such
+	// as returning k_ESteamHardwareDefaultConfigSteamDeck when running on a Steam Deck. It may also return a configuration value for 3rd party
+	// hardware that has similar performance characteristics to Steam hardware, such as returning k_ESteamHardwareDefaultConfigSteamDeck when
+	// running on a Legion Go S.
+	//
+	// You can also change what value the Steam Client returns per device through the Steamworks Partner Site. This allows you to customize the
+	// default configuration used on future Steam hardware without recompiling your game. For example, if your game runs well on Steam Machine
+	// using your 'high' user preset, but was released before that device became available, you could configure this method to return
+	// k_ESteamHardwareDefaultConfigHigh when run on those devices. Similarly if your game was released before Steam Frame, you could configure
+	// this method to return k_ESteamHardwareDefaultConfigSteamDeck so that when your game is run in 2d mode, it uses your tuned Steam Deck
+	// presets.
+	//
+	// The following example covers a common approach to choosing default settings when running on Steam hardware:
+	// 1. Call GetSteamHardwareDefaultConfig()
+	// 2. If the returned value is for hardware that you have a known configuration for, use a tuned matching configuration
+	// 3. If the returned value is low, medium, high or max, use a matching user preset
+	// 4. If the returned value had no match, fall back to your default setting heuristics
+	ESteamHardwareDefaultConfig GetSteamHardwareDefaultConfig();
+
+	// Returns true if running under the Proton compatibility layer
+	bool IsRunningUnderProton();
 
 };
 

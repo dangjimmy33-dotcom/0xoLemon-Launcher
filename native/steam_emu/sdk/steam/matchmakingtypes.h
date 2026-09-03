@@ -1,6 +1,6 @@
 //========= Copyright � 1996-2008, Valve LLC, All rights reserved. ============
 //
-// Purpose: 
+// Purpose:
 //
 // $NoKeywords: $
 //=============================================================================
@@ -55,17 +55,17 @@ enum EMatchMakingServerResponse
 
 // servernetadr_t is all the addressing info the serverbrowser needs to know about a game server,
 // namely: its IP, its connection port, and its query port.
-class servernetadr_t 
+class servernetadr_t
 {
 public:
 
 	servernetadr_t() : m_usConnectionPort( 0 ), m_usQueryPort( 0 ), m_unIP( 0 ) {}
-	
+
 	void	Init( unsigned int ip, uint16 usQueryPort, uint16 usConnectionPort );
 #ifdef NETADR_H
 	netadr_t	GetIPAndQueryPort();
 #endif
-	
+
 	// Access the query port.
 	uint16	GetQueryPort() const;
 	void	SetQueryPort( uint16 usPort );
@@ -91,7 +91,15 @@ public:
 		m_unIP = that.m_unIP;
 	}
 
-	
+	bool operator==( const servernetadr_t &rhs ) const
+	{
+		return
+			m_usConnectionPort == rhs.m_usConnectionPort &&
+			m_usQueryPort == rhs.m_usQueryPort &&
+			m_unIP == rhs.m_unIP;
+	}
+
+
 private:
 	const char *ToString( uint32 unIP, uint16 usPort ) const;
 	uint16	m_usConnectionPort;	// (in HOST byte order)
@@ -167,7 +175,7 @@ inline const char* servernetadr_t::GetConnectionAddressString() const
 
 inline const char* servernetadr_t::GetQueryAddressString() const
 {
-	return ToString( m_unIP, m_usQueryPort );	
+	return ToString( m_unIP, m_usQueryPort );
 }
 
 inline bool servernetadr_t::operator<(const servernetadr_t &netadr) const
@@ -210,11 +218,18 @@ private:
 
 	// For data added after SteamMatchMaking001 add it here
 public:
+    bool operator==( const gameserveritem_t &rhs ) const
+	{
+		return m_NetAdr == rhs.m_NetAdr;
+	}
+
 	/// the tags this server exposes
 	char m_szGameTags[k_cbMaxGameServerTags];
 
 	/// steamID of the game server - invalid if it's doesn't have one (old server, or not connected to Steam)
 	CSteamID m_steamID;
+	int m_nCurrentFriendCount;									///< count of friends currently on server
+	int m_nTotalFriendCount;									///< total count of friends who have played on server
 };
 
 
@@ -223,6 +238,8 @@ inline gameserveritem_t::gameserveritem_t()
 	m_szGameDir[0] = m_szMap[0] = m_szGameDescription[0] = m_szServerName[0] = 0;
 	m_bHadSuccessfulResponse = m_bDoNotRefresh = m_bPassword = m_bSecure = false;
 	m_nPing = m_nAppID = m_nPlayers = m_nMaxPlayers = m_nBotPlayers = m_ulTimeLastPlayed = m_nServerVersion = 0;
+	m_nTotalFriendCount = 0;
+	m_nCurrentFriendCount = 0;
 	m_szGameTags[0] = 0;
 }
 

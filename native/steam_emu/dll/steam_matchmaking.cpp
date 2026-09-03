@@ -16,6 +16,7 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include "dll/steam_matchmaking.h"
+#include "dll/dll.h"
 
 #define SEND_LOBBY_RATE 5.0
 
@@ -204,6 +205,10 @@ void Steam_Matchmaking::on_self_enter_leave_lobby(CSteamID id, int type, bool le
         settings->set_lobby(k_steamIDNil);
     }
 
+    // Force immediate re-broadcast friend data so all peers see the lobby change ASAP
+    Steam_Friends *steamFriends = get_steam_client()->steam_friends;
+    if (steamFriends) steamFriends->force_resend_friend_data();
+
     //TODO: handle cases where in two lobbies of type not invisible
     //steam says a user can only be in one regular lobby but we all know how well documented steam is
 }
@@ -280,6 +285,185 @@ Steam_Matchmaking::~Steam_Matchmaking()
     this->network->rmCallback(CALLBACK_ID_LOBBY, settings->get_local_steam_id(), &Steam_Matchmaking::steam_matchmaking_callback, this);
     this->network->rmCallback(CALLBACK_ID_USER_STATUS, settings->get_local_steam_id(), &Steam_Matchmaking::steam_matchmaking_callback, this);
     this->run_every_runcb->remove(&Steam_Matchmaking::steam_matchmaking_run_every_runcb, this);
+}
+
+void Steam_Matchmaking::AcceptLobbyJoinRequest(uint64 lobby_id, uint64 requester_id)
+{
+    PRINT_DEBUG("lobby=%llu requester=%llu", lobby_id, requester_id);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
+    auto it = std::find_if(pending_lobby_join_requests.begin(), pending_lobby_join_requests.end(),
+        [&](const Pending_Lobby_Join_Request &r) {
+            return r.lobby_id.ConvertToUint64() == lobby_id && r.requester_id.ConvertToUint64() == requester_id;
+        });
+    if (it == pending_lobby_join_requests.end()) return;
+
+    Lobby *lobby = get_lobby(CSteamID(lobby_id));
+    if (lobby && lobby->owner() == settings->get_local_steam_id().ConvertToUint64()) {
+        if (add_member_to_lobby(lobby, CSteamID(requester_id))) {
+            trigger_lobby_member_join_leave((uint64)lobby->room_id(), requester_id, false, true, 0.01);
+            SendJoinResponse(lobby_id, requester_id, true);
+            // Force immediate re-broadcast so all peers see the membership change ASAP
+            send_lobby_data();
+            Steam_Friends *steamFriends = get_steam_client()->steam_friends;
+            if (steamFriends) steamFriends->force_resend_friend_data();
+        }
+    }
+
+    pending_lobby_join_requests.erase(it);
+}
+
+void Steam_Matchmaking::DeclineLobbyJoinRequest(uint64 lobby_id, uint64 requester_id)
+{
+    PRINT_DEBUG("lobby=%llu requester=%llu", lobby_id, requester_id);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
+    auto it = std::find_if(pending_lobby_join_requests.begin(), pending_lobby_join_requests.end(),
+        [&](const Pending_Lobby_Join_Request &r) {
+            return r.lobby_id.ConvertToUint64() == lobby_id && r.requester_id.ConvertToUint64() == requester_id;
+        });
+    if (it != pending_lobby_join_requests.end()) {
+        SendJoinResponse(lobby_id, requester_id, false);
+        pending_lobby_join_requests.erase(it);
+    }
+}
+
+void Steam_Matchmaking::SendJoinResponse(uint64 lobby_id, uint64 requester_id, bool accepted)
+{
+    PRINT_DEBUG("lobby=%llu requester=%llu accepted=%d", lobby_id, requester_id, (int)accepted);
+    Lobby_Messages *message = new Lobby_Messages();
+    message->set_type(Lobby_Messages::JOIN_RESPONSE);
+    message->set_id(lobby_id);
+    message->set_join_accepted(accepted);
+
+    Common_Message msg{};
+    msg.set_allocated_lobby_messages(message);
+    msg.set_source_id(settings->get_local_steam_id().ConvertToUint64());
+    msg.set_dest_id(requester_id);
+    network->sendTo(&msg, true);
+}
+
+void Steam_Matchmaking::HandleJoinResponse(Common_Message *msg)
+{
+    uint64 lobby_id = msg->lobby_messages().id();
+    bool accepted = msg->lobby_messages().join_accepted();
+    uint64 owner_id = (uint64)msg->source_id();
+    PRINT_DEBUG("lobby=%llu accepted=%d from=%llu", lobby_id, (int)accepted, owner_id);
+
+    if (!accepted) {
+        // Find and resolve the pending join with a denial
+        auto g = std::find_if(pending_joins.begin(), pending_joins.end(),
+            [&](const Pending_Joins &pj) { return pj.lobby_id.ConvertToUint64() == lobby_id; });
+        if (g != pending_joins.end()) {
+            LobbyEnter_t data{};
+            data.m_ulSteamIDLobby = lobby_id;
+            data.m_rgfChatPermissions = 0;
+            data.m_bLocked = false;
+            data.m_EChatRoomEnterResponse = k_EChatRoomEnterResponseNotAllowed;
+            callback_results->addCallResult(g->api_id, data.k_iCallback, &data, sizeof(data));
+            callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+            pending_joins.erase(g);
+        }
+    }
+    // If accepted, reset the pending join timer so it doesn't time out before lobby data arrives
+    if (accepted) {
+        auto g = std::find_if(pending_joins.begin(), pending_joins.end(),
+            [&](const Pending_Joins &pj) { return pj.lobby_id.ConvertToUint64() == lobby_id; });
+        if (g != pending_joins.end()) {
+            g->joined = std::chrono::high_resolution_clock::now();
+            PRINT_DEBUG("reset pending join timer for lobby %llu", lobby_id);
+        }
+    }
+
+    // Notify overlay about the response
+    Steam_Overlay *overlay = get_steam_client()->steam_overlay;
+    if (overlay) {
+        Steam_Friends *steamFriends = get_steam_client()->steam_friends;
+        const char *name = steamFriends->GetFriendPersonaName(CSteamID(owner_id));
+        std::string owner_name = name ? name : "Unknown";
+        overlay->add_lobby_join_request_response_notification(lobby_id, owner_name, accepted, owner_id);
+    }
+}
+
+void Steam_Matchmaking::SendKickMessage(uint64 lobby_id, uint64 member_id)
+{
+    PRINT_DEBUG("lobby=%llu member=%llu", lobby_id, member_id);
+    Lobby_Messages *message = new Lobby_Messages();
+    message->set_type(Lobby_Messages::KICK);
+    message->set_id(lobby_id);
+
+    Common_Message msg{};
+    msg.set_allocated_lobby_messages(message);
+    msg.set_source_id(settings->get_local_steam_id().ConvertToUint64());
+    msg.set_dest_id(member_id);
+    network->sendTo(&msg, true);
+}
+
+void Steam_Matchmaking::HandleKickMessage(Common_Message *msg)
+{
+    uint64 lobby_id = msg->lobby_messages().id();
+    uint64 kicker_id = (uint64)msg->source_id();
+    PRINT_DEBUG("kicked from lobby=%llu by=%llu", lobby_id, kicker_id);
+
+    Lobby *lobby = get_lobby(CSteamID(lobby_id));
+    if (lobby) {
+        on_self_enter_leave_lobby(CSteamID((uint64)lobby->room_id()), lobby->type(), true);
+        self_lobby_member_data.erase(lobby->room_id());
+        leave_lobby(lobby, settings->get_local_steam_id());
+    }
+
+    // Notify overlay
+    Steam_Overlay *overlay = get_steam_client()->steam_overlay;
+    if (overlay) {
+        Steam_Friends *steamFriends = get_steam_client()->steam_friends;
+        const char *name = steamFriends->GetFriendPersonaName(CSteamID(kicker_id));
+        std::string kicker_name = name ? name : "Unknown";
+        overlay->add_lobby_kicked_notification(lobby_id, kicker_name, kicker_id);
+    }
+}
+
+void Steam_Matchmaking::KickLobbyMember(uint64 lobby_id, uint64 member_id)
+{
+    PRINT_DEBUG("lobby=%llu member=%llu", lobby_id, member_id);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
+    Lobby *lobby = get_lobby(CSteamID(lobby_id));
+    if (!lobby) return;
+    if (lobby->owner() != settings->get_local_steam_id().ConvertToUint64()) return;
+    if (member_id == settings->get_local_steam_id().ConvertToUint64()) return;
+
+    if (leave_lobby(lobby, CSteamID(member_id))) {
+        SendKickMessage(lobby_id, member_id);
+        trigger_lobby_member_join_leave(lobby_id, member_id, true, true, 0.01);
+        // Re-broadcast so peers see the membership change
+        Steam_Friends *steamFriends = get_steam_client()->steam_friends;
+        if (steamFriends) steamFriends->resend_friend_data();
+    }
+}
+
+void Steam_Matchmaking::KickAllLobbyMembers(uint64 lobby_id)
+{
+    PRINT_DEBUG("lobby=%llu", lobby_id);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
+    Lobby *lobby = get_lobby(CSteamID(lobby_id));
+    if (!lobby) return;
+    if (lobby->owner() != settings->get_local_steam_id().ConvertToUint64()) return;
+
+    std::vector<uint64> to_kick;
+    for (auto &m : lobby->members()) {
+        if (m.id() != settings->get_local_steam_id().ConvertToUint64())
+            to_kick.push_back(m.id());
+    }
+    for (uint64 mid : to_kick) {
+        if (leave_lobby(lobby, CSteamID(mid))) {
+            SendKickMessage(lobby_id, mid);
+            trigger_lobby_member_join_leave(lobby_id, mid, true, true, 0.01);
+        }
+    }
+    // Re-broadcast so peers see the membership changes
+    Steam_Friends *steamFriends = get_steam_client()->steam_friends;
+    if (steamFriends) steamFriends->resend_friend_data();
 }
 
 
@@ -740,6 +924,8 @@ bool Steam_Matchmaking::InviteUserToLobby( CSteamID steamIDLobby, CSteamID steam
     msg.set_allocated_friend_messages(friend_messages);
     msg.set_source_id(settings->get_local_steam_id().ConvertToUint64());
     msg.set_dest_id(steamIDInvitee.ConvertToUint64());
+    // Track this invite so when the JOIN arrives we auto-accept (no notification)
+    invited_users.insert({steamIDLobby.ConvertToUint64(), steamIDInvitee.ConvertToUint64()});
     return network->sendTo(&msg, true);
 }
 
@@ -990,6 +1176,29 @@ bool Steam_Matchmaking::SendLobbyChatMsg( CSteamID steamIDLobby, const void *pvM
     Lobby *lobby = get_lobby(steamIDLobby);
     if (!lobby || lobby->deleted()) return false;
 
+    // Add to local chat_entries immediately so sender sees their own message right away
+    {
+        struct Chat_Entry entry{};
+        entry.type = EChatEntryType::k_EChatEntryTypeChatMsg;
+        entry.message = std::string((const char*)pvMsgBody, cubMsgBody);
+        // Strip trailing null terminators from the message
+        while (!entry.message.empty() && entry.message.back() == '\0') entry.message.pop_back();
+        entry.lobby_id = steamIDLobby;
+        entry.user_id = settings->get_local_steam_id();
+        chat_entries.push_back(entry);
+    }
+
+    // Fire LobbyChatMsg_t callback for sender immediately
+    {
+        LobbyChatMsg_t data{};
+        data.m_ulSteamIDLobby = steamIDLobby.ConvertToUint64();
+        data.m_ulSteamIDUser = settings->get_local_steam_id().ConvertToUint64();
+        data.m_eChatEntryType = EChatEntryType::k_EChatEntryTypeChatMsg;
+        data.m_iChatID = static_cast<uint32>(chat_entries.size());
+        callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
+    }
+
+    // Send to all lobby members via network (self-loopback will be skipped in receive handler)
     Lobby_Messages *message = new Lobby_Messages();
     message->set_type(Lobby_Messages::CHAT_MESSAGE);
     message->set_bdata(pvMsgBody, cubMsgBody);
@@ -1518,6 +1727,7 @@ void Steam_Matchmaking::RunCallbacks()
             callback_results->addCallResult(g->api_id, data.k_iCallback, &data, sizeof(data));
             callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
             g = pending_joins.erase(g);
+            on_self_enter_leave_lobby((uint64)lobby->room_id(), lobby->type(), false);
             trigger_lobby_dataupdate((uint64)lobby->room_id(), (uint64)lobby->room_id(), true);
         } else if (check_timedout(g->joined, PENDING_JOIN_TIMEOUT)) {
             PRINT_DEBUG("pending join timeout %llu", g->lobby_id.ConvertToUint64());
@@ -1646,14 +1856,54 @@ void Steam_Matchmaking::Callback(Common_Message *msg)
 
     if (msg->has_lobby_messages()) {
         PRINT_DEBUG("LOBBY MESSAGE %u " "%" PRIu64 "", msg->lobby_messages().type(), msg->lobby_messages().id());
+
+        // JOIN_RESPONSE is sent directly to the requester, not through lobby ownership
+        if (msg->lobby_messages().type() == Lobby_Messages::JOIN_RESPONSE) {
+            HandleJoinResponse(msg);
+        }
+
+        // KICK is sent directly to the kicked user
+        if (msg->lobby_messages().type() == Lobby_Messages::KICK) {
+            HandleKickMessage(msg);
+        }
+
         Lobby *lobby = get_lobby((uint64)msg->lobby_messages().id());
         if (lobby && !lobby->deleted()) {
             bool we_are_in_lobby = !!get_lobby_member(lobby, settings->get_local_steam_id());
             if (lobby->owner() == settings->get_local_steam_id().ConvertToUint64()) {
                 if (msg->lobby_messages().type() == Lobby_Messages::JOIN) {
                     PRINT_DEBUG("LOBBY MESSAGE: JOIN, lobby=%llu from=%llu", (uint64)lobby->room_id(), (uint64)msg->source_id());
-                    if (add_member_to_lobby(lobby, (uint64)msg->source_id())) {
-                        trigger_lobby_member_join_leave((uint64)lobby->room_id(), (uint64)msg->source_id(), false, true, 0.01);
+                    CSteamID requester((uint64)msg->source_id());
+                    if (!get_lobby_member(lobby, requester)) {
+                        // If we explicitly invited this user, auto-accept them (no notification needed)
+                        auto invite_key = std::make_pair((uint64)lobby->room_id(), (uint64)msg->source_id());
+                        auto inv_it = invited_users.find(invite_key);
+                        if (inv_it != invited_users.end()) {
+                            invited_users.erase(inv_it);
+                            if (add_member_to_lobby(lobby, requester)) {
+                                trigger_lobby_member_join_leave((uint64)lobby->room_id(), (uint64)msg->source_id(), false, true, 0.01);
+                                SendJoinResponse((uint64)lobby->room_id(), (uint64)msg->source_id(), true);
+                                // Force immediate re-broadcast so all peers see the membership change ASAP
+                                send_lobby_data();
+                                Steam_Friends *sf = get_steam_client()->steam_friends;
+                                if (sf) sf->force_resend_friend_data();
+                            }
+                            PRINT_DEBUG("Auto-accepted invited user %llu for lobby %llu", (uint64)msg->source_id(), (uint64)lobby->room_id());
+                        } else {
+                            // Unsolicited join — queue for overlay Accept/Decline notification
+                            auto existing = std::find_if(pending_lobby_join_requests.begin(), pending_lobby_join_requests.end(),
+                                [&](const Pending_Lobby_Join_Request &r) {
+                                    return r.lobby_id == CSteamID((uint64)lobby->room_id()) && r.requester_id == requester;
+                                });
+                            if (existing == pending_lobby_join_requests.end()) {
+                                Pending_Lobby_Join_Request req{};
+                                req.lobby_id = (uint64)lobby->room_id();
+                                req.requester_id = requester;
+                                req.requested = std::chrono::high_resolution_clock::now();
+                                pending_lobby_join_requests.push_back(req);
+                                PRINT_DEBUG("Queued lobby join request from %llu for lobby %llu", (uint64)msg->source_id(), (uint64)lobby->room_id());
+                            }
+                        }
                     }
                 }
 
@@ -1692,11 +1942,14 @@ void Steam_Matchmaking::Callback(Common_Message *msg)
                 PRINT_DEBUG("LOBBY MESSAGE: CHAT MESSAGE");
                 EChatEntryType entry_type = EChatEntryType::k_EChatEntryTypeChatMsg;
 
-                if (we_are_in_lobby) {
+                // Skip self-loopback (sender already added their own entry in SendLobbyChatMsg)
+                if (we_are_in_lobby && msg->source_id() != settings->get_local_steam_id().ConvertToUint64()) {
                     {
                         struct Chat_Entry entry{};
                         entry.type = entry_type;
                         entry.message = msg->lobby_messages().bdata();
+                        // Strip trailing null terminators from bdata
+                        while (!entry.message.empty() && entry.message.back() == '\0') entry.message.pop_back();
                         entry.lobby_id = CSteamID((uint64)msg->lobby_messages().id());
                         entry.user_id = CSteamID((uint64)msg->source_id());
                         chat_entries.push_back(entry);

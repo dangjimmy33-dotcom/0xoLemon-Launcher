@@ -3,7 +3,28 @@
 /// Each entry maps a game_id to a list of `VersionedSavePath`.
 /// When a game exits, the launcher resolves the correct save path for the
 /// installed version and copies those files to a local snapshot directory.
-use std::path::PathBuf;
+use serde::{Deserialize, Serialize};
+use std::collections::HashSet;
+use std::path::{Path, PathBuf};
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+#[serde(rename_all = "camelCase")]
+pub enum SaveProviderKind {
+    Gse,
+    GoldbergSteamEmu,
+    GoldbergUplayEmu,
+    LegacyVersioned,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct ResolvedSaveRoot {
+    #[serde(default)]
+    pub index: usize,
+    pub provider: SaveProviderKind,
+    pub provider_save_id: String,
+    pub path: PathBuf,
+}
 
 #[derive(Debug, Clone)]
 pub struct VersionedSavePath {
@@ -88,6 +109,11 @@ pub fn compare_versions(a: &str, b: &str) -> i32 {
 /// Expand a path template to an absolute PathBuf.
 pub fn expand_save_template(template: &str) -> PathBuf {
     let app_data = std::env::var("APPDATA").unwrap_or_default();
+    expand_save_template_with_app_data(template, Path::new(&app_data))
+}
+
+fn expand_save_template_with_app_data(template: &str, app_data: &Path) -> PathBuf {
+    let app_data = app_data.to_string_lossy();
     let local_app_data = std::env::var("LOCALAPPDATA").unwrap_or_default();
     let user_profile = std::env::var("USERPROFILE").unwrap_or_default();
     let system_drive = std::env::var("SystemDrive").unwrap_or_else(|_| "C:".to_string());
@@ -117,4 +143,163 @@ pub fn resolve_save_paths(game_id: &str, installed_version: &str) -> Vec<PathBuf
         .filter(|rule| version_in_range(installed_version, rule.version_from, rule.version_to))
         .map(|rule| expand_save_template(rule.path_template))
         .collect()
+}
+
+/// Resolve every narrowly-scoped save root supported by SaveProtection.
+///
+/// Provider roots are resolved only from the pinned local runtime catalog.
+/// An AppID or a game name by itself never opts a game into save protection.
+pub fn resolve_save_roots(
+    game_id: &str,
+    installed_version: &str,
+    _app_id: Option<u32>,
+) -> Vec<ResolvedSaveRoot> {
+    let app_data = std::env::var_os("APPDATA").map(PathBuf::from);
+    resolve_save_roots_with_app_data(game_id, installed_version, app_data.as_deref())
+}
+
+fn resolve_save_roots_with_app_data(
+    game_id: &str,
+    installed_version: &str,
+    app_data: Option<&Path>,
+) -> Vec<ResolvedSaveRoot> {
+    let mut roots = Vec::new();
+
+    for provider in crate::managed_game_runtime::save_providers_for_game(game_id) {
+        match provider.provider {
+            SaveProviderKind::Gse
+            | SaveProviderKind::GoldbergSteamEmu
+            | SaveProviderKind::GoldbergUplayEmu => {
+                let Some(app_data) = app_data.filter(|path| !path.as_os_str().is_empty()) else {
+                    continue;
+                };
+                let directory = match provider.provider {
+                    SaveProviderKind::Gse => "GSE Saves",
+                    SaveProviderKind::GoldbergSteamEmu => "Goldberg SteamEmu Saves",
+                    SaveProviderKind::GoldbergUplayEmu => "Goldberg UplayEmu Saves",
+                    SaveProviderKind::LegacyVersioned => unreachable!(),
+                };
+                roots.push(ResolvedSaveRoot {
+                    index: 0,
+                    provider: provider.provider,
+                    provider_save_id: provider.save_id.clone(),
+                    path: app_data.join(directory).join(provider.save_id),
+                });
+            }
+            SaveProviderKind::LegacyVersioned => {
+                let rules = all_save_path_rules();
+                let game_rules = rules
+                    .iter()
+                    .find(|(id, _)| *id == game_id)
+                    .map(|(_, rules)| *rules)
+                    .unwrap_or(&[]);
+                for (index, rule) in game_rules.iter().enumerate() {
+                    if !version_in_range(installed_version, rule.version_from, rule.version_to) {
+                        continue;
+                    }
+                    let path = match app_data {
+                        Some(app_data) => {
+                            expand_save_template_with_app_data(rule.path_template, app_data)
+                        }
+                        None => expand_save_template(rule.path_template),
+                    };
+                    if path.as_os_str().is_empty()
+                        || roots
+                            .iter()
+                            .any(|root| path_is_same_or_nested(&path, &root.path))
+                    {
+                        continue;
+                    }
+                    roots.push(ResolvedSaveRoot {
+                        index: 0,
+                        provider: SaveProviderKind::LegacyVersioned,
+                        provider_save_id: format!("{}-{index}", provider.save_id),
+                        path,
+                    });
+                }
+            }
+        }
+    }
+
+    let mut seen = HashSet::new();
+    roots.retain(|root| seen.insert(normalized_path_key(&root.path)));
+    for (index, root) in roots.iter_mut().enumerate() {
+        root.index = index;
+    }
+    roots
+}
+
+fn normalized_path_key(path: &Path) -> String {
+    path.to_string_lossy()
+        .replace('/', "\\")
+        .trim_end_matches('\\')
+        .to_ascii_lowercase()
+}
+
+fn path_is_same_or_nested(path: &Path, root: &Path) -> bool {
+    let path = normalized_path_key(path);
+    let root = normalized_path_key(root);
+    path == root || path.starts_with(&format!("{root}\\"))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const APP_DATA: &str = r"C:\Users\Test\AppData\Roaming";
+
+    #[test]
+    fn resolves_catalog_emulator_roots_without_app_id_inference() {
+        let roots = resolve_save_roots_with_app_data(
+            "007-first-light",
+            "v1.0.0",
+            Some(Path::new(APP_DATA)),
+        );
+
+        assert_eq!(roots.len(), 2);
+        assert_eq!(roots[0].index, 0);
+        assert_eq!(roots[0].provider, SaveProviderKind::Gse);
+        assert_eq!(roots[0].provider_save_id, "3768760");
+        assert!(normalized_path_key(&roots[0].path).ends_with(r"\gse saves\3768760"));
+        assert_eq!(roots[1].provider, SaveProviderKind::GoldbergSteamEmu);
+        assert_eq!(roots[1].index, 1);
+    }
+
+    #[test]
+    fn mirage_uses_explicit_uplay_save_id() {
+        let roots = resolve_save_roots_with_app_data(
+            "assassins-creed-mirage",
+            "1.0.0",
+            Some(Path::new(APP_DATA)),
+        );
+
+        assert_eq!(roots.len(), 1);
+        assert_eq!(roots[0].provider, SaveProviderKind::GoldbergUplayEmu);
+        assert_eq!(roots[0].provider_save_id, "6100");
+    }
+
+    #[test]
+    fn other_games_do_not_inherit_mirage_mapping() {
+        let roots = resolve_save_roots_with_app_data(
+            "assassins-creed-valhalla",
+            "1.0.0",
+            Some(Path::new(APP_DATA)),
+        );
+
+        assert!(roots.is_empty());
+    }
+
+    #[test]
+    fn nested_legacy_root_is_not_backed_up_twice() {
+        let roots = resolve_save_roots_with_app_data(
+            "007-first-light",
+            "v1.0.0",
+            Some(Path::new(APP_DATA)),
+        );
+
+        assert_eq!(roots.len(), 2);
+        assert!(roots
+            .iter()
+            .all(|root| root.provider != SaveProviderKind::LegacyVersioned));
+    }
 }

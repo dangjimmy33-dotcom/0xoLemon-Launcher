@@ -1,0 +1,34 @@
+@keyframes lightning-popover-enter {
+  from { opacity: 0; transform: translateY(8px) scale(.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes lightning-route-forward-in { from { opacity: 0; transform: translate3d(34px, 0, 0) scale(.992); } to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); } }
+@keyframes lightning-route-forward-out { from { opacity: 1; transform: translate3d(0, 0, 0) scale(1); } to { opacity: 0; transform: translate3d(-25px, 0, 0) scale(.994); } }
+@keyframes lightning-route-backward-in { from { opacity: 0; transform: translate3d(-34px, 0, 0) scale(.992); } to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); } }
+@keyframes lightning-route-backward-out { from { opacity: 1; transform: translate3d(0, 0, 0) scale(1); } to { opacity: 0; transform: translate3d(25px, 0, 0) scale(.994); } }
+
+html[data-ui-theme='lightning'][data-theme-motion='full'] .lightning-tools-popover,
+html[data-ui-theme='lightning'][data-theme-motion='system'] .lightning-tools-popover {
+  animation: lightning-popover-enter .2s cubic-bezier(.2, .8, .2, 1) both;
+}
+
+html[data-ui-theme='lightning'][data-theme-motion='full'] .lightning-route-content.is-incoming.is-forward,
+html[data-ui-theme='lightning'][data-theme-motion='system'] .lightning-route-content.is-incoming.is-forward { animation: lightning-route-forward-in 360ms cubic-bezier(.2,.82,.2,1) both; }
+html[data-ui-theme='lightning'][data-theme-motion='full'] .lightning-route-content.is-outgoing.is-forward,
+html[data-ui-theme='lightning'][data-theme-motion='system'] .lightning-route-content.is-outgoing.is-forward { animation: lightning-route-forward-out 360ms cubic-bezier(.2,.82,.2,1) both; }
+html[data-ui-theme='lightning'][data-theme-motion='full'] .lightning-route-content.is-incoming.is-backward,
+html[data-ui-theme='lightning'][data-theme-motion='system'] .lightning-route-content.is-incoming.is-backward { animation: lightning-route-backward-in 360ms cubic-bezier(.2,.82,.2,1) both; }
+html[data-ui-theme='lightning'][data-theme-motion='full'] .lightning-route-content.is-outgoing.is-backward,
+html[data-ui-theme='lightning'][data-theme-motion='system'] .lightning-route-content.is-outgoing.is-backward { animation: lightning-route-backward-out 360ms cubic-bezier(.2,.82,.2,1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .lightning-primary-nav,
+  .lightning-nav-copy,
+  .lightning-tools-popover,
+  .lightning-route-content {
+    animation: none !important;
+    transition-duration: 0s !important;
+  }
+  .lightning-route-content.is-outgoing { display: none; }
+}

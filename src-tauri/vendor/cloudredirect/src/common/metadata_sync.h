@@ -11,7 +11,7 @@ extern std::atomic<bool> syncLuas;
 extern std::atomic<bool> syncAchievements;
 extern std::atomic<bool> syncPlaytime;
 
-// Fetch missing achievement/stats schemas from the CM (config: schema_fetch).
+// Retired schema-fetch flag. SchemaFetchEnabled() always returns false now.
 extern std::atomic<bool> schemaFetch;
 
 inline bool IsEnabled() {
@@ -36,7 +36,7 @@ inline bool PlaytimeEnabled() {
     return syncPlaytime.load(std::memory_order_relaxed) && StGateOpen();
 }
 inline bool SchemaFetchEnabled() {
-    return schemaFetch.load(std::memory_order_relaxed) && StGateOpen();
+    return false;
 }
 
 }

@@ -1,173 +1,37 @@
-import { Component, StrictMode, type ErrorInfo, type ReactNode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.tsx'
-import Overlay from './Overlay.tsx'
-import { Analytics } from '@vercel/analytics/react'
-import { LocaleProvider } from './context/LocaleContext'
 import { isTauriRuntime } from './lib/tauriRuntime'
 
-async function clearLegacyPwaStateInTauri() {
-  if (!isTauriRuntime()) return
-
-  // A service worker registered on the localhost origin can survive a launcher
-  // update and serve an old HTML/asset graph. Remove it, but never reload the
-  // WebView during bootstrap: WebView2 reloads at this stage have caused blank
-  // windows / STATUS_ACCESS_VIOLATION on some Windows machines.
-  try {
-    if ('serviceWorker' in navigator) {
-      const registrations = await navigator.serviceWorker.getRegistrations()
-      await Promise.all(registrations.map((registration) => registration.unregister()))
-    }
-  } catch (error) {
-    console.warn('Unable to unregister legacy service workers:', error)
-  }
-
-  try {
-    if ('caches' in window) {
-      const cacheNames = await caches.keys()
-      await Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)))
-    }
-  } catch (error) {
-    console.warn('Unable to clear legacy PWA caches:', error)
-  }
-}
-
-async function registerPwaForWeb() {
-  if (isTauriRuntime() || !('serviceWorker' in navigator)) return
-
-  try {
-    const { registerSW } = await import('virtual:pwa-register')
-    registerSW({ immediate: true })
-  } catch (error) {
-    console.warn('Unable to register the web service worker:', error)
-  }
-}
-
-import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
-
-type LauncherErrorBoundaryState = { error: Error | null }
-
-class LauncherErrorBoundary extends Component<{ children: ReactNode }, LauncherErrorBoundaryState> {
-  state: LauncherErrorBoundaryState = { error: null }
-
-  static getDerivedStateFromError(error: Error): LauncherErrorBoundaryState {
-    return { error }
-  }
-
-  componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error('Launcher render failed:', error, info.componentStack)
-  }
-
-  render() {
-    if (!this.state.error) return this.props.children
-    return (
-      <main style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: '#080d12', color: '#f5f7fa', padding: 32, boxSizing: 'border-box', fontFamily: 'Inter, Segoe UI, sans-serif' }}>
-        <section style={{ width: 'min(720px, 100%)', border: '1px solid #34404b', background: '#0e151c', padding: 24, borderRadius: 12 }}>
-          <h1 style={{ margin: '0 0 12px', fontSize: 20 }}>Launcher UI error / Lỗi giao diện Launcher</h1>
-          <p style={{ margin: '0 0 14px', lineHeight: 1.6, color: '#b9c3cc' }}>
-            A remote catalog entry or UI component failed to render. The launcher stayed open so the error can be diagnosed instead of showing a black window.
-          </p>
-          <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', color: '#ffb4a9', background: '#090e13', padding: 12, borderRadius: 6, margin: 0 }}>
-            {this.state.error.stack || this.state.error.message}
-          </pre>
-        </section>
-      </main>
-    )
-  }
-}
-
-
-async function bootstrap() {
-  let isOverlay = false;
-  try {
-    isOverlay = getCurrentWebviewWindow().label === 'overlay';
-  } catch {
-    // Ignore error if not running in Tauri
-  }
-
-  if (isOverlay) {
-    document.body.classList.add('is-overlay-window');
-  }
-
-  createRoot(document.getElementById('root')!).render(
-    <StrictMode>
-      <LauncherErrorBoundary>
-      <LocaleProvider>
-        {isOverlay ? <Overlay /> : <App />}
-        <Analytics />
-      </LocaleProvider>
-      </LauncherErrorBoundary>
-    </StrictMode>,
-  )
-
-  // Never block first paint on legacy cache cleanup. Some damaged WebView2
-  // profiles can leave service-worker/cache promises pending indefinitely.
-  void clearLegacyPwaStateInTauri()
-  void registerPwaForWeb()
-
-  // Show the Tauri window only after React has painted — prevents FOUC
-  if (typeof window !== 'undefined' && window.__TAURI_INTERNALS__) {
-    document.addEventListener('contextmenu', e => {
-      const target = e.target as HTMLElement
-      if (target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA') return
-      e.preventDefault()
-    })
-    
-    import('@tauri-apps/api/webviewWindow').then(({ getCurrentWebviewWindow }) => {
-      getCurrentWebviewWindow().show().catch(() => undefined)
-    }).catch(() => undefined)
-  }
-}
-
 function renderBootstrapFailure(error: unknown) {
-  console.error('Launcher bootstrap failed:', error)
+  console.error('0xoLemon bootstrap failed:', error)
 
   const root = document.getElementById('root')
-  if (root) {
-    root.replaceChildren()
-    const panel = document.createElement('main')
-    panel.style.cssText = [
-      'min-height:100vh',
-      'display:grid',
-      'place-items:center',
-      'background:#080d12',
-      'color:#f5f7fa',
-      'font-family:Inter,Segoe UI,sans-serif',
-      'padding:32px',
-      'box-sizing:border-box',
-    ].join(';')
+  if (!root) return
 
-    const card = document.createElement('section')
-    card.style.cssText = 'max-width:680px;border:1px solid #34404b;background:#0e151c;padding:24px;border-radius:10px'
+  const detail = error instanceof Error ? error.message : String(error)
+  root.innerHTML = `
+    <main style="min-height:100vh;display:grid;place-items:center;background:#080d12;color:#f5f7fa;padding:32px;box-sizing:border-box;font-family:Inter,Segoe UI,sans-serif">
+      <section style="width:min(680px,100%);border:1px solid #34404b;background:#0e151c;padding:24px;border-radius:8px">
+        <h1 style="font-size:20px;margin:0 0 12px">0xoLemon could not finish starting</h1>
+        <p style="line-height:1.6;color:#b9c3cc;margin:0 0 14px">The correct application surface could not be loaded. Close this window and try again.</p>
+        <pre style="white-space:pre-wrap;word-break:break-word;color:#ffb4a9;background:#090e13;padding:12px;border-radius:6px;margin:0"></pre>
+      </section>
+    </main>`
+  const pre = root.querySelector('pre')
+  if (pre) pre.textContent = detail
+}
 
-    const title = document.createElement('h1')
-    title.textContent = '0xoLemon could not finish starting / Không thể khởi động launcher'
-    title.style.cssText = 'font-size:20px;margin:0 0 12px'
+async function bootstrap() {
+  const fixture = import.meta.env.DEV
+    ? new URLSearchParams(window.location.search).get('fixture')
+    : null
 
-    const message = document.createElement('p')
-    message.textContent = 'Please close 0xoLemon in Task Manager and open it again. If this repeats, send the download-debug.log file to support. / Hãy tắt 0xoLemon trong Task Manager rồi mở lại. Nếu vẫn lỗi, gửi file download-debug.log cho hỗ trợ.'
-    message.style.cssText = 'line-height:1.6;color:#b9c3cc;margin:0 0 14px'
-
-    const detail = document.createElement('pre')
-    detail.textContent = String(error)
-    detail.style.cssText = 'white-space:pre-wrap;word-break:break-word;color:#ffb4a9;background:#090e13;padding:12px;border-radius:6px;margin:0'
-
-    card.append(title, message, detail)
-    panel.append(card)
-    root.append(panel)
+  if (isTauriRuntime() || fixture) {
+    const desktop = await import('./desktop/bootstrap')
+    await desktop.bootstrapDesktop()
+    return
   }
 
-  if (typeof window !== 'undefined' && window.__TAURI_INTERNALS__) {
-    import('@tauri-apps/api/webviewWindow')
-      .then(async ({ getCurrentWebviewWindow }) => {
-        const current = getCurrentWebviewWindow()
-        await current.show().catch(() => undefined)
-        await current.unminimize().catch(() => undefined)
-        await current.setFocus().catch(() => undefined)
-      })
-      .catch(() => undefined)
-  }
+  const web = await import('./web/bootstrap')
+  await web.bootstrapWeb()
 }
 
 void bootstrap().catch(renderBootstrapFailure)

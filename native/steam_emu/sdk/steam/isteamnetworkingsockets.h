@@ -288,12 +288,11 @@ public:
 	/// You MUST also fill in:
 	/// - m_conn - the handle of the connection to send the message to
 	/// - m_nFlags - bitmask of k_nSteamNetworkingSend_xxx flags.
+	/// - m_idxLane - the lane to send the message on.  AllocateMessage
+	///   will set this to zero, so you can ignore this if you are not using
+	///   multiple lanes.
 	///
 	/// All other fields are currently reserved and should not be modified.
-	///
-	/// The library will take ownership of the message structures.  They may
-	/// be modified or become invalid at any time, so you must not read them
-	/// after passing them to this function.
 	///
 	/// pOutMessageNumberOrResult is an optional array that will receive,
 	/// for each message, the message number that was assigned to the message
@@ -302,7 +301,28 @@ public:
 	/// -k_EResultInvalidState if the connection was in an invalid state.
 	/// See ISteamNetworkingSockets::SendMessageToConnection for possible
 	/// failure codes.
-	virtual void SendMessages( int nMessages, SteamNetworkingMessage_t *const *pMessages, int64 *pOutMessageNumberOrResult ) = 0;
+	///
+	/// Once a message fails to send on a connection, any further messages
+	/// in the array going to the same connection will not be attempted.  The
+	/// pOutMessageNumberOrResult for such message will always be set to 0.
+	/// (Note that 0 is never used as a message number.)
+	///
+	/// bDeleteFailedMessages determines what happens to messages that
+	/// fail to send:
+	///
+	/// - false: Your pointer array will be modified, and the pointers
+	///     to messages that were successfully queued will be replaced with
+	///     nullptr.  The library has taken ownership and you must not access
+	///     them.  They will be released by the library when they are no longer
+	///     needed.
+	///     Any messages that were not queued (either failed to send, or were
+	///     not attempted because an earlier message for the same connection failed)
+	///     will be left in place.  You can release these messages or try to send
+	///     them later.
+	/// - true: The caller's pointer array is not modified, and the library assumes
+	///     ownership of all messages.  Messages that fail or are not attempted due
+	///     to earlier failure on the same connection will be released immediately.
+	virtual void SendMessages( int nMessages, SteamNetworkingMessage_t **pMessages, int64 *pOutMessageNumberOrResult, bool bDeleteFailedMessages ) = 0;
 
 	/// Flush any messages waiting on the Nagle timer and send them
 	/// at the next transmission opportunity (often that means right now).
@@ -392,7 +412,12 @@ public:
 	/// identity.  Otherwise, if you pass nullptr, the respective connection will assume a generic
 	/// "localhost" identity.  If you use real network loopback, this might be translated to the
 	/// actual bound loopback port.  Otherwise, the port will be zero.
-	virtual bool CreateSocketPair( HSteamNetConnection *pOutConnection1, HSteamNetConnection *pOutConnection2, bool bUseNetworkLoopback, const SteamNetworkingIdentity *pIdentity1, const SteamNetworkingIdentity *pIdentity2 ) = 0;
+	///
+	/// NOTE: For historical reasons, each identity refers to the *remote* identity that the
+	/// corresponding connection will observe in connection state callbacks and GetConnectionInfo:
+	/// - pPeerIdentity1: remote identity observed by connection 1, local identity of connection 2
+	/// - pPeerIdentity2: remote identity observed by connection 2, local identity of connection 1
+	virtual bool CreateSocketPair( HSteamNetConnection *pOutConnection1, HSteamNetConnection *pOutConnection2, bool bUseNetworkLoopback, const SteamNetworkingIdentity *pPeerIdentity1, const SteamNetworkingIdentity *pPeerIdentity2 ) = 0;
 
 	/// Configure multiple outbound messages streams ("lanes") on a connection, and
 	/// control head-of-line blocking between them.  Messages within a given lane
@@ -444,7 +469,7 @@ public:
 	///   exchanging a few messages.
 	/// - To assign all lanes the same priority, you may use pLanePriorities=NULL.
 	/// - If you wish all lanes with the same priority to share bandwidth equally (or
-	///   if no two lanes have the same priority value, and thus priority values are
+	///   if no two lanes have the same priority value, and thus weight values are
 	///   irrelevant), you may use pLaneWeights=NULL
 	/// - Priorities and weights determine the order that messages are SENT on the wire.
 	///   There are NO GUARANTEES on the order that messages are RECEIVED!  Due to packet
@@ -921,23 +946,23 @@ public:
 protected:
 //	~ISteamNetworkingSockets(); // Silence some warnings
 };
-#define STEAMNETWORKINGSOCKETS_INTERFACE_VERSION "SteamNetworkingSockets012"
+#define STEAMNETWORKINGSOCKETS_INTERFACE_VERSION "SteamNetworkingSockets013"
 
 // Global accessors
 
 // Using standalone lib
 #ifdef STEAMNETWORKINGSOCKETS_STANDALONELIB
 
-	static_assert( STEAMNETWORKINGSOCKETS_INTERFACE_VERSION[24] == '2', "Version mismatch" );
-	STEAMNETWORKINGSOCKETS_INTERFACE ISteamNetworkingSockets *SteamNetworkingSockets_LibV12();
-	inline ISteamNetworkingSockets *SteamNetworkingSockets_Lib() { return SteamNetworkingSockets_LibV12(); }
+	static_assert( STEAMNETWORKINGSOCKETS_INTERFACE_VERSION[24] == '3', "Version mismatch" );
+	STEAMNETWORKINGSOCKETS_INTERFACE ISteamNetworkingSockets *SteamNetworkingSockets_LibV13();
+	inline ISteamNetworkingSockets *SteamNetworkingSockets_Lib() { return SteamNetworkingSockets_LibV13(); }
 
-	STEAMNETWORKINGSOCKETS_INTERFACE ISteamNetworkingSockets *SteamGameServerNetworkingSockets_LibV12();
-	inline ISteamNetworkingSockets *SteamGameServerNetworkingSockets_Lib() { return SteamGameServerNetworkingSockets_LibV12(); }
+	STEAMNETWORKINGSOCKETS_INTERFACE ISteamNetworkingSockets *SteamGameServerNetworkingSockets_LibV13();
+	inline ISteamNetworkingSockets *SteamGameServerNetworkingSockets_Lib() { return SteamGameServerNetworkingSockets_LibV13(); }
 
 	#ifndef STEAMNETWORKINGSOCKETS_STEAMAPI
-		inline ISteamNetworkingSockets *SteamNetworkingSockets() { return SteamNetworkingSockets_LibV12(); }
-		inline ISteamNetworkingSockets *SteamGameServerNetworkingSockets() { return SteamGameServerNetworkingSockets_LibV12(); }
+		inline ISteamNetworkingSockets *SteamNetworkingSockets() { return SteamNetworkingSockets_LibV13(); }
+		inline ISteamNetworkingSockets *SteamGameServerNetworkingSockets() { return SteamGameServerNetworkingSockets_LibV13(); }
 	#endif
 #endif
 
@@ -997,7 +1022,7 @@ protected:
 ///
 /// Also note that callbacks will be posted when connections are created and destroyed by your own API calls.
 struct SteamNetConnectionStatusChangedCallback_t
-{ 
+{
 	enum { k_iCallback = k_iSteamNetworkingSocketsCallbacks + 1 };
 
 	/// Connection handle
@@ -1019,7 +1044,7 @@ struct SteamNetConnectionStatusChangedCallback_t
 ///
 /// This callback is posted whenever the state of our readiness changes.
 struct SteamNetAuthenticationStatus_t
-{ 
+{
 	enum { k_iCallback = k_iSteamNetworkingSocketsCallbacks + 2 };
 
 	/// Status

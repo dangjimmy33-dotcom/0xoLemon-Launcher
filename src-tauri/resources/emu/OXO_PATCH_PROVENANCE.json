@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "patchVersion": "0xo-achievement-pipe-v1",
+  "baseSourceManifestSha256": "0c5a3b0ed39e0a9e93023fc75b54286e70a0bb9a9feb5a1ace3c64f7dd762d72",
+  "protocolVersion": 1,
+  "files": [
+    {
+      "relativePath": "dll/dll/oxo_achievement_pipe_adapter.h",
+      "sha256": "883699953951e00b994278210f0bcfc0b27db3703510cd512f9583d44b73ca89"
+    },
+    {
+      "relativePath": "dll/dll/steam_user_stats.h",
+      "sha256": "51c54921743f19bb9ca624acb4c227dc664c8204714a16f46d38f6db904afbf7"
+    },
+    {
+      "relativePath": "dll/steam_user_stats.cpp",
+      "sha256": "1b76e03b1ddef06882b0367b04821be529f40d3a29efe3bee1cd5530a510351a"
+    },
+    {
+      "relativePath": "dll/steam_user_stats_achievements.cpp",
+      "sha256": "2c656020ff47edcabebba707c919bbdd4d49de6b4b130c88a0cae22ef85a76f6"
+    },
+    {
+      "relativePath": "dll/steam_user_stats_stats.cpp",
+      "sha256": "86158ed0dcc48746a6cb6663355e47eac592a02c9048531ccce07c4ea429ee34"
+    }
+  ]
+}

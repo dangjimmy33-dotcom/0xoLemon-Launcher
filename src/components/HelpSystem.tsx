@@ -87,7 +87,7 @@ export function HelpButton({
         aria-expanded={open}
         onClick={toggle}
       >
-        <span aria-hidden="true">?</span>
+        <CircleHelp size={16} aria-hidden="true" />
       </button>
       {open && typeof document !== 'undefined' ? createPortal(
         <div className="help-popover" role="dialog" aria-label={title} style={point}>
@@ -131,8 +131,12 @@ export function PageHelpButton({
   placement?: 'floating' | 'titlebar'
 }) {
   const { t } = useLocale()
-  const topicId = HELP_TOPIC_BY_TAB[tab]
-  const topic = t.help.topics[topicId]
+  const topicId = (HELP_TOPIC_BY_TAB && HELP_TOPIC_BY_TAB[tab]) || 'home'
+  const topic = t?.help?.topics?.[topicId] || t?.help?.topics?.home || {
+    title: 'Help',
+    summary: 'Launcher assistance',
+    canDo: [],
+  }
   const inTitlebar = placement === 'titlebar'
   return (
     <div className={inTitlebar ? 'titlebar-help-anchor' : 'page-help-float'} data-tour="page-help">
@@ -140,9 +144,9 @@ export function PageHelpButton({
         title={topic.title}
         body={topic.summary}
         bullets={topic.canDo}
-        actionLabel={t.help.openHelpCenter}
+        actionLabel={t?.help?.openHelpCenter || 'Help Center'}
         onAction={onOpenCenter}
-        ariaLabel={`${t.help.buttonLabel}: ${topic.title}`}
+        ariaLabel={`${t?.help?.buttonLabel || 'Help'}: ${topic.title}`}
         className={inTitlebar ? 'titlebar-help-button' : 'page-help-button'}
       />
     </div>

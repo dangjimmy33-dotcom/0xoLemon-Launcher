@@ -1,0 +1,122 @@
+html[data-ui-theme='xmcl'] :where(
+  .home-stat-card,
+  .home-discover-card,
+  .store-game-card,
+  .game-card,
+  .library-card,
+  .settings-group,
+  .download-card,
+  .update-card,
+  .cloud-save-card,
+  .achievement-item,
+  .media-frame,
+  .tab-game-row,
+  .operation-panel,
+  .details-panel
+) {
+  border-radius: var(--xmcl-radius-card) !important;
+  border-color: color-mix(in oklab, transparent 86%, var(--theme-accent) 14%) !important;
+  background: color-mix(in oklab, var(--ui-panel-bg) 94%, transparent 6%) !important;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, .11);
+}
+
+html[data-ui-theme='xmcl'] :where(
+  .game-detail-hero,
+  .home-featured-card,
+  .hero-card,
+  .library-detail-hero,
+  .media-stage
+) {
+  border-radius: var(--xmcl-radius-panel) !important;
+  overflow: hidden;
+}
+
+html[data-ui-theme='xmcl'] :where(
+  .modal-backdrop,
+  .confirm-dialog-backdrop,
+  .achievement-modal-backdrop,
+  .launch-options-backdrop,
+  .help-center-backdrop,
+  .lua-source-picker-backdrop,
+  .guided-tour,
+  .social-full-profile-backdrop
+) {
+  background: var(--ui-overlay-bg) !important;
+  backdrop-filter: blur(7px) saturate(108%);
+  -webkit-backdrop-filter: blur(7px) saturate(108%);
+}
+
+html[data-ui-theme='xmcl'] :where(
+  .modal,
+  .confirm-dialog,
+  .achievement-modal,
+  .launch-options-modal,
+  .help-center,
+  .lua-source-picker-dialog,
+  .install-options-dialog,
+  .version-select-dialog,
+  .guided-tour-card,
+  .social-profile-popout,
+  .social-full-profile,
+  .notification-popover,
+  .context-menu,
+  .custom-select-menu
+) {
+  border-radius: var(--xmcl-radius-dialog) !important;
+  border: 1px solid color-mix(in oklab, transparent 78%, var(--theme-accent) 22%) !important;
+  background: var(--ui-popup-bg) !important;
+  box-shadow: 0 24px 74px rgba(0, 0, 0, .38) !important;
+  backdrop-filter: blur(var(--xmcl-surface-blur)) saturate(125%);
+  -webkit-backdrop-filter: blur(var(--xmcl-surface-blur)) saturate(125%);
+}
+
+html[data-ui-theme='xmcl'] :where(
+  button,
+  .settings-select,
+  .custom-select-trigger,
+  input,
+  select,
+  textarea
+) {
+  accent-color: var(--theme-accent-strong);
+}
+
+html[data-ui-theme='xmcl'] :where(
+  .settings-secondary-button,
+  .secondary,
+  .primary,
+  .custom-select-trigger,
+  .search-bar,
+  input:not([type='range']),
+  select,
+  textarea
+) {
+  border-radius: var(--xmcl-radius-item) !important;
+}
+
+html[data-ui-theme='xmcl'] :where(
+  .settings-secondary-button,
+  .secondary,
+  .custom-select-trigger,
+  .search-bar
+) {
+  background: color-mix(in oklab, var(--theme-card-bg) 76%, transparent 24%) !important;
+  border-color: color-mix(in oklab, transparent 84%, var(--theme-accent) 16%) !important;
+}
+
+html[data-ui-theme='xmcl'] :where(.nav-item, .tab-button, .settings-pane-nav button, .game-detail-tab) {
+  border-radius: var(--xmcl-radius-item) !important;
+}
+
+html[data-ui-theme='xmcl'] ::-webkit-scrollbar { width: 8px; height: 8px; }
+html[data-ui-theme='xmcl'] ::-webkit-scrollbar-track { background: transparent; }
+html[data-ui-theme='xmcl'] ::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: color-mix(in oklab, transparent 58%, var(--theme-accent) 42%);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+html[data-ui-theme='xmcl'] ::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklab, transparent 42%, var(--theme-accent-strong) 58%);
+  background-clip: padding-box;
+}

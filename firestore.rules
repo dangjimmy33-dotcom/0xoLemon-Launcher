@@ -53,10 +53,30 @@ service cloud.firestore {
       allow read, write: if isSignedIn();
     }
 
-    // ── users/ ───────────────────────────────────────────────────────────────
-    // Each user has full access to their own subtree only.
+    // Legacy remote-control documents are retained for audit/migration only.
+    // Browser and launcher clients must use the authenticated Render API.
     match /users/{userId}/{document=**} {
-      allow read, write: if isOwner(userId);
+      allow read, write: if false;
     }
+
+    // Web sessions, legal acceptance, paired devices and remote jobs are
+    // backend-only. Firebase Admin bypasses rules after Discord authorization.
+    match /webSessions/{document=**} { allow read, write: if false; }
+    match /legalAcceptances/{document=**} { allow read, write: if false; }
+    match /launcherDevices/{document=**} { allow read, write: if false; }
+    match /remoteJobs/{document=**} { allow read, write: if false; }
+
+    // Social data is available only through the Render backend after Discord
+    // authorization. Firebase Admin bypasses rules; launcher clients do not.
+    match /socialUsers/{document=**} { allow read, write: if false; }
+    match /socialRelationships/{document=**} { allow read, write: if false; }
+    match /socialRelationshipOperations/{document=**} { allow read, write: if false; }
+    match /socialPresence/{document=**} { allow read, write: if false; }
+    match /socialStatsDaily/{document=**} { allow read, write: if false; }
+    match /socialStatsTotals/{document=**} { allow read, write: if false; }
+    match /socialStatEvents/{document=**} { allow read, write: if false; }
+    match /socialCoverQueue/{document=**} { allow read, write: if false; }
+    match /socialCoverCleanup/{document=**} { allow read, write: if false; }
+    match /socialSystem/{document=**} { allow read, write: if false; }
   }
 }

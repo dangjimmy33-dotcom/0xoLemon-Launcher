@@ -63,6 +63,11 @@ static uint32_t g_diskAccountId = 0;
 // Active play sessions: appId -> session start (unix time). Guarded by g_mutex.
 static std::unordered_map<uint32_t, uint32_t> g_activeSessions;
 
+// Seconds left over from the last session's minute conversion, per app, so the
+// truncation doesn't discard them. Process-local by design: persisting it would
+// mean a new blob field and merge rule for at most 59 seconds. g_mutex.
+static std::unordered_map<uint32_t, uint32_t> g_carrySeconds;
+
 // Apps reset this session; push replaces (not merges) these. g_mutex.
 static std::unordered_set<uint32_t> g_resetApps;
 
@@ -536,8 +541,13 @@ static void ReconcileLocalConfig(const std::string& cloudRoot, const std::string
                     // playtime. Don't leave (or create) an empty synthetic bucket.
                     stats.playtime.perDevice.erase(kMigratedBucket);
                 }
-                stats.playtime.minutesLastTwoWeeks =
-                    (std::max)(stats.playtime.minutesLastTwoWeeks, vdfPlaytime2wks);
+                // Only a floor while we have no day buckets of our own. Steam
+                // leaves Playtime2wks at 0 for namespace apps (its server never
+                // sees them), so this is a no-op there -- and once day tracking
+                // is live the derived value must stay free to shrink.
+                if (!stats.playtime.daysTracked)
+                    stats.playtime.minutesLastTwoWeeks =
+                        (std::max)(stats.playtime.minutesLastTwoWeeks, vdfPlaytime2wks);
                 RecomputePlaytimeTotals(stats.playtime, /*allowShrink=*/true);
                 changed = true;
             }
@@ -673,6 +683,7 @@ bool ResetForAccountSwitch(uint32_t newAccountId) {
     g_cloudBlobMerged.clear();
     g_dirty.clear();
     g_activeSessions.clear();
+    g_carrySeconds.clear();
     g_resetApps.clear();
     g_diskLoadPending.clear();
     g_accountBlobDirty = false;
@@ -693,6 +704,7 @@ void ResetForTesting() {
     g_cloudBlobMerged.clear();
     g_dirty.clear();
     g_activeSessions.clear();
+    g_carrySeconds.clear();
     g_resetApps.clear();
     g_diskLoadPending.clear();
     g_accountBlobDirty = false;
@@ -1006,6 +1018,18 @@ static bool ParseAppStatsJson(const std::string& content, AppStats& out) {
                 dp.windows = (uint32_t)v["windows"].integer();
                 dp.mac     = (uint32_t)v["mac"].integer();
                 dp.lin     = (uint32_t)v["linux"].integer();
+                // Day buckets for the rolling two-week window. Absent in blobs
+                // written before day tracking; those keep the legacy merge.
+                const auto& days = v["days"];
+                if (days.type == Json::Type::Object) {
+                    out.playtime.daysTracked = true;
+                    for (const auto& [dayStr, mins] : days.objVal) {
+                        try {
+                            dp.days[(uint32_t)std::stoul(dayStr)] =
+                                (uint32_t)mins.integer();
+                        } catch (...) {}
+                    }
+                }
                 out.playtime.perDevice[dev] = dp;
             }
         }
@@ -1078,6 +1102,14 @@ static std::string BuildAppStatsJson(const AppStats& stats) {
         d.objVal["windows"] = Json::Number(dp.windows);
         d.objVal["mac"] = Json::Number(dp.mac);
         d.objVal["linux"] = Json::Number(dp.lin);
+        // Only when populated: an older build ignores the key, and a device with
+        // nothing in the window writes the same shape it always did.
+        if (!dp.days.empty()) {
+            Json::Value days = Json::Object();
+            for (const auto& [day, mins] : dp.days)
+                days.objVal[std::to_string(day)] = Json::Number(mins);
+            d.objVal["days"] = std::move(days);
+        }
         perDev.objVal[dev] = std::move(d);
     }
     pt.objVal["per_device"] = std::move(perDev);
@@ -1109,6 +1141,38 @@ static const std::string& ThisDeviceId() {
 // independent of the specific bug that produced them.
 static constexpr uint32_t kMaxPlausiblePlaytimeMinutes = 13u * 1000u * 1000u; // ~24.7 yrs
 
+static constexpr uint32_t kSecondsPerDay = 24u * 60 * 60;
+static constexpr uint32_t kTwoWeekDays = 14;
+
+// Drop day buckets outside the rolling two-week window and sum what remains. A
+// day survives while any part of it is inside the window, so the total is never
+// short by a partial day. Returns the surviving minutes.
+//
+// Future days are dropped too, not just expired ones: a device with a wrong
+// clock (dead RTC, dual-boot offset) would otherwise write a bucket that never
+// reaches the cutoff, pinning the two-week total forever and growing the map
+// without bound -- the exact failure this derivation exists to avoid. One day of
+// slack absorbs timezone and rounding skew.
+static uint32_t PruneAndSumRecentDays(PlaytimeData& pt) {
+    uint32_t now = NowUnix();
+    uint64_t cutoff = (now > kTwoWeekDays * kSecondsPerDay)
+        ? (uint64_t)now - kTwoWeekDays * kSecondsPerDay : 0;
+    uint32_t maxDay = now / kSecondsPerDay + 1;
+    uint64_t total = 0;
+    for (auto& [dev, dp] : pt.perDevice) {
+        for (auto it = dp.days.begin(); it != dp.days.end(); ) {
+            uint64_t dayEnd = (uint64_t)it->first * kSecondsPerDay + kSecondsPerDay;
+            if (dayEnd <= cutoff || it->first > maxDay) {
+                it = dp.days.erase(it);
+            } else {
+                total += it->second;
+                ++it;
+            }
+        }
+    }
+    return total > 0xFFFFFFFFull ? 0xFFFFFFFFu : (uint32_t)total;
+}
+
 // Recompute the derived totals from the authoritative per-device sub-totals.
 static void RecomputePlaytimeTotals(PlaytimeData& pt, bool allowShrink) {
     // Clamp each per-device platform bucket to a physically plausible ceiling so
@@ -1119,6 +1183,10 @@ static void RecomputePlaytimeTotals(PlaytimeData& pt, bool allowShrink) {
         dp.mac     = (std::min)(dp.mac,     kMaxPlausiblePlaytimeMinutes);
         dp.lin     = (std::min)(dp.lin,     kMaxPlausiblePlaytimeMinutes);
     }
+    // Prune the rolling window before the totals below, so an expired day cannot
+    // be counted. Applied to minutesLastTwoWeeks at each exit (it must be floored
+    // by minutesForever, which is only final further down).
+    uint32_t recentDays = PruneAndSumRecentDays(pt);
     uint64_t win = 0, mac = 0, lin = 0;
     for (const auto& [dev, dp] : pt.perDevice) {
         win += dp.windows; mac += dp.mac; lin += dp.lin;
@@ -1133,6 +1201,8 @@ static void RecomputePlaytimeTotals(PlaytimeData& pt, bool allowShrink) {
         pt.playtimeMac     = clamp32(mac);
         pt.playtimeLinux   = clamp32(lin);
         pt.minutesForever  = clamp32(win + mac + lin);
+        if (pt.daysTracked)
+            pt.minutesLastTwoWeeks = (std::min)(recentDays, pt.minutesForever);
         return;
     }
     // Floor at prior value -- playtime only goes up.
@@ -1151,6 +1221,11 @@ static void RecomputePlaytimeTotals(PlaytimeData& pt, bool allowShrink) {
         pt.playtimeLinux   = (std::min)(pt.playtimeLinux,   clamp32(lin));
         pt.minutesForever  = (std::min)(pt.minutesForever,  clamp32(win + mac + lin));
     }
+
+    // Authoritative once day buckets exist: assigned, not max-merged, so the
+    // window can decay back to zero when nothing was played for two weeks.
+    if (pt.daysTracked)
+        pt.minutesLastTwoWeeks = (std::min)(recentDays, pt.minutesForever);
 }
 
 // Accrue minutes onto THIS device's own per-device sub-total for this platform.
@@ -1163,6 +1238,16 @@ static void AccrueLocalPlaytime(PlaytimeData& pt, uint32_t minutes) {
 #else
     mine.lin += minutes;
 #endif
+    // Same minutes, bucketed by today, so the two-week window can be derived and
+    // aged out later. Attributed to the day the session ended; a session spanning
+    // midnight lands wholly on the later day, which the window tolerates.
+    if (minutes > 0) {
+        uint32_t today = NowUnix() / kSecondsPerDay;
+        uint64_t sum = (uint64_t)mine.days[today] + minutes;
+        mine.days[today] = sum > kMaxPlausiblePlaytimeMinutes
+            ? kMaxPlausiblePlaytimeMinutes : (uint32_t)sum;
+        pt.daysTracked = true;
+    }
     RecomputePlaytimeTotals(pt);
 }
 
@@ -1195,6 +1280,11 @@ static void MergePlaytime(PlaytimeData& dst, const PlaytimeData& src) {
         ddp.windows = (std::max)(ddp.windows, sdp.windows);
         ddp.mac     = (std::max)(ddp.mac,     sdp.mac);
         ddp.lin     = (std::max)(ddp.lin,     sdp.lin);
+        // Union the day buckets, max per day. Days are namespaced by device key,
+        // so two devices never contend; max makes a same-device replay idempotent
+        // under the last-writer-wins blob.
+        for (const auto& [day, mins] : sdp.days)
+            ddp.days[day] = (std::max)(ddp.days[day], mins);
     }
 
     // Per-platform sums of already-attributed minutes, for the legacy discount.
@@ -1228,7 +1318,12 @@ static void MergePlaytime(PlaytimeData& dst, const PlaytimeData& src) {
         ddp.lin     = (std::max)(ddp.lin,     eff.lin);
     }
 
-    dst.minutesLastTwoWeeks = (std::max)(dst.minutesLastTwoWeeks, src.minutesLastTwoWeeks);
+    // Legacy floor only while neither side has day buckets; once one does,
+    // RecomputePlaytimeTotals derives the value and a max here would pin it high
+    // forever (the old value could never age out).
+    dst.daysTracked = dst.daysTracked || src.daysTracked;
+    if (!dst.daysTracked)
+        dst.minutesLastTwoWeeks = (std::max)(dst.minutesLastTwoWeeks, src.minutesLastTwoWeeks);
     dst.lastPlayedTime = (std::max)(dst.lastPlayedTime, src.lastPlayedTime);
     RecomputePlaytimeTotals(dst);
 }
@@ -2214,7 +2309,13 @@ static bool EndSessionLocked(uint32_t appId) {
     // resume) must not over-count a session. Backward jumps already clamp to 0.
     const uint32_t kMaxSessionSecs = 24u * 60 * 60;
     if (elapsed > kMaxSessionSecs) elapsed = kMaxSessionSecs;
-    uint32_t minutes = elapsed / 60;
+    // Add the seconds the previous session's truncation left over and keep this
+    // one's remainder for the next. Without the carry, minute conversion discards
+    // up to 59 s per session -- a bias that is always downward and adds up over
+    // many short sessions (five 5:59 sessions counted 25 min instead of 29).
+    uint32_t total = elapsed + g_carrySeconds[appId];
+    uint32_t minutes = total / 60;
+    g_carrySeconds[appId] = total % 60;
     g_activeSessions.erase(it);
 
     // Seed first so the cloud blob's cross-device unlocks are in the record we
@@ -2223,9 +2324,10 @@ static bool EndSessionLocked(uint32_t appId) {
     // Accrue onto THIS device's own per-device sub-total (keyed by device id), so
     // a session here can never overwrite another device's contribution -- even a
     // same-platform device's -- under the last-writer-wins cloud blob.
+    // Also records the minutes in today's bucket, from which minutesLastTwoWeeks
+    // is derived. Steam's own Playtime2wks (via ReconcileLocalConfig) stays 0 for
+    // namespace apps -- its server never sees them -- so it cannot be the source.
     AccrueLocalPlaytime(stats.playtime, minutes);
-    // Do NOT accumulate minutesLastTwoWeeks: native Steam reads Playtime2wks as an
-    // authoritative stored VDF field, surfaced via ReconcileLocalConfig.
     stats.playtime.lastPlayedTime = now;
 
     // Steam flushes the native blob on game close; merge any new unlocks (also
@@ -2268,7 +2370,10 @@ PlaytimeData GetPlaytime(uint32_t appId) {
         // over-count the in-progress session's live playtime estimate.
         const uint32_t kMaxSessionSecs = 24u * 60 * 60;
         if (elapsed > kMaxSessionSecs) elapsed = kMaxSessionSecs;
-        uint32_t minutes = elapsed / 60;
+        // Include the carry, matching EndSession, so the live estimate and the
+        // value finally stored agree instead of differing by a minute.
+        auto carry = g_carrySeconds.find(appId);
+        uint32_t minutes = (elapsed + (carry != g_carrySeconds.end() ? carry->second : 0)) / 60;
         pt.minutesForever += minutes;
         pt.minutesLastTwoWeeks += minutes;
 #ifdef _WIN32

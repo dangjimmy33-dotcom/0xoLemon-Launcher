@@ -73,6 +73,10 @@ if exist "%TARGET_DIR%\tools\generate_interfaces\" (
 if exist "%TARGET_DIR%\tools\lobby_connect\" (
   copy /y "%ROOT%\post_build\README.lobby_connect.md" "%TARGET_DIR%\tools\lobby_connect\"
 )
+
+if exist "%TARGET_DIR%\reshade_addon\" (
+  copy /y "%ROOT%\post_build\README.reshade_addon.md" "%TARGET_DIR%\reshade_addon\"
+)
 ::::::::::::::::::::::::::::::::::::::::::
 
 set "ACHIVE_DIR=%OUT_DIR%\%~1"

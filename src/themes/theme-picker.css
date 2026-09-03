@@ -1,0 +1,341 @@
+.ui-theme-picker-groups {
+  width: min(900px, 62vw);
+  display: grid;
+  gap: 14px;
+}
+
+.ui-theme-picker-group {
+  display: grid;
+  gap: 8px;
+}
+
+.ui-theme-picker-group > header {
+  display: grid;
+  gap: 2px;
+}
+
+.ui-theme-picker-group > header strong {
+  color: var(--text-strong);
+  font-size: 10px;
+}
+
+.ui-theme-picker-group > header span {
+  color: var(--muted);
+  font-size: 8px;
+  line-height: 1.45;
+}
+
+.ui-theme-picker {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ui-theme-card {
+  position: relative;
+  display: grid;
+  grid-template-rows: 88px auto;
+  min-width: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--theme-card-bg-soft);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color .18s ease, transform .18s ease, background .18s ease;
+}
+
+.ui-theme-card:hover {
+  transform: translateY(-1px);
+  border-color: var(--line-strong);
+}
+
+.ui-theme-card:disabled,
+.ui-theme-card.is-disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  filter: grayscale(25%);
+  transform: none !important;
+  pointer-events: none;
+}
+
+.ui-theme-card.is-active {
+  border-color: color-mix(in oklab, transparent 30%, var(--theme-accent) 70%);
+  box-shadow: 0 0 0 1px color-mix(in oklab, transparent 72%, var(--theme-accent) 28%);
+}
+
+.ui-theme-card-preview {
+  position: relative;
+  display: grid;
+  grid-template-columns: 27% 1fr;
+  background: var(--preview-page);
+  overflow: hidden;
+}
+
+.ui-theme-card-preview::before {
+  content: '';
+  background: var(--preview-sidebar);
+  border-right: 1px solid rgba(255,255,255,.07);
+}
+
+.ui-theme-card-preview::after {
+  content: '';
+  position: absolute;
+  left: 34%;
+  right: 8%;
+  top: 18px;
+  height: 16px;
+  background: var(--preview-accent);
+  box-shadow: 0 25px 0 var(--preview-panel), 0 50px 0 var(--preview-panel);
+  opacity: .88;
+}
+
+.ui-theme-card-copy {
+  display: grid;
+  gap: 3px;
+  padding: 10px 11px 11px;
+}
+
+.ui-theme-card-copy strong {
+  color: var(--text-strong);
+  font-size: 12px;
+}
+
+.ui-theme-card-copy span {
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.4;
+}
+
+.ui-theme-card-check {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--theme-accent);
+  color: #071018;
+}
+
+.ui-theme-card-recommended,
+.ui-theme-card-running {
+  position: absolute;
+  z-index: 2;
+  top: 8px;
+  left: 8px;
+  padding: 3px 6px;
+  border-radius: 4px;
+  color: #180b08;
+  background: var(--preview-accent);
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: .04em;
+}
+
+.ui-theme-card-running {
+  top: auto;
+  bottom: 68px;
+  color: var(--text-strong);
+  background: rgba(7, 10, 13, .78);
+  border: 1px solid var(--line);
+}
+
+.theme-accent-source {
+  display: inline-flex;
+  padding: 3px;
+  gap: 3px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--theme-card-bg-soft);
+}
+
+.theme-accent-source button {
+  min-width: 112px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.theme-accent-source button.is-active {
+  background: var(--theme-selected-bg);
+  color: var(--text-strong);
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+}
+
+.color-studio.is-theme-accent {
+  opacity: .52;
+  filter: saturate(.72);
+}
+
+.color-studio.is-theme-accent .accent-color-wheel,
+.color-studio.is-theme-accent .accent-tone-presets,
+.color-studio.is-theme-accent .theme-range-grid,
+.color-studio.is-theme-accent .dynamic-theme-panel,
+.color-studio.is-theme-accent .dynamic-theme-speed,
+.color-studio.is-theme-accent .accent-tone-reset {
+  pointer-events: none;
+}
+
+.color-studio-theme-lock {
+  margin-bottom: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--theme-card-bg-soft);
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.theme-quick-pick {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 14px 0 4px;
+}
+
+.theme-quick-pick button {
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--theme-card-bg-soft);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.theme-quick-pick button.is-active {
+  border-color: var(--line-strong);
+  background: var(--theme-selected-bg);
+  color: var(--text-strong);
+}
+
+.theme-quick-pick button strong,
+.theme-quick-pick button span {
+  display: block;
+}
+
+.theme-quick-pick button strong { font-size: 10px; }
+.theme-quick-pick button span { margin-top: 3px; font-size: 8px; color: var(--muted); }
+.theme-quick-pick button strong em {
+  display: inline-flex;
+  margin-left: 6px;
+  padding: 2px 4px;
+  border-radius: 3px;
+  background: var(--theme-accent);
+  color: #091014;
+  font-size: 6px;
+  font-style: normal;
+  text-transform: uppercase;
+}
+
+html[data-ui-theme='steam'] .ui-theme-card,
+html[data-ui-theme='steam'] .theme-accent-source,
+html[data-ui-theme='steam'] .theme-quick-pick button,
+html[data-ui-theme='steam'] .color-studio-theme-lock {
+  border-radius: 2px;
+}
+
+@media (max-width: 980px) {
+  .ui-theme-picker-groups { width: min(560px, 54vw); }
+}
+
+@media (max-width: 760px) {
+  .ui-theme-picker,
+  .theme-quick-pick { grid-template-columns: 1fr; }
+}
+
+/* Theme previews demonstrate geometry only; hue always comes from Color Wheel. */
+.ui-theme-card.theme-preview-lightning .ui-theme-card-preview {
+  grid-template-columns: 21% 1fr;
+  background:
+    linear-gradient(135deg, rgba(255, 116, 72, .18), transparent 45%),
+    var(--preview-page);
+}
+
+.ui-theme-card.theme-preview-lightning .ui-theme-card-preview::before {
+  margin: 7px;
+  border: 1px solid rgba(255, 255, 255, .09);
+  border-radius: 7px;
+  background: rgba(8, 8, 11, .78);
+}
+
+.ui-theme-card.theme-preview-lightning .ui-theme-card-preview::after {
+  left: 28%;
+  right: 7%;
+  top: 12px;
+  height: 12px;
+  border-radius: 5px;
+  background: linear-gradient(90deg, var(--preview-accent), rgba(217, 76, 120, .82));
+  box-shadow:
+    0 21px 0 rgba(255, 255, 255, .07),
+    0 42px 0 rgba(255, 255, 255, .055),
+    0 63px 0 rgba(255, 255, 255, .04);
+}
+
+.ui-theme-card.theme-preview-steam .ui-theme-card-preview {
+  grid-template-columns: 1fr;
+  grid-template-rows: 22% 1fr 15%;
+}
+
+.ui-theme-card.theme-preview-steam .ui-theme-card-preview::before {
+  background: var(--preview-sidebar);
+  border-right: 0;
+  border-bottom: 1px solid color-mix(in oklab, transparent 78%, var(--preview-accent));
+}
+
+.ui-theme-card.theme-preview-steam .ui-theme-card-preview::after {
+  left: 8%;
+  right: 8%;
+  top: 31px;
+  height: 12px;
+  background: var(--preview-panel);
+  border-left: 22px solid var(--preview-accent);
+  box-shadow: 0 21px 0 var(--preview-panel), 0 42px 0 var(--preview-panel);
+}
+
+
+/* XMCL preview: compact 80px rail + floating/frosted content surfaces. */
+.ui-theme-card.theme-preview-xmcl .ui-theme-card-preview {
+  grid-template-columns: 22% 1fr;
+  grid-template-rows: 16% 1fr;
+  gap: 0;
+  background:
+    radial-gradient(circle at 78% 18%, color-mix(in oklab, transparent 78%, var(--preview-accent) 22%), transparent 34%),
+    var(--preview-page);
+}
+
+.ui-theme-card.theme-preview-xmcl .ui-theme-card-preview::before {
+  grid-row: 1 / 3;
+  background:
+    linear-gradient(180deg, color-mix(in oklab, var(--preview-sidebar) 82%, transparent), var(--preview-sidebar));
+  border-right: 1px solid color-mix(in oklab, transparent 78%, var(--preview-accent) 22%);
+}
+
+.ui-theme-card.theme-preview-xmcl .ui-theme-card-preview::after {
+  left: 31%;
+  right: 8%;
+  top: 27px;
+  height: 18px;
+  border-radius: 7px;
+  background: color-mix(in oklab, var(--preview-panel) 86%, transparent 14%);
+  border-left: 0;
+  box-shadow:
+    0 26px 0 color-mix(in oklab, var(--preview-panel) 88%, transparent 12%),
+    0 52px 0 color-mix(in oklab, var(--preview-panel) 90%, transparent 10%);
+}
+
+@media (max-width: 1180px) {
+  .ui-theme-picker-groups { width: min(760px, 66vw); }
+}

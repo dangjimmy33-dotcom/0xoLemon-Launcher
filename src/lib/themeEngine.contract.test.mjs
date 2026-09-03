@@ -5,6 +5,8 @@ const preferences = await readFile(new URL('./preferences.ts', import.meta.url),
 const theme = await readFile(new URL('./theme.ts', import.meta.url), 'utf8')
 const css = await readFile(new URL('../index.css', import.meta.url), 'utf8')
 const appCss = await readFile(new URL('../App.css', import.meta.url), 'utf8')
+const settingsCss = await readFile(new URL('../components/SettingsView.css', import.meta.url), 'utf8')
+const activeViewCss = await readFile(new URL('../components/ActiveViewLegacy.css', import.meta.url), 'utf8')
 const app = await readFile(new URL('../App.tsx', import.meta.url), 'utf8')
 const settings = await readFile(new URL('../components/SettingsView.tsx', import.meta.url), 'utf8')
 const en = await readFile(new URL('../i18n/en-US.ts', import.meta.url), 'utf8')
@@ -24,7 +26,7 @@ assert.ok(css.includes('@keyframes launcher-hue-cycle'), 'dynamic hue must use s
 assert.ok(css.includes('prefers-reduced-motion: reduce'), 'dynamic theme must respect reduced motion')
 
 assert.match(appCss, /\.workspace\s*\{[\s\S]*?background:\s*var\(--launcher-page-bg/, 'workspace must use the semantic page background')
-assert.match(appCss, /\.settings-group\s*\{[\s\S]*?background:\s*var\(--theme-card-bg/, 'settings cards must use semantic themed surfaces')
+assert.match(settingsCss, /\.settings-group\s*\{[\s\S]*?background:\s*var\(--theme-card-bg/, 'settings cards must use semantic themed surfaces')
 assert.ok(!appCss.includes('Sidebar stays graphite'), 'sidebar must no longer be intentionally locked to graphite')
 assert.match(appCss, /\.titlebar-label-primary\s*\{[\s\S]*?var\(--theme-accent/, 'titlebar brand color must follow launcher theme')
 assert.ok(theme.includes('--launcher-frame-bg'), 'theme engine must expose one shared frame surface for titlebar and sidebar')
@@ -53,7 +55,7 @@ assert.match(premiumCss, /\.premium-workspace\s*\{[\s\S]*?var\(--launcher-page-b
 assert.match(premiumCss, /\.premium-shell\s*>\s*\.sidebar\s*\{[\s\S]*?background:\s*var\(--launcher-frame-bg/, 'premium sidebar must share the titlebar frame surface at the junction')
 assert.ok(!app.includes('sidebar-workspace-junction'), 'launcher shell must not render the old mirrored junction helper')
 assert.match(appCss, /\.panel\s*\{[\s\S]*?background:\s*var\(--theme-card-bg/, 'common panels must follow the adaptive card palette')
-assert.match(appCss, /\.translation-catalog-card\s*\{[\s\S]*?background:\s*var\(--theme-card-bg/, 'translation cards must follow the adaptive card palette')
+assert.match(activeViewCss, /\.translation-catalog-card\s*\{[\s\S]*?background:\s*var\(--theme-card-bg/, 'translation cards must follow the adaptive card palette')
 assert.ok(!whatsNew.includes('#4da4ff'), "What's New must not keep the old fixed blue accent")
 assert.ok(!whatsNew.includes('rgba(77, 164, 255'), "What's New must not keep old fixed-blue RGBA surfaces")
 

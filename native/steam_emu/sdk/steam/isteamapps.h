@@ -12,8 +12,19 @@
 
 #include "steam_api_common.h"
 
-const int k_cubAppProofOfPurchaseKeyMax = 240;			// max supported length of a legacy cd key 
+const int k_cubAppProofOfPurchaseKeyMax = 240;			// max supported length of a legacy cd key
 
+// Games can specify what settings the user has selected or has been selected by default based
+// on the user's machine.
+enum EGamePerformanceSetting
+{
+	k_EGamePerformanceSetting_NotSet	= 0,
+	k_EGamePerformanceSetting_Low		= 1,
+	k_EGamePerformanceSetting_Medium	= 2,
+	k_EGamePerformanceSetting_High		= 3,
+	k_EGamePerformanceSetting_Ultra		= 4,
+	k_EGamePerformanceSetting_Custom	= 5,
+};
 
 //-----------------------------------------------------------------------------
 // Purpose: interface to app data
@@ -51,7 +62,7 @@ public:
 	// Install/Uninstall control for optional DLC
 	virtual void InstallDLC( AppId_t nAppID ) = 0;
 	virtual void UninstallDLC( AppId_t nAppID ) = 0;
-	
+
 	// Request legacy cd-key for yourself or owned DLC. If you are interested in this
 	// data then make sure you provide us with a list of valid keys to be distributed
 	// to users when they purchase the game, before the game ships.
@@ -66,20 +77,20 @@ public:
 	// returns current app install folder for AppID, returns folder name length
 	virtual uint32 GetAppInstallDir( AppId_t appID, char *pchFolder, uint32 cchFolderBufferSize ) = 0;
 	virtual bool BIsAppInstalled( AppId_t appID ) = 0; // returns true if that app is installed (not necessarily owned)
-	
+
 	// returns the SteamID of the original owner. If this CSteamID is different from ISteamUser::GetSteamID(),
 	// the user has a temporary license borrowed via Family Sharing
-	virtual CSteamID GetAppOwner() = 0; 
+	virtual CSteamID GetAppOwner() = 0;
 
 	// Returns the associated launch param if the game is run via steam://run/<appid>//?param1=value1&param2=value2&param3=value3 etc.
 	// Parameter names starting with the character '@' are reserved for internal use and will always return and empty string.
 	// Parameter names starting with an underscore '_' are reserved for steam features -- they can be queried by the game,
 	// but it is advised that you not param names beginning with an underscore for your own features.
 	// Check for new launch parameters on callback NewUrlLaunchParameters_t
-	virtual const char *GetLaunchQueryParam( const char *pchKey ) = 0; 
+	virtual const char *GetLaunchQueryParam( const char *pchKey ) = 0;
 
 	// get download progress for optional DLC
-	virtual bool GetDlcDownloadProgress( AppId_t nAppID, uint64 *punBytesDownloaded, uint64 *punBytesTotal ) = 0; 
+	virtual bool GetDlcDownloadProgress( AppId_t nAppID, uint64 *punBytesDownloaded, uint64 *punBytesTotal ) = 0;
 
 	// return the buildid of this app, may change at any time based on backend updates to the game
 	virtual int GetAppBuildId() = 0;
@@ -120,6 +131,10 @@ public:
 
 	// select this beta branch for this app as active, might need the game to restart so Steam can update to that branch
 	virtual bool SetActiveBeta( const char *pchBetaName ) = 0;
+
+	// game performance settings
+	virtual void SetGamePerformanceSetting( EGamePerformanceSetting setting ) = 0;
+	virtual void SetGameRenderResolution( uint32 unWidth, uint32 unHeight ) = 0;
 };
 
 #define STEAMAPPS_INTERFACE_VERSION "STEAMAPPS_INTERFACE_VERSION009"
@@ -141,7 +156,7 @@ STEAM_DEFINE_GAMESERVER_INTERFACE_ACCESSOR( ISteamApps *, SteamGameServerApps, S
 #pragma pack( push, 8 )
 #else
 #error steam_api_common.h should define VALVE_CALLBACK_PACK_xxx
-#endif 
+#endif
 //-----------------------------------------------------------------------------
 // Purpose: posted after the user gains ownership of DLC & that DLC is installed
 //-----------------------------------------------------------------------------
@@ -211,7 +226,7 @@ struct FileDetailsResult_t
 	EResult		m_eResult;
 	uint64		m_ulFileSize;	// original file size in bytes
 	uint8		m_FileSHA[20];	// original file SHA1 hash
-	uint32		m_unFlags;		// 
+	uint32		m_unFlags;		//
 };
 
 
@@ -223,7 +238,7 @@ struct TimedTrialStatus_t
 	enum { k_iCallback = k_iSteamAppsCallbacks + 30 };
 	AppId_t		m_unAppID;			// appID
 	bool		m_bIsOffline;		// if true, time allowed / played refers to offline time, not total time
-	uint32		m_unSecondsAllowed;	// how many seconds the app can be played in total 
+	uint32		m_unSecondsAllowed;	// how many seconds the app can be played in total
 	uint32		m_unSecondsPlayed;	// how many seconds the app was already played
 };
 

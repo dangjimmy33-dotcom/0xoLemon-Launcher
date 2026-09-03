@@ -34,34 +34,31 @@ bool Steam_User_Stats::clear_stats_internal()
         {
         case StatInfo::STAT_TYPE_INT: {
             auto data = stat.second.default_value_int;
-
-            bool needs_disk_write = false;
             auto it_res = stats_cache_int.find(stat_name);
-            if (stats_cache_int.end() == it_res || it_res->second != data) {
-                needs_disk_write = true;
-                notify_server = true;
-            }
-
+            if (stats_cache_int.end() == it_res || it_res->second != data) notify_server = true;
             stats_cache_int[stat_name] = data;
-            
-            if (needs_disk_write) local_storage->store_data(Local_Storage::stats_storage_folder, stat_name, (char *)&data, sizeof(data));
+            // int stats: no individual file write (user_stats.json + UGS bin are sufficient)
         }
         break;
 
-        case StatInfo::STAT_TYPE_FLOAT:
+        case StatInfo::STAT_TYPE_FLOAT: {
+            auto data = stat.second.default_value_float;
+            auto it_res = stats_cache_float.find(stat_name);
+            if (stats_cache_float.end() == it_res || it_res->second != data) notify_server = true;
+            stats_cache_float[stat_name] = data;
+            // float stats: no individual file write (user_stats.json + UGS bin are sufficient)
+        }
+        break;
+
         case StatInfo::STAT_TYPE_AVGRATE: {
             auto data = stat.second.default_value_float;
-
-            bool needs_disk_write = false;
             auto it_res = stats_cache_float.find(stat_name);
-            if (stats_cache_float.end() == it_res || it_res->second != data) {
-                needs_disk_write = true;
-                notify_server = true;
-            }
-
+            if (stats_cache_float.end() == it_res || it_res->second != data) notify_server = true;
             stats_cache_float[stat_name] = data;
-            
-            if (needs_disk_write) local_storage->store_data(Local_Storage::stats_storage_folder, stat_name, (char *)&data, sizeof(data));
+            // reset the running accumulator so UpdateAvgRateStat starts fresh
+            avgrate_count_cache.erase(stat_name);
+            avgrate_sessionlength_cache.erase(stat_name);
+            // no individual file write — accumulator is persisted via stats.json
         }
         break;
         
@@ -135,13 +132,16 @@ Steam_User_Stats::InternalSetResult<int32> Steam_User_Stats::set_stat_internal( 
         }
     }
 
-    if (local_storage->store_data(Local_Storage::stats_storage_folder, stat_name, (char* )&nData, sizeof(nData)) == sizeof(nData)) {
-        stats_cache_int[stat_name] = nData;
-        result.success = true;
-        result.notify_server = !settings->disable_sharing_stats_with_gameserver;
-        return result;
+    // int stats: no individual file write; values are persisted via user_stats.json + UGS bin on StoreStats()
+    stats_cache_int[stat_name] = nData;
+    result.success = true;
+    result.changed = true;
+    result.notify_server = !settings->disable_sharing_stats_with_gameserver;
+    if (oxo_achievement_pipe) {
+        oxo_achievement_pipe->emit_event("statChanged", {
+            {"statId", stat_name}, {"value", nData}, {"integer", true},
+        });
     }
-
     return result;
 }
 
@@ -209,13 +209,16 @@ Steam_User_Stats::InternalSetResult<std::pair<StatInfo::Stat_Type, float>> Steam
         }
     }
 
-    if (local_storage->store_data(Local_Storage::stats_storage_folder, stat_name, (char* )&fData, sizeof(fData)) == sizeof(fData)) {
-        stats_cache_float[stat_name] = fData;
-        result.success = true;
-        result.notify_server = !settings->disable_sharing_stats_with_gameserver;
-        return result;
+    // float stats: no individual file write; values are persisted via user_stats.json + UGS bin on StoreStats()
+    stats_cache_float[stat_name] = fData;
+    result.success = true;
+    result.changed = true;
+    result.notify_server = !settings->disable_sharing_stats_with_gameserver;
+    if (oxo_achievement_pipe) {
+        oxo_achievement_pipe->emit_event("statChanged", {
+            {"statId", stat_name}, {"value", fData}, {"integer", false},
+        });
     }
-
     return result;
 }
 
@@ -242,33 +245,36 @@ Steam_User_Stats::InternalSetResult<std::pair<StatInfo::Stat_Type, float>> Steam
 
     result.internal_name = stat_name;
 
-    char data[sizeof(float) + sizeof(float) + sizeof(double)];
-    int read_data = local_storage->get_data(Local_Storage::stats_storage_folder, stat_name, (char* )data, sizeof(*data));
-    float oldcount = 0;
-    double oldsessionlength = 0;
-    if (read_data == sizeof(data)) {
-        memcpy(&oldcount, data + sizeof(float), sizeof(oldcount));
-        memcpy(&oldsessionlength, data + sizeof(float) + sizeof(float), sizeof(oldsessionlength));
+    // Read running accumulator from in-memory cache (persisted via stats.json / loaded at startup)
+    float  oldcount        = 0.0f;
+    double oldsessionlength = 0.0;
+    {
+        auto it_c = avgrate_count_cache.find(stat_name);
+        if (it_c != avgrate_count_cache.end()) oldcount = it_c->second;
+        auto it_s = avgrate_sessionlength_cache.find(stat_name);
+        if (it_s != avgrate_sessionlength_cache.end()) oldsessionlength = it_s->second;
     }
 
-    oldcount += flCountThisSession;
+    oldcount         += flCountThisSession;
     oldsessionlength += dSessionLength;
 
-    float average = static_cast<float>(oldcount / oldsessionlength);
-    memcpy(data, &average, sizeof(average));
-    memcpy(data + sizeof(float), &oldcount, sizeof(oldcount));
-    memcpy(data + sizeof(float) * 2, &oldsessionlength, sizeof(oldsessionlength));
+    float average = (oldsessionlength > 0.0) ? static_cast<float>(oldcount / oldsessionlength) : 0.0f;
 
-    result.current_val.first = stats_data->second.type;
+    avgrate_count_cache[stat_name]         = oldcount;
+    avgrate_sessionlength_cache[stat_name] = oldsessionlength;
+
+    result.current_val.first  = stats_data->second.type;
     result.current_val.second = average;
 
-    if (local_storage->store_data(Local_Storage::stats_storage_folder, stat_name, data, sizeof(data)) == sizeof(data)) {
-        stats_cache_float[stat_name] = average;
-        result.success = true;
-        result.notify_server = !settings->disable_sharing_stats_with_gameserver;
-        return result;
+    stats_cache_float[stat_name] = average;
+    result.success      = true;
+    result.changed      = true;
+    result.notify_server = !settings->disable_sharing_stats_with_gameserver;
+    if (oxo_achievement_pipe) {
+        oxo_achievement_pipe->emit_event("statChanged", {
+            {"statId", stat_name}, {"value", average}, {"integer", false}, {"averageRate", true},
+        });
     }
-
     return result;
 }
 
@@ -345,6 +351,21 @@ bool Steam_User_Stats::GetStat( const char *pchName, int32 *pData )
         return true;
     }
 
+    // Try UGS bin (primary store) — loaded at startup from UserGameStats_*.bin
+    {
+        auto gid_it = stat_name_to_gid.find(stat_name);
+        if (gid_it != stat_name_to_gid.end()) {
+            auto ugs_it = ugs_stat_cache.find(gid_it->second);
+            if (ugs_it != ugs_stat_cache.end()) {
+                const int32 val = static_cast<int32>(ugs_it->second);
+                stats_cache_int[stat_name] = val;
+                if (pData) *pData = val;
+                return true;
+            }
+        }
+    }
+
+    // Fallback: individual stats/<stat_name> file (compatibility with older tools)
     int32 output = 0;
     int read_data = local_storage->get_data(Local_Storage::stats_storage_folder, stat_name, (char* )&output, sizeof(output));
     if (read_data == sizeof(int32)) {
@@ -384,6 +405,23 @@ bool Steam_User_Stats::GetStat( const char *pchName, float *pData )
         return true;
     }
 
+    // Try UGS bin (primary store) — loaded at startup from UserGameStats_*.bin
+    {
+        auto gid_it = stat_name_to_gid.find(stat_name);
+        if (gid_it != stat_name_to_gid.end()) {
+            auto ugs_it = ugs_stat_cache.find(gid_it->second);
+            if (ugs_it != ugs_stat_cache.end()) {
+                float val;
+                const uint32_t raw = ugs_it->second;
+                memcpy(&val, &raw, sizeof(val));
+                stats_cache_float[stat_name] = val;
+                if (pData) *pData = val;
+                return true;
+            }
+        }
+    }
+
+    // Fallback: individual stats/<stat_name> file (compatibility with older tools)
     float output = 0.0;
     int read_data = local_storage->get_data(Local_Storage::stats_storage_folder, stat_name, (char* )&output, sizeof(output));
     if (read_data == sizeof(float)) {
@@ -474,6 +512,8 @@ bool Steam_User_Stats::StoreStats()
     }
     store_stats_trigger.clear();
 
+    write_ugs_bin();
+    if (oxo_achievement_pipe) oxo_achievement_pipe->emit_event(std::string("flushed"));
     return true;
 }
 
@@ -656,6 +696,12 @@ bool Steam_User_Stats::ResetAllStats( bool bAchievementsToo )
     }
 
     if (!settings->disable_sharing_stats_with_gameserver && settings->immediate_gameserver_stats) send_updated_stats();
+
+    if (oxo_achievement_pipe) {
+        auto state = oxo_runtime_state();
+        state["type"] = "schemaReady";
+        oxo_achievement_pipe->emit_event(std::move(state));
+    }
 
     return true;
 }

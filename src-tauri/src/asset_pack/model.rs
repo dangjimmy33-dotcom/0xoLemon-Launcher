@@ -5,6 +5,7 @@ use thiserror::Error;
 
 use crate::cloud_save::CloudSaveMetadata;
 use crate::launch::GameLaunchConfig;
+use crate::managed_game_runtime::LocalRuntimeIntegration;
 
 #[derive(Debug, Error)]
 pub enum AssetPackError {
@@ -51,6 +52,8 @@ pub struct GameSummary {
     pub launch: GameLaunchConfig,
     #[serde(default)]
     pub cloud_save: CloudSaveMetadata,
+    #[serde(default, flatten)]
+    pub local_runtime: LocalRuntimeIntegration,
     pub asset_pack_path: String,
 }
 
@@ -101,6 +104,8 @@ pub struct GameDetail {
     pub launch: GameLaunchConfig,
     #[serde(default)]
     pub cloud_save: CloudSaveMetadata,
+    #[serde(default, flatten)]
+    pub local_runtime: LocalRuntimeIntegration,
     pub description_images: Vec<String>,
     pub versions: Vec<GameVersionInfo>,
     pub metadata_source: String,

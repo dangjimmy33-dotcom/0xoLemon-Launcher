@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 2,
+  "runtimeVersion": "gse-2026.08.30+0xo.2",
+  "source": {
+    "upstream": "Detanup01/gbe_fork",
+    "sourceManifestSha256": "0c5a3b0ed39e0a9e93023fc75b54286e70a0bb9a9feb5a1ace3c64f7dd762d72",
+    "adapterPatchSha256": "3ac5e3af1979deaf457cafdd7a361f799daaf6004398e2ed4cf550a338e7ee02",
+    "license": "LGPL-3.0",
+    "licenseSha256": "e3a994d82e644b03a792a930f574002658412f62407f5fee083f2555c5f23118"
+  },
+  "artifacts": [
+    {
+      "architecture": "x86",
+      "relativePath": "x86/steam_api.dll",
+      "fileName": "steam_api.dll",
+      "sizeBytes": 5980584,
+      "sha256": "30aa25350cfc7e803e3457e3859bd70fc7bfd38df5e207c0d63f38c161258e19"
+    },
+    {
+      "architecture": "x64",
+      "relativePath": "x64/steam_api64.dll",
+      "fileName": "steam_api64.dll",
+      "sizeBytes": 7037352,
+      "sha256": "310d0ca06e49b5870ad711a1bf71f02fc9dc1852745a77b828e3577b9d145dc5"
+    }
+  ]
+}

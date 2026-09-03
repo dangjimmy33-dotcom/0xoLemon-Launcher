@@ -938,6 +938,150 @@
   font-size: 13px;
 }
 
+.lua-runtime-compatibility .lua-manager-section-title {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.lua-runtime-compatibility .lua-manager-section-title > button,
+.lua-runtime-approval-row button,
+.lua-runtime-managed-actions button {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  color: var(--text-strong);
+  background: var(--theme-control-bg);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.lua-runtime-compatibility .lua-manager-section-title svg,
+.lua-runtime-apply-gate svg,
+.lua-runtime-scan-blockers svg {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+}
+
+.lua-runtime-scan-result {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 11px;
+  border: 1px solid rgba(65, 201, 126, .26);
+  border-radius: 6px;
+  background: rgba(27, 111, 66, .08);
+}
+
+.lua-runtime-scan-result.is-blocked {
+  border-color: rgba(241, 184, 67, .28);
+  background: rgba(130, 92, 22, .1);
+}
+
+.lua-runtime-scan-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.lua-runtime-scan-summary span {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+  padding: 7px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  color: #84919c;
+  background: var(--theme-card-bg-soft);
+  font-size: 8px;
+}
+
+.lua-runtime-scan-summary b { color: #dce4e9; font-size: 13px; }
+
+.lua-runtime-scan-path {
+  overflow: hidden;
+  color: #91a0ab;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lua-runtime-scan-files { display: grid; gap: 5px; }
+
+.lua-runtime-scan-files article {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 8px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--theme-card-bg-soft);
+}
+
+.lua-runtime-scan-files strong {
+  overflow: hidden;
+  color: #dce4e9;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lua-runtime-scan-files span,
+.lua-runtime-scan-files code { color: #82909b; font-size: 8px; }
+
+.lua-runtime-scan-blockers,
+.lua-runtime-scan-warnings { display: grid; gap: 5px; }
+
+.lua-runtime-scan-blockers span,
+.lua-runtime-scan-warnings span {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  color: #edc56f;
+  font-size: 9px;
+  line-height: 1.4;
+}
+
+.lua-runtime-scan-warnings span { color: #9eabb4; }
+
+.lua-runtime-approval-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
+.lua-runtime-approval-row > div { min-width: 0; display: grid; gap: 3px; }
+.lua-runtime-approval-row strong { color: #dbe4e9; font-size: 10px; }
+.lua-runtime-approval-row small { overflow: hidden; color: #7f8d98; font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+.lua-runtime-approval-row button:disabled,
+.lua-runtime-managed-actions button:disabled { opacity: .43; cursor: not-allowed; }
+
+.lua-runtime-managed-actions { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+
+.lua-runtime-apply-gate,
+.lua-runtime-scan-empty {
+  margin: 0;
+  color: #9ba8b2;
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.lua-runtime-apply-gate { display: flex; align-items: flex-start; gap: 6px; color: #edc56f; }
+.lua-runtime-scan-empty { margin-top: 10px; padding: 10px; border: 1px dashed var(--line); border-radius: 5px; text-align: center; }
+
 .lua-manager-segments {
   width: 100%;
   display: grid;
@@ -1101,6 +1245,27 @@
   text-align: center;
 }
 
+.lua-manager-source-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 9px 10px;
+  border: 1px solid rgba(104, 196, 225, 0.22);
+  border-radius: 5px;
+  color: #9fd9ea;
+  background: rgba(54, 130, 154, 0.1);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.lua-manager-source-notice svg { flex: 0 0 auto; margin-top: 1px; }
+.lua-manager-source-notice.changes-source {
+  border-color: rgba(241, 184, 67, 0.28);
+  color: #edc56f;
+  background: rgba(130, 92, 22, 0.12);
+}
+
 .lua-manager-apply {
   min-height: 36px;
   margin-top: 12px;
@@ -1115,6 +1280,153 @@
 .lua-manager-apply:disabled {
   opacity: 0.45;
 }
+
+.lua-drift-panel .lua-manager-section-title {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.lua-drift-panel .lua-manager-section-title > button,
+.lua-drift-actions button {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  color: var(--text-strong);
+  background: var(--theme-control-bg);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.lua-drift-panel .lua-manager-section-title svg {
+  width: 14px;
+  height: 14px;
+}
+
+.lua-drift-result {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 10px;
+  border: 1px solid rgba(65, 201, 126, 0.28);
+  border-radius: 6px;
+  background: rgba(27, 111, 66, 0.1);
+}
+
+.lua-drift-result.is-drifted {
+  border-color: rgba(241, 184, 67, 0.3);
+  background: rgba(130, 92, 22, 0.12);
+}
+
+.lua-drift-result > div:first-child {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #b9c5ce;
+  font-size: 10px;
+}
+
+.lua-drift-result code,
+.lua-drift-result small {
+  color: #7f8d98;
+  font-size: 9px;
+}
+
+.lua-drift-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.lua-drift-actions button.primary {
+  border-color: var(--line-strong);
+  background: var(--theme-accent-surface-strong);
+}
+
+.lua-variant-vault-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.lua-variant-vault-heading > button,
+.lua-variant-list article button {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  color: var(--text-strong);
+  background: var(--theme-control-bg);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.lua-variant-vault-heading > button svg,
+.lua-variant-list article button svg {
+  width: 14px;
+  height: 14px;
+}
+
+.lua-variant-list {
+  display: grid;
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.lua-variant-list article {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--theme-card-bg-soft);
+}
+
+.lua-variant-list article.is-recovery-only {
+  border-color: rgba(241, 184, 67, 0.28);
+}
+
+.lua-variant-list article.is-active {
+  border-color: color-mix(in srgb, var(--theme-accent-strong) 58%, transparent);
+  box-shadow: inset 3px 0 0 var(--theme-accent-strong);
+}
+
+.lua-variant-list article > div:first-child {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.lua-variant-list article strong,
+.lua-variant-list article span,
+.lua-variant-list article small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lua-variant-list article strong { color: #dce4e9; font-size: 11px; }
+.lua-variant-list article span { color: #8996a1; font-size: 9px; }
+.lua-variant-list article small { color: #6f7f8b; font-size: 9px; }
+.lua-variant-list article > div:last-child { display: flex; gap: 6px; }
+.lua-variant-list article button:first-child { width: 32px; padding: 0; }
+.lua-variant-list article button.is-pinned { color: var(--theme-accent-strong); background: var(--theme-accent-surface); }
+.lua-variant-list article button:disabled { opacity: 0.45; }
+.lua-variant-empty { margin: 0; padding: 12px; color: #7e8c97; font-size: 10px; text-align: center; }
 
 .lua-manager-details {
   display: grid;
@@ -1132,6 +1444,7 @@
 }
 
 .lua-manager-warning,
+.lua-manager-success,
 .lua-manager-error {
   display: flex;
   align-items: flex-start;
@@ -1143,6 +1456,13 @@
   background: rgba(130, 92, 22, 0.12);
   font-size: 11px;
   line-height: 1.45;
+}
+
+.lua-manager-success {
+  margin-top: 10px;
+  border-color: rgba(65, 201, 126, 0.28);
+  color: #79dda5;
+  background: rgba(27, 111, 66, 0.13);
 }
 
 .lua-manager-error {
@@ -1203,6 +1523,9 @@
   .lua-manager-footer { align-items: stretch; flex-direction: column-reverse; }
   .lua-manager-footer > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .lua-manager-footer button { width: 100%; }
+  .lua-variant-vault-heading { flex-direction: column; }
+  .lua-variant-list article { grid-template-columns: 1fr; }
+  .lua-variant-list article > div:last-child { justify-content: flex-end; }
 }
 
 .lua-source-picker-backdrop {
@@ -2006,6 +2329,14 @@
 .lua-source-channel-choice-buttons button.is-active.locked { border-color: rgba(245, 158, 11, 0.62); background: rgba(245, 158, 11, 0.12); color: #fbbf24; }
 @media (max-width: 720px) { .lua-source-channel-choice { align-items: stretch; flex-direction: column; } .lua-source-channel-choice-buttons button { flex: 1; } }
 
+@media (max-width: 720px) {
+  .lua-runtime-compatibility .lua-manager-section-title,
+  .lua-runtime-approval-row { align-items: stretch; flex-direction: column; }
+  .lua-runtime-scan-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lua-runtime-scan-files article { grid-template-columns: minmax(0, 1fr); }
+  .lua-runtime-managed-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
 /* Source picker step 2: hybrid channel selection lives after source selection. */
 .lua-source-channel-step {
   display: grid;
@@ -2032,3 +2363,228 @@
 .lua-source-channel-step-source > span:nth-child(2) { font-weight: 700; flex: 1; }
 .lua-source-channel-step-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .lua-source-channel-step-buttons button { min-height: 46px; justify-content: center; }
+
+/* GSE / UC Setup native integration */
+.gse-uc-panel {
+  display: grid;
+  gap: 11px;
+  padding: 11px;
+  border: 1px solid color-mix(in oklab, var(--line) 82%, rgba(91, 201, 229, .28));
+  border-radius: 7px;
+  background: color-mix(in oklab, var(--theme-card-bg-soft) 92%, rgba(41, 109, 127, .08));
+}
+
+.gse-uc-panel-heading,
+.gse-uc-footer,
+.gse-uc-subheading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.gse-uc-panel-heading > div,
+.gse-uc-footer > div {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.gse-uc-panel-heading strong,
+.gse-uc-subheading strong,
+.gse-uc-footer strong {
+  color: var(--text-strong);
+  font-size: 10px;
+}
+
+.gse-uc-panel-heading small,
+.gse-uc-footer small,
+.gse-uc-subheading span {
+  color: var(--muted);
+  font-size: 8px;
+  line-height: 1.45;
+}
+
+.gse-uc-panel-heading > button,
+.gse-uc-footer > button {
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  color: var(--text-strong);
+  background: var(--theme-control-bg);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.gse-uc-panel-heading > button svg,
+.gse-uc-footer > button svg {
+  width: 13px;
+  height: 13px;
+}
+
+.gse-uc-health {
+  display: grid;
+  gap: 7px;
+}
+
+.gse-uc-health-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.gse-uc-health-grid article {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 3px 8px;
+  padding: 7px 8px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--theme-card-bg-soft);
+}
+
+.gse-uc-health-grid article > div {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.gse-uc-health-grid strong {
+  overflow: hidden;
+  color: #dce4e9;
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gse-uc-health-grid small,
+.gse-uc-health-grid em {
+  color: #778691;
+  font-size: 7px;
+  font-style: normal;
+}
+
+.gse-uc-health-grid em {
+  grid-column: 1 / -1;
+}
+
+.gse-uc-health-grid article > span {
+  align-self: start;
+  padding: 2px 5px;
+  border-radius: 999px;
+  color: #efc66e;
+  background: rgba(241, 184, 67, .08);
+  font-size: 7px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.gse-uc-health-grid article.is-ok > span {
+  color: #6ee7a2;
+  background: rgba(65, 201, 126, .1);
+}
+
+.gse-uc-plan {
+  display: grid;
+  gap: 7px;
+  padding: 8px;
+  border: 1px solid rgba(241, 184, 67, .24);
+  border-radius: 5px;
+  background: rgba(130, 92, 22, .07);
+}
+
+.gse-uc-plan.is-ready {
+  border-color: rgba(65, 201, 126, .24);
+  background: rgba(27, 111, 66, .07);
+}
+
+.gse-uc-action-list {
+  display: grid;
+  gap: 4px;
+  max-height: 210px;
+  overflow: auto;
+  padding-right: 2px;
+}
+
+.gse-uc-action-list article {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 6px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: color-mix(in oklab, var(--theme-card-bg-soft) 92%, transparent);
+}
+
+.gse-uc-action-list article > span {
+  color: #73c9e2;
+  font-size: 7px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.gse-uc-action-list strong {
+  overflow: hidden;
+  color: #d8e1e6;
+  font-size: 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gse-uc-action-list code {
+  color: #7f8d98;
+  font-size: 7px;
+}
+
+.gse-uc-action-list > small {
+  color: #82909b;
+  font-size: 7px;
+  text-align: right;
+}
+
+.gse-uc-blockers,
+.gse-uc-warnings {
+  display: grid;
+  gap: 4px;
+}
+
+.gse-uc-blockers span,
+.gse-uc-warnings span {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  color: #edc56f;
+  font-size: 8px;
+  line-height: 1.4;
+}
+
+.gse-uc-blockers svg {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 auto;
+}
+
+.gse-uc-warnings span { color: #8e9ba5; }
+
+.gse-uc-footer {
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
+@media (max-width: 880px) {
+  .gse-uc-health-grid { grid-template-columns: 1fr; }
+  .gse-uc-panel-heading,
+  .gse-uc-footer,
+  .gse-uc-subheading { align-items: stretch; flex-direction: column; }
+  .gse-uc-action-list article { grid-template-columns: 44px minmax(0, 1fr); }
+  .gse-uc-action-list code { grid-column: 2; }
+}

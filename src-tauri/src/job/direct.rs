@@ -801,10 +801,18 @@ impl DepotSource {
                                     break;
                                 };
                                 retry_count = next_retry;
-                                observe_adaptive_range(0, true);
+                                source.observe_transport_window(
+                                    Duration::ZERO,
+                                    0,
+                                    1.0,
+                                    matches!(err, JobError::RateLimited { .. }),
+                                    0,
+                                    false,
+                                );
                                 let _ = tx.send(Ok(DownloadProgress {
                                     task_id: task_id.clone(),
                                     committed_bytes: 0,
+                                    wire_bytes_delta: 0,
                                     in_flight_bytes: 0,
                                     clear_in_flight: true,
                                     retry_count,
@@ -819,6 +827,14 @@ impl DepotSource {
                                     } else {
                                         0
                                     },
+                                    transport: DownloadTransportKind::HttpRange,
+                                    stall_reason: if matches!(err, JobError::RateLimited { .. }) {
+                                        "rate-limit".to_string()
+                                    } else {
+                                        "retry".to_string()
+                                    },
+                                    active_connections: 0,
+                                    queue_bytes: 0,
                                 }));
                                 if let Err(error) = sleep_with_control(delay, &control) {
                                     abort.store(true, Ordering::SeqCst);
@@ -901,12 +917,17 @@ impl DepotSource {
             .send(Ok(DownloadProgress {
                 task_id: task_id.to_string(),
                 committed_bytes: task.range_end.saturating_sub(task.range_start),
+                wire_bytes_delta: 0,
                 in_flight_bytes: 0,
                 clear_in_flight: true,
                 retry_count: 0,
                 rate_bytes_per_second: 0,
                 retry_wait_ms: 0,
                 rate_limit_wait_ms: 0,
+                transport: DownloadTransportKind::HttpRange,
+                stall_reason: String::new(),
+                active_connections: 0,
+                queue_bytes: 0,
             }))
             .map_err(|_| JobError::Canceled)
     }

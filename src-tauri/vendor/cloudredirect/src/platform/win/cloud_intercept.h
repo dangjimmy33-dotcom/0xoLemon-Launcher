@@ -72,6 +72,8 @@ void TriggerDeferredSeed(const std::vector<uint32_t>& apps);
 // Caller MUST be on Steam's network thread (slot4/slot5 hook context).
 void DrainPlaytimeUpdates();
 
+void QueueLocalPlaytimePush(const std::vector<uint32_t>& endedApps);
+
 // signal shutdown
 void Shutdown();
 

@@ -94,6 +94,8 @@ struct Connection {
     std::vector<CSteamID> ids{};
     uint32 appid{};
     std::chrono::high_resolution_clock::time_point last_received{};
+    uint32 known_ips[16]{};   // all IPs seen from this peer (host byte order)
+    int known_ip_count = 0;
 };
 
 class Networking
@@ -108,6 +110,7 @@ class Networking
 
     std::vector<CSteamID> ids;
     uint32 appid;
+    bool crossapp_messaging;
     std::chrono::high_resolution_clock::time_point last_broadcast;
     std::vector<IP_PORT> custom_broadcasts;
 
@@ -134,7 +137,7 @@ class Networking
 
 
 public:
-    Networking(CSteamID id, uint32 appid, uint16 port, std::set<IP_PORT> *custom_broadcasts, bool disable_sockets);
+    Networking(CSteamID id, uint32 appid, uint16 port, std::set<IP_PORT> *custom_broadcasts, bool disable_sockets, bool crossapp_messaging = false);
     ~Networking();
     
     //NOTE: for all functions ips/ports are passed/returned in host byte order
@@ -146,7 +149,8 @@ public:
     void Run();
 
     // send to a specific user, set_dest_id() must be called
-    bool sendTo(Common_Message *msg, bool reliable, Connection *conn = NULL);
+    // any_appid=true bypasses the appid filter when finding the connection (for cross-app messages)
+    bool sendTo(Common_Message *msg, bool reliable, Connection *conn = NULL, bool any_appid = false);
     
     // send to all users whose account type is Individual, no need to call set_dest_id(), this is done automatically
     bool sendToAllIndividuals(Common_Message *msg, bool reliable);
@@ -165,8 +169,19 @@ public:
     void rmCallback(Callback_Ids id, CSteamID steam_id, void (*message_callback)(void *object, Common_Message *msg), void *object);
 
     uint32 getIP(CSteamID id);
+    int getIPs(CSteamID id, uint32 *out, int max_count);
     uint16 getPort(CSteamID id);
     uint32 getOwnIP();
+
+    struct AdapterInfo {
+        uint32 ip;            // adapter's own IP (host byte order)
+        uint32 lower;         // subnet start (network byte order)
+        uint32 upper;         // subnet end / broadcast (network byte order)
+        uint8_t prefix_len;   // CIDR prefix (e.g. 24)
+        char name[128];       // adapter friendly name
+    };
+    int getAdapters(AdapterInfo *out, int max_count);
+    int getConnectedUsers(CSteamID *out, int max_count);
 
     void startQuery(IP_PORT ip_port);
     void shutDownQuery();

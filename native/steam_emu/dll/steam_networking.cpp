@@ -212,7 +212,7 @@ Steam_Networking::~Steam_Networking()
 // if we can't get through to the user, an error will be posted via the callback P2PSessionConnectFail_t
 // see EP2PSend enum above for the descriptions of the different ways of sending packets
 //
-// nChannel is a routing number you can use to help route message to different systems 	- you'll have to call ReadP2PPacket() 
+// nChannel is a routing number you can use to help route message to different systems 	- you'll have to call ReadP2PPacket()
 // with the same channel number in order to retrieve the data on the other end
 // using different channels to talk to the same user will still use the same underlying p2p connection, saving on resources
 bool Steam_Networking::SendP2PPacket( CSteamID steamIDRemote, const void *pubData, uint32 cubData, EP2PSend eP2PSendType, int nChannel)
@@ -306,7 +306,7 @@ bool Steam_Networking::ReadP2PPacket( void *pubDest, uint32 cubDest, uint32 *pcu
 
             PRINT_DEBUG("%s",
                 common_helpers::uint8_vector_to_hex_string(std::vector<uint8_t>((uint8_t*)pubDest, (uint8_t*)pubDest + msg_size)).c_str());
-            
+
             *psteamIDRemote = CSteamID((uint64)msg->source_id());
             PRINT_DEBUG("len %u channel: %u from: " "%" PRIu64 "", msg_size, nChannel, msg->source_id());
             msg = messages.erase(msg);
@@ -350,12 +350,12 @@ bool Steam_Networking::CloseP2PSessionWithUser( CSteamID steamIDRemote )
     PRINT_DEBUG("%llu", steamIDRemote.ConvertToUint64());
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (!connection_exists(steamIDRemote)) {
-        
+
         return false;
     }
 
     remove_connection(steamIDRemote);
-    
+
     return true;
 }
 
@@ -944,6 +944,14 @@ void Steam_Networking::Callback(Common_Message *msg)
 
     if (msg->has_low_level()) {
         if (msg->low_level().type() == Low_Level::DISCONNECT) {
+                // FIX REASON:
+                //  as of SDK 1.65...
+                //  errors returned for SendP2PPacket via callback
+                //  should keep the state of the other user anonymous
+                //  (for ex. this could tell another user if someone
+                //      is online or offline inadvertently.
+                //      which is not what is wanted)
+#if 0
             CSteamID source_id((uint64)msg->source_id());
             if (connection_exists(source_id)) {
                 P2PSessionConnectFail_t data;
@@ -951,6 +959,7 @@ void Steam_Networking::Callback(Common_Message *msg)
                 data.m_eP2PSessionError = k_EP2PSessionErrorDestinationNotLoggedIn;
                 callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
             }
+#endif
 
             for (auto & socket : connection_sockets) {
                 if (socket.target.ConvertToUint64() == msg->source_id()) {
@@ -966,7 +975,7 @@ void Steam_Networking::Callback(Common_Message *msg)
         } else
 
         if (msg->low_level().type() == Low_Level::CONNECT) {
-            
+
         }
     }
 }

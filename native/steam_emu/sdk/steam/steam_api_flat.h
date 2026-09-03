@@ -181,6 +181,8 @@ STEAMAPI_API const char * SteamAPI_ISteamFriends_GetProfileItemPropertyString( I
 STEAMAPI_API uint32 SteamAPI_ISteamFriends_GetProfileItemPropertyUint( ISteamFriends* self, uint64_steamid steamID, ECommunityProfileItemType itemType, ECommunityProfileItemProperty prop );
 
 // ISteamUtils
+STEAMAPI_API ISteamUtils *SteamAPI_SteamUtils_v011();
+STEAMAPI_API ISteamUtils *SteamAPI_SteamGameServerUtils_v011();
 STEAMAPI_API ISteamUtils *SteamAPI_SteamUtils_v010();
 STEAMAPI_API ISteamUtils *SteamAPI_SteamGameServerUtils_v010();
 STEAMAPI_API ISteamUtils *SteamAPI_SteamUtils_v009();
@@ -218,12 +220,15 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUtils_IsSteamChinaLauncher( ISteamUtils* 
 STEAMAPI_API steam_bool SteamAPI_ISteamUtils_InitFilterText( ISteamUtils* self, uint32 unFilterOptions );
 STEAMAPI_API int SteamAPI_ISteamUtils_FilterText( ISteamUtils* self, ETextFilteringContext eContext, uint64_steamid sourceSteamID, const char * pchInputMessage, char * pchOutFilteredText, uint32 nByteSizeOutFilteredText );
 STEAMAPI_API ESteamIPv6ConnectivityState SteamAPI_ISteamUtils_GetIPv6ConnectivityState( ISteamUtils* self, ESteamIPv6ConnectivityProtocol eProtocol );
-STEAMAPI_API steam_bool SteamAPI_ISteamUtils_IsSteamRunningOnSteamDeck( ISteamUtils* self );
+STEAMAPI_API steam_bool SteamAPI_ISteamUtils_IsSteamRunningOnSteamDeck( ISteamUtils* self ); // removed in SDK 1.65
 STEAMAPI_API steam_bool SteamAPI_ISteamUtils_ShowModalGamepadTextInput( ISteamUtils* self, EGamepadTextInputLineMode eLineInputMode );
 STEAMAPI_API steam_bool SteamAPI_ISteamUtils_ShowFloatingGamepadTextInput( ISteamUtils* self, EFloatingGamepadTextInputMode eKeyboardMode, int nTextFieldXPosition, int nTextFieldYPosition, int nTextFieldWidth, int nTextFieldHeight );
 STEAMAPI_API void SteamAPI_ISteamUtils_SetGameLauncherMode( ISteamUtils* self, bool bLauncherMode );
 STEAMAPI_API steam_bool SteamAPI_ISteamUtils_DismissFloatingGamepadTextInput( ISteamUtils* self );
 STEAMAPI_API steam_bool SteamAPI_ISteamUtils_DismissGamepadTextInput( ISteamUtils* self );
+STEAMAPI_API ESteamHardwareType SteamAPI_ISteamUtils_IsRunningOnSteamHardware( ISteamUtils* self );
+STEAMAPI_API ESteamHardwareDefaultConfig SteamAPI_ISteamUtils_GetSteamHardwareDefaultConfig( ISteamUtils* self );
+STEAMAPI_API steam_bool SteamAPI_ISteamUtils_IsRunningUnderProton( ISteamUtils* self );
 
 // ISteamMatchmaking
 STEAMAPI_API ISteamMatchmaking *SteamAPI_SteamMatchmaking_v009();
@@ -285,7 +290,13 @@ STEAMAPI_API void SteamAPI_ISteamMatchmakingRulesResponse_RulesResponded( ISteam
 STEAMAPI_API void SteamAPI_ISteamMatchmakingRulesResponse_RulesFailedToRespond( ISteamMatchmakingRulesResponse* self );
 STEAMAPI_API void SteamAPI_ISteamMatchmakingRulesResponse_RulesRefreshComplete( ISteamMatchmakingRulesResponse* self );
 
+// ISteamMatchmakingServerFriendsResponse
+STEAMAPI_API void SteamAPI_ISteamMatchmakingServerFriendsResponse_AddFriendToList( ISteamMatchmakingServerFriendsResponse* self, uint64_steamid steamID, const char * pchName, bool bCurrentlyConnected );
+STEAMAPI_API void SteamAPI_ISteamMatchmakingServerFriendsResponse_FriendsFailedToRespond( ISteamMatchmakingServerFriendsResponse* self );
+STEAMAPI_API void SteamAPI_ISteamMatchmakingServerFriendsResponse_FriendsRefreshComplete( ISteamMatchmakingServerFriendsResponse* self );
+
 // ISteamMatchmakingServers
+STEAMAPI_API ISteamMatchmakingServers *SteamAPI_SteamMatchmakingServers_v003();
 STEAMAPI_API ISteamMatchmakingServers *SteamAPI_SteamMatchmakingServers_v002();
 STEAMAPI_API HServerListRequest SteamAPI_ISteamMatchmakingServers_RequestInternetServerList( ISteamMatchmakingServers* self, AppId_t iApp, MatchMakingKeyValuePair_t ** ppchFilters, uint32 nFilters, ISteamMatchmakingServerListResponse * pRequestServersResponse );
 STEAMAPI_API HServerListRequest SteamAPI_ISteamMatchmakingServers_RequestLANServerList( ISteamMatchmakingServers* self, AppId_t iApp, ISteamMatchmakingServerListResponse * pRequestServersResponse );
@@ -303,6 +314,7 @@ STEAMAPI_API void SteamAPI_ISteamMatchmakingServers_RefreshServer( ISteamMatchma
 STEAMAPI_API HServerQuery SteamAPI_ISteamMatchmakingServers_PingServer( ISteamMatchmakingServers* self, uint32 unIP, uint16 usPort, ISteamMatchmakingPingResponse * pRequestServersResponse );
 STEAMAPI_API HServerQuery SteamAPI_ISteamMatchmakingServers_PlayerDetails( ISteamMatchmakingServers* self, uint32 unIP, uint16 usPort, ISteamMatchmakingPlayersResponse * pRequestServersResponse );
 STEAMAPI_API HServerQuery SteamAPI_ISteamMatchmakingServers_ServerRules( ISteamMatchmakingServers* self, uint32 unIP, uint16 usPort, ISteamMatchmakingRulesResponse * pRequestServersResponse );
+STEAMAPI_API HServerQuery SteamAPI_ISteamMatchmakingServers_ServerFriends( ISteamMatchmakingServers* self, uint32 unIP, uint16 usPort, ISteamMatchmakingServerFriendsResponse * pRequestServersResponse );
 STEAMAPI_API void SteamAPI_ISteamMatchmakingServers_CancelServerQuery( ISteamMatchmakingServers* self, HServerQuery hServerQuery );
 
 // ISteamGameSearch
@@ -491,6 +503,8 @@ STEAMAPI_API steam_bool SteamAPI_ISteamApps_SetDlcContext( ISteamApps* self, App
 STEAMAPI_API int SteamAPI_ISteamApps_GetNumBetas( ISteamApps* self, int * pnAvailable, int * pnPrivate );
 STEAMAPI_API steam_bool SteamAPI_ISteamApps_GetBetaInfo( ISteamApps* self, int iBetaIndex, uint32 * punFlags, uint32 * punBuildID, char * pchBetaName, int cchBetaName, char * pchDescription, int cchDescription, uint32 *punLastUpdated );
 STEAMAPI_API steam_bool SteamAPI_ISteamApps_SetActiveBeta( ISteamApps* self, const char * pchBetaName );
+STEAMAPI_API void SteamAPI_ISteamApps_SetGamePerformanceSetting( ISteamApps* self, EGamePerformanceSetting setting );
+STEAMAPI_API void SteamAPI_ISteamApps_SetGameRenderResolution( ISteamApps* self, uint32 unWidth, uint32 unHeight );
 
 
 // ISteamNetworking
@@ -613,6 +627,7 @@ STEAMAPI_API ISteamInput *SteamAPI_SteamInput_v001();
 STEAMAPI_API ISteamInput *SteamAPI_SteamInput_v002();
 STEAMAPI_API ISteamInput *SteamAPI_SteamInput_v005();
 STEAMAPI_API ISteamInput *SteamAPI_SteamInput_v006();
+STEAMAPI_API ISteamInput *SteamAPI_SteamInput_v007();
 STEAMAPI_API steam_bool SteamAPI_ISteamInput_Init( ISteamInput* self, bool bExplicitlyCallRunFrame );
 STEAMAPI_API steam_bool SteamAPI_ISteamInput_Shutdown( ISteamInput* self );
 STEAMAPI_API steam_bool SteamAPI_ISteamInput_SetInputActionManifestFilePath( ISteamInput* self, const char * pchInputActionManifestAbsolutePath );
@@ -1001,6 +1016,8 @@ STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingMessages_CloseChannelWithUser( 
 STEAMAPI_API ESteamNetworkingConnectionState SteamAPI_ISteamNetworkingMessages_GetSessionConnectionInfo( ISteamNetworkingMessages* self, const SteamNetworkingIdentity & identityRemote, SteamNetConnectionInfo_t * pConnectionInfo, SteamNetworkingQuickConnectionStatus * pQuickStatus );
 
 // ISteamNetworkingSockets
+STEAMAPI_API ISteamNetworkingSockets *SteamAPI_SteamNetworkingSockets_SteamAPI_v013();
+STEAMAPI_API ISteamNetworkingSockets *SteamAPI_SteamGameServerNetworkingSockets_SteamAPI_v013();
 STEAMAPI_API ISteamNetworkingSockets *SteamAPI_SteamNetworkingSockets_SteamAPI_v012();
 STEAMAPI_API ISteamNetworkingSockets *SteamAPI_SteamGameServerNetworkingSockets_SteamAPI_v012();
 STEAMAPI_API ISteamNetworkingSockets *SteamAPI_SteamNetworkingSockets_SteamAPI_v011();
@@ -1023,7 +1040,7 @@ STEAMAPI_API int64 SteamAPI_ISteamNetworkingSockets_GetConnectionUserData( IStea
 STEAMAPI_API void SteamAPI_ISteamNetworkingSockets_SetConnectionName( ISteamNetworkingSockets* self, HSteamNetConnection hPeer, const char * pszName );
 STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_GetConnectionName( ISteamNetworkingSockets* self, HSteamNetConnection hPeer, char * pszName, int nMaxLen );
 STEAMAPI_API EResult SteamAPI_ISteamNetworkingSockets_SendMessageToConnection( ISteamNetworkingSockets* self, HSteamNetConnection hConn, const void * pData, uint32 cbData, int nSendFlags, int64 * pOutMessageNumber );
-STEAMAPI_API void SteamAPI_ISteamNetworkingSockets_SendMessages( ISteamNetworkingSockets* self, int nMessages, SteamNetworkingMessage_t *const * pMessages, int64 * pOutMessageNumberOrResult );
+STEAMAPI_API void SteamAPI_ISteamNetworkingSockets_SendMessages( ISteamNetworkingSockets* self, int nMessages, SteamNetworkingMessage_t ** pMessages, int64 * pOutMessageNumberOrResult, bool bDeleteFailedMessages );
 STEAMAPI_API EResult SteamAPI_ISteamNetworkingSockets_FlushMessagesOnConnection( ISteamNetworkingSockets* self, HSteamNetConnection hConn );
 STEAMAPI_API int SteamAPI_ISteamNetworkingSockets_ReceiveMessagesOnConnection( ISteamNetworkingSockets* self, HSteamNetConnection hConn, SteamNetworkingMessage_t ** ppOutMessages, int nMaxMessages );
 STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_GetConnectionInfo( ISteamNetworkingSockets* self, HSteamNetConnection hConn, SteamNetConnectionInfo_t * pInfo );
@@ -1031,7 +1048,7 @@ STEAMAPI_API EResult SteamAPI_ISteamNetworkingSockets_GetConnectionRealTimeStatu
 STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_GetQuickConnectionStatus( ISteamNetworkingSockets009* self, HSteamNetConnection hConn, SteamNetworkingQuickConnectionStatus * pStats );
 STEAMAPI_API int SteamAPI_ISteamNetworkingSockets_GetDetailedConnectionStatus( ISteamNetworkingSockets* self, HSteamNetConnection hConn, char * pszBuf, int cbBuf );
 STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_GetListenSocketAddress( ISteamNetworkingSockets* self, HSteamListenSocket hSocket, SteamNetworkingIPAddr * address );
-STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_CreateSocketPair( ISteamNetworkingSockets* self, HSteamNetConnection * pOutConnection1, HSteamNetConnection * pOutConnection2, bool bUseNetworkLoopback, const SteamNetworkingIdentity * pIdentity1, const SteamNetworkingIdentity * pIdentity2 );
+STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_CreateSocketPair( ISteamNetworkingSockets* self, HSteamNetConnection * pOutConnection1, HSteamNetConnection * pOutConnection2, bool bUseNetworkLoopback, const SteamNetworkingIdentity * pPeerIdentity1, const SteamNetworkingIdentity * pPeerIdentity2 );
 STEAMAPI_API EResult SteamAPI_ISteamNetworkingSockets_ConfigureConnectionLanes( ISteamNetworkingSockets* self, HSteamNetConnection hConn, int nNumLanes, const int * pLanePriorities, const uint16 * pLaneWeights );
 STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_GetIdentity( ISteamNetworkingSockets* self, SteamNetworkingIdentity * pIdentity );
 STEAMAPI_API ESteamNetworkingAvailability SteamAPI_ISteamNetworkingSockets_InitAuthentication( ISteamNetworkingSockets* self );
@@ -1205,11 +1222,13 @@ STEAMAPI_API const char * SteamAPI_servernetadr_t_GetConnectionAddressString( se
 STEAMAPI_API const char * SteamAPI_servernetadr_t_GetQueryAddressString( servernetadr_t* self );
 STEAMAPI_API steam_bool SteamAPI_servernetadr_t_IsLessThan( servernetadr_t* self, const servernetadr_t & netadr );
 STEAMAPI_API void SteamAPI_servernetadr_t_Assign( servernetadr_t* self, const servernetadr_t & that );
+STEAMAPI_API steam_bool SteamAPI_servernetadr_t_IsEqualTo( servernetadr_t* self, const servernetadr_t & rhs );
 
 // gameserveritem_t
 STEAMAPI_API void SteamAPI_gameserveritem_t_Construct( gameserveritem_t* self );
 STEAMAPI_API const char * SteamAPI_gameserveritem_t_GetName( gameserveritem_t* self );
 STEAMAPI_API void SteamAPI_gameserveritem_t_SetName( gameserveritem_t* self, const char * pName );
+STEAMAPI_API steam_bool SteamAPI_gameserveritem_t_IsEqualTo( gameserveritem_t* self, const gameserveritem_t & rhs );
 
 // SteamNetworkingIPAddr
 STEAMAPI_API void SteamAPI_SteamNetworkingIPAddr_Clear( SteamNetworkingIPAddr* self );

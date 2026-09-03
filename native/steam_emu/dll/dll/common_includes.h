@@ -49,6 +49,7 @@
 #include <queue>
 #include <list>
 #include <unordered_map>
+#include <unordered_set>
 
 #include <thread>
 #include <mutex>

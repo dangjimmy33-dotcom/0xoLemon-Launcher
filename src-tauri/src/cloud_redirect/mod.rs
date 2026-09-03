@@ -8,6 +8,7 @@ pub mod patcher;
 pub mod pe;
 pub mod signatures;
 pub mod steam_detector;
+pub mod steam_specs_cloud;
 
 use serde::{Deserialize, Serialize};
 use tauri::command;
@@ -29,6 +30,8 @@ pub struct CloudRedirectStatus {
     pub cloud_redirect_dll_present: bool,
     pub stfixer_applied: bool,
     pub supported_versions: Vec<i64>,
+    pub steam_update_locked: bool,
+    pub dynamic_scan_active: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -58,6 +61,10 @@ pub async fn cloud_redirect_get_status() -> CloudRedirectStatus {
         .map(is_supported_steam_version)
         .unwrap_or(false);
     let steam_running = is_steam_running();
+    let steam_update_locked = steam_path
+        .as_ref()
+        .map(|p| steam_detector::get_steam_update_lock_status(p))
+        .unwrap_or(false);
 
     let (core_dll_present, cloud_redirect_dll_present, stfixer_applied) =
         if let Some(ref sp) = steam_path {
@@ -71,6 +78,8 @@ pub async fn cloud_redirect_get_status() -> CloudRedirectStatus {
             (false, false, false)
         };
 
+    let all_supported = steam_specs_cloud::load_cached_specs().supported_versions;
+
     CloudRedirectStatus {
         steam_path: steam_path.map(|p| p.to_string_lossy().into_owned()),
         steam_version,
@@ -79,7 +88,9 @@ pub async fn cloud_redirect_get_status() -> CloudRedirectStatus {
         core_dll_present,
         cloud_redirect_dll_present,
         stfixer_applied,
-        supported_versions: SUPPORTED_STEAM_VERSIONS.to_vec(),
+        supported_versions: all_supported,
+        steam_update_locked,
+        dynamic_scan_active: true,
     }
 }
 
@@ -550,3 +561,22 @@ pub fn cloud_redirect_connect_google() -> Result<(), String> {
 
     Ok(())
 }
+
+#[command]
+pub fn cloud_redirect_get_update_lock_status() -> Result<bool, String> {
+    let steam_path = find_steam_path().ok_or("Steam not found")?;
+    Ok(steam_detector::get_steam_update_lock_status(&steam_path))
+}
+
+#[command]
+pub fn cloud_redirect_set_update_lock(lock: bool) -> Result<bool, String> {
+    let steam_path = find_steam_path().ok_or("Steam not found")?;
+    steam_detector::set_steam_update_lock(&steam_path, lock)?;
+    Ok(steam_detector::get_steam_update_lock_status(&steam_path))
+}
+
+#[command]
+pub fn cloud_redirect_fetch_cloud_specs() -> Result<steam_specs_cloud::SpecsUpdateSummary, String> {
+    steam_specs_cloud::fetch_and_update_cloud_specs()
+}
+

@@ -309,22 +309,19 @@ static void EnsureInitialized() {
             auto cfg = Json::Parse(configStr);
             std::string providerName = cfg["provider"].str();
 
-            // Master kill-switch: stats_sync_enabled=false disables achievements,
-            // playtime, and schema fetching in one go. Individual toggles below
-            // can further refine when the master is on (default).
+            // Master kill-switch: stats_sync_enabled=false disables achievements
+            // and playtime in one go. Individual toggles below can further refine
+            // when the master is on (default). schema_fetch is retired (always off).
             if (cfg["stats_sync_enabled"].type == Json::Type::Bool &&
                 !cfg["stats_sync_enabled"].boolean()) {
                 MetadataSync::syncAchievements = false;
                 MetadataSync::syncPlaytime = false;
-                MetadataSync::schemaFetch = false;
             } else {
                 // Native stats/playtime sync gates. Absent -> keep default.
                 if (cfg["sync_achievements"].type == Json::Type::Bool)
                     MetadataSync::syncAchievements = cfg["sync_achievements"].boolean();
                 if (cfg["sync_playtime"].type == Json::Type::Bool)
                     MetadataSync::syncPlaytime = cfg["sync_playtime"].boolean();
-                if (cfg["schema_fetch"].type == Json::Type::Bool)
-                    MetadataSync::schemaFetch = cfg["schema_fetch"].boolean();
             }
 
             // Concurrency cap, not a speed knob (see g_uploadInFlightCapBytes).
@@ -338,14 +335,12 @@ static void EnsureInitialized() {
             // Cache whether ANY stats feature is on -- hot path checks this.
             g_statsSyncEnabled.store(
                 MetadataSync::syncAchievements.load(std::memory_order_relaxed) ||
-                MetadataSync::syncPlaytime.load(std::memory_order_relaxed) ||
-                MetadataSync::schemaFetch.load(std::memory_order_relaxed),
+                MetadataSync::syncPlaytime.load(std::memory_order_relaxed),
                 std::memory_order_release);
 
-            LOG("[Stats] Sync gates: achievements=%d, playtime=%d, schemaFetch=%d",
+            LOG("[Stats] Sync gates: achievements=%d, playtime=%d",
                 MetadataSync::syncAchievements.load() ? 1 : 0,
-                MetadataSync::syncPlaytime.load() ? 1 : 0,
-                MetadataSync::schemaFetch.load() ? 1 : 0);
+                MetadataSync::syncPlaytime.load() ? 1 : 0);
 
             if (!providerName.empty() && providerName != "local") {
                 provider = CreateCloudProvider(providerName);
@@ -400,9 +395,11 @@ static void EnsureInitialized() {
                 uint32_t accountId = CloudIntercept::GetAccountId();
                 if (accountId == 0) return false;
                 std::vector<uint8_t> data;
-                if (!CloudStorage::DownloadCloudMetadataWithLegacyFallback(
-                        accountId, CloudIntercept::kAccountScopeAppId, "stats.json",
-                        nullptr, data) || data.empty())
+                auto fetch = CloudStorage::FetchCloudMetadataStatus(
+                    accountId, CloudIntercept::kAccountScopeAppId, "stats.json", data);
+                if (fetch == CloudStorage::MetadataFetch::Error)
+                    return false; // transient failure -> keep the existing cloud cache
+                if (fetch == CloudStorage::MetadataFetch::Missing || data.empty())
                     return true;  // no account blob yet -> empty (not a failure)
                 Json::Value root = Json::Parse(
                     std::string(reinterpret_cast<const char*>(data.data()), data.size()));
@@ -922,6 +919,9 @@ extern "C" bool hook_IsCloudEnabledForApp(void* pThis, unsigned int appId)
 void CloudHooks::BeginShutdown() {
     g_shuttingDown.store(true, std::memory_order_release);
     GamesPlayedHook::Remove();
+    if (g_statsSyncEnabled.load(std::memory_order_relaxed)) {
+        LivePlaytime::DrainOnNetThread();
+    }
     LivePlaytime::RemoveUserCapture();
     for (int i = 0; i < 300 && g_hookRefCount.load(std::memory_order_acquire) > 0; ++i)
         usleep(10000); // 10ms, up to 3s total

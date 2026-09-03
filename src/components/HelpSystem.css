@@ -46,22 +46,63 @@
 .help-popover-action:hover { background: var(--theme-accent-surface-strong); }
 .page-help-float { position: fixed; top: 72px; right: 26px; z-index: 1800; }
 .page-help-button { width: 30px; height: 30px; background: color-mix(in oklab, var(--theme-modal-bg) 88%, transparent); backdrop-filter: blur(14px); box-shadow: 0 8px 24px rgba(0,0,0,.28); }
-.titlebar-help-anchor { position: relative; display: inline-flex; align-items: center; justify-content: center; -webkit-app-region: no-drag; }
-.titlebar-help-button {
-  width: 28px;
-  height: 28px;
-  border: 1px solid rgba(255,255,255,.16);
-  border-radius: 999px;
-  background: rgba(255,255,255,.035);
-  color: rgba(255,255,255,.76);
-  box-shadow: 0 0 0 1px rgba(0,0,0,.16) inset;
+.titlebar-help-anchor {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  display: inline-grid;
+  place-items: center;
+  -webkit-app-region: no-drag;
 }
+.help-icon-button.titlebar-help-button,
+.titlebar-help-button {
+  box-sizing: border-box !important;
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px !important;
+  min-height: 24px !important;
+  max-width: 24px !important;
+  max-height: 24px !important;
+  aspect-ratio: 1 / 1;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 1px solid rgba(222, 229, 236, 0.38);
+  border-radius: 9999px !important;
+  background: rgba(255, 255, 255, 0.022);
+  color: rgba(238, 243, 248, 0.94);
+  box-shadow: none;
+  font: 800 12px/1 Inter, system-ui, sans-serif;
+  display: inline-grid !important;
+  place-items: center;
+  flex: 0 0 24px !important;
+  opacity: 1;
+  visibility: visible;
+}
+.help-icon-button.titlebar-help-button:hover,
+.help-icon-button.titlebar-help-button[aria-expanded="true"],
 .titlebar-help-button:hover,
 .titlebar-help-button[aria-expanded="true"] {
-  border-color: var(--line-strong);
-  background: var(--theme-accent-surface);
+  border-color: rgba(255, 255, 255, 0.62);
+  background: rgba(255, 255, 255, 0.075);
   color: #fff;
-  box-shadow: 0 0 18px color-mix(in oklab, transparent 82%, var(--theme-accent) 18%);
+  box-shadow: none;
+  transform: none;
+}
+.help-icon-button.titlebar-help-button svg,
+.titlebar-help-button svg {
+  display: none;
+}
+.help-icon-button.titlebar-help-button::before,
+.titlebar-help-button::before {
+  content: '?';
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  line-height: 1;
+  color: currentColor;
   transform: none;
 }
 .inline-help-label { display: inline-flex; align-items: center; gap: 7px; }

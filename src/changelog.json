@@ -1,5 +1,35 @@
 ﻿[
     {
+        "version":  "2.0.55",
+        "date":  "2026-09-03",
+        "changes":  [
+                        "Disable GSE/UC Setup and Depot Downloader tabs (Coming Soon)",
+                        "Hide Runtime and Compatibility section from Lua Shop settings"
+                    ]
+    },
+    {
+        "version":  "2.0.54",
+        "date":  "2026-09-03",
+        "changes":  [
+                        "Disable GSE/UC Setup and Depot Downloader tabs (Coming Soon)",
+                        "Hide Runtime and Compatibility section from Lua Shop settings"
+                    ]
+    },
+    {
+        "version":  "2.0.52",
+        "date":  "2026-09-03",
+        "changes":  [
+                        "cập nhật lớn, GSE setup auto crack hiện đang trong giai đoạn hoàn thiện"
+                    ]
+    },
+    {
+        "version":  "2.0.51",
+        "date":  "2026-09-02",
+        "changes":  [
+                        "BẢN CẬP NHẬT LỚN"
+                    ]
+    },
+    {
         "version":  "2.0.50",
         "date":  "2026-08-19",
         "changes":  [

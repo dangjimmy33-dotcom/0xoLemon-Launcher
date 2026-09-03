@@ -23,6 +23,7 @@ pub const DEFAULT_LIBRARY_ROOT: &str = r"E:\0xoLemon store";
 pub enum DownloadProfile {
     Eco,
     Balanced,
+    Auto,
     Turbo,
 }
 
@@ -56,7 +57,7 @@ impl Default for GameUpdateMode {
 
 impl Default for DownloadProfile {
     fn default() -> Self {
-        Self::Balanced
+        Self::Auto
     }
 }
 
@@ -89,14 +90,14 @@ impl Default for LauncherSettings {
     fn default() -> Self {
         Self {
             default_library: DEFAULT_LIBRARY_ROOT.to_string(),
-            download_workers: 8,
+            download_workers: 16,
             download_retries: 20,
             pack_range_mb: 16,
             keep_chunk_cache: true,
             notifications_enabled: true,
             auto_verify_after_install: false,
-            download_profile: DownloadProfile::Balanced,
-            download_queue_mb: 128,
+            download_profile: DownloadProfile::Auto,
+            download_queue_mb: 192,
             direct_to_staging: true,
             cloud_save_root: String::new(),
             game_update_mode: GameUpdateMode::Manual,
@@ -116,8 +117,9 @@ impl LauncherSettings {
         }
         let (workers, queue_mb) = match self.download_profile {
             DownloadProfile::Eco => (4, 64),
-            DownloadProfile::Balanced => (8, 128),
-            DownloadProfile::Turbo => (12, 256),
+            DownloadProfile::Balanced => (12, 128),
+            DownloadProfile::Auto => (16, 192),
+            DownloadProfile::Turbo => (24, 256),
         };
         self.download_workers = workers;
         self.download_queue_mb = queue_mb;

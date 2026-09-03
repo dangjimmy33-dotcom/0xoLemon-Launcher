@@ -3,6 +3,7 @@ import type { TabId } from '../types'
 export type HelpTopicId =
   | 'whatsNew'
   | 'home'
+  | 'social'
   | 'store'
   | 'luaShop'
   | 'luaInstaller'
@@ -18,9 +19,13 @@ export type HelpTopicId =
 export const HELP_TOPIC_BY_TAB: Record<TabId, HelpTopicId> = {
   "What's New!": 'whatsNew',
   'Home': 'home',
+  'Social': 'social',
   'Store': 'store',
   'Lua Shop': 'luaShop',
   'Lua Installer': 'luaInstaller',
+  'GSE / UC Setup': 'settings',
+  'Depot Downloader': 'downloads',
+  'Tools': 'settings',
   'Library': 'library',
   'Offline Activation': 'offlineActivation',
   'Updates': 'updates',
@@ -32,7 +37,7 @@ export const HELP_TOPIC_BY_TAB: Record<TabId, HelpTopicId> = {
 }
 
 export const HELP_TOPIC_ORDER: HelpTopicId[] = [
-  'home', 'store', 'library', 'luaShop', 'luaInstaller', 'updates', 'downloads',
+  'home', 'social', 'store', 'library', 'luaShop', 'luaInstaller', 'updates', 'downloads',
   'cloudRedirect', 'translations', 'offlineActivation', 'cache', 'settings', 'whatsNew',
 ]
 

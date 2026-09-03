@@ -1,0 +1,87 @@
+html[data-ui-theme='lightning'] .launcher-shell.lightning-shell-layout {
+  --launcher-sidebar-track: 0px;
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: 30px 64px minmax(0, 1fr) 24px;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: #08070c;
+  color: #f1eff5;
+  font-family: Inter, "Segoe UI Variable", "Segoe UI", sans-serif;
+}
+
+.lightning-window-brand { grid-row: 1; display: flex; align-items: center; padding: 0 10px; color: #d4d0da; font-size: 12px; font-weight: 700; user-select: none; }
+.lightning-primary-nav { grid-row: 2; z-index: 5; display: flex; align-items: center; justify-content: center; gap: clamp(18px, 3vw, 48px); min-width: 0; padding: 0 90px; overflow-x: auto; scrollbar-width: none; background: linear-gradient(180deg, rgba(14, 12, 19, .96), rgba(8, 7, 12, .84)); }
+.lightning-primary-nav::-webkit-scrollbar { display: none; }
+.lightning-primary-nav button { position: relative; flex: 0 0 auto; height: 100%; padding: 0; border: 0; background: transparent; color: #8d8993; font: inherit; font-size: 14px; font-weight: 650; white-space: nowrap; cursor: pointer; }
+.lightning-primary-nav button:hover { color: #e6e2eb; }
+.lightning-primary-nav button.is-active { color: #fff5ee; text-shadow: 0 0 14px rgba(255, 182, 137, .38); }
+.lightning-primary-nav button.is-active::after { content: ''; position: absolute; left: 0; right: 0; bottom: 13px; height: 3px; border-radius: 3px; background: #ffe5d2; box-shadow: 0 0 14px rgba(255, 177, 121, .72); }
+.lightning-primary-nav button.is-drag-over { color: #ffe5d2; text-shadow: 0 0 16px rgba(255, 182, 137, .8); transform: scale(1.08); transition: transform .15s ease; }
+.lightning-primary-nav button.is-drag-over::after { content: ''; position: absolute; left: -4px; right: -4px; bottom: 10px; height: 4px; border-radius: 4px; background: #ff9858; box-shadow: 0 0 20px #ff9858; }
+
+.lightning-shell-content { position: relative; grid-row: 3; min-width: 0; min-height: 0; overflow: hidden; }
+.lightning-status-bar { grid-row: 4; z-index: 6; display: flex; align-items: center; justify-content: flex-end; gap: 18px; padding: 0 12px; border-top: 1px solid rgba(255,255,255,.05); color: #77727f; background: #07060a; font-size: 9px; }
+.lightning-status-bar > span { margin-right: auto; }
+.lightning-status-bar button { display: inline-flex; align-items: center; gap: 4px; height: 100%; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; cursor: pointer; }
+.lightning-status-bar button:disabled { opacity: .25; cursor: default; }
+.lightning-status-bar button:not(:disabled):hover { color: #ece8f1; }
+.lightning-status-bar svg { width: 11px; height: 11px; }
+
+.cinematic-news-reopen { position: absolute; z-index: 28; right: 24px; bottom: 42px; display: inline-flex; align-items: center; gap: 7px; min-height: 36px; padding: 0 13px; border: 1px solid color-mix(in oklab, var(--theme-accent-strong) 38%, rgba(255,255,255,.1)); border-radius: 9px; background: rgba(13,12,18,.84); color: #f1eff5; font: inherit; font-size: 10px; font-weight: 800; cursor: pointer; box-shadow: 0 14px 34px rgba(0,0,0,.28); backdrop-filter: blur(14px); }
+.cinematic-news-reopen svg { width: 14px; height: 14px; color: var(--theme-accent-strong); }
+
+.lightning-news-screen { position: absolute; inset: 0; z-index: 400; overflow: hidden; background: #030305; animation: lightning-news-enter .32s ease both; }
+.lightning-news-background { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; animation: lightning-news-image .55s ease both; }
+.lightning-news-shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0,0,0,.74) 0%, rgba(0,0,0,.18) 56%, rgba(0,0,0,.16)), linear-gradient(0deg, rgba(0,0,0,.9) 0%, transparent 44%); }
+.lightning-news-brand { position: absolute; top: 12px; left: 12px; color: #eeebf3; font-size: 13px; font-weight: 750; }
+.lightning-news-close { position: absolute; top: 56px; right: 24px; width: 44px; height: 44px; display: grid; place-items: center; border: 1px solid rgba(255,255,255,.16); border-radius: 50%; background: rgba(18,18,20,.62); color: #ddd9e2; backdrop-filter: blur(14px); cursor: pointer; }
+.lightning-news-close:hover { background: rgba(255,255,255,.13); color: #fff; }
+.lightning-news-close svg { width: 20px; }
+.lightning-news-copy { position: absolute; left: clamp(34px, 3.2vw, 64px); bottom: clamp(210px, 25vh, 270px); width: min(880px, 66vw); }
+.lightning-news-copy > span { display: inline-block; margin-bottom: 28px; padding-bottom: 8px; border-bottom: 4px solid #ff7800; color: #fff; font-size: 18px; font-weight: 800; letter-spacing: 2px; }
+.lightning-news-copy h1 { max-width: 920px; margin: 0; color: #fff; font-size: clamp(40px, 4.2vw, 72px); line-height: 1.04; letter-spacing: 0; text-transform: uppercase; }
+.lightning-news-copy p { margin: 18px 0 0; color: rgba(255,255,255,.82); font-size: 18px; }
+.lightning-news-copy button { margin-top: 22px; padding: 10px 18px; border: 1px solid rgba(255,255,255,.45); border-radius: 4px; background: rgba(0,0,0,.36); color: #fff; font: inherit; cursor: pointer; }
+.lightning-news-copy button:hover { background: #fff; color: #111; }
+.lightning-news-carousel { position: absolute; left: clamp(34px, 3.2vw, 64px); right: 0; bottom: 42px; display: flex; gap: 24px; overflow-x: auto; padding: 4px 32px 12px 0; scrollbar-width: none; }
+.lightning-news-carousel::-webkit-scrollbar { display: none; }
+.lightning-news-carousel button { position: relative; flex: 0 0 clamp(210px, 15vw, 286px); aspect-ratio: 16 / 6; overflow: hidden; padding: 0; border: 2px solid transparent; border-radius: 10px; background: #131218; color: #fff; text-align: left; cursor: pointer; opacity: .62; transition: transform .18s ease, opacity .18s ease, border-color .18s ease; }
+.lightning-news-carousel button:hover { opacity: .9; transform: translateY(-2px); }
+.lightning-news-carousel button.is-active { border-color: #ff7800; opacity: 1; }
+.lightning-news-carousel img { width: 100%; height: 100%; object-fit: cover; }
+.lightning-news-carousel span { position: absolute; left: 14px; right: 12px; bottom: 10px; overflow: hidden; color: #fff; font-size: 13px; font-weight: 750; text-overflow: ellipsis; white-space: nowrap; text-shadow: 0 2px 8px #000; }
+
+@keyframes lightning-news-enter { from { opacity: 0; } to { opacity: 1; } }
+@keyframes lightning-news-image { from { opacity: .45; transform: scale(1.025); } to { opacity: 1; transform: scale(1); } }
+
+@media (max-width: 1100px) {
+  .lightning-primary-nav { justify-content: flex-start; gap: 24px; padding: 0 24px; }
+  .lightning-news-copy { width: 82vw; bottom: 190px; }
+  .lightning-news-copy h1 { font-size: clamp(34px, 5vw, 54px); }
+  .lightning-news-copy p { font-size: 15px; }
+  .lightning-news-carousel { bottom: 26px; gap: 12px; }
+  .lightning-news-carousel button { flex-basis: 200px; }
+}
+
+@media (max-width: 720px) {
+  html[data-ui-theme='lightning'] .launcher-shell.lightning-shell-layout { grid-template-rows: 26px 52px minmax(0, 1fr) 22px; }
+  .lightning-primary-nav { gap: 18px; padding-inline: 16px; }
+  .lightning-primary-nav button { font-size: 12px; }
+  .lightning-primary-nav button.is-active::after { bottom: 8px; }
+  .lightning-news-copy { bottom: 170px; }
+  .lightning-news-copy > span { margin-bottom: 16px; font-size: 14px; }
+  .lightning-news-copy h1 { font-size: 32px; }
+  .lightning-news-copy p { display: none; }
+  .lightning-news-carousel button { flex-basis: 168px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lightning-news-screen, .lightning-news-background { animation: none; }
+  .lightning-news-carousel button { transition: none; }
+}

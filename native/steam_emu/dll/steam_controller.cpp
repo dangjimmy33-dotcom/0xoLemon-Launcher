@@ -1174,7 +1174,7 @@ void Steam_Controller::SetDualSenseTriggerEffect( InputHandle_t inputHandle, con
 
 void Steam_Controller::RunCallbacks()
 {
-    if (explicitly_call_run_frame) {
+    if (!explicitly_call_run_frame) {
         RunFrame();
     }
 }

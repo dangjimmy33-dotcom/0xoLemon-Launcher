@@ -90,7 +90,7 @@ set /a "BUILD_JOBS=-1"
 :gen_project_end
 
   :: check .sln
-  set "SLN_FILE=build\project\vs2026\win\gbe.slnx"
+  set "SLN_FILE=build\project\vs2022\win\gse.sln"
   if not exist "%SLN_FILE%" (
     1>&2 echo:.sln file wasn't found
     goto :end_script_with_err
@@ -99,7 +99,7 @@ set /a "BUILD_JOBS=-1"
   :: build .sln
   set "BUILD_TYPES=release debug"
   set "BUILD_PLATFORMS=x64 Win32"
-  set "BUILD_TARGETS=api_regular api_experimental steamclient_experimental_stub steamclient_experimental steamclient_experimental_loader steamclient_experimental_extra lib_game_overlay_renderer tool_lobby_connect tool_generate_interfaces"
+set "BUILD_TARGETS=api_regular api_experimental steamclient_experimental_stub steamclient_experimental steamclient_experimental_loader steamclient_experimental_extra lib_game_overlay_renderer reshade_addon_overlay tool_lobby_connect tool_generate_interfaces"
 
   for %%A in (%BUILD_TYPES%) do (
     set "BUILD_TYPE=%%A"

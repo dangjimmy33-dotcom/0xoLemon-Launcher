@@ -1,7 +1,6 @@
 import type { GameSummary } from '../types'
 import { globalAssetsOverride } from '../hooks/useRealtimeAssets'
 
-// const STEAM_API_KEY = 'C8389A6AE249466D0A5234DC9D2D23C6'
 const STEAMGRIDDB_API_KEY = '6949533daea9444b0e8f2dfe121a0c30'
 
 const CACHE_PREFIX = 'oxo_asset_cache_'

@@ -31,7 +31,7 @@ class DiscordClient {
     this.now = now;
   }
 
-  async authorize(accessToken) {
+  async authorizeProfile(accessToken) {
     if (typeof accessToken !== 'string' || accessToken.length < 20 || accessToken.length > 4096) {
       throw new ActivationError('AUTH_REQUIRED', 'Discord authorization is required.', { httpStatus: 401 });
     }
@@ -60,7 +60,30 @@ class DiscordClient {
       });
     }
 
-    return { id: String(user.id) };
+    const id = String(user.id);
+    const username = typeof user.username === 'string' && user.username.trim()
+      ? user.username.trim().slice(0, 80)
+      : `user-${id.slice(-6)}`;
+    const displayName = typeof user.global_name === 'string' && user.global_name.trim()
+      ? user.global_name.trim().slice(0, 80)
+      : username;
+    const avatarHash = typeof user.avatar === 'string' ? user.avatar.trim() : '';
+    const avatarUrl = avatarHash
+      ? `https://cdn.discordapp.com/avatars/${id}/${avatarHash}.${avatarHash.startsWith('a_') ? 'gif' : 'png'}?size=256`
+      : '';
+
+    return {
+      id,
+      username,
+      displayName,
+      avatarUrl,
+      accountCreatedAt: new Date(accountCreatedAtMs).toISOString()
+    };
+  }
+
+  async authorize(accessToken) {
+    const profile = await this.authorizeProfile(accessToken);
+    return { id: profile.id };
   }
 }
 
@@ -71,4 +94,3 @@ function bearerToken(req) {
 }
 
 module.exports = { DiscordClient, bearerToken };
-

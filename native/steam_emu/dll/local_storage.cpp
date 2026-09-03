@@ -903,6 +903,22 @@ std::vector<image_pixel_t> Local_Storage::load_image(std::string const& image_pa
     return res;
 }
 
+std::vector<image_pixel_t> Local_Storage::load_image_from_folder(std::string folder, std::string file, int &width, int &height)
+{
+    std::vector<image_pixel_t> res{};
+    width = 0; height = 0;
+    if (folder.size() && folder.back() != *PATH_SEPARATOR) folder.append(PATH_SEPARATOR);
+    std::string full_path = save_directory + appid + folder + file;
+    image_pixel_t *img = (image_pixel_t*)stbi_load(full_path.c_str(), &width, &height, nullptr, 4);
+    if (img) {
+        res.resize((size_t)width * height);
+        std::copy(img, img + (size_t)width * height, res.begin());
+        stbi_image_free(img);
+    }
+    reset_LastError();
+    return res;
+}
+
 std::string Local_Storage::load_image_resized(std::string const& image_path, std::string const& image_data, int resolution)
 {
     std::string resized_image{};
@@ -914,13 +930,13 @@ std::string Local_Storage::load_image_resized(std::string const& image_path, std
         PRINT_DEBUG("stbi_load('%s') -> %s", image_path.c_str(), (img ? "loaded" : stbi_failure_reason()));
         if (img) {
             std::vector<char> out_resized(resized_img_size);
-            stbir_resize_uint8_linear(img, width, height, 0, (unsigned char*)&out_resized[0], resolution, resolution, 0, STBIR_RGBA);
+            stbir_resize_uint8_srgb(img, width, height, 0, (unsigned char*)&out_resized[0], resolution, resolution, 0, STBIR_RGBA);
             resized_image = std::string((char*)&out_resized[0], out_resized.size());
             stbi_image_free(img);
         }
     } else if (image_data.size()) {
         std::vector<char> out_resized(resized_img_size);
-        stbir_resize_uint8_linear((unsigned char*)image_data.c_str(), 184, 184, 0, (unsigned char*)&out_resized[0], resolution, resolution, 0, STBIR_RGBA);
+        stbir_resize_uint8_srgb((unsigned char*)image_data.c_str(), 184, 184, 0, (unsigned char*)&out_resized[0], resolution, resolution, 0, STBIR_RGBA);
         resized_image = std::string((char*)&out_resized[0], out_resized.size());
     }
 

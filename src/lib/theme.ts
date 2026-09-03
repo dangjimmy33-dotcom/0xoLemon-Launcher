@@ -1,4 +1,5 @@
 import type { LauncherPreferences } from './preferences'
+import { getUiThemeProfile } from './uiThemes'
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
 
@@ -47,6 +48,8 @@ export function launcherAccent(preferences: Pick<LauncherPreferences, 'accentHue
 
 type ThemePreferences = Pick<
   LauncherPreferences,
+  | 'uiTheme'
+  | 'themeAccentMode'
   | 'accentHue'
   | 'accentChroma'
   | 'themeIntensity'
@@ -56,22 +59,56 @@ type ThemePreferences = Pick<
   | 'motionMode'
 >
 
+function setCommonSemanticAliases(root: HTMLElement) {
+  root.style.setProperty('--ui-page-bg', 'var(--launcher-page-bg)')
+  root.style.setProperty('--ui-page-bg-soft', 'var(--launcher-page-bg-soft)')
+  root.style.setProperty('--ui-frame-bg', 'var(--launcher-frame-bg)')
+  root.style.setProperty('--ui-sidebar-bg', 'var(--launcher-sidebar-bg)')
+  root.style.setProperty('--ui-panel-bg', 'var(--theme-card-bg)')
+  root.style.setProperty('--ui-panel-bg-soft', 'var(--theme-card-bg-soft)')
+  root.style.setProperty('--ui-elevated-bg', 'var(--theme-elevated-bg)')
+  root.style.setProperty('--ui-popup-bg', 'var(--theme-modal-bg)')
+  root.style.setProperty('--ui-popup-bg-strong', 'var(--theme-modal-bg-strong)')
+  root.style.setProperty('--ui-overlay-bg', 'var(--theme-overlay-bg)')
+  root.style.setProperty('--ui-selection-bg', 'var(--theme-selected-bg)')
+  root.style.setProperty('--ui-hover-bg', 'var(--theme-hover-bg)')
+  root.style.setProperty('--ui-border', 'var(--line)')
+  root.style.setProperty('--ui-border-strong', 'var(--line-strong)')
+  root.style.setProperty('--ui-text', 'var(--text)')
+  root.style.setProperty('--ui-text-strong', 'var(--text-strong)')
+  root.style.setProperty('--ui-text-muted', 'var(--muted)')
+  root.style.setProperty('--ui-text-subtle', 'var(--subtle)')
+  root.style.setProperty('--ui-radius-sm', '6px')
+  root.style.setProperty('--ui-radius-md', '10px')
+  root.style.setProperty('--ui-radius-lg', '14px')
+  root.style.setProperty('--ui-shadow-popup', '0 26px 80px rgba(0,0,0,.48)')
+}
+
 export function applyLauncherTheme(preferences: ThemePreferences) {
   if (typeof document === 'undefined') return
 
   const root = document.documentElement
-  const accent = launcherAccent(preferences)
+  const profile = getUiThemeProfile(preferences.uiTheme)
+  const customAccent = launcherAccent(preferences)
+  const useNativeAccent = preferences.themeAccentMode === 'native' && profile.id !== 'default'
+  const accent = useNativeAccent
+    ? {
+      hue: profile.nativePalette.hue,
+      chromaPercent: profile.nativePalette.chroma,
+      chroma: THEME_MIN_CHROMA + (profile.nativePalette.chroma / 100) * (THEME_MAX_CHROMA - THEME_MIN_CHROMA),
+      base: profile.nativePalette.accent,
+      strong: profile.nativePalette.accentStrong,
+      deep: profile.nativePalette.accentDeep,
+      hex: profile.nativePalette.accent,
+    }
+    : customAccent
   const intensity = clamp(Number(preferences.themeIntensity), 0, 100)
   const contrast = clamp(Number(preferences.themeContrast), 0, 100)
   const speed = clamp(Number(preferences.dynamicThemeSpeed), 0, 100)
+  const dynamicThemeEnabled = preferences.dynamicTheme
 
-  // Intensity controls how much of the accent is allowed into neutral surfaces.
-  // Contrast changes separation between page/card/elevated layers without washing out text.
   const intensity01 = intensity / 100
   const contrast01 = contrast / 100
-  // The theme is intentionally global rather than accent-only: even the darkest
-  // shell surfaces carry a visible amount of the selected hue. Keep enough neutral
-  // luminance for text/images while allowing Color Studio to visibly recolor the app.
   const pageTint = 12 + intensity01 * 20
   const chromeTint = 14 + intensity01 * 22
   const sidebarTint = 16 + intensity01 * 24
@@ -87,11 +124,11 @@ export function applyLauncherTheme(preferences: ThemePreferences) {
   const elevatedL = 18.2 + contrast01 * 5.0
   const chromeL = 9.5 + (1 - contrast01) * 1.8
   const sidebarL = 9.0 + (1 - contrast01) * 1.6
-
-  // Faster slider values mean a shorter cycle. The range stays deliberately slow
-  // enough to read as ambient motion rather than a flashing RGB effect.
   const cycleSeconds = 150 - speed * 1.15
 
+  root.setAttribute('data-ui-theme', profile.id)
+  root.setAttribute('data-theme-accent-mode', useNativeAccent ? 'native' : 'custom')
+  root.setAttribute('data-theme-reference', profile.referenceVersion)
   root.style.setProperty('--theme-hue-start', accent.hue.toFixed(2))
   root.style.setProperty('--theme-runtime-hue', accent.hue.toFixed(2))
   root.style.setProperty('--theme-accent-chroma-value', accent.chroma.toFixed(4))
@@ -101,46 +138,47 @@ export function applyLauncherTheme(preferences: ThemePreferences) {
   root.style.setProperty('--theme-contrast', String(contrast))
   root.style.setProperty('--theme-cycle-duration', `${cycleSeconds.toFixed(1)}s`)
 
-  // Every semantic color references --theme-runtime-hue. That means the same palette
-  // updates continuously when CSS animates the registered hue custom property.
-  root.style.setProperty('--theme-accent', `oklch(73% ${accent.chroma.toFixed(4)} var(--theme-runtime-hue))`)
-  root.style.setProperty('--theme-accent-strong', `oklch(81% ${(accent.chroma * 0.94).toFixed(4)} var(--theme-runtime-hue))`)
-  root.style.setProperty('--theme-accent-deep', `oklch(56% ${(accent.chroma * 0.88).toFixed(4)} var(--theme-runtime-hue))`)
+  root.style.setProperty('--theme-accent', useNativeAccent ? accent.base : `oklch(73% ${accent.chroma.toFixed(4)} var(--theme-runtime-hue))`)
+  root.style.setProperty('--theme-accent-strong', useNativeAccent ? accent.strong : `oklch(81% ${(accent.chroma * 0.94).toFixed(4)} var(--theme-runtime-hue))`)
+  root.style.setProperty('--theme-accent-deep', useNativeAccent ? accent.deep : `oklch(56% ${(accent.chroma * 0.88).toFixed(4)} var(--theme-runtime-hue))`)
 
-  root.style.setProperty('--launcher-page-bg', `color-mix(in oklab, oklch(${pageL.toFixed(2)}% 0.008 var(--theme-runtime-hue)) ${(100 - pageTint).toFixed(1)}%, var(--theme-accent-deep) ${pageTint.toFixed(1)}%)`)
-  root.style.setProperty('--launcher-page-bg-soft', `color-mix(in oklab, oklch(${(pageL + 1.8).toFixed(2)}% 0.010 var(--theme-runtime-hue)) ${(100 - pageTint - 2).toFixed(1)}%, var(--theme-accent) ${(pageTint + 2).toFixed(1)}%)`)
-  root.style.setProperty('--launcher-chrome-bg', `color-mix(in oklab, oklch(${chromeL.toFixed(2)}% 0.007 var(--theme-runtime-hue)) ${(100 - chromeTint).toFixed(1)}%, var(--theme-accent-deep) ${chromeTint.toFixed(1)}%)`)
-  root.style.setProperty('--launcher-chrome-bg-strong', `color-mix(in oklab, #05070a ${(100 - chromeTint + 2).toFixed(1)}%, var(--theme-accent-deep) ${(chromeTint - 2).toFixed(1)}%)`)
-  root.style.setProperty('--launcher-sidebar-bg', `color-mix(in oklab, oklch(${sidebarL.toFixed(2)}% 0.008 var(--theme-runtime-hue)) ${(100 - sidebarTint).toFixed(1)}%, var(--theme-accent-deep) ${sidebarTint.toFixed(1)}%)`)
-  // ChatGPT-style frame: the titlebar and sidebar must be one continuous surface.
-  // The workspace then owns the only visible rounded top-left corner.
-  root.style.setProperty('--launcher-frame-bg', 'var(--launcher-sidebar-bg)')
-  root.style.setProperty('--launcher-corner-bg', 'var(--launcher-frame-bg)')
-  root.style.setProperty('--theme-card-bg', `color-mix(in oklab, oklch(${cardL.toFixed(2)}% 0.010 var(--theme-runtime-hue)) ${(100 - cardTint).toFixed(1)}%, var(--theme-accent-deep) ${cardTint.toFixed(1)}%)`)
-  root.style.setProperty('--theme-card-bg-soft', `color-mix(in oklab, oklch(${(cardL - 1.5).toFixed(2)}% 0.008 var(--theme-runtime-hue)) ${(100 - cardTint + 3).toFixed(1)}%, var(--theme-accent-deep) ${(cardTint - 3).toFixed(1)}%)`)
-  root.style.setProperty('--theme-elevated-bg', `color-mix(in oklab, oklch(${elevatedL.toFixed(2)}% 0.012 var(--theme-runtime-hue)) ${(100 - elevatedTint).toFixed(1)}%, var(--theme-accent) ${elevatedTint.toFixed(1)}%)`)
+    root.style.setProperty('--launcher-page-bg', `color-mix(in oklab, oklch(${pageL.toFixed(2)}% 0.008 var(--theme-runtime-hue)) ${(100 - pageTint).toFixed(1)}%, var(--theme-accent-deep) ${pageTint.toFixed(1)}%)`)
+    root.style.setProperty('--launcher-page-bg-soft', `color-mix(in oklab, oklch(${(pageL + 1.8).toFixed(2)}% 0.010 var(--theme-runtime-hue)) ${(100 - pageTint - 2).toFixed(1)}%, var(--theme-accent) ${(pageTint + 2).toFixed(1)}%)`)
+    root.style.setProperty('--launcher-chrome-bg', `color-mix(in oklab, oklch(${chromeL.toFixed(2)}% 0.007 var(--theme-runtime-hue)) ${(100 - chromeTint).toFixed(1)}%, var(--theme-accent-deep) ${chromeTint.toFixed(1)}%)`)
+    root.style.setProperty('--launcher-chrome-bg-strong', `color-mix(in oklab, #05070a ${(100 - chromeTint + 2).toFixed(1)}%, var(--theme-accent-deep) ${(chromeTint - 2).toFixed(1)}%)`)
+    root.style.setProperty('--launcher-sidebar-bg', `color-mix(in oklab, oklch(${sidebarL.toFixed(2)}% 0.008 var(--theme-runtime-hue)) ${(100 - sidebarTint).toFixed(1)}%, var(--theme-accent-deep) ${sidebarTint.toFixed(1)}%)`)
+    root.style.setProperty('--launcher-frame-bg', 'var(--launcher-sidebar-bg)')
+    root.style.setProperty('--launcher-corner-bg', 'var(--launcher-frame-bg)')
+    root.style.setProperty('--theme-card-bg', `color-mix(in oklab, oklch(${cardL.toFixed(2)}% 0.010 var(--theme-runtime-hue)) ${(100 - cardTint).toFixed(1)}%, var(--theme-accent-deep) ${cardTint.toFixed(1)}%)`)
+    root.style.setProperty('--theme-card-bg-soft', `color-mix(in oklab, oklch(${(cardL - 1.5).toFixed(2)}% 0.008 var(--theme-runtime-hue)) ${(100 - cardTint + 3).toFixed(1)}%, var(--theme-accent-deep) ${(cardTint - 3).toFixed(1)}%)`)
+    root.style.setProperty('--theme-elevated-bg', `color-mix(in oklab, oklch(${elevatedL.toFixed(2)}% 0.012 var(--theme-runtime-hue)) ${(100 - elevatedTint).toFixed(1)}%, var(--theme-accent) ${elevatedTint.toFixed(1)}%)`)
+    root.style.setProperty('--line', `color-mix(in oklab, transparent ${(100 - lineTint).toFixed(1)}%, var(--theme-accent) ${lineTint.toFixed(1)}%)`)
+    root.style.setProperty('--line-strong', `color-mix(in oklab, transparent ${(100 - lineStrongTint).toFixed(1)}%, var(--theme-accent-strong) ${lineStrongTint.toFixed(1)}%)`)
+    root.style.setProperty('--theme-selected-bg', `color-mix(in oklab, transparent ${(100 - selectedTint).toFixed(1)}%, var(--theme-accent) ${selectedTint.toFixed(1)}%)`)
+    root.style.setProperty('--theme-hover-bg', `color-mix(in oklab, transparent ${(100 - hoverTint).toFixed(1)}%, var(--theme-accent) ${hoverTint.toFixed(1)}%)`)
+    root.style.setProperty('--theme-scrollbar', `color-mix(in oklab, transparent 62%, var(--theme-accent) 38%)`)
+    root.style.setProperty('--theme-control-bg', `color-mix(in oklab, var(--theme-card-bg) 84%, var(--theme-accent) 16%)`)
+    root.style.setProperty('--theme-control-hover-bg', `color-mix(in oklab, var(--theme-card-bg) 76%, var(--theme-accent) 24%)`)
+    root.style.setProperty('--theme-modal-bg', `color-mix(in oklab, var(--theme-card-bg) 84%, var(--launcher-page-bg) 16%)`)
+    root.style.setProperty('--theme-modal-bg-strong', `color-mix(in oklab, var(--theme-elevated-bg) 58%, var(--theme-card-bg) 42%)`)
+    root.style.setProperty('--theme-overlay-bg', `color-mix(in oklab, rgba(2, 5, 8, 0.78) 78%, var(--theme-accent-deep) 22%)`)
+    root.style.setProperty('--theme-accent-surface', `color-mix(in oklab, transparent 84%, var(--theme-accent) 16%)`)
+    root.style.setProperty('--theme-accent-surface-strong', `color-mix(in oklab, transparent 72%, var(--theme-accent) 28%)`)
+    root.style.setProperty('--theme-glow-1', `color-mix(in oklab, transparent ${(78 - intensity01 * 18).toFixed(1)}%, var(--theme-accent) ${(22 + intensity01 * 18).toFixed(1)}%)`)
+    root.style.setProperty('--theme-glow-2', `color-mix(in oklab, transparent ${(84 - intensity01 * 16).toFixed(1)}%, var(--theme-accent-strong) ${(16 + intensity01 * 16).toFixed(1)}%)`)
+    root.style.setProperty('--theme-glow-3', `color-mix(in oklab, transparent ${(88 - intensity01 * 14).toFixed(1)}%, var(--theme-accent-deep) ${(12 + intensity01 * 14).toFixed(1)}%)`)
+    root.style.setProperty('--text', '#c7ced3')
+    root.style.setProperty('--text-strong', '#f3f4f2')
+    root.style.setProperty('--muted', '#8a949d')
+    root.style.setProperty('--subtle', '#68737c')
+    root.style.setProperty('--launcher-content-radius', '18px')
+    root.style.setProperty('--launcher-content-soft-line', 'rgba(142, 163, 179, 0.055)')
 
-  // Backwards-compatible names used by older components.
   root.style.setProperty('--bg', 'var(--launcher-chrome-bg)')
   root.style.setProperty('--surface', 'var(--theme-card-bg)')
   root.style.setProperty('--surface-strong', 'var(--theme-elevated-bg)')
+  setCommonSemanticAliases(root)
 
-  root.style.setProperty('--line', `color-mix(in oklab, transparent ${(100 - lineTint).toFixed(1)}%, var(--theme-accent) ${lineTint.toFixed(1)}%)`)
-  root.style.setProperty('--line-strong', `color-mix(in oklab, transparent ${(100 - lineStrongTint).toFixed(1)}%, var(--theme-accent-strong) ${lineStrongTint.toFixed(1)}%)`)
-  root.style.setProperty('--theme-selected-bg', `color-mix(in oklab, transparent ${(100 - selectedTint).toFixed(1)}%, var(--theme-accent) ${selectedTint.toFixed(1)}%)`)
-  root.style.setProperty('--theme-hover-bg', `color-mix(in oklab, transparent ${(100 - hoverTint).toFixed(1)}%, var(--theme-accent) ${hoverTint.toFixed(1)}%)`)
-  root.style.setProperty('--theme-scrollbar', `color-mix(in oklab, transparent 62%, var(--theme-accent) 38%)`)
-  root.style.setProperty('--theme-control-bg', `color-mix(in oklab, var(--theme-card-bg) 84%, var(--theme-accent) 16%)`)
-  root.style.setProperty('--theme-control-hover-bg', `color-mix(in oklab, var(--theme-card-bg) 76%, var(--theme-accent) 24%)`)
-  root.style.setProperty('--theme-modal-bg', `color-mix(in oklab, var(--theme-card-bg) 84%, var(--launcher-page-bg) 16%)`)
-  root.style.setProperty('--theme-modal-bg-strong', `color-mix(in oklab, var(--theme-elevated-bg) 58%, var(--theme-card-bg) 42%)`)
-  root.style.setProperty('--theme-overlay-bg', `color-mix(in oklab, rgba(2, 5, 8, 0.78) 78%, var(--theme-accent-deep) 22%)`)
-  root.style.setProperty('--theme-accent-surface', `color-mix(in oklab, transparent 84%, var(--theme-accent) 16%)`)
-  root.style.setProperty('--theme-accent-surface-strong', `color-mix(in oklab, transparent 72%, var(--theme-accent) 28%)`)
-  root.style.setProperty('--theme-glow-1', `color-mix(in oklab, transparent ${(78 - intensity01 * 18).toFixed(1)}%, var(--theme-accent) ${(22 + intensity01 * 18).toFixed(1)}%)`)
-  root.style.setProperty('--theme-glow-2', `color-mix(in oklab, transparent ${(84 - intensity01 * 16).toFixed(1)}%, var(--theme-accent-strong) ${(16 + intensity01 * 16).toFixed(1)}%)`)
-  root.style.setProperty('--theme-glow-3', `color-mix(in oklab, transparent ${(88 - intensity01 * 14).toFixed(1)}%, var(--theme-accent-deep) ${(12 + intensity01 * 14).toFixed(1)}%)`)
-
-  root.setAttribute('data-theme-dynamic', preferences.dynamicTheme ? 'true' : 'false')
+  root.setAttribute('data-theme-dynamic', dynamicThemeEnabled ? 'true' : 'false')
   root.setAttribute('data-theme-motion', preferences.motionMode)
 }

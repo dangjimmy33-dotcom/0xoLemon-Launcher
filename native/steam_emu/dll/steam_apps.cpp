@@ -162,7 +162,7 @@ bool Steam_Apps::BIsDlcInstalled( AppId_t appID )
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (appID == 0) return false; // steam returns false (also appid 1958220 expects false otherwise it hangs in loading screen)
     if (appID == UINT32_MAX) return false; // steam returns false
-    
+
     // Age of Empires 2: Definitive Edition expects the app itself to be an owned DLC.
     // otherwise it will only load the "Return of Rome" game mode, also most options are disabled
     if (appID == settings->get_local_game_id().AppID()) return true; // steam returns true
@@ -178,11 +178,8 @@ uint32 Steam_Apps::GetEarliestPurchaseUnixTime( AppId_t nAppID )
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     if (nAppID == 0) return 0; // steam returns 0
     if (nAppID == UINT32_MAX) return 0; // steam returns 0
-    auto t =
-        // 4 days ago
-        startup_time
-        - std::chrono::hours(24 * 4);
-    auto duration = std::chrono::duration_cast<std::chrono::seconds>(t.time_since_epoch());
+
+    auto duration = std::chrono::duration_cast<std::chrono::seconds>(settings->get_purchase_date().time_since_epoch());
     if (nAppID == settings->get_local_game_id().AppID() || settings->hasDLC(nAppID)) {
         return (uint32)duration.count();
     }
@@ -190,7 +187,7 @@ uint32 Steam_Apps::GetEarliestPurchaseUnixTime( AppId_t nAppID )
         if (d == nAppID)
             return (uint32)duration.count();
     }
-    
+
     //TODO ?
     return 0;
 }
@@ -271,7 +268,7 @@ void Steam_Apps::RequestAppProofOfPurchaseKey( AppId_t nAppID )
 
     AppProofOfPurchaseKeyResponse_t data{};
     data.m_nAppID = nAppID;
-    
+
     // check Steam_Apps::BIsAppInstalled()
     if (nAppID == 0 || nAppID == UINT32_MAX) {
         FillProofOfPurchaseKey(data, nAppID, false);
@@ -297,7 +294,7 @@ void Steam_Apps::RequestAppProofOfPurchaseKey_OLD( AppId_t nAppID )
 
     AppProofOfPurchaseKeyResponse007_t data{};
     data.m_nAppID = nAppID;
-    
+
     // check Steam_Apps::BIsAppInstalled()
     if (nAppID == 0 || nAppID == UINT32_MAX) {
         FillProofOfPurchaseKey(data, nAppID, false);
@@ -404,7 +401,7 @@ bool Steam_Apps::BIsAppInstalled( AppId_t appID )
 {
     PRINT_DEBUG("%u", appID);
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    
+
     if (appID == 0) return false; // steam returns false
     // game LEGO 2K Drive (app id 1451810) checks for a proper steam behavior by sending uint32_max and expects false in return
     if (appID == UINT32_MAX) return false; // steam returns false
@@ -444,7 +441,7 @@ bool Steam_Apps::GetDlcDownloadProgress( AppId_t nAppID, uint64 *punBytesDownloa
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return false;
 }
- 
+
 
 // return the buildid of this app, may change at any time based on backend updates to the game
 int Steam_Apps::GetAppBuildId()
@@ -494,7 +491,7 @@ void Steam_Apps::RequestAllProofOfPurchaseKeys()
             callbacks->addCBResult(data.k_iCallback, &data, sizeof(data));
         }
     }
-    
+
     // termination entry
     {
         AppProofOfPurchaseKeyResponse_t data{};
@@ -681,6 +678,40 @@ bool Steam_Apps::SetActiveBeta( const char *pchBetaName )
     return false;
 }
 
+// game performance settings
+void Steam_Apps::SetGamePerformanceSetting( EGamePerformanceSetting setting )
+{
+    // TO-DO !!!
+    //
+    // Currently this method does not have any way
+    // of getting what is set,
+    //
+    // so it can remain unimpl'd for now.
+    //
+    // But eventually maybe it should have an effect?
+    //
+    // Don't know, but...
+    // Why would we want to let the game run worse Lol
+    //
+    // ALso this seems to be used for telemetry sent to Valve
+    // so yea we can leave unimpl'd
+    PRINT_DEBUG("'%d'", (int)setting);
+}
+
+void Steam_Apps::SetGameRenderResolution( uint32 unWidth, uint32 unHeight )
+{
+    // TO-DO !!!
+    //
+    // (same as SetGamePerformanceSetting)
+    //
+    // no way to get the things that are set to be honest, so...
+    // this can remain unimpl'd for now
+    //
+    // OK REASON:
+    // For telemetry for Valve servers get sent to
+    // so no need to impl clearly.
+    PRINT_DEBUG("'%u' '%u'", unWidth, unHeight);
+}
 
 #ifdef _PS3
 	// Result returned in a RegisterActivationCodeResponse_t callresult
@@ -689,7 +720,7 @@ bool Steam_Apps::SetActiveBeta( const char *pchBetaName )
         PRINT_DEBUG("%s", pchActivationCode);
         std::lock_guard<std::recursive_mutex> lock(global_mutex);
 
-        if (!pchActivationCode) return 
+        if (!pchActivationCode) return k_uAPICallInvalid;
         RegisterActivationCodeResponse_t data{};
         data.m_eResult = ERegisterActivationCodeResult::k_ERegisterActivationCodeResultOK;
         // data.m_unPackageRegistered = 0; // TODO set this

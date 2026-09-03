@@ -62,6 +62,7 @@ export function BigPictureView({
   const [activeIndex, setActiveIndex] = useState(0)
   const [showHelp, setShowHelp] = useState(false)
   const [gamepadConnected, setGamepadConnected] = useState(() => typeof navigator !== 'undefined' && Boolean(navigator.getGamepads?.().some(Boolean)))
+  const viewportRef = useRef<HTMLDivElement>(null)
   const trackRef = useRef<HTMLDivElement>(null)
   const autoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastInteractionRef = useRef(0)
@@ -85,23 +86,72 @@ export function BigPictureView({
   }, [])
 
   useEffect(() => {
-    const centerActiveCard = () => {
-      if (!trackRef.current) return
-      const activeElement = trackRef.current.children[activeIndex] as HTMLElement | undefined
+    // Force the whole WebView surface opaque while Big Picture is mounted. The
+    // native main window is transparent in normal launcher mode; without this,
+    // Windows can expose the taskbar/desktop through pixels outside the UI layer.
+    document.documentElement.classList.add('big-picture-document-active')
+    return () => document.documentElement.classList.remove('big-picture-document-active')
+  }, [])
+
+  useEffect(() => {
+    const viewport = viewportRef.current
+    const track = trackRef.current
+    if (!viewport || !track) return
+
+    let frame = 0
+    const settleTimers: number[] = []
+
+    const centerActiveCard = (behavior: ScrollBehavior = 'auto') => {
+      const activeElement = track.querySelector<HTMLElement>('.bp-game-card.is-active')
       if (!activeElement) return
-      const containerWidth = trackRef.current.parentElement?.clientWidth ?? window.innerWidth
-      const scrollLeft = activeElement.offsetLeft - containerWidth / 2 + activeElement.offsetWidth / 2
-      trackRef.current.style.transform = `translate3d(${-scrollLeft}px, 0, 0)`
+
+      // Always derive the gutter from the *current* client width. This avoids a
+      // stale pre-fullscreen width surviving a monitor resize or focus overlay.
+      const unscaledWidth = activeElement.offsetWidth || activeElement.getBoundingClientRect().width || 180
+      const endGutter = Math.max(24, (viewport.clientWidth - unscaledWidth) / 2)
+      track.style.setProperty('--bp-end-gutter', `${endGutter}px`)
+
+      window.cancelAnimationFrame(frame)
+      frame = window.requestAnimationFrame(() => {
+        // scrollIntoView's inline:center uses the browser's final layout rect and
+        // is more reliable than hand-computing deltas while WebView2 is resizing.
+        activeElement.scrollIntoView({
+          behavior,
+          block: 'nearest',
+          inline: 'center',
+        })
+      })
     }
 
-    centerActiveCard()
-    const animationFrame = window.requestAnimationFrame(centerActiveCard)
-    window.addEventListener('resize', centerActiveCard)
-    return () => {
-      window.cancelAnimationFrame(animationFrame)
-      window.removeEventListener('resize', centerActiveCard)
+    const syncImmediate = () => centerActiveCard('auto')
+
+    syncImmediate()
+    const resizeObserver = new ResizeObserver(syncImmediate)
+    resizeObserver.observe(viewport)
+    window.addEventListener('resize', syncImmediate)
+    window.addEventListener('focus', syncImmediate)
+
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') syncImmediate()
     }
-  }, [activeIndex, phase])
+    document.addEventListener('visibilitychange', handleVisibility)
+
+    // Native fullscreen and Windows shell overlays can produce several client
+    // sizes in quick succession. Re-center at each settled frame instead of
+    // trusting a single ResizeObserver notification.
+    for (const delay of [60, 180, 360, 700]) {
+      settleTimers.push(window.setTimeout(syncImmediate, delay))
+    }
+
+    return () => {
+      window.cancelAnimationFrame(frame)
+      settleTimers.forEach((timer) => window.clearTimeout(timer))
+      resizeObserver.disconnect()
+      window.removeEventListener('resize', syncImmediate)
+      window.removeEventListener('focus', syncImmediate)
+      document.removeEventListener('visibilitychange', handleVisibility)
+    }
+  }, [activeIndex, phase, reducedMotion])
 
   useEffect(() => {
     const updateGamepadState = () => setGamepadConnected(Boolean(navigator.getGamepads?.().some(Boolean)))
@@ -444,7 +494,7 @@ export function BigPictureView({
           ) : null}
 
           <button className="bp-carousel-arrow is-left" onClick={goPrev} disabled={!isInteractive || games.length < 2} aria-label="Previous game"><ChevronLeft size={26} /></button>
-          <div className="bp-carousel-viewport">
+          <div className="bp-carousel-viewport" ref={viewportRef}>
             <div className="bp-carousel-track" ref={trackRef}>
               {games.map((game, index) => {
                 const isActive = index === activeIndex

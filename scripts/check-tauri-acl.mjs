@@ -9,6 +9,8 @@ const permissionPath = path.join(root, 'src-tauri', 'permissions', 'allow-all.js
 const rustEntryPath = path.join(root, 'src-tauri', 'src', 'lib.rs')
 
 const requiredHandlerCommands = [
+  'get_launcher_library_layout',
+  'save_launcher_library_layout',
   'discover_game_installs',
   'register_library_root',
   'forget_library_root',
@@ -23,6 +25,29 @@ const requiredHandlerCommands = [
   'apply_lua_game_update',
   'check_lua_game_update',
   'check_all_lua_game_updates',
+  'get_social_bootstrap',
+  'search_social_users',
+  'get_social_profile',
+  'update_social_profile',
+  'send_social_friend_request',
+  'accept_social_friend_request',
+  'cancel_social_friend_request',
+  'decline_social_friend_request',
+  'remove_social_friend',
+  'block_social_user',
+  'unblock_social_user',
+  'update_social_presence',
+  'get_social_leaderboard',
+  'set_social_leaderboard_participation',
+  'record_social_stats',
+  'stage_social_cover',
+  'read_social_cover_draft_preview',
+  'commit_social_profile_draft',
+  'discard_social_profile_draft',
+  'retry_social_cover_publish',
+  'migrate_legacy_social_cover',
+  'get_social_cover_state',
+  'read_social_cover_preview',
 ]
 
 async function collectSourceFiles(directory) {
@@ -97,7 +122,8 @@ for (const filePath of sourceFiles) {
 
 const missingAcl = [...invoked].filter((command) => !allowed.has(command)).sort()
 const handlerBody = extractGenerateHandlerBody(rustEntry)
-const missingHandler = requiredHandlerCommands.filter(
+const handlerCommands = [...new Set([...requiredHandlerCommands, ...invoked])]
+const missingHandler = handlerCommands.filter(
   (command) => !new RegExp(`\\b${command}\\b`).test(handlerBody),
 )
 const missingRequiredAcl = requiredHandlerCommands.filter((command) => !allowed.has(command))

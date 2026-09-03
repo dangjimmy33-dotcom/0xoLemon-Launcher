@@ -10,6 +10,7 @@
 
 #include <future>
 #include <atomic>
+#include <chrono>
 #include <memory>
 #include "dll/playtime.h"
 #include "InGameOverlay/RendererHook.h"
@@ -45,6 +46,11 @@ struct friend_window_state
     char chat_input[max_chat_len];
 
     bool joinable;
+    
+    // Avatar texture (lazy loaded)
+    InGameOverlay::RendererResource_t* avatar_resource{nullptr};
+    std::string avatar_pixels{};  // kept alive for AttachResource
+    int avatar_handle{-1};        // Settings image handle, -1 = not loaded
 };
 
 struct Friend_Less
@@ -62,6 +68,11 @@ enum class notification_type
     achievement,
     achievement_progress,
     auto_accept_invite,
+    lobby_join_request,
+    lobby_join_request_response,
+    lobby_kicked,
+    friend_lobby_available,
+    lobby_status,
     screenshot,
 };
 
@@ -80,6 +91,8 @@ struct Overlay_Achievement
     InGameOverlay::RendererResource_t* icon_gray{};
     int icon_handle = Settings::UNLOADED_IMAGE_HANDLE;
     int icon_gray_handle = Settings::UNLOADED_IMAGE_HANDLE;
+    std::string icon_decoded_data{};
+    std::string icon_gray_decoded_data{};
 };
 
 struct Notification
@@ -90,10 +103,19 @@ struct Notification
     int id{};
     uint8 type{};
     bool expired = false;
-    std::chrono::milliseconds start_time{};
+    std::chrono::milliseconds start_time{};        // system_clock (used by native overlay)
+    std::chrono::milliseconds steady_start_time{};  // steady_clock (used by bridge/addon)
     std::string message{};
     std::pair<const Friend, friend_window_state>* frd{};
     std::optional<Overlay_Achievement> ach{};
+    // For lobby_join_request notifications
+    uint64 join_request_lobby_id{};
+    uint64 join_request_requester_id{};
+    // Source friend ID for notifications that involve a specific friend
+    uint64 source_friend_id{};
+    // Cached rendered size from previous frame (for stacking calculations)
+    mutable float last_width{};
+    mutable float last_height{};
 };
 
 // Lightweight archive entry -- no pointers, no GPU resources, safe to store long-term
@@ -136,12 +158,70 @@ class Steam_Overlay
     std::string show_url{};
 
     std::vector<Overlay_Achievement> achievements{};
+    std::map<std::string, float> ach_global_percentages{}; // fetched from Steam Web API
     size_t last_loaded_ach_icon{};
+
+    // snapshot of original achievement data for the "Reset" button (overlay debug use only)
+    struct AchievementSnapshot {
+        std::string name{};
+        bool achieved{};
+        uint32 progress{};
+        uint32 unlock_time{};
+    };
+    std::vector<AchievementSnapshot> achievements_snapshot{};
+    std::map<std::string, float> ach_global_percentages_snapshot{};
     
     bool show_overlay = false;
     bool show_user_info = false;
+    bool show_friends = false;
+    bool show_chat = false;
     bool show_achievements = false;
     bool show_settings = false;
+    bool show_networks = false;
+    bool show_lobby_chat = false;
+    bool show_sce_browser = false;
+
+    // SCE asset download progress (set by NotifySceAssetsReady, read on render thread)
+    struct SceAssetProgress {
+        bool   pending_notification{false};
+        uint32_t downloaded{0};
+        uint32_t skipped{0};
+        uint32_t total{0};
+    } sce_asset_progress{};
+
+    // Per-item GPU texture cache for the SCE asset browser.
+    // Key: "folder/filename" (relative to app storage root).
+    // Lifecycle: created lazily on first render, freed when show_sce_browser is closed.
+    struct SceTexture {
+        InGameOverlay::RendererResource_t *resource{nullptr}; // owned, must be Delete()d
+        std::vector<image_pixel_t> pixels{};                  // kept alive for AttachResource (RGBA8)
+        std::string fp16_pixels{};                            // kept alive for AttachResource (FP16)
+        int   w{0};
+        int   h{0};
+        bool  load_attempted{false};
+    };
+    std::map<std::string, SceTexture> sce_textures{};
+    std::string sce_preview_key{};              // tex_key of the asset currently shown in the preview popup
+    std::vector<std::string> sce_preview_nav_keys{};  // ordered keys for same-type same-series nav
+    bool sce_textures_pending_free{false};      // deferred cleanup flag to avoid mid-frame Delete()
+    void sce_textures_free_all()
+    {
+        for (auto &[k, t] : sce_textures)
+            if (t.resource) { t.resource->Delete(); t.resource = nullptr; }
+        sce_textures.clear();
+    }
+
+    // Local user avatar (loaded once, displayed in user info)
+    InGameOverlay::RendererResource_t* local_avatar_resource{nullptr};
+    std::string local_avatar_pixels{};
+    int local_avatar_handle{-1};
+    bool try_load_avatar(friend_window_state &state, uint64 steam_id);
+    bool try_load_local_avatar();
+
+    // achievement list display options
+    int  ach_sort_mode{0};             // 0=Global %, 1=Schema Order, 2=Alphabetical
+    int  ach_current_tab{1};           // 0=In Progress, 1=My Achievements, 2=Global Stats
+    char ach_search_buf[256]{};        // search filter for achievements
 
     // warn when using local save
     bool warn_local_save = false;
@@ -166,6 +246,11 @@ class Steam_Overlay
     bool notification_history_cache_dirty = false;
     // used when the button "Invite all" is clicked
     std::atomic<bool> invite_all_friends_clicked = false;
+    // track lobby join requests we've already shown a notification for
+    std::set<std::pair<uint64, uint64>> notified_lobby_join_requests{};
+
+    // track which friend lobbies we've already notified about (friend_id -> lobby_id)
+    std::unordered_map<uint64, uint64> notified_friend_lobbies{};
 
     // Rate-limiting queue for achievement notifications
     struct ScheduledAchievement {
@@ -180,6 +265,15 @@ class Steam_Overlay
     bool overlay_state_changed = false;
 
     std::atomic<bool> i_have_lobby = false;
+    std::atomic<bool> i_have_game_server = false;
+
+    // Lobby chat state
+    std::string lobby_chat_history{};
+    size_t lobby_chat_last_entry_count{0};  // how many chat_entries we've already processed
+    char lobby_chat_input[768]{};
+
+    // notifications queued before overlay is ready
+    std::vector<std::string> pending_lobby_notifications{};
 
     // some stuff has to be initialized once the renderer hook is ready
     std::atomic<bool> late_init_imgui = false;
@@ -291,10 +385,22 @@ class Steam_Overlay
 
     std::recursive_mutex overlay_mutex{};
     std::atomic<bool> setup_overlay_called = false;
+    std::atomic<int64_t> bridge_last_heartbeat_ms{0}; // steady_clock ms, 0 = never connected
 
     std::map<std::string, std::vector<char>> wav_files{
-        { "overlay_achievement_notification.wav", std::vector<char>{} },
-        { "overlay_friend_notification.wav", std::vector<char>{} },
+        { "overlay_achievement_notification.wav",  {} }, // achievement unlocked
+        { "overlay_achievement_progress.wav",      {} }, // achievement progress (not yet unlocked)
+        { "overlay_friend_notification.wav",       {} }, // generic friend/lobby fallback
+        { "overlay_invite_notification.wav",       {} }, // game invite from friend
+        { "overlay_chat_notification.wav",         {} }, // chat message
+        { "overlay_auto_accept_notification.wav",  {} }, // auto-accepted invite
+        { "overlay_lobby_join_request.wav",        {} }, // someone requests to join your lobby
+        { "overlay_lobby_join_response.wav",       {} }, // generic fallback for accepted/denied
+        { "overlay_lobby_join_accepted.wav",       {} }, // your lobby join request was accepted
+        { "overlay_lobby_join_denied.wav",         {} }, // your lobby join request was denied
+        { "overlay_lobby_kicked.wav",              {} }, // you were kicked from a lobby
+        { "overlay_friend_lobby.wav",              {} }, // a friend entered a lobby
+        { "overlay_lobby_status.wav",              {} }, // lobby/server status change (created, closed, etc.)
     };
 
     Steam_Overlay(Steam_Overlay const&) = delete;
@@ -311,6 +417,8 @@ class Steam_Overlay
         Overlay_Achievement *ach = nullptr
     );
 
+    void play_overlay_sound(const char* sound_key);
+    
     void refresh_screenshots_list();
     void render_gallery_window();
     void render_pinned_screenshot();
@@ -343,13 +451,20 @@ class Steam_Overlay
     static void on_screenshot_captured(const InGameOverlay::ScreenshotCallbackParameter_t* screenshot, void* userParameter);
 
     void notify_sound_user_invite(friend_window_state& friend_state);
+    void notify_sound_chat_message(friend_window_state& friend_state);
     void notify_sound_user_achievement();
     void notify_sound_auto_accept_friend_invite();
+    void notify_sound_lobby_join();
+    void notify_sound_friend_lobby();
+    void notify_sound_lobby_kicked();
+    void notify_sound_lobby_join_response(bool accepted);
+    void notify_sound_achievement_progress();
+    void notify_sound_lobby_status();
 
     // Right click on friend
     void build_friend_context_menu(Friend const& frd, friend_window_state &state);
     // Double click on friend
-    void build_friend_window(Friend const& frd, friend_window_state &state);
+    void build_chat_window();
     std::chrono::milliseconds get_notification_duration(notification_type type);
     // Notifications like achievements, chat and invitations
     void set_next_notification_pos(std::pair<float, float> scrn_size, std::chrono::milliseconds elapsed, std::chrono::milliseconds duration, const Notification &noti, struct NotificationsCoords &coords);
@@ -376,7 +491,8 @@ class Steam_Overlay
     void add_auto_accept_invite_notification();
     void add_invite_notification(std::pair<const Friend, friend_window_state> &wnd_state);
     void post_achievement_notification(Overlay_Achievement &ach, bool for_progress);
-    void add_chat_message_notification(std::string const& message);
+    void add_chat_message_notification(std::string const& message, std::pair<const Friend, friend_window_state> *frd = nullptr);
+    void poll_lobby_join_requests();
     void show_test_achievement();
 
     bool open_overlay_hook(bool toggle);
@@ -429,9 +545,105 @@ public:
 
     void FriendConnect(Friend _friend);
     void FriendDisconnect(Friend _friend);
+    void FriendUpdate(Friend _friend);
 
     void AddAchievementNotification(const std::string &ach_name, nlohmann::json const& ach, bool for_progress);
 
+    void add_lobby_join_request_response_notification(uint64 lobby_id, const std::string &owner_name, bool accepted, uint64 source_id = 0);
+
+    void add_lobby_kicked_notification(uint64 lobby_id, const std::string &kicker_name, uint64 source_id = 0);
+
+    void SortAchievementsByGlobalPercent(const std::map<std::string, float> &percentages);
+
+    // Called by Steam_User_Stats after SteamHunters data arrives asynchronously
+    void UpdateSteamHuntersData();
+
+    // Called by Steam_User_Stats when SCE asset downloads finish
+    void NotifySceAssetsReady(uint32_t downloaded, uint32_t skipped, uint32_t total);
+
+    // ── Bridge accessor methods (called by overlay_bridge.cpp exports) ──
+    struct BridgeStatsSnapshot {
+        bool  show_fps{};
+        bool  show_frametime{};
+        bool  show_playtime{};
+        bool  show_fps_graph{};
+        bool  show_frametime_graph{};
+        bool  show_min_max_avg{};
+        bool  show_percentile_1{};
+        bool  show_percentile_5{};
+        bool  show_percentile_01{};
+        int   graph_timeframe_sec{};
+        float fps{};
+        float frametime_ms{};
+        float playtime_hr{};
+        float playtime_min{};
+        float playtime_sec{};
+    };
+
+    bool Bridge_GetWarnLocalSave() const;
+    bool Bridge_GetWarnBadAppId() const;
+    int  Bridge_GetNotifPosition() const;
+    BridgeStatsSnapshot Bridge_GetStatsState() const;
+    int  Bridge_GetAchievementCount() const;
+    int  Bridge_GetAchievements(struct GSE_Achievement *out, int max_count);
+    int  Bridge_HasAchievementGroups();
+    int  Bridge_GetAchievementGroupCount();
+    int  Bridge_GetAchievementGroups(struct GSE_AchievementGroup *out, int max_count);
+    int  Bridge_GetNotifications(struct GSE_Notification *out, int max_count);
+    void Bridge_ExpireNotification(int id);
+    int  Bridge_GetDisplayInfo(struct GSE_DisplayInfo *out, int max_count) const;
+    float Bridge_GetSDRWhiteScale() const;
+    int  Bridge_GetFriendCount() const;
+    int  Bridge_GetFriends(struct GSE_Friend *out, int max_count) const;
+    int  Bridge_HasLobby() const;
+    int  Bridge_GetLocalLobbyInfo(struct GSE_LocalLobbyInfo *out) const;
+    int  Bridge_GetConnectString(char *out, int out_size) const;
+    int  Bridge_GetExeName(char *out, int out_size) const;
+    int  Bridge_GetGameServerInfo(struct GSE_GameServerInfo *out) const;
+    int  Bridge_GetLanguage() const;
+    void Bridge_RequestSaveSettings();
+    void Bridge_MarkConnected();
+    bool Bridge_IsConnected() const;
+    void Bridge_TestAchievement();
+    void Bridge_ResetAchievements();
+    void Bridge_SimulateAchievements();
+    void Bridge_InviteAllFriends();
+    void Bridge_FriendAction(uint64_t steam_id, int action);
+    void Bridge_KickAllLobbyMembers();
+    void Bridge_LeaveLobby();
+    void Bridge_AcceptLobbyJoinRequest(int notification_id);
+    void Bridge_DeclineLobbyJoinRequest(int notification_id);
+    void Bridge_RequestJoinFriendLobby(int notification_id);
+    void Bridge_SetShowFps(bool v);
+    void Bridge_SetShowFrametime(bool v);
+    void Bridge_SetShowPlaytime(bool v);
+    void Bridge_SetShowFpsGraph(bool v);
+    void Bridge_SetShowFrametimeGraph(bool v);
+    void Bridge_SetShowMinMaxAvg(bool v);
+    void Bridge_SetShowPercentile1(bool v);
+    void Bridge_SetShowPercentile5(bool v);
+    void Bridge_SetShowPercentile01(bool v);
+    void Bridge_SetGraphTimeframe(int sec);
+    
+    // Chat support for ReShade addon
+    int  Bridge_GetChatState(uint64_t steam_id, struct GSE_ChatState *out);
+    void Bridge_SendChatMessage(uint64_t steam_id, const char *msg);
+    void Bridge_OpenChat(uint64_t steam_id);
+    void Bridge_CloseChat(uint64_t steam_id);
+    
+    // Avatar support for ReShade addon
+    int  Bridge_GetAvatar(uint64_t steam_id, struct GSE_AvatarData *out);
+    int  Bridge_GetLocalAvatar(struct GSE_AvatarData *out);
+
+    // Lobby chat support
+    int  Bridge_GetLobbyChatState(struct GSE_LobbyChatState *out);
+    void Bridge_SendLobbyChatMsg(const char *msg);
+
+    // IP address support for ReShade addon
+    int  Bridge_GetLocalIP(char *out, int max_len) const;
+
+    // Network topology for overlay
+    int  Bridge_GetNetworkInfo(struct GSE_NetAdapter *out, int max_adapters) const;
     // Rate-limiting queue functions
     void process_achievement_queue();
 };
@@ -457,6 +669,9 @@ public:
     void UnSetupOverlay() {}
 
     void OpenOverlayInvite(CSteamID lobbyId) {}
+    void SortAchievementsByGlobalPercent(const std::map<std::string, float> &) {}
+    void UpdateSteamHuntersData() {}
+    void NotifySceAssetsReady(uint32_t downloaded, uint32_t skipped, uint32_t total) {}
     void OpenOverlay(const char* pchDialog) {}
     void OpenOverlayWebpage(const char* pchURL) {}
 
@@ -468,8 +683,14 @@ public:
 
     void FriendConnect(Friend _friend) {}
     void FriendDisconnect(Friend _friend) {}
+    void FriendUpdate(Friend _friend) {}
 
     void AddAchievementNotification(const std::string &ach_name, nlohmann::json const& ach, bool for_progress) {}
+
+    void add_lobby_join_request_response_notification(uint64 lobby_id, const std::string &owner_name, bool accepted, uint64 source_id = 0) {}
+
+    void add_lobby_kicked_notification(uint64 lobby_id, const std::string &kicker_name, uint64 source_id = 0) {}
+    
     void process_achievement_queue() {}
 };
 

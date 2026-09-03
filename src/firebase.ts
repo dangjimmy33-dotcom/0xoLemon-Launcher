@@ -19,8 +19,8 @@ const contentConfig = {
 
 // ─────────────────────────────────────────────────────────────
 // 🔵 0xoLemon-1 (xolemon-1) — Social DB
-//    Collections: chats/*, chat_meta/*, users/*
-//    Dùng cho: game chat, remote control, pc_status/commands
+//    Collections: chats/*, chat_meta/*
+//    Used for game chat only. Remote devices and jobs are backend-only.
 // ─────────────────────────────────────────────────────────────
 const socialConfig = {
   apiKey: 'AIzaSyBOeVOoaPMCX6gxnT7UTl_TlCBViBwDxPE',
@@ -40,7 +40,7 @@ export const contentDb = initializeFirestore(contentApp, {
   localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
 })
 
-/** Social DB — chat, users, remote control commands */
+/** Social DB - game chat. Social and remote-control data go through Render. */
 export const socialDb = initializeFirestore(socialApp, {
   localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
 })

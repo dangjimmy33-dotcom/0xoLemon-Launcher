@@ -1,13 +1,13 @@
-## What is this ?
+## What is this?
 This is an old Windows-only library equivalent to `steam_api.dll` that's still used by some old games.  
 
-## Purpose ?
+## Purpose
 Bypass initial/basic checks in old games.  
 
 ## Note
-Note that it doesn't emulate all the required functionality at the moment, some functions are still missing.  
+Not all functionality is emulated at the moment — some functions are still missing.  
 
-## How to use ?
+## How to use?
 
 ### Option 1:
 - Copy & paste this dll beside the game's `.exe` file

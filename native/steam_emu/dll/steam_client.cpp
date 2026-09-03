@@ -77,7 +77,7 @@ Steam_Client::Steam_Client()
         std::chrono::duration_cast<std::chrono::milliseconds>(initial_delay),
         std::chrono::duration_cast<std::chrono::milliseconds>(max_stall_ms)
     );
-    network = new Networking(settings_server->get_local_steam_id(), appid, settings_server->get_port(), &(settings_server->custom_broadcasts), settings_server->disable_networking);
+    network = new Networking(settings_server->get_local_steam_id(), appid, settings_server->get_port(), &(settings_server->custom_broadcasts), settings_server->disable_networking, settings_server->enable_crossapp_messaging);
 
     run_every_runcb = new RunEveryRunCB();
 
@@ -191,6 +191,10 @@ Steam_Client::Steam_Client()
     steamclient_version = 6; // default for C exports
 
     last_cb_run = 0;
+
+    detect_thirdparty_injectors();
+    try_start_specialk_injection();
+
     PRINT_DEBUG("end *********");
 
     reset_LastError();

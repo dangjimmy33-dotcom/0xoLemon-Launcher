@@ -1,0 +1,401 @@
+.lightning-hub {
+  --lh-bg: #090b10;
+  --lh-panel: rgba(15, 18, 25, 0.94);
+  --lh-panel-2: rgba(21, 25, 34, 0.96);
+  --lh-line: rgba(255, 255, 255, 0.1);
+  --lh-line-strong: rgba(244, 45, 63, 0.5);
+  --lh-text: #f4f5f7;
+  --lh-muted: #9299a8;
+  --lh-red: #f02c43;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  color: var(--lh-text);
+  background: linear-gradient(135deg, rgba(240, 44, 67, 0.04), transparent 38%), var(--lh-bg);
+  overflow: hidden;
+}
+
+.lightning-hub button,
+.lightning-hub input,
+.lightning-hub select { font: inherit; letter-spacing: 0; }
+
+.lightning-hub-rail {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--lh-line);
+  background: rgba(7, 9, 13, 0.94);
+}
+
+.lightning-hub-rail > header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 68px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--lh-line);
+}
+
+.lightning-hub-rail > header > span {
+  display: grid;
+  place-items: center;
+  width: 35px;
+  height: 35px;
+  flex: 0 0 35px;
+  color: #fff;
+  background: var(--lh-red);
+  border-radius: 5px;
+  box-shadow: 0 0 24px rgba(240, 44, 67, 0.22);
+}
+
+.lightning-hub-rail header div,
+.lightning-hub-rail header strong,
+.lightning-hub-rail header small { min-width: 0; display: block; }
+.lightning-hub-rail header strong { font-size: 13px; }
+.lightning-hub-rail header small { margin-top: 3px; color: var(--lh-muted); font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lightning-hub-rail nav { min-height: 0; padding: 8px; overflow-y: auto; scrollbar-width: thin; }
+.lightning-hub-rail nav button {
+  width: 100%;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  color: var(--lh-muted);
+  background: transparent;
+  text-align: left;
+}
+.lightning-hub-rail nav button:hover { color: var(--lh-text); background: rgba(255, 255, 255, 0.045); }
+.lightning-hub-rail nav button.is-active { color: #fff; border-color: rgba(240, 44, 67, 0.28); background: rgba(240, 44, 67, 0.12); box-shadow: inset 2px 0 0 var(--lh-red); }
+.lightning-hub-rail nav button > svg { flex: 0 0 auto; }
+.lightning-hub-rail nav button span,
+.lightning-hub-rail nav button strong,
+.lightning-hub-rail nav button small { min-width: 0; display: block; }
+.lightning-hub-rail nav button strong { font-size: 11px; }
+.lightning-hub-rail nav button small { margin-top: 2px; color: inherit; opacity: 0.7; font-size: 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lightning-hub-rail > footer { display: flex; align-items: center; gap: 7px; min-height: 37px; padding: 0 12px; border-top: 1px solid var(--lh-line); color: var(--lh-muted); font-size: 9px; }
+.lightning-hub-rail > footer i { width: 7px; height: 7px; border-radius: 50%; background: #666; }
+.lightning-hub-rail > footer i.is-ready { background: #33d17a; box-shadow: 0 0 8px rgba(51, 209, 122, 0.4); }
+
+.lightning-hub-content { min-width: 0; min-height: 0; overflow-y: auto; overflow-x: hidden; scrollbar-width: thin; }
+.lightning-hub-heading { position: sticky; z-index: 8; top: 0; display: flex; align-items: center; justify-content: space-between; gap: 18px; min-height: 82px; padding: 13px clamp(16px, 2.2vw, 32px); border-bottom: 1px solid var(--lh-line); background: rgba(9, 11, 16, 0.92); backdrop-filter: blur(18px); }
+.lightning-hub-heading > div { min-width: 0; }
+.lightning-hub-heading span { color: var(--lh-red); font-size: 8px; font-weight: 800; letter-spacing: 0.15em; }
+.lightning-hub-heading h1 { margin: 2px 0 0; font-size: clamp(19px, 2vw, 26px); line-height: 1; letter-spacing: 0; }
+.lightning-hub-heading p { margin: 5px 0 0; color: var(--lh-muted); font-size: 10px; }
+.lightning-hub-heading button,
+.lightning-pagination button,
+.lightning-tool-form button,
+.lightning-tool-actions button,
+.lightning-detail-panel footer button,
+.lightning-package-list article button {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid var(--lh-line);
+  border-radius: 5px;
+  padding: 0 12px;
+  color: var(--lh-text);
+  background: rgba(255, 255, 255, 0.045);
+}
+.lightning-hub-heading button:hover,
+.lightning-pagination button:hover:not(:disabled),
+.lightning-tool-form button:hover:not(:disabled),
+.lightning-tool-actions button:hover:not(:disabled),
+.lightning-detail-panel footer button:hover:not(:disabled),
+.lightning-package-list article button:hover:not(:disabled) { border-color: rgba(255, 255, 255, 0.22); background: rgba(255, 255, 255, 0.08); }
+.lightning-hub button:disabled { opacity: 0.45; cursor: not-allowed; }
+.lightning-hub button.is-primary,
+.lightning-detail-panel footer button.is-primary { border-color: #f23950; color: #fff; background: linear-gradient(180deg, #f23950, #bd172c); }
+
+.lightning-hub-message { display: flex; align-items: center; gap: 8px; min-height: 37px; margin: 12px clamp(16px, 2.2vw, 32px) 0; padding: 8px 10px; border: 1px solid var(--lh-line); border-radius: 5px; color: #c7ccd5; background: rgba(255, 255, 255, 0.04); font-size: 10px; }
+.lightning-hub-message > svg { flex: 0 0 auto; }
+.lightning-hub-message > span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.lightning-hub-message > button { border: 0; color: inherit; background: transparent; }
+.lightning-hub-message.is-error { border-color: rgba(240, 44, 67, 0.5); color: #ff98a4; background: rgba(240, 44, 67, 0.1); }
+.lightning-hub-message.is-warning { border-color: rgba(255, 190, 62, 0.34); color: #e9c66f; background: rgba(255, 190, 62, 0.07); }
+.lightning-hub-message.is-success { border-color: rgba(51, 209, 122, 0.35); color: #77e6aa; background: rgba(51, 209, 122, 0.07); }
+
+.lightning-overview,
+.lightning-catalog-view,
+.lightning-tool-workspace,
+.lightning-package-list,
+.lightning-document { width: min(1220px, calc(100% - clamp(32px, 4.4vw, 64px))); margin: 18px auto 34px; }
+.lightning-command-hero { min-height: 210px; display: flex; align-items: flex-end; justify-content: space-between; gap: 30px; padding: clamp(22px, 4vw, 48px); border: 1px solid rgba(240, 44, 67, 0.24); border-radius: 7px; background: radial-gradient(circle at 78% 18%, rgba(240, 44, 67, 0.24), transparent 30%), linear-gradient(135deg, #171b25, #0c0f15); overflow: hidden; }
+.lightning-command-hero > div { max-width: 690px; }
+.lightning-command-hero > div > span { display: inline-flex; align-items: center; gap: 7px; color: #ff6577; font-size: 9px; font-weight: 800; }
+.lightning-command-hero h2 { margin: 12px 0 8px; max-width: 650px; font-size: clamp(29px, 4vw, 54px); line-height: 0.98; letter-spacing: 0; }
+.lightning-command-hero p { margin: 0; max-width: 650px; color: #a8aebb; font-size: 12px; line-height: 1.6; }
+.lightning-command-hero > button { min-width: 175px; min-height: 42px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: 5px; color: #fff; background: var(--lh-red); font-weight: 700; }
+.lightning-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; margin-top: 10px; }
+.lightning-stats article { min-width: 0; min-height: 96px; display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; align-content: center; gap: 3px 10px; padding: 14px; border: 1px solid var(--lh-line); background: var(--lh-panel); }
+.lightning-stats article > svg { grid-row: 1 / span 2; align-self: center; color: var(--lh-red); }
+.lightning-stats article strong { font-size: 17px; }
+.lightning-stats article span { color: var(--lh-muted); font-size: 9px; }
+.lightning-workflow-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; margin-top: 10px; }
+.lightning-workflow-grid button { min-height: 72px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; padding: 13px; border: 1px solid var(--lh-line); color: var(--lh-text); background: var(--lh-panel); text-align: left; }
+.lightning-workflow-grid button:hover { border-color: var(--lh-line-strong); background: var(--lh-panel-2); }
+.lightning-workflow-grid button > svg:first-child { color: #ff6577; }
+.lightning-workflow-grid button > svg:last-child { color: var(--lh-muted); }
+.lightning-workflow-grid span,
+.lightning-workflow-grid strong,
+.lightning-workflow-grid small { min-width: 0; display: block; }
+.lightning-workflow-grid strong { font-size: 12px; }
+.lightning-workflow-grid small { margin-top: 3px; color: var(--lh-muted); font-size: 9px; }
+.lightning-capabilities { margin-top: 10px; padding: 16px; border: 1px solid var(--lh-line); background: var(--lh-panel); }
+.lightning-capabilities h3 { margin: 0 0 12px; font-size: 12px; }
+.lightning-capabilities > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+.lightning-capabilities span { display: flex; align-items: center; gap: 7px; color: #b8bec8; font-size: 10px; }
+.lightning-capabilities svg { color: #46d789; }
+
+.lightning-catalog-toolbar { display: grid; grid-template-columns: minmax(240px, 1fr) minmax(150px, 230px) auto; align-items: center; gap: 9px; margin-bottom: 12px; }
+.lightning-catalog-toolbar label { min-height: 38px; display: flex; align-items: center; gap: 9px; padding: 0 11px; border: 1px solid var(--lh-line); background: var(--lh-panel); }
+.lightning-catalog-toolbar input { width: 100%; min-width: 0; border: 0; outline: 0; color: var(--lh-text); background: transparent; }
+.lightning-catalog-toolbar select { height: 38px; border: 1px solid var(--lh-line); padding: 0 10px; color: var(--lh-text); background: #151922; }
+.lightning-catalog-toolbar > span { color: var(--lh-muted); font-size: 9px; }
+.lightning-catalog-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; }
+.lightning-catalog-grid article { min-width: 0; display: grid; grid-template-rows: 132px auto auto; border: 1px solid var(--lh-line); border-radius: 5px; background: var(--lh-panel); overflow: hidden; cursor: pointer; transition: transform 160ms ease, border-color 160ms ease, background 160ms ease; }
+.lightning-catalog-grid article:hover,
+.lightning-catalog-grid article.is-selected { transform: translateY(-2px); border-color: var(--lh-line-strong); background: var(--lh-panel-2); }
+.lightning-catalog-art { position: relative; display: grid; place-items: center; min-width: 0; color: #6b7180; background: #1c202a; overflow: hidden; }
+.lightning-catalog-art img { width: 100%; height: 100%; object-fit: cover; }
+.lightning-catalog-art > span { position: absolute; left: 8px; bottom: 7px; max-width: calc(100% - 16px); padding: 3px 6px; border-radius: 3px; color: #fff; background: rgba(0, 0, 0, 0.72); font-size: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lightning-catalog-copy { min-width: 0; padding: 11px 11px 7px; }
+.lightning-catalog-copy h3 { margin: 0; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lightning-catalog-copy p { margin: 5px 0; color: var(--lh-muted); font-size: 9px; }
+.lightning-catalog-copy small { display: block; color: #6f7786; font-size: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lightning-catalog-state { padding: 0 11px 10px; color: #8e96a5; font-size: 8px; }
+.lightning-catalog-state span { display: inline-flex; align-items: center; gap: 4px; }
+.lightning-catalog-state span.is-installed { color: #56d98e; }
+.lightning-pagination { display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 16px; }
+.lightning-pagination button svg { width: 15px; }
+.lightning-pagination > span { color: var(--lh-muted); font-size: 9px; }
+.lightning-hub-loading,
+.lightning-hub-empty { min-height: 280px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--lh-muted); }
+.lightning-hub-empty strong { color: var(--lh-text); }
+
+.lightning-detail-backdrop { position: fixed; z-index: 1200; inset: 0; display: flex; justify-content: flex-end; padding: 44px 0 25px; background: rgba(0, 0, 0, 0.62); backdrop-filter: blur(8px); }
+.lightning-detail-panel { width: min(590px, 94vw); height: 100%; min-height: 0; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; border-left: 1px solid rgba(255, 255, 255, 0.16); color: var(--lh-text); background: #0d1016; box-shadow: -25px 0 60px rgba(0, 0, 0, 0.45); }
+.lightning-detail-panel > header { position: relative; min-height: 180px; display: flex; align-items: flex-end; padding: 22px; background: #171b24; overflow: hidden; }
+.lightning-detail-panel > header > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.42; }
+.lightning-detail-panel > header::after { content: ''; position: absolute; inset: 0; background: linear-gradient(transparent, #0d1016); }
+.lightning-detail-panel > header > div { position: relative; z-index: 1; min-width: 0; }
+.lightning-detail-panel > header span { color: #ff7a89; font-size: 8px; font-weight: 800; text-transform: uppercase; }
+.lightning-detail-panel > header h2 { margin: 5px 0; font-size: 25px; }
+.lightning-detail-panel > header p { margin: 0; color: #afb5c0; font-size: 10px; }
+.lightning-detail-panel > header > button { position: absolute; z-index: 2; top: 12px; right: 12px; min-height: 30px; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 4px; padding: 0 10px; color: #fff; background: rgba(0, 0, 0, 0.55); }
+.lightning-detail-body { min-height: 0; padding: 18px 22px; overflow-y: auto; }
+.lightning-detail-body > section { margin-bottom: 18px; }
+.lightning-detail-body section h3 { margin: 0 0 9px; font-size: 11px; }
+.lightning-detail-body section > span { display: flex; align-items: flex-start; gap: 7px; margin-top: 7px; color: #b2b8c3; font-size: 10px; line-height: 1.45; }
+.lightning-detail-body section > span svg { width: 13px; flex: 0 0 13px; color: #52da90; }
+.lightning-detail-note { display: flex; gap: 8px; margin: 0 0 18px; padding: 11px; border: 1px solid rgba(255, 190, 62, 0.26); color: #e0c988; background: rgba(255, 190, 62, 0.06); font-size: 10px; line-height: 1.5; }
+.lightning-detail-note svg { flex: 0 0 auto; width: 15px; }
+.lightning-price { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.lightning-price > div { padding: 11px; border: 1px solid var(--lh-line); background: #131720; }
+.lightning-price span,
+.lightning-price strong { display: block; }
+.lightning-price span { color: var(--lh-muted); font-size: 8px; }
+.lightning-price strong { margin-top: 5px; font-size: 13px; }
+.lightning-progress { padding: 12px; border: 1px solid var(--lh-line); background: #131720; }
+.lightning-progress > div { display: flex; justify-content: space-between; gap: 8px; font-size: 9px; }
+.lightning-progress progress { width: 100%; height: 5px; margin: 10px 0 5px; accent-color: var(--lh-red); }
+.lightning-progress small { color: var(--lh-muted); font-size: 8px; }
+.lightning-receipt { display: flex; align-items: center; gap: 10px; padding: 12px; border: 1px solid rgba(51, 209, 122, 0.25); background: rgba(51, 209, 122, 0.06); }
+.lightning-receipt > svg { color: #51d98d; }
+.lightning-receipt strong,
+.lightning-receipt span { display: block; }
+.lightning-receipt strong { font-size: 10px; }
+.lightning-receipt span { margin-top: 3px; color: #9ca5b2; font-size: 8px; }
+.lightning-detail-panel > footer { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 18px; border-top: 1px solid var(--lh-line); background: #11141b; }
+
+.lightning-tool-intro { min-height: 100px; display: flex; align-items: center; gap: 16px; padding: 18px; border: 1px solid var(--lh-line); background: var(--lh-panel); }
+.lightning-tool-intro > svg { width: 31px; height: 31px; color: var(--lh-red); }
+.lightning-tool-intro h2 { margin: 0; font-size: 17px; }
+.lightning-tool-intro p { margin: 6px 0 0; color: var(--lh-muted); font-size: 10px; line-height: 1.5; }
+.lightning-tool-form { display: grid; grid-template-columns: minmax(220px, 1fr) auto; align-items: end; gap: 9px; margin-top: 10px; padding: 14px; border: 1px solid var(--lh-line); background: var(--lh-panel); }
+.lightning-tool-form label { color: var(--lh-muted); font-size: 9px; }
+.lightning-tool-form input { width: 100%; height: 36px; display: block; margin-top: 6px; border: 1px solid var(--lh-line); border-radius: 4px; padding: 0 10px; color: var(--lh-text); background: #10131a; }
+.lightning-executable-list { margin-top: 10px; border: 1px solid var(--lh-line); background: var(--lh-panel); }
+.lightning-executable-list > button { width: 100%; min-height: 52px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; padding: 8px 12px; border: 0; border-bottom: 1px solid var(--lh-line); color: var(--lh-text); background: transparent; text-align: left; }
+.lightning-executable-list > button:last-child { border-bottom: 0; }
+.lightning-executable-list > button:hover,
+.lightning-executable-list > button.is-selected { background: rgba(240, 44, 67, 0.09); }
+.lightning-executable-list span,
+.lightning-executable-list strong,
+.lightning-executable-list small { min-width: 0; display: block; }
+.lightning-executable-list strong { font-size: 10px; overflow-wrap: anywhere; }
+.lightning-executable-list small { margin-top: 3px; color: var(--lh-muted); font-size: 8px; }
+.lightning-executable-list b { color: #a2a9b4; font-size: 8px; }
+.lightning-executable-list b.is-patched { color: #56db90; }
+.lightning-tool-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
+.lightning-tool-workspace > .lightning-hub-message { margin: 14px 0 0; }
+
+.lightning-package-list article { min-height: 78px; display: grid; grid-template-columns: auto 1fr minmax(150px, auto); align-items: center; gap: 13px; margin-top: 8px; padding: 12px 14px; border: 1px solid var(--lh-line); background: var(--lh-panel); }
+.lightning-package-list article > span { display: grid; place-items: center; width: 36px; height: 36px; border: 1px solid var(--lh-line); color: var(--lh-muted); background: #11141b; }
+.lightning-package-list article > span.is-installed { color: #51da8f; border-color: rgba(51, 209, 122, 0.25); }
+.lightning-package-list article > div { min-width: 0; }
+.lightning-package-list article h3 { margin: 0; font-size: 11px; }
+.lightning-package-list article p { margin: 4px 0; color: #b2b8c3; font-size: 9px; }
+.lightning-package-list article small { color: #737b88; font-size: 8px; }
+.lightning-package-list article > div:last-child { display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
+.lightning-package-list article b { color: var(--lh-muted); font-size: 8px; text-align: right; }
+
+.lightning-document { padding: clamp(20px, 3vw, 40px); border: 1px solid var(--lh-line); background: var(--lh-panel); }
+.lightning-document > header { display: flex; align-items: center; gap: 14px; padding-bottom: 20px; border-bottom: 1px solid var(--lh-line); }
+.lightning-document > header > svg { width: 32px; height: 32px; color: var(--lh-red); }
+.lightning-document header span { color: var(--lh-red); font-size: 8px; font-weight: 800; letter-spacing: 0.14em; }
+.lightning-document h2 { margin: 3px 0 0; font-size: 24px; }
+.lightning-document > section { padding: 18px 0; border-bottom: 1px solid var(--lh-line); }
+.lightning-document > section:last-child { border-bottom: 0; }
+.lightning-document h3 { margin: 0 0 7px; font-size: 12px; }
+.lightning-document p { max-width: 850px; margin: 0; color: #abb1bc; font-size: 10px; line-height: 1.65; }
+
+html[data-ui-theme='lightning'] .lightning-hub {
+  --lh-bg: #09090d;
+  --lh-panel: #141416;
+  --lh-panel-2: #1c1c1f;
+  --lh-line: rgba(255, 255, 255, 0.07);
+  --lh-line-strong: rgba(255, 255, 255, 0.13);
+  --lh-red: #6c47ff;
+  background: radial-gradient(circle at 15% 12%, rgba(70, 51, 108, 0.15), transparent 32%), #09090d;
+}
+
+html[data-ui-theme='lightning'] .lightning-hub-heading { display: none; }
+html[data-ui-theme='lightning'] .lightning-hub-message { position: relative; z-index: 10; }
+
+.lightning-v5-tools-stage {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  min-height: 280px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(8, 8, 11, 0.42);
+}
+
+.lightning-v5-tools-stage > article {
+  min-width: 0;
+  padding: 28px 32px;
+}
+
+.lightning-v5-tools-stage > article + article { border-left: 1px solid rgba(255, 255, 255, 0.07); }
+.lightning-v5-import > span,
+.lightning-v5-appid label { display: block; color: #4e4b60; font-size: 10px; font-weight: 650; letter-spacing: 0.08em; }
+
+.lightning-v5-import > button {
+  width: 100%;
+  height: 190px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 16px;
+  border: 1px dashed rgba(255, 255, 255, 0.13);
+  border-radius: 14px;
+  color: #807c91;
+  background: transparent;
+  transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
+}
+.lightning-v5-import > button:hover { border-color: rgba(108, 71, 255, 0.56); color: #c0b6ea; background: rgba(108, 71, 255, 0.045); }
+.lightning-v5-import svg { width: 31px; height: 31px; margin-bottom: 3px; stroke-width: 1.2; }
+.lightning-v5-import strong { color: #918da0; font-size: 12px; font-weight: 500; }
+.lightning-v5-import small { color: #4c495d; font-size: 10px; }
+.lightning-v5-import b { margin-top: 8px; padding: 6px 14px; border: 1px solid rgba(255,255,255,.11); border-radius: 8px; color: #9692a1; background: #1c1c1f; font-size: 11px; font-weight: 500; }
+
+.lightning-v5-clock { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.lightning-v5-clock > svg { display: none; }
+.lightning-v5-clock strong { color: #e8e8f0; font-size: clamp(52px, 5vw, 72px); font-weight: 200; font-variant-numeric: tabular-nums; line-height: 1; }
+.lightning-v5-clock b { margin-top: 2px; color: #44445a; font-size: 18px; font-weight: 300; font-variant-numeric: tabular-nums; letter-spacing: .06em; }
+.lightning-v5-clock span { margin-top: 10px; color: #44445a; font-size: 12px; font-weight: 300; text-transform: capitalize; }
+
+.lightning-v5-appid { display: flex; flex-direction: column; justify-content: center; }
+.lightning-v5-appid input { width: 100%; height: 38px; display: block; margin-top: 16px; border: 1px solid rgba(255,255,255,.07); border-radius: 10px; outline: none; padding: 0 14px; color: #e8e8f0; background: #1c1c1f; }
+.lightning-v5-appid input:focus { border-color: rgba(108,71,255,.55); box-shadow: 0 0 0 3px rgba(108,71,255,.1); }
+.lightning-v5-appid > button { min-height: 38px; margin-top: 8px; border: 0; border-radius: 10px; color: #fff; background: #6c47ff; font-weight: 600; }
+.lightning-v5-appid > button:hover:not(:disabled) { background: #7d5cff; box-shadow: 0 4px 18px rgba(108,71,255,.34); }
+.lightning-v5-appid > p { margin: 6px 0 0; color: #4e4b60; font-size: 10px; line-height: 1.45; }
+.lightning-v5-appid > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
+.lightning-v5-appid > div button { min-height: 32px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid rgba(255,255,255,.07); border-radius: 7px; color: #d8d6de; background: #1c1c1f; }
+.lightning-v5-appid > div button:hover { border-color: rgba(255,255,255,.13); background: rgba(255,255,255,.06); }
+.lightning-v5-appid button svg { width: 14px; height: 14px; }
+
+.lightning-v5-bypass {
+  position: relative;
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 5vw;
+  background-position: center;
+  background-size: cover;
+  isolation: isolate;
+  overflow: hidden;
+}
+.lightning-v5-bypass::before { content: ''; position: absolute; z-index: -1; inset: 0; background: radial-gradient(circle at 50% 76%, rgba(245, 174, 111, .24), transparent 34%), linear-gradient(180deg, rgba(5,5,8,.1), rgba(5,5,8,.42)); }
+.lightning-v5-bypass-mark { position: absolute; top: 8%; left: 6%; max-width: 320px; color: rgba(255,255,255,.52); font-size: clamp(38px, 6vw, 82px); font-weight: 800; letter-spacing: .04em; }
+.lightning-v5-bypass-platforms { width: min(920px, 86vw); display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: clamp(12px, 1.5vw, 24px); transform: translateY(10vh); }
+.lightning-v5-bypass-platforms button { aspect-ratio: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; border: 1px solid rgba(255,255,255,.14); border-radius: 16px; color: #fff; background: linear-gradient(145deg, rgba(255,255,255,.26), rgba(255,255,255,.08)); box-shadow: 0 18px 40px rgba(0,0,0,.34), inset 0 1px rgba(255,255,255,.13); backdrop-filter: blur(12px); transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease; }
+.lightning-v5-bypass-platforms button:hover { transform: scale(1.08) translateY(-4px); border-color: rgba(255,255,255,.46); box-shadow: 0 22px 48px rgba(0,0,0,.48), 0 0 28px rgba(255,191,120,.18); }
+.lightning-v5-bypass-platforms strong { max-width: 90%; overflow: hidden; font-size: clamp(10px, .9vw, 14px); text-overflow: ellipsis; white-space: nowrap; }
+.lightning-v5-bypass-platforms span { color: rgba(255,255,255,.62); font-size: 8px; }
+
+html[data-ui-theme='lightning'] .lightning-catalog-view.is-online-fix { width: min(1296px, calc(100% - 72px)); margin-top: 24px; }
+html[data-ui-theme='lightning'] .is-online-fix .lightning-catalog-toolbar { grid-template-columns: minmax(260px, 340px) minmax(130px, 180px) 1fr; }
+html[data-ui-theme='lightning'] .is-online-fix .lightning-catalog-toolbar > span { justify-self: end; }
+html[data-ui-theme='lightning'] .is-online-fix .lightning-catalog-grid { gap: 12px; }
+html[data-ui-theme='lightning'] .is-online-fix .lightning-catalog-grid article { position: relative; grid-template-rows: auto; aspect-ratio: 2.14 / 1; border: 0; border-radius: 10px; background: #131316; }
+html[data-ui-theme='lightning'] .is-online-fix .lightning-catalog-grid article:hover { transform: translateY(-3px); }
+html[data-ui-theme='lightning'] .is-online-fix .lightning-catalog-art { position: absolute; inset: 0; }
+html[data-ui-theme='lightning'] .is-online-fix .lightning-catalog-art::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, rgba(0,0,0,.82), transparent 65%); }
+html[data-ui-theme='lightning'] .is-online-fix .lightning-catalog-art > span { display: none; }
+html[data-ui-theme='lightning'] .is-online-fix .lightning-catalog-copy { position: absolute; z-index: 2; left: 14px; right: 92px; bottom: 12px; padding: 0; }
+html[data-ui-theme='lightning'] .is-online-fix .lightning-catalog-copy h3 { color: #fff; font-size: 12px; }
+html[data-ui-theme='lightning'] .is-online-fix .lightning-catalog-copy p { margin: 4px 0 0; color: rgba(255,255,255,.5); font-size: 8px; }
+html[data-ui-theme='lightning'] .is-online-fix .lightning-catalog-copy small { display: none; }
+html[data-ui-theme='lightning'] .is-online-fix .lightning-catalog-state { position: absolute; z-index: 3; right: 12px; bottom: 10px; padding: 0; }
+html[data-ui-theme='lightning'] .is-online-fix .lightning-catalog-state button { min-height: 30px; border: 1px solid rgba(255,255,255,.13); border-radius: 16px; padding: 0 13px; color: #fff; background: rgba(24,24,28,.72); backdrop-filter: blur(8px); }
+html[data-ui-theme='lightning'] .is-online-fix .lightning-catalog-state button:hover { background: rgba(255,255,255,.18); }
+html[data-ui-theme='lightning'] .lightning-catalog-toolbar > span { display: flex; align-items: center; gap: 10px; }
+html[data-ui-theme='lightning'] .lightning-catalog-toolbar > span button { min-height: 30px; border: 1px solid rgba(255,255,255,.1); border-radius: 6px; padding: 0 10px; color: #ddd9e5; background: #15151a; }
+
+.spin { animation: lightning-hub-spin 0.85s linear infinite; }
+@keyframes lightning-hub-spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 1100px) {
+  .lightning-hub { grid-template-columns: minmax(0, 1fr); }
+  .lightning-hub-rail > header { justify-content: center; padding: 10px; }
+  .lightning-hub-rail > header > div,
+  .lightning-hub-rail nav button span,
+  .lightning-hub-rail > footer span { display: none; }
+  .lightning-hub-rail nav button { justify-content: center; padding: 8px; }
+  .lightning-catalog-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .lightning-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lightning-v5-tools-stage { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lightning-v5-tools-stage > article:nth-child(3) { grid-column: 1 / -1; border-top: 1px solid rgba(255,255,255,.07); }
+  .lightning-v5-bypass-platforms { grid-template-columns: repeat(3, minmax(0, 1fr)); transform: translateY(5vh); }
+}
+
+@media (max-width: 760px) {
+  .lightning-command-hero { align-items: flex-start; flex-direction: column; }
+  .lightning-command-hero > button { width: 100%; }
+  .lightning-catalog-toolbar { grid-template-columns: 1fr; }
+  .lightning-catalog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lightning-workflow-grid,
+  .lightning-capabilities > div { grid-template-columns: 1fr; }
+  .lightning-tool-form { grid-template-columns: 1fr; }
+  .lightning-package-list article { grid-template-columns: auto 1fr; }
+  .lightning-package-list article > div:last-child { grid-column: 1 / -1; justify-content: space-between; }
+  .lightning-v5-tools-stage { grid-template-columns: 1fr; }
+  .lightning-v5-tools-stage > article + article { border-left: 0; border-top: 1px solid rgba(255,255,255,.07); }
+  .lightning-v5-tools-stage > article:nth-child(3) { grid-column: auto; }
+  .lightning-v5-bypass { align-items: flex-start; overflow-y: auto; }
+  .lightning-v5-bypass-platforms { grid-template-columns: repeat(2, minmax(0, 1fr)); transform: translateY(70px); }
+  html[data-ui-theme='lightning'] .is-online-fix .lightning-catalog-grid { grid-template-columns: 1fr; }
+}

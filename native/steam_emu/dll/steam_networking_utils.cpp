@@ -97,6 +97,7 @@ SteamNetworkingMessage_t* Steam_Networking_Utils::AllocateMessage( int cbAllocat
         pMsg->m_pData = malloc(cbAllocateBuffer);
 
     pMsg->m_cbSize = cbAllocateBuffer;
+    pMsg->m_idxLane = 0;
     return pMsg;
 }
 

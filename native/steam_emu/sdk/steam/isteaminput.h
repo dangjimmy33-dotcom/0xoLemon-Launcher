@@ -1,8 +1,8 @@
 //====== Copyright 1996-2018, Valve Corporation, All rights reserved. =======
 //
-// Purpose: Steam Input is a flexible input API that supports over three hundred devices including all 
+// Purpose: Steam Input is a flexible input API that supports over three hundred devices including all
 //          common variants of Xbox, Playstation, Nintendo Switch Pro, and Steam Controllers.
-//			For more info including a getting started guide for developers 
+//			For more info including a getting started guide for developers
 //			please visit: https://partner.steamgames.com/doc/features/steam_controller
 //
 //=============================================================================
@@ -10,7 +10,7 @@
 #ifndef ISTEAMINPUT_H
 #define ISTEAMINPUT_H
 #ifdef STEAM_WIN32
-#pragma once	
+#pragma once
 #endif
 
 #include "steam_api_common.h"
@@ -131,7 +131,7 @@ enum EInputActionOrigin
 	k_EInputActionOrigin_SteamController_Reserved8,
 	k_EInputActionOrigin_SteamController_Reserved9,
 	k_EInputActionOrigin_SteamController_Reserved10,
-	
+
 	// PS4 Dual Shock
 	k_EInputActionOrigin_PS4_X,
 	k_EInputActionOrigin_PS4_Circle,
@@ -267,7 +267,7 @@ enum EInputActionOrigin
 	k_EInputActionOrigin_XBox360_DPad_North,
 	k_EInputActionOrigin_XBox360_DPad_South,
 	k_EInputActionOrigin_XBox360_DPad_West,
-	k_EInputActionOrigin_XBox360_DPad_East,	
+	k_EInputActionOrigin_XBox360_DPad_East,
 	k_EInputActionOrigin_XBox360_DPad_Move,
 	k_EInputActionOrigin_XBox360_Reserved1,
 	k_EInputActionOrigin_XBox360_Reserved2,
@@ -351,7 +351,7 @@ enum EInputActionOrigin
 	k_EInputActionOrigin_Switch_Reserved18,
 	k_EInputActionOrigin_Switch_Reserved19,
 	k_EInputActionOrigin_Switch_Reserved20,
-	
+
 	// Added in SDK 1.51
 	k_EInputActionOrigin_PS5_X,
 	k_EInputActionOrigin_PS5_Circle,
@@ -596,6 +596,210 @@ enum EInputActionOrigin
 	k_EInputActionOrigin_Generic_MISC7,
 	k_EInputActionOrigin_Generic_MISC8,
 
+	// Added in SDK 1.65
+	k_EInputActionOrigin_Switch2_A,
+	k_EInputActionOrigin_Switch2_B,
+	k_EInputActionOrigin_Switch2_X,
+	k_EInputActionOrigin_Switch2_Y,
+	k_EInputActionOrigin_Switch2_LeftBumper,
+	k_EInputActionOrigin_Switch2_RightBumper,
+	k_EInputActionOrigin_Switch2_Plus,	//Start
+	k_EInputActionOrigin_Switch2_Minus,	//Back
+	k_EInputActionOrigin_Switch2_Capture,
+	k_EInputActionOrigin_Switch2_LeftTrigger_Pull,
+	k_EInputActionOrigin_Switch2_LeftTrigger_Click,
+	k_EInputActionOrigin_Switch2_RightTrigger_Pull,
+	k_EInputActionOrigin_Switch2_RightTrigger_Click,
+	k_EInputActionOrigin_Switch2_LeftStick_Move,
+	k_EInputActionOrigin_Switch2_LeftStick_Click,
+	k_EInputActionOrigin_Switch2_LeftStick_DPadNorth,
+	k_EInputActionOrigin_Switch2_LeftStick_DPadSouth,
+	k_EInputActionOrigin_Switch2_LeftStick_DPadWest,
+	k_EInputActionOrigin_Switch2_LeftStick_DPadEast,
+	k_EInputActionOrigin_Switch2_RightStick_Move,
+	k_EInputActionOrigin_Switch2_RightStick_Click,
+	k_EInputActionOrigin_Switch2_RightStick_DPadNorth,
+	k_EInputActionOrigin_Switch2_RightStick_DPadSouth,
+	k_EInputActionOrigin_Switch2_RightStick_DPadWest,
+	k_EInputActionOrigin_Switch2_RightStick_DPadEast,
+	k_EInputActionOrigin_Switch2_DPad_Move,
+	k_EInputActionOrigin_Switch2_DPad_North,
+	k_EInputActionOrigin_Switch2_DPad_South,
+	k_EInputActionOrigin_Switch2_DPad_West,
+	k_EInputActionOrigin_Switch2_DPad_East,
+	k_EInputActionOrigin_Switch2_ProGyro_Move,
+	k_EInputActionOrigin_Switch2_ProGyro_Pitch,
+	k_EInputActionOrigin_Switch2_ProGyro_Yaw,
+	k_EInputActionOrigin_Switch2_ProGyro_Roll,
+	k_EInputActionOrigin_Switch2_GL,
+	k_EInputActionOrigin_Switch2_GR,
+	k_EInputActionOrigin_Switch2_C,
+	k_EInputActionOrigin_Switch2_Reserved1,
+	k_EInputActionOrigin_Switch2_Reserved2,
+	k_EInputActionOrigin_Switch2_Reserved3,
+	k_EInputActionOrigin_Switch2_Reserved4,
+	k_EInputActionOrigin_Switch2_Reserved5,
+	k_EInputActionOrigin_Switch2_Reserved6,
+	k_EInputActionOrigin_Switch2_Reserved7,
+	k_EInputActionOrigin_Switch2_Reserved8,
+	k_EInputActionOrigin_Switch2_Reserved9,
+	k_EInputActionOrigin_Switch2_Reserved10,
+
+	k_EInputActionOrigin_SteamController2026_A,
+	k_EInputActionOrigin_SteamController2026_B,
+	k_EInputActionOrigin_SteamController2026_X,
+	k_EInputActionOrigin_SteamController2026_Y,
+	k_EInputActionOrigin_SteamController2026_L1,
+	k_EInputActionOrigin_SteamController2026_R1,
+	k_EInputActionOrigin_SteamController2026_Menu,
+	k_EInputActionOrigin_SteamController2026_View,
+	k_EInputActionOrigin_SteamController2026_LeftPad_Touch,
+	k_EInputActionOrigin_SteamController2026_LeftPad_Swipe,
+	k_EInputActionOrigin_SteamController2026_LeftPad_Click,
+	k_EInputActionOrigin_SteamController2026_LeftPad_DPadNorth,
+	k_EInputActionOrigin_SteamController2026_LeftPad_DPadSouth,
+	k_EInputActionOrigin_SteamController2026_LeftPad_DPadWest,
+	k_EInputActionOrigin_SteamController2026_LeftPad_DPadEast,
+	k_EInputActionOrigin_SteamController2026_RightPad_Touch,
+	k_EInputActionOrigin_SteamController2026_RightPad_Swipe,
+	k_EInputActionOrigin_SteamController2026_RightPad_Click,
+	k_EInputActionOrigin_SteamController2026_RightPad_DPadNorth,
+	k_EInputActionOrigin_SteamController2026_RightPad_DPadSouth,
+	k_EInputActionOrigin_SteamController2026_RightPad_DPadWest,
+	k_EInputActionOrigin_SteamController2026_RightPad_DPadEast,
+	k_EInputActionOrigin_SteamController2026_L2_SoftPull,
+	k_EInputActionOrigin_SteamController2026_L2,
+	k_EInputActionOrigin_SteamController2026_R2_SoftPull,
+	k_EInputActionOrigin_SteamController2026_R2,
+	k_EInputActionOrigin_SteamController2026_LeftStick_Move,
+	k_EInputActionOrigin_SteamController2026_L3,
+	k_EInputActionOrigin_SteamController2026_LeftStick_DPadNorth,
+	k_EInputActionOrigin_SteamController2026_LeftStick_DPadSouth,
+	k_EInputActionOrigin_SteamController2026_LeftStick_DPadWest,
+	k_EInputActionOrigin_SteamController2026_LeftStick_DPadEast,
+	k_EInputActionOrigin_SteamController2026_LeftStick_Touch,
+	k_EInputActionOrigin_SteamController2026_RightStick_Move,
+	k_EInputActionOrigin_SteamController2026_R3,
+	k_EInputActionOrigin_SteamController2026_RightStick_DPadNorth,
+	k_EInputActionOrigin_SteamController2026_RightStick_DPadSouth,
+	k_EInputActionOrigin_SteamController2026_RightStick_DPadWest,
+	k_EInputActionOrigin_SteamController2026_RightStick_DPadEast,
+	k_EInputActionOrigin_SteamController2026_RightStick_Touch,
+	k_EInputActionOrigin_SteamController2026_L4,
+	k_EInputActionOrigin_SteamController2026_R4,
+	k_EInputActionOrigin_SteamController2026_L5,
+	k_EInputActionOrigin_SteamController2026_R5,
+	k_EInputActionOrigin_SteamController2026_DPad_Move,
+	k_EInputActionOrigin_SteamController2026_DPad_North,
+	k_EInputActionOrigin_SteamController2026_DPad_South,
+	k_EInputActionOrigin_SteamController2026_DPad_West,
+	k_EInputActionOrigin_SteamController2026_DPad_East,
+	k_EInputActionOrigin_SteamController2026_Gyro_Move,
+	k_EInputActionOrigin_SteamController2026_Gyro_Pitch,
+	k_EInputActionOrigin_SteamController2026_Gyro_Yaw,
+	k_EInputActionOrigin_SteamController2026_Gyro_Roll,
+	k_EInputActionOrigin_SteamController2026_LGrip,
+	k_EInputActionOrigin_SteamController2026_RGrip,
+	k_EInputActionOrigin_SteamController2026_Reserved1,
+	k_EInputActionOrigin_SteamController2026_Reserved2,
+	k_EInputActionOrigin_SteamController2026_Reserved3,
+	k_EInputActionOrigin_SteamController2026_Reserved4,
+	k_EInputActionOrigin_SteamController2026_Reserved5,
+	k_EInputActionOrigin_SteamController2026_Reserved6,
+	k_EInputActionOrigin_SteamController2026_Reserved7,
+	k_EInputActionOrigin_SteamController2026_Reserved8,
+	k_EInputActionOrigin_SteamController2026_Reserved9,
+	k_EInputActionOrigin_SteamController2026_Reserved10,
+	k_EInputActionOrigin_SteamController2026_Reserved11,
+	k_EInputActionOrigin_SteamController2026_Reserved12,
+	k_EInputActionOrigin_SteamController2026_Reserved13,
+	k_EInputActionOrigin_SteamController2026_Reserved14,
+	k_EInputActionOrigin_SteamController2026_Reserved15,
+	k_EInputActionOrigin_SteamController2026_Reserved16,
+	k_EInputActionOrigin_SteamController2026_Reserved17,
+	k_EInputActionOrigin_SteamController2026_Reserved18,
+	k_EInputActionOrigin_SteamController2026_Reserved19,
+	k_EInputActionOrigin_SteamController2026_Reserved20,
+
+	k_EInputActionOrigin_SteamFrameController_A_Click,
+	k_EInputActionOrigin_SteamFrameController_A_Touch,
+	k_EInputActionOrigin_SteamFrameController_B_Click,
+	k_EInputActionOrigin_SteamFrameController_B_Touch,
+	k_EInputActionOrigin_SteamFrameController_X_Click,
+	k_EInputActionOrigin_SteamFrameController_X_Touch,
+	k_EInputActionOrigin_SteamFrameController_Y_Click,
+	k_EInputActionOrigin_SteamFrameController_Y_Touch,
+	k_EInputActionOrigin_SteamFrameController_LeftTrigger_Pull,
+	k_EInputActionOrigin_SteamFrameController_LeftTrigger_Click,
+	k_EInputActionOrigin_SteamFrameController_LeftTrigger_Touch,
+	k_EInputActionOrigin_SteamFrameController_RightTrigger_Pull,
+	k_EInputActionOrigin_SteamFrameController_RightTrigger_Click,
+	k_EInputActionOrigin_SteamFrameController_RightTrigger_Touch,
+	k_EInputActionOrigin_SteamFrameController_Menu_Click,
+	k_EInputActionOrigin_SteamFrameController_Menu_Touch,
+	k_EInputActionOrigin_SteamFrameController_View_Click,
+	k_EInputActionOrigin_SteamFrameController_View_Touch,
+	k_EInputActionOrigin_SteamFrameController_LeftBumper_Click,
+	k_EInputActionOrigin_SteamFrameController_LeftBumper_Touch,
+	k_EInputActionOrigin_SteamFrameController_RightBumper_Click,
+	k_EInputActionOrigin_SteamFrameController_RightBumper_Touch,
+	k_EInputActionOrigin_SteamFrameController_LeftStick_Move,
+	k_EInputActionOrigin_SteamFrameController_LeftStick_Click,
+	k_EInputActionOrigin_SteamFrameController_LeftStick_DPadNorth,
+	k_EInputActionOrigin_SteamFrameController_LeftStick_DPadSouth,
+	k_EInputActionOrigin_SteamFrameController_LeftStick_DPadWest,
+	k_EInputActionOrigin_SteamFrameController_LeftStick_DPadEast,
+	k_EInputActionOrigin_SteamFrameController_LeftStick_Touch,
+	k_EInputActionOrigin_SteamFrameController_RightStick_Move,
+	k_EInputActionOrigin_SteamFrameController_RightStick_Click,
+	k_EInputActionOrigin_SteamFrameController_RightStick_DPadNorth,
+	k_EInputActionOrigin_SteamFrameController_RightStick_DPadSouth,
+	k_EInputActionOrigin_SteamFrameController_RightStick_DPadWest,
+	k_EInputActionOrigin_SteamFrameController_RightStick_DPadEast,
+	k_EInputActionOrigin_SteamFrameController_RightStick_Touch,
+	k_EInputActionOrigin_SteamFrameController_DPad_Move,
+	k_EInputActionOrigin_SteamFrameController_DPad_North,
+	k_EInputActionOrigin_SteamFrameController_DPad_South,
+	k_EInputActionOrigin_SteamFrameController_DPad_West,
+	k_EInputActionOrigin_SteamFrameController_DPad_East,
+	k_EInputActionOrigin_SteamFrameController_DPad_Touch,
+	k_EInputActionOrigin_SteamFrameController_LeftGyro_Move,
+	k_EInputActionOrigin_SteamFrameController_LeftGyro_Pitch,
+	k_EInputActionOrigin_SteamFrameController_LeftGyro_Yaw,
+	k_EInputActionOrigin_SteamFrameController_LeftGyro_Roll,
+	k_EInputActionOrigin_SteamFrameController_RightGyro_Move,
+	k_EInputActionOrigin_SteamFrameController_RightGyro_Pitch,
+	k_EInputActionOrigin_SteamFrameController_RightGyro_Yaw,
+	k_EInputActionOrigin_SteamFrameController_RightGyro_Roll,
+	k_EInputActionOrigin_SteamFrameController_LeftGrip_Pull,
+	k_EInputActionOrigin_SteamFrameController_LeftGrip_Click,
+	k_EInputActionOrigin_SteamFrameController_LeftGrip_Touch,
+	k_EInputActionOrigin_SteamFrameController_RightGrip_Pull,
+	k_EInputActionOrigin_SteamFrameController_RightGrip_Click,
+	k_EInputActionOrigin_SteamFrameController_RightGrip_Touch,
+	k_EInputActionOrigin_SteamFrameController_LeftThumbrest_Touch,
+	k_EInputActionOrigin_SteamFrameController_RightThumbrest_Touch,
+	k_EInputActionOrigin_SteamFrameController_Reserved1,
+	k_EInputActionOrigin_SteamFrameController_Reserved2,
+	k_EInputActionOrigin_SteamFrameController_Reserved3,
+	k_EInputActionOrigin_SteamFrameController_Reserved4,
+	k_EInputActionOrigin_SteamFrameController_Reserved5,
+	k_EInputActionOrigin_SteamFrameController_Reserved6,
+	k_EInputActionOrigin_SteamFrameController_Reserved7,
+	k_EInputActionOrigin_SteamFrameController_Reserved8,
+	k_EInputActionOrigin_SteamFrameController_Reserved9,
+	k_EInputActionOrigin_SteamFrameController_Reserved10,
+	k_EInputActionOrigin_SteamFrameController_Reserved11,
+	k_EInputActionOrigin_SteamFrameController_Reserved12,
+	k_EInputActionOrigin_SteamFrameController_Reserved13,
+	k_EInputActionOrigin_SteamFrameController_Reserved14,
+	k_EInputActionOrigin_SteamFrameController_Reserved15,
+	k_EInputActionOrigin_SteamFrameController_Reserved16,
+	k_EInputActionOrigin_SteamFrameController_Reserved17,
+	k_EInputActionOrigin_SteamFrameController_Reserved18,
+	k_EInputActionOrigin_SteamFrameController_Reserved19,
+	k_EInputActionOrigin_SteamFrameController_Reserved20,
+
 	k_EInputActionOrigin_Count, // If Steam has added support for new controllers origins will go here.
 	k_EInputActionOrigin_MaximumPossibleValue = 32767, // Origins are currently a maximum of 16 bits.
 };
@@ -635,10 +839,15 @@ enum EXboxOrigin
 
 enum ESteamControllerPad
 {
-	k_ESteamControllerPad_Left,
-	k_ESteamControllerPad_Right
+    k_ESteamControllerPad_Left,
+	k_ESteamControllerPad_Right,
+	k_ESteamControllerPad_Both,
+	k_ESteamControllerGrip_Left,
+	k_ESteamControllerGrip_Right,
+	k_ESteamControllerGrip_Both
 };
 
+// Only used in the Legacy haptic call family (Steam Input api). For modern haptic locations we are using ESteamControllerPad.
 enum EControllerHapticLocation
 {
 	k_EControllerHapticLocation_Left = ( 1 << k_ESteamControllerPad_Left ),
@@ -670,6 +879,10 @@ enum ESteamInputType
 	k_ESteamInputType_PS3Controller,		// Currently uses PS4 Origins
 	k_ESteamInputType_PS5Controller,		// Added in SDK 151
 	k_ESteamInputType_SteamDeckController,	// Added in SDK 153
+	k_ESteamInputType_SteamOSHandheld,		// Added in SDK 165
+	k_ESteamInputType_Switch2ProController,	// Added in SDK 165
+	k_ESteamInputType_SteamController2026,	// Added in SDK 165
+	k_ESteamInputType_SteamFrameControllerPair,
 	k_ESteamInputType_Count,
 	k_ESteamInputType_MaximumPossibleValue = 255,
 };
@@ -689,8 +902,8 @@ enum ESteamInputLEDFlag
 {
 	k_ESteamInputLEDFlag_SetColor,
 	// Restore the LED color to the user's preference setting as set in the controller personalization menu.
-	// This also happens automatically on exit of your game.  
-	k_ESteamInputLEDFlag_RestoreUserDefault 
+	// This also happens automatically on exit of your game.
+	k_ESteamInputLEDFlag_RestoreUserDefault
 };
 
 // These values are passed into GetGlyphPNGForActionOrigin
@@ -738,10 +951,10 @@ struct InputAnalogActionData_t
 {
 	// Type of data coming from this action, this will match what got specified in the action set
 	EInputSourceMode eMode;
-	
+
 	// The current state of this action; will be delta updates for mouse actions
 	float x, y;
-	
+
 	// Whether or not this action is currently available to be bound in the active action set
 	bool bActive;
 };
@@ -750,7 +963,7 @@ struct InputDigitalActionData_t
 {
 	// The current state of this action; will be true if currently pressed
 	bool bState;
-	
+
 	// Whether or not this action is currently available to be bound in the active action set
 	bool bActive;
 };
@@ -758,20 +971,40 @@ struct InputDigitalActionData_t
 struct InputMotionData_t
 {
 	// Sensor-fused absolute rotation; will drift in heading toward average
+	//
+	// Absolute rotation of the controller since wakeup, using the Accelerometer reading at startup to determine the first value.
+	// This means real world "up" is know, but heading is not known.
+	// Every rotation packet is integrated using sensor time delta, and that change is used to update this quaternion.
+	// A Quaternion Identity ( x:0, y:0, z:0, w:1 ) will be sent in the first few packets while the controller's IMU is still waking up;
+	// some controllers have a short "warmup" period before these values should be used.
+
+	// After the first time GetMotionData is called per controller handle, the IMU will be active until your app is closed.
+	// The exception is the Sony Dualshock, which will stay on until the controller has been turned off.
+
+	// Filtering: When rotating the controller at low speeds, low level noise is filtered out without noticeable latency. High speed movement is always unfiltered.
+	// Drift: Gyroscopic "Drift" can be fixed using the Steam Input "Gyro Calibration" button. Users will have to be informed of this feature.
 	float rotQuatX;
 	float rotQuatY;
 	float rotQuatZ;
 	float rotQuatW;
 
 	// Positional acceleration
-	float posAccelX;
-	float posAccelY;
-	float posAccelZ;
+	//
+	// This represents only the latest hardware packet's state.
+	// Values range from -SHRT_MAX..SHRT_MAX
+	// This represents -2G..+2G along each axis
+	float posAccelX; // +tive when controller's Right hand side is pointed toward the sky.
+	float posAccelY; // +tive when controller's charging port (forward side of controller) is pointed toward the sky.
+	float posAccelZ; // +tive when controller's sticks point toward the sky.
 
 	// Angular velocity
-	float rotVelX;
-	float rotVelY;
-	float rotVelZ;
+	//
+	// Values range from -SHRT_MAX..SHRT_MAX
+	// These values map to a real world range of -2000..+2000 degrees per second on each axis (SDL standard)
+	// This represents only the latest hardware packet's state.
+	float rotVelX; // Local Pitch
+	float rotVelY; // Local Roll
+	float rotVelZ; // Local Yaw
 };
 
 
@@ -784,7 +1017,7 @@ struct InputMotionDataV2_t
 	// Drift Corrected Quaternion is calculated after steam input controller calibration values have been applied.
 	// Rawest _useful_ version of a quaternion.
 	// Most camera implementations should use this by comparing last rotation against current rotation, and applying the difference to the in game camera (plus your own sensitivity tweaks)
-	// It is worth viewing 
+	// It is worth viewing
 	float driftCorrectedQuatX;
 	float driftCorrectedQuatY;
 	float driftCorrectedQuatZ;
@@ -814,7 +1047,7 @@ struct InputMotionDataV2_t
 	float gravityY;
 	float gravityZ;
 
-	// 
+	//
 	// Same as rotVel values in GetMotionData but values are calibrated to degrees per second.
 	// Local Space (controller relative)
 	// X = Pitch = left to right axis
@@ -863,13 +1096,13 @@ typedef void ( *SteamInputActionEventCallbackPointer )( SteamInputActionEvent_t 
 class ISteamInput
 {
 public:
-	
+
 	// Init and Shutdown must be called when starting/ending use of this interface.
 	// if bExplicitlyCallRunFrame is called then you will need to manually call RunFrame
 	// each frame, otherwise Steam Input will updated when SteamAPI_RunCallbacks() is called
 	virtual bool Init( bool bExplicitlyCallRunFrame ) = 0;
 	virtual bool Shutdown() = 0;
-	
+
 	// Set the absolute path to the Input Action Manifest file containing the in-game actions
 	// and file paths to the official configurations. Used in games that bundle Steam Input
 	// configurations inside of the game depot instead of using the Steam Workshop
@@ -877,7 +1110,7 @@ public:
 
 	// Synchronize API state with the latest Steam Input action data available. This
 	// is performed automatically by SteamAPI_RunCallbacks, but for the absolute lowest
-	// possible latency, you call this directly before reading controller state. 
+	// possible latency, you call this directly before reading controller state.
 	// Note: This must be called from somewhere before GetConnectedControllers will
 	// return any handles
 	virtual void RunFrame( bool bReservedValue = true ) = 0;
@@ -897,11 +1130,11 @@ public:
 	// handlesOut should point to a STEAM_INPUT_MAX_COUNT sized array of InputHandle_t handles
 	// Returns the number of handles written to handlesOut
 	virtual int GetConnectedControllers( STEAM_OUT_ARRAY_COUNT( STEAM_INPUT_MAX_COUNT, Receives list of connected controllers ) InputHandle_t *handlesOut ) = 0;
-	
+
 	//-----------------------------------------------------------------------------
 	// CALLBACKS
 	//-----------------------------------------------------------------------------
-	
+
 	// Controller configuration loaded - these callbacks will always fire if you have
 	// a handler. Note: this is called within either SteamInput()->RunFrame or by SteamAPI_RunCallbacks
 	STEAM_CALL_BACK( SteamInputConfigurationLoaded_t )
@@ -936,7 +1169,7 @@ public:
 
 	// Lookup the handle for an Action Set. Best to do this once on startup, and store the handles for all future API calls.
 	virtual InputActionSetHandle_t GetActionSetHandle( const char *pszActionSetName ) = 0;
-	
+
 	// Reconfigure the controller to use the specified action set (ie 'Menu', 'Walk' or 'Drive')
 	// This is cheap, and can be safely called repeatedly. It's often easier to repeatedly call it in
 	// your state loops, instead of trying to place it in all of your state transitions.
@@ -959,21 +1192,21 @@ public:
 
 	// Lookup the handle for a digital action. Best to do this once on startup, and store the handles for all future API calls.
 	virtual InputDigitalActionHandle_t GetDigitalActionHandle( const char *pszActionName ) = 0;
-	
+
 	// Returns the current state of the supplied digital game action
 	virtual InputDigitalActionData_t GetDigitalActionData( InputHandle_t inputHandle, InputDigitalActionHandle_t digitalActionHandle ) = 0;
-	
+
 	// Get the origin(s) for a digital action within an action set. Returns the number of origins supplied in originsOut. Use this to display the appropriate on-screen prompt for the action.
 	// originsOut should point to a STEAM_INPUT_MAX_ORIGINS sized array of EInputActionOrigin handles. The EInputActionOrigin enum will get extended as support for new controller controllers gets added to
 	// the Steam client and will exceed the values from this header, please check bounds if you are using a look up table.
 	virtual int GetDigitalActionOrigins( InputHandle_t inputHandle, InputActionSetHandle_t actionSetHandle, InputDigitalActionHandle_t digitalActionHandle, STEAM_OUT_ARRAY_COUNT( STEAM_INPUT_MAX_ORIGINS, Receives list of action origins ) EInputActionOrigin *originsOut ) = 0;
-	
+
 	// Returns a localized string (from Steam's language setting) for the user-facing action name corresponding to the specified handle
 	virtual const char *GetStringForDigitalActionName( InputDigitalActionHandle_t eActionHandle ) = 0;
 
 	// Lookup the handle for an analog action. Best to do this once on startup, and store the handles for all future API calls.
 	virtual InputAnalogActionHandle_t GetAnalogActionHandle( const char *pszActionName ) = 0;
-	
+
 	// Returns the current state of these supplied analog game action
 	virtual InputAnalogActionData_t GetAnalogActionData( InputHandle_t inputHandle, InputAnalogActionHandle_t analogActionHandle ) = 0;
 
@@ -982,15 +1215,15 @@ public:
 	// the Steam client and will exceed the values from this header, please check bounds if you are using a look up table.
 	virtual int GetAnalogActionOrigins( InputHandle_t inputHandle, InputActionSetHandle_t actionSetHandle, InputAnalogActionHandle_t analogActionHandle, STEAM_OUT_ARRAY_COUNT( STEAM_INPUT_MAX_ORIGINS, Receives list of action origins ) EInputActionOrigin *originsOut ) = 0;
 
-	// Get a local path to a PNG file for the provided origin's glyph. 
+	// Get a local path to a PNG file for the provided origin's glyph.
 	virtual const char *GetGlyphPNGForActionOrigin( EInputActionOrigin eOrigin, ESteamInputGlyphSize eSize, uint32 unFlags ) = 0;
 
-	// Get a local path to a SVG file for the provided origin's glyph. 
+	// Get a local path to a SVG file for the provided origin's glyph.
 	virtual const char *GetGlyphSVGForActionOrigin( EInputActionOrigin eOrigin, uint32 unFlags ) = 0;
 
 	// Get a local path to an older, Big Picture Mode-style PNG file for a particular origin
 	virtual const char *GetGlyphForActionOrigin_Legacy( EInputActionOrigin eOrigin ) = 0;
-	
+
 	// Returns a localized string (from Steam's language setting) for the specified origin.
 	virtual const char *GetStringForActionOrigin( EInputActionOrigin eOrigin ) = 0;
 
@@ -1037,7 +1270,7 @@ public:
 	virtual bool ShowBindingPanel( InputHandle_t inputHandle ) = 0;
 
 	// Returns the input type for a particular handle - unlike EInputActionOrigin which update with Steam and may return unrecognized values
-	// ESteamInputType will remain static and only return valid values from your SDK version 
+	// ESteamInputType will remain static and only return valid values from your SDK version
 	virtual ESteamInputType GetInputTypeForHandle( InputHandle_t inputHandle ) = 0;
 
 	// Returns the associated controller handle for the specified emulated gamepad - can be used with the above 2 functions
@@ -1046,7 +1279,7 @@ public:
 
 	// Returns the associated gamepad index for the specified controller, if emulating a gamepad or -1 if not associated with an Xinput index
 	virtual int GetGamepadIndexForController( InputHandle_t ulinputHandle ) = 0;
-	
+
 	// Returns a localized string (from Steam's language setting) for the specified Xbox controller origin.
 	virtual const char *GetStringForXboxOrigin( EXboxOrigin eOrigin ) = 0;
 
@@ -1077,7 +1310,7 @@ public:
 	virtual void SetDualSenseTriggerEffect( InputHandle_t inputHandle, const ScePadTriggerEffectParam *pParam ) = 0;
 };
 
-#define STEAMINPUT_INTERFACE_VERSION "SteamInput006"
+#define STEAMINPUT_INTERFACE_VERSION "SteamInput007"
 
 // Global interface accessor
 inline ISteamInput *SteamInput();
@@ -1089,7 +1322,7 @@ STEAM_DEFINE_USER_INTERFACE_ACCESSOR( ISteamInput *, SteamInput, STEAMINPUT_INTE
 #pragma pack( push, 8 )
 #else
 #error steam_api_common.h should define VALVE_CALLBACK_PACK_xxx
-#endif 
+#endif
 
 //-----------------------------------------------------------------------------
 // Purpose: called when a new controller has been connected, will fire once
@@ -1122,7 +1355,7 @@ struct SteamInputConfigurationLoaded_t
 	InputHandle_t	m_ulDeviceHandle;		// Handle for device
 	CSteamID		m_ulMappingCreator;		// May differ from local user when using
 											// an unmodified community or official config
-	uint32			m_unMajorRevision;		// Binding revision from In-game Action File. 
+	uint32			m_unMajorRevision;		// Binding revision from In-game Action File.
 											// Same value as queried by GetDeviceBindingRevision
 	uint32			m_unMinorRevision;
 	bool			m_bUsesSteamInputAPI;	// Does the configuration contain any Analog/Digital actions?

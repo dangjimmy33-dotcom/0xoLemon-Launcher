@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { GameCatalog, GameSummary, GameInstallMetadata, CloudSaveMetadata } from '../types'
 import { fetchWithRetry } from '../lib/fetchWithRetry'
 import { normalizeGameVersions } from '../lib/catalogVersions'
+import { normalizeLocalRuntime } from '../lib/localRuntime'
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://zeroxolemon-launcher.onrender.com'
 const TENANT_ID = import.meta.env.VITE_TENANT_ID || '0xolemon1'
@@ -69,6 +70,7 @@ function normalizeSummary(raw: Record<string, unknown>): GameSummary {
 
   return {
     id: gameId,
+    appid: typeof raw.appid === 'number' || typeof raw.appid === 'string' ? raw.appid : undefined,
     title,
     subtitle: stringValue(raw.subtitle),
     developer: stringValue(raw.developer),
@@ -81,6 +83,7 @@ function normalizeSummary(raw: Record<string, unknown>): GameSummary {
     iconAssetId: stringValue(assetOverride.icon) || stringValue(raw.iconAssetId),
     install: buildInstall(gameId, title, recordValue(raw.install)),
     cloudSave: normalizeCloudSave(raw.cloudSave),
+    ...normalizeLocalRuntime(raw),
     assetPackPath: stringValue(raw.assetPackPath) || `assets/games/${gameId}/core.0xo`,
   }
 }

@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
-pub const ENGINE_VERSION: &str = "2.6.4";
-pub const ENGINE_SOURCE_COMMIT: &str = "9d0dbbf48f349a4172d2d47a936bb41c5f5ecff6";
+pub const ENGINE_VERSION: &str = "2.6.5";
+pub const ENGINE_SOURCE_COMMIT: &str = "bc5e38a156ff123e47ec07abf67158160c50a50e";
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]

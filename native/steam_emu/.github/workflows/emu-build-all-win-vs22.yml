@@ -1,13 +1,102 @@
-name: "Build emu (Windows)"
+name: "Build emu (Windows - VS2022)"
 
 on:
   workflow_call:
-    # needed since it allows this to become a reusable workflow
+    inputs:
+      branch:
+        description: 'Branch to build'
+        type: string
+        default: 'dev'
+      commit:
+        description: 'Commit SHA to build (empty = latest on branch)'
+        type: string
+        default: ''
+      rebuild_ssq:
+        description: 'Force rebuild ssq (ignore cache)'
+        type: boolean
+        default: false
+      rebuild_zlib:
+        description: 'Force rebuild zlib (ignore cache)'
+        type: boolean
+        default: false
+      rebuild_mbedtls:
+        description: 'Force rebuild mbedtls (ignore cache)'
+        type: boolean
+        default: false
+      rebuild_curl:
+        description: 'Force rebuild curl (ignore cache)'
+        type: boolean
+        default: false
+      rebuild_protobuf:
+        description: 'Force rebuild protobuf (ignore cache)'
+        type: boolean
+        default: false
+      rebuild_ingame_overlay:
+        description: 'Force rebuild ingame_overlay (ignore cache)'
+        type: boolean
+        default: false
+      rebuild_opus:
+        description: 'Force rebuild opus (ignore cache)'
+        type: boolean
+        default: false
+      rebuild_portaudio:
+        description: 'Force rebuild portaudio (ignore cache)'
+        type: boolean
+        default: false
+      rebuild_sdl:
+        description: 'Force rebuild sdl (ignore cache)'
+        type: boolean
+        default: false
   workflow_dispatch:
-    # allows manual trigger
+    inputs:
+      branch:
+        description: 'Branch to build'
+        type: string
+        default: 'dev'
+      commit:
+        description: 'Commit SHA to build (leave empty for latest on branch)'
+        type: string
+        default: ''
+      rebuild_ssq:
+        description: 'Force rebuild ssq (ignore cache)'
+        type: boolean
+        default: false
+      rebuild_zlib:
+        description: 'Force rebuild zlib (ignore cache)'
+        type: boolean
+        default: false
+      rebuild_mbedtls:
+        description: 'Force rebuild mbedtls (ignore cache)'
+        type: boolean
+        default: false
+      rebuild_curl:
+        description: 'Force rebuild curl (ignore cache)'
+        type: boolean
+        default: false
+      rebuild_protobuf:
+        description: 'Force rebuild protobuf (ignore cache)'
+        type: boolean
+        default: false
+      rebuild_ingame_overlay:
+        description: 'Force rebuild ingame_overlay (ignore cache)'
+        type: boolean
+        default: false
+      rebuild_opus:
+        description: 'Force rebuild opus (ignore cache)'
+        type: boolean
+        default: false
+      rebuild_portaudio:
+        description: 'Force rebuild portaudio (ignore cache)'
+        type: boolean
+        default: false
+      rebuild_sdl:
+        description: 'Force rebuild sdl (ignore cache)'
+        type: boolean
+        default: false
 
 permissions:
   contents: "write"
+  actions: "write"
 
 env:
   PREMAKE_ACTION: "vs2022"
@@ -24,10 +113,79 @@ jobs:
     name: "Restore or build deps"
     if: ${{ !cancelled() }}
     uses: "./.github/workflows/emu-deps-win-vs22.yml"
+    with:
+      branch: ${{ inputs.branch || 'dev' }}
+      commit: ${{ inputs.commit || '' }}
+      rebuild_ssq: ${{ inputs.rebuild_ssq || false }}
+      rebuild_zlib: ${{ inputs.rebuild_zlib || false }}
+      rebuild_mbedtls: ${{ inputs.rebuild_mbedtls || false }}
+      rebuild_curl: ${{ inputs.rebuild_curl || false }}
+      rebuild_protobuf: ${{ inputs.rebuild_protobuf || false }}
+      rebuild_ingame_overlay: ${{ inputs.rebuild_ingame_overlay || false }}
+      rebuild_opus: ${{ inputs.rebuild_opus || false }}
+      rebuild_portaudio: ${{ inputs.rebuild_portaudio || false }}
+      rebuild_sdl: ${{ inputs.rebuild_sdl || false }}
+
+  gen-proto:
+    name: "Generate proto files - *.pb.cc, *.pb.h"
+    needs: ["deps"]
+    runs-on: "windows-2022"
+    if: ${{ !cancelled() }}
+
+    steps:
+      # on Windows Git will auto change line ending to CRLF, not preferable
+      - name: "Ensure LF line ending"
+        shell: "cmd"
+        working-directory: "${{ github.workspace }}"
+        run: |
+          git config --system core.autocrlf false
+          git config --global core.autocrlf false
+
+      - name: "Checkout branch"
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.commit || inputs.branch || 'dev' }}
+
+      - name: "Capture build commit SHA"
+        id: "build_ref"
+        shell: "bash"
+        run: echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+
+      - name: "Restore combined deps cache"
+        uses: actions/cache/restore@v5
+        with:
+          key: "emu-deps-win-all-${{ env.PREMAKE_ACTION }}"
+          path: "${{ env.DEPS_CACHE_DIR }}/${{ env.PREMAKE_ACTION }}"
+          fail-on-cache-miss: true
+
+      - name: "Clone third-party build helpers (common/win)"
+        uses: actions/checkout@v6
+        with:
+          ref: "third-party/common/win"
+          path: "${{env.THIRD_PARTY_BASE_DIR}}/common/win"
+
+      - name: "Set build date"
+        shell: "bash"
+        run: echo "EMU_BUILD_DATE=$(date +%Y_%m_%d)" >> $GITHUB_ENV
+
+      - name: "Generate proto files"
+        shell: "cmd"
+        working-directory: "${{ github.workspace }}"
+        run: |
+          "${{env.THIRD_PARTY_BASE_DIR}}\common\win\premake\premake5.exe" --file=premake5.lua --genproto_only --os=windows vs2022
+
+      - name: "Upload proto_gen artifact"
+        uses: actions/upload-artifact@v7
+        with:
+          name: "proto-gen-win-vs2022-${{ steps.build_ref.outputs.sha }}"
+          path: "proto_gen/win"
+          if-no-files-found: "error"
+          retention-days: 1
+          overwrite: true
 
   builds-matrix-win:
     name: "build"
-    needs: ["deps"]
+    needs: ["deps", "gen-proto"]
     runs-on: "windows-2022"
     if: ${{ !cancelled() }}
     continue-on-error: true
@@ -51,39 +209,42 @@ jobs:
             # tools
             "tool_lobby_connect",
             "tool_generate_interfaces",
+            # reshade addon overlay
+            "reshade_addon_overlay",
           ]
-        arch: ["x64", "Win32"]
         cfg: ["debug", "release"]
 
-        exclude:
-          - prj: lib_steam_old
-            arch: x64
-
     steps:
-      # clone branch
-      - name: "Checkout branch"
-        uses: actions/checkout@v6
-
-      # ensure we have msbuild
-      - name: "Add MSBuild to PATH"
-        uses: microsoft/setup-msbuild@v3
-
       # on Windows Git will auto change line ending to CRLF, not preferable
       - name: "Ensure LF line ending"
         shell: "cmd"
         working-directory: "${{ github.workspace }}"
         run: |
-          git config --local core.autocrlf false
           git config --system core.autocrlf false
           git config --global core.autocrlf false
 
-      # deps
-      - name: "Restore deps"
-        id: "emu-deps-cache-step"
-        uses: actions/cache@v5
+      # ensure we have msbuild
+      - name: "Add MSBuild to PATH"
+        uses: microsoft/setup-msbuild@v3
+
+      # clone branch
+      - name: "Checkout branch"
+        uses: actions/checkout@v6
         with:
-          key: "${{ env.DEPS_CACHE_KEY }}-${{ env.PREMAKE_ACTION }}"
+          ref: ${{ inputs.commit || inputs.branch || 'dev' }}
+
+      - name: "Capture build commit SHA"
+        id: "build_ref"
+        shell: "bash"
+        run: echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+
+      # deps
+      - name: "Restore combined deps cache"
+        uses: actions/cache/restore@v5
+        with:
+          key: "emu-deps-win-all-${{ env.PREMAKE_ACTION }}"
           path: "${{ env.DEPS_CACHE_DIR }}/${{ env.PREMAKE_ACTION }}"
+          fail-on-cache-miss: true
 
       # extra helpers/tools, these are not built inside the deps build dir
       - name: "Clone third-party build helpers (common/win)"
@@ -99,25 +260,52 @@ jobs:
           path: "${{env.THIRD_PARTY_BASE_DIR}}/build/win"
 
       # generate project files
+      - name: "Set build date"
+        shell: "bash"
+        run: echo "EMU_BUILD_DATE=$(date +%Y_%m_%d)" >> $GITHUB_ENV
+
+      - name: "Generate proto files - *.pb.cc, *.pb.h"
+        id: "gen_proto_attempt"
+        continue-on-error: true
+        shell: "cmd"
+        working-directory: "${{ github.workspace }}"
+        run: |
+          "${{env.THIRD_PARTY_BASE_DIR}}\common\win\premake\premake5.exe" --file=premake5.lua --genproto_only --emubuild=${{ steps.build_ref.outputs.sha }} --emubuilddate=${{ env.EMU_BUILD_DATE }} --dosstub --winrsrc --winsign --os=windows vs2022
+
+      - name: "Download proto files artifact (fallback)"
+        if: steps.gen_proto_attempt.outcome == 'failure'
+        uses: actions/download-artifact@v8
+        with:
+          name: "proto-gen-win-vs2022-${{ steps.build_ref.outputs.sha }}"
+          path: "proto_gen/win"
+
       - name: "Generate project files"
         shell: "cmd"
         working-directory: "${{ github.workspace }}"
         run: |
-          "${{env.THIRD_PARTY_BASE_DIR}}\common\win\premake\premake5.exe" --file=premake5.lua --genproto --emubuild=${{ github.sha }} --dosstub --winrsrc --winsign --os=windows vs2022
+          "${{env.THIRD_PARTY_BASE_DIR}}\common\win\premake\premake5.exe" --file=premake5.lua --emubuild=${{ steps.build_ref.outputs.sha }} --emubuilddate=${{ env.EMU_BUILD_DATE }} --dosstub --winrsrc --winsign --os=windows vs2022
 
       # build target
-      - name: "Build target"
+      - name: "Build x64"
+        if: matrix.prj != 'lib_steam_old'
         shell: "cmd"
         working-directory: "${{ github.workspace }}/build/project/vs2022/win"
         run: |
-          msbuild /nologo /target:${{ matrix.prj }} /m:1 -p:CL_MPCount=${{ env.MAX_PARALLEL_JOBS }} /v:n /p:Configuration=${{ matrix.cfg }},Platform=${{ matrix.arch }} gbe.sln
+          msbuild /nologo /target:${{ matrix.prj }} /m:1 -p:CL_MPCount=${{ env.MAX_PARALLEL_JOBS }} /v:n /p:Configuration=${{ matrix.cfg }},Platform=x64 gse.sln
+
+      - name: "Build Win32"
+        shell: "cmd"
+        working-directory: "${{ github.workspace }}/build/project/vs2022/win"
+        run: |
+          msbuild /nologo /target:${{ matrix.prj }} /m:1 -p:CL_MPCount=${{ env.MAX_PARALLEL_JOBS }} /v:n /p:Configuration=${{ matrix.cfg }},Platform=Win32 gse.sln
 
       # upload artifact/package to github Actions
       - name: "Upload target package"
         uses: actions/upload-artifact@v7
         with:
-          name: "emu-win-vs22-${{ matrix.prj }}-${{ matrix.cfg }}-${{ matrix.arch }}-${{ github.sha }}"
+          name: "emu-win-${{ matrix.prj }}-${{ matrix.cfg }}-${{ steps.build_ref.outputs.sha }}"
           path: "build/win"
           if-no-files-found: "error"
           compression-level: 9
           retention-days: 1
+          overwrite: true

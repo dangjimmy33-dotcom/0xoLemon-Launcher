@@ -1,11 +1,11 @@
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState, memo } from 'react'
-import type { ReactElement } from 'react'
+import type { PointerEvent as ReactPointerEvent, ReactElement } from 'react'
 import { doc, setDoc, increment } from 'firebase/firestore'
 import { contentDb as db } from '../firebase'
 import { createPortal } from 'react-dom'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
-import { BookOpen, CheckCircle2, ChevronLeft, ChevronRight, CircleAlert, PlusCircle, Download, FolderOpen, HardDrive, Image as ImageIcon, Library, Play, RefreshCcw, Search, ShieldCheck, ShoppingBag, SlidersHorizontal, ThumbsUp, Trophy, X, MessageSquare, Info, Sparkles, Clock3, TrendingUp } from 'lucide-react'
+import { BookOpen, CheckCircle2, ChevronLeft, ChevronRight, CircleAlert, PlusCircle, Download, FolderOpen, HardDrive, Image as ImageIcon, Library, Play, RefreshCcw, Search, ShieldCheck, ShoppingBag, SlidersHorizontal, ThumbsUp, Trash2, Trophy, X, MessageSquare, Info, Sparkles, Clock3, TrendingUp } from 'lucide-react'
 import { useGameStats } from '../hooks/useGameStats'
 import { TutorialModal } from './TutorialModal'
 import { useLocale } from '../context/locale'
@@ -24,7 +24,14 @@ import { useRealtimeConfig } from '../hooks/useRealtimeConfig'
 import { useFirestoreDetail } from '../hooks/useFirestoreDetail'
 import { SaveBackupIndicator } from './SaveBackupIndicator'
 import { normalizeStoreSearchTerm, rankStoreGames, type StoreSearchFilter, type StoreSearchResult } from '../lib/storeSearch'
+import type { UiThemeId } from '../lib/uiThemes'
+import { getThemeLibraryPresentation } from '../themes/libraryPolicy'
 import { useStoreSearchTelemetry, type StoreSearchTermStat } from '../hooks/useStoreSearchTelemetry'
+import { useLauncherLibraryLayout } from '../hooks/useLauncherLibraryLayout'
+import { SteamLibraryHome } from '../themes/steam/SteamLibraryHome'
+import { SteamLibraryActivity } from '../themes/steam/SteamLibraryActivity'
+import { SteamLibraryDetail } from '../themes/steam/SteamLibraryDetail'
+import { SteamStoreHome } from '../themes/steam/SteamStoreHome'
 
 function LazyGameCardImageBase({
   game,
@@ -71,6 +78,7 @@ function LazyGameCardImageBase({
           alt=""
           loading="lazy"
           decoding="async"
+          draggable={false}
           className={imageLoaded ? 'loaded' : 'loading'}
           onLoad={() => setLoadedUrl(url)}
         />
@@ -87,6 +95,7 @@ function LazyGameCardImageBase({
 const LazyGameCardImage = memo(LazyGameCardImageBase)
 
 const STORE_SEARCH_HISTORY_KEY = '0xo_store_search_history_v1'
+
 const STORE_SEARCH_FILTERS: Array<{ id: StoreSearchFilter; label: string }> = [
   { id: 'all', label: 'All' },
   { id: 'installed', label: 'Installed' },
@@ -649,6 +658,8 @@ export function StoreLibraryView({
   installStates,
   steamInstalledAppIds,
   steamBuildIds,
+  uiTheme,
+  onOpenLibrary,
 }: {
   viewMode: 'store' | 'library'
   catalog: GameCatalog
@@ -697,8 +708,16 @@ export function StoreLibraryView({
   installStates?: Record<string, GameInstallState>
   steamInstalledAppIds?: number[]
   steamBuildIds?: Record<number, string>
+  uiTheme: UiThemeId
+  onOpenLibrary: (gameId: string) => void
 }) {
   const { t } = useLocale()
+  const {
+    acquisitionOnlyStore,
+    ownershipLibrary,
+    showLibraryRail,
+    showSourceSwitches,
+  } = getThemeLibraryPresentation(uiTheme, viewMode)
   const [query, setQuery] = useState('')
   const deferredQuery = useDeferredValue(query)
   const [searchOpen, setSearchOpen] = useState(false)
@@ -725,10 +744,277 @@ export function StoreLibraryView({
     try { return new Set(JSON.parse(localStorage.getItem('libraryWishlist') || '[]')) }
     catch { return new Set() }
   })
-  const [likedGames, setLikedGames] = useState<Set<string>>(() => {
-    try { return new Set(JSON.parse(localStorage.getItem('libraryLikedGames') || '[]')) }
-    catch { return new Set() }
-  })
+  const {
+    layout: launcherLibraryLayout,
+    libraryGameIds,
+    favoriteGameIds: likedGames,
+    addGameIds: addLauncherLibraryGameIds,
+    removeGameIds: removeLauncherLibraryGameIds,
+    setFavorite: setLauncherFavorite,
+    saveCollection,
+    updateLayout: updateLauncherLibraryLayout,
+    persistError: libraryPersistError,
+  } = useLauncherLibraryLayout()
+  const [activeSteamCollectionId, setActiveSteamCollectionId] = useState('all')
+  const [collectionEditorOpen, setCollectionEditorOpen] = useState(false)
+  const [collectionName, setCollectionName] = useState('')
+  const [collectionDropTarget, setCollectionDropTarget] = useState<string | null>(null)
+  const pointerGameDragRef = useRef<{
+    gameId: string
+    title: string
+    source: HTMLElement
+    pointerId: number
+    startX: number
+    startY: number
+    lastX: number
+    lastY: number
+    grabOffsetX: number
+    grabOffsetY: number
+    cardWidth: number
+    cardHeight: number
+    active: boolean
+    preview: HTMLDivElement | null
+    status: HTMLDivElement | null
+    target: HTMLElement | null
+  } | null>(null)
+  const suppressCardClickRef = useRef<string | null>(null)
+
+  const finishPointerGameDrag = useCallback((commit: boolean) => {
+    const drag = pointerGameDragRef.current
+    if (!drag) return
+
+    if (drag.active) {
+      suppressCardClickRef.current = drag.gameId
+      window.setTimeout(() => {
+        if (suppressCardClickRef.current === drag.gameId) suppressCardClickRef.current = null
+      }, 0)
+    }
+
+    drag.source.classList.remove('is-pointer-pressed', 'is-pointer-dragging')
+    drag.target?.classList.remove('is-drag-over')
+    try {
+      if (drag.source.hasPointerCapture(drag.pointerId)) drag.source.releasePointerCapture(drag.pointerId)
+    } catch {
+      // Pointer capture can already be released by pointerup/pointercancel.
+    }
+
+    const root = document.documentElement
+    root.classList.remove(
+      'game-card-pointer-drag-active',
+      'game-card-pointer-drag-can-drop',
+      'game-card-pointer-drag-cannot-drop',
+    )
+
+    const shouldCommit = commit && drag.active && !!drag.target
+    if (drag.preview) {
+      if (shouldCommit && drag.target && typeof drag.preview.animate === 'function') {
+        const targetRect = drag.target.getBoundingClientRect()
+        const fromRect = drag.preview.getBoundingClientRect()
+        const targetX = targetRect.left + targetRect.width / 2 - fromRect.width / 2
+        const targetY = targetRect.top + targetRect.height / 2 - fromRect.height / 2
+        drag.preview.animate([
+          { opacity: 1, transform: drag.preview.style.transform },
+          { opacity: .2, transform: `translate3d(${targetX}px, ${targetY}px, 0) perspective(900px) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(.32)` },
+        ], { duration: 150, easing: 'cubic-bezier(.2,.75,.2,1)', fill: 'forwards' })
+        window.setTimeout(() => drag.preview?.remove(), 160)
+      } else {
+        drag.preview.remove()
+      }
+    }
+
+    if (shouldCommit) {
+      window.dispatchEvent(new CustomEvent('0xo-add-to-library', {
+        detail: { gameId: drag.gameId, title: drag.title },
+      }))
+    }
+
+    pointerGameDragRef.current = null
+  }, [])
+
+  useEffect(() => {
+    const handlePointerMove = (event: PointerEvent) => {
+      const drag = pointerGameDragRef.current
+      if (!drag || event.pointerId !== drag.pointerId) return
+
+      if (!drag.active) {
+        const distance = Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY)
+        if (distance < 6) return
+
+        drag.active = true
+        drag.source.classList.add('is-pointer-dragging')
+        const root = document.documentElement
+        root.classList.add('game-card-pointer-drag-active', 'game-card-pointer-drag-cannot-drop')
+
+        // Clone the real Store card so the entire game grid card lifts and follows
+        // the pointer instead of replacing it with a generic tooltip preview.
+        const preview = drag.source.cloneNode(true) as HTMLDivElement
+        preview.classList.remove('active', 'is-pointer-pressed', 'is-pointer-dragging')
+        preview.classList.add('game-card-pointer-drag-ghost', 'cannot-drop')
+        preview.setAttribute('aria-hidden', 'true')
+        preview.setAttribute('role', 'presentation')
+        preview.tabIndex = -1
+        preview.style.width = `${drag.cardWidth}px`
+        preview.style.height = `${drag.cardHeight}px`
+        preview.querySelectorAll<HTMLElement>('button, a, input, select, textarea, [tabindex]').forEach((node) => {
+          node.tabIndex = -1
+        })
+
+        const status = document.createElement('div')
+        status.className = 'game-card-pointer-drag-status'
+        status.innerHTML = '<span aria-hidden="true">×</span><strong>Library only</strong>'
+        preview.appendChild(status)
+        document.body.appendChild(preview)
+        drag.preview = preview
+        drag.status = status
+      }
+
+      event.preventDefault()
+
+      const element = document.elementFromPoint(event.clientX, event.clientY)
+      const nextTarget = element?.closest<HTMLElement>('[data-library-drop-target="true"]') ?? null
+      if (nextTarget !== drag.target) {
+        drag.target?.classList.remove('is-drag-over')
+        nextTarget?.classList.add('is-drag-over')
+        drag.target = nextTarget
+      }
+
+      const canDrop = !!nextTarget
+      const root = document.documentElement
+      root.classList.toggle('game-card-pointer-drag-can-drop', canDrop)
+      root.classList.toggle('game-card-pointer-drag-cannot-drop', !canDrop)
+
+      if (drag.preview) {
+        drag.preview.classList.toggle('can-drop', canDrop)
+        drag.preview.classList.toggle('cannot-drop', !canDrop)
+        if (drag.status) {
+          drag.status.innerHTML = canDrop
+            ? '<span aria-hidden="true">+</span><strong>Drop to Library</strong>'
+            : '<span aria-hidden="true">×</span><strong>Library only</strong>'
+        }
+
+        const velocityX = event.clientX - drag.lastX
+        const velocityY = event.clientY - drag.lastY
+        const tiltY = Math.max(-7, Math.min(7, velocityX * .85))
+        const tiltX = Math.max(-5, Math.min(5, -velocityY * .6))
+        const tiltZ = Math.max(-2.2, Math.min(2.2, velocityX * .2))
+        const x = event.clientX - drag.grabOffsetX
+        const y = event.clientY - drag.grabOffsetY
+        drag.preview.style.transform = `translate3d(${x}px, ${y}px, 0) perspective(900px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) rotateZ(${tiltZ}deg) scale(1.035)`
+      }
+
+      drag.lastX = event.clientX
+      drag.lastY = event.clientY
+    }
+
+    const handlePointerUp = (event: PointerEvent) => {
+      const drag = pointerGameDragRef.current
+      if (!drag || event.pointerId !== drag.pointerId) return
+      finishPointerGameDrag(true)
+    }
+    const handlePointerCancel = (event: PointerEvent) => {
+      const drag = pointerGameDragRef.current
+      if (!drag || event.pointerId !== drag.pointerId) return
+      finishPointerGameDrag(false)
+    }
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') finishPointerGameDrag(false)
+    }
+
+    window.addEventListener('pointermove', handlePointerMove, { passive: false })
+    window.addEventListener('pointerup', handlePointerUp)
+    window.addEventListener('pointercancel', handlePointerCancel)
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove)
+      window.removeEventListener('pointerup', handlePointerUp)
+      window.removeEventListener('pointercancel', handlePointerCancel)
+      window.removeEventListener('keydown', handleKeyDown)
+      finishPointerGameDrag(false)
+    }
+  }, [finishPointerGameDrag])
+
+  const beginPointerGameDrag = useCallback((event: ReactPointerEvent<HTMLElement>, game: GameSummary) => {
+    if (viewMode !== 'store' || event.button !== 0 || event.pointerType === 'touch') return
+    const target = event.target as Element
+    if (target.closest('button, a, input, select, textarea')) return
+
+    const source = event.currentTarget
+    const rect = source.getBoundingClientRect()
+    source.classList.add('is-pointer-pressed')
+    try {
+      source.setPointerCapture(event.pointerId)
+    } catch {
+      // Window-level pointer listeners still keep the drag functional.
+    }
+
+    pointerGameDragRef.current = {
+      gameId: game.id,
+      title: game.title,
+      source,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      lastX: event.clientX,
+      lastY: event.clientY,
+      grabOffsetX: event.clientX - rect.left,
+      grabOffsetY: event.clientY - rect.top,
+      cardWidth: rect.width,
+      cardHeight: rect.height,
+      active: false,
+      preview: null,
+      status: null,
+      target: null,
+    }
+  }, [viewMode])
+
+  const addToLauncherLibrary = useCallback((gameId: string) => {
+    addLauncherLibraryGameIds([gameId])
+    window.dispatchEvent(new CustomEvent('0xo-add-to-library', { detail: { gameId } }))
+  }, [addLauncherLibraryGameIds])
+
+  const removeFromLauncherLibrary = useCallback((gameId: string) => {
+    removeLauncherLibraryGameIds([gameId])
+    window.dispatchEvent(new CustomEvent('0xo-remove-from-library', { detail: { gameId } }))
+  }, [removeLauncherLibraryGameIds])
+
+  const createSteamCollection = useCallback(() => {
+    const name = collectionName.trim()
+    if (!name) return
+    const now = new Date().toISOString()
+    const id = `collection-${crypto.randomUUID()}`
+    saveCollection({ id, name, gameIds: [], createdAt: now, updatedAt: now })
+    setActiveSteamCollectionId(id)
+    setCollectionName('')
+    setCollectionEditorOpen(false)
+  }, [collectionName, saveCollection])
+
+  const removeSteamCollection = useCallback((collectionId: string) => {
+    updateLauncherLibraryLayout((current) => ({
+      ...current,
+      collections: current.collections.filter((collection) => collection.id !== collectionId),
+      shelves: current.shelves.filter((shelf) => shelf.collectionId !== collectionId),
+    }))
+    setActiveSteamCollectionId((current) => current === collectionId ? 'all' : current)
+  }, [updateLauncherLibraryLayout])
+
+  const addGameToSteamCollection = useCallback((collectionId: string, gameId: string) => {
+    const collection = launcherLibraryLayout.collections.find((entry) => entry.id === collectionId)
+    if (!collection || collection.gameIds.includes(gameId)) return
+    saveCollection({
+      ...collection,
+      gameIds: [...collection.gameIds, gameId],
+      updatedAt: new Date().toISOString(),
+    })
+  }, [launcherLibraryLayout.collections, saveCollection])
+
+  useEffect(() => {
+    if (!installStates) return
+    const installedIds = Object.entries(installStates)
+      .filter(([, state]) => state?.installed)
+      .map(([gameId]) => gameId)
+    if (installedIds.length === 0) return
+    addLauncherLibraryGameIds(installedIds)
+  }, [addLauncherLibraryGameIds, installStates])
   const [sortOpen, setSortOpen] = useState(false)
   const realtimeConfig = useRealtimeConfig()
   const gameStats = useGameStats()
@@ -770,12 +1056,7 @@ export function StoreLibraryView({
   const toggleLike = async (gameId: string) => {
     const isLiked = likedGames.has(gameId)
     const delta = isLiked ? -1 : 1
-    setLikedGames(prev => {
-      const next = new Set(prev)
-      if (isLiked) next.delete(gameId); else next.add(gameId)
-      localStorage.setItem('libraryLikedGames', JSON.stringify([...next]))
-      return next
-    })
+    setLauncherFavorite(gameId, !isLiked)
     // Optimistic update so counter changes immediately
     setOptimisticLikes(prev => ({
       ...prev,
@@ -786,6 +1067,7 @@ export function StoreLibraryView({
         likes: { [gameId]: increment(delta) }
       }, { merge: true })
     } catch (e) {
+      setLauncherFavorite(gameId, isLiked)
       // Rollback optimistic update
       setOptimisticLikes(prev => ({
         ...prev,
@@ -840,21 +1122,22 @@ export function StoreLibraryView({
   const browseGames = useMemo(() => {
     let baseGames = catalog.games
 
-    // In library view, filter based on libraryMode
-    if (viewMode === 'library' && installStates && steamInstalledAppIds) {
+    if (ownershipLibrary) {
+      baseGames = baseGames.filter((game) => libraryGameIds.has(game.id) || Boolean(installStates?.[game.id]?.installed))
+    } else if (viewMode === 'library') {
       baseGames = baseGames.filter((game) => {
         if (libraryMode === 'local') {
-          return installStates[game.id]?.installed
+          return libraryGameIds.has(game.id) || Boolean(installStates?.[game.id]?.installed)
         } else if (libraryMode === 'steam') {
           const appid = mapping[game.id]
-          return appid && steamInstalledAppIds.includes(appid)
+          return Boolean(appid && steamInstalledAppIds?.includes(appid))
         }
         return false
       })
     }
 
     return baseGames
-  }, [catalog.games, viewMode, libraryMode, installStates, steamInstalledAppIds, mapping])
+  }, [catalog.games, viewMode, ownershipLibrary, libraryGameIds, libraryMode, installStates, steamInstalledAppIds, mapping])
 
   const rankedSearchResults = useMemo(() => rankStoreGames({
     games: browseGames,
@@ -1167,8 +1450,17 @@ export function StoreLibraryView({
         key={game.id}
         role="button"
         tabIndex={isComingSoon ? -1 : 0}
-        aria-disabled={isComingSoon}
-        onClick={() => !isComingSoon && onSelectGame(game.id)}
+        draggable={false}
+        onPointerDown={(event) => {
+          if (!isComingSoon) beginPointerGameDrag(event, game)
+        }}
+        onClick={() => {
+          if (suppressCardClickRef.current === game.id) {
+            suppressCardClickRef.current = null
+            return
+          }
+          if (!isComingSoon) onSelectGame(game.id)
+        }}
         onKeyDown={(event) => {
           if (!isComingSoon && (event.key === 'Enter' || event.key === ' ')) {
             event.preventDefault()
@@ -1247,6 +1539,157 @@ export function StoreLibraryView({
     )
   }
 
+  const renderSteamLibraryRail = (detailMode = false) => {
+    if (!showLibraryRail) return null
+    const activeCollection = launcherLibraryLayout.collections.find((collection) => collection.id === activeSteamCollectionId)
+    const filteredRailGames = activeSteamCollectionId === 'favorites'
+      ? visibleGames.filter((game) => likedGames.has(game.id))
+      : activeSteamCollectionId === 'installed'
+        ? visibleGames.filter((game) => Boolean(installStates?.[game.id]?.installed))
+        : activeCollection
+          ? visibleGames.filter((game) => activeCollection.gameIds.includes(game.id))
+          : visibleGames
+    const railGames = filteredRailGames.slice(0, 180)
+
+    return (
+      <aside className={detailMode ? 'steam-library-detail-rail' : 'steam-library-rail'} aria-label="Library games">
+        <button
+          type="button"
+          className={`steam-library-home-button${selectedGame ? '' : ' is-active'}`}
+          onClick={() => onSelectGame(null)}
+        >
+          <Library size={15} />
+          <span>Home</span>
+          <small>{browseGames.length}</small>
+        </button>
+        <label className="steam-library-search">
+          <Search size={14} />
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.currentTarget.value)}
+            placeholder="Search library"
+            aria-label="Search library"
+          />
+          <kbd>Ctrl K</kbd>
+        </label>
+        <div className="steam-library-rail-heading steam-library-collections-heading">
+          <span>Collections</span>
+          <button
+            type="button"
+            className="steam-library-collection-add"
+            onClick={() => setCollectionEditorOpen((open) => !open)}
+            title="Create collection"
+            aria-label="Create collection"
+            aria-expanded={collectionEditorOpen}
+          >
+            <PlusCircle size={13} />
+          </button>
+        </div>
+        {collectionEditorOpen ? (
+          <form
+            className="steam-library-collection-editor"
+            onSubmit={(event) => { event.preventDefault(); createSteamCollection() }}
+          >
+            <input
+              autoFocus
+              value={collectionName}
+              onChange={(event) => setCollectionName(event.currentTarget.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Escape') {
+                  setCollectionEditorOpen(false)
+                  setCollectionName('')
+                }
+              }}
+              maxLength={48}
+              placeholder="Collection name"
+              aria-label="Collection name"
+            />
+            <button type="submit" disabled={!collectionName.trim()} aria-label="Save collection">+</button>
+          </form>
+        ) : null}
+        <div className="steam-library-collection-list" aria-label="Library collections">
+          {[
+            { id: 'all', name: 'All games', count: visibleGames.length },
+            { id: 'favorites', name: 'Favorites', count: visibleGames.filter((game) => likedGames.has(game.id)).length },
+            { id: 'installed', name: 'Installed', count: visibleGames.filter((game) => Boolean(installStates?.[game.id]?.installed)).length },
+          ].map((collection) => (
+            <button
+              key={collection.id}
+              type="button"
+              className={`steam-library-collection-row${activeSteamCollectionId === collection.id ? ' is-active' : ''}`}
+              onClick={() => setActiveSteamCollectionId(collection.id)}
+            >
+              <span>{collection.name}</span><small>{collection.count}</small>
+            </button>
+          ))}
+          {launcherLibraryLayout.collections.map((collection) => (
+            <div
+              key={collection.id}
+              className={`steam-library-custom-collection${collectionDropTarget === collection.id ? ' is-drop-target' : ''}`}
+              onDragOver={(event) => { event.preventDefault(); setCollectionDropTarget(collection.id) }}
+              onDragLeave={() => setCollectionDropTarget((current) => current === collection.id ? null : current)}
+              onDrop={(event) => {
+                event.preventDefault()
+                setCollectionDropTarget(null)
+                const gameId = event.dataTransfer.getData('application/x-0xolemon-game-id')
+                if (gameId) addGameToSteamCollection(collection.id, gameId)
+              }}
+            >
+              <button
+                type="button"
+                className={`steam-library-collection-row${activeSteamCollectionId === collection.id ? ' is-active' : ''}`}
+                onClick={() => setActiveSteamCollectionId(collection.id)}
+                title="Drop a game here to add it"
+              >
+                <span>{collection.name}</span><small>{collection.gameIds.length}</small>
+              </button>
+              <button
+                type="button"
+                className="steam-library-collection-remove"
+                onClick={() => removeSteamCollection(collection.id)}
+                title="Delete collection"
+                aria-label={`Delete ${collection.name}`}
+              >
+                <X size={11} />
+              </button>
+            </div>
+          ))}
+        </div>
+        <div className="steam-library-rail-heading">
+          <span>Games</span>
+          <small>{railGames.length}</small>
+        </div>
+        <div className="steam-library-game-list">
+          {railGames.map((game) => {
+            const railIcon = assetUrlForId(game.iconAssetId, assets) || assetUrlForId(game.gridAssetId, assets)
+            const isActive = selectedGame?.id === game.id
+            return (
+              <button
+                type="button"
+                key={game.id}
+                draggable
+                className={`steam-library-game-row${isActive ? ' is-active' : ''}`}
+                onClick={() => onSelectGame(game.id)}
+                onMouseEnter={() => onRequestAsset(game, game.iconAssetId || game.gridAssetId)}
+                onDragStart={(event) => {
+                  event.dataTransfer.effectAllowed = 'copy'
+                  event.dataTransfer.setData('application/x-0xolemon-game-id', game.id)
+                }}
+                title={game.title}
+              >
+                <span className="steam-library-game-icon">
+                  {railIcon ? <img src={railIcon} alt="" loading="lazy" decoding="async" /> : <Library size={13} />}
+                </span>
+                <span className="steam-library-game-name">{game.title}</span>
+                {installStates?.[game.id]?.installed ? <span className="steam-library-installed-dot" aria-label="Installed" /> : null}
+              </button>
+            )
+          })}
+        </div>
+      </aside>
+    )
+  }
+
   if (!selectedGame) {
     if (catalogLoadState === 'loading' && catalog.games.length === 0) {
       return <CatalogLoadingView viewMode={viewMode} />
@@ -1256,17 +1699,48 @@ export function StoreLibraryView({
       return <CatalogUnavailableView viewMode={viewMode} onRetry={onRetryCatalog} />
     }
 
+    if (showLibraryRail) {
+      return (
+        <section className="library-browse-view has-steam-library-rail steam-library-home-view">
+          {renderSteamLibraryRail(false)}
+          <SteamLibraryHome
+            games={visibleGames}
+            assets={assets}
+            installStates={installStates}
+            favoriteGameIds={likedGames}
+            onSelectGame={(gameId) => onSelectGame(gameId)}
+            onCustomizeShelves={() => setCollectionEditorOpen(true)}
+            onRequestAsset={onRequestAsset}
+          />
+        </section>
+      )
+    }
+
+    if (uiTheme === 'steam' && viewMode === 'store') {
+      return (
+        <SteamStoreHome
+          games={browseGames}
+          assets={assets}
+          ownedGameIds={libraryGameIds}
+          wishlistGameIds={wishlist}
+          onSelectGame={(gameId) => onSelectGame(gameId)}
+          onRequestAsset={onRequestAsset}
+        />
+      )
+    }
+
     return (
-      <section className="library-browse-view">
+      <section className={`library-browse-view${showLibraryRail ? ' has-steam-library-rail' : ''}`}>
+        {renderSteamLibraryRail(false)}
         <header className="library-browse-toolbar">
           <div className="library-browse-heading">
-            <strong>{viewMode === 'store' ? 'Store' : 'Installed games'}</strong>
+            <strong>{viewMode === 'store' ? t.nav.store : t.nav.library}</strong>
             <span>
               {visibleGames.length} game{visibleGames.length === 1 ? '' : 's'}
             </span>
           </div>
-          {viewMode === 'store' && <StoreModeSwitch value={storeMode} onChange={(v) => { setStoreMode(v); localStorage.setItem('libraryStoreMode', v) }} />}
-          {viewMode === 'library' && <LibraryModeSwitch value={libraryMode} onChange={(v) => { setLibraryMode(v); localStorage.setItem('libraryMode', v) }} />}
+          {viewMode === 'store' && showSourceSwitches && <StoreModeSwitch value={storeMode} onChange={(v) => { setStoreMode(v); localStorage.setItem('libraryStoreMode', v) }} />}
+          {viewMode === 'library' && showSourceSwitches && <LibraryModeSwitch value={libraryMode} onChange={(v) => { setLibraryMode(v); localStorage.setItem('libraryMode', v) }} />}
 
           <div className="library-toolbar-actions">
             <div className="store-sort-dropdown">
@@ -1396,8 +1870,8 @@ export function StoreLibraryView({
             ) : (
               <>
                 <Library size={28} />
-                <strong>No installed games</strong>
-                <span>Games installed from Store will appear here.</span>
+                <strong>{t.library.noGamesInLibrary || 'No games in Library'}</strong>
+                <span>{t.library.noGamesInLibraryDesc || 'Add games from Store to see them here.'}</span>
                 <button type="button" onClick={onOpenStore}>
                   <ShoppingBag size={15} />
                   Open Store
@@ -1422,6 +1896,7 @@ export function StoreLibraryView({
   const hero = assetUrlForId(selectedGame.heroAssetId, assets) || firstMediaUrl(detail, assets)
   const logo = assetUrlForId(selectedGame.logoAssetId, assets)
   const installed = Boolean(selectedInstallState?.installed)
+  const inLauncherLibrary = libraryGameIds.has(selectedGame.id) || installed
   const installBlocked = ['recovering', 'conflict', 'unavailable'].includes(selectedInstallState?.discoveryStatus ?? '')
   const isVerifying = verifyStatus?.state === 'running'
 
@@ -1439,15 +1914,17 @@ export function StoreLibraryView({
   let actionLabel: string = installed ? t.library.play : (!isTauriRuntime() ? 'Remote Install' : t.library.chooseInstall)
   let actionClass = 'primary-control'
   let primaryDisabled = false
-  const stateLabel = discoveryStatus === 'recovering'
-    ? t.installRecovery.checking
-    : installBlocked
-      ? selectedInstallState?.unavailableReason || t.installRecovery.libraryUnavailable
-    : !installed
-      ? t.library.readyToInstall
-      : updateReady
-        ? t.library.readyToUpdate
-        : t.library.readyToPlay
+  const stateLabel = acquisitionOnlyStore
+    ? (inLauncherLibrary ? 'In Library' : 'Available to add')
+    : discoveryStatus === 'recovering'
+      ? t.installRecovery.checking
+      : installBlocked
+        ? selectedInstallState?.unavailableReason || t.installRecovery.libraryUnavailable
+        : !installed
+          ? t.library.readyToInstall
+          : updateReady
+            ? t.library.readyToUpdate
+            : t.library.readyToPlay
 
   if (isPlaying) {
     actionLabel = 'Running'
@@ -1513,11 +1990,58 @@ export function StoreLibraryView({
   // local: show all buttons (play/install), hide steam
   // local: show play/install buttons
   // steam: hide install/play buttons completely, show only "Add to Steam"
-  const showInstallButton = effectiveMode === 'local'
-  const showSteamButton = effectiveMode === 'steam'
+  const showInstallButton = effectiveMode === 'local' && !acquisitionOnlyStore
+  const showSteamButton = effectiveMode === 'steam' && !acquisitionOnlyStore
+
+  if (showLibraryRail) {
+    const libraryPrimaryAction = isPlaying
+      ? onStop
+      : updateReady
+        ? onPrimaryAction
+        : installed
+          ? onPlay
+          : onOpenInstallOptions
+
+    return (
+      <section className="game-detail-view has-steam-library-rail steam-library-game-detail steam-library-dedicated-detail">
+        {renderSteamLibraryRail(true)}
+        <SteamLibraryDetail
+          game={selectedGame}
+          detail={detail}
+          assets={assets}
+          installState={selectedInstallState}
+          displayedVersion={displayedVersion}
+          heroUrl={hero}
+          logoUrl={logo}
+          coverUrl={gridAsset}
+          downloadSize={downloadSize}
+          installed={installed}
+          updateReady={updateReady}
+          installing={isDownloading}
+          playing={isPlaying}
+          verifying={isVerifying}
+          installBlocked={installBlocked}
+          favorite={likedGames.has(selectedGame.id)}
+          showVersionAction={showVersionAction}
+          verifyStatus={verifyStatus}
+          onInstall={onOpenInstallOptions}
+          onPlay={onPlay}
+          onStop={onStop}
+          onUpdate={libraryPrimaryAction}
+          onVersions={onPrimaryAction}
+          onVerify={onVerify}
+          onBrowse={() => selectedInstallState?.installPath && void invoke('open_folder', { path: selectedInstallState.installPath })}
+          onUninstall={onUninstall}
+          onToggleFavorite={() => setLauncherFavorite(selectedGame.id, !likedGames.has(selectedGame.id))}
+          onOpenStore={onOpenStore}
+        />
+      </section>
+    )
+  }
 
   return (
-    <section className="game-detail-view">
+    <section className={`game-detail-view${showLibraryRail ? ' has-steam-library-rail steam-library-game-detail' : ''}`}>
+      {renderSteamLibraryRail(true)}
       {/* ── Sticky Floating Bar ── */}
       <div className={`sticky-action-bar${stickyVisible ? ' visible' : ''}`}>
         {(iconAsset || gridAsset) && (
@@ -1532,24 +2056,35 @@ export function StoreLibraryView({
           <span>{effectiveMode === 'steam' ? (isInstalledOnSteam ? `Steam Build ${steamBuildId || 'Unknown'}` : 'Not Installed on Steam') : `${displayedVersion}`} {livePlayers !== undefined ? `• ${livePlayers.toLocaleString()} Playing` : ''}</span>
         </div>
         <div className="sticky-bar-actions">
-          {(installed && effectiveMode !== 'steam' && selectedGame?.id.includes('among')) && (
+          {(!acquisitionOnlyStore && installed && effectiveMode !== 'steam' && selectedGame?.id.includes('among')) && (
             <button type="button" onClick={() => setTutorialVisible(true)}>
               <BookOpen size={15} />
               Tutorial
             </button>
           )}
-          {(installed && effectiveMode !== 'steam') && (
+          {(!acquisitionOnlyStore && installed && effectiveMode !== 'steam') && (
             <button type="button" disabled={installBlocked} onClick={() => selectedInstallState?.installPath && invoke('open_folder', { path: selectedInstallState.installPath })}>
               <FolderOpen size={15} />
               Browse
             </button>
           )}
-          {effectiveMode !== 'steam' && (
+          {!acquisitionOnlyStore && effectiveMode !== 'steam' && (
             <button type="button" onClick={onVerify} disabled={!installed || isVerifying || installBlocked}>
               <VerifyIcon size={15} />
               {verifyLabel}
             </button>
           )}
+          {acquisitionOnlyStore ? (
+            <button
+              className="primary-control steam-add-library-control"
+              data-library-state={inLauncherLibrary ? 'owned' : 'available'}
+              type="button"
+              onClick={() => inLauncherLibrary ? onOpenLibrary(selectedGame.id) : addToLauncherLibrary(selectedGame.id)}
+            >
+              <Library size={15} />
+              <span>{inLauncherLibrary ? 'View in Library' : 'Add to Library'}</span>
+            </button>
+          ) : null}
           {showInstallButton && (
             <button
               className={actionClass}
@@ -1586,7 +2121,7 @@ export function StoreLibraryView({
               {updateReady ? t.library.update : 'Versions'}
             </button>
           ) : null}
-          {(installed && effectiveMode !== 'steam') ? (
+          {(!acquisitionOnlyStore && installed && effectiveMode !== 'steam') ? (
             <button className="danger-control" type="button" onClick={onUninstall} disabled={installBlocked}>
               <X size={15} />
               {t.library.uninstall}
@@ -1604,6 +2139,10 @@ export function StoreLibraryView({
           {hero ? <img src={hero} alt="" loading="eager" /> : <div className="detail-placeholder"><ImageIcon size={40} /></div>}
           <div className="detail-hero-shade" />
           <div className="detail-copy">
+            {showLibraryRail && gridAsset ? (
+              <img className="steam-detail-cover" src={gridAsset} alt="" loading="eager" decoding="async" />
+            ) : null}
+            <div className="detail-copy-main">
             <span className="storage-pill">
               <HardDrive size={14} />
               {detail.install?.storageLabel || 'HDD'}
@@ -1612,8 +2151,8 @@ export function StoreLibraryView({
             <p>{detail.shortDescription}</p>
             <div className="library-meta-row">
               <span>{effectiveMode === 'steam' ? (isInstalledOnSteam ? `Steam Build ${steamBuildId || 'Unknown'}` : 'Not Installed on Steam') : `Version ${displayedVersion}`}</span>
-              {effectiveMode !== 'steam' && <span>{formatBytes(downloadSize)}</span>}
-              {effectiveMode !== 'steam' && detail.install?.supportsResume ? <span>{t.library.resumeSupported}</span> : null}
+              {!acquisitionOnlyStore && effectiveMode !== 'steam' && <span>{formatBytes(downloadSize)}</span>}
+              {!acquisitionOnlyStore && effectiveMode !== 'steam' && detail.install?.supportsResume ? <span>{t.library.resumeSupported}</span> : null}
               {livePlayers !== undefined ? <span className="live-players-badge"><span className="pulse-dot"></span>{livePlayers.toLocaleString()} Online</span> : null}
               <button
                 type="button"
@@ -1649,8 +2188,68 @@ export function StoreLibraryView({
                   return count > 1000 ? `${(count / 1000).toFixed(1)}k` : count
                 })()}
               </button>
+              {viewMode === 'store' && (
+                !inLauncherLibrary ? (
+                  <button
+                    type="button"
+                    className="detail-add-library-btn"
+                    onClick={() => addToLauncherLibrary(selectedGame.id)}
+                    title={t.library.addToLibrary}
+                  >
+                    <PlusCircle size={15} />
+                    <span>{t.library.addToLibrary}</span>
+                  </button>
+                ) : (
+                  <div className="detail-library-group" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                    <button
+                      type="button"
+                      className="detail-add-library-btn is-in-library"
+                      onClick={() => onOpenLibrary(selectedGame.id)}
+                      title={t.library.inLibrary}
+                    >
+                      <CheckCircle2 size={15} />
+                      <span>{t.library.inLibrary}</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="detail-action-icon-btn remove-library-btn"
+                      onClick={() => removeFromLauncherLibrary(selectedGame.id)}
+                      title={t.library.removeFromLibrary}
+                      aria-label={t.library.removeFromLibrary}
+                    >
+                      <Trash2 size={14} />
+                      <span>{t.library.removeFromLibrary}</span>
+                    </button>
+                  </div>
+                )
+              )}
+              {viewMode === 'library' && inLauncherLibrary && (
+                <button
+                  type="button"
+                  className="detail-action-icon-btn remove-library-btn"
+                  onClick={() => {
+                    removeFromLauncherLibrary(selectedGame.id)
+                    onSelectGame(null)
+                  }}
+                  title={t.library.removeFromLibrary}
+                  aria-label={t.library.removeFromLibrary}
+                >
+                  <Trash2 size={14} />
+                  <span>{t.library.removeFromLibrary}</span>
+                </button>
+              )}
             </div>
+            </div>
+            {showLibraryRail ? (
+              <dl className="steam-detail-facts">
+                <div><dt>Developer</dt><dd>{detail.developers.join(', ') || selectedGame.developer}</dd></div>
+                <div><dt>Publisher</dt><dd>{detail.publishers.join(', ') || selectedGame.publisher}</dd></div>
+                <div><dt>Release date</dt><dd>{detail.releaseDate || 'Available now'}</dd></div>
+                <div><dt>Features</dt><dd>{detail.categories.slice(0, 3).join(' · ') || 'Single-player'}</dd></div>
+              </dl>
+            ) : null}
           </div>
+          {viewMode !== 'store' ? (
           <div className="store-action-dock" ref={actionDockRef}>
             {(installed && effectiveMode !== 'steam' && (selectedGame?.id.includes('among') || selectedGame?.id === 'persona-3-reload')) && (
               <button type="button" onClick={() => setTutorialVisible(true)}>
@@ -1658,24 +2257,53 @@ export function StoreLibraryView({
                 Tutorial
               </button>
             )}
-            {(installed && effectiveMode !== 'steam') && (
+            {(!acquisitionOnlyStore && installed && effectiveMode !== 'steam') && (
               <button type="button" disabled={installBlocked} onClick={() => selectedInstallState?.installPath && invoke('open_folder', { path: selectedInstallState.installPath })}>
                 <FolderOpen size={15} />
                 Browse
               </button>
             )}
-            {effectiveMode !== 'steam' && (
+            {!acquisitionOnlyStore && effectiveMode !== 'steam' && (
               <button type="button" onClick={onVerify} disabled={!installed || isVerifying || installBlocked}>
                 <VerifyIcon size={17} />
                 {verifyLabel}
               </button>
             )}
+            {viewMode === 'library' && inLauncherLibrary && !installed && (
+              <button
+                type="button"
+                className="library-action-remove-btn"
+                onClick={() => {
+                  removeFromLauncherLibrary(selectedGame.id)
+                  onSelectGame(null)
+                }}
+                title={t.library.removeFromLibrary}
+              >
+                <Trash2 size={16} />
+                <span>{t.library.removeFromLibrary}</span>
+              </button>
+            )}
+            {acquisitionOnlyStore ? (
+              <button
+                className="primary-control steam-add-library-control"
+                data-library-state={inLauncherLibrary ? 'owned' : 'available'}
+                type="button"
+                onClick={() => inLauncherLibrary ? onOpenLibrary(selectedGame.id) : addToLauncherLibrary(selectedGame.id)}
+              >
+                <Library size={17} />
+                <span>{inLauncherLibrary ? 'View in Library' : 'Add to Library'}</span>
+              </button>
+            ) : null}
+            {acquisitionOnlyStore && libraryPersistError ? (
+              <span className="library-persist-error" role="alert">{t.library.libraryPersistFailed}</span>
+            ) : null}
             {showInstallButton && (
               <button
                 className={actionClass}
                 type="button"
                 onClick={primaryActionBtn}
                 disabled={primaryDisabled}
+                data-steam-action={isPlaying ? 'stop' : installed ? 'play' : 'install'}
                 data-stop-label={isPlaying ? 'STOP' : undefined}
               >
                 {primaryIcon}
@@ -1689,6 +2317,7 @@ export function StoreLibraryView({
                 className={isPlaying ? 'primary-control running-btn can-stop' : 'primary-control'}
                 type="button"
                 onClick={primaryActionBtn}
+                data-steam-action={isPlaying ? 'stop' : 'play'}
                 data-stop-label={isPlaying ? 'STOP' : undefined}
               >
                 {isPlaying ? <Play size={17} /> : <Play size={17} />}
@@ -1700,7 +2329,7 @@ export function StoreLibraryView({
               <SaveBackupIndicator gameId={selectedGameId} />
             )}
 
-            {(showSteamButton && !isJobRunning && !isPlaying && selectedGameId) && (
+            {(!acquisitionOnlyStore && showSteamButton && !isJobRunning && !isPlaying && selectedGameId) && (
               <SteamIntegrationButton gameId={selectedGameId} gameTitle={detail.title} storeMode={effectiveMode} />
             )}
 
@@ -1720,22 +2349,23 @@ export function StoreLibraryView({
               </button>
             ) : null}
             
-            {(installed && effectiveMode !== 'steam') ? (
+            {(!acquisitionOnlyStore && installed && effectiveMode !== 'steam') ? (
               <button className="danger-control" type="button" onClick={onUninstall} disabled={installBlocked}>
                 <X size={17} />
                 {t.library.uninstall}
               </button>
             ) : null}
           </div>
+          ) : null}
         </div>
 
-        <nav className="detail-tabs">
+        <nav className={`detail-tabs${showLibraryRail ? ' steam-detail-subnav' : ''}`}>
           <button
             className={activeDetailTab === 'overview' ? 'active' : ''}
             onClick={() => setActiveDetailTab('overview')}
             type="button"
           >
-            <Info size={16} /> Overview
+            <Info size={16} /> {showLibraryRail ? 'Activity' : 'Overview'}
           </button>
           <button
             className={activeDetailTab === 'chat' ? 'active' : ''}
@@ -1744,39 +2374,32 @@ export function StoreLibraryView({
           >
             <MessageSquare size={16} /> Live Chat
           </button>
-          {showLuaGameTab && (
-            <button
-              className={activeDetailTab === 'lua-game' ? 'active' : ''}
-              onClick={() => setActiveDetailTab('lua-game')}
-              type="button"
-              style={{
-                background: 'linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,165,0,0.1))',
-                border: '1px solid rgba(255,215,0,0.3)',
-                position: 'relative'
-              }}
-            >
-              <Sparkles size={16} /> {t.library.luaGameMode}
-              {updateInfo && ['error', 'conflict'].includes(updateInfo.syncStatus) && (
-                <span className="lua-state-alert-dot" title={updateInfo.lastError || updateInfo.syncStatus} />
-              )}
-            </button>
-          )}
         </nav>
 
         {activeDetailTab === 'overview' ? (
-          <>
-            <MediaRail detail={detail} assets={assets} />
+          showLibraryRail ? (
+            <SteamLibraryActivity
+              game={selectedGame}
+              detail={detail}
+              assets={assets}
+              installState={selectedInstallState}
+              displayedVersion={displayedVersion}
+            />
+          ) : (
+            <>
+              <MediaRail detail={detail} assets={assets} />
 
-            <section className="detail-body">
-              <div className="detail-description">
-                <h2>{detail.title}</h2>
-                <div
-                  className="description-html"
-                  dangerouslySetInnerHTML={{ __html: processDescriptionHtml(detail.detailedDescription, assets) }}
-                />
-              </div>
-            </section>
-          </>
+              <section className="detail-body">
+                <div className="detail-description">
+                  <h2>{detail.title}</h2>
+                  <div
+                    className="description-html"
+                    dangerouslySetInnerHTML={{ __html: processDescriptionHtml(detail.detailedDescription, assets) }}
+                  />
+                </div>
+              </section>
+            </>
+          )
         ) : activeDetailTab === 'lua-game' ? (
           <section className="detail-body lua-game-tab-container">
             {updateInfo && (
@@ -1886,7 +2509,7 @@ export function StoreLibraryView({
         )}
       </section>
 
-      {activeDetailTab === 'overview' && (
+      {activeDetailTab === 'overview' && !showLibraryRail && (
         <aside className="store-info-column">
           <section className="panel status-card">
             <header className="side-header">
@@ -1894,7 +2517,18 @@ export function StoreLibraryView({
               <strong>{stateLabel}</strong>
             </header>
             <dl className="metric-list">
-              {effectiveMode === 'steam' ? (
+              {acquisitionOnlyStore ? (
+                <>
+                  <div>
+                    <dt>Library</dt>
+                    <dd>{inLauncherLibrary ? 'In Library' : 'Not in Library'}</dd>
+                  </div>
+                  <div>
+                    <dt>{t.library.latestVersion}</dt>
+                    <dd>{selectedGame.latestVersion}</dd>
+                  </div>
+                </>
+              ) : effectiveMode === 'steam' ? (
                 <div>
                   <dt>Steam Status</dt>
                   <dd>{isInstalledOnSteam ? `Installed (Build ${steamBuildId || 'Unknown'})` : 'Not Installed on Steam'}</dd>
@@ -1921,7 +2555,7 @@ export function StoreLibraryView({
               )}
             </dl>
           </section>
-          {effectiveMode !== 'steam' && (
+          {!acquisitionOnlyStore && effectiveMode !== 'steam' && (
             <InstallSummaryPanel
               selectedVersion={selectedVersion}
               downloadSize={downloadSize}
@@ -1978,7 +2612,7 @@ export function StoreLibraryView({
               onRestoreMissingFiles={onRestoreMissingSaveFiles}
             />
           ) : null}
-          <OSTPlayer bgImage={hero || logo || undefined} gameId={selectedGame.id} />
+          <OSTPlayer bgImage={hero || logo || undefined} gameId={selectedGame.id} gameTitle={selectedGame.title} />
           <GameTagsPreview game={selectedGame} />
           <AchievementPreview gameId={selectedGame.id} achievements={detail?.achievements || []} assets={assets} />
         </aside>
@@ -1992,114 +2626,6 @@ export function StoreLibraryView({
     </section>
   )
 }
-export function OperationHero({
-  game,
-  detail,
-  assets,
-  currentVersion,
-  latestVersion,
-  updateReady,
-  showVersionAction,
-  updateSize,
-  onUpdate,
-  onPlay,
-  onStop,
-  isJobRunning,
-  isGameRunning,
-  canUpdate,
-  installMode,
-  selectedVersion,
-  storeMode = 'local',
-}: {
-  game: GameSummary
-  detail: GameDetail
-  assets: Record<string, string>
-  currentVersion: string
-  latestVersion: string
-  updateReady: boolean
-  showVersionAction: boolean
-  updateSize: number
-  onUpdate: () => void
-  onPlay: () => void
-  onStop: () => void
-  isJobRunning: boolean
-  isGameRunning: boolean
-  canUpdate: boolean
-  installMode: boolean
-  selectedVersion: string
-  storeMode?: 'local' | 'steam'
-}) {
-  const { t } = useLocale()
-  const hero = assetUrlForId(game.heroAssetId, assets) || firstMediaUrl(detail, assets)
-  const stateLabel = installMode ? t.library.readyToInstall : updateReady ? t.library.readyToUpdate : t.library.readyToPlay
-
-  let playLabel = t.library.play.toUpperCase()
-  let playClass = 'update-button hero-play-button'
-  if (isGameRunning) {
-    playLabel = 'RUNNING'
-    playClass = 'update-button running-btn can-stop'
-  } else if (isJobRunning) {
-    playLabel = 'DOWNLOADING'
-    playClass = 'update-button downloading-btn'
-  }
-
-  const playDisabled = isJobRunning
-  const updateDisabled = isGameRunning || isJobRunning || !canUpdate
-
-  return (
-    <section className="hero-panel">
-      {hero ? <img src={hero} alt="" loading="eager" fetchPriority="high" decoding="async" /> : null}
-      <div className="game-strip">
-        <div className="game-emblem">
-          {assetUrlForId(game.iconAssetId, assets) ? <img src={assetUrlForId(game.iconAssetId, assets)} alt="" decoding="async" loading="lazy" /> : <ImageIcon size={28} />}
-        </div>
-        <div>
-          <h1>{game.title}</h1>
-          <div className="version-row">
-            <VersionStat label={t.library.currentVersion} value={currentVersion} />
-            <VersionStat label={t.library.latestVersion} value={latestVersion} highlight />
-            <VersionStat label={t.library.targetVersion} value={selectedVersion} />
-            <div className="ready-state">
-              <CheckCircle2 size={20} />
-              <span>{stateLabel}</span>
-              <small>{formatBytes(updateSize)}</small>
-            </div>
-          </div>
-        </div>
-        <div className="hero-action-group">
-          {installMode ? (
-            <button
-              className={`update-button${isJobRunning ? ' downloading-btn' : ''}`}
-              type="button"
-              onClick={onUpdate}
-              disabled={isJobRunning || !canUpdate}
-            >
-              <span>{isJobRunning ? 'DOWNLOADING' : (!isTauriRuntime() ? 'REMOTE INSTALL' : t.library.chooseInstall.toUpperCase())}</span>
-              <Download size={18} />
-            </button>
-          ) : (
-            <>
-              <button className={playClass} type="button" onClick={isGameRunning ? onStop : onPlay} disabled={playDisabled}
-                data-stop-label={isGameRunning ? 'STOP' : undefined}
-              >
-                <span>{playLabel}</span>
-                {isJobRunning ? <Download size={18} /> : <Play size={18} />}
-              </button>
-              {showVersionAction ? (
-                <button className="update-button" type="button" onClick={onUpdate} disabled={updateDisabled}>
-                  <span>{updateReady ? t.library.update.toUpperCase() : 'VERSIONS'}</span>
-                  <Download size={18} />
-                </button>
-              ) : null}
-            </>
-          )}
-          {(!isJobRunning && !isGameRunning) && <SteamIntegrationButton gameId={game.id} gameTitle={game.title} storeMode={storeMode} />}
-        </div>
-      </div>
-    </section>
-  )
-}
-
 function SteamIntegrationButton({ gameId, gameTitle, storeMode }: { gameId: string, gameTitle: string, storeMode: 'local' | 'steam' }) {
   const [status, setStatus] = useState<boolean>(false)
   const [luaState, setLuaState] = useState<LuaGameState | null>(null)
@@ -2502,15 +3028,6 @@ function SteamIntegrationButton({ gameId, gameTitle, storeMode }: { gameId: stri
         />
       )}
     </>
-  )
-}
-
-export function VersionStat({ label, value, highlight = false }: { label: string; value: string; highlight?: boolean }) {
-  return (
-    <div className="version-stat">
-      <small>{label}</small>
-      <strong className={highlight ? 'gold-text' : ''}>{value}</strong>
-    </div>
   )
 }
 

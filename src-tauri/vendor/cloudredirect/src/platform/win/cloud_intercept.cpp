@@ -1145,6 +1145,8 @@ static void DrainPlaytimeUpdateQueueOnNetThread() {
             g_playtimeUpdateQueue.pop();
         }
     }
+    if (!batch.empty())
+        LOG("Drain: flushing %zu pending playtime push(es)", batch.size());
     for (auto& body : batch)
         ApplyLastPlayedUpdate(body);
 }
@@ -4672,14 +4674,10 @@ void Init(const std::string& steamPath, bool cloudSaveOnly, CR_NotifyFn notifyCa
             MetadataSync::syncAchievements = cfg["sync_achievements"].boolean();
         if (cfg["sync_playtime"].type == Json::Type::Bool)
             MetadataSync::syncPlaytime = cfg["sync_playtime"].boolean();
-        // Schema fetch (default on).
-        if (cfg["schema_fetch"].type == Json::Type::Bool)
-            MetadataSync::schemaFetch = cfg["schema_fetch"].boolean();
-        LOG("[Stats] Sync gates: achievements=%d, playtime=%d, schemaFetch=%d, "
-            "steamTools=%d, stGateOpen=%d",
+        // schema_fetch is retired and no longer honored; it stays off regardless of config.
+        LOG("[Stats] Sync gates: achievements=%d, playtime=%d, steamTools=%d, stGateOpen=%d",
             MetadataSync::syncAchievements.load() ? 1 : 0,
             MetadataSync::syncPlaytime.load() ? 1 : 0,
-            MetadataSync::schemaFetch.load() ? 1 : 0,
             MetadataSync::steamToolsPresent.load() ? 1 : 0,
             MetadataSync::StGateOpen() ? 1 : 0);
         // Defaults to true when absent.
@@ -4725,9 +4723,11 @@ void Init(const std::string& steamPath, bool cloudSaveOnly, CR_NotifyFn notifyCa
             uint32_t accountId = GetAccountId();
             if (accountId == 0) return false;
             std::vector<uint8_t> data;
-            if (!CloudStorage::DownloadCloudMetadataWithLegacyFallback(
-                    accountId, CloudIntercept::kAccountScopeAppId, "stats.json",
-                    nullptr, data) || data.empty())
+            auto fetch = CloudStorage::FetchCloudMetadataStatus(
+                accountId, CloudIntercept::kAccountScopeAppId, "stats.json", data);
+            if (fetch == CloudStorage::MetadataFetch::Error)
+                return false; // transient failure -> keep the existing cloud cache
+            if (fetch == CloudStorage::MetadataFetch::Missing || data.empty())
                 return true;  // no account blob yet -> empty (not a failure)
             Json::Value root = Json::Parse(
                 std::string(reinterpret_cast<const char*>(data.data()), data.size()));
@@ -5581,7 +5581,9 @@ static uint8_t __fastcall BAsyncSendHook(void* pMsg, uint32_t connHandle) {
                     if (!observeBytes.empty()) {
                         LOG("[Stats] GamesPlayed observed (emsg=%u, %zu bytes) -> session tracking",
                             emsg, observeBytes.size());
-                        StatsHandlers::ObserveGamesPlayed(observeBytes.data(), observeBytes.size());
+                        auto ended = StatsHandlers::ObserveGamesPlayed(
+                            observeBytes.data(), observeBytes.size());
+                        QueueLocalPlaytimePush(ended);
                     }
                 }
                 // Non-Steam-game spoof (hard-gated to ST clients).
@@ -6752,6 +6754,14 @@ void DrainPlaytimeUpdates() {
     DrainPlaytimeUpdateQueueOnNetThread();
 }
 
+void QueueLocalPlaytimePush(const std::vector<uint32_t>& endedApps) {
+    if (endedApps.empty()) return;
+    PB::Writer body = StatsHandlers::BuildLastPlayedNotificationBody(endedApps);
+    if (body.Size() == 0) return;
+    QueueLastPlayedUpdate(body.Data());
+    LOG("[Stats] Queued live playtime update for %zu local app(s)", endedApps.size());
+}
+
 // Shutdown entry points: ExitProcess IAT hook (production) and DllMain
 // DLL_PROCESS_DETACH with reserved==NULL. once_flag makes it idempotent.
 void Shutdown() {
@@ -6785,6 +6795,10 @@ static void ShutdownImpl() {
 
     // Flush stats/playtime to cloud (hooks drained, store is safe).
     StatsHandlers::Shutdown();
+
+    // Flush pending pushes before teardown, else a session ending right before close
+    // never persists. Safe here: steamclient64 is still mapped, vtable not yet restored.
+    DrainPlaytimeUpdateQueueOnNetThread();
 
     // Restore vtable pointers; skip if steamclient64 unloaded or hook drain timed out.
     if (!hookDrainTimedOut && g_vtableHookInstalled.load(std::memory_order_acquire) && g_steamClientBase) {

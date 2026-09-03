@@ -3,14 +3,15 @@
 // Depotdownloader tree for build/manifest metadata, downloads manifests, and writes
 // properly-formatted Lua scripts for the SteamPlugin system.
 
-use std::path::Path;
-use std::collections::{BTreeSet, HashMap};
+use once_cell::sync::Lazy;
+use reqwest::blocking::Client;
+use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION};
+use serde::{Deserialize, Serialize};
+use std::collections::{BTreeMap, BTreeSet, HashMap};
+use std::io::Read;
+use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
-use serde::{Deserialize, Serialize};
-use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION};
-use reqwest::blocking::Client;
-use once_cell::sync::Lazy;
 
 // ─── HuggingFace API helpers ──────────────────────────────────────────────────
 
@@ -122,7 +123,6 @@ pub struct GameBuildsInfo {
 
 // ─── Commands ─────────────────────────────────────────────────────────────────
 
-
 const PATCH_RSS_TTL: Duration = Duration::from_secs(6 * 60 * 60);
 static PATCH_RSS_CACHE: Lazy<Mutex<HashMap<u32, (Instant, String)>>> =
     Lazy::new(|| Mutex::new(HashMap::new()));
@@ -159,7 +159,10 @@ fn patchnotes_rss_blocking(appid: u32) -> Result<String, String> {
         .send()
         .map_err(|_| "Patch history service unavailable".to_string())?;
     if !response.status().is_success() {
-        return Err(format!("Patch history unavailable (HTTP {})", response.status()));
+        return Err(format!(
+            "Patch history unavailable (HTTP {})",
+            response.status()
+        ));
     }
     let xml = response
         .text()
@@ -307,7 +310,10 @@ fn builds_blocking(appid: u32, game_name: &str) -> Result<GameBuildsInfo, String
 
     // Resolve by AppID first so Steam display-name differences do not break version lookup.
     let Some(folder_name) = resolve_catalog_folder_name(&client, &token, appid, game_name)? else {
-        return Ok(GameBuildsInfo { builds: Vec::new(), has_key: false });
+        return Ok(GameBuildsInfo {
+            builds: Vec::new(),
+            has_key: false,
+        });
     };
     let rel_path = format!("Depotdownloader/{}/{}", folder_name, appid);
     let url = format!("{}/{}", api_tree_base(), pct_encode(&rel_path));
@@ -319,7 +325,10 @@ fn builds_blocking(appid: u32, game_name: &str) -> Result<GameBuildsInfo, String
         .map_err(|_| "Service temporarily unavailable".to_string())?;
 
     if !resp.status().is_success() {
-        return Ok(GameBuildsInfo { builds: Vec::new(), has_key: false });
+        return Ok(GameBuildsInfo {
+            builds: Vec::new(),
+            has_key: false,
+        });
     }
 
     let nodes: Vec<HfNode> = resp
@@ -348,16 +357,10 @@ fn builds_blocking(appid: u32, game_name: &str) -> Result<GameBuildsInfo, String
     // For each BuildID, list the manifest files (and optionally version.txt)
     let mut builds = Vec::new();
     for bid in &raw_build_ids {
-        let build_rel = format!(
-            "Depotdownloader/{}/{}/BuildID_{}",
-            folder_name, appid, bid
-        );
+        let build_rel = format!("Depotdownloader/{}/{}/BuildID_{}", folder_name, appid, bid);
         let build_url = format!("{}/{}", api_tree_base(), pct_encode(&build_rel));
 
-        let build_resp = client
-            .get(&build_url)
-            .headers(auth_headers(&token))
-            .send();
+        let build_resp = client.get(&build_url).headers(auth_headers(&token)).send();
 
         let mut manifests: Vec<ManifestEntry> = Vec::new();
         let mut version: Option<String> = None;
@@ -387,10 +390,8 @@ fn builds_blocking(appid: u32, game_name: &str) -> Result<GameBuildsInfo, String
                                 folder_name, appid, bid
                             );
                             let ver_url = format!("{}/{}", raw_base(), pct_encode(&ver_rel));
-                            if let Ok(vr) = client
-                                .get(&ver_url)
-                                .headers(auth_headers(&token))
-                                .send()
+                            if let Ok(vr) =
+                                client.get(&ver_url).headers(auth_headers(&token)).send()
                             {
                                 if vr.status().is_success() {
                                     version = vr.text().ok().map(|t| t.trim().to_string());
@@ -411,24 +412,30 @@ fn builds_blocking(appid: u32, game_name: &str) -> Result<GameBuildsInfo, String
     }
 
     // Attempt to fetch real build dates from SteamCMD API
-    if let Ok(steamcmd_resp) = client.get(format!("https://api.steamcmd.net/v1/info/{}", appid)).send() {
+    if let Ok(steamcmd_resp) = client
+        .get(format!("https://api.steamcmd.net/v1/info/{}", appid))
+        .send()
+    {
         if steamcmd_resp.status().is_success() {
             if let Ok(json) = steamcmd_resp.json::<serde_json::Value>() {
-                if let Some(branches) = json.get("data")
+                if let Some(branches) = json
+                    .get("data")
                     .and_then(|d| d.get(appid.to_string()))
                     .and_then(|a| a.get("depots"))
                     .and_then(|d| d.get("branches"))
-                    .and_then(|b| b.as_object()) 
+                    .and_then(|b| b.as_object())
                 {
                     let mut date_map = std::collections::HashMap::new();
                     for (_branch_name, branch_data) in branches {
                         if let Some(bid) = branch_data.get("buildid").and_then(|v| v.as_str()) {
-                            if let Some(tupdate) = branch_data.get("timeupdated").and_then(|v| v.as_str()) {
+                            if let Some(tupdate) =
+                                branch_data.get("timeupdated").and_then(|v| v.as_str())
+                            {
                                 date_map.insert(bid.to_string(), tupdate.to_string());
                             }
                         }
                     }
-                    
+
                     for build in &mut builds {
                         if let Some(date_str) = date_map.get(&build.build_id) {
                             build.build_date = Some(date_str.clone());
@@ -477,7 +484,6 @@ pub async fn lua_shop_install_game(
     .map(|_| ())
 }
 
-
 fn fetch_text_rel(client: &Client, token: &str, rel: &str) -> Option<String> {
     let url = format!("{}/{}", raw_base(), pct_encode(rel));
     let response = client.get(&url).headers(auth_headers(token)).send().ok()?;
@@ -485,7 +491,11 @@ fn fetch_text_rel(client: &Client, token: &str, rel: &str) -> Option<String> {
         return None;
     }
     let text = response.text().ok()?;
-    if text.trim().is_empty() { None } else { Some(text) }
+    if text.trim().is_empty() {
+        None
+    } else {
+        Some(text)
+    }
 }
 
 fn choose_lua_base(
@@ -496,7 +506,9 @@ fn choose_lua_base(
     appid: u32,
 ) -> String {
     let local_path = stplug_in_dir.join(format!("{}.lua", appid));
-    let local = std::fs::read_to_string(&local_path).ok().filter(|v| !v.trim().is_empty());
+    let local = std::fs::read_to_string(&local_path)
+        .ok()
+        .filter(|v| !v.trim().is_empty());
     let canonical = fetch_text_rel(client, token, &format!("lua/{}.lua", appid));
 
     // Repair files produced by older launcher versions that regenerated a tiny
@@ -536,63 +548,16 @@ fn append_lua_line(content: &mut String, line: &str) {
 fn patch_manifest_bindings(
     base: &str,
     manifest_entries: &[(u32, String, String)],
-    skip_manifest_pin: bool,
 ) -> Result<String, String> {
-    let mut output = base.to_string();
-
-    if skip_manifest_pin {
-        let patterns: Vec<regex::Regex> = manifest_entries
-            .iter()
-            .filter_map(|(depot_id, _, _)| {
-                regex::RegexBuilder::new(&format!(r"setmanifestid\s*\(\s*{}\s*,", depot_id))
-                    .case_insensitive(true)
-                    .build()
-                    .ok()
-            })
-            .collect();
-        let newline = if output.contains("\r\n") { "\r\n" } else { "\n" };
-        let trailing_newline = output.ends_with('\n');
-        let kept: Vec<&str> = output
-            .lines()
-            .filter(|line| !patterns.iter().any(|re| re.is_match(line)))
-            .collect();
-        output = kept.join(newline);
-        if trailing_newline && !output.is_empty() {
-            output.push_str(newline);
-        }
-        return Ok(output);
-    }
-
-    for (depot_id, manifest_gid, _) in manifest_entries {
-        let re = regex::RegexBuilder::new(&format!(
-            r#"(setmanifestid\s*\(\s*{}\s*,\s*)[\"'][^\"']*[\"']"#,
-            depot_id
-        ))
-        .case_insensitive(true)
-        .build()
-        .map_err(|_| "Failed to prepare Lua manifest patch".to_string())?;
-
-        if re.is_match(&output) {
-            output = re
-                .replace_all(&output, format!(r#"${{1}}"{}""#, manifest_gid))
-                .to_string();
-        } else {
-            append_lua_line(
-                &mut output,
-                &format!(r#"setManifestid({}, "{}")"#, depot_id, manifest_gid),
-            );
-        }
-    }
-
-    Ok(output)
+    let exact = manifest_entries
+        .iter()
+        .map(|(depot_id, manifest_gid, _)| (*depot_id, manifest_gid.clone()))
+        .collect::<Vec<_>>();
+    crate::lua_live::replace_manifest_bindings_exact(base, &exact)
 }
 
 fn has_lua_app_call(content: &str, function_name: &str, appid: u32) -> bool {
-    let pattern = format!(
-        r#"{}\s*\(\s*{}\s*,"#,
-        regex::escape(function_name),
-        appid
-    );
+    let pattern = format!(r#"{}\s*\(\s*{}\s*,"#, regex::escape(function_name), appid);
     regex::RegexBuilder::new(&pattern)
         .case_insensitive(true)
         .build()
@@ -615,7 +580,10 @@ fn upsert_lua_string_call(content: &mut String, function_name: &str, appid: u32,
         regex::escape(function_name),
         appid
     );
-    if let Ok(re) = regex::RegexBuilder::new(&pattern).case_insensitive(true).build() {
+    if let Ok(re) = regex::RegexBuilder::new(&pattern)
+        .case_insensitive(true)
+        .build()
+    {
         if re.is_match(content) {
             let literal = lua_string_literal(value);
             *content = re
@@ -628,8 +596,284 @@ fn upsert_lua_string_call(content: &mut String, function_name: &str, appid: u32,
     }
     append_lua_line(
         content,
-        &format!("{}({}, {})", function_name, appid, lua_string_literal(value)),
+        &format!(
+            "{}({}, {})",
+            function_name,
+            appid,
+            lua_string_literal(value)
+        ),
     );
+}
+
+const MAX_LOCKED_MANIFEST_BYTES: u64 = 64 * 1024 * 1024;
+const LOCKED_SOURCE_LABEL: &str = "Hugging Face curated (Immaking/Luas)";
+
+#[derive(Debug)]
+struct VerifiedLockedManifest {
+    depot_id: u32,
+    manifest_gid: String,
+    file_name: String,
+    bytes: Vec<u8>,
+}
+
+enum FileMutation {
+    Write { path: PathBuf, bytes: Vec<u8> },
+    Delete { path: PathBuf },
+}
+
+impl FileMutation {
+    fn path(&self) -> &Path {
+        match self {
+            Self::Write { path, .. } | Self::Delete { path } => path,
+        }
+    }
+}
+
+struct FileSnapshot {
+    path: PathBuf,
+    prior: Option<Vec<u8>>,
+}
+
+fn read_optional_file(path: &Path) -> Result<Option<Vec<u8>>, String> {
+    match std::fs::read(path) {
+        Ok(bytes) => Ok(Some(bytes)),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(None),
+        Err(error) => Err(format!("Could not snapshot {}: {error}", path.display())),
+    }
+}
+
+fn restore_snapshot(snapshot: &FileSnapshot) -> Result<(), String> {
+    if let Some(bytes) = snapshot.prior.as_deref() {
+        crate::lua_live::atomic_write_path(&snapshot.path, bytes)
+    } else {
+        match std::fs::remove_file(&snapshot.path) {
+            Ok(()) => Ok(()),
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
+            Err(error) => Err(format!(
+                "Could not remove transaction output {}: {error}",
+                snapshot.path.display()
+            )),
+        }
+    }
+}
+
+fn apply_file_transaction(mutations: Vec<FileMutation>) -> Result<(), String> {
+    let mut seen = BTreeSet::new();
+    for mutation in &mutations {
+        if !seen.insert(mutation.path().to_path_buf()) {
+            return Err(format!(
+                "Locked version transaction contains duplicate path {}",
+                mutation.path().display()
+            ));
+        }
+    }
+
+    // Snapshot every destination before the first write. If any path cannot be
+    // read, no mutation starts and the currently active Steam payload remains intact.
+    let snapshots = mutations
+        .iter()
+        .map(|mutation| {
+            Ok(FileSnapshot {
+                path: mutation.path().to_path_buf(),
+                prior: read_optional_file(mutation.path())?,
+            })
+        })
+        .collect::<Result<Vec<_>, String>>()?;
+
+    let mut applied = 0usize;
+    for mutation in &mutations {
+        let result = match mutation {
+            FileMutation::Write { path, bytes } => crate::lua_live::atomic_write_path(path, bytes),
+            FileMutation::Delete { path } => match std::fs::remove_file(path) {
+                Ok(()) => Ok(()),
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
+                Err(error) => Err(format!(
+                    "Could not remove stale depot manifest {}: {error}",
+                    path.display()
+                )),
+            },
+        };
+        if let Err(error) = result {
+            let rollback_errors = snapshots[..applied]
+                .iter()
+                .rev()
+                .filter_map(|snapshot| restore_snapshot(snapshot).err())
+                .collect::<Vec<_>>();
+            if rollback_errors.is_empty() {
+                return Err(error);
+            }
+            return Err(format!(
+                "{error}; rollback also reported: {}",
+                rollback_errors.join(" | ")
+            ));
+        }
+        applied += 1;
+    }
+    Ok(())
+}
+
+fn download_verified_manifest(
+    client: &Client,
+    token: &str,
+    depot_id: u32,
+    manifest_gid: &str,
+    raw_path: &str,
+) -> Result<VerifiedLockedManifest, String> {
+    let file_name = format!("{depot_id}_{manifest_gid}.manifest");
+    let manifest_url = format!("{}/{}", raw_base(), pct_encode(raw_path));
+    let response = client
+        .get(&manifest_url)
+        .headers(auth_headers(token))
+        .send()
+        .map_err(|error| format!("Could not download {file_name}: {error}"))?;
+    if !response.status().is_success() {
+        return Err(format!(
+            "Could not download {file_name}: HTTP {}",
+            response.status()
+        ));
+    }
+    if response
+        .content_length()
+        .is_some_and(|size| size > MAX_LOCKED_MANIFEST_BYTES)
+    {
+        return Err(format!("Manifest {file_name} exceeds the safety limit"));
+    }
+    let mut bytes = Vec::new();
+    response
+        .take(MAX_LOCKED_MANIFEST_BYTES + 1)
+        .read_to_end(&mut bytes)
+        .map_err(|error| format!("Could not read {file_name}: {error}"))?;
+    if bytes.len() as u64 > MAX_LOCKED_MANIFEST_BYTES {
+        return Err(format!("Manifest {file_name} exceeds the safety limit"));
+    }
+    crate::lua_sources::validate_manifest_magic(&bytes)
+        .map_err(|error| format!("Manifest {file_name} is invalid: {error}"))?;
+    Ok(VerifiedLockedManifest {
+        depot_id,
+        manifest_gid: manifest_gid.to_string(),
+        file_name,
+        bytes,
+    })
+}
+
+fn upsert_depot_key_call(content: &mut String, depot_id: u32, key: &str) {
+    let literal = lua_string_literal(key);
+    let keyed_pattern = format!(
+        r#"(?im)^([\t ]*addappid[\t ]*\([\t ]*{}[\t ]*,[\t ]*\d+[\t ]*,[\t ]*)[\"'][^\"'\r\n]*[\"']([\t ]*\)[\t ]*;?)"#,
+        depot_id
+    );
+    if let Ok(keyed) = regex::Regex::new(&keyed_pattern) {
+        if keyed.is_match(content) {
+            *content = keyed
+                .replace(content, |captures: &regex::Captures<'_>| {
+                    format!("{}{}{}", &captures[1], literal, &captures[2])
+                })
+                .to_string();
+            return;
+        }
+    }
+
+    let existing_pattern = format!(
+        r#"(?im)^([\t ]*)addappid[\t ]*\([\t ]*{}(?:[^)\r\n]*)\)([\t ]*;?)"#,
+        depot_id
+    );
+    if let Ok(existing) = regex::Regex::new(&existing_pattern) {
+        if existing.is_match(content) {
+            *content = existing
+                .replace(content, |captures: &regex::Captures<'_>| {
+                    format!(
+                        "{}addappid({}, 0, {}){}",
+                        &captures[1], depot_id, literal, &captures[2]
+                    )
+                })
+                .to_string();
+            return;
+        }
+    }
+    append_lua_line(content, &format!("addappid({depot_id}, 0, {literal})"));
+}
+
+fn selected_source_metadata(source: &str, build_id: &str) -> Result<String, String> {
+    let legacy =
+        regex::Regex::new(r"(?im)^[\t ]*--[\t ]*Generated by 0xoLemon Launcher[\t ]*(?:\r?\n|$)")
+            .map_err(|_| "Could not prepare legacy Lua metadata cleanup".to_string())?;
+    let selected = regex::Regex::new(
+        r"(?im)^[\t ]*--[\t ]*Selected[\t ]+(?:source|BuildID)[\t ]*:[^\r\n]*(?:\r?\n|$)",
+    )
+    .map_err(|_| "Could not prepare Lua source metadata".to_string())?;
+    let without_legacy = legacy.replace_all(source, "").into_owned();
+    let cleaned = selected.replace_all(&without_legacy, "").into_owned();
+    let newline = if source.contains("\r\n") {
+        "\r\n"
+    } else {
+        "\n"
+    };
+    let mut output = format!(
+        "-- Selected source: {LOCKED_SOURCE_LABEL}{newline}-- Selected BuildID: {build_id}{newline}"
+    );
+    let cleaned = cleaned.strip_prefix('\u{feff}').unwrap_or(&cleaned);
+    output.push_str(cleaned.trim_start_matches(|value| value == '\r' || value == '\n'));
+    if !output.ends_with('\n') {
+        output.push_str(newline);
+    }
+    Ok(output)
+}
+
+fn sync_state_bytes(stplug_in_dir: &Path, pending_lua_name: &str) -> Vec<u8> {
+    let mut names = BTreeSet::new();
+    if let Ok(entries) = std::fs::read_dir(stplug_in_dir) {
+        for entry in entries.flatten() {
+            let name = entry.file_name().to_string_lossy().to_string();
+            if name.ends_with(".lua") {
+                names.insert(name);
+            }
+        }
+    }
+    names.insert(pending_lua_name.to_string());
+    if names.is_empty() {
+        Vec::new()
+    } else {
+        (names.into_iter().collect::<Vec<_>>().join("\n") + "\n").into_bytes()
+    }
+}
+
+fn manifests_referenced_by_other_lua_files(
+    stplug_in_dir: &Path,
+    current_lua: &Path,
+) -> Option<BTreeSet<String>> {
+    let mut referenced = BTreeSet::new();
+    let entries = std::fs::read_dir(stplug_in_dir).ok()?;
+    for entry in entries {
+        let path = entry.ok()?.path();
+        if path == current_lua
+            || !path.is_file()
+            || path.extension().and_then(|value| value.to_str()) != Some("lua")
+        {
+            continue;
+        }
+        let source = std::fs::read_to_string(&path).ok()?;
+        referenced.extend(crate::lua_live::manifest_refs_from_lua(&source).ok()?);
+    }
+    Some(referenced)
+}
+
+fn stale_unreferenced_manifest_paths(
+    depotcache_dir: &Path,
+    old_refs: &BTreeSet<String>,
+    target_refs: &BTreeSet<String>,
+    other_refs: Option<&BTreeSet<String>>,
+) -> Vec<PathBuf> {
+    let Some(other_refs) = other_refs else {
+        // If another Lua file could not be inspected, retain the cache. A
+        // stale file costs little; deleting a shared manifest would be worse.
+        return Vec::new();
+    };
+    old_refs
+        .difference(target_refs)
+        .filter(|name| !other_refs.contains(*name))
+        .map(|name| depotcache_dir.join(name))
+        .filter(|path| path.is_file())
+        .collect()
 }
 
 pub(crate) fn install_locked_game_blocking(
@@ -639,8 +883,10 @@ pub(crate) fn install_locked_game_blocking(
     access_token: Option<&str>,
     stat_steam_id: Option<&str>,
 ) -> Result<(), String> {
-    let steam_path =
-        crate::steam::get_steam_path().ok_or("Steam installation not found")?;
+    if build_id.is_empty() || !build_id.chars().all(|value| value.is_ascii_digit()) {
+        return Err("BuildID must contain decimal digits only".to_string());
+    }
+    let steam_path = crate::steam::get_steam_path().ok_or("Steam installation not found")?;
     let token = get_hf_token();
     let client = build_client_long()?;
 
@@ -655,12 +901,9 @@ pub(crate) fn install_locked_game_blocking(
         .ok_or_else(|| format!("No exact-version source is configured for AppID {}", appid))?;
 
     // ── 1. Fetch depot keys from the primary custom source ────────────────────────────────
-    let key_rel = format!(
-        "Depotdownloader/{}/{}/{}.key",
-        folder_name, appid, appid
-    );
+    let key_rel = format!("Depotdownloader/{}/{}/{}.key", folder_name, appid, appid);
     let key_url = format!("{}/{}", raw_base(), pct_encode(&key_rel));
-    let mut depot_keys: Vec<(u32, String)> = Vec::new();
+    let mut depot_keys = BTreeMap::<u32, String>::new();
 
     if let Ok(r) = client.get(&key_url).headers(auth_headers(&token)).send() {
         if r.status().is_success() {
@@ -673,7 +916,10 @@ pub(crate) fn install_locked_game_blocking(
                     };
                     if parts.len() >= 2 {
                         if let Ok(depot_id) = parts[0].parse::<u32>() {
-                            depot_keys.push((depot_id, parts[1].to_string()));
+                            let key = parts[1].trim();
+                            if depot_id > 0 && !key.is_empty() && key.len() <= 512 {
+                                depot_keys.insert(depot_id, key.to_string());
+                            }
                         }
                     }
                 }
@@ -692,80 +938,82 @@ pub(crate) fn install_locked_game_blocking(
         .get(&build_url)
         .headers(auth_headers(&token))
         .send()
-        .ok();
-
-    let hf_found = build_resp
-        .as_ref()
-        .map(|r| r.status().is_success())
-        .unwrap_or(false);
-
-    // (depot_id, manifest_gid, hf_path)
-    let mut manifest_entries: Vec<(u32, String, String)> = Vec::new();
-
-    if hf_found {
-        if let Some(resp) = build_resp {
-            if let Ok(nodes) = resp.json::<Vec<HfNode>>() {
-                for node in &nodes {
-                    let fname = node.path.split('/').last().unwrap_or("");
-                    if fname.ends_with(".manifest") {
-                        let stem = fname.trim_end_matches(".manifest");
-                        if let Some(up) = stem.find('_') {
-                            if let Ok(depot_id) = stem[..up].parse::<u32>() {
-                                manifest_entries.push((
-                                    depot_id,
-                                    stem[up + 1..].to_string(),
-                                    node.path.clone(),
-                                ));
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    if !hf_found || manifest_entries.is_empty() {
+        .map_err(|error| format!("Could not inspect exact BuildID {build_id}: {error}"))?;
+    if !build_resp.status().is_success() {
         return Err(format!(
-            "Build {} is known from patch history, but exact depot manifests are unavailable from the configured primary source",
-            build_id
+            "Build {build_id} is known, but its exact depot manifest set is unavailable (HTTP {})",
+            build_resp.status()
         ));
     }
 
-    // ── 3. Prefer manifest binaries from the custom source. If a binary is
-    // unavailable, keep the known depot/GID mapping: 0xoLemonCore can resolve
-    // the manifest request code for that GID through its configured runtime
-    // manifest resolver (OpenSteamTool-compatible fallback).
-    if hf_found {
-        for (depot_id, manifest_gid, raw_path) in &manifest_entries {
-            let manifest_url = format!("{}/{}", raw_base(), pct_encode(raw_path));
-            let mr = client
-                .get(&manifest_url)
-                .headers(auth_headers(&token))
-                .send();
-
-            match mr {
-                Ok(response) if response.status().is_success() => {
-                    if let Ok(bytes) = response.bytes() {
-                        let dest = depotcache_dir.join(format!("{}_{}.manifest", depot_id, manifest_gid));
-                        if std::fs::write(&dest, &bytes).is_err() {
-                        }
-                    } else {
-                    }
-                }
-                _ => {
-                }
+    let nodes = build_resp
+        .json::<Vec<HfNode>>()
+        .map_err(|error| format!("BuildID {build_id} returned invalid metadata: {error}"))?;
+    let mut manifest_map = BTreeMap::<u32, (String, String)>::new();
+    for node in nodes {
+        if node.node_type != "file" {
+            continue;
+        }
+        let file_name = node.path.rsplit('/').next().unwrap_or_default();
+        let Some(stem) = file_name.strip_suffix(".manifest") else {
+            continue;
+        };
+        let Some((depot_text, gid)) = stem.split_once('_') else {
+            return Err(format!(
+                "BuildID {build_id} contains invalid manifest name {file_name}"
+            ));
+        };
+        let depot_id = depot_text
+            .parse::<u32>()
+            .map_err(|_| format!("BuildID {build_id} contains invalid depot ID in {file_name}"))?;
+        if depot_id == 0
+            || gid.is_empty()
+            || !gid.chars().all(|value| value.is_ascii_digit())
+            || gid.parse::<u64>().is_err()
+        {
+            return Err(format!(
+                "BuildID {build_id} contains invalid manifest GID in {file_name}"
+            ));
+        }
+        if let Some((previous_gid, _)) =
+            manifest_map.insert(depot_id, (gid.to_string(), node.path.clone()))
+        {
+            if previous_gid != gid {
+                return Err(format!(
+                    "BuildID {build_id} contains more than one manifest for depot {depot_id}"
+                ));
             }
         }
     }
+    if manifest_map.is_empty() {
+        return Err(format!(
+            "Build {build_id} contains no exact depot manifests"
+        ));
+    }
 
-    // ── 4. Preserve the best available Lua base and patch only version data ──
-    let original_lua = choose_lua_base(
-        &client,
-        &token,
-        &stplug_in_dir,
-        &folder_name,
-        appid,
-    );
+    let manifest_entries = manifest_map
+        .iter()
+        .map(|(depot_id, (gid, path))| (*depot_id, gid.clone(), path.clone()))
+        .collect::<Vec<_>>();
+
+    // Download and validate the complete target set before touching Steam.
+    // Runtime request-code fallback remains available after commit, but an
+    // explicit historical BuildID never commits a partial local package.
+    let verified_manifests = manifest_entries
+        .iter()
+        .map(|(depot_id, manifest_gid, raw_path)| {
+            download_verified_manifest(&client, &token, *depot_id, manifest_gid, raw_path)
+        })
+        .collect::<Result<Vec<_>, String>>()?;
+
+    // Preserve provider metadata and all non-version functionality. Exact
+    // version ownership is rebuilt below rather than patched incrementally.
+    let lua_file = stplug_in_dir.join(format!("{appid}.lua"));
+    let active_lua = std::fs::read_to_string(&lua_file).unwrap_or_default();
+    let old_manifest_refs = crate::lua_live::manifest_refs_from_lua(&active_lua)?
+        .into_iter()
+        .collect::<BTreeSet<_>>();
+    let original_lua = choose_lua_base(&client, &token, &stplug_in_dir, &folder_name, appid);
 
     let hf_token_rel = format!("Depotdownloader/{}/{}/{}.token", folder_name, appid, appid);
     let downloaded_token = fetch_text_rel(&client, &token, &hf_token_rel)
@@ -774,18 +1022,21 @@ pub(crate) fn install_locked_game_blocking(
 
     let mut final_lua = if original_lua.trim().is_empty() {
         let mut minimal = String::new();
-        append_lua_line(&mut minimal, "-- Generated by 0xoLemon Launcher");
-        append_lua_line(&mut minimal, &format!("-- Game: {} | AppID: {}", game_name, appid));
+        let game_label = game_name.replace('\r', " ").replace('\n', " ");
+        append_lua_line(
+            &mut minimal,
+            &format!("-- Game: {} | AppID: {}", game_label.trim(), appid),
+        );
         append_lua_line(&mut minimal, &format!("addappid({})", appid));
-        for (depot_id, key) in &depot_keys {
-            append_lua_line(&mut minimal, &format!(r#"addappid({}, 0, "{}")"#, depot_id, key));
-        }
         minimal
     } else {
         original_lua
     };
 
-    final_lua = patch_manifest_bindings(&final_lua, &manifest_entries, false)?;
+    for (depot_id, key) in &depot_keys {
+        upsert_depot_key_call(&mut final_lua, *depot_id, key);
+    }
+    final_lua = patch_manifest_bindings(&final_lua, &manifest_entries)?;
 
     // Keep unrelated Lua content byte-for-byte as much as possible. Only update
     // optional token/stat calls when the user explicitly supplied them. The
@@ -793,23 +1044,60 @@ pub(crate) fn install_locked_game_blocking(
     if let Some(tok) = access_token.filter(|tok| !tok.is_empty()) {
         upsert_lua_string_call(&mut final_lua, "addtoken", appid, tok);
     } else if !downloaded_token.is_empty() && !has_lua_app_call(&final_lua, "addtoken", appid) {
-        append_lua_line(&mut final_lua, &format!(r#"addtoken({}, "{}")"#, appid, downloaded_token));
+        append_lua_line(
+            &mut final_lua,
+            &format!(r#"addtoken({}, "{}")"#, appid, downloaded_token),
+        );
     }
 
     if let Some(sid) = stat_steam_id.filter(|sid| !sid.is_empty()) {
         upsert_lua_string_call(&mut final_lua, "setStat", appid, sid);
     }
+    final_lua = selected_source_metadata(&final_lua, build_id)?;
 
-    // ── 5. Write Lua to stplug-in/ ────────────────────────────────────────────
-    let lua_file = stplug_in_dir.join(format!("{}.lua", appid));
-    crate::lua_live::atomic_write_path(&lua_file, final_lua.as_bytes())?;
+    let target_refs = verified_manifests
+        .iter()
+        .map(|manifest| manifest.file_name.clone())
+        .collect::<BTreeSet<_>>();
+    let other_refs = manifests_referenced_by_other_lua_files(&stplug_in_dir, &lua_file);
+    let stale_paths = stale_unreferenced_manifest_paths(
+        &depotcache_dir,
+        &old_manifest_refs,
+        &target_refs,
+        other_refs.as_ref(),
+    );
 
-    // ── 6. Refresh .sync_state ────────────────────────────────────────────────
-    update_sync_state(&stplug_in_dir)?;
+    let mut mutations = verified_manifests
+        .into_iter()
+        .map(|manifest| {
+            debug_assert_eq!(
+                manifest.file_name,
+                format!("{}_{}.manifest", manifest.depot_id, manifest.manifest_gid)
+            );
+            FileMutation::Write {
+                path: depotcache_dir.join(manifest.file_name),
+                bytes: manifest.bytes,
+            }
+        })
+        .collect::<Vec<_>>();
+    mutations.push(FileMutation::Write {
+        path: lua_file.clone(),
+        bytes: final_lua.into_bytes(),
+    });
+    mutations.push(FileMutation::Write {
+        path: stplug_in_dir.join(".sync_state"),
+        bytes: sync_state_bytes(&stplug_in_dir, &format!("{appid}.lua")),
+    });
+    mutations.extend(
+        stale_paths
+            .into_iter()
+            .map(|path| FileMutation::Delete { path }),
+    );
+
+    apply_file_transaction(mutations)?;
 
     Ok(())
 }
-
 
 #[cfg(test)]
 mod lua_patch_tests {
@@ -844,21 +1132,25 @@ mod lua_patch_tests {
     }
 
     #[test]
-    fn patches_manifest_case_insensitively_and_preserves_other_lines() {
-        let base = "addappid(2840770)\nSETManifestid(2840771, \"OLD\", 123)\nsetStat(2840770, \"7656\")\ncustomThing(\"keep me\")\n";
-        let manifests = vec![(2840771, "NEWGID".to_string(), "x".to_string())];
-        let patched = patch_manifest_bindings(base, &manifests, false).unwrap();
-        assert!(patched.contains("SETManifestid(2840771, \"NEWGID\", 123)"));
+    fn rebuilds_exact_manifest_set_and_preserves_non_version_content() {
+        let base = "-- setManifestid(999, \"comment\")\naddappid(2840770)\nSETManifestid(2840771, \"111\", 123)\nsetManifestid(2840772,\n  \"222\")\nskipManifestPin(2840772)\nlocal sample = 'setManifestid(998, \"string\")'\nsetStat(2840770, \"7656\")\ncustomThing(\"keep me\")\n";
+        let manifests = vec![(2840773, "333".to_string(), "x".to_string())];
+        let patched = patch_manifest_bindings(base, &manifests).unwrap();
+        assert!(patched.contains("setManifestid(2840773, \"333\")"));
         assert!(patched.contains("setStat(2840770, \"7656\")"));
         assert!(patched.contains("customThing(\"keep me\")"));
-        assert!(!patched.contains("OLD"));
+        assert!(patched.contains("-- setManifestid(999, \"comment\")"));
+        assert!(patched.contains("'setManifestid(998, \"string\")'"));
+        assert!(!patched.contains("SETManifestid(2840771"));
+        assert!(!patched.contains("setManifestid(2840772"));
+        assert!(!patched.contains("skipManifestPin("));
     }
 
     #[test]
     fn appends_only_missing_manifest_binding() {
         let base = "addappid(10)\ncustomThing()\n";
         let manifests = vec![(11, "12345".to_string(), "x".to_string())];
-        let patched = patch_manifest_bindings(base, &manifests, false).unwrap();
+        let patched = patch_manifest_bindings(base, &manifests).unwrap();
         assert!(patched.starts_with(base));
         assert!(patched.contains("setManifestid(11, \"12345\")"));
     }
@@ -886,28 +1178,63 @@ mod lua_patch_tests {
         assert!(base.contains("addtoken(10, \"a\\\"b\\\\c$1\\nnext\")"));
         assert!(!base.contains("\nnext\n"));
     }
-}
 
-/// Re-generate the .sync_state file listing every .lua in stplug-in/.
-fn update_sync_state(stplug_in_dir: &Path) -> Result<(), String> {
-    let sync_state_path = stplug_in_dir.join(".sync_state");
-    let mut lua_files: Vec<String> = Vec::new();
+    #[test]
+    fn selected_build_metadata_is_neutral_and_preserves_provider_fields() {
+        let source = "-- Generated by 0xoLemon Launcher\r\n-- Created by Hubcap Manifest\r\n-- Website: https://hubcapmanifest.com/\r\naddappid(10)\r\n";
+        let rendered = selected_source_metadata(source, "19641208").unwrap();
+        assert!(rendered.starts_with(
+            "-- Selected source: Hugging Face curated (Immaking/Luas)\r\n-- Selected BuildID: 19641208\r\n"
+        ));
+        assert!(rendered.contains("-- Created by Hubcap Manifest\r\n"));
+        assert!(rendered.contains("-- Website: https://hubcapmanifest.com/\r\n"));
+        assert!(!rendered.contains("Generated by 0xoLemon"));
+    }
 
-    if let Ok(entries) = std::fs::read_dir(stplug_in_dir) {
-        for entry in entries.flatten() {
-            if let Some(name) = entry.file_name().to_str() {
-                if name.ends_with(".lua") {
-                    lua_files.push(name.to_string());
-                }
-            }
+    #[test]
+    fn depot_key_update_preserves_the_rest_of_the_lua() {
+        let mut source =
+            "-- provider metadata\naddappid(11, 0, \"OLD\")\nsetStat(10, \"7656\")\n".to_string();
+        upsert_depot_key_call(&mut source, 11, "NEW");
+        assert!(source.contains("addappid(11, 0, \"NEW\")"));
+        assert!(!source.contains("OLD"));
+        assert!(source.contains("setStat(10, \"7656\")"));
+    }
+
+    #[test]
+    fn stale_cache_cleanup_keeps_target_and_shared_manifests() {
+        let nonce = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let root = std::env::temp_dir().join(format!(
+            "0xolemon-lua-manifest-cleanup-{}-{nonce}",
+            std::process::id()
+        ));
+        std::fs::create_dir(&root).unwrap();
+        for name in ["11_100.manifest", "12_200.manifest", "13_300.manifest"] {
+            std::fs::write(root.join(name), b"fixture").unwrap();
         }
-    }
+        let old_refs = ["11_100.manifest", "12_200.manifest"]
+            .into_iter()
+            .map(str::to_string)
+            .collect::<BTreeSet<_>>();
+        let target_refs = ["13_300.manifest"]
+            .into_iter()
+            .map(str::to_string)
+            .collect::<BTreeSet<_>>();
+        let other_refs = ["12_200.manifest"]
+            .into_iter()
+            .map(str::to_string)
+            .collect::<BTreeSet<_>>();
 
-    if lua_files.is_empty() {
-        return Ok(());
+        let stale =
+            stale_unreferenced_manifest_paths(&root, &old_refs, &target_refs, Some(&other_refs));
+        assert_eq!(stale, vec![root.join("11_100.manifest")]);
+
+        for name in ["11_100.manifest", "12_200.manifest", "13_300.manifest"] {
+            std::fs::remove_file(root.join(name)).unwrap();
+        }
+        std::fs::remove_dir(root).unwrap();
     }
-    lua_files.sort();
-    let content = lua_files.join("\n") + "\n";
-    std::fs::write(&sync_state_path, content)
-        .map_err(|_| "Failed to update sync state".to_string())
 }

@@ -1,6 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { collection, addDoc, serverTimestamp, doc, setDoc, increment } from 'firebase/firestore'
-import { db, socialDb } from './firebase'
+import { doc, setDoc, increment } from 'firebase/firestore'
+import { db } from './firebase'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import { getVersion } from '@tauri-apps/api/app'
@@ -24,6 +24,7 @@ import type {
   CloudSaveRoot,
   CloudSaveStatus,
   DiscordAuthStatus,
+  DownloadTelemetry,
   GameCatalog,
   GameDetail,
   GameInstallState,
@@ -60,34 +61,44 @@ import { formatBytes } from './lib/format'
 import { gameHasTag } from './lib/gameTags'
 import { versionsEquivalent } from './lib/version'
 import { DEFAULT_LAUNCHER_PREFERENCES, loadLauncherPreferences, saveLauncherPreferences, type LauncherPreferences } from './lib/preferences'
+import { loadLauncherNavigation, useLauncherNavigation } from './lib/launcherNavigation'
+import { useLauncherLibraryLayout } from './hooks/useLauncherLibraryLayout'
+import { collectOwnedGameIds, filterCatalogByOwnedGameIds } from './lib/libraryOwnership'
 import { applyLauncherTheme } from './lib/theme'
+import type { UiThemeId } from './lib/uiThemes'
 import { enterNativeBigPictureFullscreen, restoreNativeBigPictureFullscreen, type BigPictureFullscreenSession } from './lib/bigPictureMode'
+import { subscribeAchievementEvents } from './lib/achievementEventBus'
 import { AchievementToastOverlay } from './components/AchievementToast'
-import { ChangelogModal } from './components/ChangelogModal'
 import { CustomTitleBar } from './components/CustomTitleBar'
 import { DefenderExclusionDialog } from './components/DefenderExclusionDialog'
 import { DiscordAccessGate } from './components/DiscordAccessGate'
-import { FirebaseRemoteControl } from './components/FirebaseRemoteControl'
 import { HelpCenter } from './components/HelpSystem'
 import { InstallRecoveryDialog } from './components/InstallRecoveryDialog'
 import { DriveLibraryPickerModal, InstallOptionsDialog } from './components/install'
 import { IntroScreen } from './components/IntroScreen'
 import { LaunchOptionsModal } from './components/LaunchOptionsModal'
 import { LaunchSplash } from './components/LaunchSplash'
-import { OperationHero } from './components/library'
-import { Sidebar } from './components/layout'
+import { OperationHero } from './components/OperationHero'
+import { ConnectedThemeShellHost } from './themes/ConnectedThemeShellHost'
 import { NotificationToasts } from './components/NotificationCenter'
 import { NvidiaToast } from './components/NvidiaToast'
 import { Onboarding } from './components/Onboarding'
 import { TransferDock } from './components/TransferDock'
 import { UpdateBanner, UpdateCenter } from './components/UpdateCenter'
 import { useLocale } from './context/locale'
+import { GlobalAudioProvider, useGlobalAudio } from './context/GlobalAudioContext'
 
 const ActiveView = lazy(() => import('./components/ActiveView').then((module) => ({ default: module.ActiveView })))
+const ChangelogModal = lazy(() => import('./components/ChangelogModal').then((module) => ({ default: module.ChangelogModal })))
 const BigPictureView = lazy(() => import('./components/BigPictureView').then((module) => ({ default: module.BigPictureView })))
 const CloudSavesOverview = lazy(() => import('./components/CloudSavesOverview').then((module) => ({ default: module.CloudSavesOverview })))
 const HomeView = lazy(() => import('./components/HomeView').then((module) => ({ default: module.HomeView })))
-const SettingsView = lazy(() => import('./components/SettingsView').then((module) => ({ default: module.SettingsView })))
+const DefaultHomeView = lazy(() => import('./themes/default/DefaultHomeView'))
+const ThemeSettingsHost = lazy(() => import('./themes/ThemeSettingsHost').then((module) => ({ default: module.ThemeSettingsHost })))
+const SocialHubView = lazy(() => import('./social/SocialPrototype').then((module) => ({ default: module.SocialHubView })))
+const SocialPrototypeLayer = lazy(() => import('./social/SocialPrototype').then((module) => ({ default: module.SocialPrototypeLayer })))
+const DepotDownloaderView = lazy(() => import('./components/DepotDownloaderView').then((module) => ({ default: module.DepotDownloaderView })))
+const GseUcStandaloneView = lazy(() => import('./components/GseUcStandaloneView').then((module) => ({ default: module.GseUcStandaloneView })))
 
 function ViewChunkFallback() {
   return (
@@ -101,13 +112,30 @@ function ViewChunkFallback() {
   )
 }
 
+function AppAudioConnector({
+  onSelectGame,
+}: {
+  onSelectGame: (gameId: string) => void
+}) {
+  const { registerNavigateCallback } = useGlobalAudio()
+  useEffect(() => {
+    registerNavigateCallback((gameId) => {
+      onSelectGame(gameId)
+    })
+  }, [registerNavigateCallback, onSelectGame])
+  return null
+}
+
 const initialLauncherPreferences = loadLauncherPreferences()
+const sessionUiTheme = initialLauncherPreferences.uiTheme
+applyLauncherTheme({ ...initialLauncherPreferences, uiTheme: 'default' })
 const emptyCatalog: GameCatalog = { defaultLocale: 'en-US', games: [] }
-const TAB_IDS = ['Home', 'Store', 'Library', 'Downloads', 'Updates', 'CloudRedirect', 'Settings', 'Cache', "What's New!", 'Translations', 'Lua Installer', 'Lua Shop'] as const satisfies readonly TabId[]
+const TAB_IDS = ['Home', 'Social', 'Store', 'Library', 'Downloads', 'Updates', 'CloudRedirect', 'Settings', 'Cache', "What's New!", 'Translations', 'Depot Downloader', 'GSE / UC Setup', 'Lua Installer', 'Lua Shop', 'Tools'] as const satisfies readonly TabId[]
 
 function isTabId(value: string): value is TabId {
   return (TAB_IDS as readonly string[]).includes(value)
 }
+const initialLauncherNavigation = loadLauncherNavigation(initialLauncherPreferences.startupPage, isTabId)
 const initialDiscordAuthStatus: DiscordAuthStatus = {
   state: isTauriRuntime() ? 'checking' : 'notConfigured',
   configured: false,
@@ -129,8 +157,8 @@ const defaultLauncherSettings: LauncherSettings = {
   keepChunkCache: true,
   notificationsEnabled: true,
   autoVerifyAfterInstall: false,
-  downloadProfile: 'balanced',
-  downloadQueueMb: 128,
+  downloadProfile: 'auto',
+  downloadQueueMb: 192,
   directToStaging: true,
   cloudSaveRoot: '',
   gameUpdateMode: 'manual',
@@ -159,6 +187,8 @@ import { useCloudSaveMap } from './hooks/useCloudSaveMap'
 import { GameTurboModal } from './components/GameTurboModal'
 import { NoInternetView } from './components/NoInternetView'
 import { SaveCloseGuardModal } from './components/SaveCloseGuardModal'
+import { SocialPrototypeProvider } from './social/SocialProvider'
+import { recordSocialStats } from './social/socialApi'
 
 export default function App() {
   const { t } = useLocale()
@@ -242,16 +272,22 @@ export default function App() {
   const [, setHasScanned] = useState(false)
   const [preferences, setPreferences] = useState<LauncherPreferences>(initialLauncherPreferences)
   const [launcherSettings, setLauncherSettings] = useState<LauncherSettings>(defaultLauncherSettings)
-  const [activeTab, setActiveTab] = useState<TabId>(() => {
-    // Restore from localStorage on mount (persist across app restarts)
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('0xo_activeTab') as TabId | null
-      if (saved && isTabId(saved)) {
-        return saved
-      }
-    }
-    return initialLauncherPreferences.startupPage
-  })
+  const navigation = useLauncherNavigation(initialLauncherNavigation)
+  const {
+    layout: launcherLibraryLayout,
+    addGameIds: addLauncherLibraryGameIds,
+    removeGameIds: removeLauncherLibraryGameIds,
+  } = useLauncherLibraryLayout()
+  const {
+    activeTab,
+    selectedGameId,
+    navigate: setActiveTab,
+    setSelectedGameId,
+    goBack,
+    goForward,
+    canGoBack,
+    canGoForward,
+  } = navigation
   const [isOnline, setIsOnline] = useState(navigator.onLine)
   const [offlineModeEnabled, setOfflineModeEnabled] = useState(false)
   const [selectedVersion, setSelectedVersion] = useState('')
@@ -262,14 +298,6 @@ export default function App() {
   const [catalogLoadState, setCatalogLoadState] = useState<CatalogLoadState>(
     isTauriRuntime() ? 'loading' : 'ready',
   )
-  const [selectedGameId, setSelectedGameId] = useState<string | null>(() => {
-    // Restore from localStorage on mount (persist across app restarts)
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('0xo_selectedGameId')
-      return saved || null
-    }
-    return null
-  })
   const [detail, setDetail] = useState<GameDetail | null>(null)
   const [bigPicturePhase, setBigPicturePhase] = useState<'closed' | 'entering' | 'active' | 'exiting'>('closed')
   const bigPicturePhaseRef = useRef<'closed' | 'entering' | 'active' | 'exiting'>('closed')
@@ -299,6 +327,7 @@ export default function App() {
     jobId: string
     points: Array<{ bytesDone: number; applyBytesDone: number; at: number }>
   } | null>(null)
+  const downloadTelemetryJobRef = useRef<string | null>(null)
   const canceledJobIdRef = useRef<string | null>(null)
   const autoResumeInFlightRef = useRef(false)
   const autoResumeJobIdRef = useRef<string | null>(null)
@@ -355,6 +384,9 @@ export default function App() {
   // Block shell-only features while intro or the Discord gate owns the screen.
   const hasLauncherAccess = offlineModeEnabled || discordAuth.state === 'authorized'
   const isBlockedState = showIntro || !hasLauncherAccess
+  const requestedShellTheme: UiThemeId = hasLauncherAccess && !showIntro ? sessionUiTheme : 'default'
+  const [renderedShellTheme, setRenderedShellTheme] = useState<UiThemeId>('default')
+  const [themeRecovery, setThemeRecovery] = useState<{ theme: UiThemeId; message: string } | null>(null)
   const [cacheBusy, setCacheBusy] = useState(false)
   const [appVersion, setAppVersion] = useState(packageMetadata.version)
   const [showWhatsNewModal, setShowWhatsNewModal] = useState(false)
@@ -363,6 +395,7 @@ export default function App() {
   const launcherUpdateRateRef = useRef<Array<{ bytes: number; at: number }>>([])
   const pendingHomeLaunchRef = useRef<string | null>(null)
   const playingGamesRef = useRef<Record<string, boolean>>({})
+  const socialPlaySessionsRef = useRef<Partial<Record<string, { requestId: string; startedAt: string }>>>({})
   const lastDiscordCheckRef = useRef(0)
   const [systemReducedMotion, setSystemReducedMotion] = useState(
     () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches,
@@ -401,32 +434,41 @@ export default function App() {
 
   useEffect(() => {
     selectedGameIdRef.current = selectedGameId
-    // Persist to localStorage whenever selectedGameId changes (persist across app restarts)
-    if (typeof window !== 'undefined') {
-      if (selectedGameId) {
-        localStorage.setItem('0xo_selectedGameId', selectedGameId)
-      } else {
-        localStorage.removeItem('0xo_selectedGameId')
-      }
-    }
   }, [selectedGameId])
-
-  // Persist activeTab to localStorage (persist across app restarts)
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('0xo_activeTab', activeTab)
-    }
-  }, [activeTab])
 
   useEffect(() => {
     preferencesRef.current = preferences
     saveLauncherPreferences(preferences)
-    applyLauncherTheme(preferences)
-  }, [preferences])
+    applyLauncherTheme({
+      ...preferences,
+      uiTheme: requestedShellTheme === 'default' ? 'default' : renderedShellTheme,
+    })
+  }, [preferences, renderedShellTheme, requestedShellTheme])
+
+  useEffect(() => {
+    const handleThemePackageError = (event: Event) => {
+      const detail = (event as CustomEvent<{ theme?: UiThemeId; message?: string }>).detail
+      const failedTheme = detail?.theme ?? requestedShellTheme
+      setRenderedShellTheme('default')
+      setThemeRecovery({
+        theme: failedTheme,
+        message: detail?.message || 'The selected theme package could not be loaded.',
+      })
+    }
+    window.addEventListener('0xo-theme-package-error', handleThemePackageError)
+    return () => window.removeEventListener('0xo-theme-package-error', handleThemePackageError)
+  }, [requestedShellTheme])
 
   useEffect(() => {
     playingGamesRef.current = playingGames
   }, [playingGames])
+
+  const socialActiveGame = useMemo(() => {
+    const gameId = Object.keys(playingGames).find((id) => playingGames[id])
+    if (!gameId) return null
+    const game = catalog.games.find((entry) => entry.id === gameId)
+    return { gameId, label: game?.title || gameId }
+  }, [catalog.games, playingGames])
 
   // game-started / game-exited merged into launcher://game-started/launcher://game-exited below
 
@@ -491,6 +533,12 @@ export default function App() {
     if (!onboardingMayStart || activeTab === 'Home') return
     setActiveTab('Home')
   }, [activeTab, onboardingMayStart])
+
+  useEffect(() => {
+    if (activeTab === 'GSE / UC Setup' || activeTab === 'Depot Downloader') {
+      setActiveTab('Home')
+    }
+  }, [activeTab, setActiveTab])
 
   useEffect(() => {
     if (!onboardingMayStart || activeTab !== 'Home') {
@@ -664,13 +712,23 @@ export default function App() {
   useEffect(() => {
     const handleNavigateToSettings = (e: Event) => {
       const customEvent = e as CustomEvent<{ section?: string }>
+      const section = customEvent.detail?.section
+      const pane = section === 'notification-settings'
+        ? 'notifications'
+        : section === 'lua-sources' || section === 'steam-integration'
+          ? 'games'
+          : null
+      if (pane) {
+        window.localStorage.setItem('0xolemon.settings.activePane', pane)
+        window.dispatchEvent(new CustomEvent('0xo-settings-pane', { detail: { pane } }))
+      }
       setActiveTab('Settings')
-      // Optionally scroll to specific section
-      if (customEvent.detail?.section) {
+      // Optionally scroll to specific section after the matching settings pane mounts.
+      if (section) {
         setTimeout(() => {
-          const element = document.getElementById(customEvent.detail.section!)
+          const element = document.getElementById(section)
           element?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-        }, 100)
+        }, 120)
       }
     }
     window.addEventListener('navigate-to-settings', handleNavigateToSettings)
@@ -775,6 +833,50 @@ export default function App() {
       installCompleteAudioRef.current = null
     }
   }, [])
+
+  useEffect(() => {
+    const handleAddToLibrary = (event: Event) => {
+      const custom = event as CustomEvent<{ gameId: string; title?: string }>
+      const gameId = custom.detail?.gameId
+      if (!gameId) return
+      addLauncherLibraryGameIds([gameId])
+      const foundGame = catalog.games.find((g) => g.id === gameId)
+      const title = custom.detail?.title || foundGame?.title || gameId
+      void publishNotification({
+        category: 'launcher',
+        severity: 'success',
+        title: t.library.gameAddedToLibrary,
+        message: title,
+        dedupeKey: `add-to-library:${gameId}:${Date.now()}`,
+        entity: { kind: 'game', id: gameId },
+        action: { kind: 'open-library', tab: 'Library', gameId },
+      })
+    }
+    window.addEventListener('0xo-add-to-library', handleAddToLibrary)
+    return () => window.removeEventListener('0xo-add-to-library', handleAddToLibrary)
+  }, [addLauncherLibraryGameIds, catalog.games, publishNotification, t.library.gameAddedToLibrary])
+
+  useEffect(() => {
+    const handleRemoveFromLibrary = (event: Event) => {
+      const custom = event as CustomEvent<{ gameId: string; title?: string }>
+      const gameId = custom.detail?.gameId
+      if (!gameId) return
+      removeLauncherLibraryGameIds([gameId])
+      const foundGame = catalog.games.find((g) => g.id === gameId)
+      const title = custom.detail?.title || foundGame?.title || gameId
+      void publishNotification({
+        category: 'launcher',
+        severity: 'info',
+        title: t.library.gameRemovedFromLibrary || 'Removed from Library',
+        message: title,
+        dedupeKey: `remove-from-library:${gameId}:${Date.now()}`,
+        entity: { kind: 'game', id: gameId },
+        action: { kind: 'open-library', tab: 'Store', gameId },
+      })
+    }
+    window.addEventListener('0xo-remove-from-library', handleRemoveFromLibrary)
+    return () => window.removeEventListener('0xo-remove-from-library', handleRemoveFromLibrary)
+  }, [removeLauncherLibraryGameIds, catalog.games, publishNotification, t.library.gameRemovedFromLibrary])
 
   const primeInstallCompleteSound = useCallback(() => {
     if (!preferencesRef.current.playInstallCompleteSound) return
@@ -892,6 +994,21 @@ export default function App() {
 
     listen<{ gameId: string }>('launcher://game-started', (event) => {
       setPlayingGames((current) => ({ ...current, [event.payload.gameId]: true }))
+      const storageKey = `0xo.social.play-session.${event.payload.gameId}`
+      let session = socialPlaySessionsRef.current[event.payload.gameId]
+      if (!session) {
+        try {
+          const stored = window.localStorage.getItem(storageKey)
+          session = stored ? JSON.parse(stored) as { requestId: string; startedAt: string } : undefined
+        } catch {
+          session = undefined
+        }
+      }
+      if (!session?.requestId || !session.startedAt) {
+        session = { requestId: crypto.randomUUID(), startedAt: new Date().toISOString() }
+      }
+      socialPlaySessionsRef.current[event.payload.gameId] = session
+      try { window.localStorage.setItem(storageKey, JSON.stringify(session)) } catch { /* optional recovery cache */ }
       void refreshRuntimeStates()
       scheduleNvidiaToast()
     }).then((dispose) => {
@@ -899,24 +1016,43 @@ export default function App() {
     })
     listen<{ gameId: string; exitCode: number | null; sessionSeconds: number }>('launcher://game-exited', (event) => {
       setPlayingGames((current) => ({ ...current, [event.payload.gameId]: false }))
+      const storageKey = `0xo.social.play-session.${event.payload.gameId}`
+      let session = socialPlaySessionsRef.current[event.payload.gameId]
+      if (!session) {
+        try {
+          const stored = window.localStorage.getItem(storageKey)
+          session = stored ? JSON.parse(stored) as { requestId: string; startedAt: string } : undefined
+        } catch {
+          session = undefined
+        }
+      }
+      if (session?.requestId && event.payload.sessionSeconds > 0) {
+        void recordSocialStats({
+          eventId: session.requestId,
+          kind: 'game-session',
+          playMinutes: Math.max(1, Math.round(event.payload.sessionSeconds / 60)),
+          gamesPlayed: 1,
+        }).catch(() => undefined)
+      }
+      delete socialPlaySessionsRef.current[event.payload.gameId]
+      try { window.localStorage.removeItem(storageKey) } catch { /* optional recovery cache */ }
       clearNvidiaToastTimers()
       setShowNvidiaToast(false)
       void refreshRuntimeStates()
     }).then((dispose) => {
       exitedDispose = dispose
     })
-    listen<{ gameId: string; id: string; name: string; description: string }>('launcher://achievement-unlocked', (event) => {
+    achievementDispose = subscribeAchievementEvents((event) => {
+      if (event.kind !== 'unlock') return
       void publishNotification({
         category: 'achievements',
         severity: 'success',
-        title: `Achievement unlocked: ${event.payload.name}`,
-        message: event.payload.description || 'A new achievement was recorded.',
-        dedupeKey: `achievement:${event.payload.gameId}:${event.payload.id}`,
-        entity: { kind: 'game', id: event.payload.gameId },
-        action: { kind: 'open-game', tab: 'Library', gameId: event.payload.gameId },
+        title: `Achievement unlocked: ${event.name || event.achievementId}`,
+        message: event.description || 'A new achievement was recorded.',
+        dedupeKey: `achievement:${event.eventId}`,
+        entity: { kind: 'game', id: event.gameId },
+        action: { kind: 'open-game', tab: 'Library', gameId: event.gameId },
       })
-    }).then((dispose) => {
-      achievementDispose = dispose
     })
     listen<string>('launcher://runtime-error', (event) => {
       void publishNotification({
@@ -1472,21 +1608,64 @@ export default function App() {
     return () => window.removeEventListener('lua-game-mode-changed', handleLuaGameModeChange)
   }, [])
 
+  const ownedGameIds = useMemo(() => collectOwnedGameIds({
+    catalog,
+    explicitLibraryGameIds: launcherLibraryLayout.libraryGameIds,
+    installStates,
+    steamMapping: mapping,
+    steamInstalledAppIds,
+  }), [catalog, installStates, launcherLibraryLayout.libraryGameIds, mapping, steamInstalledAppIds])
   const libraryCatalog = useMemo(
-    () => ({
-      ...catalog,
-      games: catalog.games.filter((game) => {
-        const isLocal = installStates[game.id]?.installed
-        const appId = mapping[game.id]
-        const isSteam = appId && steamInstalledAppIds.includes(appId)
-        return isLocal || isSteam
-      }),
-    }),
-    [catalog, installStates, mapping, steamInstalledAppIds],
+    () => filterCatalogByOwnedGameIds(catalog, ownedGameIds),
+    [catalog, ownedGameIds],
   )
+  const themeInstances = useMemo(() => {
+    const favorites = new Set(launcherLibraryLayout.favoriteGameIds)
+    return libraryCatalog.games.map((game) => ({
+      gameId: game.id,
+      title: game.title,
+      iconUrl: assetUrlForId(game.iconAssetId, assetUrls) || assetUrlForId(game.gridAssetId, assetUrls),
+      gridUrl: assetUrlForId(game.gridAssetId, assetUrls),
+      heroUrl: assetUrlForId(game.heroAssetId, assetUrls),
+      developer: game.developer,
+      description: game.subtitle,
+      installed: Boolean(installStates[game.id]?.installed || (mapping[game.id] && steamInstalledAppIds.includes(mapping[game.id]))),
+      favorite: favorites.has(game.id),
+      playing: Boolean(playingGames[game.id]),
+    }))
+  }, [assetUrls, installStates, launcherLibraryLayout.favoriteGameIds, libraryCatalog.games, mapping, playingGames, steamInstalledAppIds])
+  const themeInstanceGroups = useMemo(() => {
+    const groups = new Map<string, { id: string; name: string; gameIds: string[]; collapsed: boolean }>()
+    groups.set('all-instances', {
+      id: 'all-instances',
+      name: 'All instances',
+      gameIds: themeInstances.map((instance) => instance.gameId),
+      collapsed: false,
+    })
+    if (launcherLibraryLayout.favoriteGameIds.length > 0) {
+      groups.set('favorites', {
+        id: 'favorites',
+        name: 'Favorites',
+        gameIds: launcherLibraryLayout.favoriteGameIds,
+        collapsed: false,
+      })
+    }
+    launcherLibraryLayout.collections.forEach((collection) => {
+      groups.set(`collection:${collection.id}`, {
+        id: `collection:${collection.id}`,
+        name: collection.name,
+        gameIds: collection.gameIds,
+        collapsed: false,
+      })
+    })
+    launcherLibraryLayout.xmclInstanceGroups.forEach((group) => {
+      if (group.id !== 'all-instances' && !groups.has(group.id)) groups.set(group.id, group)
+    })
+    return [...groups.values()]
+  }, [launcherLibraryLayout.collections, launcherLibraryLayout.favoriteGameIds, launcherLibraryLayout.xmclInstanceGroups, themeInstances])
 
   const effectiveGameId = useMemo(() => {
-    if (activeTab === 'Home' || activeTab === 'CloudRedirect' || activeTab === 'Settings') {
+    if (activeTab === 'Home' || activeTab === 'Social' || activeTab === 'CloudRedirect' || activeTab === 'Settings') {
       return null
     }
     if (activeTab === 'Store') {
@@ -1494,10 +1673,7 @@ export default function App() {
     }
     if (activeTab === 'Library') {
       if (!selectedGameId) return null
-      const isLocal = installStates[selectedGameId]?.installed
-      const appId = mapping[selectedGameId]
-      const isSteam = appId && steamInstalledAppIds.includes(appId)
-      return (isLocal || isSteam) ? selectedGameId : null
+      return ownedGameIds.has(selectedGameId) ? selectedGameId : null
     }
     const activeJobGameId = job?.gameId || snapshot.lastJob?.gameId
     if (activeTab === 'Downloads') {
@@ -1516,7 +1692,7 @@ export default function App() {
       return selectedGameId && updateReadyGameIds.includes(selectedGameId) ? selectedGameId : null
     }
     return selectedGameId
-  }, [activeTab, installStates, job?.gameId, job?.kind, mapping, snapshot.lastJob?.gameId, snapshot.lastJob?.kind, selectedGameId, steamInstalledAppIds, updateReadyGameIds])
+  }, [activeTab, job?.gameId, job?.kind, ownedGameIds, snapshot.lastJob?.gameId, snapshot.lastJob?.kind, selectedGameId, updateReadyGameIds])
 
   const requestHomeAsset = useCallback(
     (gameId: string, assetId: string, urgent = false) => {
@@ -1782,6 +1958,7 @@ export default function App() {
 
     let unsubscribe: (() => void) | undefined
     let unsubscribeJobCleared: (() => void) | undefined
+    let unsubscribeDownloadTelemetry: (() => void) | undefined
     listen<JobJournal>('launcher://job', (event) => {
       const nextJob = event.payload
       if (canceledJobIdRef.current === nextJob.id) {
@@ -1790,6 +1967,7 @@ export default function App() {
       if (canceledJobIdRef.current && canceledJobIdRef.current !== nextJob.id) {
         canceledJobIdRef.current = null
       }
+      latestJobRef.current = nextJob
       setJob(nextJob)
       if (nextJob.kind === 'patch' && nextJob.status !== 'canceled') {
         setActiveTab('Downloads')
@@ -1811,6 +1989,14 @@ export default function App() {
       if (nextJob.status === 'committed') {
         playInstallCompleteSound(nextJob)
         const isPatchJob = nextJob.kind === 'patch'
+        if (nextJob.kind === 'install') {
+          void recordSocialStats({
+            eventId: nextJob.id,
+            kind: 'install',
+            downloads: 1,
+            downloadedBytes: Math.max(0, nextJob.bytesDone || nextJob.bytesTotal || 0),
+          }).catch(() => undefined)
+        }
         const gameTitle =
           catalogRef.current.games.find((game) => game.id === nextJob.gameId)?.title ??
           nextJob.gameId
@@ -1936,10 +2122,29 @@ export default function App() {
       }
     })
 
+    listen<DownloadTelemetry>('launcher://download-telemetry', (event) => {
+      const telemetry = event.payload
+      if (latestJobRef.current?.id !== telemetry.jobId) return
+      if (downloadTelemetryJobRef.current !== telemetry.jobId) {
+        downloadTelemetryJobRef.current = telemetry.jobId
+        downloadRateWindowRef.current = null
+      }
+      setDownloadRate(Math.max(0, telemetry.wireBytesPerSecond))
+      setApplyRate(Math.max(0, telemetry.applyBytesPerSecond))
+    }).then((fn) => {
+      if (disposed) {
+        fn()
+      } else {
+        unsubscribeDownloadTelemetry = fn
+      }
+    })
+
     listen('launcher://job-cleared', () => {
       setJob(null)
       setDownloadRate(0)
+      setApplyRate(0)
       downloadRateWindowRef.current = null
+      downloadTelemetryJobRef.current = null
       setVerifyStatus((current) => (current?.state === 'running' ? null : current))
     }).then((fn) => {
       if (disposed) {
@@ -1954,6 +2159,7 @@ export default function App() {
       window.clearTimeout(snapshotTimer)
       unsubscribe?.()
       unsubscribeJobCleared?.()
+      unsubscribeDownloadTelemetry?.()
     }
   }, [playInstallCompleteSound, publishNotification, refreshInstallState])
 
@@ -2066,8 +2272,14 @@ export default function App() {
       (activeJob.kind === 'patch' && activeJob.status === 'running' && activeJob.bytesTotal > 0)
     if (!isActiveDownload) {
       downloadRateWindowRef.current = null
+      downloadTelemetryJobRef.current = null
       setDownloadRate(0)
       setApplyRate(0)
+      return
+    }
+
+    if (activeJob.pipelineVersion?.startsWith('transport-pipeline-v3')) {
+      downloadRateWindowRef.current = null
       return
     }
 
@@ -2088,15 +2300,19 @@ export default function App() {
       }
 
       const lastPoint = windowState.points[windowState.points.length - 1]
+      const currentNetworkBytes =
+        current.pipelineVersion === 'transport-pipeline-v3'
+          ? (current.wireBytesDone ?? 0)
+          : current.bytesDone
       const currentApplyBytes = current.applyBytesDone ?? 0
       if (
         !lastPoint ||
-        current.bytesDone !== lastPoint.bytesDone ||
+        currentNetworkBytes !== lastPoint.bytesDone ||
         currentApplyBytes !== lastPoint.applyBytesDone ||
         now - lastPoint.at >= 900
       ) {
         windowState.points.push({
-          bytesDone: current.bytesDone,
+          bytesDone: currentNetworkBytes,
           applyBytesDone: currentApplyBytes,
           at: now,
         })
@@ -2121,7 +2337,7 @@ export default function App() {
     tick()
     const timer = window.setInterval(tick, 1000)
     return () => window.clearInterval(timer)
-  }, [activeJob.bytesTotal, activeJob.id, activeJob.kind, activeJob.status])
+  }, [activeJob.bytesTotal, activeJob.id, activeJob.kind, activeJob.pipelineVersion, activeJob.status])
 
   const isPatchDownloading =
     activeJob.kind === 'patch' &&
@@ -2597,6 +2813,25 @@ export default function App() {
       void enableWindowsNotifications()
       return
     }
+
+    if (key === 'uiTheme') {
+      const next = { ...preferencesRef.current, uiTheme: value as LauncherPreferences['uiTheme'] }
+      preferencesRef.current = next
+      saveLauncherPreferences(next)
+      setPreferences(next)
+
+      if (value !== sessionUiTheme) {
+        if (isTauriRuntime()) {
+          void invoke('restart_launcher').catch((error) => {
+            setSettingsUpdateStatus(`Could not restart launcher: ${String(error)}`)
+          })
+        } else if (typeof window !== 'undefined') {
+          window.location.reload()
+        }
+      }
+      return
+    }
+
     setPreferences((current) => ({ ...current, [key]: value }))
   }
 
@@ -2609,8 +2844,10 @@ export default function App() {
         ? value === 'eco'
           ? { downloadWorkers: 4, downloadQueueMb: 64 }
           : value === 'turbo'
-            ? { downloadWorkers: 12, downloadQueueMb: 256 }
-            : { downloadWorkers: 8, downloadQueueMb: 128 }
+            ? { downloadWorkers: 24, downloadQueueMb: 256 }
+            : value === 'balanced'
+              ? { downloadWorkers: 12, downloadQueueMb: 128 }
+              : { downloadWorkers: 16, downloadQueueMb: 192 }
         : {}
     const next = { ...launcherSettings, [key]: value, ...profilePreset }
     setLauncherSettings(next)
@@ -3077,35 +3314,12 @@ export default function App() {
     setIsStartingDownload(true)
     setScanStatus('')
 
-    // Web app: send remote install command to PC launcher via Firebase
+    // Browser traffic is handled by the authenticated WebApp/Render remote-job API.
+    // Keeping this boundary explicit prevents legacy direct Firestore commands from
+    // bypassing device ownership, legal acceptance, online checks and job ACKs.
     if (!isTauriRuntime()) {
-      if (!discordAuth.user) {
-        setScanStatus('Please login with Discord to remote install.')
-        setIsStartingDownload(false)
-        return
-      }
-      try {
-        await addDoc(collection(socialDb, 'users', discordAuth.user.id, 'commands'), {
-          action: 'install',
-          game_id: selectedGame.id,
-          timestamp: serverTimestamp()
-        })
-        setShowInstallOptions(false)
-        void publishNotification({
-          category: 'launcher',
-          severity: 'info',
-          title: 'Remote Command Sent',
-          message: `Installation for ${selectedGame.title} will start on your PC shortly.`,
-          dedupeKey: `remote-install-${selectedGame.id}`,
-          entity: null,
-          action: null
-        })
-      } catch (err) {
-        setScanStatus('Failed to send remote command. Is your PC online?')
-        console.error('Remote install failed:', err)
-      } finally {
-        setIsStartingDownload(false)
-      }
+      setScanStatus('Remote installs must be sent from the signed-in Remote Dashboard.')
+      setIsStartingDownload(false)
       return
     }
 
@@ -3338,21 +3552,7 @@ export default function App() {
     if (!selectedGame || !activeDetail) return
 
     if (!isTauriRuntime()) {
-      if (!discordAuth.user) return
-      await addDoc(collection(socialDb, 'users', discordAuth.user.id, 'commands'), {
-        action: 'launch',
-        game_id: selectedGame.id,
-        timestamp: serverTimestamp()
-      })
-      void publishNotification({
-        category: 'launcher',
-        severity: 'info',
-        title: 'Remote Command Sent',
-        message: `Command to launch ${selectedGame.title} sent to PC.`,
-        dedupeKey: `remote-launch-${selectedGame.id}`,
-        entity: null,
-        action: null
-      })
+      setScanStatus('Remote launch must be sent from the signed-in Remote Dashboard.')
       return
     }
 
@@ -3779,6 +3979,12 @@ export default function App() {
     if (transitionId === bigPictureTransitionRef.current) {
       bigPicturePhaseRef.current = 'closed'
       setBigPicturePhase('closed')
+      // The normal launcher subtree remounts only after Big Picture closes. Give
+      // WebView2 two frames to settle the restored window geometry, then notify
+      // responsive/reveal systems that the final viewport is ready.
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => window.dispatchEvent(new Event('resize')))
+      })
     }
   }
 
@@ -3790,8 +3996,19 @@ export default function App() {
     void restoreNativeBigPictureFullscreen(session)
   }, [])
 
+  const HomeRenderer = renderedShellTheme === 'default' ? DefaultHomeView : HomeView
+
+  const handleJumpToGame = useCallback((gameId: string) => {
+    setSelectedGameId(gameId)
+    if (activeTab !== 'Store' && activeTab !== 'Library') {
+      setActiveTab('Store')
+    }
+  }, [activeTab, setActiveTab, setSelectedGameId])
+
   return (
-    <MotionConfig reducedMotion={reducedMotion ? 'always' : 'never'}>
+    <GlobalAudioProvider>
+      <AppAudioConnector onSelectGame={handleJumpToGame} />
+      <MotionConfig reducedMotion={reducedMotion ? 'always' : 'never'}>
       {isBigPictureMode ? (
         <AnimatePresence>
           <Suspense fallback={<ViewChunkFallback />}>
@@ -3825,16 +4042,22 @@ export default function App() {
               onOpenNotificationSettings={() => {
                 setNotificationOpen(false)
                 void exitBigPicture().then(() => {
+                  window.localStorage.setItem('0xolemon.settings.activePane', 'notifications')
+                  window.dispatchEvent(new CustomEvent('0xo-settings-pane', { detail: { pane: 'notifications' } }))
                   setActiveTab('Settings')
                   window.setTimeout(() => {
                     document.getElementById('notification-settings')?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth' })
-                  }, 80)
+                  }, 100)
                 })
               }}
             />
           </Suspense>
         </AnimatePresence>
       ) : (
+        <SocialPrototypeProvider
+          user={discordAuth.state === 'authorized' ? discordAuth.user : null}
+          activeGame={socialActiveGame}
+        >
         <div
           className={[
             'app-root',
@@ -3891,18 +4114,23 @@ export default function App() {
             }}
             onOpenNotificationSettings={() => {
               setNotificationOpen(false)
+              window.localStorage.setItem('0xolemon.settings.activePane', 'notifications')
+              window.dispatchEvent(new CustomEvent('0xo-settings-pane', { detail: { pane: 'notifications' } }))
               setActiveTab('Settings')
               window.setTimeout(() => {
                 setNotificationOpen(false)
                 document.getElementById('notification-settings')?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth' })
-              }, 80)
+              }, 100)
             }}
             onDiscordLogout={() => void logoutDiscord()}
             onToggleBigPicture={enterBigPicture}
+            onToggleSocial={() => window.dispatchEvent(new CustomEvent('0xo-social-toggle'))}
             onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
             isSidebarCollapsed={isSidebarCollapsed}
             onlineCount={onlineCount}
             activeTab={activeTab}
+            uiTheme={renderedShellTheme}
+            onNavigate={setActiveTab}
             onOpenHelpCenter={() => setHelpCenterOpen(true)}
           />
           {/* Pull-to-refresh indicator */}
@@ -3930,20 +4158,47 @@ export default function App() {
               onSkip={() => { setUpdateSkipped(true); setShowUpdateCenter(false) }}
             />
           ) : null}
-          <main className={`launcher-shell premium-shell ${isSidebarCollapsed ? 'sidebar-collapsed-shell' : ''}`}>
-            <Sidebar
-              serviceStatus={contentServiceLabel(snapshot.proxyStatus)}
-              activeTab={activeTab}
-              onSelect={setActiveTab}
-              updateCount={updateReadyGameIds.length}
-              downloadCount={hasVisibleJob ? 1 : 0}
-              luaModeEnabled={luaModeEnabled}
-              isSidebarCollapsed={isSidebarCollapsed}
-              onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
-            />
+          {themeRecovery ? (
+            <aside className="theme-package-recovery" role="status">
+              <div>
+                <strong>{themeRecovery.theme.toUpperCase()} theme was recovered</strong>
+                <span>{themeRecovery.message} Default is active for this session; your saved preference was not changed.</span>
+              </div>
+              <button type="button" onClick={() => setThemeRecovery(null)} aria-label="Dismiss theme recovery message">×</button>
+            </aside>
+          ) : null}
+          <ConnectedThemeShellHost
+            theme={requestedShellTheme}
+            onThemeReady={(theme) => {
+              setRenderedShellTheme(theme)
+              if (theme === requestedShellTheme) setThemeRecovery(null)
+            }}
+            activeTab={activeTab}
+            onNavigate={setActiveTab}
+            onBack={goBack}
+            onForward={goForward}
+            canGoBack={canGoBack}
+            canGoForward={canGoForward}
+            serviceStatus={contentServiceLabel(snapshot.proxyStatus)}
+            updateCount={updateReadyGameIds.length}
+            downloadCount={hasVisibleJob ? 1 : 0}
+            luaModeEnabled={luaModeEnabled}
+            discordAuthorized={discordAuth.state === 'authorized'}
+            displayName={discordAuth.state === 'authorized' ? discordAuth.user?.displayName : null}
+            selectedGameTitle={selectedGame?.title ?? null}
+            selectedGameId={selectedGameId}
+            instances={themeInstances}
+            instanceGroups={themeInstanceGroups}
+            onSelectGame={(gameId) => {
+              setSelectedGameId(gameId)
+              setActiveTab('Library')
+            }}
+            isSidebarCollapsed={isSidebarCollapsed}
+            onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
+          >
             <div className="workspace-corner-clip">
               <section
-                className={`workspace premium-workspace${ptrProgress > 0 ? ' ptr-pulling' : ''}${activeTab === 'Lua Shop' ? ' lua-shop-workspace' : ''}`}
+                className={`workspace premium-workspace${ptrProgress > 0 ? ' ptr-pulling' : ''}${activeTab === 'Lua Shop' ? ' lua-shop-workspace' : ''}${activeTab === "What's New!" ? ' whats-new-workspace' : ''}`}
                 style={ptrProgress > 0 ? { transform: `translateY(${Math.min(ptrProgress * 60, 60)}px)` } : undefined}
               >
               {showLocateLibraryPrompt ? (
@@ -3985,18 +4240,21 @@ export default function App() {
 
               <div
                 key={activeTab}
+                style={(activeTab === 'Depot Downloader' || activeTab === 'GSE / UC Setup') ? { display: 'none' } : undefined}
                 className={[
                   'tab-content',
                   reducedMotion ? '' : 'tab-enter',
                   activeTab === 'Lua Shop' ? 'lua-shop-tab-content' : '',
+                  activeTab === "What's New!" ? 'whats-new-tab-content' : '',
+                  activeTab === 'Settings' ? 'settings-tab-content' : '',
                 ].filter(Boolean).join(' ')}
               >
                 <Suspense fallback={<ViewChunkFallback />}>
                   {/* Offline gate: tabs requiring internet show NoInternetView when offline */}
-                  {!isOnline && !['Library', 'Settings'].includes(activeTab) ? (
+                  {!isOnline && !['Home', 'Library', 'Social', 'Settings', 'GSE / UC Setup'].includes(activeTab) ? (
                   <NoInternetView tabName={activeTab === 'Home' ? 'Home' : activeTab === 'Store' ? 'Store' : activeTab === "What's New!" ? "What's New" : activeTab === 'Downloads' ? 'Downloads' : activeTab === 'Updates' ? 'Updates' : activeTab === 'CloudRedirect' ? 'CloudRedirect' : activeTab === 'Translations' ? 'Translations' : undefined} />
                 ) : activeTab === 'Home' ? (
-                  <HomeView
+                  <HomeRenderer
                     catalog={catalog}
                     installStates={installStates}
                     runtimeStates={runtimeStates}
@@ -4012,6 +4270,8 @@ export default function App() {
                     onOpenTab={setActiveTab}
                     onOpenDiscord={() => void openUrl('https://discord.gg/7ZXdTUVsJE')}
                     onOpenDonate={() => setShowDonate(true)}
+                    displayName={discordAuth.state === 'authorized' ? discordAuth.user?.displayName : null}
+                    online={isOnline}
                   />
                 ) : activeTab === 'CloudRedirect' ? (
                   <CloudSavesOverview
@@ -4021,8 +4281,11 @@ export default function App() {
                     onOpenGame={openHomeGame}
                     onRequestAsset={requestHomeAsset}
                   />
+                ) : activeTab === 'Social' ? (
+                  <SocialHubView />
                 ) : activeTab === 'Settings' ? (
-                  <SettingsView
+                  <ThemeSettingsHost
+                    theme={renderedShellTheme}
                     preferences={preferences}
                     launcherSettings={launcherSettings}
                     onChange={updatePreference}
@@ -4030,6 +4293,7 @@ export default function App() {
                     onChooseLibrary={() => void chooseDefaultLibraryRoot()}
                     onOpenLibrary={() => void openDefaultLibraryRoot()}
                     onOpenCache={() => setActiveTab('Cache')}
+                    onOpenCloudRedirect={() => setActiveTab('CloudRedirect')}
                     onChooseCloudRoot={() => void chooseCloudSaveRoot()}
                     onOpenCloudRoot={() => void openCloudSaveRoot()}
                     onCheckForUpdates={() => void checkLauncherUpdateNow()}
@@ -4047,6 +4311,8 @@ export default function App() {
                     }}
                     onOpenHelpCenter={() => setHelpCenterOpen(true)}
                     onManageNotifications={() => setNotificationOpen(true)}
+                    sessionUiTheme={sessionUiTheme}
+                    onClose={() => setActiveTab('Home')}
                     appVersion={appVersion}
                     updateStatus={settingsUpdateStatus}
                   />
@@ -4091,6 +4357,12 @@ export default function App() {
                     installStates={installStates}
                     steamInstalledAppIds={steamInstalledAppIds}
                     steamBuildIds={steamBuildIds}
+                    uiTheme={sessionUiTheme}
+                    onOpenLibrary={(gameId) => {
+                      setSelectedGameId(gameId)
+                      setActiveTab('Library')
+                    }}
+                    onNavigate={(tab) => setActiveTab(tab)}
                     selectedInstallState={selectedInstallState}
                     verifyStatus={selectedVerifyStatus}
                     installMode={installMode}
@@ -4151,6 +4423,24 @@ export default function App() {
                   )}
                 </Suspense>
               </div>
+              {/* Depot Downloader — always mounted so downloads survive tab switches */}
+              <Suspense fallback={null}>
+                <div
+                  className="depot-persistent-layer"
+                  style={{ display: activeTab === 'Depot Downloader' ? 'flex' : 'none' }}
+                >
+                  <DepotDownloaderView defaultLibraryRoot={preferences.defaultLibraryRoot} />
+                </div>
+              </Suspense>
+              {/* GSE / UC Setup — always mounted so setup progress survives tab switches */}
+              <Suspense fallback={null}>
+                <div
+                  className="gse-persistent-layer"
+                  style={{ display: activeTab === 'GSE / UC Setup' ? 'flex' : 'none' }}
+                >
+                  <GseUcStandaloneView />
+                </div>
+              </Suspense>
               {showInstallOptions && selectedGame && activeDetail ? (
                 <InstallOptionsDialog
                   detail={activeDetail}
@@ -4352,7 +4642,7 @@ export default function App() {
               )}
               </section>
             </div>
-          </main>
+          </ConnectedThemeShellHost>
           <TransferDock
             visible={showTransferDock}
             gameTitle={activeJobGame?.title ?? activeJob.gameId}
@@ -4406,6 +4696,8 @@ export default function App() {
           </Suspense>
           {shouldShowOnboarding ? (
             <Onboarding
+              uiTheme={preferences.uiTheme}
+              onThemeChange={(theme) => updatePreference('uiTheme', theme)}
               onComplete={() => updatePreference('onboardingCompleted', true)}
             />
           ) : null}
@@ -4442,20 +4734,10 @@ export default function App() {
               onEnterOfflineMode={() => setOfflineModeEnabled(true)}
             />
           </div>
-          {discordAuth.state === 'authorized' && discordAuth.user ? (
-            <FirebaseRemoteControl
-              user={discordAuth.user}
-              catalog={catalog}
-              installStates={installStates}
-              runtimeStates={runtimeStates}
-              setCatalog={setCatalog}
-              setInstallStates={setInstallStates}
-              setRuntimeStates={setRuntimeStates}
-            />
-          ) : null}
-
           {showWhatsNewModal && (
-            <ChangelogModal onClose={() => setShowWhatsNewModal(false)} />
+            <Suspense fallback={null}>
+              <ChangelogModal onClose={() => setShowWhatsNewModal(false)} />
+            </Suspense>
           )}
 
           <DefenderExclusionDialog
@@ -4465,11 +4747,25 @@ export default function App() {
             onAccept={defenderExclusion.handleAccept}
           />
 
+          {discordAuth.state === 'authorized' && discordAuth.user ? (
+            <Suspense fallback={null}>
+              <SocialPrototypeLayer
+                reducedMotion={reducedMotion}
+                onOpenSocial={() => {
+                  setNotificationOpen(false)
+                  setActiveTab('Social')
+                }}
+              />
+            </Suspense>
+          ) : null}
+
           <SaveCloseGuardModal />
         </div>
+        </SocialPrototypeProvider>
       )
       }
     </MotionConfig >
+    </GlobalAudioProvider>
   )
 }
 

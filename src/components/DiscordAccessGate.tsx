@@ -159,34 +159,9 @@ export function DiscordAccessGate({
         {notConfigured ? (
           <div className="discord-access-policy" style={{ textAlign: 'center' }}>
             <p style={{ marginBottom: '16px', color: 'var(--text)' }}>
-              To remote control your PC, please enter your Discord User ID below.
-              You can find this by right-clicking your profile in Discord and selecting "Copy User ID".
+              Discord OAuth is not configured for this launcher build. Manual Discord IDs cannot be used
+              because they do not prove account ownership, server membership or role access.
             </p>
-            <input 
-              type="text" 
-              id="manual-discord-id"
-              placeholder="e.g. 123456789012345678" 
-              style={{ padding: '10px', width: '100%', borderRadius: '4px', border: '1px solid var(--line)', background: 'var(--theme-control-bg)', color: 'var(--text-strong)', marginBottom: '12px' }}
-            />
-            <button 
-              type="button" 
-              className="discord-primary"
-              onClick={() => {
-                const val = (document.getElementById('manual-discord-id') as HTMLInputElement)?.value;
-                if (val && val.trim().length > 10) {
-                  // Hack to authorize web app instantly with the typed ID
-                  Object.assign(status, {
-                    state: 'authorized',
-                    user: { id: val.trim(), username: 'Remote User', displayName: 'Remote User', avatarUrl: '', accountAgeDays: 100 }
-                  });
-                  onRefresh(); // Trigger a re-render
-                } else {
-                  alert('Please enter a valid Discord ID');
-                }
-              }}
-            >
-              Connect to PC
-            </button>
           </div>
         ) : null}
 
@@ -214,6 +189,11 @@ export function DiscordAccessGate({
                 Sign out
               </button>
             </>
+          ) : notConfigured ? (
+            <button type="button" className="discord-secondary" disabled={busy} onClick={onRefresh}>
+              <RefreshCw size={16} className={busy ? 'is-spinning' : ''} />
+              {busy ? 'Checking configuration...' : 'Check configuration again'}
+            </button>
           ) : networkOffline ? (
             <>
               <button type="button" className="discord-primary" style={{ background: 'linear-gradient(135deg, var(--theme-accent-strong), var(--theme-accent))', color: 'color-mix(in oklab, #05070a 82%, var(--theme-accent-deep) 18%)' }} onClick={onEnterOfflineMode}>

@@ -816,6 +816,16 @@ STEAMAPI_API uint32 SteamAPI_ISteamFriends_GetProfileItemPropertyUint( ISteamFri
     return (get_steam_client()->steam_friends)->GetProfileItemPropertyUint(steamID, itemType, prop);
 }
 
+STEAMAPI_API ISteamUtils *SteamAPI_SteamUtils_v011()
+{
+    return get_steam_client()->GetISteamUtils(flat_hsteampipe(), "SteamUtils011");
+}
+
+STEAMAPI_API ISteamUtils *SteamAPI_SteamGameServerUtils_v011()
+{
+    return get_steam_client()->GetISteamUtils(flat_gs_hsteampipe(), "SteamUtils011");
+}
+
 STEAMAPI_API ISteamUtils *SteamAPI_SteamUtils_v010()
 {
     return get_steam_client()->GetISteamUtils(flat_hsteampipe(), "SteamUtils010");
@@ -1234,6 +1244,7 @@ STEAMAPI_API ESteamIPv6ConnectivityState SteamAPI_ISteamUtils_GetIPv6Connectivit
     return (ptr)->GetIPv6ConnectivityState(eProtocol);
 }
 
+// removed in SDK 1.65
 STEAMAPI_API steam_bool SteamAPI_ISteamUtils_IsSteamRunningOnSteamDeck( ISteamUtils* self )
 {
     long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
@@ -1306,6 +1317,42 @@ STEAMAPI_API steam_bool SteamAPI_ISteamUtils_DismissGamepadTextInput( ISteamUtil
     }
 
     return (ptr)->DismissGamepadTextInput();
+}
+
+STEAMAPI_API ESteamHardwareType SteamAPI_ISteamUtils_IsRunningOnSteamHardware( ISteamUtils* self )
+{
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    auto ptr = get_steam_client()->steam_gameserver_utils;
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
+        ptr = get_steam_client()->steam_utils;
+    }
+
+    return (ptr)->IsRunningOnSteamHardware();
+}
+
+STEAMAPI_API ESteamHardwareDefaultConfig SteamAPI_ISteamUtils_GetSteamHardwareDefaultConfig( ISteamUtils* self )
+{
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    auto ptr = get_steam_client()->steam_gameserver_utils;
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
+        ptr = get_steam_client()->steam_utils;
+    }
+
+    return (ptr)->GetSteamHardwareDefaultConfig();
+}
+
+STEAMAPI_API steam_bool SteamAPI_ISteamUtils_IsRunningUnderProton( ISteamUtils* self )
+{
+    long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_utils);
+    long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_utils);
+    auto ptr = get_steam_client()->steam_gameserver_utils;
+    if (client_vftable_distance >= 0 && (server_vftable_distance < 0 || client_vftable_distance < server_vftable_distance)) {
+        ptr = get_steam_client()->steam_utils;
+    }
+
+    return (ptr)->IsRunningUnderProton();
 }
 
 STEAMAPI_API ISteamMatchmaking *SteamAPI_SteamMatchmaking_v009()
@@ -1558,6 +1605,26 @@ STEAMAPI_API void SteamAPI_ISteamMatchmakingRulesResponse_RulesRefreshComplete( 
     return self->RulesRefreshComplete();
 }
 
+STEAMAPI_API void SteamAPI_ISteamMatchmakingServerFriendsResponse_AddFriendToList( ISteamMatchmakingServerFriendsResponse* self, uint64_steamid steamID, const char * pchName, bool bCurrentlyConnected )
+{
+    return self->AddFriendToList(steamID, pchName, bCurrentlyConnected);
+}
+
+STEAMAPI_API void SteamAPI_ISteamMatchmakingServerFriendsResponse_FriendsFailedToRespond( ISteamMatchmakingServerFriendsResponse* self )
+{
+    return self->FriendsFailedToRespond();
+}
+
+STEAMAPI_API void SteamAPI_ISteamMatchmakingServerFriendsResponse_FriendsRefreshComplete( ISteamMatchmakingServerFriendsResponse* self )
+{
+    return self->FriendsRefreshComplete();
+}
+
+STEAMAPI_API ISteamMatchmakingServers *SteamAPI_SteamMatchmakingServers_v003()
+{
+    return get_steam_client()->GetISteamMatchmakingServers(flat_hsteamuser(), flat_hsteampipe(), "SteamMatchMakingServers003");
+}
+
 STEAMAPI_API ISteamMatchmakingServers *SteamAPI_SteamMatchmakingServers_v002()
 {
     return get_steam_client()->GetISteamMatchmakingServers(flat_hsteamuser(), flat_hsteampipe(), "SteamMatchMakingServers002");
@@ -1641,6 +1708,11 @@ STEAMAPI_API HServerQuery SteamAPI_ISteamMatchmakingServers_PlayerDetails( IStea
 STEAMAPI_API HServerQuery SteamAPI_ISteamMatchmakingServers_ServerRules( ISteamMatchmakingServers* self, uint32 unIP, uint16 usPort, ISteamMatchmakingRulesResponse * pRequestServersResponse )
 {
     return (get_steam_client()->steam_matchmaking_servers)->ServerRules(unIP, usPort, pRequestServersResponse);
+}
+
+STEAMAPI_API HServerQuery SteamAPI_ISteamMatchmakingServers_ServerFriends( ISteamMatchmakingServers* self, uint32 unIP, uint16 usPort, ISteamMatchmakingServerFriendsResponse * pRequestServersResponse )
+{
+    return (get_steam_client()->steam_matchmaking_servers)->ServerFriends(unIP, usPort, pRequestServersResponse);
 }
 
 STEAMAPI_API void SteamAPI_ISteamMatchmakingServers_CancelServerQuery( ISteamMatchmakingServers* self, HServerQuery hServerQuery )
@@ -2580,6 +2652,16 @@ STEAMAPI_API steam_bool SteamAPI_ISteamApps_SetActiveBeta(ISteamApps* self, cons
     return self->SetActiveBeta(pchBetaName);
 }
 
+STEAMAPI_API void SteamAPI_ISteamApps_SetGamePerformanceSetting( ISteamApps* self, EGamePerformanceSetting setting )
+{
+    return self->SetGamePerformanceSetting(setting);
+}
+
+STEAMAPI_API void SteamAPI_ISteamApps_SetGameRenderResolution( ISteamApps* self, uint32 unWidth, uint32 unHeight )
+{
+    return self->SetGameRenderResolution(unWidth, unHeight);
+}
+
 /*
 //SDK 1.60
 STEAMAPI_API int SteamAPI_ISteamApps_GetNumBetas( ISteamApps* self, AppId_t unAppID, int * pnAvailable, int * pnPrivate )
@@ -3146,6 +3228,11 @@ STEAMAPI_API ISteamInput *SteamAPI_SteamInput_v005()
 STEAMAPI_API ISteamInput *SteamAPI_SteamInput_v006()
 {
     return get_steam_client()->GetISteamInput(flat_hsteamuser(), flat_hsteampipe(), "SteamInput006");
+}
+
+STEAMAPI_API ISteamInput *SteamAPI_SteamInput_v007()
+{
+    return get_steam_client()->GetISteamInput(flat_hsteamuser(), flat_hsteampipe(), "SteamInput007");
 }
 
 STEAMAPI_API steam_bool SteamAPI_ISteamInput_Init( ISteamInput* self, bool bExplicitlyCallRunFrame )
@@ -6006,6 +6093,16 @@ STEAMAPI_API ESteamNetworkingConnectionState SteamAPI_ISteamNetworkingMessages_G
     return self->GetSessionConnectionInfo(identityRemote, pConnectionInfo, pQuickStatus);
 }
 
+STEAMAPI_API ISteamNetworkingSockets *SteamAPI_SteamNetworkingSockets_SteamAPI_v013()
+{
+    return (ISteamNetworkingSockets *)get_steam_client()->GetISteamGenericInterface(flat_hsteamuser(), flat_hsteampipe(), "SteamNetworkingSockets013");
+}
+
+STEAMAPI_API ISteamNetworkingSockets *SteamAPI_SteamGameServerNetworkingSockets_SteamAPI_v013()
+{
+    return (ISteamNetworkingSockets *)get_steam_client()->GetISteamGenericInterface(flat_gs_hsteamuser(), flat_gs_hsteampipe(), "SteamNetworkingSockets013");
+}
+
 STEAMAPI_API ISteamNetworkingSockets *SteamAPI_SteamNetworkingSockets_SteamAPI_v012()
 {
     return (ISteamNetworkingSockets *)get_steam_client()->GetISteamGenericInterface(flat_hsteamuser(), flat_hsteampipe(), "SteamNetworkingSockets012");
@@ -6200,7 +6297,7 @@ STEAMAPI_API EResult SteamAPI_ISteamNetworkingSockets_SendMessageToConnection( I
     return (ptr)->SendMessageToConnection(hConn, pData, cbData, nSendFlags, pOutMessageNumber);
 }
 
-STEAMAPI_API void SteamAPI_ISteamNetworkingSockets_SendMessages( ISteamNetworkingSockets* self, int nMessages, SteamNetworkingMessage_t *const * pMessages, int64 * pOutMessageNumberOrResult )
+STEAMAPI_API void SteamAPI_ISteamNetworkingSockets_SendMessages( ISteamNetworkingSockets* self, int nMessages, SteamNetworkingMessage_t ** pMessages, int64 * pOutMessageNumberOrResult, bool bDeleteFailedMessages )
 {
     long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
     long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
@@ -6209,7 +6306,10 @@ STEAMAPI_API void SteamAPI_ISteamNetworkingSockets_SendMessages( ISteamNetworkin
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
-    return (ptr)->SendMessages(nMessages, pMessages, pOutMessageNumberOrResult);
+    if (get_old_interface_ver(ptr->get_version().c_str()) >= 13)
+        return (ptr)->SendMessages(nMessages, pMessages, pOutMessageNumberOrResult, bDeleteFailedMessages);
+    else
+        return (ptr)->SendMessages(nMessages, pMessages, pOutMessageNumberOrResult);
 }
 
 STEAMAPI_API EResult SteamAPI_ISteamNetworkingSockets_FlushMessagesOnConnection( ISteamNetworkingSockets* self, HSteamNetConnection hConn )
@@ -6296,7 +6396,7 @@ STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_GetListenSocketAddress(
     return (ptr)->GetListenSocketAddress(hSocket, address);
 }
 
-STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_CreateSocketPair( ISteamNetworkingSockets* self, HSteamNetConnection * pOutConnection1, HSteamNetConnection * pOutConnection2, bool bUseNetworkLoopback, const SteamNetworkingIdentity * pIdentity1, const SteamNetworkingIdentity * pIdentity2 )
+STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_CreateSocketPair( ISteamNetworkingSockets* self, HSteamNetConnection * pOutConnection1, HSteamNetConnection * pOutConnection2, bool bUseNetworkLoopback, const SteamNetworkingIdentity * pPeerIdentity1, const SteamNetworkingIdentity * pPeerIdentity2 )
 {
     long long client_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_networking_sockets);
     long long server_vftable_distance = ((char *)self - (char*)get_steam_client()->steam_gameserver_networking_sockets);
@@ -6305,7 +6405,7 @@ STEAMAPI_API steam_bool SteamAPI_ISteamNetworkingSockets_CreateSocketPair( IStea
         ptr = get_steam_client()->steam_networking_sockets;
     }
 
-    return (ptr)->CreateSocketPair(pOutConnection1, pOutConnection2, bUseNetworkLoopback, pIdentity1, pIdentity2);
+    return (ptr)->CreateSocketPair(pOutConnection1, pOutConnection2, bUseNetworkLoopback, pPeerIdentity1, pPeerIdentity2);
 }
 
 STEAMAPI_API EResult SteamAPI_ISteamNetworkingSockets_ConfigureConnectionLanes( ISteamNetworkingSockets* self, HSteamNetConnection hConn, int nNumLanes, const int * pLanePriorities, const uint16 * pLaneWeights )
@@ -7310,6 +7410,11 @@ STEAMAPI_API void SteamAPI_servernetadr_t_Assign( servernetadr_t* self, const se
     return self->operator=(that);
 }
 
+STEAMAPI_API steam_bool SteamAPI_servernetadr_t_IsEqualTo( servernetadr_t* self, const servernetadr_t & rhs )
+{
+    return self->operator==(rhs);
+}
+
 STEAMAPI_API void SteamAPI_gameserveritem_t_Construct( gameserveritem_t* self )
 {
     new(self) gameserveritem_t();
@@ -7323,6 +7428,11 @@ STEAMAPI_API const char * SteamAPI_gameserveritem_t_GetName( gameserveritem_t* s
 STEAMAPI_API void SteamAPI_gameserveritem_t_SetName( gameserveritem_t* self, const char * pName )
 {
     return self->SetName(pName);
+}
+
+STEAMAPI_API steam_bool SteamAPI_gameserveritem_t_IsEqualTo( gameserveritem_t* self, const gameserveritem_t & rhs )
+{
+    return self->operator==(rhs);
 }
 
 STEAMAPI_API void SteamAPI_SteamNetworkingIPAddr_Clear( SteamNetworkingIPAddr* self )

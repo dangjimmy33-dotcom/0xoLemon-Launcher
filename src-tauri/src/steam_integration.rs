@@ -61,6 +61,12 @@ pub struct RestartSteamReport {
     pub message: String,
 }
 
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct SteamMaintenanceStop {
+    pub was_running: bool,
+    pub forced: bool,
+}
+
 pub fn environment_info(app: &AppHandle) -> SteamEnvironmentInfo {
     let root = find_steam_root();
     let account_id = root.as_deref().and_then(|steam_root| {
@@ -122,7 +128,7 @@ pub fn open_big_picture() -> Result<(), String> {
     open_steam_uri("steam://open/bigpicture")
 }
 
-pub fn restart_steam() -> Result<RestartSteamReport, String> {
+pub(crate) fn stop_steam_for_maintenance() -> Result<SteamMaintenanceStop, String> {
     #[cfg(target_os = "windows")]
     {
         let root =
@@ -164,35 +170,72 @@ pub fn restart_steam() -> Result<RestartSteamReport, String> {
             }
         }
 
-        thread::sleep(Duration::from_millis(700));
-        Command::new(&executable)
-            .spawn()
-            .map_err(|error| format!("Could not start Steam again: {error}"))?;
-        let running = wait_for_steam_state(true, Duration::from_secs(25));
-        if !running {
-            return Err(
-                "Steam was closed, but it did not start again within 25 seconds".to_string(),
-            );
-        }
-
-        return Ok(RestartSteamReport {
+        return Ok(SteamMaintenanceStop {
             was_running,
             forced,
-            running,
-            message: if forced {
-                "Steam was force-closed and started again.".to_string()
-            } else if was_running {
-                "Steam closed normally and started again.".to_string()
-            } else {
-                "Steam was not running and has now been started.".to_string()
-            },
         });
     }
 
     #[cfg(not(target_os = "windows"))]
     {
-        Err("Restarting Steam is currently supported only on Windows".to_string())
+        Err("Stopping Steam is currently supported only on Windows".to_string())
     }
+}
+
+pub(crate) fn start_steam_after_maintenance(
+    post_restart_action: Option<&str>,
+) -> Result<(), String> {
+    #[cfg(target_os = "windows")]
+    {
+        let root =
+            find_steam_root().ok_or_else(|| "Steam installation was not found".to_string())?;
+        let executable = root.join("steam.exe");
+        if !executable.is_file() {
+            return Err(format!(
+                "Steam executable was not found at {}",
+                executable.display()
+            ));
+        }
+
+        thread::sleep(Duration::from_millis(700));
+        let mut command = Command::new(&executable);
+        command.current_dir(&root).creation_flags(CREATE_NO_WINDOW);
+        if let Some(action) = post_restart_action.filter(|value| !value.trim().is_empty()) {
+            command.arg(action);
+        }
+        command
+            .spawn()
+            .map_err(|error| format!("Could not start Steam again: {error}"))?;
+        if !wait_for_steam_state(true, Duration::from_secs(25)) {
+            return Err(
+                "Steam was closed, but it did not start again within 25 seconds".to_string(),
+            );
+        }
+        return Ok(());
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    {
+        let _ = post_restart_action;
+        Err("Starting Steam is currently supported only on Windows".to_string())
+    }
+}
+
+pub fn restart_steam() -> Result<RestartSteamReport, String> {
+    let stopped = stop_steam_for_maintenance()?;
+    start_steam_after_maintenance(None)?;
+    Ok(RestartSteamReport {
+        was_running: stopped.was_running,
+        forced: stopped.forced,
+        running: true,
+        message: if stopped.forced {
+            "Steam was force-closed and started again.".to_string()
+        } else if stopped.was_running {
+            "Steam closed normally and started again.".to_string()
+        } else {
+            "Steam was not running and has now been started.".to_string()
+        },
+    })
 }
 
 pub fn install_spacewar() -> Result<(), String> {
@@ -1241,7 +1284,7 @@ fn resolve_cloud_redirect_dll(app: &AppHandle) -> Option<PathBuf> {
                 .join("resources")
                 .join("cloud_redirect")
                 .join("engine")
-                .join("2.6.4")
+                .join(crate::cloud_redirect_v2::ENGINE_VERSION)
                 .join("0xoCloudRedirect.dll"),
         );
     }
@@ -1252,7 +1295,7 @@ fn resolve_cloud_redirect_dll(app: &AppHandle) -> Option<PathBuf> {
                     .join("resources")
                     .join("cloud_redirect")
                     .join("engine")
-                    .join("2.6.4")
+                    .join(crate::cloud_redirect_v2::ENGINE_VERSION)
                     .join("0xoCloudRedirect.dll"),
             );
         }

@@ -25,10 +25,10 @@ Steam_Utils::Steam_Utils(Settings *settings, class SteamCallResults *callback_re
     callbacks(callbacks),
     overlay(overlay)
 {
-    
+
 }
 
-// return the number of seconds since the user 
+// return the number of seconds since the user
 uint32 Steam_Utils::GetSecondsSinceAppActive()
 {
     PRINT_DEBUG_ENTRY();
@@ -228,10 +228,10 @@ bool Steam_Utils::IsOverlayEnabled()
 }
 
 
-// Normally this call is unneeded if your game has a constantly running frame loop that calls the 
+// Normally this call is unneeded if your game has a constantly running frame loop that calls the
 // D3D Present API, or OGL SwapBuffers API every frame.
 //
-// However, if you have a game that only refreshes the screen on an event driven basis then that can break 
+// However, if you have a game that only refreshes the screen on an event driven basis then that can break
 // the overlay, as it uses your Present/SwapBuffers calls to drive it's internal frame loop and it may also
 // need to Present() to the screen any time an even needing a notification happens or when the overlay is
 // brought up over the game by a user.  You can use this API to ask the overlay if it currently need a present
@@ -246,7 +246,7 @@ bool Steam_Utils::BOverlayNeedsPresent()
 
 
 // Asynchronous call to check if an executable file has been signed using the public key set on the signing tab
-// of the partner site, for example to refuse to load modified executable files.  
+// of the partner site, for example to refuse to load modified executable files.
 // The result is returned in CheckFileSignature_t.
 //   k_ECheckFileSignatureNoSignaturesFoundForThisApp - This app has not been configured on the signing tab of the partner site to enable this function.
 //   k_ECheckFileSignatureNoSignaturesFoundForThisFile - This file is not listed on the signing tab for the partner site.
@@ -439,9 +439,9 @@ ESteamIPv6ConnectivityState Steam_Utils::GetIPv6ConnectivityState( ESteamIPv6Con
 // returns true if currently running on the Steam Deck device
 bool Steam_Utils::IsSteamRunningOnSteamDeck()
 {
-    PRINT_DEBUG("%i", (int)settings->steam_deck);
+    PRINT_DEBUG("current: %i", (int)(settings->steam_hardware_type == k_ESteamHardwareTypeSteamDeck));
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
-    return settings->steam_deck;
+    return settings->steam_hardware_type == k_ESteamHardwareTypeSteamDeck;
 }
 
 // Opens a floating keyboard over the game content and sends OS keyboard keys directly to the game.
@@ -472,4 +472,43 @@ bool Steam_Utils::DismissGamepadTextInput()
     PRINT_DEBUG_TODO();
     std::lock_guard<std::recursive_mutex> lock(global_mutex);
     return true;
+}
+
+ESteamHardwareType Steam_Utils::IsRunningOnSteamHardware()
+{
+    PRINT_DEBUG("current: %i", (int)settings->steam_hardware_type);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    return settings->steam_hardware_type;
+}
+
+
+ESteamHardwareDefaultConfig Steam_Utils::GetSteamHardwareDefaultConfig()
+{
+    PRINT_DEBUG_ENTRY();
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+    return settings->steam_hardware_def_config;
+}
+
+
+bool Steam_Utils::IsRunningUnderProton()
+{
+    // TO-DO:
+    //      Could try to detect Proton by
+    //      GetProcAddress of a special function in a system module
+    //      that is only present under proton (based on wine?)
+    PRINT_DEBUG("current: %i", (int)settings->is_under_proton);
+    std::lock_guard<std::recursive_mutex> lock(global_mutex);
+
+#ifdef __WINDOWS__
+    HMODULE ntdll = ::GetModuleHandleW(L"ntdll.dll");
+#endif
+
+    bool ret = settings->is_under_proton
+#ifdef __WINDOWS__
+    || (ntdll != NULL && ::GetProcAddress(ntdll, "wine_get_build_id") != NULL)
+#endif
+    ;
+
+    PRINT_DEBUG("final: %i", (int)ret);
+    return ret;
 }

@@ -1,5 +1,5 @@
-## :large_orange_diamond: **This is a fork**
-Fork of https://gitlab.com/Mr_Goldberg/goldberg_emulator
+## :large_orange_diamond: **Goldberg Steam Emu**
+Fork of https://gitlab.com/Mr_Goldberg/goldberg_emulator with a lot of fixes, improvements, additional features and a completely reworked file structure.
 
 ### Feel free to make a PR.
 
@@ -7,9 +7,8 @@ Fork of https://gitlab.com/Mr_Goldberg/goldberg_emulator
 
 :red_circle:
 
-**This fork is not a takeover, not a resurrection of the original project, and not a replacement.**
-**This is just a fork, don't take it seriously.**
-**You are highly encouraged to fork/clone it and do whatever you want with it.**
+**This fork is not a takeover, not a resurrection of the original project, and not a replacement.**  
+**You are highly encouraged to fork/clone it and do whatever you want with it.**  
 
 :red_circle:
 
@@ -32,9 +31,10 @@ This project depends on many third-party libraries and tools, credits to them fo
 * **Always generate the interfaces file using the `generate_interfaces` tool.**
 * **If things don't work, try the `ColdClientLoader` setup.**
 
-You can find helper guides, scripts, and tools here:
+You can find some guides, helper tools and scripts here:
 
-**(These guides, scripts, and tools are maintained by their authors.)**
+**These guides, tools and scripts are maintained by their authors. 
+Before using them, it's always a good idea to first make sure they are updated and designed to support all features of this fork of the emulator.**
 
 * **[gbe_fork_tools](https://github.com/Detanup01/gbe_fork_tools)**
 * **[gen.emu.sharp](https://github.com/otavepto/gen.emu.sharp)**
@@ -47,11 +47,15 @@ You can find helper guides, scripts, and tools here:
 
 You can also find instructions here in [README.release.md](./post_build/README.release.md)
 
----
----
+### Included tools
 
-<br/>
+Tools bundled in this repository:
 
+* **[generate_interfaces](./tools/generate_interfaces/)** — scans the game’s `steam_api(64).dll` / `libsteam_api.so` and writes the required `steam_interfaces.txt`
+* **[lobby_connect](./tools/lobby_connect/)** — discovers LAN peers and launches your game with the right join parameters
+* **[steam_stats_converter](./tools/steam_stats_converter/)** — converts between Steam’s local achievements/stats binary cache and GSE save files; see its [README](./tools/steam_stats_converter/README.md)
+
+---
 # **Compiling**
 ## One time setup
 ### **Cloning the repo**
@@ -62,7 +66,7 @@ You can also find instructions here in [README.release.md](./post_build/README.r
  ```
  The switch `-j8` is optional, it allows Git to fetch up to 8 submodules
 
- It is adviseable to always checkout submodules every now and then, to make sure they're up to date
+ It is advisable to always checkout submodules every now and then, to make sure they're up to date
  ```shell
  git submodule update --init --recursive --remote
  ```
@@ -71,14 +75,14 @@ You can also find instructions here in [README.release.md](./post_build/README.r
 * You need Windows 10 or 8.1 + WDK
 * Using Visual Studio, install `Visual Studio 2022 Community`: https://visualstudio.microsoft.com/vs/community/
    * Select the Workload `Desktop development with C++`
-   * In the `Individual componenets` scroll to the buttom and select the **latest** version of `Windows XX SDK (XX.X...)`
+   * In the `Individual components` scroll to the bottom and select the **latest** version of `Windows XX SDK (XX.X...)`  
       For example `Windows 11 SDK (10.0.22621.0)`
 * Using `MSYS2` **this is currently experimental and will not work due to ABI differences**: https://www.msys2.org/
   <details>
     <summary>steps</summary>
-
-    * To build 64-bit binaries use either the [environment](https://www.msys2.org/docs/environments/) `UCRT64` or `MINGW64` then install the GCC toolchain
-      `UCRT64`
+  
+    * To build 64-bit binaries use either the [environment](https://www.msys2.org/docs/environments/) `UCRT64` or `MINGW64` then install the GCC toolchain  
+      `UCRT64`  
       ```shell
       pacman -S mingw-w64-ucrt-x86_64-gcc
       ```
@@ -90,9 +94,9 @@ You can also find instructions here in [README.release.md](./post_build/README.r
       ```shell
       pacman -S mingw-w64-i686-gcc
       ```
-
-  </details>
-* Python 3.10 or above: https://www.python.org/downloads/windows/
+  
+  </details> 
+* Python 3.10 or above: https://www.python.org/downloads/windows/  
    After installation, make sure it works
    ```batch
    python --version
@@ -136,9 +140,9 @@ You can also find instructions here in [README.release.md](./post_build/README.r
 
 ### **Building dependencies**
 
-These are third party libraries needed to build the emu later, they are linked with the emu during its build process.
-You don't need to build these dependencies every time, they rarely get updated.
-The only times you'll need to rebuild them is either when their separete build folder was accedentally deleted, or when the dependencies were updated.
+These are third party libraries needed to build the emu later, they are linked with the emu during its build process.  
+You don't need to build these dependencies every time, they rarely get updated.  
+The only times you'll need to rebuild them is either when their separate build folder was accidentally deleted, or when the dependencies were updated.  
 
 <br/>
 
@@ -152,7 +156,7 @@ Open CMD in the repo folder, then run the following
 * To build using `MSYS2` **this is currently experimental and will not work due to ABI differences**
   <details>
     <summary>steps</summary>
-
+  
     *(Optional)* In both cases below, you can use `Clang` compiler instead of `GCC` by running these 2 commands in the same terminal instance
     ```shell
     export CC="clang"
@@ -168,8 +172,8 @@ Open CMD in the repo folder, then run the following
     export CMAKE_GENERATOR="MSYS Makefiles"
     ./third-party/common/win/premake/premake5.exe --file=premake5-deps.lua --32-build --all-ext --all-build --verbose   --os=windows gmake2
     ```
-
-  </details>
+  
+  </details> 
 
 This will:
 * Extract all third party dependencies from the folder `third-party` into the folder `build\deps\win`
@@ -203,18 +207,18 @@ Open CMD in the repo folder, then run the following
   You can then go to the folder `build\project\vs2026\win` and open the produced `.sln` file in Visual Studio.
   Or, if you prefer to do it from command line, open the `Developer Command Prompt for VS 2026` inside the above folder, then:
   ```batch
-  msbuild /nologo /v:n /p:Configuration=release,Platform=Win32 gbe.slnx
+  msbuild /nologo /v:n /p:Configuration=release,Platform=Win32 gse.slnx
 
-  msbuild /nologo /v:n /p:Configuration=release,Platform=x64 gbe.slnx
+  msbuild /nologo /v:n /p:Configuration=release,Platform=x64 gse.slnx
   ```
 
 * For `MSYS2` **this is currently experimental and will not work due to ABI differences**
   <details>
     <summary>steps</summary>
-
+  
     ```shell
     ./third-party/common/win/premake/premake5.exe --file=premake5.lua --genproto --os=windows gmake2
-
+  
     cd ./build/project/gmake2/win
     ```
     *(Optional)* You can use `Clang` compiler instead of `GCC` by running these 2 commands in the current terminal instance
@@ -230,10 +234,12 @@ Open CMD in the repo folder, then run the following
       ```shell
       make config=release_x86 -j 8 all
       ```
-    To see all possible build targets
+      To see all possible build targets
     ```shell
     make help
     ```
+  
+  </details> 
 
   </details>
 

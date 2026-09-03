@@ -62,12 +62,15 @@ message Lobby_Messages {
         CHANGE_OWNER = 2;
         MEMBER_DATA = 3;
         CHAT_MESSAGE = 4;
+        JOIN_RESPONSE = 5;
+        KICK = 6;
     }
 
     Types type = 2;
     uint64 idata = 3;
     bytes bdata = 4;
     map<string, bytes> map = 5;
+    bool join_accepted = 6;
 }
 
 message Low_Level {
@@ -191,6 +194,9 @@ message Friend {
     uint32 appid = 4;
     uint64 lobby_id = 5;
     bytes avatar = 6;
+    int32 lobby_member_count = 7;
+    int32 lobby_member_limit = 8;
+    bytes lobby_owner_name = 9;
 }
 
 message Auth_Ticket {

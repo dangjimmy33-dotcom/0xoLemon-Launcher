@@ -114,8 +114,8 @@ struct HuggingFaceRepoEntry {
     revision: String,
     #[serde(default = "default_enabled")]
     enabled: bool,
-    #[serde(default, rename = "token")]
-    _legacy_token: Option<String>,
+    #[serde(default)]
+    token: Option<String>,
 }
 
 fn default_repo_type() -> String {
@@ -278,12 +278,20 @@ fn repo_entry_to_base_url(entry: &HuggingFaceRepoEntry) -> Option<(String, Optio
         _ => "datasets/",
     };
 
+    let token = entry
+        .token
+        .as_deref()
+        .map(str::trim)
+        .filter(|t| !t.is_empty())
+        .map(str::to_string)
+        .or_else(|| token_for_repo(repo_id));
+
     Some((
         format!(
             "https://huggingface.co/{prefix}{repo_id}/resolve/{}",
             encode_hf_relative_path(revision)
         ),
-        token_for_repo(repo_id),
+        token,
     ))
 }
 

@@ -1,0 +1,17 @@
+html[data-ui-theme='lightning'] {
+  --lightning-bg: #070709;
+  --lightning-frame: rgba(10, 10, 13, .84);
+  --lightning-frame-strong: rgba(13, 13, 17, .94);
+  --lightning-panel: rgba(21, 21, 27, .78);
+  --lightning-panel-strong: rgba(29, 29, 36, .92);
+  --lightning-line: rgba(255, 255, 255, .10);
+  --lightning-line-strong: rgba(255, 157, 108, .34);
+  --lightning-orange: #ff7448;
+  --lightning-orange-strong: #ffad70;
+  --lightning-pink: #d94c78;
+  --lightning-text: #f7f4f2;
+  --lightning-muted: #aaa5a3;
+  --lightning-danger: #ff6b6b;
+  --launcher-content-radius: 14px;
+  color-scheme: dark;
+}

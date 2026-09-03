@@ -14,31 +14,17 @@ export default defineConfig({
       // service worker on its localhost origin.
       injectRegister: false,
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,ttf}'],
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/firestore\.googleapis\.com\/.*/i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'firebase-firestore-cache',
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
-              },
-              cacheableResponse: {
-                statuses: [0, 200],
-              },
-            },
-          },
-        ],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,avif,webp,woff2,ttf}'],
+        navigateFallback: '/index.html',
+        runtimeCaching: [],
       },
       includeAssets: ['favicon.svg'],
       manifest: {
-        name: '0xoLemon Store',
+        name: '0xoLemon Launcher',
         short_name: '0xoLemon',
-        description: '0xoLemon Store & Launcher',
-        theme_color: '#0e1116',
-        background_color: '#0e1116',
+        description: 'Version-aware game delivery and authenticated Remote Web access.',
+        theme_color: '#080b0e',
+        background_color: '#080b0e',
         display: 'standalone',
         icons: [
           {

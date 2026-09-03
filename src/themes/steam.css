@@ -1,0 +1,2725 @@
+/*
+ * Steam workbench skin for 0xoLemon Launcher.
+ *
+ * This package owns a versioned Steam-like workbench structure and its native
+ * blue palette. Color Studio overrides the palette only when the user opts in.
+ * No Valve binary, script bundle, logo, or proprietary artwork is included.
+ */
+
+.steam-primary-nav,
+.steam-bottom-bar,
+.steam-client-menu {
+  display: none;
+}
+
+html[data-ui-theme='steam'] {
+  --steam-library-rail-width: clamp(290px, 21vw, 404px);
+  --steam-shell-line: color-mix(in oklab, transparent 68%, var(--theme-accent) 32%);
+  --steam-shell-line-soft: color-mix(in oklab, transparent 83%, var(--theme-accent) 17%);
+  --steam-shell-chrome: color-mix(in oklab, var(--launcher-chrome-bg) 90%, black 10%);
+  --steam-shell-chrome-2: color-mix(in oklab, var(--launcher-chrome-bg-strong) 88%, var(--theme-accent-deep) 12%);
+  --steam-shell-panel: color-mix(in oklab, var(--theme-card-bg) 92%, black 8%);
+  --steam-shell-panel-soft: color-mix(in oklab, var(--theme-card-bg-soft) 94%, black 6%);
+  --steam-shell-row: color-mix(in oklab, var(--theme-card-bg) 86%, var(--theme-accent-deep) 14%);
+  --steam-shell-row-hover: color-mix(in oklab, var(--theme-card-bg) 72%, var(--theme-accent) 28%);
+  --steam-shell-input: color-mix(in oklab, var(--launcher-page-bg) 84%, black 16%);
+  --steam-shell-action: color-mix(in oklab, var(--theme-card-bg) 58%, var(--theme-accent) 42%);
+  --steam-shell-action-strong: color-mix(in oklab, var(--theme-card-bg) 34%, var(--theme-accent) 66%);
+  --steam-acquire-start: #75b022;
+  --steam-acquire-end: #588a1b;
+  --steam-acquire-hover-start: #8bc53f;
+  --steam-acquire-hover-end: #6aa621;
+  --steam-shell-shadow: 0 16px 44px rgba(0, 0, 0, .48);
+
+  /* Semantic aliases: every shared popup/surface consumes the same Color Wheel
+     driven palette while the Steam skin changes only structure and density. */
+  --ui-page-bg: var(--launcher-page-bg);
+  --ui-frame-bg: var(--launcher-frame-bg);
+  --ui-sidebar-bg: var(--launcher-sidebar-bg);
+  --ui-panel-bg: var(--steam-shell-panel);
+  --ui-popup-bg: var(--steam-shell-panel-soft);
+  --ui-overlay-bg: color-mix(in oklab, transparent 22%, var(--launcher-frame-bg) 78%);
+  --ui-selection-bg: color-mix(in oklab, transparent 72%, var(--theme-accent) 28%);
+  --ui-hover-bg: color-mix(in oklab, transparent 86%, var(--theme-accent) 14%);
+  --ui-border: var(--steam-shell-line-soft);
+  --ui-border-strong: var(--steam-shell-line);
+  --ui-radius-sm: 1px;
+  --ui-radius-md: 2px;
+  --ui-radius-lg: 3px;
+  --launcher-content-radius: 0px;
+}
+
+html[data-ui-theme='steam'] body,
+html[data-ui-theme='steam'] #root {
+  background: var(--launcher-frame-bg);
+  color: var(--text);
+}
+
+/* Disable the ambient glow field in Steam mode. Steam's hierarchy is created
+   by bands, shelves and utility chrome rather than background blobs. */
+html[data-ui-theme='steam'] .launcher-shell::before,
+html[data-ui-theme='steam'] .launcher-shell::after {
+  display: none;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Native title bar                                                            */
+/* -------------------------------------------------------------------------- */
+html[data-ui-theme='steam'] .custom-titlebar {
+  min-height: 30px;
+  height: 30px;
+  padding: 0;
+  background: var(--steam-shell-chrome-2);
+  border-bottom: 1px solid rgba(0, 0, 0, .42);
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+html[data-ui-theme='steam'] .titlebar-sidebar-toggle {
+  display: none !important;
+}
+
+html[data-ui-theme='steam'] .steam-client-menu {
+  display: flex;
+  align-items: stretch;
+  height: 100%;
+  flex: 0 0 auto;
+  padding-left: 8px;
+}
+
+html[data-ui-theme='steam'] .steam-client-menu button {
+  height: 100%;
+  padding: 0 7px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+html[data-ui-theme='steam'] .steam-client-menu button:hover {
+  background: var(--theme-hover-bg);
+  color: var(--text-strong);
+}
+
+html[data-ui-theme='steam'] .titlebar-drag-area {
+  min-width: 100px;
+  flex: 1 1 auto;
+}
+
+html[data-ui-theme='steam'] .titlebar-label {
+  opacity: .72;
+  transform: scale(.88);
+  transform-origin: left center;
+}
+
+html[data-ui-theme='steam'] .titlebar-label-secondary {
+  display: none;
+}
+
+html[data-ui-theme='steam'] .titlebar-status-cluster {
+  gap: 4px;
+}
+
+html[data-ui-theme='steam'] .titlebar-clock,
+html[data-ui-theme='steam'] .titlebar-discord-user,
+html[data-ui-theme='steam'] .titlebar-online-chip,
+html[data-ui-theme='steam'] .titlebar-bell,
+html[data-ui-theme='steam'] .titlebar-social-toggle,
+html[data-ui-theme='steam'] .titlebar-status-icon {
+  border-radius: 0 !important;
+}
+
+html[data-ui-theme='steam'] .titlebar-btn {
+  width: 42px;
+  height: 30px;
+  border-radius: 0;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Full workbench shell: horizontal primary nav + content + bottom utility bar */
+/* -------------------------------------------------------------------------- */
+html[data-ui-theme='steam'] .launcher-shell.steam-shell-layout {
+  --launcher-sidebar-track: 0px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: 54px minmax(0, 1fr);
+  gap: 0;
+  padding-right: var(--social-layout-reserve, 0px);
+  background: var(--launcher-frame-bg);
+  transition: padding-right .2s ease;
+}
+
+html[data-ui-theme='steam'] .launcher-shell.steam-shell-layout > .sidebar {
+  display: none !important;
+}
+
+html[data-ui-theme='steam'] .steam-primary-nav {
+  grid-column: 1;
+  grid-row: 1;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  padding: 0 18px;
+  background:
+    linear-gradient(180deg,
+      color-mix(in oklab, var(--steam-shell-chrome) 82%, var(--theme-accent) 18%),
+      var(--steam-shell-chrome));
+  border-bottom: 1px solid rgba(0, 0, 0, .46);
+  box-shadow: inset 0 -1px var(--steam-shell-line-soft);
+  z-index: 30;
+}
+
+html[data-ui-theme='steam'] .steam-nav-home-mark {
+  height: 100%;
+  min-width: 148px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 18px 0 2px;
+  border: 0;
+  background: transparent;
+  color: var(--text-strong);
+  cursor: pointer;
+}
+
+html[data-ui-theme='steam'] .steam-nav-home-mark strong {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: .01em;
+}
+
+html[data-ui-theme='steam'] .steam-history-controls {
+  display: grid;
+  grid-template-columns: repeat(2, 30px);
+  gap: 2px;
+  margin-right: 10px;
+}
+
+html[data-ui-theme='steam'] .steam-history-controls button {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 1px;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+}
+
+html[data-ui-theme='steam'] .steam-history-controls button:hover:not(:disabled),
+html[data-ui-theme='steam'] .steam-history-controls button:focus-visible {
+  color: var(--text-strong);
+  border-color: var(--steam-shell-line-soft);
+  background: var(--theme-hover-bg);
+}
+
+html[data-ui-theme='steam'] .steam-history-controls button:disabled {
+  color: var(--muted);
+  opacity: .32;
+  cursor: default;
+}
+
+html[data-ui-theme='steam'] .steam-mark-disc {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  border: 2px solid color-mix(in oklab, white 52%, var(--theme-accent) 48%);
+  border-radius: 50%;
+}
+
+html[data-ui-theme='steam'] .steam-mark-disc::before,
+html[data-ui-theme='steam'] .steam-mark-disc::after {
+  content: '';
+  position: absolute;
+  background: currentColor;
+}
+
+html[data-ui-theme='steam'] .steam-mark-disc::before {
+  width: 7px;
+  height: 7px;
+  right: 2px;
+  top: 2px;
+  border: 2px solid var(--theme-accent-strong);
+  border-radius: 50%;
+  background: transparent;
+}
+
+html[data-ui-theme='steam'] .steam-mark-disc::after {
+  width: 13px;
+  height: 2px;
+  left: 3px;
+  bottom: 5px;
+  transform: rotate(-28deg);
+  transform-origin: left center;
+  background: var(--theme-accent-strong);
+}
+
+html[data-ui-theme='steam'] .steam-primary-tabs {
+  height: 100%;
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+html[data-ui-theme='steam'] .steam-primary-tabs button {
+  position: relative;
+  min-width: 0;
+  height: 100%;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: color-mix(in oklab, var(--muted) 84%, white 16%);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: .015em;
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+html[data-ui-theme='steam'] .steam-primary-tabs button:hover {
+  color: var(--text-strong);
+  background: color-mix(in oklab, transparent 92%, var(--theme-accent) 8%);
+}
+
+html[data-ui-theme='steam'] .steam-primary-tabs button.is-active {
+  color: var(--theme-accent-strong);
+}
+
+html[data-ui-theme='steam'] .steam-primary-tabs button.is-drag-over {
+  color: var(--theme-accent-strong);
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  transform: scale(1.05);
+}
+
+html[data-ui-theme='steam'] .steam-primary-tabs button.is-active::after {
+  content: '';
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 6px;
+  height: 2px;
+  background: var(--theme-accent-strong);
+  box-shadow: 0 0 10px color-mix(in oklab, transparent 45%, var(--theme-accent) 55%);
+}
+
+html[data-ui-theme='steam'] .steam-nav-tools {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+html[data-ui-theme='steam'] .steam-tools-trigger {
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  border: 1px solid var(--steam-shell-line-soft);
+  border-radius: 1px;
+  background: color-mix(in oklab, var(--steam-shell-panel) 86%, transparent);
+  color: var(--muted);
+  font: inherit;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+html[data-ui-theme='steam'] .steam-tools-trigger:hover,
+html[data-ui-theme='steam'] .steam-tools-trigger.is-open {
+  color: var(--text-strong);
+  border-color: var(--steam-shell-line);
+  background: var(--theme-hover-bg);
+}
+
+html[data-ui-theme='steam'] .steam-tools-popover {
+  position: absolute;
+  top: calc(100% + 7px);
+  right: 0;
+  width: 235px;
+  padding: 5px;
+  background: var(--ui-popup-bg-strong);
+  border: 1px solid var(--steam-shell-line);
+  box-shadow: var(--steam-shell-shadow);
+  z-index: 200;
+}
+
+html[data-ui-theme='steam'] .steam-tools-popover button {
+  width: 100%;
+  height: 33px;
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+  padding: 0 8px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+html[data-ui-theme='steam'] .steam-tools-popover button:hover {
+  background: var(--theme-selected-bg);
+  color: var(--text-strong);
+}
+
+html[data-ui-theme='steam'] .steam-tools-popover b {
+  min-width: 20px;
+  text-align: center;
+  color: var(--theme-accent-strong);
+  font-size: 10px;
+}
+
+html[data-ui-theme='steam'] .steam-route-frame {
+  grid-column: 1;
+  grid-row: 2;
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: 28px minmax(0, 1fr);
+  overflow: hidden;
+  background: var(--launcher-page-bg);
+}
+
+html[data-ui-theme='steam'] .steam-route-context {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 13px;
+  border-bottom: 1px solid rgba(0, 0, 0, .36);
+  background: color-mix(in oklab, var(--steam-shell-chrome-2) 88%, black 12%);
+  color: var(--muted);
+  font-size: 10px;
+}
+
+html[data-ui-theme='steam'] .steam-route-breadcrumb,
+html[data-ui-theme='steam'] .steam-route-indicators,
+html[data-ui-theme='steam'] .steam-route-indicators span {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+html[data-ui-theme='steam'] .steam-route-breadcrumb strong { color: var(--text-strong); }
+html[data-ui-theme='steam'] .steam-route-breadcrumb span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+html[data-ui-theme='steam'] .steam-route-content {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+html[data-ui-theme='steam'] .steam-route-content > .workspace-corner-clip {
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  border-radius: 0;
+  background: var(--launcher-page-bg);
+}
+
+html[data-ui-theme='steam'] .launcher-shell.steam-shell-layout .workspace,
+html[data-ui-theme='steam'] .launcher-shell.steam-shell-layout .premium-workspace {
+  height: 100%;
+  min-height: 0;
+  border-radius: 0;
+  background:
+    linear-gradient(180deg,
+      color-mix(in oklab, var(--launcher-page-bg-soft) 70%, transparent),
+      var(--launcher-page-bg) 34%);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+html[data-ui-theme='steam'] .steam-bottom-bar {
+  position: fixed;
+  left: 0;
+  right: var(--social-layout-reserve, 0px);
+  bottom: 0;
+  height: 31px;
+  display: grid;
+  grid-template-columns: auto minmax(160px, 1fr) auto auto;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+  padding: 0 10px;
+  border-top: 1px solid rgba(0, 0, 0, .5);
+  background: var(--steam-shell-chrome-2);
+  box-shadow: inset 0 1px var(--steam-shell-line-soft);
+  z-index: 120;
+}
+
+html[data-ui-theme='steam'] .launcher-shell.steam-shell-has-bottom-bar > .steam-route-frame {
+  margin-bottom: 31px;
+}
+
+html[data-ui-theme='steam'] .steam-bottom-bar button {
+  width: max-content;
+  height: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 8px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+html[data-ui-theme='steam'] .steam-bottom-bar button:nth-child(2) {
+  justify-self: center;
+}
+
+html[data-ui-theme='steam'] .steam-bottom-bar button:nth-child(3) {
+  justify-self: end;
+}
+
+html[data-ui-theme='steam'] .steam-bottom-bar button:hover {
+  color: var(--text-strong);
+  background: var(--theme-hover-bg);
+}
+
+html[data-ui-theme='steam'] .steam-bottom-status {
+  height: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px;
+  color: color-mix(in oklab, var(--muted) 78%, var(--theme-accent-strong) 22%);
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Page primitives                                                             */
+/* -------------------------------------------------------------------------- */
+html[data-ui-theme='steam'] .panel,
+html[data-ui-theme='steam'] .settings-group,
+html[data-ui-theme='steam'] .store-detail-panel,
+html[data-ui-theme='steam'] .detail-description,
+html[data-ui-theme='steam'] .install-summary-panel,
+html[data-ui-theme='steam'] .game-details-panel,
+html[data-ui-theme='steam'] .translation-catalog-card,
+html[data-ui-theme='steam'] .translation-detail-view,
+html[data-ui-theme='steam'] .cloud-saves-card,
+html[data-ui-theme='steam'] .home-card {
+  border-radius: 1px;
+  border-color: var(--steam-shell-line-soft);
+  background: var(--steam-shell-panel);
+  box-shadow: none;
+}
+
+html[data-ui-theme='steam'] button,
+html[data-ui-theme='steam'] input,
+html[data-ui-theme='steam'] textarea,
+html[data-ui-theme='steam'] select {
+  accent-color: var(--theme-accent);
+}
+
+html[data-ui-theme='steam'] .primary-control,
+html[data-ui-theme='steam'] .update-control,
+html[data-ui-theme='steam'] .hero-play-button,
+html[data-ui-theme='steam'] .install-modal footer .primary-control,
+html[data-ui-theme='steam'] .confirm-dialog-info,
+html[data-ui-theme='steam'] .guided-tour-primary {
+  border-radius: 1px !important;
+  border-color: color-mix(in oklab, transparent 55%, var(--theme-accent-strong) 45%) !important;
+  background: linear-gradient(90deg, var(--steam-shell-action), var(--steam-shell-action-strong)) !important;
+  color: color-mix(in oklab, black 76%, var(--theme-accent-deep) 24%) !important;
+  box-shadow: none !important;
+}
+
+html[data-ui-theme='steam'] .primary-control:hover,
+html[data-ui-theme='steam'] .update-control:hover,
+html[data-ui-theme='steam'] .hero-play-button:hover,
+html[data-ui-theme='steam'] .install-modal footer .primary-control:hover {
+  filter: brightness(1.08);
+}
+
+html[data-ui-theme='steam'] .secondary-control,
+html[data-ui-theme='steam'] .secondary,
+html[data-ui-theme='steam'] .settings-secondary-button,
+html[data-ui-theme='steam'] .settings-reset,
+html[data-ui-theme='steam'] .settings-path-control button,
+html[data-ui-theme='steam'] .sort-toggle-btn,
+html[data-ui-theme='steam'] .view-layout-toggle button {
+  border-radius: 1px !important;
+  background: var(--theme-control-bg);
+  border-color: var(--steam-shell-line-soft);
+  box-shadow: none;
+}
+
+html[data-ui-theme='steam'] .secondary-control:hover,
+html[data-ui-theme='steam'] .secondary:hover,
+html[data-ui-theme='steam'] .settings-secondary-button:hover,
+html[data-ui-theme='steam'] .settings-reset:hover,
+html[data-ui-theme='steam'] .sort-toggle-btn:hover,
+html[data-ui-theme='steam'] .view-layout-toggle button:hover {
+  background: var(--theme-control-hover-bg);
+  border-color: var(--steam-shell-line);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Store / catalog                                                             */
+/* -------------------------------------------------------------------------- */
+html[data-ui-theme='steam'] .library-browse-view {
+  padding: 20px 24px 34px;
+  gap: 16px;
+}
+
+html[data-ui-theme='steam'] .library-browse-toolbar {
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 0 10px;
+  border-bottom: 1px solid var(--steam-shell-line-soft);
+}
+
+html[data-ui-theme='steam'] .library-browse-heading {
+  margin-right: auto;
+}
+
+html[data-ui-theme='steam'] .library-browse-heading strong {
+  font-size: 18px;
+  letter-spacing: .01em;
+}
+
+html[data-ui-theme='steam'] .library-browse-toolbar .store-mode-switch {
+  display: none;
+}
+
+html[data-ui-theme='steam'] .library-toolbar-actions {
+  margin-left: auto;
+  gap: 8px;
+}
+
+html[data-ui-theme='steam'] .store-search {
+  min-width: 270px;
+  border-radius: 1px;
+  background: var(--steam-shell-input);
+  border-color: var(--steam-shell-line-soft);
+}
+
+html[data-ui-theme='steam'] .store-card,
+html[data-ui-theme='steam'] .library-card {
+  border-radius: 1px;
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
+
+html[data-ui-theme='steam'] .store-card:hover,
+html[data-ui-theme='steam'] .library-card:hover {
+  background: color-mix(in oklab, transparent 90%, var(--theme-accent) 10%);
+  border-color: var(--steam-shell-line-soft);
+  transform: none;
+}
+
+html[data-ui-theme='steam'] .store-card-image-wrapper {
+  border-radius: 0;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, .34);
+}
+
+html[data-ui-theme='steam'] .steam-add-library-control {
+  min-width: 170px;
+  justify-content: center;
+}
+
+html[data-ui-theme='steam'] .steam-add-library-control[data-library-state='available'] {
+  border-color: rgba(137, 196, 63, .64) !important;
+  background: linear-gradient(90deg, var(--steam-acquire-start), var(--steam-acquire-end)) !important;
+  color: #f4ffe6 !important;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, .35);
+}
+
+html[data-ui-theme='steam'] .steam-add-library-control[data-library-state='available']:hover {
+  background: linear-gradient(90deg, var(--steam-acquire-hover-start), var(--steam-acquire-hover-end)) !important;
+  filter: none;
+}
+
+html[data-ui-theme='steam'] .steam-add-library-control[data-library-state='available']:active {
+  background: linear-gradient(90deg, #4f7d18, #3f6912) !important;
+}
+
+html[data-ui-theme='steam'] .steam-add-library-control[data-library-state='available']:focus-visible {
+  outline: 2px solid rgba(170, 224, 98, .86);
+  outline-offset: 2px;
+}
+
+html[data-ui-theme='steam'] .steam-add-library-control[data-library-state='owned'] {
+  background: linear-gradient(90deg, var(--steam-shell-action), var(--steam-shell-action-strong)) !important;
+}
+
+html[data-ui-theme='steam'] .library-persist-error {
+  flex: 1 1 100%;
+  padding: 7px 9px;
+  border: 1px solid rgba(239, 92, 92, .44);
+  color: #ffb0a8;
+  background: rgba(112, 25, 25, .36);
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+/* Store is discovery/acquisition only in the Steam skin. Installing and download
+   management live in Library, matching the launcher's ownership flow. */
+html[data-ui-theme='steam'] .game-detail-view:not(.has-steam-library-rail) .install-summary-panel,
+html[data-ui-theme='steam'] .game-detail-view:not(.has-steam-library-rail) .verify-feedback {
+  display: none;
+}
+
+/* Search overlay becomes a Steam-style command surface instead of a floating
+   rounded mobile sheet. */
+html[data-ui-theme='steam'] .store-search-backdrop {
+  background: color-mix(in oklab, rgba(0,0,0,.68) 82%, var(--theme-accent-deep) 18%);
+  backdrop-filter: blur(1px);
+}
+
+html[data-ui-theme='steam'] .store-search-surface {
+  border-radius: 1px;
+  background: var(--ui-popup-bg);
+  border-color: var(--steam-shell-line);
+  box-shadow: var(--steam-shell-shadow);
+}
+
+html[data-ui-theme='steam'] .store-search-command,
+html[data-ui-theme='steam'] .store-search-filters,
+html[data-ui-theme='steam'] .store-search-chips button {
+  border-radius: 1px;
+}
+
+/* Theme picker: selection is staged; the currently running theme is separately
+   labelled so changing it never masquerades as already-applied. */
+html[data-ui-theme='steam'] .ui-theme-selection-stack {
+  width: min(650px, 100%);
+}
+
+html[data-ui-theme='steam'] .ui-theme-card {
+  border-radius: 1px;
+}
+
+.ui-theme-card-running {
+  position: absolute;
+  left: 7px;
+  top: 7px;
+  padding: 3px 5px;
+  border: 1px solid var(--line);
+  background: color-mix(in oklab, var(--theme-card-bg) 88%, transparent);
+  color: var(--muted);
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+
+.ui-theme-restart-required {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--line-strong);
+  background: var(--theme-accent-surface);
+}
+
+.ui-theme-restart-required > svg {
+  color: var(--theme-accent-strong);
+}
+
+.ui-theme-restart-required strong,
+.ui-theme-restart-required span {
+  display: block;
+}
+
+.ui-theme-restart-required strong {
+  color: var(--text-strong);
+  font-size: 11px;
+}
+
+.ui-theme-restart-required span {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.ui-theme-restart-required button {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 1px;
+  background: var(--steam-shell-action);
+  color: var(--text-strong);
+  cursor: pointer;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Modal / context / dropdown system                                           */
+/* -------------------------------------------------------------------------- */
+html[data-ui-theme='steam'] .dialog-backdrop,
+html[data-ui-theme='steam'] .confirm-dialog-backdrop,
+html[data-ui-theme='steam'] .chat-modal-backdrop,
+html[data-ui-theme='steam'] .offline-detail-overlay,
+html[data-ui-theme='steam'] .donate-modal-backdrop {
+  background: var(--ui-overlay-bg);
+  backdrop-filter: blur(1px);
+}
+
+html[data-ui-theme='steam'] .install-modal,
+html[data-ui-theme='steam'] .confirm-dialog,
+html[data-ui-theme='steam'] .achievement-modal,
+html[data-ui-theme='steam'] .launch-options-modal,
+html[data-ui-theme='steam'] .offline-detail-panel,
+html[data-ui-theme='steam'] .donate-modal,
+html[data-ui-theme='steam'] .help-center,
+html[data-ui-theme='steam'] .lua-manager-dialog,
+html[data-ui-theme='steam'] .lua-source-picker,
+html[data-ui-theme='steam'] .guided-tour-card {
+  border-radius: 1px;
+  background: var(--ui-popup-bg);
+  border: 1px solid var(--steam-shell-line);
+  box-shadow: var(--steam-shell-shadow);
+}
+
+html[data-ui-theme='steam'] .install-modal {
+  width: min(660px, calc(100vw - 44px));
+  padding: 0;
+}
+
+html[data-ui-theme='steam'] .install-modal .modal-handle,
+html[data-ui-theme='steam'] .confirm-dialog .modal-handle {
+  display: none;
+}
+
+html[data-ui-theme='steam'] .install-modal header,
+html[data-ui-theme='steam'] .confirm-dialog-header {
+  min-height: 48px;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--steam-shell-line-soft);
+  background: var(--steam-shell-chrome);
+}
+
+html[data-ui-theme='steam'] .install-modal header h2,
+html[data-ui-theme='steam'] .confirm-dialog-header h2 {
+  font-size: 16px;
+}
+
+html[data-ui-theme='steam'] .install-modal header button,
+html[data-ui-theme='steam'] .confirm-dialog-close,
+html[data-ui-theme='steam'] .guided-tour-close {
+  border-radius: 1px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--muted);
+}
+
+html[data-ui-theme='steam'] .install-modal header button:hover,
+html[data-ui-theme='steam'] .confirm-dialog-close:hover,
+html[data-ui-theme='steam'] .guided-tour-close:hover {
+  background: var(--theme-hover-bg);
+  border-color: var(--steam-shell-line-soft);
+  color: var(--text-strong);
+}
+
+html[data-ui-theme='steam'] .install-options-grid > div,
+html[data-ui-theme='steam'] .version-dropdown-trigger,
+html[data-ui-theme='steam'] .version-dropdown-option,
+html[data-ui-theme='steam'] .install-folder-row,
+html[data-ui-theme='steam'] .download-folder-row {
+  border-radius: 1px;
+  border-color: var(--steam-shell-line-soft);
+  background: var(--steam-shell-input);
+}
+
+html[data-ui-theme='steam'] .version-dropdown-menu,
+html[data-ui-theme='steam'] .cs-dropdown,
+html[data-ui-theme='steam'] .sort-dropdown-menu,
+html[data-ui-theme='steam'] .ctx-menu,
+html[data-ui-theme='steam'] .hover-card-portal,
+html[data-ui-theme='steam'] .lua-manager-build-menu {
+  border-radius: 1px;
+  background: var(--ui-popup-bg-strong);
+  border: 1px solid var(--steam-shell-line);
+  box-shadow: var(--steam-shell-shadow);
+}
+
+html[data-ui-theme='steam'] .ctx-menu button,
+html[data-ui-theme='steam'] .sort-dropdown-menu button,
+html[data-ui-theme='steam'] .version-dropdown-option,
+html[data-ui-theme='steam'] .cs-option {
+  border-radius: 0;
+}
+
+html[data-ui-theme='steam'] .ctx-menu button:hover,
+html[data-ui-theme='steam'] .sort-dropdown-menu button:hover,
+html[data-ui-theme='steam'] .version-dropdown-option:hover,
+html[data-ui-theme='steam'] .version-dropdown-option.active,
+html[data-ui-theme='steam'] .cs-option:hover,
+html[data-ui-theme='steam'] .cs-option.is-selected {
+  background: var(--theme-selected-bg);
+  color: var(--text-strong);
+}
+
+html[data-ui-theme='steam'] .install-modal footer,
+html[data-ui-theme='steam'] .confirm-dialog-footer {
+  padding: 10px 14px;
+  border-top: 1px solid var(--steam-shell-line-soft);
+  background: color-mix(in oklab, var(--ui-popup-bg) 84%, black 16%);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Library/Game detail density                                                 */
+/* -------------------------------------------------------------------------- */
+html[data-ui-theme='steam'] .game-detail-view {
+  background: var(--launcher-page-bg);
+}
+
+html[data-ui-theme='steam'] .game-detail-main {
+  padding: 0 18px 32px;
+}
+
+html[data-ui-theme='steam'] .back-to-library {
+  margin: 8px 0;
+  border-radius: 1px;
+}
+
+html[data-ui-theme='steam'] .detail-hero {
+  border-radius: 0;
+  border: 0;
+  box-shadow: none;
+}
+
+html[data-ui-theme='steam'] .detail-hero-shade {
+  background: linear-gradient(180deg, transparent 36%, color-mix(in oklab, var(--launcher-page-bg) 94%, transparent) 100%);
+}
+
+html[data-ui-theme='steam'] .sticky-action-bar {
+  border-radius: 0;
+  background: var(--steam-shell-chrome);
+  border-color: var(--steam-shell-line-soft);
+}
+
+html[data-ui-theme='steam'] .detail-action-icon-btn,
+html[data-ui-theme='steam'] .storage-pill,
+html[data-ui-theme='steam'] .live-players-badge,
+html[data-ui-theme='steam'] .game-detail-tag {
+  border-radius: 1px !important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Scrollbars                                                                  */
+/* -------------------------------------------------------------------------- */
+html[data-ui-theme='steam'] ::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+html[data-ui-theme='steam'] ::-webkit-scrollbar-track {
+  background: color-mix(in oklab, var(--launcher-page-bg) 90%, black 10%);
+}
+
+html[data-ui-theme='steam'] ::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 0;
+  background: color-mix(in oklab, transparent 58%, var(--theme-accent) 42%);
+  background-clip: padding-box;
+}
+
+html[data-ui-theme='steam'] ::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklab, transparent 44%, var(--theme-accent-strong) 56%);
+  background-clip: padding-box;
+}
+
+@media (max-width: 980px) {
+  html[data-ui-theme='steam'] .steam-nav-home-mark { min-width: 112px; }
+  html[data-ui-theme='steam'] .steam-primary-tabs button { padding-inline: 8px; font-size: 12px; }
+}
+
+@media (max-width: 760px) {
+  html[data-ui-theme='steam'] .launcher-shell.steam-shell-layout { grid-template-rows: auto minmax(0, 1fr); }
+  html[data-ui-theme='steam'] .steam-primary-nav { min-height: 54px; flex-wrap: wrap; padding-block: 4px; }
+  html[data-ui-theme='steam'] .steam-nav-home-mark { min-width: auto; }
+  html[data-ui-theme='steam'] .steam-nav-home-mark strong { display: none; }
+  html[data-ui-theme='steam'] .steam-primary-tabs { order: 3; width: 100%; height: 34px; }
+  html[data-ui-theme='steam'] .steam-primary-tabs button { flex: 1 1 auto; }
+  .ui-theme-restart-required { grid-template-columns: 22px 1fr; }
+  .ui-theme-restart-required button { grid-column: 1 / -1; width: 100%; }
+}
+
+/* --------------------------------------------------------------------------
+   Library structural companion rail. Hidden in Default; Steam skin owns it.
+   -------------------------------------------------------------------------- */
+.steam-library-rail,
+.steam-library-detail-rail {
+  display: none;
+}
+
+html[data-ui-theme='steam'] .library-browse-view.has-steam-library-rail {
+  display: grid;
+  grid-template-columns: var(--steam-library-rail-width) minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  column-gap: 0;
+  padding: 0;
+  min-height: 100%;
+  background: var(--steam-shell-content);
+}
+
+html[data-ui-theme='steam'] .library-browse-view.has-steam-library-rail > :not(.steam-library-rail) {
+  grid-column: 2;
+}
+
+html[data-ui-theme='steam'] .library-browse-view.has-steam-library-rail > .steam-library-rail {
+  grid-column: 1;
+  grid-row: 1 / span 20;
+}
+
+html[data-ui-theme='steam'] .steam-library-rail,
+html[data-ui-theme='steam'] .steam-library-detail-rail {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  width: var(--steam-library-rail-width);
+  border-right: 1px solid var(--steam-shell-line);
+  background: color-mix(in oklab, var(--launcher-sidebar-bg) 93%, black 7%);
+  color: var(--text);
+  overflow: hidden;
+  z-index: 5;
+}
+
+html[data-ui-theme='steam'] .steam-library-rail {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: calc(100vh - 115px);
+}
+
+html[data-ui-theme='steam'] .steam-library-detail-rail {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: calc(100vh - 115px);
+}
+
+html[data-ui-theme='steam'] .steam-library-home-button {
+  height: 39px;
+  margin: 7px 7px 5px;
+  padding: 0 10px;
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid transparent;
+  border-radius: 1px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 650;
+  text-align: left;
+  cursor: pointer;
+}
+
+html[data-ui-theme='steam'] .steam-library-home-button:hover,
+html[data-ui-theme='steam'] .steam-library-home-button.is-active {
+  color: var(--text-strong);
+  background: color-mix(in oklab, transparent 80%, var(--theme-accent) 20%);
+  border-color: color-mix(in oklab, transparent 70%, var(--theme-accent) 30%);
+}
+
+html[data-ui-theme='steam'] .steam-library-home-button small {
+  min-width: 20px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 9px;
+}
+
+html[data-ui-theme='steam'] .steam-library-search {
+  height: 31px;
+  margin: 0 7px 8px;
+  padding: 0 7px;
+  display: grid;
+  grid-template-columns: 15px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid var(--steam-shell-line);
+  background: color-mix(in oklab, var(--launcher-page-bg) 84%, black 16%);
+  color: var(--muted);
+}
+
+html[data-ui-theme='steam'] .steam-library-search input {
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text-strong);
+  font: inherit;
+  font-size: 10px;
+}
+
+html[data-ui-theme='steam'] .steam-library-search kbd {
+  padding: 2px 4px;
+  border: 1px solid var(--steam-shell-line);
+  border-radius: 1px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 8px;
+}
+
+html[data-ui-theme='steam'] .steam-library-rail-heading {
+  height: 24px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--steam-shell-line);
+  border-bottom: 1px solid var(--steam-shell-line);
+  color: var(--muted);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+html[data-ui-theme='steam'] .steam-library-collections-heading {
+  border-bottom: 0;
+}
+
+html[data-ui-theme='steam'] .steam-library-collection-add,
+html[data-ui-theme='steam'] .steam-library-collection-remove {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+html[data-ui-theme='steam'] .steam-library-collection-add:hover,
+html[data-ui-theme='steam'] .steam-library-collection-remove:hover {
+  color: var(--text-strong);
+  background: color-mix(in oklab, transparent 86%, var(--text) 14%);
+}
+
+html[data-ui-theme='steam'] .steam-library-collection-editor {
+  height: 30px;
+  margin: 2px 7px 4px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 28px;
+  border: 1px solid var(--steam-shell-line);
+  background: color-mix(in oklab, var(--launcher-page-bg) 84%, black 16%);
+}
+
+html[data-ui-theme='steam'] .steam-library-collection-editor input,
+html[data-ui-theme='steam'] .steam-library-collection-editor button {
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text-strong);
+  font: inherit;
+  font-size: 10px;
+}
+
+html[data-ui-theme='steam'] .steam-library-collection-editor input {
+  padding: 0 7px;
+}
+
+html[data-ui-theme='steam'] .steam-library-collection-editor button {
+  border-left: 1px solid var(--steam-shell-line);
+  cursor: pointer;
+}
+
+html[data-ui-theme='steam'] .steam-library-collection-editor button:disabled {
+  opacity: .35;
+  cursor: default;
+}
+
+html[data-ui-theme='steam'] .steam-library-collection-list {
+  max-height: 132px;
+  overflow: auto;
+  padding: 2px 0 5px;
+  border-bottom: 1px solid var(--steam-shell-line);
+}
+
+html[data-ui-theme='steam'] .steam-library-collection-row {
+  width: 100%;
+  height: 25px;
+  padding: 0 9px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  border-left: 2px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 10px;
+  text-align: left;
+  cursor: pointer;
+}
+
+html[data-ui-theme='steam'] .steam-library-collection-row span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+html[data-ui-theme='steam'] .steam-library-collection-row small {
+  color: var(--muted);
+  font-size: 8px;
+}
+
+html[data-ui-theme='steam'] .steam-library-collection-row:hover,
+html[data-ui-theme='steam'] .steam-library-collection-row.is-active {
+  color: var(--text-strong);
+  background: color-mix(in oklab, transparent 84%, var(--theme-accent) 16%);
+}
+
+html[data-ui-theme='steam'] .steam-library-collection-row.is-active {
+  border-left-color: var(--theme-accent-strong);
+}
+
+html[data-ui-theme='steam'] .steam-library-custom-collection {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 24px;
+  outline: 1px solid transparent;
+  outline-offset: -1px;
+}
+
+html[data-ui-theme='steam'] .steam-library-custom-collection.is-drop-target {
+  outline-color: var(--theme-accent-strong);
+  background: color-mix(in oklab, transparent 76%, var(--theme-accent) 24%);
+}
+
+html[data-ui-theme='steam'] .steam-library-custom-collection .steam-library-collection-row {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+html[data-ui-theme='steam'] .steam-library-game-row[draggable='true'] {
+  -webkit-user-drag: element;
+}
+
+html[data-ui-theme='steam'] .steam-library-game-list {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 3px 0 10px;
+}
+
+html[data-ui-theme='steam'] .steam-library-game-row {
+  width: 100%;
+  height: 27px;
+  padding: 0 7px;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) 7px;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  border-left: 2px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+html[data-ui-theme='steam'] .steam-library-game-row:hover {
+  background: color-mix(in oklab, transparent 88%, var(--text) 12%);
+  color: var(--text-strong);
+}
+
+html[data-ui-theme='steam'] .steam-library-game-row.is-active {
+  border-left-color: var(--theme-accent-strong);
+  background: color-mix(in oklab, transparent 74%, var(--theme-accent) 26%);
+  color: var(--text-strong);
+}
+
+html[data-ui-theme='steam'] .steam-library-game-icon {
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: color-mix(in oklab, var(--launcher-page-bg) 78%, black 22%);
+}
+
+html[data-ui-theme='steam'] .steam-library-game-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+html[data-ui-theme='steam'] .steam-library-game-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10px;
+}
+
+html[data-ui-theme='steam'] .steam-library-installed-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--theme-accent-strong);
+  box-shadow: 0 0 0 2px color-mix(in oklab, transparent 75%, var(--theme-accent) 25%);
+}
+
+html[data-ui-theme='steam'] .game-detail-view.has-steam-library-rail {
+  display: grid;
+  grid-template-columns: var(--steam-library-rail-width) minmax(0, 1fr);
+  align-items: start;
+  padding: 0;
+  background: var(--steam-shell-content);
+}
+
+html[data-ui-theme='steam'] .game-detail-view.has-steam-library-rail > :not(.steam-library-detail-rail) {
+  grid-column: 2;
+  min-width: 0;
+}
+
+html[data-ui-theme='steam'] .game-detail-view.has-steam-library-rail > .steam-library-detail-rail {
+  grid-column: 1;
+  grid-row: 1 / span 50;
+}
+
+html[data-ui-theme='steam'] .game-detail-view.has-steam-library-rail .game-detail-main {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+html[data-ui-theme='steam'] .game-detail-view.has-steam-library-rail .back-to-library {
+  margin-left: 12px;
+}
+
+@media (max-width: 1050px) {
+  html[data-ui-theme='steam'] { --steam-library-rail-width: 230px; }
+  html[data-ui-theme='steam'] .library-browse-view.has-steam-library-rail,
+  html[data-ui-theme='steam'] .game-detail-view.has-steam-library-rail {
+    grid-template-columns: var(--steam-library-rail-width) minmax(0, 1fr);
+  }
+  html[data-ui-theme='steam'] .steam-library-rail,
+  html[data-ui-theme='steam'] .steam-library-detail-rail { width: var(--steam-library-rail-width); }
+}
+
+/* --------------------------------------------------------------------------
+   Steam Library home. This is a dedicated renderer, not a themed Store grid.
+   -------------------------------------------------------------------------- */
+html[data-ui-theme='steam'] .steam-library-home-view {
+  height: calc(100dvh - 112px);
+  min-height: 0;
+  overflow: hidden;
+}
+
+html[data-ui-theme='steam'] .steam-library-home-view .steam-library-rail,
+html[data-ui-theme='steam'] .steam-library-game-detail .steam-library-detail-rail {
+  position: sticky;
+  top: 0;
+  height: calc(100dvh - 112px);
+}
+
+html[data-ui-theme='steam'] .steam-library-home {
+  grid-column: 2;
+  min-width: 0;
+  min-height: 0;
+  height: calc(100dvh - 112px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 18px 24px 74px;
+  background: #2b3039;
+  color: #d6d7d8;
+}
+
+html[data-ui-theme='steam'] .steam-library-home-empty {
+  display: grid;
+  place-content: center;
+  gap: 8px;
+  text-align: center;
+}
+
+html[data-ui-theme='steam'] .steam-library-shelf {
+  min-width: 0;
+  padding: 0 0 26px;
+  border-bottom: 1px solid rgba(16, 19, 24, .62);
+}
+
+html[data-ui-theme='steam'] .steam-library-shelf + .steam-library-shelf {
+  padding-top: 26px;
+}
+
+html[data-ui-theme='steam'] .steam-library-shelf-header {
+  min-height: 38px;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 9px;
+}
+
+html[data-ui-theme='steam'] .steam-library-shelf-header > div:first-child {
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+html[data-ui-theme='steam'] .steam-library-shelf-header h2 {
+  margin: 0;
+  color: #f1f1f1;
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+html[data-ui-theme='steam'] .steam-library-shelf-header span {
+  color: #7d8794;
+  font-size: 12px;
+}
+
+html[data-ui-theme='steam'] .steam-library-shelf-arrows {
+  display: flex;
+  gap: 12px;
+  color: #9da7b2;
+}
+
+html[data-ui-theme='steam'] .steam-library-news-track,
+html[data-ui-theme='steam'] .steam-library-recent-track,
+html[data-ui-theme='steam'] .steam-library-next-track {
+  min-width: 0;
+  display: flex;
+  gap: 15px;
+  overflow: hidden;
+}
+
+html[data-ui-theme='steam'] .steam-library-home button {
+  border: 0;
+  border-radius: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+html[data-ui-theme='steam'] .steam-library-news-card {
+  display: block !important;
+  flex: 1 1 250px;
+  min-width: 190px;
+  max-width: 340px;
+  padding: 0;
+  background: transparent;
+}
+
+html[data-ui-theme='steam'] .steam-library-news-art {
+  aspect-ratio: 16 / 6.4;
+  display: block;
+  overflow: hidden;
+  background: #171b21;
+}
+
+html[data-ui-theme='steam'] .steam-library-news-card img,
+html[data-ui-theme='steam'] .steam-library-featured-card img,
+html[data-ui-theme='steam'] .steam-library-portrait-card img,
+html[data-ui-theme='steam'] .steam-library-next-card > img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  transition: filter 160ms ease, transform 180ms ease;
+}
+
+html[data-ui-theme='steam'] .steam-library-news-card:hover img,
+html[data-ui-theme='steam'] .steam-library-featured-card:hover img,
+html[data-ui-theme='steam'] .steam-library-portrait-card:hover img,
+html[data-ui-theme='steam'] .steam-library-next-card:hover > img {
+  filter: brightness(1.1);
+  transform: scale(1.012);
+}
+
+html[data-ui-theme='steam'] .steam-library-news-card strong,
+html[data-ui-theme='steam'] .steam-library-news-card small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+html[data-ui-theme='steam'] .steam-library-news-card strong {
+  margin-top: 5px;
+  color: #d6d7d8;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+html[data-ui-theme='steam'] .steam-library-news-card small {
+  margin-top: 2px;
+  color: #808895;
+  font-size: 11px;
+}
+
+html[data-ui-theme='steam'] .steam-library-featured-card {
+  display: block !important;
+  flex: 0 0 clamp(300px, 27vw, 430px);
+  height: 268px;
+  padding: 0;
+  overflow: hidden;
+  background: #1a1e24;
+  box-shadow: 0 3px 9px rgba(0, 0, 0, .42);
+}
+
+html[data-ui-theme='steam'] .steam-library-featured-art {
+  height: 196px;
+  display: block;
+  overflow: hidden;
+}
+
+html[data-ui-theme='steam'] .steam-library-featured-footer {
+  height: 72px;
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  align-items: center;
+  gap: 13px;
+  padding: 0 14px 0 8px;
+  background: linear-gradient(90deg, #59616a, #30363e 70%, #272c33);
+}
+
+html[data-ui-theme='steam'] .steam-library-status-tile {
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  color: #c7d5e0;
+  background: linear-gradient(135deg, #4b5663, #303944);
+  box-shadow: 0 2px 7px rgba(0, 0, 0, .45);
+}
+
+html[data-ui-theme='steam'] .steam-library-status-tile.is-installed {
+  color: #dfffc7;
+  background: linear-gradient(135deg, #69a52b, #477c19);
+}
+
+html[data-ui-theme='steam'] .steam-library-featured-footer > span:last-child {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+
+html[data-ui-theme='steam'] .steam-library-featured-footer strong,
+html[data-ui-theme='steam'] .steam-library-featured-footer small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+html[data-ui-theme='steam'] .steam-library-featured-footer strong { font-size: 14px; }
+html[data-ui-theme='steam'] .steam-library-featured-footer small { color: #bec5cb; font-size: 11px; }
+
+html[data-ui-theme='steam'] .steam-library-portrait-card {
+  display: block !important;
+  position: relative;
+  flex: 0 0 clamp(128px, 10.2vw, 178px);
+  height: 268px;
+  padding: 0;
+  overflow: hidden;
+  background: #181c22;
+  box-shadow: 0 3px 9px rgba(0, 0, 0, .42);
+}
+
+html[data-ui-theme='steam'] .steam-library-card-status {
+  position: absolute;
+  left: 7px;
+  bottom: 7px;
+  padding: 3px 6px;
+  color: #9da7b2;
+  background: rgba(17, 21, 27, .82);
+  font-size: 9px;
+  text-transform: uppercase;
+}
+
+html[data-ui-theme='steam'] .steam-library-next-card {
+  display: block !important;
+  flex: 0 0 clamp(170px, 14vw, 238px);
+  min-width: 0;
+  padding: 0;
+  overflow: hidden;
+  background: #1b2027;
+  box-shadow: 0 3px 9px rgba(0, 0, 0, .35);
+}
+
+html[data-ui-theme='steam'] .steam-library-next-card > img,
+html[data-ui-theme='steam'] .steam-library-next-card > .steam-library-art-placeholder {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+}
+
+html[data-ui-theme='steam'] .steam-library-next-card > span:last-child {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+  padding: 10px;
+}
+
+html[data-ui-theme='steam'] .steam-library-next-card strong,
+html[data-ui-theme='steam'] .steam-library-next-card small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+html[data-ui-theme='steam'] .steam-library-next-card strong { font-size: 12px; }
+html[data-ui-theme='steam'] .steam-library-next-card small { color: #7f8995; font-size: 10px; }
+
+html[data-ui-theme='steam'] .steam-library-art-placeholder {
+  display: grid;
+  place-items: center;
+  color: #65707d;
+  background: linear-gradient(145deg, #1c2229, #303743);
+  font-size: 28px;
+  font-weight: 700;
+}
+
+html[data-ui-theme='steam'] .steam-library-add-shelf {
+  width: 100%;
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 18px;
+  background: rgba(17, 21, 27, .28);
+  color: #858e99;
+}
+
+html[data-ui-theme='steam'] .steam-library-add-shelf:hover {
+  color: #d6d7d8;
+  background: rgba(17, 21, 27, .48);
+}
+
+/* --------------------------------------------------------------------------
+   Steam Library game page: hero, action strip and information row.
+   -------------------------------------------------------------------------- */
+html[data-ui-theme='steam'] .steam-library-game-detail {
+  min-height: 0;
+  height: calc(100dvh - 112px);
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+html[data-ui-theme='steam'] .steam-library-game-detail > :not(.steam-library-detail-rail) {
+  grid-column: 2;
+}
+
+html[data-ui-theme='steam'] .steam-library-game-detail .game-detail-main {
+  height: auto;
+  overflow: visible;
+  display: block;
+  padding: 0 20px 72px;
+  background: linear-gradient(180deg, #252a32, #1d2229 700px, #20252c);
+}
+
+html[data-ui-theme='steam'] .steam-library-game-detail .back-to-library,
+html[data-ui-theme='steam'] .steam-library-game-detail .sticky-action-bar {
+  display: none !important;
+}
+
+html[data-ui-theme='steam'] .steam-library-game-detail .detail-hero {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding-top: clamp(250px, 31vh, 330px);
+  overflow: hidden;
+  background: #1d2229;
+}
+
+html[data-ui-theme='steam'] .steam-library-game-detail .detail-hero > img:not(.steam-detail-cover),
+html[data-ui-theme='steam'] .steam-library-game-detail .detail-placeholder {
+  height: clamp(250px, 31vh, 330px);
+  bottom: auto;
+  object-position: center 34%;
+}
+
+html[data-ui-theme='steam'] .steam-library-game-detail .detail-hero-shade {
+  height: clamp(250px, 31vh, 330px);
+  bottom: auto;
+  background: linear-gradient(90deg, rgba(12, 15, 19, .22), transparent 50%, rgba(12, 15, 19, .15));
+}
+
+html[data-ui-theme='steam'] .steam-library-game-detail .store-action-dock {
+  position: relative;
+  order: 1;
+  z-index: 3;
+  left: auto;
+  bottom: auto;
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  min-height: 60px;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, .035);
+  border-bottom: 1px solid #101317;
+  background: linear-gradient(180deg, #343a43, #242a31);
+  transform: none;
+  backdrop-filter: none;
+}
+
+html[data-ui-theme='steam'] .steam-library-game-detail .store-action-dock button {
+  flex: 0 0 auto;
+  min-height: 40px;
+  border-radius: 1px;
+}
+
+html[data-ui-theme='steam'] .steam-library-game-detail .store-action-dock .primary-control {
+  order: -10;
+  min-width: 164px;
+  padding-inline: 22px;
+  color: white !important;
+  background: linear-gradient(90deg, #36c947, #1cad31) !important;
+  border-color: #42d655 !important;
+  font-size: 18px;
+  font-weight: 400;
+  text-transform: uppercase;
+}
+
+html[data-ui-theme='steam'] .steam-library-game-detail .store-action-dock .primary-control[data-steam-action='install'] {
+  background: linear-gradient(90deg, #2786bd, #1b6f9e) !important;
+  border-color: #4ea7d9 !important;
+}
+
+html[data-ui-theme='steam'] .steam-library-game-detail .store-action-dock .primary-control[data-steam-action='stop'] {
+  background: linear-gradient(90deg, #bd493e, #96352d) !important;
+  border-color: #cf665d !important;
+}
+
+html[data-ui-theme='steam'] .steam-library-game-detail .detail-copy {
+  position: absolute;
+  inset: auto 0 60px;
+  z-index: 2;
+  width: 100%;
+  display: block;
+  padding: 64px 28px 22px;
+  background: linear-gradient(0deg, rgba(13, 16, 20, .88), rgba(13, 16, 20, .08));
+  pointer-events: none;
+}
+
+html[data-ui-theme='steam'] .steam-library-game-detail .steam-detail-cover {
+  display: none;
+}
+
+html[data-ui-theme='steam'] .steam-library-game-detail .detail-copy-main {
+  width: min(650px, 66%);
+  min-width: 0;
+  pointer-events: auto;
+}
+
+html[data-ui-theme='steam'] .steam-library-game-detail .detail-copy-main .storage-pill {
+  display: none;
+}
+
+html[data-ui-theme='steam'] .steam-library-game-detail .detail-logo {
+  position: static;
+  max-width: min(420px, 50vw);
+  max-height: 92px;
+  margin: 0 0 12px;
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, .75));
+}
+
+html[data-ui-theme='steam'] .steam-library-game-detail .detail-copy-main h1 {
+  margin: 0 0 8px;
+  font-size: 20px;
+}
+
+html[data-ui-theme='steam'] .steam-library-game-detail .detail-copy-main p {
+  margin: 0;
+  color: #aab0b8;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+html[data-ui-theme='steam'] .steam-library-game-detail .library-meta-row {
+  margin-top: 12px;
+}
+
+html[data-ui-theme='steam'] .steam-library-game-detail .library-meta-row span,
+html[data-ui-theme='steam'] .steam-library-game-detail .detail-action-icon-btn {
+  padding: 4px 7px;
+  border-radius: 1px !important;
+  font-size: 10px;
+}
+
+html[data-ui-theme='steam'] .steam-detail-facts {
+  display: none;
+}
+
+html[data-ui-theme='steam'] .steam-detail-facts > div {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 78px minmax(0, 1fr);
+  gap: 8px;
+}
+
+html[data-ui-theme='steam'] .steam-detail-facts dt { color: #747e89; }
+html[data-ui-theme='steam'] .steam-detail-facts dd {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  color: #c2c7cd;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+html[data-ui-theme='steam'] .steam-library-game-detail .detail-tabs {
+  margin-top: 10px;
+  border-radius: 0;
+}
+
+html[data-ui-theme='steam'] .steam-library-game-detail .steam-detail-subnav {
+  min-height: 39px;
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  margin: 0;
+  padding: 0 14px;
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, .025);
+  border-bottom: 1px solid #15191e;
+  background: #2a3038;
+}
+
+html[data-ui-theme='steam'] .steam-library-game-detail .steam-detail-subnav button {
+  min-width: 118px;
+  min-height: 38px;
+  justify-content: center;
+  border: 0;
+  border-radius: 0;
+  color: #8e98a3;
+  background: transparent;
+}
+
+html[data-ui-theme='steam'] .steam-library-game-detail .steam-detail-subnav button:hover,
+html[data-ui-theme='steam'] .steam-library-game-detail .steam-detail-subnav button.active {
+  color: #d8e7f1;
+  background: rgba(52, 62, 72, .78);
+}
+
+html[data-ui-theme='steam'] .steam-library-game-detail .steam-detail-subnav button.active {
+  box-shadow: inset 0 -2px #1a9fff;
+}
+
+html[data-ui-theme='steam'] .steam-library-activity-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(270px, 29%, 410px);
+  align-items: start;
+  gap: 28px;
+  min-width: 0;
+  padding: 22px 20px 96px;
+  background: #20252c;
+}
+
+html[data-ui-theme='steam'] .steam-library-activity-main,
+html[data-ui-theme='steam'] .steam-library-activity-sidebar {
+  min-width: 0;
+}
+
+html[data-ui-theme='steam'] .steam-library-section-heading {
+  margin: 0 0 10px;
+  color: #8f98a3;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+html[data-ui-theme='steam'] .steam-library-activity-composer {
+  width: 100%;
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 20px;
+  padding: 0 14px;
+  border: 1px solid rgba(0, 0, 0, .18);
+  border-radius: 1px;
+  color: #77818d;
+  background: #1b2026;
+  font-size: 12px;
+  font-style: italic;
+}
+
+html[data-ui-theme='steam'] .steam-library-activity-card {
+  min-width: 0;
+  border: 1px solid rgba(14, 18, 23, .7);
+  background: linear-gradient(180deg, #333a44, #2b3139);
+  box-shadow: 0 5px 16px rgba(0, 0, 0, .2);
+}
+
+html[data-ui-theme='steam'] .steam-library-activity-card > header {
+  min-height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 14px;
+  border-bottom: 1px solid rgba(13, 17, 22, .55);
+  color: #8e98a3;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+html[data-ui-theme='steam'] .steam-library-activity-event {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr);
+  gap: 14px;
+  padding: 17px 18px 20px;
+}
+
+html[data-ui-theme='steam'] .steam-library-activity-icon {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  color: #66c0f4;
+  background: #202932;
+  border: 1px solid rgba(102, 192, 244, .25);
+}
+
+html[data-ui-theme='steam'] .steam-library-activity-event h3 {
+  margin: 0 0 7px;
+  color: #e5e7e9;
+  font-size: 17px;
+  font-weight: 400;
+}
+
+html[data-ui-theme='steam'] .steam-library-activity-event p,
+html[data-ui-theme='steam'] .steam-library-activity-event small {
+  display: block;
+  margin: 0;
+  color: #9fa8b2;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+html[data-ui-theme='steam'] .steam-library-activity-event small {
+  margin-top: 10px;
+  color: #7f8994;
+}
+
+html[data-ui-theme='steam'] .steam-library-activity-sidebar {
+  display: grid;
+  gap: 18px;
+}
+
+html[data-ui-theme='steam'] .steam-library-side-panel {
+  min-width: 0;
+  padding: 12px;
+  background: linear-gradient(180deg, #2d333c, #292f37);
+  box-shadow: 0 4px 13px rgba(0, 0, 0, .18);
+}
+
+html[data-ui-theme='steam'] .steam-library-side-panel > header {
+  min-height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+  color: #9da6b0;
+  font-size: 11px;
+}
+
+html[data-ui-theme='steam'] .steam-library-side-panel > header > div {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+html[data-ui-theme='steam'] .steam-library-achievement-strip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+html[data-ui-theme='steam'] .steam-library-achievement-strip img,
+html[data-ui-theme='steam'] .steam-library-achievement-strip span {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+}
+
+html[data-ui-theme='steam'] .steam-library-achievement-strip img {
+  object-fit: cover;
+  filter: grayscale(1) brightness(.62);
+  background: #1a1e23;
+}
+
+html[data-ui-theme='steam'] .steam-library-achievement-strip span {
+  display: grid;
+  place-items: center;
+  color: #c5cbd1;
+  background: #1b2026;
+  font-size: 11px;
+}
+
+html[data-ui-theme='steam'] .steam-library-side-empty {
+  margin: 0;
+  color: #7f8994;
+  font-size: 11px;
+}
+
+html[data-ui-theme='steam'] .steam-library-note-empty {
+  width: 100%;
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin: 0;
+  padding: 0 10px;
+  border-radius: 1px;
+  color: #9aa3ad;
+  background: #20252b;
+  font-size: 11px;
+}
+
+html[data-ui-theme='steam'] .steam-library-game-info-panel dl {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+html[data-ui-theme='steam'] .steam-library-game-info-panel dl > div {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 8px;
+  font-size: 10px;
+}
+
+html[data-ui-theme='steam'] .steam-library-game-info-panel dt { color: #737d88; }
+html[data-ui-theme='steam'] .steam-library-game-info-panel dd {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  color: #b8bec5;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 1250px) {
+  html[data-ui-theme='steam'] .steam-library-home { padding-inline: 16px; }
+  html[data-ui-theme='steam'] .steam-library-game-detail .detail-copy {
+    padding-inline: 20px;
+  }
+  html[data-ui-theme='steam'] .steam-library-game-detail .detail-copy-main { width: min(620px, 78%); }
+  html[data-ui-theme='steam'] .steam-library-activity-layout {
+    grid-template-columns: minmax(0, 1fr) 270px;
+    gap: 16px;
+    padding-inline: 14px;
+  }
+}
+
+@media (max-width: 900px) {
+  html[data-ui-theme='steam'] .steam-library-activity-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Dedicated Steam Library detail renderer. Store detail DOM never enters this tree. */
+html[data-ui-theme='steam'] .game-detail-view.steam-library-dedicated-detail {
+  display: grid;
+  grid-template-columns: var(--steam-library-rail-width) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  width: 100%;
+  height: calc(100dvh - 112px);
+  min-height: 0;
+  overflow: hidden;
+  background: #20242b;
+}
+
+html[data-ui-theme='steam'] .game-detail-view.steam-library-dedicated-detail > .steam-library-detail-rail {
+  grid-column: 1;
+  grid-row: 1;
+  height: 100%;
+  position: relative;
+  top: auto;
+}
+
+html[data-ui-theme='steam'] .game-detail-view.steam-library-dedicated-detail > .steam-library-detail-surface {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: linear-gradient(180deg, #242a32 0, #20252c 580px, #1f242b 100%);
+  color: #d6d7d8;
+  scrollbar-color: #617080 #171b20;
+}
+
+html[data-ui-theme='steam'] .steam-library-detail-hero {
+  position: relative;
+  width: 100%;
+  height: clamp(250px, 34vh, 382px);
+  overflow: hidden;
+  background: #10151b;
+}
+
+html[data-ui-theme='steam'] .steam-library-detail-hero-art,
+html[data-ui-theme='steam'] .steam-library-detail-hero-placeholder {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+html[data-ui-theme='steam'] .steam-library-detail-hero-art {
+  object-fit: cover;
+  object-position: center 38%;
+}
+
+html[data-ui-theme='steam'] .steam-library-detail-hero-placeholder {
+  display: grid;
+  place-items: center;
+  color: #687887;
+  background: linear-gradient(135deg, #111821, #26313b);
+}
+
+html[data-ui-theme='steam'] .steam-library-detail-hero-vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(6, 9, 12, .32), transparent 42%, rgba(6, 9, 12, .14)),
+    linear-gradient(0deg, rgba(21, 26, 32, .92), transparent 44%);
+  pointer-events: none;
+}
+
+html[data-ui-theme='steam'] .steam-library-detail-brand {
+  position: absolute;
+  left: clamp(26px, 3.5vw, 62px);
+  bottom: 24px;
+  z-index: 1;
+  max-width: min(430px, 55%);
+}
+
+html[data-ui-theme='steam'] .steam-library-detail-brand img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  max-height: 116px;
+  object-fit: contain;
+  object-position: left bottom;
+  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, .75));
+}
+
+html[data-ui-theme='steam'] .steam-library-detail-brand h1 {
+  margin: 0;
+  color: #f4f5f6;
+  font-size: clamp(30px, 3.4vw, 56px);
+  font-weight: 300;
+  text-shadow: 0 3px 9px rgba(0, 0, 0, .8);
+}
+
+html[data-ui-theme='steam'] .steam-library-detail-actionbar {
+  position: sticky;
+  top: 0;
+  z-index: 8;
+  min-height: 62px;
+  display: grid;
+  grid-template-columns: auto minmax(180px, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 20px;
+  border-top: 1px solid rgba(255, 255, 255, .035);
+  border-bottom: 1px solid #101419;
+  background: linear-gradient(180deg, rgba(56, 63, 73, .98), rgba(37, 43, 51, .98));
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .28);
+  backdrop-filter: blur(12px);
+}
+
+html[data-ui-theme='steam'] .steam-library-primary-action {
+  min-width: 164px;
+  min-height: 43px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 24px;
+  border: 0;
+  border-radius: 2px;
+  color: white;
+  background: linear-gradient(90deg, #47b839, #20a43a);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, .35);
+  font-size: 18px;
+  font-weight: 400;
+  text-transform: uppercase;
+}
+
+html[data-ui-theme='steam'] .steam-library-primary-action:hover:not(:disabled) {
+  background: linear-gradient(90deg, #57c846, #27b544);
+}
+
+html[data-ui-theme='steam'] .steam-library-primary-action[data-action-state='install'],
+html[data-ui-theme='steam'] .steam-library-primary-action[data-action-state='update'] {
+  background: linear-gradient(90deg, #2e91c9, #1976a9);
+}
+
+html[data-ui-theme='steam'] .steam-library-primary-action[data-action-state='stop'] {
+  background: linear-gradient(90deg, #b7554b, #91423a);
+}
+
+html[data-ui-theme='steam'] .steam-library-primary-action:disabled {
+  cursor: default;
+  opacity: .58;
+}
+
+html[data-ui-theme='steam'] .steam-library-action-summary {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+html[data-ui-theme='steam'] .steam-library-action-summary strong,
+html[data-ui-theme='steam'] .steam-library-action-summary span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+html[data-ui-theme='steam'] .steam-library-action-summary strong {
+  color: #dfe3e6;
+  font-size: 15px;
+  font-weight: 400;
+}
+
+html[data-ui-theme='steam'] .steam-library-action-summary span {
+  color: #8e98a3;
+  font-size: 10px;
+}
+
+html[data-ui-theme='steam'] .steam-library-action-tools {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+html[data-ui-theme='steam'] .steam-library-action-tools button {
+  min-width: 40px;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 2px;
+  color: #c6ccd2;
+  background: #3a414b;
+}
+
+html[data-ui-theme='steam'] .steam-library-action-tools button span {
+  display: none;
+  font-size: 11px;
+}
+
+html[data-ui-theme='steam'] .steam-library-action-tools button:hover:not(:disabled) {
+  color: white;
+  background: #49525e;
+}
+
+html[data-ui-theme='steam'] .steam-library-action-tools button.is-favorite {
+  color: #b9dfff;
+}
+
+html[data-ui-theme='steam'] .steam-library-action-tools button:disabled {
+  opacity: .42;
+  cursor: default;
+}
+
+html[data-ui-theme='steam'] .steam-library-detail-overview {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(180px, 260px) minmax(260px, 1fr) minmax(170px, 240px);
+  gap: 18px;
+  padding: 20px;
+  background: linear-gradient(180deg, #252b33, #22272e);
+}
+
+html[data-ui-theme='steam'] .steam-library-detail-cover {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  display: block;
+  object-fit: cover;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, .42);
+}
+
+html[data-ui-theme='steam'] .steam-library-detail-description {
+  min-width: 0;
+}
+
+html[data-ui-theme='steam'] .steam-library-detail-description > p {
+  margin: 0 0 14px;
+  color: #b8c0c8;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+html[data-ui-theme='steam'] .steam-library-detail-description dl {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+}
+
+html[data-ui-theme='steam'] .steam-library-detail-description dl > div {
+  display: grid;
+  grid-template-columns: 86px minmax(0, 1fr);
+  gap: 8px;
+  font-size: 10px;
+}
+
+html[data-ui-theme='steam'] .steam-library-detail-description dt { color: #71808d; }
+html[data-ui-theme='steam'] .steam-library-detail-description dd {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  color: #aeb8c1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+html[data-ui-theme='steam'] .steam-library-detail-features {
+  align-content: start;
+  display: grid;
+  gap: 5px;
+}
+
+html[data-ui-theme='steam'] .steam-library-detail-features span {
+  min-height: 27px;
+  display: flex;
+  align-items: center;
+  padding: 0 9px;
+  color: #7cc5ef;
+  background: rgba(102, 192, 244, .1);
+  font-size: 10px;
+}
+
+html[data-ui-theme='steam'] .steam-library-detail-links {
+  min-height: 40px;
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  margin: 0 20px;
+  border-top: 1px solid rgba(255, 255, 255, .025);
+  border-bottom: 1px solid #15191e;
+  background: #2a3038;
+}
+
+html[data-ui-theme='steam'] .steam-library-detail-links button,
+html[data-ui-theme='steam'] .steam-library-detail-links span {
+  min-width: 112px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 0;
+  color: #8e98a3;
+  background: transparent;
+  font-size: 11px;
+}
+
+html[data-ui-theme='steam'] .steam-library-detail-links button:hover {
+  color: #e3edf4;
+  background: rgba(73, 84, 96, .58);
+}
+
+html[data-ui-theme='steam'] .steam-library-detail-danger-zone {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 20px 96px;
+}
+
+html[data-ui-theme='steam'] .steam-library-detail-danger-zone button {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 11px;
+  border: 1px solid rgba(202, 82, 73, .45);
+  border-radius: 1px;
+  color: #d77b73;
+  background: rgba(88, 30, 28, .22);
+}
+
+/* Dedicated Steam Store renderer, based on the installed client's desktop proportions. */
+html[data-ui-theme='steam'] .steam-store-home {
+  width: 100%;
+  height: calc(100dvh - 112px);
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
+  color: #d6d7d8;
+  background: radial-gradient(circle at 42% -12%, #29496a 0, #1b2c3d 28%, #192532 48%, #171d25 78%);
+}
+
+html[data-ui-theme='steam'] .steam-store-navigation {
+  min-width: 0;
+  min-height: 44px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(230px, 360px) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px clamp(18px, 4vw, 72px);
+  background: rgba(24, 36, 49, .92);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .22);
+}
+
+html[data-ui-theme='steam'] .steam-store-navigation nav {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+html[data-ui-theme='steam'] .steam-store-navigation nav button,
+html[data-ui-theme='steam'] .steam-store-wishlist {
+  min-height: 31px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 0;
+  color: #d6d7d8;
+  background: #1d6c9e;
+  font-size: 11px;
+}
+
+html[data-ui-theme='steam'] .steam-store-navigation nav button:hover,
+html[data-ui-theme='steam'] .steam-store-wishlist:hover,
+html[data-ui-theme='steam'] .steam-store-wishlist.is-active {
+  color: white;
+  background: #2b86ba;
+}
+
+html[data-ui-theme='steam'] .steam-store-search-control {
+  min-width: 0;
+  height: 31px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+  padding: 0 8px;
+  border: 1px solid #245b75;
+  background: rgba(13, 35, 47, .82);
+  color: #67bde8;
+}
+
+html[data-ui-theme='steam'] .steam-store-search-control input {
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  color: #d7edf8;
+  background: transparent;
+  font-size: 12px;
+}
+
+html[data-ui-theme='steam'] .steam-store-wishlist {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #6e8b23;
+}
+
+html[data-ui-theme='steam'] .steam-store-scroll {
+  min-width: 0;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 30px max(22px, calc((100% - 1180px) / 2)) 90px;
+}
+
+html[data-ui-theme='steam'] .steam-store-featured-section > h1,
+html[data-ui-theme='steam'] .steam-store-section > h2 {
+  margin: 0 0 9px;
+  color: white;
+  font-size: 15px;
+  font-weight: 400;
+  text-transform: uppercase;
+}
+
+html[data-ui-theme='steam'] .steam-store-featured-stage {
+  position: relative;
+  height: clamp(280px, 33vw, 390px);
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(270px, .78fr);
+  box-shadow: 0 0 8px rgba(0, 0, 0, .65);
+  background: #0e151d;
+}
+
+html[data-ui-theme='steam'] .steam-store-featured-main,
+html[data-ui-theme='steam'] .steam-store-featured-info {
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  overflow: hidden;
+  color: white;
+  background: #0e151d;
+  text-align: left;
+}
+
+html[data-ui-theme='steam'] .steam-store-featured-main img,
+html[data-ui-theme='steam'] .steam-store-featured-main .steam-store-art-placeholder {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+html[data-ui-theme='steam'] .steam-store-featured-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 22px 18px 18px;
+  background: linear-gradient(145deg, #182635, #101923);
+}
+
+html[data-ui-theme='steam'] .steam-store-featured-info > strong {
+  font-size: clamp(20px, 2vw, 27px);
+  font-weight: 300;
+}
+
+html[data-ui-theme='steam'] .steam-store-featured-info > span,
+html[data-ui-theme='steam'] .steam-store-featured-info > small {
+  color: #b6c4d1;
+  font-size: 12px;
+}
+
+html[data-ui-theme='steam'] .steam-store-featured-info > small {
+  width: fit-content;
+  margin-top: auto;
+  padding: 5px 8px;
+  color: #a4d007;
+  background: #4c6b22;
+}
+
+html[data-ui-theme='steam'] .steam-store-featured-thumbnails {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
+}
+
+html[data-ui-theme='steam'] .steam-store-featured-thumbnails span {
+  min-width: 0;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: #111820;
+}
+
+html[data-ui-theme='steam'] .steam-store-featured-thumbnails img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+html[data-ui-theme='steam'] .steam-store-featured-arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  width: 45px;
+  height: 90px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  color: #d6e8f4;
+  background: linear-gradient(90deg, rgba(7, 12, 18, .82), rgba(7, 12, 18, .18));
+  transform: translateY(-50%);
+}
+
+html[data-ui-theme='steam'] .steam-store-featured-arrow.previous { left: -45px; }
+html[data-ui-theme='steam'] .steam-store-featured-arrow.next { right: -45px; transform: translateY(-50%) rotate(180deg); }
+
+html[data-ui-theme='steam'] .steam-store-featured-dots {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 10px;
+}
+
+html[data-ui-theme='steam'] .steam-store-featured-dots button {
+  width: 17px;
+  height: 9px;
+  padding: 0;
+  border: 0;
+  border-radius: 2px;
+  background: #445565;
+}
+
+html[data-ui-theme='steam'] .steam-store-featured-dots button.is-active { background: #66c0f4; }
+
+html[data-ui-theme='steam'] .steam-store-section {
+  margin-top: 38px;
+}
+
+html[data-ui-theme='steam'] .steam-store-category-track,
+html[data-ui-theme='steam'] .steam-store-card-track {
+  min-width: 0;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(190px, 1fr);
+  gap: 10px;
+  overflow: hidden;
+}
+
+html[data-ui-theme='steam'] .steam-store-category-track button {
+  min-height: 74px;
+  display: grid;
+  align-content: center;
+  gap: 5px;
+  padding: 12px 16px;
+  border: 0;
+  border-radius: 0;
+  color: #d9e8f1;
+  background: linear-gradient(90deg, #2778a6, #1d5c86);
+  text-align: left;
+}
+
+html[data-ui-theme='steam'] .steam-store-category-track button:hover,
+html[data-ui-theme='steam'] .steam-store-category-track button.is-active {
+  background: linear-gradient(90deg, #46a3d8, #287aaa);
+}
+
+html[data-ui-theme='steam'] .steam-store-category-track small { color: #b8d7e8; }
+
+html[data-ui-theme='steam'] .steam-store-landscape-card {
+  min-width: 0;
+  display: grid;
+  grid-template-rows: auto auto auto;
+  gap: 0;
+  padding: 0 0 10px;
+  border: 0;
+  border-radius: 0;
+  overflow: hidden;
+  color: #d9e4ea;
+  background: linear-gradient(180deg, #23394b, #1b2b38);
+  text-align: left;
+}
+
+html[data-ui-theme='steam'] .steam-store-landscape-card > span {
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+}
+
+html[data-ui-theme='steam'] .steam-store-landscape-card img,
+html[data-ui-theme='steam'] .steam-store-update-card img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  transition: filter 150ms ease;
+}
+
+html[data-ui-theme='steam'] .steam-store-landscape-card:hover img,
+html[data-ui-theme='steam'] .steam-store-update-card:hover img { filter: brightness(1.13); }
+html[data-ui-theme='steam'] .steam-store-landscape-card strong { padding: 9px 10px 2px; font-size: 12px; }
+html[data-ui-theme='steam'] .steam-store-landscape-card small { padding: 0 10px; color: #83bfe0; font-size: 10px; }
+
+html[data-ui-theme='steam'] .steam-store-update-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+html[data-ui-theme='steam'] .steam-store-update-card {
+  min-width: 0;
+  min-height: 96px;
+  display: grid;
+  grid-template-columns: 168px minmax(0, 1fr);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  overflow: hidden;
+  color: #d8e2e8;
+  background: rgba(31, 49, 63, .9);
+  text-align: left;
+}
+
+html[data-ui-theme='steam'] .steam-store-update-card > span { overflow: hidden; }
+html[data-ui-theme='steam'] .steam-store-update-card > div { min-width: 0; display: grid; align-content: center; gap: 6px; padding: 12px; }
+html[data-ui-theme='steam'] .steam-store-update-card strong,
+html[data-ui-theme='steam'] .steam-store-update-card small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+html[data-ui-theme='steam'] .steam-store-update-card small { color: #67b9e6; }
+
+html[data-ui-theme='steam'] .steam-store-art-placeholder,
+html[data-ui-theme='steam'] .steam-store-empty {
+  display: grid;
+  place-items: center;
+  color: #70889a;
+  background: linear-gradient(145deg, #15202a, #243847);
+}
+
+html[data-ui-theme='steam'] .steam-store-empty {
+  min-height: 320px;
+  align-content: center;
+  gap: 10px;
+}
+
+@media (min-width: 1540px) {
+  html[data-ui-theme='steam'] .steam-library-action-tools button span { display: inline; }
+}
+
+@media (max-width: 1120px) {
+  html[data-ui-theme='steam'] .steam-library-detail-overview {
+    grid-template-columns: minmax(180px, 240px) minmax(0, 1fr);
+  }
+  html[data-ui-theme='steam'] .steam-library-detail-features {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  html[data-ui-theme='steam'] .steam-store-navigation {
+    grid-template-columns: minmax(0, 1fr) minmax(190px, 280px);
+  }
+  html[data-ui-theme='steam'] .steam-store-wishlist { display: none; }
+}
+
+@media (max-width: 900px) {
+  html[data-ui-theme='steam'] .steam-library-detail-actionbar {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  html[data-ui-theme='steam'] .steam-library-action-tools { grid-column: 1 / -1; }
+  html[data-ui-theme='steam'] .steam-library-detail-overview { grid-template-columns: minmax(0, 1fr); }
+  html[data-ui-theme='steam'] .steam-library-detail-cover { max-width: 360px; }
+  html[data-ui-theme='steam'] .steam-library-detail-features { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  html[data-ui-theme='steam'] .steam-library-detail-links { overflow-x: auto; }
+  html[data-ui-theme='steam'] .steam-store-featured-stage { grid-template-columns: minmax(0, 1fr); }
+  html[data-ui-theme='steam'] .steam-store-featured-info { display: none; }
+  html[data-ui-theme='steam'] .steam-store-update-grid { grid-template-columns: minmax(0, 1fr); }
+}

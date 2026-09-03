@@ -1,0 +1,69 @@
+html[data-ui-theme='xmcl'] .tab-enter {
+  animation: xmcl-page-enter var(--xmcl-motion-duration) var(--xmcl-ease) both !important;
+}
+
+html[data-ui-theme='xmcl'] :where(
+  .home-stat-card,
+  .home-discover-card,
+  .store-game-card,
+  .game-card,
+  .library-card,
+  .settings-group,
+  .tab-game-row
+) {
+  transition:
+    transform var(--xmcl-motion-duration) var(--xmcl-ease),
+    box-shadow var(--xmcl-motion-duration) var(--xmcl-ease),
+    border-color var(--xmcl-motion-fast) ease,
+    background-color var(--xmcl-motion-fast) ease;
+}
+
+html[data-ui-theme='xmcl'] :where(
+  .home-discover-card,
+  .store-game-card,
+  .game-card,
+  .library-card,
+  .tab-game-row
+):hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 34px rgba(0,0,0,.18);
+}
+
+html[data-ui-theme='xmcl'] :where(
+  .modal,
+  .confirm-dialog,
+  .achievement-modal,
+  .launch-options-modal,
+  .help-center,
+  .lua-source-picker-dialog,
+  .install-options-dialog,
+  .version-select-dialog,
+  .notification-popover,
+  .context-menu,
+  .custom-select-menu
+) {
+  animation: xmcl-surface-enter var(--xmcl-motion-duration) var(--xmcl-ease-emphasized) both;
+}
+
+html[data-ui-theme='xmcl'][data-theme-motion='reduced'] *,
+html[data-ui-theme='xmcl'].reduce-motion * {
+  animation-duration: .001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: .001ms !important;
+  scroll-behavior: auto !important;
+}
+
+@keyframes xmcl-page-enter {
+  from { opacity: .72; transform: translate3d(0, 8px, 0) scale(.998); filter: blur(1.5px); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: blur(0); }
+}
+
+@keyframes xmcl-surface-enter {
+  from { opacity: 0; transform: translate3d(0, 10px, 0) scale(.985); filter: blur(2px); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: blur(0); }
+}
+
+@keyframes xmcl-popover-in {
+  from { opacity: 0; transform: translate3d(-6px, 4px, 0) scale(.97); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}

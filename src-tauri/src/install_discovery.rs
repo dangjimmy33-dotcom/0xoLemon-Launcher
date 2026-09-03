@@ -159,7 +159,9 @@ fn library_root_from_install_path(install_path: &Path) -> Option<PathBuf> {
         .file_name()
         .and_then(|name| name.to_str())
         .is_some_and(|name| name.eq_ignore_ascii_case(COMMON_DIR));
-    is_common.then(|| common.parent().map(Path::to_path_buf)).flatten()
+    is_common
+        .then(|| common.parent().map(Path::to_path_buf))
+        .flatten()
 }
 
 fn volume_root(path: &Path) -> Option<PathBuf> {
@@ -188,8 +190,8 @@ fn read_library_marker(root: &Path) -> Result<Option<LibraryRecoveryIndex>, Stri
     if !path.is_file() {
         return Ok(None);
     }
-    let bytes = fs::read(&path)
-        .map_err(|error| format!("Could not read {}: {error}", path.display()))?;
+    let bytes =
+        fs::read(&path).map_err(|error| format!("Could not read {}: {error}", path.display()))?;
     let marker: LibraryRecoveryIndex = serde_json::from_slice(&bytes)
         .map_err(|error| format!("Invalid library marker {}: {error}", path.display()))?;
     if marker.schema_version != LIBRARY_SCHEMA || Uuid::parse_str(&marker.library_id).is_err() {
@@ -210,10 +212,7 @@ fn write_new_library_marker(root: &Path) -> Result<LibraryRecoveryIndex, String>
         created_at: Utc::now().to_rfc3339(),
     };
     let path = marker_path(root);
-    let temporary = directory.join(format!(
-        "{LIBRARY_MARKER_FILE}.{}.next",
-        Uuid::new_v4()
-    ));
+    let temporary = directory.join(format!("{LIBRARY_MARKER_FILE}.{}.next", Uuid::new_v4()));
     let bytes = serde_json::to_vec_pretty(&marker)
         .map_err(|error| format!("Could not serialize library marker: {error}"))?;
     {
@@ -254,13 +253,30 @@ fn read_registry_roots() -> Vec<(String, PathBuf)> {
     };
     key.enum_values()
         .filter_map(Result::ok)
-        .filter_map(|(name, _)| key.get_value::<String, _>(&name).ok().map(|path| (name, PathBuf::from(path))))
+        .filter_map(|(name, _)| {
+            key.get_value::<String, _>(&name)
+                .ok()
+                .map(|path| (name, PathBuf::from(path)))
+        })
         .collect()
 }
 
 #[cfg(not(windows))]
 fn read_registry_roots() -> Vec<(String, PathBuf)> {
     Vec::new()
+}
+
+/// Returns only registered libraries whose on-disk marker still proves the
+/// library identity. Remote Web uses this boundary so a browser can select a
+/// stable library ID without ever receiving or supplying a Windows path.
+pub(crate) fn registered_library_roots() -> Vec<(LibraryRecoveryIndex, PathBuf)> {
+    read_registry_roots()
+        .into_iter()
+        .filter_map(|(registered_id, root)| {
+            let marker = read_library_marker(&root).ok().flatten()?;
+            (marker.library_id == registered_id).then_some((marker, root))
+        })
+        .collect()
 }
 
 #[cfg(windows)]
@@ -321,7 +337,9 @@ fn delete_registry_path(key_path: &str, game_id: &str) -> Result<(), String> {
     match key.delete_value(game_id) {
         Ok(()) => Ok(()),
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
-        Err(error) => Err(format!("Could not forget the selected install path: {error}")),
+        Err(error) => Err(format!(
+            "Could not forget the selected install path: {error}"
+        )),
     }
 }
 
@@ -427,10 +445,7 @@ pub(crate) fn remember_managed_install_path(
     remember_library_root(&root).map(Some)
 }
 
-pub(crate) fn remember_install_selection(
-    game_id: &str,
-    install_path: &Path,
-) -> Result<(), String> {
+pub(crate) fn remember_install_selection(game_id: &str, install_path: &Path) -> Result<(), String> {
     if game_id.trim().is_empty() || !install_path.is_absolute() {
         return Err("Install recovery requires a game ID and an absolute path".to_string());
     }
@@ -488,18 +503,13 @@ fn local_drive_roots() -> Vec<PathBuf> {
 }
 
 fn normalized_path_key(path: &Path) -> String {
-    let mut value = path
-        .as_os_str()
-        .to_string_lossy()
-        .replace('/', "\\");
+    let mut value = path.as_os_str().to_string_lossy().replace('/', "\\");
     if let Some(unc) = value.strip_prefix(r"\\?\UNC\") {
         value = format!(r"\\{unc}");
     } else if let Some(local) = value.strip_prefix(r"\\?\") {
         value = local.to_string();
     }
-    value
-        .trim_end_matches(['\\', '/'])
-        .to_lowercase()
+    value.trim_end_matches(['\\', '/']).to_lowercase()
 }
 
 fn user_visible_path(path: &Path) -> PathBuf {
@@ -531,10 +541,7 @@ fn selected_candidate<'a>(
                     == normalized_path_key(selected)
             })
         })
-        .or_else(|| {
-            (explicit_selection.is_none() && candidates.len() == 1)
-                .then(|| &candidates[0])
-        })
+        .or_else(|| (explicit_selection.is_none() && candidates.len() == 1).then(|| &candidates[0]))
 }
 
 fn collect_candidate_roots(app: &AppHandle) -> (Vec<PathBuf>, HashMap<String, String>) {
@@ -550,7 +557,10 @@ fn collect_candidate_roots(app: &AppHandle) -> (Vec<PathBuf>, HashMap<String, St
             {
                 unavailable_games.insert(
                     record.game_id.clone(),
-                    format!("Installed library is currently unavailable: {}", path.display()),
+                    format!(
+                        "Installed library is currently unavailable: {}",
+                        path.display()
+                    ),
                 );
             }
             if let Some(root) = root {
@@ -656,7 +666,11 @@ pub fn discover_game_installs(
         snapshot.completed = false;
     }
     let started = Instant::now();
-    let requested = game_ids.into_iter().collect::<BTreeSet<_>>().into_iter().collect::<Vec<_>>();
+    let requested = game_ids
+        .into_iter()
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
     let requested_game_ids = requested.iter().cloned().collect::<BTreeSet<_>>();
     let existing = crate::platform::install_records(app)?
         .into_iter()
@@ -688,10 +702,7 @@ pub fn discover_game_installs(
                 invalid_candidates += 1;
                 unavailable_roots.push(root.display().to_string());
                 let root_key = normalized_path_key(&root);
-                for (game_id, install_path) in existing
-                    .iter()
-                    .chain(known_installs.iter())
-                {
+                for (game_id, install_path) in existing.iter().chain(known_installs.iter()) {
                     if library_root_from_install_path(install_path.as_path())
                         .is_some_and(|known_root| normalized_path_key(&known_root) == root_key)
                     {
@@ -722,7 +733,10 @@ pub fn discover_game_installs(
             }
         }
         for install in installs {
-            grouped.entry(install.game_id.clone()).or_default().push(install);
+            grouped
+                .entry(install.game_id.clone())
+                .or_default()
+                .push(install);
         }
     }
 
@@ -732,7 +746,10 @@ pub fn discover_game_installs(
     for game_id in requested {
         let mut candidates = grouped.remove(&game_id).unwrap_or_default();
         candidates.sort_by(|left, right| left.install_path.cmp(&right.install_path));
-        candidates.dedup_by(|left, right| normalized_path_key(Path::new(&left.install_path)) == normalized_path_key(Path::new(&right.install_path)));
+        candidates.dedup_by(|left, right| {
+            normalized_path_key(Path::new(&left.install_path))
+                == normalized_path_key(Path::new(&right.install_path))
+        });
         if candidates.is_empty() {
             if let Some(reason) = unavailable_games.get(&game_id) {
                 let selected_path = known_installs
@@ -752,23 +769,27 @@ pub fn discover_game_installs(
                         })
                         .map(|(id, _)| id.clone())
                 });
-                views.insert(game_id, GameDiscoveryView {
-                    status: "unavailable".to_string(),
-                    candidate_paths: selected_path.into_iter().collect(),
-                    library_id,
-                    unavailable_reason: Some(reason.clone()),
-                });
+                views.insert(
+                    game_id,
+                    GameDiscoveryView {
+                        status: "unavailable".to_string(),
+                        candidate_paths: selected_path.into_iter().collect(),
+                        library_id,
+                        unavailable_reason: Some(reason.clone()),
+                    },
+                );
             }
             continue;
         }
 
         let registered_path = existing.get(&game_id);
         let explicit_selection = conflict_selections.get(&game_id);
-        let selected = selected_candidate(&candidates, explicit_selection.map(PathBuf::as_path))
-            .cloned();
+        let selected =
+            selected_candidate(&candidates, explicit_selection.map(PathBuf::as_path)).cloned();
         if let Some(install) = selected {
             let was_already_registered = registered_path.is_some_and(|registered| {
-                normalized_path_key(registered) == normalized_path_key(Path::new(&install.install_path))
+                normalized_path_key(registered)
+                    == normalized_path_key(Path::new(&install.install_path))
             });
             crate::platform::register_install(
                 app,
@@ -777,27 +798,39 @@ pub fn discover_game_installs(
                 &install.version,
                 &install.launch_executable,
             )?;
-            views.insert(install.game_id.clone(), GameDiscoveryView {
-                status: if was_already_registered {
-                    "registered".to_string()
-                } else {
-                    "recovered".to_string()
+            views.insert(
+                install.game_id.clone(),
+                GameDiscoveryView {
+                    status: if was_already_registered {
+                        "registered".to_string()
+                    } else {
+                        "recovered".to_string()
+                    },
+                    candidate_paths: vec![install.install_path.clone()],
+                    library_id: install.library_id.clone(),
+                    unavailable_reason: None,
                 },
-                candidate_paths: vec![install.install_path.clone()],
-                library_id: install.library_id.clone(),
-                unavailable_reason: None,
-            });
+            );
             if !was_already_registered {
                 recovered.push(install);
             }
         } else {
-            let paths = candidates.iter().map(|candidate| candidate.install_path.clone()).collect::<Vec<_>>();
-            views.insert(game_id.clone(), GameDiscoveryView {
-                status: "conflict".to_string(),
-                candidate_paths: paths.clone(),
-                ..GameDiscoveryView::default()
+            let paths = candidates
+                .iter()
+                .map(|candidate| candidate.install_path.clone())
+                .collect::<Vec<_>>();
+            views.insert(
+                game_id.clone(),
+                GameDiscoveryView {
+                    status: "conflict".to_string(),
+                    candidate_paths: paths.clone(),
+                    ..GameDiscoveryView::default()
+                },
+            );
+            conflicts.push(InstallDiscoveryConflict {
+                game_id,
+                candidate_paths: paths,
             });
-            conflicts.push(InstallDiscoveryConflict { game_id, candidate_paths: paths });
         }
     }
 
@@ -828,7 +861,9 @@ pub fn register_library_root(path: &Path) -> Result<LibraryRecoveryIndex, String
         .and_then(|name| name.to_str())
         .is_some_and(|name| name.eq_ignore_ascii_case(COMMON_DIR))
     {
-        path.parent().map(Path::to_path_buf).ok_or_else(|| "Invalid common directory".to_string())?
+        path.parent()
+            .map(Path::to_path_buf)
+            .ok_or_else(|| "Invalid common directory".to_string())?
     } else {
         path.to_path_buf()
     };
@@ -896,7 +931,9 @@ pub fn resolve_install_conflict(
         return Err("The selected folder is not a current discovery candidate".to_string());
     }
     if library_root_from_install_path(&visible_install_path).is_none() {
-        return Err("The selected install is not a direct child of a library common directory".to_string());
+        return Err(
+            "The selected install is not a direct child of a library common directory".to_string(),
+        );
     }
     let marker = crate::job::inspect_discoverable_install(&canonical, &[game_id.to_string()])?
         .ok_or_else(|| "The selected folder is not a valid install for this game".to_string())?;
@@ -919,12 +956,15 @@ pub fn resolve_install_conflict(
         library_id: Some(library.library_id.clone()),
     };
     if let Ok(mut snapshot) = discovery().write() {
-        snapshot.games.insert(marker.game_id, GameDiscoveryView {
-            status: "recovered".to_string(),
-            candidate_paths: vec![install.install_path.clone()],
-            library_id: Some(library.library_id),
-            unavailable_reason: None,
-        });
+        snapshot.games.insert(
+            marker.game_id,
+            GameDiscoveryView {
+                status: "recovered".to_string(),
+                candidate_paths: vec![install.install_path.clone()],
+                library_id: Some(library.library_id),
+                unavailable_reason: None,
+            },
+        );
     }
     Ok(install)
 }
@@ -1010,11 +1050,8 @@ mod tests {
         ];
         assert!(selected_candidate(&candidates, None).is_none());
         assert_eq!(
-            selected_candidate(
-                &candidates,
-                Some(Path::new(r"\\?\e:\library\common\game")),
-            )
-            .map(|value| value.install_path.as_str()),
+            selected_candidate(&candidates, Some(Path::new(r"\\?\e:\library\common\game")),)
+                .map(|value| value.install_path.as_str()),
             Some(r"E:\Library\common\Game")
         );
     }

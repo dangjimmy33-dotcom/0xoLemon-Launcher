@@ -80,61 +80,20 @@ impl ProcessManager {
             );
         }
 
-        // --- Steam Emulator injection ---
-        // Determine if game exe is 64-bit or 32-bit, then copy the matching DLL.
-        let game_dir = executable.parent().unwrap_or(install_path);
-        let exe_is_64 = is_pe64(executable);
-        let (src_dll_name, dst_dll_name) = if exe_is_64 {
-            ("steam_api64.dll", "steam_api64.dll")
+        // The authenticated named-pipe server must exist before the game loads
+        // steam_api. The PID is bound immediately after spawn and verified by
+        // the server against the kernel-reported pipe client process.
+        let watcher = if crate::managed_game_runtime::supports_managed_achievements(&game_id) {
+            Some(crate::achievement_watcher::start_session(
+                app.clone(),
+                &game_id,
+                None,
+                install_path,
+                0,
+            )?)
         } else {
-            ("steam_api.dll", "steam_api.dll")
+            None
         };
-        let arch_dir = if exe_is_64 { "x64" } else { "x86" };
-
-        // resource_dir() already IS the "resources" folder, don't double-add it
-        let emu_dll = if let Ok(res_dir) = app.path().resource_dir() {
-            let candidate = res_dir.join("emu").join(arch_dir).join(src_dll_name);
-            eprintln!(
-                "[steam_emu] resource_dir candidate: {}",
-                candidate.display()
-            );
-            candidate
-        } else {
-            let candidate = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-                .join("resources")
-                .join("emu")
-                .join(arch_dir)
-                .join(src_dll_name);
-            eprintln!(
-                "[steam_emu] CARGO_MANIFEST_DIR candidate: {}",
-                candidate.display()
-            );
-            candidate
-        };
-
-        if emu_dll.exists() {
-            let dest = game_dir.join(dst_dll_name);
-            match std::fs::copy(&emu_dll, &dest) {
-                Ok(_) => eprintln!(
-                    "[steam_emu] Copied {} -> {}",
-                    emu_dll.display(),
-                    dest.display()
-                ),
-                Err(e) => eprintln!("[steam_emu] Failed to copy DLL: {}", e),
-            }
-        } else {
-            eprintln!("[steam_emu] DLL not found at: {}", emu_dll.display());
-        }
-
-        // Start the achievement watcher BEFORE spawning so we have the TCP port
-        let watcher = crate::achievement_watcher::start_session(
-            app.clone(),
-            &game_id,
-            None,
-            install_path,
-            0, // pid not known yet
-        );
-        let tcp_port = watcher.tcp_port();
 
         let mut command = Command::new(executable);
         if let Some(parent) = executable.parent() {
@@ -143,11 +102,20 @@ impl ProcessManager {
             command.current_dir(install_path);
         }
         command.stdin(Stdio::null());
-        if tcp_port > 0 {
-            command.env("ACHIEVEMENT_TCP_PORT", tcp_port.to_string());
+        if let Some(watcher) = watcher.as_ref() {
+            for (key, value) in watcher.environment() {
+                command.env(key, value);
+            }
         }
         let mut child = command.spawn().map_err(|error| error.to_string())?;
         let pid = child.id();
+        if let Some(watcher) = watcher.as_ref() {
+            if let Err(error) = watcher.bind_pid(pid) {
+                let _ = child.kill();
+                let _ = child.wait();
+                return Err(error);
+            }
+        }
         let started = Instant::now();
         let (started_event, achievement_events) =
             match platform::begin_game_session(&app, &game_id, pid, install_path, executable) {
@@ -164,7 +132,7 @@ impl ProcessManager {
             executable: executable.display().to_string(),
             install_path: install_path.display().to_string(),
             started_at: started_event.started_at.clone(),
-            achievement_watcher: Some(Arc::new(watcher)),
+            achievement_watcher: watcher.map(Arc::new),
         };
         manager
             .running
@@ -231,32 +199,8 @@ impl ProcessManager {
     }
 }
 
-/// Reads the PE header of an executable to determine if it is 64-bit.
-/// Returns true for AMD64/x64, false for x86 or on any read error (safe fallback).
-pub fn is_pe64(path: &Path) -> bool {
-    use std::io::{Read, Seek, SeekFrom};
-    let Ok(mut f) = std::fs::File::open(path) else {
-        return true;
-    };
-    // Read DOS header magic "MZ"
-    let mut dos = [0u8; 64];
-    if f.read_exact(&mut dos).is_err() || &dos[0..2] != b"MZ" {
-        return true;
-    }
-    // e_lfanew is at offset 0x3C
-    let e_lfanew = u32::from_le_bytes(dos[0x3C..0x40].try_into().unwrap_or([0; 4]));
-    if f.seek(SeekFrom::Start(e_lfanew as u64)).is_err() {
-        return true;
-    }
-    // Read PE signature + machine type (4 + 2 bytes)
-    let mut pe = [0u8; 6];
-    if f.read_exact(&mut pe).is_err() {
-        return true;
-    }
-    if &pe[0..4] != b"PE\0\0" {
-        return true;
-    }
-    let machine = u16::from_le_bytes([pe[4], pe[5]]);
-    // IMAGE_FILE_MACHINE_AMD64 = 0x8664
-    machine == 0x8664
+/// Reads the PE header without guessing on malformed or unsupported files.
+pub fn is_pe64(path: &Path) -> Result<bool, String> {
+    crate::managed_game_runtime::read_pe_architecture(path)
+        .map(|architecture| architecture == crate::managed_game_runtime::PeArchitecture::X64)
 }

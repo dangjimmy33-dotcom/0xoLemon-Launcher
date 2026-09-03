@@ -79,6 +79,7 @@ public ISteamController,
 public ISteamInput001,
 public ISteamInput002,
 public ISteamInput005,
+public ISteamInput006,
 public ISteamInput
 // ---
 {
@@ -227,7 +228,7 @@ public:
 
     int GetAnalogActionOrigins( InputHandle_t inputHandle, InputActionSetHandle_t actionSetHandle, InputAnalogActionHandle_t analogActionHandle, EInputActionOrigin *originsOut );
 
-        
+
     void StopAnalogActionMomentum( ControllerHandle_t controllerHandle, ControllerAnalogActionHandle_t eAction );
 
 
@@ -249,13 +250,13 @@ public:
     // Send a haptic pulse, works on Steam Deck and Steam Controller devices
     void TriggerSimpleHapticEvent( InputHandle_t inputHandle, EControllerHapticLocation eHapticLocation, uint8 nIntensity, char nGainDB, uint8 nOtherIntensity, char nOtherGainDB );
 
-    // Tigger a vibration event on supported controllers.  
+    // Tigger a vibration event on supported controllers.
     void TriggerVibration( ControllerHandle_t controllerHandle, unsigned short usLeftSpeed, unsigned short usRightSpeed );
 
     // Trigger a vibration event on supported controllers including Xbox trigger impulse rumble - Steam will translate these commands into haptic pulses for Steam Controllers
     void TriggerVibrationExtended( InputHandle_t inputHandle, unsigned short usLeftSpeed, unsigned short usRightSpeed, unsigned short usLeftTriggerSpeed, unsigned short usRightTriggerSpeed );
 
-    // Set the controller LED color on supported controllers.  
+    // Set the controller LED color on supported controllers.
     void SetLEDColor( ControllerHandle_t controllerHandle, uint8 nColorR, uint8 nColorG, uint8 nColorB, unsigned int nFlags );
 
 
@@ -286,15 +287,15 @@ public:
     // Returns a localized string (from Steam's language setting) for the user-facing action name corresponding to the specified handle
     const char *GetStringForAnalogActionName( InputAnalogActionHandle_t eActionHandle );
 
-    // Get a local path to art for on-screen glyph for a particular origin 
+    // Get a local path to art for on-screen glyph for a particular origin
     const char *GetGlyphForActionOrigin( EControllerActionOrigin eOrigin );
 
     const char *GetGlyphForActionOrigin( EInputActionOrigin eOrigin );
 
-    // Get a local path to a PNG file for the provided origin's glyph. 
+    // Get a local path to a PNG file for the provided origin's glyph.
     const char *GetGlyphPNGForActionOrigin( EInputActionOrigin eOrigin, ESteamInputGlyphSize eSize, uint32 unFlags );
 
-    // Get a local path to a SVG file for the provided origin's glyph. 
+    // Get a local path to a SVG file for the provided origin's glyph.
     const char *GetGlyphSVGForActionOrigin( EInputActionOrigin eOrigin, uint32 unFlags );
 
     // Get a local path to an older, Big Picture Mode-style PNG file for a particular origin
@@ -321,7 +322,7 @@ public:
 
     uint32 GetRemotePlaySessionID( InputHandle_t inputHandle );
 
-    // Get a bitmask of the Steam Input Configuration types opted in for the current session. Returns ESteamInputConfigurationEnableType values.?	
+    // Get a bitmask of the Steam Input Configuration types opted in for the current session. Returns ESteamInputConfigurationEnableType values.?
     // Note: user can override the settings from the Steamworks Partner site so the returned values may not exactly match your default configuration
     uint16 GetSessionInputConfigurationSettings();
 

@@ -3,6 +3,7 @@ import type { GameCatalog, GameSummary, GameInstallMetadata, CloudSaveMetadata }
 import { globalAssetsOverride } from './useRealtimeAssets'
 import { normalizeGameVersions } from '../lib/catalogVersions'
 import { fetchWithRetry } from '../lib/fetchWithRetry'
+import { normalizeLocalRuntime } from '../lib/localRuntime'
 
 const DEFAULT_CLOUD_SAVE: CloudSaveMetadata = {
   enabled: false,
@@ -63,6 +64,7 @@ function normalizeSummary(raw: Record<string, unknown>): GameSummary {
 
   return {
     id: gameId,
+    appid: typeof raw.appid === 'number' || typeof raw.appid === 'string' ? raw.appid : undefined,
     title,
     subtitle: stringValue(raw.subtitle),
     developer: stringValue(raw.developer),
@@ -75,6 +77,7 @@ function normalizeSummary(raw: Record<string, unknown>): GameSummary {
     iconAssetId: stringValue(assetOverride.icon) || stringValue(raw.iconAssetId),
     install: buildInstall(gameId, title, recordValue(raw.install)),
     cloudSave: normalizeCloudSave(raw.cloudSave),
+    ...normalizeLocalRuntime(raw),
     assetPackPath: stringValue(raw.assetPackPath) || `assets/games/${gameId}/core.0xo`,
   }
 }

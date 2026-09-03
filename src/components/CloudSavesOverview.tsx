@@ -8,6 +8,7 @@ import { formatBytes } from '../lib/format'
 import { cloudSavePresentation, quotaPercent } from '../lib/cloudSaveStatus'
 import { useLocale } from '../context/locale'
 import { CloudRedirectSettings } from './CloudRedirectSettings'
+import './CloudSavesLegacy.css'
 
 const PROVIDER_VALUES = ['gdrive', 'onedrive', 'folder'] as const
 const showLegacyStfixerPanel = import.meta.env.VITE_SHOW_LEGACY_STFIXER === 'true'

@@ -98,6 +98,9 @@ std::string CloudMetadataPath(uint32_t accountId, uint32_t appId, const std::str
 bool DownloadCloudMetadataWithLegacyFallback(uint32_t accountId, uint32_t appId,
     const char* canonicalName, const char* legacyName,
     std::vector<uint8_t>& outData, bool* outUsedLegacy = nullptr);
+enum class MetadataFetch { Ok, Missing, Error };
+MetadataFetch FetchCloudMetadataStatus(uint32_t accountId, uint32_t appId,
+    const char* canonicalName, std::vector<uint8_t>& outData);
 // Download the first-format per-app playtime blob (account-scope
 // <acct>/0/blobs/Playtime/<appId>.bin). False if absent/unavailable. Migration-only.
 bool DownloadLegacyPlaytimeBlob(uint32_t accountId, uint32_t appId,

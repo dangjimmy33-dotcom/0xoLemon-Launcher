@@ -300,6 +300,7 @@ UGCQueryHandle_t Steam_UGC::CreateQueryAllUGCRequest( EUGCQuery eQueryType, EUGC
         }
     }
     catch (const std::exception &e) {
+        (void)e;
         PRINT_DEBUG("Conversion error, reason: %s. Is this a valid cursor?", e.what());
         page = 0;
     }

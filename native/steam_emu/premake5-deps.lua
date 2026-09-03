@@ -681,6 +681,7 @@ if _OPTIONS["build-curl"] or _OPTIONS["all-build"] then
         
         "CURL_USE_MBEDTLS=ON",
         -- "CURL_USE_SCHANNEL=ON",
+        -- "CURL_CA_FALLBACK=ON", -- removed: only works with OpenSSL since curl 8.19.0
         "CURL_CA_FALLBACK=OFF",
 
         -- fix building on Arch Linux
@@ -821,16 +822,21 @@ if _OPTIONS["build-portaudio"] or _OPTIONS["all-build"] then
         "PA_BUILD_EXAMPLES=OFF",
         "PA_ENABLE_DEBUG_OUTPUT=OFF",
         "PA_USE_SKELETON=OFF", -- skeleton idk what that means
-        -- Win dependent stuff
-        "PA_USE_ASIO=OFF",
-        "PA_USE_DS=ON",
-        "PA_USE_WMME=ON",
-        "PA_USE_WASAPI=ON",
-        "PA_USE_WDMKS=ON",
-        "PA_USE_WDMKS_DEVICE_INFO=ON",
-        -- linux specific stuff
-        "PA_ALSA_DYNAMIC=OFF",
     }
+    if os.target() == 'windows' then
+        -- Windows-only audio backends
+        table.insert(portaudio_common_defs, "PA_USE_ASIO=OFF")
+        table.insert(portaudio_common_defs, "PA_USE_DS=ON")
+        table.insert(portaudio_common_defs, "PA_USE_WMME=ON")
+        table.insert(portaudio_common_defs, "PA_USE_WASAPI=ON")
+        table.insert(portaudio_common_defs, "PA_USE_WDMKS=ON")
+        table.insert(portaudio_common_defs, "PA_USE_WDMKS_DEVICE_INFO=ON")
+    else -- linux
+        -- disable backends that require system libs not available in CI
+        table.insert(portaudio_common_defs, "PA_USE_ALSA=OFF")
+        table.insert(portaudio_common_defs, "PA_USE_JACK=OFF")
+        table.insert(portaudio_common_defs, "PA_ALSA_DYNAMIC=OFF")
+    end
 
     if _OPTIONS["32-build"] then
         cmake_build('portaudio', true, portaudio_common_defs)
@@ -849,8 +855,11 @@ if _OPTIONS["build-sdl"] or _OPTIONS["all-build"] then
         "SDL_SENSOR=OFF",
         "SDL_DIALOG=OFF",
         "SDL_TRAY=OFF",
-        "SDL_UNIX_CONSOLE_BUILD=ON",
     }
+    if os.target() ~= 'windows' then
+        -- build SDL without requiring a display server on Linux/Unix
+        table.insert(sdl_common_defs, "SDL_UNIX_CONSOLE_BUILD=ON")
+    end
 
     if _OPTIONS["32-build"] then
         cmake_build('sdl', true, sdl_common_defs)

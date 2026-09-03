@@ -9,7 +9,9 @@ $Here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $Source = Join-Path $Here 'vendor\cloudredirect'
 $Build64 = Join-Path $Here 'target\cloudredirect-native-x64'
 $Build32 = Join-Path $Here 'target\cloudredirect-cloud760-x86'
-$Destination = Join-Path $Here 'resources\cloud_redirect\engine\2.6.4'
+$versionProps = Get-Content (Join-Path $Source 'Version.props') -Raw
+$version = if ($versionProps -match '<ReleaseVersion>([^<]+)</ReleaseVersion>') { $Matches[1] } else { throw 'CloudRedirect release version is missing.' }
+$Destination = Join-Path $Here "resources\cloud_redirect\engine\$version"
 $Required = @('0xoCloudRedirect.dll', 'cloud_redirect_cli.exe', 'cloud760_tool.exe')
 
 if ($SkipIfPresent) {
@@ -27,7 +29,15 @@ if (-not (Test-Path (Join-Path $Source 'CMakeLists.txt'))) {
   throw "CloudRedirect source not found: $Source"
 }
 if (-not (Get-Command cmake -ErrorAction SilentlyContinue)) {
-  throw 'CMake is required to build CloudRedirect 2.6.4.'
+  throw "CMake is required to build CloudRedirect $version."
+}
+
+$EngineBase = Join-Path $Here 'resources\cloud_redirect\engine'
+if (Test-Path $EngineBase) {
+  Get-ChildItem -Path $EngineBase -Directory | Where-Object { $_.Name -ne $version } | ForEach-Object {
+    Write-Host "[CloudRedirect] Cleaning stale engine version directory: $($_.FullName)"
+    Remove-Item -Recurse -Force $_.FullName
+  }
 }
 
 New-Item -ItemType Directory -Force -Path $Build64, $Build32, $Destination | Out-Null
@@ -79,9 +89,7 @@ if (-not $SteamApiCopied) {
   Write-Warning '[CloudRedirect] steam_api.dll was not present. Engine features work, but the optional Cloud760 tool will remain unavailable.'
 }
 
-$versionProps = Get-Content (Join-Path $Source 'Version.props') -Raw
-$version = if ($versionProps -match '<ReleaseVersion>([^<]+)</ReleaseVersion>') { $Matches[1] } else { 'unknown' }
-$commit = '9d0dbbf48f349a4172d2d47a936bb41c5f5ecff6'
+$commit = 'bc5e38a156ff123e47ec07abf67158160c50a50e'
 @{
   version = $version
   commit = $commit

@@ -48,7 +48,7 @@ static std::string iden_factory_64BitSteamID(CSimpleIniA *ini, class Settings *s
     return std::to_string(settings_client->get_local_steam_id().ConvertToUint64());
 }
 
-static std::string iden_factory_gameinstall(CSimpleIniA *ini, class Settings *settings_client, class Settings *settings_server, class Local_Storage *local_storage)
+static std::string iden_factory_GameInstall(CSimpleIniA *ini, class Settings *settings_client, class Settings *settings_server, class Local_Storage *local_storage)
 {
     // should be: [Steam Install]\SteamApps\common\[Game Folder]
     auto str = Local_Storage::get_exe_dir();
@@ -179,7 +179,7 @@ static std::string iden_factory_SteamCloudDocuments(CSimpleIniA *ini, class Sett
         username = DEFAULT_NAME;
     }
 
-    std::string game_folder = iden_factory_gameinstall(ini, settings_client, settings_server, local_storage);
+    std::string game_folder = iden_factory_GameInstall(ini, settings_client, settings_server, local_storage);
     {
         auto last_sep = game_folder.rfind(PATH_SEPARATOR);
         if (last_sep != std::string::npos) {
@@ -214,7 +214,7 @@ static std::unordered_map<
 > identifiers_factories {
     { "{::Steam3AccountID::}", iden_factory_Steam3AccountID, },
     { "{::64BitSteamID::}", iden_factory_64BitSteamID, },
-    { "{::gameinstall::}", iden_factory_gameinstall, },
+    { "{::GameInstall::}", iden_factory_GameInstall, },
     { "{::EmuSteamInstall::}", iden_factory_EmuSteamInstall, },
 
 #if defined(__WINDOWS__)

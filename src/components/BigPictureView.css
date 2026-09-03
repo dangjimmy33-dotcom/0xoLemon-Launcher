@@ -3,6 +3,19 @@
    Color Studio aware, controller-first, compositor-friendly.
    ========================================================= */
 
+
+html.big-picture-document-active,
+html.big-picture-document-active body,
+html.big-picture-document-active body #root {
+  width: 100%;
+  height: 100%;
+  min-width: 100%;
+  min-height: 100%;
+  margin: 0;
+  overflow: hidden !important;
+  background: #02050a !important;
+}
+
 .big-picture-container {
   --bp-accent: var(--theme-accent, #7dd3fc);
   --bp-accent-strong: var(--theme-accent-strong, #bae6fd);
@@ -437,32 +450,47 @@
 /* ── Carousel ──────────────────────────────────────────── */
 .bp-carousel-container {
   position: relative;
-  flex: 0 0 clamp(290px, 34vh, 390px);
+  /* Give a 2:3 poster + active lift/scale + label real vertical headroom. */
+  flex: 0 0 clamp(360px, 38vh, 450px);
   min-height: 0;
-  display: grid;
-  grid-template-columns: 56px minmax(0, 1fr) 56px;
-  align-items: center;
-  gap: 8px;
-  padding: 10px clamp(14px, 2.4vw, 38px) 24px;
+  width: 100%;
+  overflow: visible;
+  padding: 0 0 max(24px, env(safe-area-inset-bottom));
 }
 
 .bp-carousel-viewport {
-  min-width: 0;
+  position: relative;
+  z-index: 2;
+  width: 100%;
   height: 100%;
-  overflow: hidden;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
   display: flex;
   align-items: flex-end;
-  padding: 28px 0 14px;
-  mask-image: linear-gradient(to right, transparent 0, #000 5%, #000 95%, transparent 100%);
+  padding: 54px 0 30px;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 50%;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+
+.bp-carousel-viewport::-webkit-scrollbar {
+  display: none;
 }
 
 .bp-carousel-track {
+  /* JS overwrites this from the live viewport width; this is only a safe first paint. */
+  --bp-end-gutter: max(24px, calc(50dvw - 98px));
+  flex: 0 0 max-content;
+  min-width: 100%;
   display: flex;
   align-items: flex-end;
-  gap: clamp(14px, 1.45vw, 22px);
-  padding: 0 50vw;
-  transition: transform 480ms cubic-bezier(0.2, 0.78, 0.2, 1);
-  will-change: transform;
+  gap: clamp(16px, 1.55vw, 24px);
+  padding-inline: var(--bp-end-gutter);
 }
 
 .bp-auto-progress {
@@ -481,18 +509,24 @@
 }
 
 .bp-carousel-arrow {
+  position: absolute;
+  top: 50%;
   width: 50px;
   height: 70px;
   border-radius: 18px;
   display: grid;
   place-items: center;
-  z-index: 5;
+  z-index: 12;
+  transform: translateY(-50%);
 }
+
+.bp-carousel-arrow.is-left { left: max(18px, env(safe-area-inset-left)); }
+.bp-carousel-arrow.is-right { right: max(18px, env(safe-area-inset-right)); }
 
 .bp-carousel-arrow:hover:not(:disabled),
 .bp-carousel-arrow:focus-visible:not(:disabled) {
   outline: none;
-  transform: scale(1.055);
+  transform: translateY(-50%) scale(1.055);
   border-color: color-mix(in oklab, transparent 44%, var(--bp-accent-strong) 56%);
   background: color-mix(in oklab, rgba(12, 17, 25, 0.76) 70%, var(--bp-accent) 30%);
 }
@@ -503,8 +537,9 @@
 }
 
 .bp-game-card {
+  scroll-snap-align: center;
   flex: 0 0 auto;
-  width: clamp(150px, 10.8vw, 196px);
+  width: clamp(148px, 10.4vw, 188px);
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -751,7 +786,6 @@
   .bp-controller-hint { display: none; }
   .bp-hero { padding-inline: 42px; }
   .bp-hero-content { width: min(680px, 72vw); }
-  .bp-carousel-container { grid-template-columns: 44px minmax(0, 1fr) 44px; }
   .bp-carousel-arrow { width: 42px; height: 62px; }
 }
 
@@ -762,8 +796,9 @@
   .bp-exit-btn { min-height: 40px; }
   .bp-hero { min-height: 170px; padding-bottom: 20px; }
   .bp-hero-logo { max-height: 110px; }
-  .bp-carousel-container { flex-basis: 275px; padding-bottom: 10px; }
-  .bp-game-card { width: clamp(126px, 10vw, 162px); }
+  .bp-carousel-container { flex-basis: 310px; padding-bottom: max(18px, env(safe-area-inset-bottom)); }
+  .bp-carousel-viewport { padding-top: 40px; padding-bottom: 20px; }
+  .bp-game-card { width: clamp(112px, 9.2vw, 144px); }
 }
 
 @media (max-width: 760px) {
@@ -775,7 +810,7 @@
   .bp-hero { padding-inline: 24px; }
   .bp-hero-content { width: 86vw; }
   .bp-play-hint { display: none; }
-  .bp-carousel-container { grid-template-columns: 36px minmax(0, 1fr) 36px; padding-inline: 4px; }
+  .bp-carousel-container { padding-inline: 0; }
   .bp-carousel-arrow { width: 34px; height: 54px; border-radius: 14px; }
   .bp-help-content { grid-template-columns: 1fr; }
 }

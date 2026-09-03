@@ -1,7 +1,7 @@
 {
   "name": "first-light-smart-launcher",
   "private": true,
-  "version": "2.0.50",
+  "version": "2.0.55",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,7 +9,8 @@
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
     "check:tauri-acl": "node scripts/check-tauri-acl.mjs",
-    "build": "npm run check:tauri-acl && tsc -b && vite build",
+    "check:web-security": "node --test src/lib/remoteWebSecurity.contract.test.mjs",
+    "build": "npm run check:tauri-acl && npm run check:web-security && tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },

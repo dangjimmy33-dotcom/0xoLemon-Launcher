@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import type React from 'react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
-import { Bell, Download, LogOut, Monitor } from 'lucide-react'
+import { Bell, Download, LogOut, Monitor, CircleUserRound, Music, Play, SkipBack, SkipForward } from 'lucide-react'
 import { isTauriRuntime } from '../lib/gameMeta'
 import type { ClockFormat, CloseBehavior } from '../lib/preferences'
+import type { UiThemeId } from '../lib/uiThemes'
 import type { DiscordAuthUser, JobJournal, LauncherUpdateProgress, NotificationRecord, TabId } from '../types'
 import { NotificationPopover } from './NotificationCenter'
 import { PageHelpButton } from './HelpSystem'
+import { useGlobalAudio } from '../context/GlobalAudioContext'
 
 type NetworkQuality = 'good' | 'weak' | 'offline'
 type BatteryState = { level: number; charging: boolean } | null
@@ -131,6 +133,91 @@ type StatusPreferences = {
   glassEffects: boolean
 }
 
+function TitleBarMusicMiniPlayer() {
+  const audio = useGlobalAudio()
+
+  if (!audio.activeTrack || audio.tracks.length === 0 || audio.isDetailActive) {
+    return null
+  }
+
+  return (
+    <div
+      className="titlebar-ost-mini-player"
+      onMouseDown={(e) => e.stopPropagation()}
+      title={`${audio.activeTrack.title} · ${audio.activeTrack.artist || audio.gameTitle || 'Soundtrack'} (Click to jump to game)`}
+    >
+      <button
+        type="button"
+        className="titlebar-ost-track-info"
+        onClick={audio.navigateToActiveGame}
+        aria-label={`Jump to ${audio.gameTitle || 'Game'} soundtrack`}
+      >
+        <div className={`titlebar-ost-disc ${audio.isPlaying ? 'is-spinning' : ''}`}>
+          {audio.bgImage ? (
+            <img src={audio.bgImage} alt="" />
+          ) : (
+            <Music size={12} />
+          )}
+          <span className="titlebar-ost-disc-hole" />
+        </div>
+        <div className="titlebar-ost-meta">
+          <span className="titlebar-ost-title">{audio.activeTrack.title}</span>
+          <span className="titlebar-ost-artist">{audio.activeTrack.artist || audio.gameTitle}</span>
+        </div>
+      </button>
+
+      <div className="titlebar-ost-controls">
+        <button
+          type="button"
+          className="titlebar-ost-btn"
+          onClick={audio.prevTrack}
+          title="Previous track"
+          aria-label="Previous track"
+        >
+          <SkipBack size={12} fill="currentColor" />
+        </button>
+        <button
+          type="button"
+          className="titlebar-ost-btn is-play-btn"
+          onClick={audio.togglePlayPause}
+          title={audio.isPlaying ? 'Pause' : 'Play'}
+          aria-label={audio.isPlaying ? 'Pause' : 'Play'}
+        >
+          {audio.isPlaying ? (
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+              <rect x="6" y="4" width="4" height="16" />
+              <rect x="14" y="4" width="4" height="16" />
+            </svg>
+          ) : (
+            <Play size={11} fill="currentColor" />
+          )}
+        </button>
+        <button
+          type="button"
+          className="titlebar-ost-btn"
+          onClick={audio.nextTrack}
+          title="Next track"
+          aria-label="Next track"
+        >
+          <SkipForward size={12} fill="currentColor" />
+        </button>
+      </div>
+
+      <div
+        className="titlebar-ost-progress"
+        onClick={(e) => {
+          const rect = e.currentTarget.getBoundingClientRect()
+          const clickX = e.clientX - rect.left
+          const pct = Math.max(0, Math.min(100, (clickX / rect.width) * 100))
+          audio.seek(pct)
+        }}
+      >
+        <div className="titlebar-ost-progress-bar" style={{ width: `${audio.progress}%` }} />
+      </div>
+    </div>
+  )
+}
+
 export function CustomTitleBar({
   closeBehavior = 'exit',
   job,
@@ -148,10 +235,13 @@ export function CustomTitleBar({
   onOpenNotificationSettings,
   onDiscordLogout,
   onToggleBigPicture,
+  onToggleSocial,
   onToggleSidebar,
   isSidebarCollapsed,
   onlineCount = 0,
   activeTab,
+  uiTheme = 'default',
+  onNavigate,
   onOpenHelpCenter,
 }: {
   closeBehavior?: CloseBehavior
@@ -170,17 +260,23 @@ export function CustomTitleBar({
   onOpenNotificationSettings: () => void
   onDiscordLogout: () => void
   onToggleBigPicture: () => void
+  onToggleSocial?: () => void
   onToggleSidebar?: () => void
   isSidebarCollapsed?: boolean
   /** Số người dùng đang online launcher */
   onlineCount?: number
   activeTab: TabId
+  uiTheme?: UiThemeId
+  onNavigate?: (tab: TabId) => void
   onOpenHelpCenter: () => void
 }) {
   const win = isTauriRuntime() ? getCurrentWindow() : null
   const [now, setNow] = useState(() => new Date())
   const networkQuality = useNetworkQuality()
   const battery = useBattery()
+  const [socialLayerVisible, setSocialLayerVisible] = useState(() =>
+    typeof document !== 'undefined' && document.documentElement.dataset.socialLayer === 'true'
+  )
   const unread = notifications.filter((notification) => !notification.read).length
   const activeJob = job && !['committed', 'failed', 'canceled'].includes(job.status) ? job : null
   const updateActive = updateProgress && ['downloading', 'verifying', 'installing', 'restarting'].includes(updateProgress.phase)
@@ -194,6 +290,18 @@ export function CustomTitleBar({
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 1000)
     return () => window.clearInterval(timer)
+  }, [])
+
+  useEffect(() => {
+    const syncSocialVisibility = (event: Event) => {
+      const visible = (event as CustomEvent<{ visible?: boolean }>).detail?.visible
+      setSocialLayerVisible(typeof visible === 'boolean'
+        ? visible
+        : document.documentElement.dataset.socialLayer === 'true')
+    }
+    setSocialLayerVisible(document.documentElement.dataset.socialLayer === 'true')
+    window.addEventListener('0xo-social-visibility-change', syncSocialVisibility)
+    return () => window.removeEventListener('0xo-social-visibility-change', syncSocialVisibility)
   }, [])
 
   const clock = useMemo(() => {
@@ -229,7 +337,7 @@ export function CustomTitleBar({
       className={`custom-titlebar premium-titlebar${statusPreferences.glassEffects ? ' use-glass' : ''}`}
     >
       {/* Toggle outside drag area for independent sizing */}
-      {onToggleSidebar && !isBlockedState && (
+      {onToggleSidebar && !isBlockedState && uiTheme !== 'lightning' && (
         <button
           className={`titlebar-sidebar-toggle${isSidebarCollapsed ? ' is-collapsed' : ''}`}
           onClick={onToggleSidebar}
@@ -253,6 +361,15 @@ export function CustomTitleBar({
           )}
         </button>
       )}
+      {uiTheme === 'steam' ? (
+        <div className="steam-client-menu" aria-label="Steam style application menu">
+          <button type="button" onMouseDown={(e) => e.stopPropagation()} onClick={() => onNavigate?.('Settings')}>0xoLemon</button>
+          <button type="button" onMouseDown={(e) => e.stopPropagation()} onClick={() => onNavigate?.("What's New!")}>View</button>
+          <button type="button" onMouseDown={(e) => e.stopPropagation()} onClick={() => onNavigate?.('Library')}>Games</button>
+          <button type="button" onMouseDown={(e) => e.stopPropagation()} onClick={() => onNavigate?.('Social')}>Friends</button>
+          <button type="button" onMouseDown={(e) => e.stopPropagation()} onClick={onOpenHelpCenter}>Help</button>
+        </div>
+      ) : null}
       <div className="titlebar-drag-area" data-tauri-drag-region>
         {!isBlockedState && (
           <span
@@ -277,6 +394,7 @@ export function CustomTitleBar({
       </div>
 
       <div className="titlebar-status-cluster">
+        <TitleBarMusicMiniPlayer />
         {statusPreferences.showNetworkStatus ? (
           <span
             className="titlebar-status-icon"
@@ -301,13 +419,27 @@ export function CustomTitleBar({
         ) : null}
         {/* Online users chip */}
         {onlineCount > 0 ? (
-          <span
-            className="titlebar-online-chip"
-            title={`${onlineCount} người dùng đang online`}
-          >
-            <span className="titlebar-online-dot" />
-            {onlineCount}
-          </span>
+          onToggleSocial ? (
+            <button
+              type="button"
+              className="titlebar-online-chip is-clickable"
+              title={`${onlineCount} người dùng đang online · Open Social`}
+              aria-label={`Open Social panel, ${onlineCount} users online`}
+              onMouseDown={(event) => event.stopPropagation()}
+              onClick={onToggleSocial}
+            >
+              <span className="titlebar-online-dot" aria-hidden="true" />
+              {onlineCount}
+            </button>
+          ) : (
+            <span
+              className="titlebar-online-chip"
+              title={`${onlineCount} người dùng đang online`}
+            >
+              <span className="titlebar-online-dot" aria-hidden="true" />
+              {onlineCount}
+            </span>
+          )
         ) : null}
         {statusPreferences.showClock ? (
           <div className="titlebar-clock">
@@ -323,7 +455,7 @@ export function CustomTitleBar({
             className="titlebar-discord-user"
             onMouseDown={(event) => event.stopPropagation()}
             onClick={onDiscordLogout}
-            title="Sign out of Discord"
+            title={`${discordUser.displayName} · Sign out of Discord`}
             aria-label={`Discord user ${discordUser.displayName}. Sign out`}
           >
             <img src={discordUser.avatarUrl} alt="" />
@@ -371,6 +503,20 @@ export function CustomTitleBar({
             <Monitor size={16} />
           </button>
         )}
+        {!isBlockedState && onToggleSocial ? (
+          <button
+            type="button"
+            className={`titlebar-social-toggle${socialLayerVisible ? ' is-open' : ''}`}
+            onMouseDown={(event) => event.stopPropagation()}
+            onClick={onToggleSocial}
+            title={socialLayerVisible ? 'Hide friends panel' : 'Show friends panel'}
+            aria-label={socialLayerVisible ? 'Hide friends panel' : 'Show friends panel'}
+            aria-pressed={socialLayerVisible}
+          >
+            <CircleUserRound size={17} strokeWidth={1.9} />
+            <span className="titlebar-social-state-dot" aria-hidden="true" />
+          </button>
+        ) : null}
       </div>
 
       <div className="titlebar-actions">
@@ -396,7 +542,7 @@ export function CustomTitleBar({
           onMouseDown={(e) => e.stopPropagation()}
           onClick={handleClose}
         >
-          <svg width="10" height="10" viewBox="0 0 10 10"><line x1="0" y1="0" x2="10" y2="10" stroke="currentColor" strokeWidth="1.2" /><line x1="10" y1="0" x2="0" y2="10" stroke="currentColor" strokeWidth="1.2" /></svg>
+          <svg width="10" height="10" viewBox="0 0 10 10"><path d="M 1 1 L 9 9 M 9 1 L 1 9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" /></svg>
         </button>
       </div>
     </div>
