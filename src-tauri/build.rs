@@ -73,6 +73,43 @@ fn validate_command_acl(manifest_dir: &Path) -> Result<(), String> {
     ))
 }
 
+
+fn prepare_lightning_catalogs(manifest_dir: &Path) -> Result<(), String> {
+    let out_dir = env::var_os("OUT_DIR")
+        .map(std::path::PathBuf::from)
+        .ok_or_else(|| "OUT_DIR is unavailable".to_string())?;
+
+    let catalogs = [
+        ("data.json", "lightning_data.json"),
+        ("data-fix.json", "lightning_data_fix.json"),
+        ("shop.json", "lightning_shop.json"),
+    ];
+
+    for (source_name, output_name) in catalogs {
+        let source = manifest_dir.join("resources").join("lightning").join(source_name);
+        println!("cargo:rerun-if-changed={}", source.display());
+
+        let body = match fs::read_to_string(&source) {
+            Ok(body) => body,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                println!(
+                    "cargo:warning=Lightning catalog missing: {}. Building with an empty catalog; runtime can still start.",
+                    source.display()
+                );
+                "{}\n".to_string()
+            }
+            Err(error) => {
+                return Err(format!("could not read {}: {error}", source.display()));
+            }
+        };
+
+        fs::write(out_dir.join(output_name), body)
+            .map_err(|error| format!("could not write generated {output_name}: {error}"))?;
+    }
+
+    Ok(())
+}
+
 fn main() {
     println!("cargo:rerun-if-env-changed=OXO_DISCORD_CLIENT_ID");
     println!("cargo:rerun-if-changed=src/lib.rs");
@@ -83,6 +120,9 @@ fn main() {
         .expect("CARGO_MANIFEST_DIR is unavailable");
     if let Err(error) = validate_command_acl(&manifest_dir) {
         panic!("Tauri command ACL validation failed: {error}");
+    }
+    if let Err(error) = prepare_lightning_catalogs(&manifest_dir) {
+        panic!("Lightning catalog preparation failed: {error}");
     }
 
     tauri_build::build();

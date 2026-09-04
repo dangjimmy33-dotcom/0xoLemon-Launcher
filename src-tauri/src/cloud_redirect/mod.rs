@@ -16,7 +16,7 @@ use tauri::command;
 use patcher::Patcher;
 use steam_detector::{
     find_steam_path, get_steam_version, is_steam_running, is_supported_steam_version,
-    shutdown_steam, SUPPORTED_STEAM_VERSIONS,
+    shutdown_steam,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

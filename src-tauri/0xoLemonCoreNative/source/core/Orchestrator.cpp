@@ -23,15 +23,6 @@
 namespace _0xoLemonCore {
 
     using HookOp = void(*)();
-    static constexpr HookOp kInstallOrder[] = {
-        DepotKeys::Install,
-        DecryptionKeyHook::Install,
-        IPCBus::Install,
-        ManifestBind::Install,
-        PacketRouter::Install,
-        OnlineFixInject::Install,
-        LicenseHooks::Install,
-    };
     static constexpr HookOp kUninstallOrder[] = {
         DepotKeys::Uninstall,
         DecryptionKeyHook::Uninstall,
@@ -45,10 +36,25 @@ namespace _0xoLemonCore {
         LicenseHooks::Uninstall,
     };
 
-    void Attach() {
+    void Attach(bool compatibilityReady) {
         if (!SffCore::Initialize())
             LOG_WARN("Native SFF core initialization failed; continuing with hook-only runtime");
-        for (auto fn : kInstallOrder) fn();
+
+        // Compatibility-sensitive IPC handlers must never run with stale method
+        // hashes. Unknown Steam builds stay in pass-through mode until both the
+        // per-build pattern TOML and IPC metadata are available. This prevents a
+        // half-installed hook set from changing Steam's native entitlement/UI state.
+        DepotKeys::Install();
+        DecryptionKeyHook::Install();
+        if (compatibilityReady) {
+            IPCBus::Install();
+        } else {
+            LOG_WARN("Compatibility degraded: IPCBus disabled; Steam remains pass-through");
+        }
+        ManifestBind::Install();
+        PacketRouter::Install();
+        OnlineFixInject::Install();
+        LicenseHooks::Install();
     }
 
     void Detach() {

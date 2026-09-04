@@ -259,9 +259,7 @@ namespace CoreInit {
                        static_cast<unsigned>(pcResult.entries.size()),
                        pcResult.ok ? 1 : 0);
 
-            HookStatus::SetStartupPhase("installing_critical_hooks");
-            PackagePatch::Install();
-            SteamCapture::Install();
+            HookStatus::SetStartupPhase("checking_compatibility");
 
             // ── Steamui leg ──────────────────────────────────────────
             PatternFetcher::PatternResult puResult{};
@@ -277,8 +275,10 @@ namespace CoreInit {
                                puResult.ok ? 1 : 0);
                 }
             } else {
-                LOG_COREIN_INFO("\"stage\" \"Patterns\" \"module\" \"steamui\" \"act\" \"deferred\"");
-                Patterns::StartSteamUiLateRetryLoop();
+                // Defer the SteamUI retry thread until steamclient compatibility
+                // is confirmed. On an unknown build the core remains inert and
+                // must not install any UI/package hooks in the background.
+                LOG_COREIN_INFO("\"stage\" \"Patterns\" \"module\" \"steamui\" \"act\" \"deferred-until-compatible\"");
             }
 
             // ── IPC method spec loader ───────────────────────────────
@@ -287,12 +287,14 @@ namespace CoreInit {
             // ── IPC method metadata (ipc_methods.toml) ─────────────
             IpcLoader::Load(SteamclientPath);
 
-            // ── Diagnostics capture ──────────────────────────────────
-            BootDiag::Capture();
-            if (!IpcSpecLoader::IsLoaded() && !IpcLoader::IsLoaded())
-                BootDiag::ReportMissing();
+            // ── Compatibility gate / diagnostics ──────────────────────
+            const bool ipcMetadataReady = IpcSpecLoader::IsLoaded() || IpcLoader::IsLoaded();
+            const bool compatibilityReady = pcResult.ok && ipcMetadataReady;
 
-            // SHAs first, then per-module availability.
+            BootDiag::Capture();
+
+            // Publish diagnostics before the compatibility decision so an
+            // unsupported build still leaves a useful status file behind.
             {
                 std::lock_guard<std::mutex> lk(g_shas.mtx);
                 g_shas.clientSha = pcResult.sha;
@@ -301,6 +303,35 @@ namespace CoreInit {
             HookStatus::SetShas(pcResult.sha, puResult.sha);
             HookStatus::SetTomlAvailability("steamclient", pcResult.ok);
             HookStatus::SetTomlAvailability("steamui",     puResult.ok);
+
+            if (!compatibilityReady) {
+                // Unknown Steam builds are a strict pass-through state. Do not
+                // install capture, package, UI, IPC, cloud/license, depot or
+                // routing hooks until exact SHA-specific metadata is available.
+                // This preserves Steam's native state instead of running a
+                // partially compatible hook set.
+                HookStatus::SetStartupPhase("compatibility-degraded-pass-through");
+                HookStatus::SetStartupSafety(
+                    "compatibility-degraded-pass-through", false,
+                    "steamclient-pattern-or-ipc-metadata-missing");
+                LOG_COREIN_WARN(
+                    "\"stage\" \"Compatibility\" \"mode\" \"pass-through\" \"patterns\" {} \"ipc\" {}",
+                    pcResult.ok ? 1 : 0, ipcMetadataReady ? 1 : 0);
+                BootDiag::ReportMissing();
+                HookStatus::WriteToDisk();
+                LOG_COREIN_INFO("\"stage\" \"Bootstrap\" \"act\" \"complete-pass-through\"");
+                return 0;
+            }
+
+            HookStatus::SetStartupSafety("compatibility-full", true, "");
+            HookStatus::SetStartupPhase("installing_critical_hooks");
+            SteamCapture::Install();
+            PackagePatch::Install();
+            LOG_COREIN_INFO("\"stage\" \"Compatibility\" \"mode\" \"full\"");
+
+            if (!steamUiMapped)
+                Patterns::StartSteamUiLateRetryLoop();
+
             HookStatus::SetStartupPhase("patterns_loaded");
             HookStatus::WriteToDisk();
 
@@ -317,13 +348,17 @@ namespace CoreInit {
 
             DirWatch::Start(watchDirs);
 
-            // ── IPC dispatch layer (ticket spoofing handlers) ──────
-            IpcHooks::Install();
+            // ── IPC dispatch layer ─────────────────────────────────
+            if (compatibilityReady) {
+                IpcHooks::Install();
+            } else {
+                LOG_COREIN_WARN("\"stage\" \"IPC\" \"act\" \"skip-unknown-build\"");
+            }
 
             // ── Denuvo authorization state machine ──────────────────
             DenuvoAuth::Init();
 
-            _0xoLemonCore::Attach();
+            _0xoLemonCore::Attach(compatibilityReady);
             g_HooksInstalled.store(true);
             HookStatus::SetStartupPhase("hooks_complete");
             HookStatus::WriteToDisk();

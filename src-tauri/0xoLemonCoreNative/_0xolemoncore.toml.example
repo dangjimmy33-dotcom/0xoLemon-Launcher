@@ -54,10 +54,10 @@ x64 = ""
 inject_enabled = true
 
 [boot]
-# Show a diagnostic popup with Steam build ID and steamclient SHA256 when
-# patterns can't load (new Steam build, network down, GitHub cache miss).
-# The popup data is what you need to report a missing build.
-diagnostic_popup = true
+# Optional blocking diagnostic popup with Steam build ID and steamclient SHA256
+# when compatibility metadata cannot load. Keep this false for normal use: the
+# same details are written to logs/status without interrupting Steam startup.
+diagnostic_popup = false
 
 [steamstub]
 # Automatically activate the SteamStub bypass route when launching a

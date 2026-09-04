@@ -41,7 +41,7 @@ pub struct NativeCoreSettingsState {
     pub config_exists: bool,
 }
 
-const NATIVE_CORE_CONFIG: &str = "_0xolemoncore.toml";
+pub(crate) const NATIVE_CORE_CONFIG: &str = "_0xolemoncore.toml";
 
 fn native_core_config_path() -> Result<PathBuf, String> {
     Ok(get_steam_root()?.join(NATIVE_CORE_CONFIG))
@@ -70,6 +70,18 @@ fn write_native_core_stats_setting(path: &Path, enabled: bool) -> Result<(), Str
         DocumentMut::new()
     };
     document["stats"]["enable_api"] = value(enabled);
+    crate::lua_live::atomic_write_path(path, document.to_string().as_bytes())
+}
+
+pub(crate) fn write_native_core_diagnostic_popup(path: &Path, enabled: bool) -> Result<(), String> {
+    let mut document = if path.is_file() {
+        parse_native_core_config(
+            &fs::read_to_string(path).map_err(|error| io_error("read", path, error))?,
+        )?
+    } else {
+        DocumentMut::new()
+    };
+    document["boot"]["diagnostic_popup"] = value(enabled);
     crate::lua_live::atomic_write_path(path, document.to_string().as_bytes())
 }
 
@@ -173,6 +185,12 @@ pub(crate) fn hook_files_match_sources(app: &AppHandle, steam_root: &Path) -> bo
 
 pub(crate) fn install_hook_files(app: &AppHandle, steam_root: &Path) -> Result<(), String> {
     let resource_dir = resolve_hook_resource_dir(app)?;
+
+    // Diagnostics for an unknown Steam build are surfaced through the launcher
+    // status/logs. Keep the native MessageBox disabled so startup never blocks
+    // waiting for user input on every client update.
+    write_native_core_diagnostic_popup(&steam_root.join(NATIVE_CORE_CONFIG), false)?;
+
     install_hook_files_from(&resource_dir, steam_root)
 }
 

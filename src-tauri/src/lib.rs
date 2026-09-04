@@ -53,6 +53,7 @@ pub mod social;
 pub mod steam;
 pub mod steam_integration;
 pub mod steam_launch_options;
+pub mod steam_pattern_scanner;
 pub mod steam_vn_fix;
 pub mod steamless;
 pub mod storage;

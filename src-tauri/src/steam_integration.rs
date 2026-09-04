@@ -110,6 +110,7 @@ pub fn is_steam_running() -> bool {
 pub fn open_steam() -> Result<(), String> {
     #[cfg(target_os = "windows")]
     {
+        let _ = crate::steam_pattern_scanner::auto_adapt_steam_patterns();
         if let Some(root) = find_steam_root() {
             let executable = root.join("steam.exe");
             if executable.is_file() {
@@ -187,6 +188,7 @@ pub(crate) fn start_steam_after_maintenance(
 ) -> Result<(), String> {
     #[cfg(target_os = "windows")]
     {
+        let _ = crate::steam_pattern_scanner::auto_adapt_steam_patterns();
         let root =
             find_steam_root().ok_or_else(|| "Steam installation was not found".to_string())?;
         let executable = root.join("steam.exe");
@@ -1160,6 +1162,8 @@ pub fn check_and_update_dlls(app: &AppHandle) -> Result<(), String> {
         return Ok(());
     }
 
+    let _ = crate::steam_pattern_scanner::auto_adapt_steam_patterns();
+
     // Loaded proxy DLLs cannot be replaced safely. The next launcher start
     // while Steam is closed will reconcile them. Process-enumeration errors
     // must fail closed instead of risking a write into a running Steam client.
@@ -1168,6 +1172,12 @@ pub fn check_and_update_dlls(app: &AppHandle) -> Result<(), String> {
     }
 
     let steam_path = steam_root.as_path();
+    // Diagnostics for Steam build are surfaced through launcher status/logs.
+    // Keep native MessageBox disabled so startup never blocks waiting for user input.
+    let _ = crate::open_steam_tool::write_native_core_diagnostic_popup(
+        &steam_path.join(crate::open_steam_tool::NATIVE_CORE_CONFIG),
+        false,
+    );
     let mut updated = false;
     if !crate::open_steam_tool::hook_files_match_sources(app, steam_path) {
         crate::open_steam_tool::install_hook_files(app, steam_path)?;
@@ -1235,6 +1245,8 @@ pub fn enable_lua_game_mode(app: &AppHandle) -> Result<(), String> {
     crate::open_steam_tool::ensure_steam_closed()?;
     let steam_root = crate::open_steam_tool::get_steam_root()?;
     let steam_path = steam_root.as_path();
+
+    let _ = crate::steam_pattern_scanner::auto_adapt_steam_patterns();
 
     crate::open_steam_tool::install_hook_files(app, steam_path)?;
 

@@ -14,7 +14,7 @@ namespace SteamUI {
 }
 
 namespace _0xoLemonCore {
-    void Attach();
+    void Attach(bool compatibilityReady);
     void Detach();
 }
 

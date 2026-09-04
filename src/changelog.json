@@ -1,5 +1,22 @@
 ﻿[
     {
+        "version":  "2.0.58",
+        "date":  "2026-09-04",
+        "changes":  [
+                        "Fix Steam IPC metadata auto-adaptation to resolve startup diagnostic popup",
+                        "Rebuild native 0xoCore.dll with diagnostic popup disabled and full compatibility gate",
+                        "Ensure diagnostic popup is disabled unconditionally on startup"
+                    ]
+    },
+    {
+        "version":  "2.0.57",
+        "date":  "2026-09-04",
+        "changes":  [
+                        "Fix Steam IPC metadata auto-adaptation to resolve startup diagnostic popup",
+                        "Ensure diagnostic popup is disabled unconditionally on startup"
+                    ]
+    },
+    {
         "version":  "2.0.56",
         "date":  "2026-09-04",
         "changes":  [

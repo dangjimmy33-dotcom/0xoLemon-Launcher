@@ -121,7 +121,7 @@ namespace Settings {
     // so users are not surprised by a popup on first launch. When a Steam
     // update breaks dispatch, users can flip this to true and share the
     // popup content in bug reports.
-    inline bool diagnosticPopupEnabled = true;
+    inline bool diagnosticPopupEnabled = false;
 
 
 }

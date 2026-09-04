@@ -15,9 +15,9 @@ use tauri_plugin_dialog::DialogExt;
 use uuid::Uuid;
 use zip::ZipArchive;
 
-const BYPASS_CATALOG: &str = include_str!("../resources/lightning/data.json");
-const ONLINE_FIX_CATALOG: &str = include_str!("../resources/lightning/data-fix.json");
-const PARTNER_STORE_CATALOG: &str = include_str!("../resources/lightning/shop.json");
+const BYPASS_CATALOG: &str = include_str!(concat!(env!("OUT_DIR"), "/lightning_data.json"));
+const ONLINE_FIX_CATALOG: &str = include_str!(concat!(env!("OUT_DIR"), "/lightning_data_fix.json"));
+const PARTNER_STORE_CATALOG: &str = include_str!(concat!(env!("OUT_DIR"), "/lightning_shop.json"));
 const MAX_PACKAGE_FILES: usize = 4_096;
 const MAX_PACKAGE_DOWNLOAD_BYTES: u64 = 2 * 1024 * 1024 * 1024;
 const MAX_PACKAGE_EXPANDED_BYTES: u64 = 4 * 1024 * 1024 * 1024;
