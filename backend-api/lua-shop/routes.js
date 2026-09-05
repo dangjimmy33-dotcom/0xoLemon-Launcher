@@ -9,6 +9,7 @@ const { ActivationError } = require('../activation/errors');
 const { searchSteamCatalog } = require('./catalog');
 const { publishCommunityPackage } = require('./hf-publisher');
 const { validateCanonicalPackage } = require('./package-validator');
+const { createArchiveRouter } = require('./archive-routes');
 const {
   FirestoreLuaShopQuota,
   LuaShopError,
@@ -98,6 +99,8 @@ function createLuaShopRouter({ getTenantDb }) {
       sendError(res, error);
     }
   }
+
+  router.use('/archive', createArchiveRouter({ getTenantDb, authenticateRequest, accountIpLimiter, accountIdentityLimiter, catalogLimiter }));
 
   router.get('/catalog/search', catalogLimiter, async (req, res) => {
     try {

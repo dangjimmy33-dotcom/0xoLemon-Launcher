@@ -1,0 +1,35 @@
+name: Reconcile 0xoLemon depot archive
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+    inputs:
+      appId:
+        description: 'Optional single AppID for a bounded staging test'
+        required: false
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: depot-archive
+  cancel-in-progress: false
+jobs:
+  reconcile:
+    if: github.event_name == 'workflow_dispatch' || vars.DEPOT_ARCHIVE_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: backend-api/package-lock.json
+      - run: npm ci --ignore-scripts
+        working-directory: backend-api
+      - run: node backend-api/scripts/reconcile-depot-archive.js
+        env:
+          HUBCAP_API_KEY: ${{ secrets.HUBCAP_API_KEY }}
+          ARCHIVE_SERVICE_TOKEN: ${{ secrets.ARCHIVE_SERVICE_TOKEN }}
+          ARCHIVE_BACKEND_URL: ${{ vars.ARCHIVE_BACKEND_URL }}
+          ARCHIVE_APP_ID: ${{ inputs.appId }}

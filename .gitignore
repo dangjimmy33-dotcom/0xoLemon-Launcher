@@ -15,6 +15,9 @@ target/
 src-tauri/target
 depot
 depot-*
+!backend-api/lua-shop/depot-archive.js
+!backend-api/test/depot-archive.test.js
+!.github/workflows/depot-archive.yml
 worker/node_modules
 worker/dist
 *.local
