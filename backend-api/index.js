@@ -6,7 +6,7 @@
 
 const express = require('express');
 const http = require('http');
-const cors = require('cors');
+const { createHttpPolicy } = require('./http-policy');
 const NodeCache = require('node-cache');
 const admin = require('firebase-admin');
 const rateLimit = require('express-rate-limit');
@@ -131,26 +131,7 @@ function getTenantDb(tenantId) {
 // MIDDLEWARE
 // ============================================================
 
-// Rate limiting: 100 requests per 15 minutes per IP
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Too many requests from this IP, please try again after 15 minutes' }
-});
-app.use(limiter);
-
-app.use(cors({
-  credentials: true,
-  origin(origin, callback) {
-    if (!origin || remoteConfig.allowedOrigins.has(String(origin).replace(/\/$/, ''))) {
-      callback(null, true);
-      return;
-    }
-    callback(new Error('Origin is not allowed'));
-  }
-}));
+app.use(createHttpPolicy(remoteConfig));
 app.use(express.json({ limit: '32kb' }));
 
 const searchWriteLimiter = rateLimit({
